@@ -2,7 +2,6 @@
 	header('Content-type: application/pdf');
 	header('Content-Disposition: attachment; filename="downloaded.pdf"');
 
-
 // header('Content-type: application/pdf');
 //	header('Content-Type=application/octet-stream;charset=UTF-8');
 //	header('Content-Disposition: attachment; filename="downloaded.pdf"');
