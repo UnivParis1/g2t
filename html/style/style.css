@@ -1,0 +1,432 @@
+@CHARSET "ISO-8859-1";
+
+/*<group=Navigation principale>*/
+
+#menuprincipal {
+	position: absolute;
+	top:  21px;
+	left:  25px; /* 123 */
+	width: 990px; /* 690 */
+	height: 17px;
+	z-index: 7;
+	float: left;
+	clear: right;
+	margin: 0px;
+	padding: 0px;
+   list-style-type: none;
+   font-family: Arial;
+}
+
+#menuprincipal a {
+	width: 500px; /* 500 */
+}
+
+#menuprincipal dl {
+	float: left;
+	width: 247px ;/* 190px; */
+   list-style-type: none;
+}
+
+#menuprincipal dt {
+   width: 247px;  /* 200 */
+	text-align: center;
+	background-color: #336699;   /* #EF001F;   */
+   list-style-type: none;
+}
+
+#menuprincipal dd {
+	display: none;
+	float: left; 
+	background-color: white; /* #D2D2D2 */
+	width: 247px; /* 257 */
+	border: 1px solid; /* ajout MS */
+	border-color: gray;  /* ajout MS */
+   list-style-type: none;
+}
+
+#smenuprincipal1, #smenuprincipal2, #smenuprincipal3, #smenuprincipal4, #smenuprincipal5 {
+	display: none;
+	text-align: left;
+	float: left;
+	font-size: 11px;
+	line-height: 15px;;
+	font-family: Arial;
+	padding: 0px;
+	margin: 0px;
+   list-style-type: none;
+}
+
+#smenuprincipal1 li, #smenuprincipal2 li, #smenuprincipal3 li, #smenuprincipal4 li, #smenuprincipal5 li,
+#smenuprincipal1 dl, #smenuprincipal2 dl, #smenuprincipal3 dl, #smenuprincipal4 dl, #smenuprincipal5 dl,
+#smenuprincipal1 dt, #smenuprincipal2 dt, #smenuprincipal3 dt, #smenuprincipal4 dt, #smenuprincipal5 dt,
+#smenuprincipal1 dd, #smenuprincipal2 dd, #smenuprincipal3 dd, #smenuprincipal4 dd, #smenuprincipal5 dd,
+#smenuprincipal1 ul, #smenuprincipal2 ul, #smenuprincipal3 ul, #smenuprincipal4 ul, #smenuprincipal5 ul
+{
+	width:  100%; 
+	float: left;
+   margin: 0px;
+   padding: 0px;
+   list-style-type: none;
+} 
+
+#smenuprincipal1 a, #smenuprincipal2 a, #smenuprincipal3 a, #smenuprincipal4 a, #smenuprincipal5 a {
+	text-decoration: none;
+	float:  left; 
+	font-size: 11px;
+	font-weight: bold;
+	text-align: center; /* left; */
+	padding: 0px;
+	margin: 0px;
+	padding-left: 0px; /*12px; */
+	width: 245px;  /* 245px; */
+	display: block;	
+  	/*background: url(images/accueil_btn.gif) 2px 5px no-repeat; */
+  	border-top: 1px solid; /* ajout MS */
+	border-color: gray;  /* ajout MS */
+   list-style-type: none;
+}
+#smenuprincipal1 a:hover, #smenuprincipal2 a:hover, #smenuprincipal3 a:hover, #smenuprincipal4 a:hover, #smenuprincipal5 a:hover {
+	color: #EF001F; /* white */
+	/* background: url(images/accueil_btn.gif) 2px 5px no-repeat; */
+	background-color: white; /* #EF001F */
+}
+
+/*</group>*/
+
+/*******************************************************/
+/* NOUVELLE VERSION DE LA CSS                          */
+/*******************************************************/
+
+/*******************************************************/
+/* DEFINITION DU BODY (Police, taille, couleur, ...)   */
+/*******************************************************/
+.bodyhtml {
+	FONT-SIZE: 14px; FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif; COLOR: #000000; 
+}
+
+/*******************************************************/
+/* Tableau simple (bordure fine, noire etc)            */
+/*******************************************************/
+.tableausimple {
+	border-width:1px; 
+	border-style:solid; 
+	border-color:#888B8A;
+   border-collapse:collapse;
+/*	width:50%; */
+ }
+.cellulesimple{
+	border-width:1px;
+	border-style:solid; 
+	border-color:#888B8A;
+   padding-left:10px;
+   padding-right:10px;
+/*	width:50%; */
+}
+.titresimple{
+   FONT-WEIGHT: bold ; 
+   color : #BF3021; 
+	border-width:1px;
+   border-style:solid; 
+   border-color:#888B8A;
+   padding-left:10px;
+   padding-right:10px;
+   text-align : center;
+/* width:50%; */
+}
+
+/****************************************************
+/ MENU PRINCIPAL
+/****************************************************/
+#mainmenu {
+   FONT-WEIGHT: bold; 
+   FONT-SIZE: 12px; 
+   FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif; 
+   border-collapse : collapse; 
+   COLOR: #336699; 
+}
+#mainmenu UL UL {
+/*	BORDER-RIGHT: #888B8A 1px solid; BORDER-TOP: #888B8A 1px solid; BORDER-LEFT: #888B8A 1px solid; BORDER-BOTTOM: #888B8A 1px solid;*/ 
+   PADDING-RIGHT: 0px; 
+   DISPLAY: none; 
+   PADDING-LEFT: 0px; 
+   LEFT: 254px; 
+   PADDING-BOTTOM: 0px;
+   MARGIN: 0px; 
+   PADDING-TOP: 0px; 
+   POSITION: absolute; 
+   TOP: -1px;
+}
+#mainmenu LI {
+   PADDING-RIGHT: 2px; 
+   PADDING-LEFT: 2px; 
+   PADDING-BOTTOM: 5px; 
+   MARGIN: 0px; 
+   WIDTH: 250px; 
+   PADDING-TOP: 5px;
+   LIST-STYLE-TYPE: none; 
+   POSITION: relative; 
+   BACKGROUND-COLOR: #E5EAE9;  
+   float: left; 
+   text-align: center; 
+}
+#mainmenu LI a:hover {
+   cursor:pointer; /*  COLOR: #A4405B; */
+}
+#mainmenu LI:hover {
+   BACKGROUND-COLOR: #ffff70; 
+   cursor:pointer; /* COLOR: #A4405B !important;*/
+}
+#mainmenu LI A {
+   TEXT-DECORATION: none; 
+   COLOR: #336699;
+}
+#mainmenu UL.niveau1 LI {
+/*   BACKGROUND-COLOR: #336699; */ 
+   TEXT-DECORATION: none;  
+   BORDER-BOTTOM: #888B8A 1px solid;  
+   BORDER-TOP: #888B8A 1px solid; 
+   BORDER-LEFT: #888B8A 1px solid;  
+   BORDER-RIGHT: #888B8A 1px solid; 
+}
+#mainmenu UL.niveau2 LI {
+/*   BACKGROUND-COLOR: #ffffff; */ 
+   TEXT-DECORATION: none; 
+   BORDER-BOTTOM: #888B8A 1px solid;  
+   BORDER-TOP: #888B8A 1px solid;  
+   BORDER-LEFT: #888B8A 1px solid;  
+   BORDER-RIGHT: #888B8A 1px solid; 
+}
+#mainmenu UL.niveau1 {
+   DISPLAY: block;
+}
+#mainmenu LI:hover UL.niveau2 {
+   DISPLAY: block;  
+   FONT-SIZE: 11px; 
+   LEFT: 0px; 
+   TOP:24px; /* TOP: 18px; */
+}
+/*
+#mainmenu ul.niveau1 li ul.niveau2 li:hover {
+   BACKGROUND-COLOR: #ffff70; cursor:pointer; COLOR: #A4405B !important;
+}
+#mainmenu ul.niveau1 li ul.niveau2 a.li:hover {
+   BACKGROUND-COLOR: #ffff70; cursor:pointer; COLOR: #A4405B !important;
+}
+*/
+#mainmenu LI LI:hover UL.niveau3 {
+   DISPLAY: block;
+}
+#mainmenu LI.sfhover UL.niveau2 {
+   DISPLAY: block;  
+   FONT-SIZE: 11px; 
+   LEFT: 0px; 
+   TOP: 18px;  
+}
+#mainmenu LI LI.sfhover UL.niveau3 {
+   DISPLAY: block;
+}
+#mainmenu LI.plus {
+   COLOR: #336699; 
+   BACKGROUND-POSITION: right 50%; 
+   BACKGROUND-IMAGE: url(../images/fdroite.gif); 
+   BORDER-BOTTOM: #888B8A 1px solid; 
+   BACKGROUND-REPEAT: no-repeat;
+}
+
+/****************************************************
+/ TABLEAU DES SOLDES DE CONGES 
+/****************************************************/
+#soldeconges {
+   FONT-WEIGHT: normal ;
+}
+#soldeconges table {
+   border-collapse : collapse; 
+   border-spacing : 0px; 
+   text-align : center; 
+}
+#soldeconges TR.titre TD {
+	FONT-WEIGHT: bold ; 
+	color : #BF3021; 
+	BORDER-RIGHT: #888B8A 1px solid; 
+	PADDING-RIGHT: 4px; 
+	BORDER-TOP: #888B8A 1px solid; 
+	PADDING-LEFT: 4px; 
+	PADDING-BOTTOM: 2px; 
+	MARGIN: 0px; 
+	BORDER-LEFT: #888B8A 1px solid; 
+	PADDING-TOP: 2px; 
+	BORDER-BOTTOM: #888B8A 1px solid;
+}
+#soldeconges TR.entete TD, #soldeconges TR.element TD {
+   color: black; 
+   BORDER-RIGHT: #888B8A 1px solid; 
+   PADDING-RIGHT: 4px; 
+   BORDER-TOP: #888B8A 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: #888B8A 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: #888B8A 1px solid;
+}
+
+/****************************************************
+/ TABLEAU DE L'HISTORIQUE DES DEMANDES 
+/****************************************************/
+#demandeliste {
+   FONT-WEIGHT: normal ;
+}
+#demandeliste table {
+   border-collapse : collapse; 
+   border-spacing : 0px; 
+   text-align : center; 
+}
+#demandeliste TR.titre TD {
+   FONT-WEIGHT: bold ; 
+   color : #BF3021; 
+   BORDER-RIGHT: #888B8A 1px solid; 
+   PADDING-RIGHT: 4px; BORDER-TOP: #888B8A 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: #888B8A 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: #888B8A 1px solid;
+}
+#demandeliste TR.entete TD, #demandeliste TR.element TD {
+   color: black; 
+   BORDER-RIGHT: #888B8A 1px solid; 
+   PADDING-RIGHT: 4px; 
+   BORDER-TOP: #888B8A 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: #888B8A 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: #888B8A 1px solid;
+}
+
+/****************************************************
+/ PLANNING D'UN AGENT 
+/****************************************************/
+#planning {
+   FONT-WEIGHT: normal ;
+}
+#planning table.tableau {
+   border-collapse : collapse; 
+   border-spacing : 0px; 
+}
+#planning TR.entete TD {
+   color: black; 
+   BORDER-RIGHT: black 1px solid; 
+   PADDING-RIGHT: 4px;
+   BORDER-TOP: black 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: black 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: black 1px solid;  
+   text-align : center; 
+}
+#planning TR.ligneplanning TD {
+   color: black;
+   BORDER-RIGHT: black 1px solid; 
+   ADDING-RIGHT: 4px; 
+   BORDER-TOP: black 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: black 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: black 1px solid;  
+   text-align : left; 
+}
+#planning TR.ligneplanning TD.planningelement_matin {
+   cursor:pointer; 
+   border-left:2px solid black; 
+   border-top:2px solid black; 
+   border-right:0px solid black; 
+   border-bottom:2px solid black; 
+   PADDING-RIGHT: 1px; 
+   PADDING-LEFT: 1px;
+}
+#planning TR.ligneplanning TD.planningelement_aprem {
+   cursor:pointer; 
+   border-left:0px solid black; 
+   border-top:2px solid black; 
+   border-right:2px solid black; 
+   border-bottom:2px solid black;  
+   PADDING-RIGHT: 1px; 
+   PADDING-LEFT: 1px;
+}
+
+/****************************************************
+/ PLANNING D'UNE STRUCTURE
+/****************************************************/
+#structplanning {
+   FONT-WEIGHT: normal ;
+}
+#structplanning table.tableau {
+   border-collapse : collapse;
+   border-spacing : 0px; 
+}
+#structplanning TR.entete TD {
+   color: black; 
+   BORDER-RIGHT: black 1px solid; 
+   PADDING-RIGHT: 4px; 
+   BORDER-TOP: black 1px solid;
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: black 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: black 1px solid;  
+   text-align : center; 
+}
+#structplanning TR.entete_mois TD {
+   color: black; 
+   FONT-WEIGHT: bold ; 
+   BORDER-RIGHT: black 1px solid; 
+   PADDING-RIGHT: 4px; 
+   BORDER-TOP: black 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px; 
+   MARGIN: 0px; 
+   BORDER-LEFT: black 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: black 1px solid;  
+   text-align : center; 
+}
+#structplanning TR.ligneplanning TD {
+   color: black; 
+   BORDER-RIGHT: black 1px solid; 
+   PADDING-RIGHT: 4px; 
+   BORDER-TOP: black 1px solid; 
+   PADDING-LEFT: 4px; 
+   PADDING-BOTTOM: 2px;
+   MARGIN: 0px; 
+   BORDER-LEFT: black 1px solid; 
+   PADDING-TOP: 2px; 
+   BORDER-BOTTOM: black 1px solid;  
+   text-align : left; 
+}
+#structplanning TR.ligneplanning TD.planningelement_matin {
+   cursor:pointer; 
+   border-left:2px solid black; 
+   border-top:2px solid black; 
+   border-right:0px solid black; 
+   border-bottom:2px solid black; 
+   PADDING-RIGHT: 1px; 
+   PADDING-LEFT: 1px;
+}
+#structplanning TR.ligneplanning TD.planningelement_aprem {
+   cursor:pointer; 
+   border-left:0px solid black; 
+   border-top:2px solid black; 
+   border-right:2px solid black; 
+   border-bottom:2px solid black; 
+   PADDING-RIGHT: 1px; 
+   PADDING-LEFT: 1px;
+}
+

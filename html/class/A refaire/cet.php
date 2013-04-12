@@ -1,0 +1,282 @@
+<?php
+
+class cet {
+
+	private $idannuel = null;
+	private $idtotal = null;
+	private $agentid = null;
+	private $datedebut = null;
+	private $cumulannuel = null;
+	private $dbconnect = null;
+	private $cumultotal = null;
+	private $jrspris = null;
+	 
+	private $fonctions = null;
+
+	 
+	function __construct($db)
+	{
+		$this->dbconnect = $db;
+		if (is_null($this->dbconnect))
+		{
+			echo "Cet->construct : La connexion a la base de donnée est NULL !!!<br>";
+		}
+		$this->fonctions = new fonctions($db);
+	}
+	
+	function idannuel()
+	{
+		if (!is_null($this->idannuel))
+			return $this->idannuel;
+		else
+			echo "Cet->idannuel : L'identifiant du CET annuel n'est pas initialisé !!! <br>";
+	}
+	
+	function idtotal()
+	{
+		if (!is_null($this->idtotal))
+			return $this->idtotal;
+		else
+			echo "Cet->idtotal : L'identifiant du CET total n'est pas initialisé !!! <br>";
+	}
+	
+	function agentid($agentid = null)
+	{
+		if (is_null($agentid))
+		{
+			if (is_null($this->agentid))
+				echo "Cet->agentid : L'Id de l'agent n'est pas défini !!! <br>";
+			else
+				return $this->agentid;
+		}
+		else
+			$this->agentid = $agentid;
+	}
+	
+	function datedebut($date = null)
+	{
+		if (is_null($date))
+		{
+			if (is_null($this->datedebut))
+				echo "Cet->datedebutcet : La date du début du CET de l'agent n'est pas défini !!! <br>";
+			else
+				return $this->fonctions->formatdate($this->datedebut);
+		}
+		else
+			$this->datedebut = $this->fonctions->formatdatedb($date);
+	}
+	
+	function cumulannuel($cumulannee = null)
+	{
+		if (is_null($cumulannee))
+		{
+			if (is_null($this->cumulannuel))
+				echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent n'est pas défini !!! <br>";
+			else
+				return $this->cumulannuel;
+		}
+		elseif (intval($cumulannee) == $cumulannee)
+			$this->cumulannuel = $cumulannee;
+		else 
+			echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent doit être un nombre entier <br>";
+	}
+
+	function cumultotal($cumultot = null)
+	{
+		if (is_null($cumultot))
+		{
+			if (is_null($this->cumultotal))
+				echo "Cet->cumultotal : Le cumul total du CET de l'agent n'est pas défini !!! <br>";
+			else
+				return $this->cumultotal;
+		}
+		elseif (intval($cumultot) == $cumultot)
+			$this->cumultotal = $cumultot;
+		else 
+			echo "Cet->cumultotal : Le cumul total du CET de l'agent doit être un nombre entier <br>";
+	}
+	
+	function jrspris($nbrejrspris = null)
+	{
+		if (is_null($nbrejrspris))
+		{
+			if (is_null($this->jrspris))
+				echo "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent n'est pas défini !!! <br>";
+			else
+				return $this->jrspris;
+		}
+		elseif (intval($nbrejrspris) == $nbrejrspris)
+			$this->jrspris = $nbrejrspris;
+		else
+			echo "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent doit être un nombre entier <br>";
+	}
+	
+	function load($agentid)
+	{
+		$msgerreur = "";
+		if (is_null($agentid))
+			return "Cet->load : Le code de l'agent est NULL <br>";
+		
+		$agent = new agent($this->dbconnect);
+		$agent ->load($agentid);
+		// On charge le cumul annuel
+		$sql = "SELECT ID_SOLDE_CMPTE,DROIT_ACQUIS_DEMIE_JRS,DROIT_PRIS_DEMIE_JRS,COD_TYP_CONGE,CODE FROM SOLDE_CMPTE WHERE CODE = '" . $agentid   . "' AND COD_TYP_CONGE ='cetcu'";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+			echo "Cet->Load (cetcu): " . $erreur . "<br>";
+		if (mysql_num_rows($query) == 0)
+		{
+			//echo "Cet->Load (cetcu) : Le cumul annuel pour l'agent $agentid non trouvé <br>";
+			$msgerreur = $msgerreur . "Le cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvé <br>";
+		}
+
+		$result = mysql_fetch_row($query);
+		$this->cumulannuel = $result[1];
+		$this->agentid = $result[4];
+		$this->idannuel = $result[0];
+
+		// On charge le solde du CET
+		$sql = "SELECT ID_SOLDE_CMPTE,DROIT_ACQUIS_DEMIE_JRS,DROIT_PRIS_DEMIE_JRS,COD_TYP_CONGE,CODE FROM SOLDE_CMPTE WHERE CODE = '" . $agentid   . "' AND COD_TYP_CONGE ='cet'";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+			echo "Cet->Load (cet): " . $erreur . "<br>";
+		if (mysql_num_rows($query) == 0)
+		{
+			//echo "Cet->Load (cet) : Le CET pour l'agent $agentid non trouvé <br>";
+			$msgerreur = $msgerreur . "Le CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvé <br>";
+		}
+		$result = mysql_fetch_row($query);
+		$this->cumultotal = $result[1];
+		$this->idtotal = $result[0];
+		$this->jrspris = $result[2];
+		
+		// On charge la date de début du CET
+		$sql = "SELECT D_DEB_CET FROM ARTT_UTILISATEUR WHERE CODE = '" . $agentid   . "'";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+			echo "Cet->Load (date début): " . $erreur . "<br>";
+		if (mysql_num_rows($query) == 0)
+		{
+			echo "Cet->Load (date début) : La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvée <br>";
+			$msgerreur = $msgerreur . "La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvée <br>";
+		}
+		$result = mysql_fetch_row($query);
+		$this->datedebut = $this->fonctions->formatdate($result[0]);	
+		return $msgerreur;
+	}
+	
+	function store()
+	{
+		//echo "Avant le test idannuel <br>";
+		//echo "this->idannuel = " . $this->idannuel . "<br>";
+		$solde = new solde($this->dbconnect);
+		if (is_null($this->idannuel))
+		{
+			//echo "On va creer le solde <br>";
+			$solde->creersolde('cetcu',$this->agentid);
+			//echo "On va recharger le solde... <br>";
+			$solde->loadbytypeagent($this->agentid, 'cetcu');
+		}
+		else
+		{
+			//echo "On charge le solde avec son id <br>";
+			$solde->load($this->idannuel);
+		}
+		$solde->droitaquis_demijrs($this->cumulannuel());
+		//echo "On va store le solde <br>";
+		$msgerreur =  $msgerreur . $solde->store();
+		
+		unset($solde);
+		$solde = new solde($this->dbconnect);
+		//echo "Avant le test idtotal <br>";
+		//echo "this->idtotal = " . $this->idtotal . "<br>";
+		if (is_null($this->idtotal))
+		{
+			//echo "On va creer le solde <br>";
+			$solde->creersolde('cet',$this->agentid);
+			//echo "On va recharger le solde... <br>";
+			$solde->loadbytypeagent($this->agentid, 'cet');
+			
+			$sql = "UPDATE ARTT_UTILISATEUR SET D_DEB_CET='" . $this->fonctions->formatdatedb(date("d/m/Y")) . "', CET='o' WHERE CODE='" . $this->agentid . "'";
+			//echo "sql = " . $sql . "<br>";
+			$query=mysql_query ($sql, $this->dbconnect);
+			$erreur=mysql_error();
+			if ($erreur != "")
+				echo "Cet->Store (date début): " . $erreur . "<br>";
+		}
+		else
+		{
+			//echo "On charge le solde avec son id <br>";
+			$solde->load($this->idtotal);
+		}
+		$solde->droitaquis_demijrs($this->cumultotal());
+		$solde->droitpris_demijrs($this->jrspris());
+		//echo "On va store le solde <br>";
+		$msgerreur =  $msgerreur . $solde->store();
+		return $msgerreur; 
+	}
+	
+	function pdf($responsableid, $ajoutmode = TRUE, $detail = null)
+	{
+
+		//echo "Avant le new agent <br>";
+		$responsable = new agent($this->dbconnect);
+		$responsable->load($responsableid);
+		//echo "Apres le load...<br>";
+		
+		$pdf=new FPDF();
+		//echo "Apres le new <br>";
+		define('FPDF_FONTPATH','fpdffont/');
+		$pdf->Open();
+		$pdf->AddPage();
+		$pdf->Image('images/logo_papeterie.png',70,25,60,20);
+		
+		//echo "Apres image <br>";
+		$pdf->SetFont('Arial','B',16);
+		$pdf->Ln(70);
+		$pdf->Cell(60,10,'Composante : '. $responsable->structure()->parentstructure()->nomlong() .' ('. $responsable->structure()->parentstructure()->nomcourt() .')' );
+		$pdf->Ln(10);
+		$pdf->SetFont('Arial','B',12);
+		$pdf->Cell(60,10,'Service : '. $responsable->structure()->nomlong().' ('. $responsable->structure()->nomcourt() .')' );
+		$pdf->Ln(10);
+		
+		if ($ajoutmode)
+		{
+			//echo "Apres le nom du service <br>";
+			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'être alimenté.');
+			$pdf->Ln(10);
+			$pdf->Cell(40,10,'La date d\'ouverture de votre CET est : ' . $this->datedebut());
+			$pdf->Ln(10);
+			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())/2) . ' jour(s).');
+			$pdf->Ln(10);
+			$pdf->Cell(40,10,'Cette année, vous avez ajouté ' . ($this->cumulannuel()/2) . ' jour(s).');
+		}
+		else
+		{
+			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'être modifié.');
+			$pdf->Ln(10);
+			$pdf->Cell(40,10,$detail);
+			$pdf->Ln(10);
+			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())/2) . ' jour(s).');
+		}
+		//echo "Apres les textes <br>";
+		$pdf->Ln(10);
+		
+
+		$pdf->Cell(40,10,$responsable->civilite() . " " . $responsable->nom() . " " . $responsable->prenom());
+		$pdf->Ln(10);
+		
+		//echo "Nom du fichier....<br>";
+		$pdfname = './pdf/modification_cet_num'.$this->idtotal(). '_' . date("Ydm")  . '.pdf';
+		//echo "Avant le output... pdfname =   $pdfname <br>";
+		$pdf->Output($pdfname);
+		//echo "Avant le return. <br>";
+		return $pdfname;
+		
+	}
+}
+
+?>
