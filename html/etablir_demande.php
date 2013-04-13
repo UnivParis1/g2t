@@ -217,15 +217,15 @@
 	else 
 		$congeanticipe = null;
 	
-//	## On regarde si il y a des autodeclarations ==> Si pas !! Pas de saisie possible
-//	if (!is_null($agent))
-//	{
-//		if ($agent->dossiercomplet()==false)
-//		{
-//			$msg_erreur = $msg_erreur . "<br><b>Votre dossier est incomplet (pas d'auto-déclaration active) ==> Vous ne pouvez pas établir de demande !!! </b><br>";
-//			$pasautodeclaration = TRUE;
-//		}
-//	}
+	## On regarde si le dossier est complet pour la période demandée ==> Si pas !! Pas de saisie possible
+	if (!is_null($agent) and !$datefausse)
+	{
+		if (!$agent->dossiercomplet($date_debut,$date_fin))
+		{
+			$msg_erreur = $msg_erreur . "<br><b>Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande !!! </b><br>";
+			$pasautodeclaration = TRUE;
+		}
+	}
 	
 	require ("includes/menu.php");
 ?>

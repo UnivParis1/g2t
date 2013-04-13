@@ -42,9 +42,9 @@ class planning {
 		$datetemp = $this->fonctions->formatdatedb($datedebut);
 		//echo "datetemp= $datetemp <br>";
 		// On boucle sur tous les jours
+		$declarationTP = null;
 		for ($index=0; $index <= $nbre_jour-1 ; $index++)
 		{
-			$declarationTP = null;
 			if (!is_null($affectation))
 			{
 				//echo "Affectation non null <br>";
@@ -66,6 +66,9 @@ class planning {
 				{
 					$affectation = new affectation($this->dbconnect);
 					$affectation = reset($affectationliste);
+					//echo "Planning->Load : Je reset declarationTPliste et declarationTP <br>";
+					$declarationTPliste = null;
+					$declarationTP = null;
 					//$affectation = $affectationliste[0];
 					// echo "affectationliste = "; print_r($affectationliste); echo "<br>";
 					// echo "Avant chargement declarationTPliste <br>";
@@ -73,7 +76,18 @@ class planning {
 					//echo "Affectionid = " . $affectation->affectationid() . "<br>";
 					// echo "datetemp= $datetemp <br>";
 				}
-				$declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
+				//echo "Planning->Load : declarationTP = "; if (is_null($declarationTP)) echo "null<br>"; else echo "PAS null<br>";
+				if (!is_null($declarationTP))
+				{
+					if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
+					{
+						//echo "Planning->Load : La date de l'element planning > declarationTP->datefin ==> On doit recharger tout <br>";
+						$declarationTPliste = null;
+						$declarationTP = null;
+					}
+				}
+				if (is_null($declarationTPliste))
+					$declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
 				//echo "ApreS.... <br>";
 				if (!is_null($declarationTPliste))
 				{
@@ -92,7 +106,7 @@ class planning {
 						{
 							// Si on a trouvée une declatation de TP validée on sort
 							//echo "Je break... <br>";
-							$fulldeclarationTPliste[] = $declarationTP;
+							$fulldeclarationTPliste[$declarationTP->declarationTPid()] = $declarationTP;
 							break;
 						}
 					}
@@ -185,6 +199,7 @@ class planning {
 
 		//echo "Nbre d'élément = " . count($this->listeelement);
 		//echo "   "  . date("H:i:s") . "<br>";
+		//echo "Planning->Load : fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
 
 		if (!is_null($fulldeclarationTPliste))
 		{
