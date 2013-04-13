@@ -2,6 +2,7 @@
 
 	require_once("../html/class/fonctions.php");
 	require_once('../html/includes/dbconnection.php');
+	require_once("../html/class/declarationTP.php");
 
 	$fonctions = new fonctions($dbcon);
 
@@ -79,6 +80,22 @@
 				$erreur_requete=mysql_error();
 				if ($erreur_requete!="")
 					echo "INSERT AFFECTATION => $erreur_requete \n";
+					
+				if ($numquotite == $denomquotite)
+				{
+					$declarationTP = new declarationTP($dbcon);
+					$declarationTP->affectationid($affectationid);
+					$declarationTP->tabtpspartiel(str_repeat("0", 20));
+					//echo "datedebut = $datedebut \n";
+					$declarationTP->datedebut($datedebut);
+					if ("$datefin" == "")
+						$datefin = "9999-12-31";
+					//echo "datefin = $datefin \n";
+					$declarationTP->datefin($datefin);
+					$erreur = $declarationTP->store();
+					if ($erreur!="")
+						echo "Erreur dans la declarationTP->store : " . $erreur . "\n";
+				}
 			}
 			else
 			{

@@ -213,34 +213,33 @@ WHERE DECLARATIONID=" . $id;
 	function store()
 	{
 		
-		echo "DeclarationTP->store : non refaite !!!! <br>";
-		return false;
+//		echo "DeclarationTP->store : non refaite !!!! <br>";
+//		return false;
 		
 		//echo "On teste le nbre de tabrtt = " . count($this->tabrtt) . "<br>";
-		if (count($this->tabrtt) != 28)
-			return "Les RTT ne sont pas initialisée. L'enregistrement est impossible. <br>";
+		if (strlen($this->tabtpspartiel) != 20)
+			return "Le tableau des temps partiels n'est pas initialisé. L'enregistrement est impossible. <br>";
 		
 		//echo "id est null ==> " . $this->id . "<br>";
-		if (is_null($this->id))
+		if (is_null($this->declarationid))
 		{
 			$this->datedemande = $this->fonctions->formatdatedb(date("d/m/Y"));
 
-			$sql = "LOCK TABLES AUTODECLARATION WRITE";
+			$sql = "LOCK TABLES DECLARATIONTP WRITE";
 			mysql_query($sql,$this->dbconnect);
 			$sql = "SET AUTOCOMMIT = 0";
 			mysql_query($sql,$this->dbconnect);
-			$sql = "INSERT INTO AUTODECLARATION (ID_AUTODECLARATION,CODE,LMA1,MMA1,MEMA1,JMA1,VMA1,SMA1,DMA1,LMD1,MMD1,MEMD1,JMD1,VMD1,SMD1,DMD1,LMA2,MMA2,MEMA2,JMA2,VMA2,SMA2,DMA2,LMD2,MMD2,MEMD2,JMD2,VMD2,SMD2,DMD2,DEMIE_JRS_ATT1,STATUT_DEMANDE,D_DEB_DCL,D_FIN_DCL,D_DEMANDE_DCL,PROFIL_DCL)
-			        VALUES ('','" . $this->agentid()  ."',";
-			for ($tabindex = 1; $tabindex <= 28 ; $tabindex ++)
-				$sql = $sql . "'" . $this->tabrtt[$tabindex] . "',";
-			$sql = $sql . "'','a','" . $this->datedebut .  "','" . $this->datefin .  "','" . $this->datedemande ."','1')";
+			$sql = "INSERT INTO DECLARATIONTP (AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT) ";
+			$sql = $sql . " VALUES ('" . $this->affectationid  . "','" . $this->tabtpspartiel  ."',";
+			$sql = $sql . "'" . $this->datedemande ."','" . $this->fonctions->formatdatedb($this->datedebut) .  "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande ."','v')";
 			//echo "SQL = $sql   <br>";
 			mysql_query($sql,$this->dbconnect);
 	 		$erreur=mysql_error();
 			if ($erreur != "")
 				echo "DeclarationTP->store : " . $erreur . "<br>";
-			$sql = "SELECT LAST_INSERT_ID()";
-			$this->id = mysql_query($sql,$this->dbconnect);
+//			$sql = "SELECT LAST_INSERT_ID()";
+//			$this->id = mysql_query($sql,$this->dbconnect);
+			$this->declarationid = mysql_insert_id($this->dbconnect);
 			$sql = "COMMIT";
 			mysql_query($sql,$this->dbconnect);
 			$sql = "UNLOCK TABLES";
@@ -251,13 +250,10 @@ WHERE DECLARATIONID=" . $id;
 		else
 		{
 			$this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
-			$nomcol = array(1 => "LMA1","MMA1","MEMA1","JMA1","VMA1","SMA1","DMA1","LMD1","MMD1","MEMD1","JMD1","VMD1","SMD1","DMD1","LMA2","MMA2","MEMA2","JMA2","VMA2","SMA2","DMA2","LMD2","MMD2","MEMD2","JMD2","VMD2","SMD2","DMD2");
 			// c'est une modification ...
-			$sql = "UPDATE AUTODECLARATION  SET ";
-			for ($index =1; $index <=28 ; $index++) 
-					$sql = $sql . " " . $nomcol[$index] . "='" . $this->tabrtt[$index]  . "',";
-			$sql = $sql . " STATUT_DEMANDE='" . $this->statut . "', D_DEB_DCL='" . $this->datedebut . "', D_FIN_DCL='" . $this->datefin  . "', D_VALID_DCL='" . $this->datestatut . "' ";
-			$sql = $sql . "WHERE ID_AUTODECLARATION='" . $this->id() . "'";
+			$sql = "UPDATE DECLARATIONTP SET ";
+			$sql = $sql . " STATUT='" . $this->statut . "', DATEDEBUT='" . $this->datedebut . "', DATEFIN='" . $this->datefin  . "', DATESTATUT='" . $this->datestatut . "' ";
+			$sql = $sql . "WHERE DECLARATIONID='" . $this->declarationid . "'";
 			//echo "SQL = $sql   <br>";
 			mysql_query($sql,$this->dbconnect);
 	 		$erreur=mysql_error();
