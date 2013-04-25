@@ -191,14 +191,24 @@
 	{
 		// => On est en mode "responsable" mais aucun agent n'est sélectionné
 		//echo "Avant le chargement structure responsable <br>";
-		$agentliste=$responsable->structure()->agentlist();
-		echo "<SELECT name='agentid'>";
-		foreach ($agentliste as $keyagent => $membre)
+		$structureliste = $responsable->structrespliste();
+		//echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+		$agentlistefull = array();
+		foreach ($structureliste as $structure)
 		{
-			echo "<OPTION value='" . $membre->harepgeid() .  "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom()  . "</OPTION>";
+			$agentliste=$structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+			//echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+			$agentlistefull = array_merge((array)$agentlistefull, (array)$agentliste);
+			//echo "fin du select <br>";
+		}
+		ksort($agentlistefull);
+		echo "<SELECT name='agentid'>";
+		foreach ($agentlistefull as $keyagent => $membre)
+		{
+			echo "<OPTION value='" . $membre->harpegeid() .  "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom()  . "</OPTION>";
 		}
 		echo "</SELECT>";
-		//echo "fin du select <br>";
+		echo "<br>";
 	}
 	else
 	{
