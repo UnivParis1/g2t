@@ -138,13 +138,13 @@
 					</form>
 					<a href="javascript:document.dem_absence.submit();">Etablir une demande d'autorisation d'absence</a>
 				</li>				
-				<li onclick='document.agent_autodeclaration.submit();'>
-					<form name='agent_autodeclaration'  method='post' action="etablir_autodeclaration.php">
+				<li onclick='document.agent_tpspartiel.submit();'>
+					<form name='agent_tpspartiel'  method='post' action="saisir_tpspartiel.php">
 						<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>">
 						<input type="hidden" name="mode" value="agent">						
 					</form>
-					<a href="javascript:document.agent_autodeclaration.submit();">Validation dossier, temps partiel</a>
+					<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
 				</li>
 			</ul> 
 		</li> 
@@ -193,19 +193,19 @@
 								</form>
 								<a href="javascript:document.resp_valid_conge.submit();">Demandes en attente</a>
 							</li>
-							<li onclick='document.resp_valid_autodecla.submit();'>
-								<form name='resp_valid_autodecla'  method='post' action="valider_autodeclaration.php">
+							<li onclick='document.resp_valid_tpspartiel.submit();'>
+								<form name='resp_valid_tpspartiel'  method='post' action="valider_tpspartiel.php">
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 									<input type="hidden" name="mode" value="resp">
 								</form>
-								<a href="javascript:document.resp_valid_autodecla.submit();">Validation des autodéclarations</a>
-							</li>				
-							<li onclick='document.resp_autodeclaration.submit();'>
-								<form name='resp_autodeclaration'  method='post' action="etablir_autodeclaration.php">
+								<a href="javascript:document.resp_valid_tpspartiel.submit();">Validation des temps partiels</a>
+							</li>
+							<li onclick='document.resp_tpspartiel.submit();'>
+								<form name='resp_tpspartiel'  method='post' action="saisir_tpspartiel.php">
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 									<input type="hidden" name="mode" value="resp">
 								</form>
-								<a href="javascript:document.resp_autodeclaration.submit();">Validation dossier, tps partiel pour un agent</a>
+								<a href="javascript:document.resp_tpspartiel.submit();">Saisir le temps partiel pour un agent</a>
 							</li>
 							<li onclick='document.resp_gestcet.submit();'>
 								<form name='resp_gestcet'  method='post' action="gerer_cet.php">
