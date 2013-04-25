@@ -12,6 +12,10 @@ class declarationTP {
 	private $statut = null;
 	
 	private $fonctions = null;
+	private $dbconnect = null;
+	private $agent = null;
+	private $ancienfin = null;
+	private $anciendebut = null;
 	
 	function __construct($db)
 	{
@@ -97,7 +101,11 @@ WHERE DECLARATIONID=" . $id;
 				return $this->fonctions->formatdate($this->datedebut);
 		}
 		else
+		{
+			if (is_null($this->anciendebut))
+				$this->anciendebut = $this->datedebut;
 			$this->datedebut = $this->fonctions->formatdatedb($date);
+		}
 	}
 	
 	function datefin($date = null)
@@ -110,7 +118,11 @@ WHERE DECLARATIONID=" . $id;
 				return $this->fonctions->formatdate($this->datefin);
 		}
 		else
+		{
+			if (is_null($this->ancienfin))
+				$this->ancienfin = $this->datefin;
 			$this->datefin = $this->fonctions->formatdatedb($date);
+		}
 	}
 	
 	function datedemande($date = null)
@@ -143,13 +155,64 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($tableauTP))
 		{
-			echo "DeclarationTP->tabtpspartiel : Le tableau des temps partiels n'est pas défini (NULL) !!! <br>";
+			if (is_null($this->tabtpspartiel))
+				echo "DeclarationTP->tabtpspartiel : Le tableau des temps partiels n'est pas défini (NULL) !!! <br>";
+			else
+				return $this->tabtpspartiel;
 		}
 		else 
 		{
 			$this->tabtpspartiel = $tableauTP;
 		}
 		//echo "DeclarationTP->initTP : "; print_r($this->tabrtt); echo "<br>";
+	}
+	
+	function tabtpspartielhtml($pour_modif = false)
+	{
+		$htmltext = "";
+		$htmltext = $htmltext . "<tr class='entete'>";
+		$htmltext = $htmltext . "<td></td>";
+ 		for ($indexjrs=1; $indexjrs<6; $indexjrs++)
+ 		{
+ 		//echo "indexjrs = $indexjrs <br>";
+ 			$htmltext = $htmltext . "<td colspan='2' style='width:50px'>" . $this->fonctions->nomjourparindex($indexjrs) . "</td>";
+		}
+		$htmltext = $htmltext . "</tr>";
+		$checkboxname = null;
+		for ($semaine=0; $semaine <2 ; $semaine++)
+		{
+			$htmltext = $htmltext . "<tr class='ligneplanning'><td>Semaine ";
+	 		if ($semaine==0)
+	 			$htmltext = $htmltext . "paire</td>";
+	 		else
+	 			$htmltext = $htmltext . "impaire</td>";
+					
+			for ($indexelement=0 ; $indexelement<10 ; $indexelement++) 
+			{
+				unset($element);
+				$element = new planningelement($this->dbconnect);
+				if ($indexelement%2 == 0)
+					$element->moment("m");
+				else
+					$element->moment("a");
+				if ($pour_modif)
+					$checkboxname = $indexelement + ($semaine * 10); //  $this->fonctions->nomjourparindex(((int)($indexelement/2))+1) . "_" . $element->moment() . "_" . $semaine;
+				if (substr($this->tabtpspartiel(), $indexelement + ($semaine * 10),1) == 1)
+				{
+					$element->type("tppar");
+					$element->info("Temps partiel");
+				}
+				else
+				{
+					$element->type("");
+					$element->info("");
+				} 
+				$htmltext = $htmltext . $element->html(false,$checkboxname);
+				unset($element);
+			}
+			$htmltext = $htmltext ."</tr>";
+		}
+		return $htmltext;
 	}
 	
 	function enTP($date = null, $moment = null)
@@ -210,6 +273,27 @@ WHERE DECLARATIONID=" . $id;
 		}
 	}
 	
+	function agent()
+	{
+		if (is_null($this->agent))
+		{
+			$sql = "SELECT HARPEGEID FROM AFFECTATION,DECLARATIONTP WHERE DECLARATIONTP.DECLARATIONID='" . $this->declarationTPid() ."'";
+			$sql = $sql . " AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID";
+			$query=mysql_query ($sql,$this->dbconnect);
+			$erreur=mysql_error();
+			if ($erreur != "")
+				echo "Demande->agent : " . $erreur . "<br>";
+			if (mysql_num_rows($query) == 0)
+				echo "Demande->agent : Pas d'agent trouvé pour la déclaration de TP " . $this->declarationTPid() . " <br>";
+			$result = mysql_fetch_row($query);
+			$agent = new agent($this->dbconnect);
+			$agent->load("$result[0]");
+			$this->agent = $agent;
+		}
+		return $this->agent;
+		
+	}
+	
 	function store()
 	{
 		
@@ -231,7 +315,7 @@ WHERE DECLARATIONID=" . $id;
 			mysql_query($sql,$this->dbconnect);
 			$sql = "INSERT INTO DECLARATIONTP (AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT) ";
 			$sql = $sql . " VALUES ('" . $this->affectationid  . "','" . $this->tabtpspartiel  ."',";
-			$sql = $sql . "'" . $this->datedemande ."','" . $this->fonctions->formatdatedb($this->datedebut) .  "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande ."','v')";
+			$sql = $sql . "'" . $this->datedemande ."','" . $this->fonctions->formatdatedb($this->datedebut) .  "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande ."','" . $this->statut . "')";
 			//echo "SQL = $sql   <br>";
 			mysql_query($sql,$this->dbconnect);
 	 		$erreur=mysql_error();
@@ -259,26 +343,80 @@ WHERE DECLARATIONID=" . $id;
 	 		$erreur=mysql_error();
 			if ($erreur != "")
 				echo "DeclarationTP->store : " . $erreur . "<br>";
+			if (!is_null($this->anciendebut) or (!is_null($this->ancienfin)))
+			{
+//				echo "###############################<br>";
+//				echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui ne sont plus dans la période de TP #######<br>";
+//				echo "########################################<br>";
+//				echo "#### CA NE MARCHE PAS !!!!!!! A VERIFIER !!!!<br>";
+//				echo "###############################<br>";
+				if (is_null($this->anciendebut))
+					$debut= $this->datedebut();
+				else
+					$debut = $this->anciendebut;
+				if (is_null($this->ancienfin))
+					$fin= $this->datefin();
+				else
+					$fin = $this->ancienfin;
+				echo "debut = " . $this->fonctions->formatdate($debut) . "   datedebut = " . $this->datedebut() . "<br>";
+				echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "<br>";
+				$demandelistedebut = $this->demandesliste($this->fonctions->formatdate($debut),$this->datedebut());
+				$demandelistefin = $this->demandesliste($this->datefin(),$this->fonctions->formatdate($fin));
+				$demandeliste = array_merge((array)$demandelistedebut,(array)$demandelistefin);
+				echo "demandeliste = "; print_r($demandeliste); echo "<br>"; 
+				if (is_array($demandeliste))
+				{
+					foreach ($demandeliste as $key => $demande)
+					{
+						if ($demande->statut() != "r")
+						{
+							$demande->statut("r");
+							$demande->motifrefus("Modification de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
+							$demande->datestatut($this->fonctions->formatdatedb(date("d/m/Y")));
+							$msg = $demande->store();
+							if ($msg != "" )
+								echo "STORE de la demande apres modification d'une declaration TP : " . $msg . "<br>";
+						}
+					}
+				}
+			}
+			if ($this->statut == "r")
+			{
+				//echo "###############################<br>";
+				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associées à cette déclaration de TP #######<br>";
+				//echo "###############################<br>";
+				$demandeliste = $this->demandesliste($this->datedebut(),$this->datefin());
+				if (!is_null($demandeliste))
+				{
+					foreach ($demandeliste as $key => $demande)
+					{
+						if ($demande->statut() != "r")
+						{
+							$demande->statut("r");
+							$demande->motifrefus("Annulation de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
+							$demande->datestatut($this->fonctions->formatdatedb(date("d/m/Y")));
+							$msg = $demande->store();
+							if ($msg != "" )
+								echo "STORE de la demande apres suppression d'une declaration TP : " . $msg . "<br>";
+						}
+					}
+					
+				}
+			}
 		}
 		return "";
 	}
 	
 	function html($pourmodif = FALSE, $structid = NULL)
 	{
-		echo "DeclarationTP->html : non refaite !!!! <br>";
-		return false;
-		
-		
-		$agent = new agent($this->dbconnect);
-		$agent->load($this->agentid);
+//		echo "DeclarationTP->html : non refaite !!!! <br>";
+//		return false;
 
-//		echo "Agent-> Nom = " . $agent->nom() . " " ;
-//		print_r($this->tabrtt); echo "<br>";
-		
 		$htmltext = "";
 		$htmltext = $htmltext . "<tr>";
-		$htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "</td>";
-		$htmltext = $htmltext . "<input type='hidden' name='" .  $structid. "_" . $this->agentid() . "_autodeclaid_" . $this->id() . "' value='" . $this->id() ."'>";
+		if ($pourmodif)
+			$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->agent()->identitecomplete() . "</td>";
+//			$htmltext = $htmltext . "<input type='hidden' name='" .  $structid. "_" . $this->agent()->harpegeid() . "_autodeclaid_" . $this->declarationTPid() . "' value='" . $this->declarationTPid() ."'>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedemande() . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedebut() . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datefin() . "</td>";
@@ -286,7 +424,7 @@ WHERE DECLARATIONID=" . $id;
 		if ($pourmodif and $this->statut() == "a")
 		{
 			// Affichager les selections !!!!
-			$htmltext = $htmltext . "<select name='" .  $structid. "_" . $this->agentid() . "_statut_" . $this->id() . "'>";
+			$htmltext = $htmltext . "<select name='statut[" . $this->declarationTPid() . "]'>";
 			$htmltext = $htmltext . "<option value='a'"; if ($this->statut() == "a") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">En attente</option>";
 			$htmltext = $htmltext . "<option value='v'"; if ($this->statut() == "v") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Validé</option>";
 			$htmltext = $htmltext . "<option value='r"; if ($this->statut() == "r") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . "'>Refusé</option>";
@@ -309,63 +447,37 @@ WHERE DECLARATIONID=" . $id;
 		}
 		$htmltext = $htmltext . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple'>";
-		$tmphtml = "";
-		for ($cpt = 0; $cpt <=13 ; $cpt++)
-		{
-			//echo "calcul $cpt = " . ($cpt + ((int)($cpt / 7) * 7)); 
-			if ($cpt==0)
-				$tmphtml = $tmphtml . "Semaine impaire : ";
-			elseif ($cpt==7)
-				$tmphtml = $tmphtml . "Semaine paire : ";
-			$value = $this->tabrtt[($cpt + ((int)($cpt / 7) * 7))+1];
-			// On regarde si c'est une heure ou si la cas est vide ==> L'agent est en TP ou RTT
-			$result = strtotime($value) . "";
-			if ($result == "" and $value != "")
-			{
-				$index = substr($value,0,1);
-				$moment = substr($value,1,1);
-				//echo "    Value = " .  $value  . "   Index = " . $index . "   moment = " . $moment . "<br>";
-				$tmphtml = $tmphtml . $this->fonctions->nomjourparindex($index);
-				if ($moment == "m")
-					$tmphtml = $tmphtml . " matin";
-				else
-					$tmphtml = $tmphtml . " après-midi";
-			}
-			//echo "calcul v2 $cpt = " . ($cpt + ((int)($cpt / 7) * 7) + 7);
-			$tmphtml = $tmphtml . " ";
-			$value = $this->tabrtt[($cpt + ((int)($cpt / 7) * 7)  + 7)+1];
-			$result = strtotime($value) . "";
-			if ($result == "" and $value != "")
-			{
-				$index = substr($value,0,1);
-				$moment = substr($value,1,1);
-				//echo "      Value = " .  $value  . "   Index = " . $index . "   moment = " . $moment . "<br>";
-				$tmphtml = $tmphtml . $this->fonctions->nomjourparindex($index);
-				if ($moment == "m")
-					$tmphtml = $tmphtml . " matin";
-				else
-					$tmphtml = $tmphtml . " après-midi";
-			}
-			if ($cpt == 6)
-				$tmphtml = $tmphtml . "<br>";
-			$tmphtml = $tmphtml . " ";
-		}
-		$htmltext = $htmltext . trim($tmphtml);
-		$htmltext = $htmltext . "</td>";
-		$htmltext = $htmltext . "</tr>";
 		
+		$elementliste = array(10);
+		
+		//echo "Le tableau des TP = " . $this->tabtpspartiel . "<br>";
+ 		$htmltext = $htmltext . "<div id='planning'>";
+		$htmltext = $htmltext . "<table class='tableau'>";
+		$htmltext = $htmltext . $this->tabtpspartielhtml();
+		$htmltext = $htmltext ."</table>";
+		$htmltext = $htmltext ."</div>";
+		
+		$htmltext = $htmltext . "</td>";
+		if (!$pourmodif)
+		{
+			$htmltext = $htmltext . "<td class='cellulesimple' align=center >";
+			$htmltext = $htmltext . "<input type='checkbox' name='declaannule[" . $this->declarationTPid() ."]' value='1'>";
+			$htmltext = $htmltext . "</td>";
+		}
+		$htmltext = $htmltext .  "</tr>";
 		return $htmltext;
 	}
 	
 	function pdf($valideurid)
 	{
-		echo "DeclarationTP->pdf : non refaite !!!! <br>";
-		return false;
+//		echo "DeclarationTP->pdf : non refaite !!!! <br>";
+//		return false;
 		
 		//echo "Avant le new <br>";
 		$pdf = new FPDF();
 		//echo "Avant le define <br>";
-		define('FPDF_FONTPATH','fpdffont/');
+		if (!defined('FPDF_FONTPATH'))
+			define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('images/logo_papeterie.png',70,25,60,20);
@@ -374,11 +486,7 @@ WHERE DECLARATIONID=" . $id;
 		$pdf->Ln(50);
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 		$pdf->Ln(10);
-		//echo "Avant le load agent <br>";
-		$agent = new agent($this->dbconnect);
-		$agent->load($this->agentid());
-		//echo "Apres le load agent " .  $this->agentid()  . "<br>";
-		$pdf->Cell(60,10,'Autodéclaration N°'.$this->id().' de '. $agent->civilite() . ' ' . $agent->nom() . ' '  . $agent->prenom());
+		$pdf->Cell(60,10,'Autodéclaration N°'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
 		$pdf->Ln(10);
 		$pdf->SetFont('Arial','B',12);
 		//echo "Avant le test statut <br>";
@@ -390,74 +498,55 @@ WHERE DECLARATIONID=" . $id;
 		$pdf->Cell(40,10,"L'autodéclaration que vous avez déposée le " . $this->datedemande() .' a été '.$decision.' le '. $this->datestatut());
 		$pdf->Ln(10);
 		//echo "Avant test quotité <br>";
-		if ($agent->quotite() != "100%")
+		$pdf->Cell(60,10,'Récapitulatif de votre autodéclatation pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
+		$pdf->Ln(10);
+
+		for ($cpt = 0; $cpt <20 ; $cpt++)
 		{
-			$pdf->Cell(60,10,'Récapitulatif de votre autodéclatation pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
-			$pdf->Ln(10);
-
-			for ($cpt = 0; $cpt <=13 ; $cpt++)
+			//echo "calcul $cpt = " . ($cpt + ((int)($cpt / 7) * 7));
+			if ($cpt==0)
 			{
-				//echo "calcul $cpt = " . ($cpt + ((int)($cpt / 7) * 7));
-				if ($cpt==0)
-				{
-					$pdf->Cell(40,10,"Semaine impaire : ");
-					$pdf->Ln(10);
-				}
-				elseif ($cpt==7)
-				{
-					$pdf->Cell(40,10,"Semaine paire : ");
-					$pdf->Ln(10);
-				}
-				
-				$value = $this->tabrtt[($cpt + ((int)($cpt / 7) * 7))+1];
-				$result = strtotime($value) . "";
-				if ($result == "" and $value != "")
-				{
-					$index = substr($value,0,1);
-					$moment = substr($value,1,1);
-					//echo "    Value = " .  $value  . "   Index = " . $index . "   moment = " . $moment . "<br>";
-					if ($moment == "m")
-					{
-						$pdf->Cell(40,10, $this->fonctions->nomjourparindex($index) . " matin");
-					}
-					else
-					{
-						$pdf->Cell(40,10, $this->fonctions->nomjourparindex($index) . " après-midi");
-					}
-					$pdf->Ln(10);
-				}
-				//echo "calcul v2 $cpt = " . ($cpt + ((int)($cpt / 7) * 7) + 7);
-
-				$value = $this->tabrtt[($cpt + ((int)($cpt / 7) * 7)  + 7)+1];
-				$result = strtotime($value) . "";
-				if ($result == "" and $value != "")
-				{
-					$index = substr($value,0,1);
-					$moment = substr($value,1,1);
-					//echo "      Value = " .  $value  . "   Index = " . $index . "   moment = " . $moment . "<br>";
-					if ($moment == "m")
-					{
-						$pdf->Cell(40,10, $this->fonctions->nomjourparindex($index) . " matin");
-					}
-					else
-					{
-						$pdf->Cell(40,10, $this->fonctions->nomjourparindex($index) . " après-midi");
-					}
-					$pdf->Ln(10);
-				}
-				if ($cpt == 6)
-					$pdf->Ln(10);
+				$pdf->Cell(40,10,"Semaine paire : ");
+				$pdf->Ln(10);
+				$indexjrs = 0;
 			}
+			elseif ($cpt==10)
+			{
+				$pdf->Ln(10);
+				$pdf->Cell(40,10,"Semaine impaire : ");
+				$pdf->Ln(10);
+				$indexjrs = 0;
+			}
+			
+			$value = $this->tabtpspartiel[$cpt];
+			if ($cpt%2 == 0)
+				$indexjrs = $indexjrs+1;
+			if ($value == "1")
+			{
+				$moment = ($cpt%2);
+				//echo "    Value = " .  $value  . "   Index = " . $index . "   moment = " . $moment . "<br>";
+				if ($moment == "0")
+				{
+					$pdf->Cell(40,10, $this->fonctions->nomjourparindex($indexjrs) . " matin");
+				}
+				else
+				{
+					$pdf->Cell(40,10, $this->fonctions->nomjourparindex($indexjrs) . " après-midi");
+				}
+				$pdf->Ln(10);
+			}
+			//echo "calcul v2 $cpt = " . ($cpt + ((int)($cpt / 7) * 7) + 7);
+
+		}
 		
 
 			// $pdf->Cell(40,10,'Ajouter ici le tableau de récap pour les temps partiels');
-		}
 		
 		$pdf->Ln(15);
 //		$pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
-		$pdfname = './pdf/autodeclaration_num'.$this->id().'.pdf';
+		$pdfname = './pdf/autodeclaration_num'.$this->declarationTPid().'.pdf';
 		//$pdfname = sys_get_temp_dir() . '/autodeclaration_num'.$this->id().'.pdf';
 		//echo "Nom du PDF = " . $pdfname . "<br>";
 		$pdf->Output($pdfname);

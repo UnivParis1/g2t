@@ -273,7 +273,7 @@ class agent {
 			echo "Agent->affectationliste : " . $erreur . "<br>";
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Agent->affectationliste : L'agent $this->harpegeid n'a pas d'affectation entre $datedebut et $datefin <br>";
+			//echo "Agent->affectationliste : L'agent $this->harpegeid n'a pas d'affectation entre $datedebut et $datefin <br>";
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -615,12 +615,15 @@ class agent {
 		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
 		// On enlève les doublons des demandes !!!
 		$uniquedemandeliste = array();
-		foreach ($demandeliste as $key => $demande)
+		if (is_array($demandeliste))
 		{
-			$uniquedemandeliste[$demande->id()] = $demande;
+			foreach ($demandeliste as $key => $demande)
+			{
+				$uniquedemandeliste[$demande->id()] = $demande;
+			}
+			$demandeliste = $uniquedemandeliste;
+			unset($uniquedemandeliste);
 		}
-		$demandeliste = $uniquedemandeliste;
-		unset($uniquedemandeliste);
 		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
 		
 		$htmltext =                   "<br>";
@@ -795,12 +798,15 @@ class agent {
 		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
 		// On enlève les doublons des demandes !!!
 		$uniquedemandeliste = array();
-		foreach ($liste as $key => $demande)
+		if (is_array($liste))
 		{
-			$uniquedemandeliste[$demande->id()] = $demande;
+			foreach ($liste as $key => $demande)
+			{
+				$uniquedemandeliste[$demande->id()] = $demande;
+			}
+			$liste = $uniquedemandeliste;
+			unset($uniquedemandeliste);
 		}
-		$liste = $uniquedemandeliste;
-		unset($uniquedemandeliste);
 		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
 		
 		$debut_interval = $this->fonctions->formatdatedb($debut_interval);
@@ -846,7 +852,7 @@ class agent {
 						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->commentaire() . "&nbsp </td>";
 					$htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name='" . $cleelement  . "_cancel_" . $demande->id() . "' value='cancel' /></td>";
 					if ($demande->statut() == "v" and $mode == "resp")
-						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='" . $cleelement .  "_motif_" . $demande->id() . "' id='" . $cleelement .  "_motif_" . $demande->id() . "' value='" . $demande->motifrefus()  . "' size=30 ></td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='" . $cleelement .  "_motif_" . $demande->id() . "' id='" . $cleelement .  "_motif_" . $demande->id() . "' value='" . $demande->motifrefus()  . "'  size=40></td>";
 					$htmltext = $htmltext . "</tr>";
 				}
 				//echo "demandeslistehtmlpourgestion => On passe au suivant <br>";
@@ -854,6 +860,123 @@ class agent {
 			//$htmltext = $htmltext .    "<br>";
 			if ($htmltext != "")
 				$htmltext = $htmltext .    "</table>";
+		}
+		return $htmltext;
+	}
+	
+	function demandeslistehtmlpourvalidation($debut_interval,$fin_interval, $agentid = null, $structureid = null, $cleelement = null)
+	{
+		$liste = null;
+		$affectationliste = $this->affectationliste($debut_interval, $fin_interval);
+		$affectation = new affectation($this->dbconnect);
+		$declarationTP = new declarationTP($this->dbconnect);
+		$demande = new demande($this->dbconnect);
+		if (!is_null($affectationliste))
+		{
+			foreach ($affectationliste as $key => $affectation)
+			{
+				//echo "<br><br>Affectation (".  $affectation->affectationid()  .")  date debut = " . $affectation->datedebut() . "  Date fin = " . $affectation->datefin() . "<br>";
+				unset($declarationTPliste);
+				$declarationTPliste = $affectation->declarationTPliste($debut_interval, $fin_interval);
+				if (!is_null($declarationTPliste))
+				{
+					foreach ($declarationTPliste as $key => $declarationTP) 
+					{
+						//echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ")  Debut = " . $declarationTP->datedebut() . "   Fin = " . $declarationTP->datefin() . "<br>";
+						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
+						$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
+					}
+				}
+			}
+		}
+		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
+		// On enlève les doublons des demandes !!!
+		$uniquedemandeliste = array();
+		if (is_array($liste))
+		{
+			foreach ($liste as $key => $demande)
+			{
+				$uniquedemandeliste[$demande->id()] = $demande;
+			}
+			$liste = $uniquedemandeliste;
+			unset($uniquedemandeliste);
+		}
+		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
+		
+		$debut_interval = $this->fonctions->formatdatedb($debut_interval);
+		$fin_interval = $this->fonctions->formatdatedb($fin_interval);
+			
+//		$liste=$this->demandesliste($debut_interval,$fin_interval);
+// 		foreach ($this->structure()->structurefille() as $key => $value)
+// 		{
+// 			echo "Structure fille = " . $value->nomlong() . "<br>";
+// 			$listerespsousstruct = $value->responsable()->demandesliste($debut_interval,$fin_interval);
+// 			$liste = array_merge($liste,$listerespsousstruct);
+// 		}
+		
+		$htmltext = "";
+		//$htmltext =                   "<br>";
+		if (count($liste) == 0)
+		{
+			//$htmltext = $htmltext .    "   <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
+		}
+		else
+		{
+			$premieredemande = TRUE;
+			foreach ($liste as $key => $demande)
+			{
+				if ($demande->statut() == "a")
+				{
+					$todisplay = true;
+					// On n'affiche pas les demandes du responsable !!!!
+					if ($agentid == $this->harpegeid)
+					{
+						$todisplay = false;
+					}
+					//echo "todisplay = $todisplay <br>";
+					if ($todisplay)
+					{
+						if ($premieredemande)
+						{
+							$htmltext = $htmltext .       "<table class='tableausimple' width=100%>";
+							$htmltext = $htmltext .    "   <tr><td class=titresimple colspan=7 align=center ><font color=#BF3021>Tableau des demandes à valider pour " . $this->civilite() . " " .  $this->nom() . " " . $this->prenom() .  "</font></td></tr>";
+							$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
+							$premieredemande = FALSE;
+						}
+						
+						$htmltext = $htmltext . "<tr align=center >";
+	//					$htmltext = $htmltext . "   <td>&nbsp" . $this->nom() . " " . $this->prenom() . "&nbsp </td>";
+
+						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->date_demande() ."&nbsp </td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->datedebut() . "&nbsp" . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->datefin() . "&nbsp" . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->typelibelle() . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->nbrejrsdemande() . "&nbsp </td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp";
+						$htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]'>";
+						$htmltext = $htmltext . "         <option ";
+						if ($demande->statut()=="v")
+							$htmltext=$htmltext  . " selected ";
+						$htmltext = $htmltext . " value='v'>Validé</option>";
+						$htmltext = $htmltext . "         <option ";
+						if ($demande->statut()=="r")
+							$htmltext=$htmltext  . " selected ";
+						$htmltext = $htmltext . " value='r'>Refusé</option>";
+						$htmltext = $htmltext . "         <option ";
+						if ($demande->statut()=="a")
+							$htmltext=$htmltext  . " selected ";
+						$htmltext = $htmltext . " value='a'>En attente</option>";
+						//. $demande->statutlibelle() . 
+						$htmltext = $htmltext . "      <select>";
+						$htmltext = $htmltext . "&nbsp </td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus()  . "' size=40 ></td>";
+						$htmltext = $htmltext . "</tr>";
+					}
+				}
+			}
+			if (!$premieredemande)
+				$htmltext = $htmltext .    "</table>";
+			//$htmltext = $htmltext .    "<br>";
 		}
 		return $htmltext;
 	}

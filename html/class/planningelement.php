@@ -147,7 +147,7 @@ class planningelement {
 		}
 	}
 	
-	function html($clickable = FALSE)
+	function html($clickable = FALSE, $checkboxname = null)
 	{
 		$htmltext = "";
 		//$htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" > &nbsp </td>";
@@ -168,11 +168,15 @@ class planningelement {
 			$clickabletext = "oncontextmenu=\"planning_rclick('" . $this->date() .  "','" . $this->moment()  . "');return false;\" onclick=\"planning_lclick('" . $this->date() .  "','" . $this->moment()  . "')\" ";
 		else
 			$clickabletext = "";
+		if (!is_null($checkboxname))
+			$checkboxtext = "<input type='checkbox' name='elmtcheckbox[" . $checkboxname . "]' value='1'>";
+		else
+			$checkboxtext = "";
 		
 		if ($this->moment == 'm')
-			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" ></td>";
+			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
 		else
-			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" ></td>";
+			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
 /*		
 		if ($this->typeelement == "atten")
 			$htmltext = $htmltext ."</a>";

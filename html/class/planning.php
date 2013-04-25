@@ -45,6 +45,13 @@ class planning {
 		$declarationTP = null;
 		for ($index=0; $index <= $nbre_jour-1 ; $index++)
 		{
+			// Si la declaration de TP existe et que la date de fin est avant la date en cours 
+			// (donc on se moque de cette declaration de TP) => On dit qu'on en n'a pas !!! 
+			if (!is_null($declarationTP))
+			{
+				if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
+					$declarationTP = null;
+			}
 			if (!is_null($affectation))
 			{
 				//echo "Affectation non null <br>";
@@ -61,6 +68,7 @@ class planning {
 			
 			if (!is_null($affectationliste))
 			{
+				// On a une affectation a la date courante ($datetemp)
 				//echo "affectationliste n'est pas null <br>";
 				if (is_null($affectation))
 				{
@@ -79,6 +87,7 @@ class planning {
 				//echo "Planning->Load : declarationTP = "; if (is_null($declarationTP)) echo "null<br>"; else echo "PAS null<br>";
 				if (!is_null($declarationTP))
 				{
+					// Si on a deja une declaration de TP on vérifie si on peut la garder ou pas (si elle est tjrs dans la période)
 					if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
 					{
 						//echo "Planning->Load : La date de l'element planning > declarationTP->datefin ==> On doit recharger tout <br>";
@@ -86,23 +95,27 @@ class planning {
 						$declarationTP = null;
 					}
 				}
+				//echo "Planning->Load : declarationTPliste = "; if (is_null($declarationTPliste)) echo "null<br>"; else echo "PAS null<br>";
 				if (is_null($declarationTPliste))
+				{
+					//echo "On recherche les declarations pour cette affectation !!! " . $this->fonctions->formatdate($datetemp) . "<br>";
 					$declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
+					//echo "apres la recherche des declaration pour l'affectation en cours !!! Count = " . count($declarationTPliste) . "<br>";
+				}
 				//echo "ApreS.... <br>";
 				if (!is_null($declarationTPliste))
 				{
 					//echo "declarationTPListe n'est pas null <br>";
+					//echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>"; 
 					// On parcours toutes les declarations de TP pour trouver celle qui est validée (si elle existe)
 					for($indexdecla = 0, $nbdecla = count($declarationTPliste); $indexdecla < $nbdecla; $indexdecla++)
 					{
 						//echo "indexdecla = $indexdecla   nbdecla = $nbdecla <br>";
-						//echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>"; 
 						$declarationTP = $declarationTPliste[$indexdecla];
 						//echo "Apres le declarationTP = declarationTPliste <br>";
+						//echo "declarationTP->statut() = " . $declarationTP->statut() . "<br>";
 						// Si la déclaration de TP n'est pas validée alors c'est comme si on avait rien
-						if ($declarationTP->statut() != "v")
-							$declarationTP = null;
-						else
+						if ($declarationTP->statut() == "v")
 						{
 							// Si on a trouvée une declatation de TP validée on sort
 							//echo "Je break... <br>";
@@ -135,8 +148,14 @@ class planning {
 				$element->type("WE");
 				$element->info("week-end");
 			}
-			// On est dans le cas ou aucune déclaration de TP n'est faite (validée???)
+			// On est dans le cas ou aucune déclaration de TP n'est faite
 			elseif (is_null($declarationTP))
+			{
+				$element->type("nondec");
+				$element->info("Période non déclarée");
+			}
+			// On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!! 
+			elseif ($declarationTP->statut()!="v")
 			{
 				$element->type("nondec");
 				$element->info("Période non déclarée");
@@ -172,6 +191,12 @@ class planning {
 				$element->info("week-end");
 			}
 			elseif (is_null($declarationTP))
+			{
+				$element->type("nondec");
+				$element->info("Période non déclarée");
+			}
+			// On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!! 
+			elseif ($declarationTP->statut()!="v")
 			{
 				$element->type("nondec");
 				$element->info("Période non déclarée");

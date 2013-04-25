@@ -339,7 +339,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	
 	function store($declarationTPListe = null, $ignoreabsenceautodecla = FALSE, $ignoresoldeinsuffisant = FALSE)
 	{
-		echo "Demande->store : En cours de réécriture !!!!! <br>";
+		//echo "Demande->store : En cours de réécriture !!!!! <br>";
 		
 	
 		if (is_null($this->demandeid))
@@ -501,7 +501,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		//echo "Debut du PDF <br>";
 		$pdf=new FPDF();
 		//echo "Apres le new <br>";
-		define('FPDF_FONTPATH','fpdffont/');
+		if (!defined('FPDF_FONTPATH')) 
+			define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('images/logo_papeterie.png',70,25,60,20);
@@ -548,7 +549,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		else
 			$decision='refusée';
 		
-		$pdf->Cell(40,10,'Votre demande ' .  $typelib  . 'du '. $this->datedebut() .' '.$this->momentdebut . ' au '.$this->datefin().' '.$this->momentfin . ' ');
+		$pdf->Cell(40,10,'Votre demande ' .  $typelib  . 'du '. $this->datedebut() .' '. $this->fonctions->nommoment($this->momentdebut) . ' au '.$this->datefin().' '.$this->fonctions->nommoment($this->momentfin) . ' ');
 		$pdf->Ln(10);
 		$pdf->Cell(40,10,' a été '.$decision. ' par :');
 		
@@ -595,15 +596,18 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Cell(25,10,'');
 
 		$tabsolde = $agent->soldecongesliste($this->fonctions->anneeref());
-		foreach ($tabsolde as $key => $solde)
+		if (is_array($tabsolde))
 		{
-			$pdf->Cell(70,7,$solde->typelibelle(),1);
-			$pdf->Cell(25,7,(string)($solde->droitaquis()),1);
-			$pdf->Cell(25,7,(string)($solde->droitpris()),1);
-			$pdf->Cell(25,7,(string)($solde->solde()),1);
-			$pdf->Ln();
-			$pdf->SetFont('Arial','B',9);
-			$pdf->Cell(25,10,'');
+			foreach ($tabsolde as $key => $solde)
+			{
+				$pdf->Cell(70,7,$solde->typelibelle(),1);
+				$pdf->Cell(25,7,(string)($solde->droitaquis()),1);
+				$pdf->Cell(25,7,(string)($solde->droitpris()),1);
+				$pdf->Cell(25,7,(string)($solde->solde()),1);
+				$pdf->Ln();
+				$pdf->SetFont('Arial','B',9);
+				$pdf->Cell(25,10,'');
+			}
 		}
 		
 // 		//Positionnement à 1,5 cm du bas

@@ -133,6 +133,37 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			
 	}
 	
+	function numquotite()
+	{
+		if (is_null($this->numerateurquotite)) 
+			echo "Affectation->numquotite : Le numérateur de la quotité n'est pas définie !!! <br>";
+		else
+			return $this->numerateurquotite;
+	}
+	
+	function denumquotite()
+	{
+		if (is_null($this->denominateurquotite)) 
+			echo "Affectation->numquotite : Le denumérateur de la quotité n'est pas définie !!! <br>";
+		else
+			return $this->denominateurquotite;
+	}
+	
+	function quotitevaleur()
+	{
+		$equation = $this->quotite();
+		$equation = preg_replace("/[^0-9+\-.*\/()%]/","",$equation);       
+		$equation = preg_replace("/([+-])([0-9]+)(%)/","*(1\$1.\$2)",$equation);
+		// you could use str_replace on this next line
+		// if you really, really want to fine-tune this equation
+		$equation = preg_replace("/([0-9]+)(%)/",".\$1",$equation);
+		if ( $equation == "" )
+			$return = 0;
+		else
+			eval("\$return=" . $equation . ";" );
+		return $return;
+	}
+	
 	function datemodif()
 	{
 		if (is_null($this->datemodif))
@@ -145,11 +176,12 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 	{
 		//echo "Je suis dans la declarationTPliste <br>";
 		$declarationliste = null;
-		$sql = "(SELECT DECLARATIONID FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $this->affectationid . "' AND DATEDEBUT<'" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN)";
+		$sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $this->affectationid . "' AND DATEDEBUT<'" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN)";
 		$sql = $sql . " UNION ";
-		$sql = $sql . "(SELECT DECLARATIONID FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
+		$sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
 		$sql = $sql . " UNION ";
-		$sql = $sql . "(SELECT DECLARATIONID FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)";
+		$sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)) AS SUBQUERY";
+		$sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
 
 		//echo "declarationTPliste SQL = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
@@ -171,9 +203,52 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			//echo "Avant le unset...<br>";
 			unset($declarationTP);
 		}
-//		print_r ($declarationliste) ; echo "<br>";
+		//print_r ($declarationliste) ; echo "<br>";
 		return $declarationliste;
 	}
 	
+	
+	function html($aff_declaTP = false, $pour_modif = false)
+	{
+		$agent= new agent($this->dbconnect);
+		$agent->load($this->agentid());
+		
+		$structure = new structure($this->dbconnect);
+		$structure->load($this->structureid());
+		
+ 		$htmltext = "Tableau des temps partiel pour " . $agent->identitecomplete() . "<br>";
+ 		$htmltext = $htmltext . "<div id='planning'>";
+ 		$htmltext = $htmltext . "<table class='tableausimple'>";
+ 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Structure</td><td class='titresimple'>Quotité</td>";
+		$htmltext = $htmltext . "</tr>";
+		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->datedebut() . "</td><td class='cellulesimple'>" . $this->datefin() . "</td><td class='cellulesimple'>" . $structure->nomlong() . "</td><td class='cellulesimple'>" . $this->quotite() . "</td></tr>";
+		$htmltext = $htmltext ."</table><br>";
+ 		$htmltext = $htmltext . "<table class='tableausimple'>";
+ 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Statut</td><td class='titresimple'>Répartition du temps partiel</td>";
+ 		if ($pour_modif)
+ 			$htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
+		$htmltext = $htmltext . "</tr>";
+
+		if ($aff_declaTP)
+		{
+			$declarationliste = $this->declarationTPliste($this->datedebut(),$this->datefin());
+
+			if (!is_null($declarationliste))
+			{
+		 		foreach ($declarationliste as $key => $declaration)
+		 		{
+		 			if ($declaration->statut() != "r")
+			 			$htmltext = $htmltext . $declaration->html($pour_modif); 
+		 		}
+			}
+			else
+			{
+				//echo "Pas de déclaration de TP pour l'affectation " . $this->affectationid() . "<br>";
+			}
+		}		
+		$htmltext = $htmltext ."</table>";
+		$htmltext = $htmltext ."</div>";
+		return $htmltext;
+	}
 }
 ?>
