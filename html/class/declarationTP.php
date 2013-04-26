@@ -566,7 +566,7 @@ WHERE DECLARATIONID=" . $id;
 					OR (DATEFIN >= '" . $this->fonctions->formatdatedb($fin_interval) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($fin_interval) . "')
 					OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($debut_interval) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($fin_interval) . "'))
 		ORDER BY DATEDEBUT";
-		//echo "declarationTP->demandeliste SQL = $sql <br>";
+		echo "declarationTP->demandeliste SQL = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")

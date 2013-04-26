@@ -190,9 +190,9 @@ AND DEMANDE.STATUT='a';";
 
 	function store()
 	{
-		if (!is_null($this->harpegeid) and (!is_null($this->typeabsenceid)))
+		if (!is_null($this->agentid) and (!is_null($this->typeabsenceid)))
 		{
-			$sql = "UPDATE SOLDE SET DROITACQUIS='" . $this->droitaquis() . "',DROITPRIS='" . $this->droitpris()   . "' WHERE HARPEGEID='" . $this->harpegeid . "' AND TYPEABSENCEID='" . $this->typeabsenceid . "'";
+			$sql = "UPDATE SOLDE SET DROITAQUIS='" . $this->droitaquis() . "',DROITPRIS='" . $this->droitpris()   . "' WHERE HARPEGEID='" . $this->agentid . "' AND TYPEABSENCEID='" . $this->typeabsenceid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "")

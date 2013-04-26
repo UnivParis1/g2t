@@ -474,11 +474,23 @@ class agent {
 		//echo "Apres le addpage <br>";
 		if ($header == TRUE)
 		{
-			$pdf->AddPage(L);
+			$pdf->AddPage('L');
 			$pdf->Image('images/logo_papeterie.png',10,5,60,20);
 			$pdf->SetFont('Arial','B',15);
 			$pdf->Ln(15);
-			$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('.$this->structure()->nomcourt() . ')' );
+
+			$affectationliste = $this->affectationliste($this->fonctions->formatdate($anneeref . $this->fonctions->debutperiode()),$this->fonctions->formatdate(($anneeref+1) . $this->fonctions->finperiode()));
+			foreach ($affectationliste as $key => $affectation)
+			{
+				$structure = new structure($this->dbconnect);
+				$structure->load($affectation->structureid());
+				$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+				$pdf->Cell(60,10,'Service : '. $nomstructure);
+				$pdf->Ln();
+			}
+			
+			
+//			$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('.$this->structure()->nomcourt() . ')' );
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
@@ -512,23 +524,24 @@ class agent {
 		$totaldroitpris=0;
 		$totaldroitrestant=0;
 		$totaldemandeattente=0;
-		foreach ($this->soldecongesliste($anneeref) as $key => $tempsolde)
+		$soldeliste = $this->soldecongesliste($anneeref);
+		foreach ((array)$soldeliste as $key => $tempsolde)
 		{
 			$pdf->Cell(75,5,$tempsolde->typelibelle(),1,0,'C');
-			$pdf->Cell(30,5,$tempsolde->droitaquis_demijrs()/2 . "",1,0,'C');
-			$pdf->Cell(30,5,$tempsolde->droitpris_demijrs()/2 . "",1,0,'C');
-			$pdf->Cell(30,5,$tempsolde->solde_demijrs()/2 . "",1,0,'C');
+			$pdf->Cell(30,5,$tempsolde->droitaquis() . "",1,0,'C');
+			$pdf->Cell(30,5,$tempsolde->droitpris() . "",1,0,'C');
+			$pdf->Cell(30,5,$tempsolde->solde() . "",1,0,'C');
 			$pdf->Cell(50,5,$tempsolde->demandeenattente() . "",1,0,'C');
-			$totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis_demijrs();
-			$totaldroitpris = $totaldroitpris + $tempsolde->droitpris_demijrs();
-			$totaldroitrestant = $totaldroitrestant + $tempsolde->solde_demijrs();
+			$totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis();
+			$totaldroitpris = $totaldroitpris + $tempsolde->droitpris();
+			$totaldroitrestant = $totaldroitrestant + $tempsolde->solde();
 			$totaldemandeattente = $totaldemandeattente + $tempsolde->demandeenattente();
 			$pdf->Ln(5);
 		}
 		$pdf->Cell(75,5,"Total",1,0,'C');
-		$pdf->Cell(30,5,$totaldroitaquis/2 . "",1,0,'C');
-		$pdf->Cell(30,5,$totaldroitpris/2 . "",1,0,'C');
-		$pdf->Cell(30,5,$totaldroitrestant/2 . "",1,0,'C');
+		$pdf->Cell(30,5,$totaldroitaquis . "",1,0,'C');
+		$pdf->Cell(30,5,$totaldroitpris . "",1,0,'C');
+		$pdf->Cell(30,5,$totaldroitrestant . "",1,0,'C');
 		$pdf->Cell(50,5,$totaldemandeattente . "",1,0,'C');
 		
 		$pdf->Ln(8);
@@ -693,8 +706,19 @@ class agent {
 				}
 			}
 		}
-		$demandeliste = array_unique($demandeliste);
-
+		// On enlève les doublons des demandes !!!
+		$uniquedemandeliste = array();
+		if (is_array($demandeliste))
+		{
+			foreach ($demandeliste as $key => $demande)
+			{
+				$uniquedemandeliste[$demande->id()] = $demande;
+			}
+			$demandeliste = $uniquedemandeliste;
+			unset($uniquedemandeliste);
+		}
+		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
+				
 		$closeafter = FALSE;
 		if (is_null($pdf))
 		{
@@ -981,6 +1005,11 @@ class agent {
 		return $htmltext;
 	}
 	
+	function ajoutecommentaireconge($type, $nbrejrs ,$commentaire)
+	{
+		echo "agent->ajoutecommentaireconge : PAS ENCORE REFAITE !!!!! <br>";
+		return "";
+	}
 	
 	function affichecommentairecongehtml()
 	{
