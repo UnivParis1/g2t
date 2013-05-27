@@ -90,11 +90,11 @@
 
 			foreach ($agentliste as $agentkey => $agent)
 			{
- 				 echo "Annee ref = " . $fonctions->anneeref();
- 				 echo " debut =  " . $fonctions->debutperiode();
- 				 echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
- 				 echo " Fin = " . $fonctions->finperiode();
- 				 echo "Previous = " . $previous ;
+ 				 //echo "Annee ref = " . $fonctions->anneeref();
+ 				 //echo " debut =  " . $fonctions->debutperiode();
+ 				 //echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
+ 				 //echo " Fin = " . $fonctions->finperiode();
+ 				 //echo "Previous = " . $previous ;
 				echo $agent->soldecongeshtml(($fonctions->anneeref()-$previous),TRUE);
 				echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
 				echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);

@@ -620,7 +620,7 @@ class agent {
 					{
 						//echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ")  Debut = " . $declarationTP->datedebut() . "   Fin = " . $declarationTP->datefin() . "<br>";
 						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
-						$demandeliste = array_merge((array)$demandeliste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
+						$demandeliste = array_merge((array)$demandeliste,(array)$declarationTP->demandesliste($datedebut, $datefin));
 					}
 				}
 			}
