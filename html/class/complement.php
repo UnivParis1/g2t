@@ -30,14 +30,20 @@ class complement {
 		$erreur=mysql_error();
 		if ($erreur != "")
 			echo "Complement->Load : " . $erreur . "<br>";
-		if (mysql_num_rows($query) == 0)
+		if (mysql_num_rows($query) != 0)
 		{
-			//echo "Structure->Load (STRUCTURE) : Structure $structureid non trouvé <br>";
+			$result = mysql_fetch_row($query);
+	 		$this->harpegeid = "$result[0]";
+	 		$this->complementid = "$result[1]";
+			$this->valeur = "$result[2]";
 		}
-		$result = mysql_fetch_row($query);
- 		$this->harpegeid = "$result[0]";
- 		$this->complementid = "$result[1]";
-		$this->valeur = "$result[2]";
+		else 
+		{
+	 		$this->harpegeid = "";
+	 		$this->complementid = "";
+			$this->valeur = "";
+			//echo "CET->Load : CET pour agent  $harpegeid et complement $complementid non trouvé <br>";
+		}
 	}
 	
 	function harpegeid($agentid = null)

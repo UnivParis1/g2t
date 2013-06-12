@@ -136,9 +136,13 @@
 */	
 	echo $user->soldecongeshtml($fonctions->anneeref());
 	
-//	echo $user->affichecommentairecongehtml();
+	echo $user->affichecommentairecongehtml();
 	echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()));
 
-	
+	echo "<br>";
+	echo "<form name='subst_agent' method='post' >";
+	echo "<input type='text' name='userid' >";
+	echo "<input type='submit' value='Se faire passer pour...'>";
+	echo "</form>";
 ?>
 </body></html>

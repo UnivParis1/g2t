@@ -444,9 +444,9 @@ class agent {
 		{
 			//echo "Avant la comparaison date <br>";
 			//echo "cet->datedebut() = " . $cet->datedebut() . "<br>";
-			//echo "formatdatedb(cet->datedebut()) = " . $this->fonctions->formatdatedb($cet->datedebut()) . "<br>";
+			///echo "formatdatedb(cet->datedebut()) = " . $this->fonctions->formatdatedb($cet->datedebut()) . "<br>";
 			//echo "this->fonctions->anneeref() = " . $this->fonctions->anneeref() . "<br>";
-			//echo "anneeref+1 = " . ($anneeref+1) . "<br>";
+			// "anneeref+1 = " . ($anneeref+1) . "<br>";
 			//echo "this->fontions->finperiode() = " . $this->fonctions->finperiode() . "<br>";
 			if ($this->fonctions->formatdatedb($cet->datedebut()) <= ($anneeref+1) . $this->fonctions->finperiode())
 			{
@@ -567,7 +567,10 @@ class agent {
   		$totaldroitpris=0;
   		$totaldroitrestant=0;
   		$totaldemandeattente=0;
+  		//echo "soldecongeshtml => Avant solde Liste...<br>";
   		$soldecongesliste = $this->soldecongesliste($anneeref);
+  		//echo "soldecongeshtml => Apres solde Liste...<br>";
+
   		if (!is_null($soldecongesliste))
   		{
 			foreach ($soldecongesliste as $key => $tempsolde)
@@ -1005,16 +1008,61 @@ class agent {
 		return $htmltext;
 	}
 	
-	function ajoutecommentaireconge($type, $nbrejrs ,$commentaire)
-	{
-		echo "agent->ajoutecommentaireconge : PAS ENCORE REFAITE !!!!! <br>";
-		return "";
-	}
-	
+
 	function affichecommentairecongehtml()
 	{
-		echo "agent->affichecommentairecongehtml : PAS ENCORE REFAITE !!!!! <br>";
+		$sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE 
+FROM COMMENTAIRECONGE,TYPEABSENCE 
+WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(),2,2) . "' 
+                                             OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref()-1),2,2)  ."' 
+                                             OR COMMENTAIRECONGE.TYPEABSENCEID='cet') 
+                                           AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
+		//echo "SQL = " . $sql . "<br>";
+		$query=mysql_query($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+			echo "Agent->affichecommentairecongehtml : " . $erreur . "<br>";
+		$htmltext = "";
+		$premiercomment = TRUE;
+		$htmltext = $htmltext . "<center><table class='tableausimple'>";
+		while ($result = mysql_fetch_row($query))
+		{
+			if ($premiercomment)
+			{
+				$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
+				$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
+				$premiercomment = FALSE;
+			}				
+			
+			$htmltext = $htmltext . "<tr align=center>";
+			$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1]  ."</td>";
+			$htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2])  ."</td>";
+			if ($result[4] > 0)
+				$htmltext = $htmltext . "<td class='cellulesimple'>+" . ($result[4])  ."</td>";
+			else
+				$htmltext = $htmltext . "<td class='cellulesimple'>" . ($result[4])  ."</td>";
+			$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[3]  ."</td>";
+			$htmltext = $htmltext . "</tr>";
+		}
+		$htmltext = $htmltext . "</table></center>";
+		$htmltext = $htmltext . "<br>";
+		return $htmltext;
 	}
+	
+	function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null)
+	{
+		$date =date("d/m/Y");
+		$sql = "INSERT INTO COMMENTAIRECONGE(HARPEGEID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
+		        VALUES ('" . $this->harpegeid  . "','" . $typeconge . "','" . $this->fonctions->formatdatedb($date) . "','" . str_replace("'","''",$commentaire) . "','" . $nbrejours . "')";
+		$query = mysql_query($sql, $this->dbconnect);
+		$erreur = mysql_error();
+		if ($erreur != "")
+		{
+			$message = "$erreur";
+		}
+		
+	}
+	
 }
 
 ?> 

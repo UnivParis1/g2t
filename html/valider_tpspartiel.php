@@ -94,7 +94,7 @@
 	}
 	
 	
-	
+/*	
 	
 	//print_r($_POST); echo "<br>";
 	foreach ($_POST as $key => $value)
@@ -136,76 +136,54 @@
 		}
 	}
 	
+*/
+	
+	$structlist = null;
 	if ($mode == "resp")
 	{
 		$structlist = $user->structrespliste();
-		if (is_array($structlist))
-		{
-			foreach ($structlist as $keystruct => $structure)
-			{
-				echo "<form name='frm_validation_autodecla'  method='post' >";
-				echo "<table class='tableausimple'>";
-				echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong()  . "</td></tr>";
-				echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Statut</td><td class='cellulesimple'>Jours de RTT</td></tr>";
-				$agentlist = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
-				foreach ($agentlist as $key => $membre)
-				{
-					$affectationliste = $membre->affectationliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());
-					if (is_array($affectationliste))
-					{
-						foreach ($affectationliste as $key => $affectation)
-						{
-							$declaTPliste = $affectation->declarationTPliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());
-							if (is_array($declaTPliste))
-							{
-								foreach ($declaTPliste as $declaration)
-								{
-									if ($declaration->statut() != "r")
-										echo $declaration->html(TRUE,$structure->id());
-								}
-							}
-						} 
-					}
-				}
-				echo "</table>";
-				echo "<input type='submit' value='Valider' />";
-				echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  . "' />";
-				echo "<input type='hidden' name='mode' value='" . $mode  . "' />";
-				echo "</form>";
-			}
-		}
 	}
 	
 	if ($mode == "gestion")
 	{
-		$structlist = $user->structgestionnaireliste();
-		if (!is_null($structlist))
-		{
-			foreach ($structlist as $keystruct => $structure)
-			{
-				echo "<form name='frm_validation_autodecla'  method='post' >";
-				echo "<table>";
-				echo "<tr><td colspan=6 align=center ><font color=#BF3021>La structure est : " . $structure->nomlong()  . "</td></tr>";
-				echo "<tr align=center><td>Nom de l'agent</td><td>Date de la demande</td><td>Date de début</td><td>Date de fin</td><td>Statut</td><td>Jours de RTT</td></tr>";
-				$agentlist = $structure->agentlist();
-				foreach ($agentlist as $key => $membre)
-				{
-					$autodeclalist = $membre->autodeclarationssurperiode($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()));
-					foreach ($autodeclalist as $keyautodecla => $autodecla)
-					{
-						if ($autodecla != "")
-							echo $autodecla->html(TRUE,$structure->id());
-					}
-				}
-				echo "</table>";
-				echo "<input type='submit' value='Valider' />";
-				echo "<input type='hidden' name='userid' value='" . $user->id()  . "' />";
-				echo "<input type='hidden' name='mode' value='" . $mode  . "' />";
-				echo "</form>";
-			}
-		}
+		$structlist = $user->structgestliste();
 	}
 	
+	if (is_array($structlist))
+	{
+		foreach ($structlist as $keystruct => $structure)
+		{
+			echo "<form name='frm_validation_autodecla'  method='post' >";
+			echo "<table class='tableausimple'>";
+			echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong()  . "</td></tr>";
+			echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Statut</td><td class='cellulesimple'>Jours de RTT</td></tr>";
+			$agentlist = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
+			foreach ($agentlist as $key => $membre)
+			{
+				$affectationliste = $membre->affectationliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());
+				if (is_array($affectationliste))
+				{
+					foreach ($affectationliste as $key => $affectation)
+					{
+						$declaTPliste = $affectation->declarationTPliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());
+						if (is_array($declaTPliste))
+						{
+							foreach ($declaTPliste as $declaration)
+							{
+								if ($declaration->statut() != "r")
+									echo $declaration->html(TRUE,$structure->id());
+							}
+						}
+					} 
+				}
+			}
+			echo "</table>";
+			echo "<input type='submit' value='Valider' />";
+			echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  . "' />";
+			echo "<input type='hidden' name='mode' value='" . $mode  . "' />";
+			echo "</form>";
+		}
+	}
 	
 	echo "<br>";
 

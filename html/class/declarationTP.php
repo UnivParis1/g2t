@@ -414,8 +414,10 @@ WHERE DECLARATIONID=" . $id;
 
 		$htmltext = "";
 		$htmltext = $htmltext . "<tr>";
+
 		if ($pourmodif)
 			$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->agent()->identitecomplete() . "</td>";
+
 //			$htmltext = $htmltext . "<input type='hidden' name='" .  $structid. "_" . $this->agent()->harpegeid() . "_autodeclaid_" . $this->declarationTPid() . "' value='" . $this->declarationTPid() ."'>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedemande() . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedebut() . "</td>";
@@ -458,12 +460,14 @@ WHERE DECLARATIONID=" . $id;
 		$htmltext = $htmltext ."</div>";
 		
 		$htmltext = $htmltext . "</td>";
-		if (!$pourmodif)
+/*
+		if ($pourmodif)
 		{
 			$htmltext = $htmltext . "<td class='cellulesimple' align=center >";
 			$htmltext = $htmltext . "<input type='checkbox' name='declaannule[" . $this->declarationTPid() ."]' value='1'>";
 			$htmltext = $htmltext . "</td>";
 		}
+*/
 		$htmltext = $htmltext .  "</tr>";
 		return $htmltext;
 	}

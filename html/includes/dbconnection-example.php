@@ -10,7 +10,7 @@
 		echo "Impossible d'effectuer la connexion au serveur";
 		exit;
 	}
-	mysql_select_db ("G2T-v3") or die ("La sélection de la base a échoué");
+	mysql_select_db ("G2T-v3",$dbcon) or die ("La sélection de la base a échoué");
 
 
 ?>

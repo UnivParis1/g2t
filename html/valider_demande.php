@@ -198,15 +198,16 @@
 
 	if ($user->estgestionnaire() and ($mode == "gestion"))
 	{
-		$listestruct = $user->structgestionnaireliste();
-		//print_r($listestruct); echo "<br>";
+		$listestruct = $user->structgestliste();
 		foreach ($listestruct as $key => $structure)
 		{
 			$cleelement = $structure->id();
 			echo "<center><p>Tableau pour les agents de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
 			echo "<form name='frm_validation_conge'  method='post' >";
-			foreach ($structure->agentlist() as $membrekey => $membre)
+			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
+			foreach ($agentliste as $membrekey => $membre)
 			{
+				//echo "boucle => " .$membre->nom() . "<br>";
 				$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 				// Si on est en mode "previous" alors on considère que la fin est l'année courante
 				if ($previous == 1)
@@ -219,16 +220,57 @@
 					$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
 				//echo "Debut = $debut     fin = $fin <br>";
 				//echo "structure->id() = " . $structure->id() . "<br>";
-				$htmltodisplay =  $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null,$cleelement);
+				//echo "Membre = " . $membre->nom() . "<br>";
+				
+				//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				//echo "htmltodisplay = $htmltodisplay <br>";
 				if ($htmltodisplay != "")
 				{
 					echo $htmltodisplay;
 					echo "<br>";
 				}	
 			}
-			echo "<input type='hidden' name='mode' value='" . $mode .   "' />";				
-			echo "<input type='hidden' name='userid' value='" . $user->id()  .   "' />";
+			
+			// A Voir si on affiche les structures filles lorsque l'on est Gestionnaire
+/*
+			$sousstructureliste=$structure->structurefille();
+			if (is_array($sousstructureliste))
+			{
+				//echo "Je suis dans la boucle des sousstructures <br>";
+				foreach ($sousstructureliste as $ssstructkey => $structfille)
+				{
+					//echo "Dans le echo des structFille... <br>";
+					$agentliste = $structfille->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
+					foreach ($agentliste as $membrekey => $membre)
+					{
+						$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
+	
+						// Si on est en mode "previous" alors on considère que la fin est l'année courante
+						if ($previous == 1)
+							$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
+						// Si on ne limite pas les congès a la date de fin de la période, il faut prendre plus large que la fin de période
+						// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
+						elseif ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
+							$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
+						else
+							$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
+						
+						//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+						$htmltodisplay =  $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+						if ($htmltodisplay != "")
+						{
+							echo $htmltodisplay;
+							echo "<br>";
+						}	
+					}			
+				}
+			}
+*/	
+			echo "<input type='hidden' name='mode' value='" . $mode .   "' />";
+			echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  .   "' />";
 			echo "<input type='hidden' name='previous' value='" . $previoustxt  .   "' />";
+			
 		}
 		echo "<input type='submit' value='Valider' />";
 		echo "</form>";

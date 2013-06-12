@@ -212,7 +212,7 @@
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 									<input type="hidden" name="mode" value="resp">
 								</form>
-								<a href="javascript:document.resp_gestcet.submit();">Gestion du CET d'un agent</a>
+								<a href="javascript:document.resp_gestcet.submit();">Gestion du CET d'un agent -- PAS FAIT !!!</a>
 							</li>
 							<li onclick='document.resp_ajout_conge.submit();'>
 								<form name='resp_ajout_conge'  method='post' action="ajouter_conges.php">
@@ -322,7 +322,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="resp">
 						</form>
-						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et de la structure</a>
+						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et de la structure -- PAS FAIT !!!</a>
 					</li>	
 					
 <!--  			
@@ -398,7 +398,7 @@
 							<input type="hidden" name="action" value="lecture">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre.submit();">Affichage paramétrage des dossiers</a>
+						<a href="javascript:document.gest_parametre.submit();">Affichage paramétrage des dossiers -- PAS FAIT !!!</a>
 					</li>				
 					<li onclick='document.gest_struct_planning.submit();'>
 						<form name='gest_struct_planning'  method='post' action="structure_planning.php">
@@ -413,21 +413,22 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers</a>
+						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers -- PAS FAIT !!!</a>
 					</li>				
-					<li onclick='document.gest_valid_autodecla.submit();'>
-						<form name='gest_valid_autodecla'  method='post' action="valider_autodeclaration.php">
+
+					<li onclick='document.gest_valid_tpspartiel.submit();'>
+						<form name='gest_valid_tpspartiel'  method='post' action="valider_tpspartiel.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_valid_autodecla.submit();">Validation des autodéclarations</a>
+						<a href="javascript:document.gest_valid_tpspartiel.submit();">Validation des temps partiels</a>
 					</li>
 					<li onclick='document.gest_gestcet.submit();'>
 						<form name='gest_gestcet'  method='post' action="gerer_cet.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 							<input type="hidden" name="mode" value="gest">
 						</form>
-						<a href="javascript:document.gest_gestcet.submit();">Gestion du CET d'un agent</a>
+						<a href="javascript:document.gest_gestcet.submit();">Gestion du CET d'un agent -- PAS FAIT !!!</a>
 					</li>
 				</ul> 
 			</li> 

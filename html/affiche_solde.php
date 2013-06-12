@@ -55,8 +55,10 @@
 	$mode = $_POST["mode"];
 	if ($mode == "")
 		$mode = "resp";
-	
-	$previous = $_POST["previous"];
+		
+	$previous = "";
+	if (isset($_POST["previous"]))
+		$previous = $_POST["previous"];
 	if ($previous == 'yes')
 		$previous = 1;
 	else

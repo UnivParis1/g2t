@@ -451,17 +451,19 @@
 		$affectationliste = $agent->affectationliste($debut_interval,$fin_interval);
 		$affectation = new affectation($dbcon);
 		$tppossible = false;
-		foreach ($affectationliste as $key => $affectation)
+		if (is_array($affectationliste))
 		{
-			//echo "juste dans le for .... Quotite = " . $affectation->quotite() . "<br>";
-			if ($affectation->quotite() != "100%")
+			foreach ($affectationliste as $key => $affectation)
 			{
-				//echo "La quotité != 100% ==> Je peux poser un tps partiel <br>";
-				$tppossible = true;
-				break;
+				//echo "juste dans le for .... Quotite = " . $affectation->quotite() . "<br>";
+				if ($affectation->quotite() != "100%")
+				{
+					//echo "La quotité != 100% ==> Je peux poser un tps partiel <br>";
+					$tppossible = true;
+					break;
+				}
 			}
 		}
-		
 		if (!$tppossible)
 		{
 			echo "Vous n'avez aucune affectation à temps partiel entre le " . $fonctions->formatdate($debut_interval) . " et le " . $fonctions->formatdate($fin_interval) . "<br>";
@@ -481,7 +483,7 @@
 			{
 				echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
 				echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() ."'>";
-				echo $affectation->html(true,true);
+				echo $affectation->html(true,false);
 
 				echo "<br>Nouvelle déclaration de temps partiel<br>";
 				echo "<table>";

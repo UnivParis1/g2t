@@ -118,7 +118,7 @@ class cet {
 			return "Cet->load : Le code de l'agent est NULL <br>";
 		
 		$agent = new agent($this->dbconnect);
-		$agent ->load($agentid);
+		$agent->load($agentid);
 		// On charge le cumul annuel
 		$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid   . "' AND TYPEABSENCEID ='cetcu'";
 		$query=mysql_query ($sql, $this->dbconnect);
@@ -155,17 +155,21 @@ class cet {
 		// On charge la date de début du CET
 		$complement = new complement($this->dbconnect);
 		$complement->load($agentid, "DEBUTCET");
-		if (is_null($complement->valeur()))
+		if ($complement->harpegeid()=="")
 		{
-			echo "Cet->Load (date début) : La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvée <br>";
+			//echo "Cet->Load (date début) : La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvée <br>";
 			$msgerreur = $msgerreur . "La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvée <br>";
+			$this->datedebut = "";
 		}
-		$this->datedebut = $complement->valeur();	
+		else
+			$this->datedebut = $this->fonctions->formatdate($complement->valeur());	
 		return $msgerreur;
 	}
 	
 	function store()
 	{
+		echo "cet->store : Pas encore fait !!!! <br>";
+		return;
 		//echo "Avant le test idannuel <br>";
 		//echo "this->idannuel = " . $this->idannuel . "<br>";
 		$solde = new solde($this->dbconnect);
@@ -233,12 +237,25 @@ class cet {
 		//echo "Apres image <br>";
 		$pdf->SetFont('Arial','B',16);
 		$pdf->Ln(70);
+		$pdf->SetFont('Arial','B',12);
+
+		$agent=new agent($this->dbconnect);
+		$agent->load($this->agentid);
+		$affectationliste = $agent->affectationliste($this->fonctions->anneeref() . $this->fonctions->debutperiode(), ($this->fonctions->anneeref()+1) . $this->fonctions->finperiode()); 
+		foreach ($affectationliste as $key => $affectation)
+		{
+			$structure = new structure($this->dbconnect);
+			$structure->load($affectation->structureid());
+			$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+			$pdf->Cell(60,10,'Service : '. $nomstructure);
+			$pdf->Ln();
+		}
+/*		
 		$pdf->Cell(60,10,'Composante : '. $responsable->structure()->parentstructure()->nomlong() .' ('. $responsable->structure()->parentstructure()->nomcourt() .')' );
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',12);
 		$pdf->Cell(60,10,'Service : '. $responsable->structure()->nomlong().' ('. $responsable->structure()->nomcourt() .')' );
 		$pdf->Ln(10);
-		
+*/		
 		if ($ajoutmode)
 		{
 			//echo "Apres le nom du service <br>";
