@@ -212,7 +212,7 @@
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 									<input type="hidden" name="mode" value="resp">
 								</form>
-								<a href="javascript:document.resp_gestcet.submit();">Gestion du CET d'un agent -- PAS FAIT !!!</a>
+								<a href="javascript:document.resp_gestcet.submit();">Gestion du CET d'un agent</a>
 							</li>
 							<li onclick='document.resp_ajout_conge.submit();'>
 								<form name='resp_ajout_conge'  method='post' action="ajouter_conges.php">
@@ -428,7 +428,7 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 							<input type="hidden" name="mode" value="gest">
 						</form>
-						<a href="javascript:document.gest_gestcet.submit();">Gestion du CET d'un agent -- PAS FAIT !!!</a>
+						<a href="javascript:document.gest_gestcet.submit();">Gestion du CET d'un agent</a>
 					</li>
 				</ul> 
 			</li> 
