@@ -283,7 +283,7 @@ class agent {
 			$affectationliste[$affectation->affectationid()] = $affectation;
 			unset($affectation);
 		}
-//		print_r ($affectationliste) ; echo "<br>";
+		//print_r ($affectationliste) ; echo "<br>";
 		return $affectationliste;
 	}
 	
@@ -393,19 +393,17 @@ class agent {
 		// echo "this->fonctions->debutperiode() = " . $this->fonctions->debutperiode() . "<br>";
 		// echo "this->fonctions->liredbconstante(FIN_REPORT) = " . $this->fonctions->liredbconstante("FIN_REPORT") . "<br>";
 
-   	$reportactif = ($this->fonctions->liredbconstante("REPORTACTIF") == 'O');
+   	//$reportactif = ($this->fonctions->liredbconstante("REPORTACTIF") == 'O');
    	//if ($reportactif) echo "ReportActif = true<br>"; else echo "ReportActif = false<br>";
-/*   	$complement = new complement($this->dbconnect);
+   	
+   	$complement = new complement($this->dbconnect);
    	$complement->load($this->harpegeid,"REPORTACTIF");
-   	if (is_null($complement->valeur()))
-   	{
-   		$complement->valeur("O");
-   	}
-   	if ($complement->valeur() == "O")
+   	// Si le complement n'est pas initialisé (NULL ou "") alors on active le report
+   	if ($complement->valeur() == "O" or strlen($complement->valeur()) == 0)
    		$reportactif = true;
    	else
 			$reportactif = FALSE;
-*/		
+	
 		
    	if((date("Ymd")>=$anneeref . $this->fonctions->debutperiode() && date("Ymd")<=$annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT")) && $reportactif)
    	{

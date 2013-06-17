@@ -174,7 +174,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 	
 	function declarationTPliste($datedebut,$datefin)
 	{
-		//echo "Je suis dans la declarationTPliste <br>";
+		//echo "Je suis dans la affectation->declarationTPliste <br>";
 		$declarationliste = null;
 		$sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $this->affectationid . "' AND DATEDEBUT<'" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN)";
 		$sql = $sql . " UNION ";
@@ -183,14 +183,14 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		$sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)) AS SUBQUERY";
 		$sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
 
-		//echo "declarationTPliste SQL = $sql <br>";
+		//echo "affectation->declarationTPliste SQL = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
 			echo "Agent->declarationTPliste : " . $erreur . "<br>";
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "Agent->declarationTPliste : L'affectation $this->affectationid n'a pas de déclaration de TP entre $datedebut et $datefin <br>";
+			//echo "Affectation->declarationTPliste : L'affectation $this->affectationid n'a pas de déclaration de TP entre $datedebut et $datefin <br>";
 		}
 		while ($result = mysql_fetch_row($query))
 		{

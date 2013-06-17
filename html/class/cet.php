@@ -141,7 +141,7 @@ class cet {
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
-			echo "Cet->Load (cet): " . $erreur . "<br>";
+			echo "(cet): " . $erreur . "<br>";
 		if (mysql_num_rows($query) == 0)
 		{
 			//echo "Cet->Load (cet) : Le CET pour l'agent $agentid non trouvé <br>";
@@ -163,29 +163,30 @@ class cet {
 		}
 		else
 			$this->datedebut = $this->fonctions->formatdate($complement->valeur());	
+		//echo "Cet->Load : msgerreur = $msgerreur <br>";
 		return $msgerreur;
 	}
 	
 	function store()
 	{
-		echo "cet->store : Pas encore fait !!!! <br>";
-		return;
+		//echo "cet->store : Pas encore fait !!!! <br>";
+		//return;
 		//echo "Avant le test idannuel <br>";
 		//echo "this->idannuel = " . $this->idannuel . "<br>";
+		$msgerreur = "";
 		$solde = new solde($this->dbconnect);
 		if (is_null($this->idannuel))
 		{
 			//echo "On va creer le solde <br>";
-			$solde->creersolde('cetcu',$this->agentid);
-			//echo "On va recharger le solde... <br>";
-			$solde->loadbytypeagent($this->agentid, 'cetcu');
+			if ($solde->load($this->agentid, 'cetcu') <> "")
+				$solde->creersolde('cetcu',$this->agentid);
+			// On recré un nouvel objet pour eviter les effets de bord eventuels
+			unset ($solde);
+			$solde = new solde($this->dbconnect);
 		}
-		else
-		{
-			//echo "On charge le solde avec son id <br>";
-			$solde->load($this->idannuel);
-		}
-		$solde->droitaquis_demijrs($this->cumulannuel());
+		//echo "On va recharger le solde... <br>";
+		$solde->load($this->agentid, 'cetcu');
+		$solde->droitaquis($this->cumulannuel());
 		//echo "On va store le solde <br>";
 		$msgerreur =  $msgerreur . $solde->store();
 		
@@ -198,22 +199,18 @@ class cet {
 			//echo "On va creer le solde <br>";
 			$solde->creersolde('cet',$this->agentid);
 			//echo "On va recharger le solde... <br>";
-			$solde->loadbytypeagent($this->agentid, 'cet');
 			
-			$sql = "UPDATE ARTT_UTILISATEUR SET D_DEB_CET='" . $this->fonctions->formatdatedb(date("d/m/Y")) . "', CET='o' WHERE CODE='" . $this->agentid . "'";
-			//echo "sql = " . $sql . "<br>";
-			$query=mysql_query ($sql, $this->dbconnect);
-			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Cet->Store (date début): " . $erreur . "<br>";
+			$complement = new complement($this->dbconnect);
+			$complement->harpegeid($this->agentid);
+			$complement->complementid('DEBUTCET');
+			$this->datedebut = date("Ymd");
+			$complement->valeur(date("Ymd"));
+			$complement->store();
 		}
-		else
-		{
-			//echo "On charge le solde avec son id <br>";
-			$solde->load($this->idtotal);
-		}
-		$solde->droitaquis_demijrs($this->cumultotal());
-		$solde->droitpris_demijrs($this->jrspris());
+		$solde->load($this->agentid, 'cet');
+
+		$solde->droitaquis($this->cumultotal());
+		$solde->droitpris($this->jrspris);
 		//echo "On va store le solde <br>";
 		$msgerreur =  $msgerreur . $solde->store();
 		return $msgerreur; 
@@ -263,9 +260,9 @@ class cet {
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,'La date d\'ouverture de votre CET est : ' . $this->datedebut());
 			$pdf->Ln(10);
-			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())/2) . ' jour(s).');
+			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())) . ' jour(s).');
 			$pdf->Ln(10);
-			$pdf->Cell(40,10,'Cette année, vous avez ajouté ' . ($this->cumulannuel()/2) . ' jour(s).');
+			$pdf->Cell(40,10,'Cette année, vous avez ajouté ' . ($this->cumulannuel()) . ' jour(s).');
 		}
 		else
 		{
@@ -273,7 +270,7 @@ class cet {
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,$detail);
 			$pdf->Ln(10);
-			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())/2) . ' jour(s).');
+			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . ($this->cumultotal()-$this->jrspris()) . ' jour(s).');
 		}
 		//echo "Apres les textes <br>";
 		$pdf->Ln(10);

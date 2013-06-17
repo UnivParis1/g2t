@@ -45,6 +45,7 @@ class planning {
 		$declarationTP = null;
 		for ($index=0; $index <= $nbre_jour-1 ; $index++)
 		{
+			//echo "datetemp= $datetemp <br>";
 			// Si la declaration de TP existe et que la date de fin est avant la date en cours 
 			// (donc on se moque de cette declaration de TP) => On dit qu'on en n'a pas !!! 
 			if (!is_null($declarationTP))
@@ -60,11 +61,20 @@ class planning {
 				{
 					//echo "Je recherche une nouvelle liste d'affectation car hors période <br>";
 					$affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
+					$declarationTPliste = null;
 					$affectation = null;
 				}
+				else 
+				{
+					//echo "L'affectation que j'ai est toujours valide !!! <br>";
+				} 
 			}
 			else
+			{
 				$affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
+				//echo "J'ai rechargé les affectations pour la date $datetemp <br>";
+				$declarationTPliste = null;
+			}
 			
 			if (!is_null($affectationliste))
 			{
@@ -88,6 +98,7 @@ class planning {
 				if (!is_null($declarationTP))
 				{
 					// Si on a deja une declaration de TP on vérifie si on peut la garder ou pas (si elle est tjrs dans la période)
+					//echo "Date courante = $datetemp    declarationTP->datefin = " . $this->fonctions->formatdatedb($declarationTP->datefin()) . "<br>";
 					if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
 					{
 						//echo "Planning->Load : La date de l'element planning > declarationTP->datefin ==> On doit recharger tout <br>";
@@ -115,22 +126,29 @@ class planning {
 						//echo "Apres le declarationTP = declarationTPliste <br>";
 						//echo "declarationTP->statut() = " . $declarationTP->statut() . "<br>";
 						// Si la déclaration de TP n'est pas validée alors c'est comme si on avait rien
-						if ($declarationTP->statut() == "v")
+						if (($declarationTP->statut() == "v") and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
 						{
 							// Si on a trouvée une declatation de TP validée on sort
 							//echo "Je break... <br>";
 							$fulldeclarationTPliste[$declarationTP->declarationTPid()] = $declarationTP;
 							break;
 						}
+						else
+						{
+							$declarationTP = null;
+							//echo "Je ne met pas cette declaration de TP <br>";
+						}
 					}
 					//echo "j'ai fini le for... <br>";
-				}	
+				}
+					
 			}
 			else
 			{
 				//echo "affectationliste EST NULL <br>";
 			}
 			//echo "Apres le for...<br>";
+			//echo "fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
 			//if (is_null($declarationTP)) echo "declarationTP est NULL <br>"; else echo "declarationTP = " . $declarationTP->declarationTPid() . "<br>"; 
 			// Le matin du jour en cours de traitement
 			$element = new planningelement($this->dbconnect);

@@ -46,6 +46,27 @@ class complement {
 		}
 	}
 	
+	function store()
+	{
+		if (strlen($this->harpegeid) == 0 or strlen($this->complementid) == 0)
+		{
+			echo "Complement->Store : Le numéro HARPEGE (" . $this->harpegeid . ")ou le code du complément (". $this->complementid  .") n'est pas initialisé<br>";
+			return;
+		}
+		$sql = "DELETE FROM COMPLEMENT WHERE HARPEGEID='" . $this->harpegeid . "' AND COMPLEMENTID='" . $this->complementid . "'";
+		//echo "SQL Complement->Store : $sql <br>";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+			echo "Complement->Store (DELETE) : " . $erreur . "<br>";
+		$sql = "INSERT INTO COMPLEMENT(HARPEGEID,COMPLEMENTID,VALEUR) VALUES('" . $this->harpegeid . "','" . $this->complementid . "','" . str_replace("'", "''", $this->valeur) . "')";
+		//echo "SQL Complement->Store : $sql <br>";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+			echo "Complement->Store (INSERT) : " . $erreur . "<br>";
+	}
+	
 	function harpegeid($agentid = null)
 	{
 		if (is_null($agentid))
