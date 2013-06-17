@@ -223,7 +223,7 @@
 		if (!$agent->dossiercomplet($date_debut,$date_fin))
 		{
 			$msg_erreur = $msg_erreur . "<br><b>Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande !!! </b><br>";
-			$pasautodeclaration = TRUE;
+			//$pasautodeclaration = TRUE;
 		}
 	}
 	
@@ -390,7 +390,7 @@
 		if ($msg_erreur <> "" or $datefausse)
 		{
 			echo "<P style='color: red'>" . $msg_erreur . " </P>";
-			//echo "J'ai print le message d'erreur <br>";
+			//echo "J'ai print le message d'erreur pasautodeclaration = $pasautodeclaration  <br>";
 		}
 		elseif (!$datefausse)
 		{
@@ -553,7 +553,7 @@
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe  . "'>";
 		echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
-		if (!$pasautodeclaration)	
+		//if (!$pasautodeclaration)	
 			echo "<input type='submit' value='Valider' />";
 		echo "<br><br>";
 ?>
