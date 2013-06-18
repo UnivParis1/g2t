@@ -18,10 +18,17 @@
 
 	// On charge la table des agents avec le fichier
 	$filename = "../INPUT_FILES_V3/har_agents_$date.dat";
-	$load_affect=mysql_query("LOAD DATA LOCAL INFILE '$filename' INTO TABLE AGENT CHARACTER SET LATIN1 FIELDS TERMINATED BY '#'");
-	$erreur_requete=mysql_error();
-	if ($erreur_requete!="")
-		echo "LOAD AGENT FROM FILE => $erreur_requete \n";
+	if (!file_exists($filename))
+	{
+		echo "Le fichier $filename n'existe pas !!! \n";
+	}
+	else
+	{
+		$load_affect=mysql_query("LOAD DATA LOCAL INFILE '$filename' INTO TABLE AGENT CHARACTER SET LATIN1 FIELDS TERMINATED BY '#'");
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			echo "LOAD AGENT FROM FILE => $erreur_requete \n";
+	}
 
 	echo "Fin de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 ?>
