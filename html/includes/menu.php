@@ -108,7 +108,12 @@
 					<a href="javascript:document.agentannulation.submit();">Annulation de demandes</a>
 				</li>				
 <?php
-	if (false) 
+	$affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
+	$affectation = reset($affectationliste);
+	$structureid = $affectation->structureid();
+	$structure = new structure($dbcon);
+	$structure->load($structureid);
+	if (strcasecmp($structure->affichetoutagent(), "o") == 0) 
 //	if ($user->structure()->affichetoutagent() == "o")
 	{
 ?>

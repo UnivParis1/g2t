@@ -115,10 +115,19 @@
 	}
 	else
 	{
-		$structure = $user->structure();
-		echo "<br>";
-		echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-		echo $structure->planninghtml($indexmois . "/"  . $annee);
+		$affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
+		foreach ($affectationliste as $affectkey => $affectation)
+		{
+			$structureid = $affectation->structureid();
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			if (strcasecmp($structure->affichetoutagent(), "o") == 0)
+			{
+				echo "<br>";
+				echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
+				echo $structure->planninghtml($indexmois . "/"  . $annee);
+			}
+		}
 	}
 	unset($strucuture);
 ?>
