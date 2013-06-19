@@ -129,9 +129,9 @@
 					{
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-						$user->sendmail($agent,"Validation d'une demande","Le statut de votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+						$user->sendmail($agent,"Validation d'une demande","Le statut de votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $this->fonctions->demandestatutlibelle($demande->statut()) . ".", $pdffilename);
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $demande->statutlibelle());
+						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 					}
 				}
 			}
@@ -174,7 +174,7 @@
 					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 					$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
 					//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-					$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),$structfille->id(), $cleelement);
+					$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
 					if ($htmltodisplay != "")
 					{
 						echo $htmltodisplay;

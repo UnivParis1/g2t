@@ -457,12 +457,12 @@
 		<tr>
 			<td>Date de début de la demande :</td>
 			<td width=1px><input class="calendrier" type=text name=date_debut id=date_debut size=10 ></td>
-			<td align="left"><input type='radio' name='deb_mataprem' value='m' checked >Matin &nbsp;<input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
+			<td align="left"><input type='radio' name='deb_mataprem' value='m' checked >Matin <input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
 		</tr>
 		<tr>
 			<td>Date de fin de la demande :</td>
 			<td width=1px><input class="calendrier" type=text name=date_fin id=date_fin size=10 ></td>
-			<td align="left"><input type='radio' name='fin_mataprem' value='m' >Matin &nbsp;<input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
+			<td align="left"><input type='radio' name='fin_mataprem' value='m' >Matin <input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
 		</tr>
 		<tr>
 			<td>Type de congé : </td>
@@ -471,12 +471,12 @@
 <!-- 
 	Date de début de la demande :
 	<input class="calendrier" type=text name=date_debut id=date_debut size=10 > <br>
-	<input type='radio' name='deb_mataprem' value='m' checked >Matin &nbsp;
+	<input type='radio' name='deb_mataprem' value='m' checked >Matin
 	<input type='radio' name='deb_mataprem' value='a'>Après-midi
 	<br>
 	Date de fin de la demande :
 	<input class="calendrier" type=text name=date_fin id=date_fin size=10 > <br>
-	<input type='radio' name='fin_mataprem' value='m' >Matin &nbsp;
+	<input type='radio' name='fin_mataprem' value='m' >Matin
 	<input type='radio' name='fin_mataprem' value='a' checked>Après-midi
 	<br>
  -->	

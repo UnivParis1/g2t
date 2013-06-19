@@ -211,7 +211,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				echo "Demande->nbrejrsdemande : Le nombre de jours demandés n'est pas défini !!! <br>";
 			else
 			{
-				return number_format($this->nbrejrsdemande,1);
+				return (float)$this->nbrejrsdemande; // number_format($this->nbrejrsdemande,1);
 			}
 		}
 		else
@@ -265,22 +265,22 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		}
 	}
 	
-	function statutlibelle()
-	{
-		if (is_null($this->demandeid))
-			echo "Demande->statutlibelle : La demande n'est pas enregistrée, donc pas de statut !!! <br>";
-		else
-		{
-			if ($this->statut == 'v')
-				return "Validé";
-			elseif ($this->statut == 'r')
-				return "Refusé";
-			elseif ($this->statut == 'a')
-				return "En attente";
-			else
-				echo "Demande->statutlibelle : le statut n'est pas connu [statut = $this->statut] !!! <br>";
-		}
-	}
+//	function statutlibelle()
+//	{
+//		if (is_null($this->demandeid))
+//			echo "Demande->statutlibelle : La demande n'est pas enregistrée, donc pas de statut !!! <br>";
+//		else
+//		{
+//			if (strcasecmp($this->statut,'v') == 0)
+//				return "Validée";
+//			elseif (strcasecmp($this->statut,'r') == 0)
+//				return "Refusée";
+//			elseif (strcasecmp($this->statut,'a') == 0)
+//				return "En attente";
+//			else
+//				echo "Demande->statutlibelle : le statut n'est pas connu [statut = $this->statut] !!! <br>";
+//		}
+//	}
 
 	function motifrefus($motif = null)
 	{
@@ -544,10 +544,12 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Cell(60,10,'Demande' . $typelib .  'N°'. $this->id() .' de ' . $this->agent()->civilite() . " " . $this->agent()->nom() . " " . $this->agent()->prenom() );
 		$pdf->Ln(10);
 		$pdf->SetFont('Arial','B',12);
-		if($this->statut()=='v')
-			$decision='validée';
-		else
-			$decision='refusée';
+		$decision = strtolower($this->fonctions->demandestatutlibelle($this->statut()));
+		
+//		if($this->statut()=='v')
+//			$decision='validée';
+//		else
+//			$decision='refusée';
 		
 		$pdf->Cell(40,10,'Votre demande ' .  $typelib  . 'du '. $this->datedebut() .' '. $this->fonctions->nommoment($this->momentdebut) . ' au '.$this->datefin().' '.$this->fonctions->nommoment($this->momentfin) . ' ');
 		$pdf->Ln(10);

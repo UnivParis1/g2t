@@ -150,9 +150,9 @@
 					{
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-						$user->sendmail($agent,"Annulation d'une demande","Le statut de votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+						$user->sendmail($agent,"Annulation d'une demande","Le statut de votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $this->fonctions->demandestatutlibelle($demande->statut()) . ".", $pdffilename);
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $demande->statutlibelle());
+						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
 					}
 				}

@@ -186,7 +186,7 @@ class cet {
 		}
 		//echo "On va recharger le solde... <br>";
 		$solde->load($this->agentid, 'cetcu');
-		$solde->droitaquis($this->cumulannuel());
+		$solde->droitaquis($this->cumulannuel);
 		//echo "On va store le solde <br>";
 		$msgerreur =  $msgerreur . $solde->store();
 		
@@ -203,8 +203,13 @@ class cet {
 			$complement = new complement($this->dbconnect);
 			$complement->harpegeid($this->agentid);
 			$complement->complementid('DEBUTCET');
-			$this->datedebut = date("Ymd");
-			$complement->valeur(date("Ymd"));
+			if (!$this->fonctions->verifiedate($this->datedebut()))
+			{
+				//echo "CET->Store : Date début n'est pas une date => " . $this->datedebut() . "<br>";
+				$this->datedebut = date("Ymd");
+			}
+			//echo "this->datedebut() = " . $this->datedebut() . "<br>";
+			$complement->valeur($this->datedebut());
 			$complement->store();
 		}
 		$solde->load($this->agentid, 'cet');

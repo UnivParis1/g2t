@@ -77,7 +77,7 @@ class solde {
 			if (is_null($this->droitaquis))
 				echo "Solde->droitaquis : Les droits aquis ne sont pas définis !!! <br>";
 			else
-				return number_format($this->droitaquis,1);
+				return (float)$this->droitaquis; //number_format($this->droitaquis,1);
 		}
 		else
 			$this->droitaquis = $droitaquis;		
@@ -90,7 +90,7 @@ class solde {
 			if (is_null($this->droitpris))
 				echo "Solde->droitpris : Les droits pris ne sont pas définis !!! <br>";
 			else
-				return number_format($this->droitpris,1);
+				return (float)$this->droitpris; //number_format($this->droitpris,1);
 		}
 		else
 			$this->droitpris = $droitpris;
@@ -98,7 +98,7 @@ class solde {
 	
 	function solde()
 	{
-		return number_format($this->droitaquis - $this->droitpris,1);
+		return (float)($this->droitaquis - $this->droitpris); //number_format($this->droitaquis - $this->droitpris,1);
 	}
 
 	function typeabsenceid($typeid = null)

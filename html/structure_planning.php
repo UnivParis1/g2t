@@ -99,7 +99,7 @@
 		foreach ($structureliste as $structkey => $structure)
 		{
 			echo "<br>";
-			echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
+//			echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
 	}
@@ -109,7 +109,7 @@
 		foreach ($structureliste as $structkey => $structure)
 		{
 			echo "<br>";
-			echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
+//			echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
 	}
@@ -124,7 +124,7 @@
 			if (strcasecmp($structure->affichetoutagent(), "o") == 0)
 			{
 				echo "<br>";
-				echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
+//				echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
 				echo $structure->planninghtml($indexmois . "/"  . $annee);
 			}
 		}

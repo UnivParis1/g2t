@@ -377,7 +377,7 @@ class fonctions {
  		{
 	 		if (($key % 5) == 0)
  				$htmltext = $htmltext . "</tr><tr>";
-	 		$htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" .  $legende["couleur"]  . "> &nbsp &nbsp</td><td></td><td align=left>" . $legende["libelle"]  ." &nbsp &nbsp</td>";
+	 		$htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" .  $legende["couleur"]  . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>" . $legende["libelle"]  ."</td>";
 		}
  		$htmltext = $htmltext . "</tr>";
  		$htmltext = $htmltext . "</table>";
@@ -439,8 +439,46 @@ class fonctions {
  				return "après-midi";
  				break;
  		} 
- 	}	
+ 	}
 
+ 	public function ouinonlibelle($codeouinon = null)
+ 	{
+ 		if (is_null($codeouinon))
+ 			return "Le codeouinon $codeouinon est inconnu";
+ 		switch ($codeouinon)
+ 		{
+ 			case "o":
+ 				return "Oui";
+ 				break;
+ 			case "n":
+ 				return "Non";
+ 				break;
+ 		} 
+ 	}
+ 	
+ 	public function demandestatutlibelle($statut = null)
+ 	{
+		if (strcasecmp($statut,'v') == 0)
+			return "Validée";
+		elseif (strcasecmp($statut,'r') == 0)
+			return "Refusée";
+		elseif (strcasecmp($statut,'a') == 0)
+			return "En attente";
+		else
+			echo "Demandestatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+ 	}
+
+ 	public function declarationTPstatutlibelle($statut = null)
+ 	{
+		if (strcasecmp($statut,'v') == 0)
+			return "Validée";
+		elseif (strcasecmp($statut,'r') == 0)
+			return "Refusée";
+		elseif (strcasecmp($statut,'a') == 0)
+			return "En attente";
+		else
+			echo "declarationTPstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+ 	}
 }
 
 ?>

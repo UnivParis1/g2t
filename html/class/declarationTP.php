@@ -91,6 +91,23 @@ WHERE DECLARATIONID=" . $id;
 			$this->statut = $statut;
 	}
 	
+//	function statutlibelle()
+//	{
+//		if (is_null($this->declarationid))
+//			echo "DeclarationTP->statutlibelle : La déclaration de TP n'est pas enregistrée, donc pas de statut !!! <br>";
+//		else
+//		{
+//			if (strcasecmp($this->statut,'v') == 0)
+//				return "Validée";
+//			elseif (strcasecmp($this->statut,'r') == 0)
+//				return "Refusée";
+//			elseif (strcasecmp($this->statut,'a') == 0)
+//				return "En attente";
+//			else
+//				echo "DeclarationTP->statutlibelle : le statut n'est pas connu [statut = $this->statut] !!! <br>";
+//		}
+//	}
+	
 	function datedebut($date = null)
 	{
 		if (is_null($date))
@@ -427,25 +444,26 @@ WHERE DECLARATIONID=" . $id;
 		{
 			// Affichager les selections !!!!
 			$htmltext = $htmltext . "<select name='statut[" . $this->declarationTPid() . "]'>";
-			$htmltext = $htmltext . "<option value='a'"; if ($this->statut() == "a") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">En attente</option>";
-			$htmltext = $htmltext . "<option value='v'"; if ($this->statut() == "v") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Validé</option>";
-			$htmltext = $htmltext . "<option value='r"; if ($this->statut() == "r") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . "'>Refusé</option>";
+			$htmltext = $htmltext . "<option value='a'"; if ($this->statut() == "a") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('a') . "</option>";
+			$htmltext = $htmltext . "<option value='v'"; if ($this->statut() == "v") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('v') . "</option>";
+			$htmltext = $htmltext . "<option value='r"; if ($this->statut() == "r") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle('r') . "</option>";
 			$htmltext = $htmltext . "</select>";
 		}
 		else
 		{
-			switch ($this->statut())
-			{
-				case "v":
-					$htmltext = $htmltext .  "Validé";
-					break;
-				case "a":
-					$htmltext = $htmltext .  "En attente";
-					break;
-				case "r":
-					$htmltext = $htmltext .  "Refusé";
-					break;
-			}
+			$htmltext = $htmltext . $this->fonctions->declarationTPstatutlibelle($this->statut());
+//			switch ($this->statut())
+//			{
+//				case "v":
+//					$htmltext = $htmltext .  "Validé";
+//					break;
+//				case "a":
+//					$htmltext = $htmltext .  "En attente";
+//					break;
+//				case "r":
+//					$htmltext = $htmltext .  "Refusé";
+//					break;
+//			}
 		}
 		$htmltext = $htmltext . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple'>";
@@ -490,19 +508,20 @@ WHERE DECLARATIONID=" . $id;
 		$pdf->Ln(50);
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 		$pdf->Ln(10);
-		$pdf->Cell(60,10,'Autodéclaration N°'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
+		$pdf->Cell(60,10,'Demande de temps partiel N°'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
 		$pdf->Ln(10);
 		$pdf->SetFont('Arial','B',12);
 		//echo "Avant le test statut <br>";
-		if($this->statut()=='v')
-			$decision='validée';
-		else
-			$decision='refusée';
+		$decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
+//		if($this->statut()=='v')
+//			$decision='validée';
+//		else
+//			$decision='refusée';
 		
-		$pdf->Cell(40,10,"L'autodéclaration que vous avez déposée le " . $this->datedemande() .' a été '.$decision.' le '. $this->datestatut());
+		$pdf->Cell(40,10,"La demande de temps partiel que vous avez déposée le " . $this->datedemande() .' a été '.$decision.' le '. $this->datestatut());
 		$pdf->Ln(10);
 		//echo "Avant test quotité <br>";
-		$pdf->Cell(60,10,'Récapitulatif de votre autodéclatation pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
+		$pdf->Cell(60,10,'Récapitulatif de votre demande de temps partiel pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
 		$pdf->Ln(10);
 
 		for ($cpt = 0; $cpt <20 ; $cpt++)
@@ -531,11 +550,11 @@ WHERE DECLARATIONID=" . $id;
 				//echo "    Value = " .  $value  . "   Index = " . $index . "   moment = " . $moment . "<br>";
 				if ($moment == "0")
 				{
-					$pdf->Cell(40,10, $this->fonctions->nomjourparindex($indexjrs) . " matin");
+					$pdf->Cell(40,10, $this->fonctions->nomjourparindex($indexjrs) . " " . $this->fonctions->nommoment("m"));
 				}
 				else
 				{
-					$pdf->Cell(40,10, $this->fonctions->nomjourparindex($indexjrs) . " après-midi");
+					$pdf->Cell(40,10, $this->fonctions->nomjourparindex($indexjrs) . " " . $this->fonctions->nommoment("a"));
 				}
 				$pdf->Ln(10);
 			}
@@ -550,7 +569,7 @@ WHERE DECLARATIONID=" . $id;
 //		$pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
-		$pdfname = './pdf/autodeclaration_num'.$this->declarationTPid().'.pdf';
+		$pdfname = './pdf/declarationTP_num'.$this->declarationTPid().'.pdf';
 		//$pdfname = sys_get_temp_dir() . '/autodeclaration_num'.$this->id().'.pdf';
 		//echo "Nom du PDF = " . $pdfname . "<br>";
 		$pdf->Output($pdfname);

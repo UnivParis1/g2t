@@ -42,13 +42,13 @@ class structure {
 			}
 			$result = mysql_fetch_row($query);
  			$this->structureid = "$result[0]";
- 			$this->nomcourt = "$result[2]";
  			$this->nomlong = "$result[1]";
+ 			$this->nomcourt = "$result[2]";
  			$this->parentid = "$result[3]";
  			$this->responsableid = "$result[4]";
-			$this->affichesousstruct = "$result[5]";
- 			$this->affichetoutagent = "$result[6]";
- 			$this->gestionnaireid = "$result[7]";
+ 			$this->gestionnaireid = "$result[5]";
+			$this->affichesousstruct = "$result[6]";
+ 			$this->affichetoutagent = "$result[7]";
 		}
 	}
 	
@@ -270,7 +270,8 @@ class structure {
 		{
  			if ($titre_a_ajouter)
  			{
-				$monthname = $this->fonctions->nommois("01/" .  $mois_annee_debut) . " " . date("Y",strtotime($this->fonctions->formatdatedb("01/" .  $mois_annee_debut)));
+				$htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) .  " align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
+ 				$monthname = $this->fonctions->nommois("01/" .  $mois_annee_debut) . " " . date("Y",strtotime($this->fonctions->formatdatedb("01/" .  $mois_annee_debut)));
 				//echo "Nom du mois = " . $monthname . "<br>";
   				$htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + 1) .  "'>" .  $monthname  . "</td></tr>";
  				//echo "Nbre de jour = " . count($planningservice[$agentid]->planning()) . "<br>";
@@ -330,41 +331,80 @@ class structure {
 	function dossierhtml($pourmodif = FALSE, $userid = NULL)
 	{
 		
-		echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
-		return null;
+		//echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
+		//return null;
 		
-		//echo "Structure->dossierhtml : début <br>";
 		$htmltext = "<br>";
 		$htmltext = "<table class='tableausimple'>";
-		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=9 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
-		$htmltext = $htmltext . "<tr class=titre1 align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Droit enfants malades</td><td class='cellulesimple'>Statut du dossier</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Quotité</td><td class='cellulesimple'>Report</td><td class='cellulesimple'>CET existant</td><td class='cellulesimple'>Date du CET</td>";
-		foreach ($this->agentlist('n') as $key => $membre)
+		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
+		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
+		$agentliste = $this->agentlist(date('d/m/Y'),date('d/m/Y') , 'n');
+		foreach ($agentliste as $key => $membre)
 		{
 			//echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
 			if ($membre->harpegeid() != $userid)
 			{
-				$dossier = $membre->dossieractif();
-				if (!is_null($dossier))
-					$htmltext = $htmltext . $dossier->html($pourmodif,$this->id());
+				$htmltext = $htmltext . "<tr>";
+				$htmltext = $htmltext . "<center><td class='cellulesimple' style='text-align:center;'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
+				
+				$complement = new complement($this->dbconnect);
+				$complement->load($membre->harpegeid(), "REPORTACTIF");
+				$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>";
+				if ($pourmodif)
+				{
+					$htmltext = $htmltext . "<select name=report[" . $membre->harpegeid() . "]>";
+					$htmltext = $htmltext . "<option value='n'"; if (strcasecmp($complement->valeur(),"n") == 0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Non</option>";
+					$htmltext = $htmltext . "<option value='o'"; if (strcasecmp($complement->valeur(),"o") == 0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Oui</option>";
+					$htmltext = $htmltext . "</select>";
+				}
+				else
+					$htmltext = $htmltext . $this->fonctions->ouinonlibelle($complement->valeur());
+				$htmltext = $htmltext . "</td></center>";
+				unset($complement);
+
+				$cet = new cet($this->dbconnect);
+				$msg = $cet->load($membre->harpegeid());
+				$cumultotal = "";
+				$datedebut = "";
+				if ($msg == "")
+				{
+					$cumultotal = $cet->cumultotal();
+					$datedebut = $cet->datedebut();
+				}
+				unset($cet);
+				// Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
+				if (($msg == "") or (!$pourmodif))
+				{
+					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
+					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $datedebut . "</td></center>";
+				}
+				else 
+				{
+					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->harpegeid()  ."] value=''/></td></center>";
+					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->harpegeid()  ."] value=''/></td></center>";
+				}
+				$htmltext = $htmltext . "</tr>";
 			}
 		}
 		$htmltext = $htmltext . "</table>";
 		$htmltext = $htmltext . "<br>";
+
 		return $htmltext;
 	}
 	
 	function store()
 	{
-		echo "structure->store : Non refaite !!!!! <br>";
-		return false;
+//		echo "structure->store : Non refaite !!!!! <br>";
+//		return false;
 		
-		$sql = "UPDATE ARTT_STRUCTURE SET TEM_CONSULT_TTE_STRUCT='" . $this->sousstructure()  .   "',AGT_PLN_STR='" . $this->affichetoutagent()   . "',CODE_VALID_SUP='" . $this->gestionnaireid  . "',CODE_DIRECTION='" . $this->responsableid  . "' WHERE C_STRUCTURE='" . $this->id() ."'";
+		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' WHERE STRUCTUREID='" . $this->id() . "'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
-			echo "Structure->store (ARTT_STRUCTURE) : " . $erreur . "<br>";
+			echo "Structure->store (STRUCTURE - Sous struct + Affiche) : " . $erreur . "<br>";
 		
+		return;
 		$sql = "UPDATE HARP_STRUCTURE SET CODE_RESPONSABLE='" . $this->responsableid .   "' WHERE C_STRUCTURE='" . $this->id() ."'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);

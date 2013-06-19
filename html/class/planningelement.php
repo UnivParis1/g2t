@@ -150,7 +150,7 @@ class planningelement {
 	function html($clickable = FALSE, $checkboxname = null)
 	{
 		$htmltext = "";
-		//$htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" > &nbsp </td>";
+		//$htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" ></td>";
 
 /*
 		$htmltext = $htmltext . "<form name='frm_" . $this->date . "_" . $this->moment . "'  method='post' >";

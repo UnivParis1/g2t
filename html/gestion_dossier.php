@@ -75,104 +75,78 @@
 	
 	//print_r ( $_POST); echo "<br>";
 	
-	foreach ($_POST as $key => $value)
-	{
-		//echo "key = $key     value = $value <br>";
-		//echo "Substr => "  . substr($key, 0, strlen("statut_")) . "<br>";
-		$position = strpos($key, "_dossierid");
-		if ($position !==FALSE)
-		{
-			$dossierid=$value;
-			//echo "Dossierid = " . $dossierid . "<br>";
-			$structid = substr($key,0,strpos($key, "_"));
-			//echo "Structure id = " . $structid . "<br>";
-			$dossier = new dossier($dbcon);
-			$dossier->load($dossierid);
-			$enregistrement_necessaire=FALSE; 
-			//echo "enregistrement_necessaire = " . $enregistrement_necessaire . "<br>";
-			$nbrejrsenfantmalade = $_POST[$structid . "_" . $dossier->agentid() . "_nbjrsenfant"];
-			//echo "nbrejrsenfantmalade = " . $nbrejrsenfantmalade . "  dossier->enfantmalade() = " . $dossier->enfantmalade() . "<br>";
-//			if ($nbrejrsenfantmalade  != "")
-			if (($nbrejrsenfantmalade != $dossier->enfantmalade()) and ($nbrejrsenfantmalade  != ""))
-			{
-				$dossier->enfantmalade($nbrejrsenfantmalade);
-				$enregistrement_necessaire = TRUE;
-			}
-			//echo "enregistrement_necessaire = " . $enregistrement_necessaire . "<br>";
-			$statut = $_POST[$structid . "_" . $dossier->agentid() . "_statut"];
-			//echo "statut = " . $statut . "  dossier->statut() = " . $dossier->statut() . "<br>";
-//			if ($statut  != "")
-			if (($statut != $dossier->statut()) and ($statut != ""))
-			{
-				$dossier->statut($statut);
-				$enregistrement_necessaire = TRUE;
-			}
-			//echo "enregistrement_necessaire = " . $enregistrement_necessaire . "<br>";
-			$report = $_POST[$structid . "_" . $dossier->agentid() . "_report"];
-			//echo "report = " . $report . "   dossier->reportactif() = " . $dossier->reportactif() . "<br>";
-//			if ($report  != "")
-			if (($report != chr(ord('n') + $dossier->reportactif())) and ($report  != ""))
-			{
-				$dossier->reportactif($report);
-				$enregistrement_necessaire = TRUE;
-			}
-			//echo "enregistrement_necessaire = " . $enregistrement_necessaire . "<br>";
-			$cetactif = $_POST[$structid . "_" . $dossier->agentid() . "_cetactif"];
-			//echo "cetactif = " . $cetactif . "   dossier->cetactif() = " . $dossier->cetactif() . "<br>";
-//			if ($cetactif  != "")
-			if (($cetactif != chr(ord('n') + $dossier->cetactif())) and ($cetactif != ""))
-			{
-				$dossier->cetactif($cetactif);
-				$enregistrement_necessaire = TRUE;
-			}
-			//echo "enregistrement_necessaire = " . $enregistrement_necessaire . "<br>";
-			$datedebcet = $_POST[$structid . "_" . $dossier->agentid() . "_datedebutcet"];
-			//echo "datedebcet = " . $datedebcet . "    dossier->datedebutcet() = " . $dossier->datedebutcet() . "<br>";
-//			if ($datedebcet  != "")
-			if (($datedebcet != $dossier->datedebutcet()) and ($datedebcet != "") ) 
-			{
-				//echo "Je suis dans le if <br>";
-				$dossier->datedebutcet($datedebcet);
-				$enregistrement_necessaire = TRUE;
-			}
-			//echo "TEST A LA FIN : enregistrement_necessaire = " . $enregistrement_necessaire . "<br>";
-			if ($enregistrement_necessaire == TRUE)
-			{
-				$msgerreur = $dossier->store();
-				$agent = new agent($dbcon);
-				$agent->load($dossier->agentid());
-				if ($msgerreur != "")
-				{
-					echo "<font color='red'>Echec de l'engistrement du dossier de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() ." : " . $msgerreur . "</font>";
-				}
-				else
-				{
-					echo "<font color='green'>Le dossier de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() .  " est correctement enregistré.</font><br>";
-				}
-				unset($agent);
-
-			}
-		}
-		$position = strpos($key, "_displaysousstruct");
-		if ($position !==FALSE)
-		{
-			$structid = substr($key,0,$position);
-			$structure = new structure($dbcon);
-			$structure->load($structid);
-			$structure->sousstructure($value);
-			$structure->store();
-		}
-		$position = strpos($key, "_displayallagent");
-		if ($position !==FALSE)
-		{
-			$structid = substr($key,0,$position);
-			$structure = new structure($dbcon);
-			$structure->load($structid);
-			$structure->affichetoutagent($value);
-			$structure->store();
-		}
-	} 
+	$reportlist = null;
+	if (isset($_POST['report']))
+		$reportlist = $_POST['report'];
+		
+	$cumultotallist = null;
+	if (isset($_POST['cumultotal']))
+		$cumultotallist = $_POST['cumultotal'];
+		
+	$datedebutcetlist= null;
+	if (isset($_POST['datedebutcet']))
+		$datedebutcetlist = $_POST['datedebutcet'];
 	
+	if (is_array($reportlist))
+	{
+		foreach ($reportlist as $harpegeid => $reportvalue)
+		{
+			$complement = new complement($dbcon);
+			$complement->complementid('REPORTACTIF');
+			$complement->harpegeid($harpegeid);
+			$complement->valeur($reportvalue);
+			$complement->store();
+		}
+	}
+	
+	if (is_array($cumultotallist))
+	{
+		foreach ($cumultotallist as $harpegeid => $cumultotal)
+		{
+			if (isset($datedebutcetlist[$harpegeid]))
+			{
+				if ($fonctions->verifiedate($datedebutcetlist[$harpegeid]))
+				{
+					$cet = new cet($dbcon);
+					$cet->cumultotal($cumultotal);
+					$cet->agentid($harpegeid);
+					$cet->datedebut($datedebutcetlist[$harpegeid]);
+					$cet->store();
+				}
+			}
+		}
+	}
+	
+	$displaysousstructlist = null;
+	if (isset($_POST["displaysousstruct"]))
+		$displaysousstructlist = $_POST["displaysousstruct"];
+	if (is_array($displaysousstructlist))
+	{
+		foreach ($displaysousstructlist as $structureid => $valeur)
+		{
+			$structureid = str_replace("'", "", $structureid);
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			$structure->sousstructure($valeur);
+			$structure->store();
+		}
+	}
+		
+	$displayallagentlist = null;
+	if (isset($_POST["displaysousstruct"]))
+		$displayallagentlist = $_POST["displayallagent"];
+	if (is_array($displayallagentlist))
+	{
+		foreach ($displayallagentlist as $structureid => $valeur)
+		{
+			$structureid = str_replace("'", "", $structureid);
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			$structure->affichetoutagent($valeur);
+			$structure->store();
+		}
+	}
+		
 	echo "<br>";
 	echo "<form name='frm_dossier'  method='post' >";
 	if ($mode == 'resp')
@@ -186,26 +160,33 @@
 			echo $structure->dossierhtml(($action == 'modif'),$userid);
 		else
 			echo $structure->dossierhtml(($action == 'modif'));
-		if ($mode == 'resp')
+
+		echo "Autoriser la consultation du planning de toute les structures filles à tous les agents de cette structure : ";
+		if ($action == 'modif' )
 		{
-			echo "<br>";
-			echo "Autoriser la consultation du planning de toute les structures filles à tous les agents de cette structure : (TEM_CONSULT_TTE_STRUCT) ";
-			echo "<select name='" . $structure->id()  . "_displaysousstruct'>";
-			echo "<option value='o'"; if (strcasecmp($structure->sousstructure(), "o")) echo " selected "; echo ">Oui</option>";
-			echo "<option value='n'"; if (strcasecmp($structure->sousstructure(), "n")) echo " selected "; echo ">Non</option>";
+			echo "<select name=displaysousstruct['" . $structure->id() . "']>";
+			echo "<option value='o'"; if (strcasecmp($structure->sousstructure(), "o")==0) echo " selected "; echo ">Oui</option>";
+			echo "<option value='n'"; if (strcasecmp($structure->sousstructure(), "n")==0) echo " selected "; echo ">Non</option>";
 			echo "</select>";
-			echo "<br>";
-			echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci (AGT_PLN_STR) :";
-			echo "<select name='" . $structure->id()  . "_displayallagent'>";
-			echo "<option value='o'"; if (strcasecmp($structure->affichetoutagent(),"o")) echo " selected "; echo ">Oui</option>";
-			echo "<option value='n'"; if (strcasecmp($structure->affichetoutagent(),"n")) echo " selected "; echo ">Non</option>";
-			echo "</select>";
-			echo "<br>";
 		}
+		else 
+			echo $fonctions->ouinonlibelle($structure->sousstructure());
+		echo "<br>";
+		echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
+		if ($action == 'modif' )
+		{
+			echo "<select name=displayallagent['" . $structure->id() . "']>";
+			echo "<option value='o'"; if (strcasecmp($structure->affichetoutagent(),"o")==0) echo " selected "; echo ">Oui</option>";
+			echo "<option value='n'"; if (strcasecmp($structure->affichetoutagent(),"n")==0) echo " selected "; echo ">Non</option>";
+			echo "</select>";
+		}
+		else
+			echo $fonctions->ouinonlibelle($structure->affichetoutagent());
+		echo "<br><br><br>";
 	}	
 	
-	echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
-	echo "<input type='hidden' name='action' value='" . $action ."'>";
+	echo "<input type='hidden' name='userid' value=" . $user->harpegeid() .">";
+	echo "<input type='hidden' name='action' value=" . $action .">";
 	echo "<input type='hidden' name='mode' value='" . $mode ."'>";
 	
 	if ($action == 'modif') 

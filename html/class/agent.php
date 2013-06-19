@@ -588,9 +588,9 @@ class agent {
 		}
 		$htmltext = $htmltext . "         <tr class='element'>";
 		$htmltext = $htmltext . "	          <td>Total</td>";
-		$htmltext = $htmltext . "	          <td>". number_format($totaldroitaquis,1) ."</td>";
-		$htmltext = $htmltext . "	          <td>". number_format($totaldroitpris,1) ."</td>";
-		$htmltext = $htmltext . "	          <td>". number_format($totaldroitrestant,1) ."</td>";
+		$htmltext = $htmltext . "	          <td>". $totaldroitaquis ."</td>"; //number_format($totaldroitaquis,1) ."</td>";
+		$htmltext = $htmltext . "	          <td>". $totaldroitpris ."</td>"; //number_format($totaldroitpris,1) ."</td>";
+		$htmltext = $htmltext . "	          <td>". $totaldroitrestant ."</td>"; //number_format($totaldroitrestant,1) ."</td>";
 		$htmltext = $htmltext . "	          <td>". $totaldemandeattente ."</td>";
 		$htmltext = $htmltext . "	       </tr>";
 		$htmltext = $htmltext . "      </table>";
@@ -648,19 +648,19 @@ class agent {
 		else
 		{
 			$htmltext = $htmltext .    "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
-			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>&nbsp Statut &nbsp <td>Motif (obligatoire si le congé est annulé)</td></tr>";
+			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Statut<td>Motif (obligatoire si le congé est annulé)</td></tr>";
 			foreach ($demandeliste as $key => $demande)
 			{
 				if ($demande->motifrefus() != "" or $demande->statut() != "r")
 				{
 					$htmltext = $htmltext . "<tr class='element'>";
- 					$htmltext = $htmltext . "   <td>&nbsp" . $demande->typelibelle() . "&nbsp </td>";
- 					$htmltext = $htmltext . "   <td>&nbsp" . $demande->date_demande() ."&nbsp </td>";
- 					$htmltext = $htmltext . "   <td>&nbsp" . $demande->datedebut() . "&nbsp" . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
- 					$htmltext = $htmltext . "   <td>&nbsp" . $demande->datefin() . "&nbsp" . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
- 					$htmltext = $htmltext . "   <td>&nbsp" . $demande->nbrejrsdemande() . "&nbsp </td>";
-	 				$htmltext = $htmltext . "   <td>&nbsp" . $demande->statutlibelle() . "&nbsp </td>";
- 					$htmltext = $htmltext . "   <td>&nbsp" . $demande->motifrefus() . "&nbsp </td>";
+ 					$htmltext = $htmltext . "   <td>" . $demande->typelibelle() . "</td>";
+ 					$htmltext = $htmltext . "   <td>" . $demande->date_demande() ."</td>";
+ 					$htmltext = $htmltext . "   <td>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+ 					$htmltext = $htmltext . "   <td>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+ 					$htmltext = $htmltext . "   <td>" . $demande->nbrejrsdemande() . "</td>";
+	 				$htmltext = $htmltext . "   <td>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</td>";
+ 					$htmltext = $htmltext . "   <td>" . $demande->motifrefus() . "</td>";
 					$htmltext = $htmltext . "</tr>";
 				}
 			}
@@ -783,7 +783,7 @@ class agent {
 					$pdf->Cell(35,5,$demande->datedebut() . " " . $demande->moment_debut(),1,0,'C');
 					$pdf->Cell(35,5,$demande->datefin() . " " . $demande->moment_fin(),1,0,'C');
 					$pdf->Cell(20,5,$demande->nbrejrsdemande(),1,0,'C');
-					$pdf->Cell(20,5,$demande->statutlibelle(),1,0,'C');
+					$pdf->Cell(20,5,$this->fonctions->demandestatutlibelle($demande->statut()),1,0,'C');
 					$pdf->Cell(80,5,$demande->motifrefus(),1,0,'C');
 					$pdf->ln(5);
 				}
@@ -867,14 +867,14 @@ class agent {
 					}
 
 					$htmltext = $htmltext . "<tr align=center >";
-					//					$htmltext = $htmltext . "   <td>&nbsp" . $this->nom() . " " . $this->prenom() . "&nbsp </td>";
-					$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->date_demande() ."&nbsp </td>";
-					$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->datedebut() . "&nbsp" . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
-					$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->datefin() . "&nbsp" . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
-					$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->typelibelle() . "</td>";
-					$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->nbrejrsdemande() . "&nbsp </td>";
+					//					$htmltext = $htmltext . "   <td>" . $this->nom() . " " . $this->prenom() . "</td>";
+					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() ."</td>";
+					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
 					if ($demande->statut() == "a" and $mode == "agent")
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->commentaire() . "&nbsp </td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
 					$htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name='" . $cleelement  . "_cancel_" . $demande->id() . "' value='cancel' /></td>";
 					if ($demande->statut() == "v" and $mode == "resp")
 						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='" . $cleelement .  "_motif_" . $demande->id() . "' id='" . $cleelement .  "_motif_" . $demande->id() . "' value='" . $demande->motifrefus()  . "'  size=40></td>";
@@ -970,30 +970,29 @@ class agent {
 						}
 						
 						$htmltext = $htmltext . "<tr align=center >";
-	//					$htmltext = $htmltext . "   <td>&nbsp" . $this->nom() . " " . $this->prenom() . "&nbsp </td>";
+	//					$htmltext = $htmltext . "   <td>" . $this->nom() . " " . $this->prenom() . "</td>";
 
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->date_demande() ."&nbsp </td>";
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->datedebut() . "&nbsp" . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->datefin() . "&nbsp" . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->typelibelle() . "</td>";
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp" . $demande->nbrejrsdemande() . "&nbsp </td>";
-						$htmltext = $htmltext . "   <td class='cellulesimple'>&nbsp";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() ."</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>";
 						$htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]'>";
 						$htmltext = $htmltext . "         <option ";
-						if ($demande->statut()=="v")
+						if (strcasecmp($demande->statut(),"v") == 0)
 							$htmltext=$htmltext  . " selected ";
-						$htmltext = $htmltext . " value='v'>Validé</option>";
+						$htmltext = $htmltext . " value='v'>" . $this->fonctions->demandestatutlibelle("v") . "</option>";
 						$htmltext = $htmltext . "         <option ";
-						if ($demande->statut()=="r")
+						if (strcasecmp($demande->statut(),"r") == 0)
 							$htmltext=$htmltext  . " selected ";
-						$htmltext = $htmltext . " value='r'>Refusé</option>";
+						$htmltext = $htmltext . " value='r'>" . $this->fonctions->demandestatutlibelle("r") . "</option>";
 						$htmltext = $htmltext . "         <option ";
-						if ($demande->statut()=="a")
+						if (strcasecmp($demande->statut(),"a") == 0)
 							$htmltext=$htmltext  . " selected ";
-						$htmltext = $htmltext . " value='a'>En attente</option>";
-						//. $demande->statutlibelle() . 
+						$htmltext = $htmltext . " value='a'>" . $this->fonctions->demandestatutlibelle("a") . "</option>";
 						$htmltext = $htmltext . "      <select>";
-						$htmltext = $htmltext . "&nbsp </td>";
+						$htmltext = $htmltext . "</td>";
 						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus()  . "' size=40 ></td>";
 						$htmltext = $htmltext . "</tr>";
 					}
@@ -1060,6 +1059,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		}
 		
 	}
+	
 	
 }
 

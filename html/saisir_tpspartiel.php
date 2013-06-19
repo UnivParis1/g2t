@@ -367,7 +367,7 @@
 						$msg_erreur = $msg_erreur . "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
 						$afficheheader = FALSE;
 					}	
-					$msg_erreur = $msg_erreur . "&nbsp&nbsp&nbsp La demande du " . $demande->date_demande() . " pour la période du " . $demande->datedebut() . " au "  . $demande->datefin()   . " <br>";
+					$msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la période du " . $demande->datedebut() . " au "  . $demande->datefin()   . " <br>";
 					$demande->statut("r");
 					$demande->motifrefus("Changement d'autodéclaration");
 					//echo "Avant le store...<br>";
@@ -599,9 +599,9 @@
 					$nomjour = $fonctions->nomjourparindex($index);
 					echo "<tr>";
 					$moment = "matin";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . $index   . "]' value='" . $index .  substr($moment,0,1) . "' >&nbsp;" . $nomjour . " " . $moment . "</td>"; 
+					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . $index   . "]' value='" . $index .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>"; 
 					$moment = "après-midi";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . ($index + 7)   . "]' value='" . $index .  substr($moment,0,1) . "' >&nbsp;" . $nomjour . " " . $moment . "</td>";
+					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . ($index + 7)   . "]' value='" . $index .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>";
 					echo "</tr>";
 				}
 				echo "</table>";
@@ -613,9 +613,9 @@
 					$nomjour = $fonctions->nomjourparindex($index);
 					echo "<tr>";
 					$moment = "matin";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . $index   . "]' value='" . ($index - 14) .  substr($moment,0,1) . "' >&nbsp;" . $nomjour . " " . $moment . "</td>";
+					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . $index   . "]' value='" . ($index - 14) .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>";
 					$moment = "après-midi";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . ($index + 7)   . "]' value='" . ($index - 14) .  substr($moment,0,1) . "' >&nbsp;" . $nomjour . " " . $moment . "</td>";
+					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . ($index + 7)   . "]' value='" . ($index - 14) .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>";
 					echo "</tr>";
 				}
 				echo "</table>";
