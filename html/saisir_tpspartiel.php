@@ -351,60 +351,60 @@
 		else
 			echo "<font color='green'>La déclaration de temps partiel est bien enregistrée.</font><br><br>";
 
-/*		$timestamp = strtotime($fonctions->formatdatedb($date_debut));
-		$nvlledatefin = date("d/m/Y", strtotime("+1year", $timestamp ));  // On ajoute un an pour chercher les éventuelles demandes faites après la fin de période
-		$demandeliste = $agent->demandesliste($date_debut , $nvlledatefin );
-		if (count($demandeliste) != 0)
-		{
-			$afficheheader = TRUE;
-			foreach ($demandeliste as $demandekey => $demande)
-			{
-				if (($demande->statut() != "r") and ($fonctions->formatdatedb($demande->datedebut())>=($fonctions->anneeref() . $fonctions->debutperiode())))
-				{
-					if ($afficheheader)
-					{
-						//echo "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
-						$msg_erreur = $msg_erreur . "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
-						$afficheheader = FALSE;
-					}	
-					$msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la période du " . $demande->datedebut() . " au "  . $demande->datefin()   . " <br>";
-					$demande->statut("r");
-					$demande->motifrefus("Changement d'autodéclaration");
-					//echo "Avant le store...<br>";
-					//print_r($demande); echo "<br>";
-					$demande->store();
-					//echo "Apres le store...<br>";
+//		$timestamp = strtotime($fonctions->formatdatedb($date_debut));
+//		$nvlledatefin = date("d/m/Y", strtotime("+1year", $timestamp ));  // On ajoute un an pour chercher les éventuelles demandes faites après la fin de période
+//		$demandeliste = $agent->demandesliste($date_debut , $nvlledatefin );
+//		if (count($demandeliste) != 0)
+//		{
+//			$afficheheader = TRUE;
+//			foreach ($demandeliste as $demandekey => $demande)
+//			{
+//				if (($demande->statut() != "r") and ($fonctions->formatdatedb($demande->datedebut())>=($fonctions->anneeref() . $fonctions->debutperiode())))
+//				{
+//					if ($afficheheader)
+//					{
+//						//echo "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
+//						$msg_erreur = $msg_erreur . "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
+//						$afficheheader = FALSE;
+//					}	
+//					$msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la période du " . $demande->datedebut() . " au "  . $demande->datefin()   . " <br>";
+//					$demande->statut("r");
+//					$demande->motifrefus("Changement d'autodéclaration");
+//					//echo "Avant le store...<br>";
+//					//print_r($demande); echo "<br>";
+//					$demande->store();
+//					//echo "Apres le store...<br>";
+//
+//					// DANS LE CAS DU MODE RESPONSABLE 
+//					// => 1 mail à l'agent  => expéditeur = $user et destinataire = $agent
+//					// => 1 mail au responsable => expéditeur = $user et destinataire = $user
+//					if ($mode=="resp")
+//					{
+//						//echo "Avant le PDF... <br>";
+//						$pdffilename = $demande->pdf($user->harpegeid());
+//						// Mail à l'agent
+//						//echo "Avant le mail à l'agent... <br>";
+//						$user->sendmail($agent,"Annulation d'une demande (Changement d'autodéclaration)","Votre autodéclaration a été modifiée par " . $user->civilite() . " " . $user->nom() .  " "  . $user->prenom() . "!! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						// Mail au responsable (donc c'est un automail)
+//						//echo "Avant le mail AU RESP... <br>";
+//						$user->sendmail($user,"Annulation d'une demande (Changement d'autodéclaration)","Vous venez de changer l'autodéclaration de l'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						//echo "Apres mail resp...<br>";
+//					}
+//					// DANS LE CAS DU MODE AGENT
+//					// => 1 mail à l'agent  => expéditeur = $agent et destinataire = $agent
+//					// => 1 mail au responsable => expéditeur = $agent et destinataire = $resp récup a partir de la strcture
+//					else
+//					{
+//						$pdffilename = $demande->pdf($agent->harpegeid());
+//						$agent->sendmail($agent,"Annulation d'une demande (Changement d'autodéclaration)","Vous avez changé d'autodéclaration !! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						$resp = $agent->structure()->responsable();
+//						$agent->sendmail($resp,"Annulation d'une demande (Changement d'autodéclaration)","L'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " a changé d'autodéclaration !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//					}
+//					
+//				}
+//			}
+//		}
 
-					// DANS LE CAS DU MODE RESPONSABLE 
-					// => 1 mail à l'agent  => expéditeur = $user et destinataire = $agent
-					// => 1 mail au responsable => expéditeur = $user et destinataire = $user
-					if ($mode=="resp")
-					{
-						//echo "Avant le PDF... <br>";
-						$pdffilename = $demande->pdf($user->harpegeid());
-						// Mail à l'agent
-						//echo "Avant le mail à l'agent... <br>";
-						$user->sendmail($agent,"Annulation d'une demande (Changement d'autodéclaration)","Votre autodéclaration a été modifiée par " . $user->civilite() . " " . $user->nom() .  " "  . $user->prenom() . "!! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-						// Mail au responsable (donc c'est un automail)
-						//echo "Avant le mail AU RESP... <br>";
-						$user->sendmail($user,"Annulation d'une demande (Changement d'autodéclaration)","Vous venez de changer l'autodéclaration de l'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-						//echo "Apres mail resp...<br>";
-					}
-					// DANS LE CAS DU MODE AGENT
-					// => 1 mail à l'agent  => expéditeur = $agent et destinataire = $agent
-					// => 1 mail au responsable => expéditeur = $agent et destinataire = $resp récup a partir de la strcture
-					else
-					{
-						$pdffilename = $demande->pdf($agent->harpegeid());
-						$agent->sendmail($agent,"Annulation d'une demande (Changement d'autodéclaration)","Vous avez changé d'autodéclaration !! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-						$resp = $agent->structure()->responsable();
-						$agent->sendmail($resp,"Annulation d'une demande (Changement d'autodéclaration)","L'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " a changé d'autodéclaration !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-					}
-					
-				}
-			}
-		}
-*/
 	}
 	
 	if ($agentid == "")
