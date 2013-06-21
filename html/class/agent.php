@@ -1035,9 +1035,9 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 			$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1]  ."</td>";
 			$htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2])  ."</td>";
 			if ($result[4] > 0)
-				$htmltext = $htmltext . "<td class='cellulesimple'>+" . ($result[4])  ."</td>";
+				$htmltext = $htmltext . "<td class='cellulesimple'>+" . (real)($result[4])  ."</td>";
 			else
-				$htmltext = $htmltext . "<td class='cellulesimple'>" . ($result[4])  ."</td>";
+				$htmltext = $htmltext . "<td class='cellulesimple'>" . (real)($result[4])  ."</td>";
 			$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[3]  ."</td>";
 			$htmltext = $htmltext . "</tr>";
 		}

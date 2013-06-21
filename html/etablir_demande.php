@@ -118,7 +118,7 @@
 	//print_r($_POST); echo "<br>";
 
 	$datefausse = FALSE;
-	$pasautodeclaration = FALSE;
+	$masquerboutonvalider = FALSE;
 	$msg_erreur = "";
 	
 	// Récupération de la date de début
@@ -223,7 +223,7 @@
 		if (!$agent->dossiercomplet($date_debut,$date_fin))
 		{
 			$msg_erreur = $msg_erreur . "<br><b>Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande !!! </b><br>";
-			//$pasautodeclaration = TRUE;
+			//$masquerboutonvalider = TRUE;
 		}
 	}
 	
@@ -321,7 +321,7 @@
 					{
 						$msg_erreur = $msg_erreur . "<br><b>" . $result . "</b>";
 						$msg_erreur = $msg_erreur . "<b>Contactez l'administrateur pour qu'il crée le type de congés...</b><br>";
-						$pasautodeclaration = TRUE;  // Empèche le bouton de s'afficher !!!
+						$masquerboutonvalider = TRUE;  // Empèche le bouton de s'afficher !!!
 					}
 					else
 						$msg_erreur = $msg_erreur . "<br><P style='color: green'>Création du solde de congés " . $codecongeanticipe . " pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() ."</P><br>";
@@ -333,12 +333,12 @@
 					//echo "Avant le for each <br>";
 					foreach ($soldeliste as $keysolde => $solde)
 					{
-						if ($solde->typecode() ==  "ann" . substr(($fonctions->anneeref()-$previous), 2))
+						if ($solde->typeabsenceid() ==  "ann" . substr(($fonctions->anneeref()-$previous), 2))
 						{
-							if ($solde->solde_demijrs() != 0)
+							if ($solde->solde() != 0)
 							{
-								$msg_erreur = $msg_erreur . "<br><b>Impossible de poser un congé par anticipation. Il reste " . ($solde->solde_demijrs() / 2) . " jours de congés à poser pour " .$solde->typelibelle() . "</b><br>";
-								$pasautodeclaration = TRUE;  // Empèche le bouton de s'afficher !!!
+								$msg_erreur = $msg_erreur . "<br><b>Impossible de poser un congé par anticipation. Il reste " . $solde->solde() . " jours de congés à poser pour " .$solde->typelibelle() . "</b><br>";
+								$masquerboutonvalider = TRUE;  // Empèche le bouton de s'afficher !!!
 							}
 						}
 					}
@@ -390,7 +390,7 @@
 		if ($msg_erreur <> "" or $datefausse)
 		{
 			echo "<P style='color: red'>" . $msg_erreur . " </P>";
-			//echo "J'ai print le message d'erreur pasautodeclaration = $pasautodeclaration  <br>";
+			//echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider  <br>";
 		}
 		elseif (!$datefausse)
 		{
@@ -488,9 +488,9 @@
 			if ($congeanticipe != "")
 			{
 				$solde = new solde($dbcon);
-				$solde->typecode("ann" . substr(($fonctions->anneeref()+1-$previous), 2));
+				$solde->typeabsenceid("ann" . substr(($fonctions->anneeref()+1-$previous), 2));
 				echo "<select name='listetype'>";
-				echo "<OPTION value='" . $solde->typecode() .  "'>" . $solde->typelibelle()  . "</OPTION>";
+				echo "<OPTION value='" . $solde->typeabsenceid() .  "'>" . $solde->typelibelle()  . "</OPTION>";
 				echo "</select>";
 				echo "<input type='hidden' name='typedemande' value='conges' ?>";
 			}
@@ -553,7 +553,7 @@
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe  . "'>";
 		echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
-		//if (!$pasautodeclaration)	
+		if (!$masquerboutonvalider)	
 			echo "<input type='submit' value='Valider' />";
 		echo "<br><br>";
 ?>
