@@ -297,7 +297,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	
 	function declarationTPliste()
 	{
-		$sql = "SELECT DECLARATIONID FROM DEMANDEDECLARATIONTP WHERE DEMANDEID= = '" . $this->demandeid . "'";
+		$sql = "SELECT DECLARATIONID FROM DEMANDEDECLARATIONTP WHERE DEMANDEID= '" . $this->demandeid . "'";
 		//echo "Demande declarationTPListe sql = $sql <br>";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();

@@ -109,10 +109,17 @@
 				</li>				
 <?php
 	$affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
-	$affectation = reset($affectationliste);
-	$structureid = $affectation->structureid();
 	$structure = new structure($dbcon);
-	$structure->load($structureid);
+	if (is_array($affectationliste))
+	{
+		$affectation = reset($affectationliste);
+		$structureid = $affectation->structureid();
+		$structure->load($structureid);
+	}
+	else
+	{
+		$structure->affichetoutagent("n");
+	}
 	if (strcasecmp($structure->affichetoutagent(), "o") == 0) 
 //	if ($user->structure()->affichetoutagent() == "o")
 	{
@@ -327,7 +334,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="resp">
 						</form>
-						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et de la structure -- PAS FAIT !!!</a>
+						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et de la structure</a>
 					</li>	
 					
 <!--  			
@@ -403,7 +410,7 @@
 							<input type="hidden" name="action" value="lecture">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre.submit();">Affichage paramétrage des dossiers -- PAS FAIT !!!</a>
+						<a href="javascript:document.gest_parametre.submit();">Affichage paramétrage des dossiers</a>
 					</li>				
 					<li onclick='document.gest_struct_planning.submit();'>
 						<form name='gest_struct_planning'  method='post' action="structure_planning.php">
@@ -418,7 +425,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers -- PAS FAIT !!!</a>
+						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers</a>
 					</li>				
 
 					<li onclick='document.gest_valid_tpspartiel.submit();'>
@@ -439,8 +446,27 @@
 			</li> 
 		</ul>
 <?php
-	} 
-	if ($user->estadministrateur())
+	}
+	// On vérifie que la personne connecté (la vraie personne avec le compte LDAP) est administrateur de l'appli
+	// On n'utilise pas la variable $user car dans le cas de la subtitution (se faire passer pour...) on ne serait plus admin
+	$uid=phpCAS::getUser();
+	$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
+	$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
+	$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
+	$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
+	$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
+	$con_ldap=ldap_connect($LDAP_SERVER);
+	ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+	$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
+	$filtre="(uid=$uid)";
+	$dn=$LDAP_SEARCH_BASE;
+	$restriction=array("$LDAP_CODE_AGENT_ATTR");
+	$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+	$info=ldap_get_entries($con_ldap,$sr);
+	//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+	$adminuser = new agent($dbcon);
+	$adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
+	if ($adminuser->estadministrateur())
 	{
 ?>
 		<ul class="niveau1">     
@@ -458,6 +484,13 @@
 						</form>
 						<a href="javascript:document.admin_info_agent.submit();">Affichage informations agent</a>
 					</li>
+					<li onclick='document.admin_subst_agent.submit();'>
+						<form name='admin_subst_agent'  method='post' action="admin_substitution.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form>
+						<a href="javascript:document.admin_subst_agent.submit();">Se faire passer pour un autre agent</a>
+					</li>
+					
 <!-- 				
 					<li>
 						<a href="g2t_consult_stat_adm.php?id_ses={$ID_SES}">Tableau de bord [Pas fait]</a>

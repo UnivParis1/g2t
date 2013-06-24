@@ -29,6 +29,13 @@
 		if ($erreur_requete!="")
 			echo "LOAD AGENT FROM FILE => $erreur_requete \n";
 	}
+	
+	// Ajout manuel de l'agent CRON-G2T avec un harpegeid = -1
+	$sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-1','','CRON','G2T','noreply-g2t@univ-paris1.fr','')";
+	mysql_query ($sql,$dbcon);
+	$erreur_requete=mysql_error();
+	if ($erreur_requete!="")
+		echo "INSERT INTO AGENT noreply-G2T => $erreur_requete \n";
 
 	echo "Fin de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 ?>

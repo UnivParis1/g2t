@@ -84,9 +84,9 @@
 //					$agentid = $declaration->agent();
 //					$agent = new agent($dbcon);
 //					$agent->load($agentid);
-					$user->sendmail($declaration->agent(),"Validation d'une autodéclaration","Le statut de votre autodéclaration du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . $declaration->statut() . ".",$pdffilename);
+					$user->sendmail($declaration->agent(),"Validation d'un temps-partiel","La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . strtolower($fonctions->declarationTPstatutlibelle($declaration->statut())) . ".",$pdffilename);
 					//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-					error_log("Sauvegarde l'autodeclaration " . $declaration->declarationTPid() . " avec le statut " . $declaration->statut());
+					error_log("Sauvegarde du temps-partiel " . $declaration->declarationTPid() . " avec le statut " . $declaration->statut());
 				}
 			}
 			

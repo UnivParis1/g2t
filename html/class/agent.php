@@ -203,6 +203,20 @@ class agent {
 		//--------------------------------------------------
 		// Construction du message proprement dit
 		//--------------------------------------------------
+
+//		$objet = iconv("CP1256","ISO-8859-15","$objet");
+//		$tab = array("UTF-8", "ASCII", "Windows-1252", "ISO-8859-15", "ISO-8859-1", "ISO-8859-6", "CP1256"); 
+//		$chain = ""; 
+//		 foreach ($tab as $i) 
+//		     { 
+//		         foreach ($tab as $j) 
+//		         { 
+//		             $chain .= " $i$j ".iconv($i, $j, "$objet")."\n"; 
+//		         } 
+//		     } 
+//		
+//		 echo $chain; 
+		
 		$msg = "$objet\r\n";
 		
 		//---------------------------------
@@ -216,7 +230,7 @@ class agent {
 		$msg .= "Content-Transfer-Encoding:8bit\r\n";
 		$msg .= "\r\n";
 		$msg .= "Bonjour,<br><br>";
-		$msg .= htmlentities("$message",ENT_QUOTES,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
+		$msg .= nl2br(htmlentities("$message",ENT_QUOTES,"ISO8859-15",false)) ."<br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
 		
 		//$msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 		$msg .= "\r\n";
@@ -251,7 +265,8 @@ class agent {
 		ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . "<" . $this->adressemail  . ">");
 		ini_set('SMTP',$this->fonctions->liredbconstante("SMTPSERVER") );
 		//$objet .=" G2T";
-		mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg",	"$header");
+		mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", "$objet", "$msg",	"$header");
+//		mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg",	"$header");
 		ini_restore('sendmail_from');
 		
 	}
