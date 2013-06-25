@@ -142,8 +142,10 @@
 	{
 		$listestruct = $user->structrespliste();
 		//print_r($listestruct); echo "<br>";
+		echo "<form name='frm_validation_conge'  method='post' >";
 		foreach ($listestruct as $key => $structure)
 		{
+			$aumoinsunedemande = False;
 			$cleelement = $structure->id();
 			echo "<center><p>Tableau pour les agents de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
 			echo "<form name='frm_validation_conge'  method='post' >";
@@ -163,6 +165,7 @@
 				{
 					echo $htmltodisplay;
 					echo "<br>";
+					$aumoinsunedemande = TRUE;
 				}	
 			}
 			$sousstructureliste=$structure->structurefille();
@@ -179,15 +182,20 @@
 					{
 						echo $htmltodisplay;
 						echo "<br>";
+						$aumoinsunedemande = TRUE;
 					}	
 									
 				}
 			}	
-			echo "<input type='hidden' name='mode' value='" . $mode .   "' />";
-			echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  .   "' />";
-			echo "<input type='hidden' name='previous' value='" . $previoustxt  .   "' />";
-			
+			if (!$aumoinsunedemande)
+			{
+				echo "Aucune demande en attente pour cette structure...<br>";
+			}
 		}
+		echo "<input type='hidden' name='mode' value='" . $mode .   "' />";
+		echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  .   "' />";
+		echo "<input type='hidden' name='previous' value='" . $previoustxt  .   "' />";
+		echo "<br>";
 		echo "<input type='submit' value='Valider' />";
 		echo "</form>";
 	}
@@ -198,12 +206,13 @@
 
 	if ($user->estgestionnaire() and ($mode == "gestion"))
 	{
+		echo "<form name='frm_validation_conge'  method='post' >";
 		$listestruct = $user->structgestliste();
 		foreach ($listestruct as $key => $structure)
 		{
+			$aumoinsunedemande = FALSE;
 			$cleelement = $structure->id();
 			echo "<center><p>Tableau pour les agents de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
-			echo "<form name='frm_validation_conge'  method='post' >";
 			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
 			foreach ($agentliste as $membrekey => $membre)
 			{
@@ -229,6 +238,7 @@
 				{
 					echo $htmltodisplay;
 					echo "<br>";
+					$aumoinsunedemande = TRUE;
 				}	
 			}
 			
@@ -262,16 +272,22 @@
 						{
 							echo $htmltodisplay;
 							echo "<br>";
+							$aumoinsunedemande = TRUE;
 						}	
 					}			
 				}
 			}
 */	
-			echo "<input type='hidden' name='mode' value='" . $mode .   "' />";
-			echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  .   "' />";
-			echo "<input type='hidden' name='previous' value='" . $previoustxt  .   "' />";
+			if (!$aumoinsunedemande)
+			{
+				echo "Aucune demande en attente pour cette structure...<br>";
+			}
 			
 		}
+		echo "<input type='hidden' name='mode' value='" . $mode .   "' />";
+		echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  .   "' />";
+		echo "<input type='hidden' name='previous' value='" . $previoustxt  .   "' />";
+		echo "<br>";
 		echo "<input type='submit' value='Valider' />";
 		echo "</form>";
 	}

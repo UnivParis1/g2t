@@ -396,21 +396,28 @@ class structure {
 	{
 //		echo "structure->store : Non refaite !!!!! <br>";
 //		return false;
-		
+		$msgerreur = null;
 		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' WHERE STRUCTUREID='" . $this->id() . "'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
+		{
 			echo "Structure->store (STRUCTURE - Sous struct + Affiche) : " . $erreur . "<br>";
+			$msgerreur = $msgerreur . $erreur;
+			
+		}
 		
-		return;
-		$sql = "UPDATE HARP_STRUCTURE SET CODE_RESPONSABLE='" . $this->responsableid .   "' WHERE C_STRUCTURE='" . $this->id() ."'";
+		$sql = "UPDATE STRUCTURE SET GESTIONNAIREID='" . $this->gestionnaireid .   "', RESPONSABLEID='" . $this->responsableid . "' WHERE STRUCTUREID='" . $this->id() ."'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
+		{
 			echo "Structure->store (HARP_STRUCTURE) : " . $erreur . "<br>";
+			$msgerreur = $msgerreur . $erreur;
+		}
+		return $msgerreur;
 	}
 	
 	function pdf($mois_annee_debut)  // Le format doit être MM/YYYY

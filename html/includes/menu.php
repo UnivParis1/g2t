@@ -318,16 +318,6 @@
 						</form>
 						<a href="javascript:document.resp_struct_planning.submit();">Plannings de la structure</a>
 					</li>
-<!--   		
-					<li>
-						<form name='resp_valid_conge'  method='post' action="valider_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="mode" value="resp">
-							<input type="hidden" name="previous" value="no">
-							</form>
-						<a href="javascript:document.resp_valid_conge.submit();">Demandes en attente</a>
-					</li>		
- -->		
 					<li onclick='document.resp_parametre.submit();'>
 						<form name='resp_parametre'  method='post' action="gestion_dossier.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
@@ -336,45 +326,6 @@
 						</form>
 						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et de la structure</a>
 					</li>	
-					
-<!--  			
-					<li>
-						<a href="g2t_consult_modif_att.php?id_ses={$ID_SES}">Att [Pas fait]</a>
-					</li>					
--->
-<!-- 
-					<li>
-						<form name='resp_gest_conge'  method='post' action="gestion_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="responsableid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="previous" value="no">
-						</form>
-						<a href="javascript:document.resp_gest_conge.submit();">Annulation de demandes</a>
-					</li>
-					<li>
-						<form name='resp_conge'  method='post' action="etablir_demande.php">
-							<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="typedemande" value="conges">
-							<input type="hidden" name="previous" value="no">
-						</form>
-						<a href="javascript:document.resp_conge.submit();">Etablir une demande de congé pour un agent</a>
-					</li>				
-					<li>
-						<form name='resp_absence'  method='post' action="etablir_demande.php">
-							<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="typedemande" value="absence">
-							<input type="hidden" name="previous" value="no">
-						</form>
-						<a href="javascript:document.resp_absence.submit();">Etablir une demande d'absence pour un agent</a>
-					</li>
- -->
-<!-- 
-					<li>
-						<a href="g2t_add_reliquats_foragent.php?id_ses={$ID_SES}">Ajout de reliquat pour un agent [Pas fait]</a>
-					</li>
--->
 				</ul> 
 			</li> 
 		</ul> 
@@ -400,10 +351,6 @@
 						</form>
 						<a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
 					</li>	
-					
-<!--
-					<li><a href="g2t_valid_absence_gestio.php?id_ses={$ID_SES}">Absences en attente de validation</a></li>
--->				
 					<li onclick='document.gest_parametre.submit();'>
 						<form name='gest_parametre'  method='post' action="gestion_dossier.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
@@ -478,27 +425,20 @@
 						</form>
 						<a href="javascript:document.admin_struct_gest.submit();">Paramétrage des structures</a>
 					</li>
+<!-- 
 					<li onclick='document.admin_info_agent.submit();'>
 						<form name='admin_info_agent'  method='post' action="affiche_info_agent.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form>
 						<a href="javascript:document.admin_info_agent.submit();">Affichage informations agent</a>
 					</li>
+-->
 					<li onclick='document.admin_subst_agent.submit();'>
 						<form name='admin_subst_agent'  method='post' action="admin_substitution.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form>
 						<a href="javascript:document.admin_subst_agent.submit();">Se faire passer pour un autre agent</a>
 					</li>
-					
-<!-- 				
-					<li>
-						<a href="g2t_consult_stat_adm.php?id_ses={$ID_SES}">Tableau de bord [Pas fait]</a>
-					</li>
-					<li>
-						<a href="g2t_planning_struct_adm.php?id_ses={$ID_SES}">Tous les plannings [Pas fait]</a>
-					</li>
- -->
  				</ul> 
 			</li> 
 		</ul>  

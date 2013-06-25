@@ -98,8 +98,17 @@
 		$structureliste = $user->structrespliste();
 		foreach ($structureliste as $structkey => $structure)
 		{
+			if (strcasecmp($structure->sousstructure(), "o") ==0 )
+			{
+				$sousstructliste = $structure->structurefille();
+				$structureliste = array_merge($structureliste, (array)$sousstructliste);
+				// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+			}
+		}
+		//echo "StructureListe = "; print_r($structureliste); echo "<br>";
+		foreach ($structureliste as $structkey => $structure)
+		{
 			echo "<br>";
-//			echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
 	}
@@ -108,8 +117,17 @@
 		$structureliste = $user->structgestliste();
 		foreach ($structureliste as $structkey => $structure)
 		{
+			if (strcasecmp($structure->sousstructure(), "o") ==0 )
+			{
+				$sousstructliste = $structure->structurefille();
+				$structureliste = array_merge($structureliste, (array)$sousstructliste);
+				// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+			}
+		}
+		//echo "StructureListe = "; print_r($structureliste); echo "<br>";
+		foreach ($structureliste as $structkey => $structure)
+		{
 			echo "<br>";
-//			echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
 	}
