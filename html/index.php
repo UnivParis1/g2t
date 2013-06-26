@@ -64,6 +64,8 @@
 			echo "<br><font color=#FF0000>Vous n'êtes pas authorisé à vous connecter à cette application...</font>";
 			return;
 		}
+		$_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+		//echo "Je viens de set le param - index.php<br>";
 		//echo "Avant le recup user-> id";
 		$userid = $user->harpegeid();
 		//echo "Apres le recup user-> id";

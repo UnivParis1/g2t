@@ -203,20 +203,6 @@ class agent {
 		//--------------------------------------------------
 		// Construction du message proprement dit
 		//--------------------------------------------------
-
-//		$objet = iconv("CP1256","ISO-8859-15","$objet");
-//		$tab = array("UTF-8", "ASCII", "Windows-1252", "ISO-8859-15", "ISO-8859-1", "ISO-8859-6", "CP1256"); 
-//		$chain = ""; 
-//		 foreach ($tab as $i) 
-//		     { 
-//		         foreach ($tab as $j) 
-//		         { 
-//		             $chain .= " $i$j ".iconv($i, $j, "$objet")."\n"; 
-//		         } 
-//		     } 
-//		
-//		 echo $chain; 
-		
 		$msg = "$objet\r\n";
 		
 		//---------------------------------

@@ -54,6 +54,7 @@
 	echo '<html><body class="bodyhtml">';
 	echo "<br>";
 
+	//echo "SESSION = "; print_r($_SESSION); echo "<br>";
 	//echo "_POST = "; print_r($_POST); echo "<br>";
 	$statutliste = null;
 	if (isset($_POST['statut']))
