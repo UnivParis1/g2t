@@ -150,7 +150,7 @@
 					{
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-						$user->sendmail($agent,"Annulation d'une demande","Le statut de votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $fonctions->demandestatutlibelle($demande->statut()) . ".", $pdffilename);
+						$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
 						echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";

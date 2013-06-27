@@ -134,7 +134,7 @@ class fonctions {
 	public function listeabsence($categorie = null)
 	{
 		if (is_null($categorie))
-			$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ABSENCEIDPARENT IS NOT NULL ORDER BY ABSENCEIDPARENT";
+			$sql = "SELECT TA.TYPEABSENCEID,TA.LIBELLE FROM TYPEABSENCE TA, TYPEABSENCE TA2 WHERE TA2.ABSENCEIDPARENT='abs' AND TA.ABSENCEIDPARENT=TA2.TYPEABSENCEID ORDER BY TA.ABSENCEIDPARENT";
 		else
 			$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ABSENCEIDPARENT='"  . $categorie  .  "' ORDER BY LIBELLE";
 
@@ -159,7 +159,7 @@ class fonctions {
 
 	public function listecategorieabsence()
 	{
-		$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT=''";
+		$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT='abs'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
