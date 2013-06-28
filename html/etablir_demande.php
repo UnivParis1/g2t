@@ -80,7 +80,7 @@
 		$previoustxt = $_POST["previous"];
 	else
 		$previoustxt = null;
-	if ($previoustxt == "yes")
+	if (strcasecmp($previoustxt,"yes")==0)
 		$previous=1;
 	else
 		$previous=0;
@@ -170,7 +170,7 @@
 				$fin_mataprem = $_POST["fin_mataprem"];
 			else
 				$fin_mataprem = null;
-			if (is_null($fin_mataprem) or ($fin_mataprem != "m" and $fin_mataprem != "a") )
+			if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem,"m")!=0 and strcasecmp($fin_mataprem,"a")!=0))
 			{
 				$msg_erreur = $msg_erreur . "Le moment de fin n'est pas initialisé !!! <br>";
 			}
@@ -236,7 +236,7 @@
 		//alert("planning_click => " + date + "  "  + moment);
 		document.getElementById("date_debut").value = date;
 		
-		if (moment == "m")
+		if (strcasecmp(moment,"m")==0)
 			document.frm_demande_conge["deb_mataprem"][0].checked = true;
 		else
 			document.frm_demande_conge["deb_mataprem"][1].checked = true;
@@ -247,7 +247,7 @@
 		//alert("planning_click => " + date + "  "  + moment);
 		document.getElementById("date_fin").value = date;
 		
-		if (moment == "m")
+		if (strcasecmp(moment,"m")==0)
 			document.frm_demande_conge["fin_mataprem"][0].checked = true;
 		else
 			document.frm_demande_conge["fin_mataprem"][1].checked = true;
@@ -302,7 +302,7 @@
 	}
 	else
 	{
-		if ($typedemande == "conges")
+		if (strcasecmp($typedemande,"conges")==0)
 		{
 			echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
 			$solde = new solde($dbcon);
@@ -333,7 +333,7 @@
 					//echo "Avant le for each <br>";
 					foreach ($soldeliste as $keysolde => $solde)
 					{
-						if ($solde->typeabsenceid() ==  "ann" . substr(($fonctions->anneeref()-$previous), 2))
+						if (strcasecmp($solde->typeabsenceid(),"ann")==0 . substr(($fonctions->anneeref()-$previous), 2))
 						{
 							if ($solde->solde() != 0)
 							{
@@ -363,7 +363,7 @@
 			// Si la date de fin est supérieur à la date de début et que l'on accepte que ca déborde
 			// on fait un traitement spécial <=> pas de vérification des autodéclarations
 			if ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode() 
-					    and $fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
+					    and strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 			{
 				// Si la date de fin est suppérieure d'un mois à la date de fin de période ==> On refuse
 				// ==> On accepte que de déborder d'un mois
@@ -432,7 +432,7 @@
 			if ($resultat == "")
 			{
 				echo "<P style='color: green'>Votre demande a été enregistrée... ==> "; 
-				if ($typedemande == "conges")
+				if (strcasecmp($typedemande,"conges")==0)
 				{
 					if (($demande->nbrejrsdemande())>1)
 						echo $demande->nbrejrsdemande() ." jours vous seront décomptés (" . $demande->typelibelle() .  ").";
@@ -481,7 +481,7 @@
 	<br>
  -->	
 <?php
-		if ($typedemande == "conges")
+		if (strcasecmp($typedemande,"conges")==0)
 		{
 			//echo "congesanticipe = " . $congeanticipe . "<br>";
 			// C'est une demande par anticipation
@@ -542,7 +542,7 @@
 			echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
 			echo "<br>";
 		}
-		elseif ($typedemande != "conges") 
+		elseif (strcasecmp($typedemande,"conges")!=0) 
 		{
 			echo "Commentaire (facultatif) : <br>";
 			echo "<textarea rows='4' cols='60' name='commentaire'></textarea> <br>";
@@ -565,7 +565,7 @@
 		//echo "Fin periode = " . $fonctions->finperiode() . "<br>";
 		//echo "Annee ref = " . $fonctions->anneeref() . "<br>";
 		//echo "debut = " . $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()) . "    fin =" . $fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()) . "<br>";
-		if ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
+		if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 		{
 			$datetemp = ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode();
 			$timestamp = strtotime($datetemp);

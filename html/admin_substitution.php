@@ -83,7 +83,19 @@
 ?>
 <br>
 <form name='subst_agent' method='post' action='index.php'>
+   <input id="userid" name="userid" placeholder="Nom et/ou prenom" />
+
+   <script>
+    $( "#userid" ).autocompleteUser(
+       'https://ticetest.univ-paris1.fr/wsgroups/searchUserCAS', { wantedAttr: "supannEmpId",
+                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } }
+    );
+   </script>
+
+
+<!-- 
 <input type='text' name='userid' >
+ -->
 <input type='submit' value='Se faire passer pour...'>
 </form>
 

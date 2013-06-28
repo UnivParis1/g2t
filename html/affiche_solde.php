@@ -64,7 +64,7 @@
 	else
 		$previous = 0;
 	
-	if ($mode == "resp")
+	if (strcasecmp($mode,"resp")==0)
 	{
 		$structureliste = $user->structrespliste();
 		foreach ($structureliste as $structkey => $structure)
@@ -136,6 +136,7 @@
 			foreach ($agentliste as $agentkey => $agent)
 			{
 				echo $agent->soldecongeshtml($fonctions->anneeref(),TRUE);
+//				echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
 				echo $agent->demandeslistehtml($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref()+1) . $fonctions->finperiode(),$structure->id(),FALSE);
 				echo $agent->planninghtml($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref()+1) . $fonctions->finperiode(),FALSE,FALSE);
 				echo "<hr>";

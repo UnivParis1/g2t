@@ -126,7 +126,7 @@ class planning {
 						//echo "Apres le declarationTP = declarationTPliste <br>";
 						//echo "declarationTP->statut() = " . $declarationTP->statut() . "<br>";
 						// Si la déclaration de TP n'est pas validée alors c'est comme si on avait rien
-						if (($declarationTP->statut() == "v") and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
+						if ((strcasecmp($declarationTP->statut(),"v")==0) and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
 						{
 							// Si on a trouvée une declatation de TP validée on sort
 							//echo "Je break... <br>";
@@ -173,7 +173,7 @@ class planning {
 				$element->info("Période non déclarée");
 			}
 			// On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!! 
-			elseif ($declarationTP->statut()!="v")
+			elseif (strcasecmp($declarationTP->statut(),"v")!=0)
 			{
 				$element->type("nondec");
 				$element->info("Période non déclarée");
@@ -214,7 +214,7 @@ class planning {
 				$element->info("Période non déclarée");
 			}
 			// On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!! 
-			elseif ($declarationTP->statut()!="v")
+			elseif (strcasecmp($declarationTP->statut(),"v")!=0)
 			{
 				$element->type("nondec");
 				$element->info("Période non déclarée");
@@ -304,7 +304,7 @@ class planning {
 			 					//echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
 			 					if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
-			 					elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->listeelement[$datetemp . $demandetempmoment]->type() == "nondec")
+			 					elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(),"nondec")==0)
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
 			 					$demandetempmoment = 'a';
 			 					unset($element);
@@ -328,7 +328,7 @@ class planning {
 			 					// $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
 			 					if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
-			 					elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->listeelement[$datetemp . $demandetempmoment]->type() == "nondec")
+			 					elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(),"nondec")==0)
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
 			 					unset ($element);
 								//echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
@@ -520,9 +520,9 @@ WHERE HARPEGEID = '" . $agentid . "'
  		//echo "Apres le load <br>";
  		$paslepremier = FALSE;
  		$pasledernier = FALSE;
- 		if ($momentdebut != "m")
+ 		if (strcasecmp($momentdebut,"m")!=0)
  			$paslepremier = TRUE;
- 		if ($momentfin != "a")
+ 		if (strcasecmp($momentfin,"a")!=0)
  			$pasledernier = TRUE;
  		$index=0;
  		foreach ($listeelement as $key => $element)
@@ -535,11 +535,11 @@ WHERE HARPEGEID = '" . $agentid . "'
  			if (!$pasdetraitement)
  			{
  				//echo "element->type() = " . $element->type() . "<br>";
-	 			if ($element->type() == "" or $element->type() == "WE" or $element->type() == "ferie" or $element->type() == "tppar")
+	 			if ($element->type() == "" or strcasecmp($element->type(),"WE")==0 or strcasecmp($element->type(),"ferie")==0 or strcasecmp($element->type(),"tppar")==0)
 	 			{
 	 				// On ne fait rien si c'est vide, un WE, un jour férié ou un temp partiel
 	 			}
-	 			elseif ($ignoreabsenceautodecla == TRUE and $element->type() == "nondec")
+	 			elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(),"nondec")==0)
 	 			{
 	 				// On ne fait rien car on doit ignorer le fait que l'autodéclaration n'est pas faite
 	 			}
@@ -559,12 +559,12 @@ WHERE HARPEGEID = '" . $agentid . "'
  		$listeelement = $this->load($agentid,$datedebut,$datefin);
  		$paslepremier = FALSE;
  		$pasledernier = FALSE;
- 		if ($momentdebut != "m")
+ 		if (strcasecmp($momentdebut,"m")!=0)
  		{
  			$paslepremier = TRUE;
  			//echo "On fixe paslepremier <br>";
  		}
- 		if ($momentfin != "a")
+ 		if (strcasecmp($momentfin,"a")!=0)
  		{
  			$pasledernier = TRUE;
  			//echo "On fixe pasledernier <br>";
@@ -595,7 +595,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 	 				// On ajoute 1 car "rien de prévu ce jour là" donc c'est un jour ou l'agent travail
 		 			$nbredemijour++;
 	 			}
- 				elseif ($ignoreabsenceautodecla == TRUE and $element->type() == "nondec")
+ 				elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(),"nondec")==0)
 	 			{
 	 				// On ajoute 1 car "pas d'autodeclaration et on doit l'ignorer" donc c'est un jour ou l'agent travail
 		 			$nbredemijour++;
@@ -689,7 +689,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 			// -------------------------------------------
 			list($col_part1,$col_part2,$col_part3)=$this->fonctions->html2rgb($planningelement->couleur());
 			$pdf->SetFillColor($col_part1,$col_part2,$col_part3);
-			if ($planningelement->moment() != "m")
+			if (strcasecmp($planningelement->moment(),"m")!=0)
 				$pdf->Cell(4,5,"",'TBR',0,'C',1);
 			else
 				$pdf->Cell(4,5,"",'TBL',0,'C',1);

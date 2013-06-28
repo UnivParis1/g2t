@@ -171,7 +171,7 @@ class agent {
       if (mysql_num_rows($query) == 0)
 			return FALSE;
 		$result = mysql_fetch_row($query);
-		return ($result[0] == "O");
+		return (strcasecmp($result[0], "O")==0);
 	}
 	
 	function planning($debut_interval,$fin_interval)
@@ -303,7 +303,7 @@ class agent {
 			$listeelement = $planning->planning();
 			foreach ($listeelement as $key => $element)
 			{
-				if ($element->type() == "nondec")
+				if (strcasecmp($element->type(),"nondec")==0)
 				{
 					//echo "Le premier element non declaré est : " . $key . "<br>";
 					return false;
@@ -400,7 +400,7 @@ class agent {
    	$complement = new complement($this->dbconnect);
    	$complement->load($this->harpegeid,"REPORTACTIF");
    	// Si le complement n'est pas initialisé (NULL ou "") alors on active le report
-   	if ($complement->valeur() == "O" or strlen($complement->valeur()) == 0)
+   	if (strcasecmp($complement->valeur(),"O")==0 or strlen($complement->valeur()) == 0)
    		$reportactif = true;
    	else
 			$reportactif = FALSE;
@@ -652,7 +652,7 @@ class agent {
 			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Statut<td>Motif (obligatoire si le congé est annulé)</td></tr>";
 			foreach ($demandeliste as $key => $demande)
 			{
-				if ($demande->motifrefus() != "" or $demande->statut() != "r")
+				if ($demande->motifrefus() != "" or strcasecmp($demande->statut(),"r")!=0)
 				{
 					$htmltext = $htmltext . "<tr class='element'>";
  					$htmltext = $htmltext . "   <td>" . $demande->typelibelle() . "</td>";
@@ -777,7 +777,7 @@ class agent {
 			$pdf->ln(5);
 			foreach ($demandeliste as $key => $demande)
 			{
-				if ($demande->motifrefus() != "" or $demande->statut() != "r")
+				if ($demande->motifrefus() != "" or strcasecmp($demande->statut(),"r")!=0)
 				{
 					$pdf->Cell(60,5,$demande->typelibelle(),1,0,'C');
 					$pdf->Cell(25,5,$demande->date_demande(),1,0,'C');
@@ -851,17 +851,18 @@ class agent {
 			foreach ($liste as $key => $demande)
 			{
 				//echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
-				if (($demande->statut() == "a" and $mode == "agent") or ($demande->statut() == "v" and $mode == "resp"))
+				//if (($demande->statut() == "a" and $mode == "agent") or ($demande->statut() == "v" and $mode == "resp"))
+				if ((strcasecmp($demande->statut(),"a")==0 and strcasecmp($mode,"agent")==0) or (strcasecmp($demande->statut(),"v")==0 and strcasecmp($mode,"resp")==0))
 				{
 					if ($premieredemande)
 					{
 						$htmltext = $htmltext .       "<table class='tableausimple'>";
 						$htmltext = $htmltext .    "   <tr ><td class='titresimple' colspan=7 align=center ><font color=#BF3021>Gestion des demandes pour " . $this->civilite() . " " .  $this->nom() . " " . $this->prenom() .  "</font></td></tr>";
 						$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td>";
-						if ($demande->statut() == "a" and $mode == "agent")
+						if (strcasecmp($demande->statut(),"a")==0 and strcasecmp($mode,"agent")==0)
 							$htmltext = $htmltext . "<td class='cellulesimple'>Commentaire</td>";
 						$htmltext = $htmltext . "<td class='cellulesimple'>Annuler</td>";
-						if ($demande->statut() == "v" and $mode == "resp")
+						if (strcasecmp($demande->statut(),"v")==0 and strcasecmp($mode,"resp")==0)
 							$htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
 						$htmltext = $htmltext . "</tr>";
 						$premieredemande = FALSE;
@@ -874,11 +875,11 @@ class agent {
 					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
 					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
 					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
-					if ($demande->statut() == "a" and $mode == "agent")
+					if (strcasecmp($demande->statut(),"a")==0 and strcasecmp($mode,"agent")==0)
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
-					$htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name='" . $cleelement  . "_cancel_" . $demande->id() . "' value='cancel' /></td>";
-					if ($demande->statut() == "v" and $mode == "resp")
-						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='" . $cleelement .  "_motif_" . $demande->id() . "' id='" . $cleelement .  "_motif_" . $demande->id() . "' value='" . $demande->motifrefus()  . "'  size=40></td>";
+					$htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] value='yes' /></td>";
+					if (strcasecmp($demande->statut(),"v")==0 and strcasecmp($mode,"resp")==0)
+						$htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus()  . "'  size=40></td>";
 					$htmltext = $htmltext . "</tr>";
 				}
 				//echo "demandeslistehtmlpourgestion => On passe au suivant <br>";
@@ -909,7 +910,7 @@ class agent {
 					foreach ($declarationTPliste as $key => $declarationTP) 
 					{
 						//echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ")  Debut = " . $declarationTP->datedebut() . "   Fin = " . $declarationTP->datefin() . "<br>";
-						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
+						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($debut_interval, $fin_interval)); echo "<br>";
 						//$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
 						$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($debut_interval, $fin_interval));
 					}
@@ -952,7 +953,7 @@ class agent {
 			$premieredemande = TRUE;
 			foreach ($liste as $key => $demande)
 			{
-				if ($demande->statut() == "a")
+				if (strcasecmp($demande->statut(),"a")==0)
 				{
 					$todisplay = true;
 					// On n'affiche pas les demandes du responsable !!!!

@@ -30,7 +30,7 @@
 	
 	$previous = 0;
 	if (isset($_POST["previous"]))
-		if ($_POST["previous"] == "yes" )
+		if (strcasecmp($_POST["previous"],"yes")==0)
 			$previous = 1;
 		else 
 			$previous = 0;
@@ -84,14 +84,14 @@
 	}
 		
 	
-	if ($_POST["userpdf"] == "yes")
+	if (strcasecmp($_POST["userpdf"],"yes")==0)
 	{
 		$agentid = $_POST["agentid"];
 		$planning = new planning($dbcon);
 		$planning->pdf($agentid, $fonctions->formatdate($anneeref . $fonctions->debutperiode()),$fonctions->formatdate(($anneeref+1) . $fonctions->finperiode()));
 	}
 
-	if ($_POST["structpdf"] == "yes")
+	if (strcasecmp($_POST["structpdf"],"yes")==0)
 	{
 		$structid = $_POST["structid"];
 		$mois_annee = $_POST["mois_annee"];

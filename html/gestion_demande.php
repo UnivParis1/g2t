@@ -107,54 +107,51 @@
 		$previoustxt = $_POST["previous"];
 	else 
 		$previoustxt = null;
-	if ($previoustxt == "yes")
+	if (strcasecmp($previoustxt,"yes")==0)
 		$previous=1;
 	else
 		$previous=0;
 	
 	//echo "Avant le include <br>";
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	echo '<html><body class="bodyhtml"><br>';
 
-	//print_r($_POST); echo "<br>";
+	echo "POST = "; print_r($_POST); echo "<br>";
 	
-	foreach ($_POST as $key => $value)
+	$cancelarray = array();
+	if (isset($_POST["cancel"]))
+		$cancelarray = $_POST["cancel"];
+	
+	foreach ($cancelarray as $demandeid => $value)
 	{
-		//echo "key = $key     value = $value <br>";
-		//echo "Substr => "  . substr($key, 0, strlen("statut_")) . "<br>";
-		$position = strpos($key, "_cancel_");
-		if ($position !==FALSE)
+		//echo "demandeid = $demandeid     value = $value <br>";
+		if (strcasecmp($value,"yes")==0)
 		{
-			if ($value == "cancel")
+			$motif = "";
+			if (isset($_POST["motif"][$demandeid]))
+				$motif = $_POST["motif"][$demandeid];
+			echo "Motif = $motif";
+			$demande = new demande($dbcon);
+			//echo "cleelement = $cleelement  demandeid = $demandeid  <br>";
+			$demande->load($demandeid);
+			$demande->motifrefus($motif);
+			if (strcasecmp($demande->statut(),"v")==0 and $motif == "")
+				echo "<p style='color: red'>Le motif du refus est obligatoire !!!! </p><br>";
+			else
 			{
-				$cleelement = substr($key,0,$position);
-				$position = $position + strlen("_cancel_");
-				$demandeid = substr($key,$position);    //str_replace("statut_", "", $key);
-				if (isset($_POST[$cleelement . "_motif_" . $demandeid]))
-					$motif = $_POST[$cleelement . "_motif_" . $demandeid];
-				else
-					$motif = "";
-				$demande = new demande($dbcon);
-				//echo "cleelement = $cleelement  demandeid = $demandeid  <br>";
-				$demande->load($demandeid);
-				$demande->motifrefus($motif);
-				if ($demande->statut() == "v" and $motif == "")
-					echo "<p style='color: red'>Le motif du refus est obligatoire !!!! </p><br>";
+				$demande->statut("R");
+				$msgerreur = "";
+				$msgerreur = $demande->store();
+				if ($msgerreur != "")
+					echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
 				else
 				{
-					$demande->statut("r");
-					$msgerreur = $demande->store();
-					if ($msgerreur != "")
-						echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
-					else
-					{
-						$pdffilename = $demande->pdf($user->harpegeid());
-						$agent = $demande->agent();
-						$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
-						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
-						echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
-					}
+					$pdffilename = $demande->pdf($user->harpegeid());
+					$agent = $demande->agent();
+					$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
+					//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
+					error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
+					echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
 				}
 			}
 		}
@@ -166,7 +163,7 @@
 	// Si on est dans le mode "previous" alors on dit que la date de fin est l'année courante
 	if ($previous == 1)
 		$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-	elseif ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
+	elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 		$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
 	else
 		$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());

@@ -66,7 +66,7 @@
 	{
 		foreach ($statutliste as $declarationid => $statut)
 		{
-			if ($statut != "a" and $statut != "")
+			if (strcasecmp($statut,"a")!=0 and $statut != "")
 			{
 				$declaration = new declarationTP($dbcon);
 				//echo "Avant le load... <br>";
@@ -140,12 +140,12 @@
 */
 	
 	$structlist = null;
-	if ($mode == "resp")
+	if (strcasecmp($mode,"resp")==0)
 	{
 		$structlist = $user->structrespliste();
 	}
 	
-	if ($mode == "gestion")
+	if (strcasecmp($mode,"gestion")==0)
 	{
 		$structlist = $user->structgestliste();
 	}
@@ -171,7 +171,7 @@
 						{
 							foreach ($declaTPliste as $declaration)
 							{
-								if ($declaration->statut() != "r")
+								if (strcasecmp($declaration->statut(),"r")!=0)
 									echo $declaration->html(TRUE,$structure->id());
 							}
 						}

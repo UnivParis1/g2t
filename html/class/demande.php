@@ -247,7 +247,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				echo "Demande->statut : La demande n'est pas enregistrée, donc pas de statut !!! <br>";
 			else
 			{
-				if ($this->statut == 'v' or $this->statut == 'a' or $this->statut == 'r')
+				if (strcasecmp($this->statut,'v')==0 or (strcasecmp($this->statut,'a')==0 or strcasecmp($this->statut,'r')==0))
 					return $this->statut;
 				else
 					echo "Demande->statut : le statut n'est pas connu [statut = $this->statut] !!! <br>";
@@ -255,7 +255,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		}
 		else
 		{
-			if ($this->statut == 'a' or ($this->statut == 'v' and $statut=='r'))
+			if (strcasecmp($this->statut,'a')==0 or (strcasecmp($this->statut,'v')==0 and strcasecmp($statut,'r')==0))
 			{
 				$this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
 				$this->statut = $statut;
@@ -462,7 +462,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		else
 		{
 		
-			if ($this->ancienstatut == "r")
+			if (strcasecmp($this->ancienstatut,"r")==0)
 			{
 				return "Impossible de changer le statut d'une demande 'refusée'!! <br>";
 			}
@@ -478,7 +478,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	 			$erreur=mysql_error();
 	 			if ($erreur != "")
 	 				echo "Demande->store : " . $erreur . "<br>";
-	 			if ($this->ancienstatut <> "r" and $this->statut == "r")
+	 			if (strcasecmp($this->ancienstatut,"r")!=0 and strcasecmp($this->statut,"r")==0)
 	 			{
 	 				// On recrédite le nombre de jours dans les congés....
 	 				$sql = "UPDATE SOLDE

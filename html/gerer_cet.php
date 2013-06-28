@@ -227,7 +227,7 @@
 		
 	if (is_null($agent))
 	{
-		if ($mode == "gest")
+		if (strcasecmp($mode,"gest")==0)
 			$structureliste=$user->structgestliste();
 		else
 			$structureliste=$user->structrespliste();
@@ -269,13 +269,13 @@
 
 			// On mémorise le nombre de jours pris sur le conges annuels annXX
 			// On s'en sert pour savoir combien de jour on peut mettre sur le CET....
-			if ($solde->typeabsenceid() == "ann" . substr(($fonctions->anneeref()-1),2,2))
+			if (strcasecmp($solde->typeabsenceid(),"ann" . substr(($fonctions->anneeref()-1),2,2))==0)
 			{
 				$nbrejoursprisannuel = $solde->droitpris();
 			}
 				
 			// On exclu le CET du nombre de jour pris
-			if ($solde->typeabsenceid() != "cet")
+			if (strcasecmp($solde->typeabsenceid(),"cet")!=0)
 				$nbrejourspris = $nbrejourspris + $solde->droitpris();
 		}
 		//$nbrejourspris = ($nbrejourspris/2);

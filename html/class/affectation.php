@@ -237,7 +237,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			{
 		 		foreach ($declarationliste as $key => $declaration)
 		 		{
-		 			if ($declaration->statut() != "r")
+		 			if (strcasecmp($declaration->statut(),"r")!=0)
 			 			$htmltext = $htmltext . $declaration->html($pour_modif); 
 		 		}
 			}

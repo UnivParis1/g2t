@@ -481,7 +481,7 @@ class structure {
 			{
 				list($col_part1,$col_part2,$col_part3)=$this->fonctions->html2rgb($element->couleur());
 				$pdf->SetFillColor($col_part1,$col_part2,$col_part3);
-				if ($element->moment() != "m")
+				if (strcasecmp($element->moment(),"m")!=0)
 					$pdf->Cell(3,5,"",'TBR',0,'C',1);
 				else
 					$pdf->Cell(3,5,"",'TBL',0,'C',1);

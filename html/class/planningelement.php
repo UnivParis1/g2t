@@ -76,9 +76,9 @@ class planningelement {
 			else
 				return $this->info;
 		}
-		elseif ($this->statut <> "a" )
+		elseif (strcasecmp($this->statut,"a")!=0)
 			$this->info = $info;
-		elseif ($this->statut == "a" )
+		elseif (strcasecmp($this->statut,"a")==0)
 			$this->info = $this->info . "  " . $info;
 		else 
 		{
@@ -104,9 +104,9 @@ class planningelement {
 	{
 		if ($this->typeelement == "")
 			return self::COULEUR_VIDE;
-		elseif ($this->typeelement == "nondec")
+		elseif (strcasecmp($this->typeelement,"nondec")==0)
 		   return self::COULEUR_NON_DECL;
-		elseif ($this->typeelement == "WE")
+		elseif (strcasecmp($this->typeelement,"WE")==0)
 		   return self::COULEUR_WE;
 		$sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
 		$query=mysql_query ($sql, $this->dbconnect);
@@ -131,7 +131,7 @@ class planningelement {
 		else
 		{
 			$this->statut = $statut;
-		   if ($this->statut == "a")
+		   if (strcasecmp($this->statut,"a")==0)
 		   {
 				$this->type("atten");
 				$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";

@@ -75,6 +75,14 @@
 <script type="text/javascript" src="https://esup-data.univ-paris1.fr/esup/outils/postMessage-resize-iframe-in-parent.js">
 </script>
 
+   <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/jquery-ui.css" type="text/css" media="all">
+   <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/ui.theme.css" type="text/css" media="all">
+   <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/autocompleteUser.css" type="text/css" media="all">
+   <script src="https://wsgroups.univ-paris1.fr/web-widget/jquery-1.7.2.min.js"></script>
+   <script src="https://wsgroups.univ-paris1.fr/web-widget/jquery-ui-1.8.21.custom.min.js"></script>
+   <script src="https://wsgroups.univ-paris1.fr/web-widget/autocompleteUser.js"></script>
+
+
 <link rel="stylesheet" type="text/css" href="style/style.css" media="screen">
 <link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen">
 </head> 

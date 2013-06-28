@@ -53,7 +53,7 @@
 
 	echo "<br>Planning de l'agent " . $user->civilite() . " "  . $user->nom() . " " . $user->prenom() . " <br>";
 	
-	if ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
+	if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 	{
 		$datetemp = ($fonctions->anneeref()+1) . $fonctions->finperiode();
 		$timestamp = strtotime($datetemp);

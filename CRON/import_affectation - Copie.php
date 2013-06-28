@@ -138,7 +138,7 @@
 							foreach ($declarationliste as $declaration)
 							{
 								$msg = "";
-								if ($declaration->statut() != "r")
+								if (strcasecmp($declaration->statut(),"r")!=0)
 								{
 									$declaration->statut("r");
 									$msg = $declaration->store();
@@ -204,7 +204,7 @@
 							foreach ($declarationliste as $declaration)
 							{
 								$msg = "";
-								if ($declaration->statut() != "r")
+								if (strcasecmp($declaration->statut(),"r")!=0)
 								{
 									$declaration->statut("r");
 									$msg = $declaration->store();
@@ -224,7 +224,7 @@
 							foreach ($declarationliste as $declaration)
 							{
 								$msg = "";
-								if ($declaration->statut() != "r")
+								if (strcasecmp($declaration->statut(),"r")!=0)
 								{
 									$declaration->statut("r");
 									$msg = $declaration->store();

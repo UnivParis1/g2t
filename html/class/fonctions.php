@@ -460,8 +460,10 @@ class fonctions {
  	{
 		if (strcasecmp($statut,'v') == 0)
 			return "Validée";
-		elseif (strcasecmp($statut,'r') == 0)
+		elseif (strcmp($statut,'r') == 0)
 			return "Refusée";
+		elseif (strcmp($statut,'R') == 0)
+			return "Annulée";
 		elseif (strcasecmp($statut,'a') == 0)
 			return "En attente";
 		else

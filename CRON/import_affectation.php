@@ -152,7 +152,7 @@
 								foreach ($declarationliste as $declaration)
 								{
 									$msg = "";
-									if ($declaration->statut() != "r")
+									if (strcasecmp($declaration->statut(),"r")!=0)
 									{
 										$declaration->statut("r");
 										$msg = $declaration->store();
@@ -204,7 +204,7 @@
 								{
 									foreach ($declarationliste as $declarationTP)
 									{
-										if ($declarationTP->statut() != "r")
+										if (strcasecmp($declarationTP->statut(),"r")!=0)
 										{
 											$declarationTP->datedebut($datedebut);
 											if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000")) 
@@ -234,7 +234,7 @@
 									foreach ($declarationliste as $declaration)
 									{
 										$msg = "";
-										if ($declaration->statut() != "r")
+										if (strcasecmp($declaration->statut(),"r")!=0)
 										{
 											// Si la nvlle date de debut est apres la date de fin => On annule la declaration
 											if ($fonctions->formatdatedb($datedebut) > $fonctions->formatdatedb($declaration->datefin()))
@@ -260,7 +260,7 @@
 									{
 										echo "Declaration en cours => "; print_r($declaration); echo " \n";
 										$msg = "";
-										if ($declaration->statut() != "r")
+										if (strcasestr($declaration->statut(),"r")!=0)
 										{
 											// Si la nvlle date de fin est avant la date de début => On annule la declaration
 											if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($declaration->datedebut()))

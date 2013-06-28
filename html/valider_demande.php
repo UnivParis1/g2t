@@ -108,7 +108,7 @@
 	{
 		foreach ($statutliste as $demandeid => $statut)
 		{
-			if ($statut != "a")
+			if (strcasecmp($statut,"a")!=0)
 			{
 				$motif = $motifliste["$demandeid"];
 				$demande = new demande($dbcon);
@@ -117,7 +117,7 @@
 				if ($statut == 'r')
 					$demande->motifrefus($motif);
 				$demande->statut($statut);
-				if ($statut == "r" and $motif == "")
+				if (strcasecmp($statut,"r")==0 and $motif == "")
 					echo "<p style='color: red'>Le motif du refus est obligatoire !!!! </p><br>";
 				else
 				{
@@ -138,7 +138,7 @@
 		} 
 	}
 	
-	if ($user->estresponsable() and ($mode == "resp"))
+	if ($user->estresponsable() and (strcasecmp($mode,"resp")==0))
 	{
 		$listestruct = $user->structrespliste();
 		//print_r($listestruct); echo "<br>";
@@ -199,12 +199,12 @@
 		echo "<input type='submit' value='Valider' />";
 		echo "</form>";
 	}
-	elseif (!$user->estresponsable() and ($mode == "resp"))
+	elseif (!$user->estresponsable() and (strcasecmp($mode,"resp")==0))
 	{
 		echo "Vous n'êtes pas responsable, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
 	}
 
-	if ($user->estgestionnaire() and ($mode == "gestion"))
+	if ($user->estgestionnaire() and (strcasecmp($mode,"gestion")==0))
 	{
 		echo "<form name='frm_validation_conge'  method='post' >";
 		$listestruct = $user->structgestliste();
@@ -223,7 +223,7 @@
 					$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
 				// Si on ne limite pas les congès a la date de fin de la période, il faut prendre plus large que la fin de période
 				// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
-				elseif ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
+				elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 					$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
 				else
 					$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
@@ -232,7 +232,11 @@
 				//echo "Membre = " . $membre->nom() . "<br>";
 				
 				//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
-				$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				// -------------------------------------------------------------
+				// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
+				//$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, null,$structure->id(), $cleelement);
+				// -------------------------------------------------------------
 				//echo "htmltodisplay = $htmltodisplay <br>";
 				if ($htmltodisplay != "")
 				{
@@ -291,7 +295,7 @@
 		echo "<input type='submit' value='Valider' />";
 		echo "</form>";
 	}
-	elseif (!$user->estgestionnaire() and ($mode == "gestion"))
+	elseif (!$user->estgestionnaire() and (strcasecmp($mode,"gestion")==0))
 	{
 		echo "Vous n'êtes pas gestionnaire, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
 	}

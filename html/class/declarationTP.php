@@ -270,7 +270,7 @@ WHERE DECLARATIONID=" . $id;
 			$semaineindex = 1;
 		}
 		
-		if ($moment == "m")
+		if (strcasecmp($moment,"m")==0)
 			$momentindex = 0;
 		else 
 			$momentindex = 1;
@@ -385,7 +385,7 @@ WHERE DECLARATIONID=" . $id;
 				{
 					foreach ($demandeliste as $key => $demande)
 					{
-						if ($demande->statut() != "r")
+						if (strcasecmp($demande->statut(),"r")!=0)
 						{
 							$demande->statut("r");
 							$demande->motifrefus("Modification de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
@@ -397,7 +397,7 @@ WHERE DECLARATIONID=" . $id;
 					}
 				}
 			}
-			if ($this->statut == "r")
+			if (strcasecmp($this->statut,"r")==0)
 			{
 				//echo "###############################<br>";
 				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associées à cette déclaration de TP #######<br>";
@@ -407,7 +407,7 @@ WHERE DECLARATIONID=" . $id;
 				{
 					foreach ($demandeliste as $key => $demande)
 					{
-						if ($demande->statut() != "r")
+						if (strcasecmp($demande->statut(),"r")!=0)
 						{
 							$demande->statut("r");
 							$demande->motifrefus("Annulation de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
@@ -440,13 +440,13 @@ WHERE DECLARATIONID=" . $id;
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedebut() . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datefin() . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >";
-		if ($pourmodif and $this->statut() == "a")
+		if ($pourmodif and strcasecmp($this->statut(),"a")==0)
 		{
 			// Affichager les selections !!!!
 			$htmltext = $htmltext . "<select name='statut[" . $this->declarationTPid() . "]'>";
-			$htmltext = $htmltext . "<option value='a'"; if ($this->statut() == "a") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('a') . "</option>";
-			$htmltext = $htmltext . "<option value='v'"; if ($this->statut() == "v") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('v') . "</option>";
-			$htmltext = $htmltext . "<option value='r"; if ($this->statut() == "r") $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle('r') . "</option>";
+			$htmltext = $htmltext . "<option value='a'"; if (strcasecmp($this->statut(),"a")==0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('a') . "</option>";
+			$htmltext = $htmltext . "<option value='v'"; if (strcasecmp($this->statut(),"v")==0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('v') . "</option>";
+			$htmltext = $htmltext . "<option value='r"; if (strcasecmp($this->statut(),"r")==0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle('r') . "</option>";
 			$htmltext = $htmltext . "</select>";
 		}
 		else

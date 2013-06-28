@@ -93,7 +93,7 @@
 	echo "<input type='submit' value='Valider' /></center>";
 	echo "</form>";
 
-	if ($mode == "resp")
+	if (strcasecmp($mode,"resp")==0)
 	{ 
 		$structureliste = $user->structrespliste();
 		foreach ($structureliste as $structkey => $structure)
@@ -112,7 +112,7 @@
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
 	}
-	elseif ($mode == "gestion")
+	elseif (strcasecmp($mode,"gestion")==0)
 	{
 		$structureliste = $user->structgestliste();
 		foreach ($structureliste as $structkey => $structure)
