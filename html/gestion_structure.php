@@ -50,7 +50,7 @@
 	$user->load($userid);
 
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 		
 	if (isset($_POST["structureid"]))
 		$structureid = $_POST["structureid"];

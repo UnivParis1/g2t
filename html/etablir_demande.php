@@ -264,7 +264,7 @@
     <?php	
 		
 
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	
 	################################################################
 	## Affichage

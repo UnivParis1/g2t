@@ -51,7 +51,7 @@
 	$mode = $_POST["mode"];
 	
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 
 	//echo "SESSION = "; print_r($_SESSION); echo "<br>";

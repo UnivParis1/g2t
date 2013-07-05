@@ -114,9 +114,9 @@
 	
 	//echo "Avant le include <br>";
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml"><br>';
+	//echo '<html><body class="bodyhtml"><br>';
 
-	echo "POST = "; print_r($_POST); echo "<br>";
+	//echo "POST = "; print_r($_POST); echo "<br>";
 	
 	$cancelarray = array();
 	if (isset($_POST["cancel"]))

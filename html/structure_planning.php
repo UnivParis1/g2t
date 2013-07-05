@@ -52,7 +52,7 @@
 	
 	require ("includes/menu.php");
 	
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	if (isset($_POST["indexmois"]))
 		$indexmois = $_POST["indexmois"];

@@ -80,7 +80,7 @@
 	}
 
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	
 	//echo "Date du jour = " . date("d/m/Y") . "<br>";
 	$affectationliste = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));

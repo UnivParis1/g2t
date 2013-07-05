@@ -76,7 +76,7 @@
 		});
 	</script>
 <?php	
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 
 	// Récupération de l'affectation correspondant à la déclaration TP en cours
 	$affectation = null;

@@ -82,7 +82,7 @@
 // 		$agent->load($agentid);
 	
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
 	// Récupération du mode => resp ou gestion

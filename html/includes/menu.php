@@ -87,7 +87,7 @@
 <link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen">
 </head> 
 
-<body> 
+<body class="bodyhtml"> 
 
 <?php 
 	if ($user->harpegeid() != $_SESSION['phpCAS']['harpegeid'])
@@ -465,12 +465,3 @@
 <br>
 <br>
 <br>
-</body> 
-</html>
-
-
-
-
-
-
-

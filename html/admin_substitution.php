@@ -76,7 +76,7 @@
 	
 
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 
 //	echo "<br>Planning de l'agent " . $user->civilite() . " "  . $user->nom() . " " . $user->prenom() . " <br>";
 	
@@ -93,9 +93,9 @@
    </script>
 
 
-<!-- 
+<br> 
 <input type='text' name='userid' >
- -->
+
 <input type='submit' value='Se faire passer pour...'>
 </form>
 

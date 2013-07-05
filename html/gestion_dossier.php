@@ -70,7 +70,7 @@
 	</script>
 <?php	
 		
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
 	//print_r ( $_POST); echo "<br>";

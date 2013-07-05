@@ -49,7 +49,7 @@
 	$user->load($userid);
 
 	require ("includes/menu.php");
-	echo '<html><body class="bodyhtml">';
+	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
 	$mode = $_POST["mode"];
