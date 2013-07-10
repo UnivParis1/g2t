@@ -174,7 +174,9 @@ class structure {
 			//echo "Apres le new et avant le load =" . $result[0]  . "<br>";
 			$agent->load("$result[0]");
 			//echo "Apres le load...<br>";
+			// La clé est NOM + PRENOM + HARPEGEID => permet de trier les tableaux par ordre alphabétique
 			$agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->harpegeid()] = $agent;
+///			$agentliste[$agent->harpegeid()] = $agent;
 			//echo "Apres la mise dans le tableau <br>";
 			unset($agent);
 		}
@@ -328,7 +330,7 @@ class structure {
 		return $htmltext;
 	}
 	
-	function dossierhtml($pourmodif = FALSE, $userid = NULL)
+	function dossierhtml($pourmodif = FALSE, $responsableid = NULL)
 	{
 		
 		//echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
@@ -339,10 +341,32 @@ class structure {
 		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
 		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
 		$agentliste = $this->agentlist(date('d/m/Y'),date('d/m/Y') , 'n');
+		
+		// Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
+		if (!is_null($responsableid))
+		{
+			// On ajoute les responsables de structures filles
+			$structureliste = $this->structurefille();
+			$responsableliste = array();
+			if (is_array($structureliste))
+			{
+				foreach ($structureliste as $key => $structure)
+				{
+					$responsable = $structure->responsable();
+					
+					// La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
+					$responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+					///$responsableliste[$responsable->harpegeid()] = $responsable;
+				}
+			}
+			$agentliste = array_merge($agentliste,$responsableliste);
+			ksort($agentliste);
+		}
+		
 		foreach ($agentliste as $key => $membre)
 		{
 			//echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
-			if ($membre->harpegeid() != $userid)
+			if ($membre->harpegeid() != $responsableid)
 			{
 				$htmltext = $htmltext . "<tr>";
 				$htmltext = $htmltext . "<center><td class='cellulesimple' style='text-align:center;'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";

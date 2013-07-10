@@ -1,4 +1,4 @@
-set PHPDIR=d:\php\bin
+set PHPDIR=d:\php
 
 del .\log\trace_cron.log
 del .\log\trace_cron_error.log

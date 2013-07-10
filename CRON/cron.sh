@@ -14,8 +14,5 @@ php mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.l
 php mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 
 
-## php p1_specific_update.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-## php artt_batch_mail_autodcl.php  >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-## php artt_batch_mail_conge.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 echo `date`  fin de traitement >>./log/trace_cron_$mydate.log
 

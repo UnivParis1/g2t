@@ -335,7 +335,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="resp">
 						</form>
-						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et de la structure</a>
+						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
 					</li>	
 				</ul> 
 			</li> 
@@ -383,7 +383,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers</a>
+						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
 					</li>				
 
 					<li onclick='document.gest_valid_tpspartiel.submit();'>

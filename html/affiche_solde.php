@@ -71,7 +71,8 @@
 		{
 			echo "<br>";
 			echo "Solde des agents de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
+			$annerecherche = date("Y") - $previous;
+			$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
 			
 			echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 			echo "<input type='hidden' name='userpdf' value='no'>";
