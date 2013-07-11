@@ -231,7 +231,7 @@ class cet {
 		
 		$pdf=new FPDF();
 		//echo "Apres le new <br>";
-		define('FPDF_FONTPATH','fpdffont/');
+		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('images/logo_papeterie.png',70,25,60,20);

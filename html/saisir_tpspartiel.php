@@ -470,7 +470,7 @@
 		}	
 		else
 		{
-			echo "<b><br>C'est moche => Présentation à revoir !!! </b><br><br>";
+//			echo "<b><br>C'est moche => Présentation à revoir !!! </b><br><br>";
 
 
 			echo "<br>";
@@ -483,7 +483,7 @@
 			{
 				echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
 				echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() ."'>";
-				echo $affectation->html(true,false);
+				echo $affectation->html(true,false,$mode);
 
 				echo "<br>Nouvelle déclaration de temps partiel<br>";
 				echo "<table>";
@@ -524,123 +524,6 @@
 				
 				echo "</form>";
 			}
-			
-			
-/*
-			echo $agent->dossierhtml();
-			echo "<br>";
-			if ($msg_erreur <> "")
-				echo "<P style='color: red'>" . $msg_erreur . " </P>";
-			
-			$autodeclalistvalide=$agent->autodeclarationssurperiode($dossier->datedebut(),$dossier->datefin(),'v');
-			$autodeclalistattente=$agent->autodeclarationssurperiode($dossier->datedebut(),$dossier->datefin(),'a');
-			$autodeclalist=array_merge((array)$autodeclalistvalide,(array)$autodeclalistattente);
-			if (!is_null($autodeclalist))
-			{
-				echo "<table class='tableausimple'>";
-				echo "<tr><td class='titresimple' style='background-color:#E5EAE9;'>";
-				echo "ATTENTION : Il exite déja une autodéclaration !!!<BR>";
-				echo "Si des congés ont été posé avec une quotité différente, alors ils seront supprimés. Un récapitulatif vous sera envoyé afin que vous puissiez redéclarer vos congés avec la bonne quotité.<br>";
-				echo "</td></tr>";
-				echo "</table>";
-				echo "<br>";
-				echo "<table class='tableausimple' >";
-				echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Jours de RTT</td></tr>";
-				foreach ($autodeclalist as $keyautodecla => $autodecla)
-				{
-					if ($autodecla != "")
-						echo $autodecla->html(FALSE);
-				}
-				echo "</table>";
-				echo "<br>";
-				
-			}
-			
-			echo "<form name='frm_etabl_autodecla'  method='post' >";
-
-			echo "<table>";
-			echo "<tr>";
-			echo"<td>Date de début de la période :</td>";
-			echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut size=10 ></td>";
-			echo "</tr>";
-			echo "<tr>";
-			echo "<td>Date de fin de la période :</td>";
-			echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin size=10 ></td>";
-			echo "</tr>";
-			echo "</table>";
-		
-//			echo "Date de début de la période : ";
-//			echo "<input class='calendrier' type=text name=date_debut id=date_debut size=10 ><br>";
-//			echo "<br>";
-//			echo "Date de fin de la période :" ;
-//			echo "<input class='calendrier' type=text name=date_fin id=date_fin size=10 ><br>";
-//			echo "<br>";
-			
-			
-			if ($agent->quotite() != "100%")
-			{
-				$equation = $agent->quotite();
-				$equation = preg_replace("/[^0-9+\-.*\/()%]/","",$equation);       
-				$equation = preg_replace("/([+-])([0-9]+)(%)/","*(1\$1.\$2)",$equation);
-				// you could use str_replace on this next line
-				// if you really, really want to fine-tune this equation
-				$equation = preg_replace("/([0-9]+)(%)/",".\$1",$equation);
-				if ( $equation == "" )
-					$return = 0;
-				else
-					eval("\$return=" . $equation . ";" );
-				$nbredemiTP = (10 - ($return * 10));
-				//echo "nbredemiTP = " . $nbredemiTP . "<br>";
-				echo "<br>Vous devez poser des jours de temps partiel (Nombre de demie-journées par semaine = $nbredemiTP )<br>";
-				echo "<table class='tableausimple'>";
-				echo "<tr><td class='cellulesimple' colspan=2 ><center>Semaine impaire : </center></td></tr>";
-				for ($index = 1; $index <= 7 ; $index++)
-				{
-					$nomjour = $fonctions->nomjourparindex($index);
-					echo "<tr>";
-					$moment = "matin";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . $index   . "]' value='" . $index .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>"; 
-					$moment = "après-midi";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . ($index + 7)   . "]' value='" . $index .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>";
-					echo "</tr>";
-				}
-				echo "</table>";
-				echo "<br>";
-				echo "<table class='tableausimple'>";
-				echo "<tr><td colspan=2 ><center>Semaine paire :</center></td></tr>";
-				for ($index = 15; $index <= 21 ; $index++)
-				{
-					$nomjour = $fonctions->nomjourparindex($index);
-					echo "<tr>";
-					$moment = "matin";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . $index   . "]' value='" . ($index - 14) .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>";
-					$moment = "après-midi";
-					echo "<td class='cellulesimple' ><input type='checkbox' name='checkbox_id[" . ($index + 7)   . "]' value='" . ($index - 14) .  substr($moment,0,1) . "' >" . $nomjour . " " . $moment . "</td>";
-					echo "</tr>";
-				}
-				echo "</table>";
-
-				//echo "Mode = $mode <br>";
-				if ($mode == "resp")
-				{
-					echo "<br>";	
-					echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel... <br>";
-					echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
-					echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est à utiliser avec prudence... Il convient de vérifier manuellement que la répartion est correcte.<br>";
-				}
-			}
-
-//			echo "<br>";
-//			echo "Valider le dossier et enregistrer l'autodéclaration ";
-			echo "<br>";
-			echo "<input type='hidden' name='userid' value='" . $userid ."'>";
-			echo "<input type='hidden' name='agentid' value='" . $agentid ."'>";
-			echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP ."'>";
-			echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-			echo "<input type='submit' value='Valider' />";
-			
-			echo "</form>";
-	*/			
 		}
 	}
 

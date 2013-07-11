@@ -208,7 +208,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 	}
 	
 	
-	function html($affiche_declaTP = false, $pour_modif = false)
+	function html($affiche_declaTP = false, $pour_modif = false, $mode = "agent")
 	{
 		$agent= new agent($this->dbconnect);
 		$agent->load($this->agentid());
@@ -237,8 +237,13 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			{
 		 		foreach ($declarationliste as $key => $declaration)
 		 		{
-		 			if (strcasecmp($declaration->statut(),"r")!=0)
-			 			$htmltext = $htmltext . $declaration->html($pour_modif); 
+		 			// Si on est en mode "resp" (responsable de service) on affiche toutes les déclarations de TP
+		 			// qui sont liés à cette affectation
+		 			if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp($mode, "resp")==0)
+		 			{
+			 			if (strcasecmp($declaration->statut(),"r")!=0)
+				 			$htmltext = $htmltext . $declaration->html($pour_modif);
+		 			} 
 		 		}
 			}
 			else

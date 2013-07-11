@@ -625,7 +625,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		
 		//echo "Apres le load <br>";
 		$pdf=new FPDF();
-		define('FPDF_FONTPATH','fpdffont/');
+		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";

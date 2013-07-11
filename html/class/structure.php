@@ -448,7 +448,7 @@ class structure {
 	{
 		//echo "Avant le new PDF <br>";
 		$pdf=new FPDF();
-		define('FPDF_FONTPATH','fpdffont/');
+		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";

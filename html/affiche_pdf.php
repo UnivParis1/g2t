@@ -55,7 +55,7 @@
 			$tablisteagent = preg_split("/,/",$listeagent);
 			//print_r($tablisteagent); echo "<br>";
 			$pdf=new FPDF();
-			define('FPDF_FONTPATH','fpdffont/');
+			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
 			foreach ($tablisteagent as $key => $agentid)
 			{
@@ -84,25 +84,31 @@
 	}
 		
 	
-	if (strcasecmp($_POST["userpdf"],"yes")==0)
+	if (isset($_POST["userpdf"]))
 	{
-		$agentid = $_POST["agentid"];
-		$planning = new planning($dbcon);
-		$planning->pdf($agentid, $fonctions->formatdate($anneeref . $fonctions->debutperiode()),$fonctions->formatdate(($anneeref+1) . $fonctions->finperiode()));
+		if (strcasecmp($_POST["userpdf"],"yes")==0)
+		{
+			$agentid = $_POST["agentid"];
+			$planning = new planning($dbcon);
+			$planning->pdf($agentid, $fonctions->formatdate($anneeref . $fonctions->debutperiode()),$fonctions->formatdate(($anneeref+1) . $fonctions->finperiode()));
+		}
 	}
 
-	if (strcasecmp($_POST["structpdf"],"yes")==0)
-	{
-		$structid = $_POST["structid"];
-		$mois_annee = $_POST["mois_annee"];
-		$structure = new structure($dbcon);
-		$structure->load($structid);
-		
-		// On décompose la date mois_annee en mois et année pour éventuellement soustraire un an
-		// Puis on la reformate
-		// Le format de la variable mois_annee est MM/YYYY (voir fonction structure::planninghtml)
-		$mois_annee = substr($mois_annee,0,3) . (substr($mois_annee,3)-$previous);
-		$structure->pdf(($mois_annee));
-	}
 	
+	if (isset($_POST["structpdf"]))
+	{
+		if (strcasecmp($_POST["structpdf"],"yes")==0)
+		{
+			$structid = $_POST["structid"];
+			$mois_annee = $_POST["mois_annee"];
+			$structure = new structure($dbcon);
+			$structure->load($structid);
+			
+			// On décompose la date mois_annee en mois et année pour éventuellement soustraire un an
+			// Puis on la reformate
+			// Le format de la variable mois_annee est MM/YYYY (voir fonction structure::planninghtml)
+			$mois_annee = substr($mois_annee,0,3) . (substr($mois_annee,3)-$previous);
+			$structure->pdf(($mois_annee));
+		}
+	}	
 ?>

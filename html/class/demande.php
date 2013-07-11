@@ -501,8 +501,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		//echo "Debut du PDF <br>";
 		$pdf=new FPDF();
 		//echo "Apres le new <br>";
-		if (!defined('FPDF_FONTPATH')) 
-			define('FPDF_FONTPATH','fpdffont/');
+		//if (!defined('FPDF_FONTPATH')) 
+		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('images/logo_papeterie.png',70,25,60,20);

@@ -466,7 +466,7 @@ class agent {
 		if (is_null($pdf))
 		{
 			$pdf=new FPDF();
-			define('FPDF_FONTPATH','fpdffont/');
+			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
 			$closeafter = TRUE;
 		}
@@ -725,7 +725,7 @@ class agent {
 		if (is_null($pdf))
 		{
 			$pdf=new FPDF();
-			define('FPDF_FONTPATH','fpdffont/');
+			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
 			$closeafter = TRUE;
 		}

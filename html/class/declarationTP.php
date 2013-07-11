@@ -498,8 +498,8 @@ WHERE DECLARATIONID=" . $id;
 		//echo "Avant le new <br>";
 		$pdf = new FPDF();
 		//echo "Avant le define <br>";
-		if (!defined('FPDF_FONTPATH'))
-			define('FPDF_FONTPATH','fpdffont/');
+		//if (!defined('FPDF_FONTPATH'))
+		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('images/logo_papeterie.png',70,25,60,20);
