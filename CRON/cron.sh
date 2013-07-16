@@ -10,6 +10,7 @@ php calcul_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.
 
 php migration_v2_v3.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 
+php p1_specific_update.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 php mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 php mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 

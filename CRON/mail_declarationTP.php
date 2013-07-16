@@ -81,7 +81,8 @@
 		$structure->load($structureid);
 		//echo "Avant le load du responsable\n";
 		$responsable = $structure->responsable();
-		//echo "Avant le sendmail \n";
+		echo "Avant le sendmail mail=" . $responsable->mail() ." Structure=" . $structureid  ." \n";
+		
 		$agentcron->sendmail($responsable,"Des demandes de temps partiel sont en attentes","Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nMerci de bien vouloir les valider dès que possible.\n",null);
 		unset ($structure);
 		unset ($responsable);

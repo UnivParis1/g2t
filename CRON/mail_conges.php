@@ -84,7 +84,8 @@
 		$structure->load($structureid);
 		//echo "Avant le load du responsable\n";
 		$responsable = $structure->responsable();
-		//echo "Avant le sendmail \n";
+		echo "Avant le sendmail mail=" . $responsable->mail() ." Structure=" . $structureid  ." \n";
+		
 		$agentcron->sendmail($responsable,"Des demandes de congés ou d'autorisations d'absence sont en attentes","Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible.\n",null);
 		unset ($structure);
 		unset ($responsable);

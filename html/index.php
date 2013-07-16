@@ -1,5 +1,5 @@
 <?php
-	require_once('./CAS/CAS.php');
+	require_once('CAS.php');
 	require_once("./class/fonctions.php");
 	require_once('./includes/dbconnection.php');
  
