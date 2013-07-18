@@ -51,7 +51,11 @@ class planning {
 			if (!is_null($declarationTP))
 			{
 				if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
+				{
 					$declarationTP = null;
+					$declarationTPliste = null;
+					//echo "La declarationTP n'est plus bonne => Je la reset et la liste des DeclarationTP aussi <br>";
+				}
 			}
 			if (!is_null($affectation))
 			{
@@ -88,11 +92,11 @@ class planning {
 					$declarationTPliste = null;
 					$declarationTP = null;
 					//$affectation = $affectationliste[0];
-					// echo "affectationliste = "; print_r($affectationliste); echo "<br>";
-					// echo "Avant chargement declarationTPliste <br>";
-					// echo "Affection = "; print_r($affectation); echo "<br>";
+					//echo "affectationliste = "; print_r($affectationliste); echo "<br>";
+					//echo "Avant chargement declarationTPliste <br>";
+					//echo "Affection = "; print_r($affectation); echo "<br>";
 					//echo "Affectionid = " . $affectation->affectationid() . "<br>";
-					// echo "datetemp= $datetemp <br>";
+					//echo "datetemp= $datetemp <br>";
 				}
 				//echo "Planning->Load : declarationTP = "; if (is_null($declarationTP)) echo "null<br>"; else echo "PAS null<br>";
 				if (!is_null($declarationTP))

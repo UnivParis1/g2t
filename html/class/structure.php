@@ -138,7 +138,7 @@ class structure {
 	function agentlist($datedebut, $datefin, $sousstrucuture = null)
 	{
 		$agentliste=null;
-		if (($this->affichesousstruct == 'o' and $sousstrucuture != 'n' ) or ($sousstrucuture == 'o'))
+		if ((strcasecmp($this->affichesousstruct,'o')==0 and strcasecmp($sousstrucuture,'n')!=0) or (strcasecmp($sousstrucuture,'o')==0))
 		{
 			$structliste = $this->structurefille();
 			if (!is_null($structliste))

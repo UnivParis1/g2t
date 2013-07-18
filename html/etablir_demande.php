@@ -189,6 +189,7 @@
 		if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == 'a' and $fin_mataprem == 'm'))
 		{
 			$msg_erreur = $msg_erreur . "Il y a une incohérence entre la date de début et la date de fin !!! <br>";
+			$datefausse = true;
 		}
 	}
 
