@@ -25,6 +25,11 @@
 	//echo "Avant le 1er while \n";
 	while ($result = mysql_fetch_row($query_agent))
 	{
+		// !!!!!!! ATTENTION : Les 2 lignes suivantes permettent de ne tester qu'un seul dossier !!!!
+		//if ($result[0]!='3008')
+		//	continue;
+		// !!!!!!! FIN du test d'un seul dossier !!!!
+		
 		$agentid=$result[0];
 		$agentinfo = $result[1] . " " . $result[2];
 
@@ -46,10 +51,15 @@
 				if ($result_aff[5]!="0") // Si c'est un contrat
 				{
 					$datedebutaff = $result_aff[1];
-					if ($result_aff[2]=='0000-00-00')
+					$datearray = date_parse($result_aff[2]);
+					$year = $datearray["year"];
+					//echo "year = $year \n";
+					// Si la fin du contrat est dans plus de 2 ans, alors on raccourci la fin de contrat pour calculer le nombre de jour
+					if (($result_aff[2]=='0000-00-00') or ($year > ($fonctions->anneeref()  +2)))
 						$datefinaff = date("Y-m-d", strtotime("+1 year"));
 					else
 						$datefinaff = $result_aff[2];
+					//echo "datedebutaff = $datedebutaff    datefinaff = $datefinaff\n";
 					//echo "Numéro de contrat pour $agentid ($agentinfo) = $result_aff[5] Durée (en jours) = " . $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff)   ."\n";
 					$nbre_total_jours += $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
 					//echo "nbre_total_jours = $nbre_total_jours pour $agentid ($agentinfo)\n";
@@ -63,7 +73,8 @@
 			}
       }
 
-		$sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid'
+		//echo "nbre_total_jours = $nbre_total_jours pour $agentid ($agentinfo)\n";
+      $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid'
 		      AND OBSOLETE='N'
 				AND (('$date_deb_period' <= DATEDEBUT AND DATEDEBUT < '$date_fin_period')
 				 OR ('$date_deb_period' < DATEFIN AND DATEFIN <= '$date_fin_period')

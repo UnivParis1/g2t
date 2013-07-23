@@ -124,7 +124,7 @@
 						$cet = new cet($dbcon);
 						$cet->agentid($agentid);
 						$cet->cumultotal($nbr_jours_cet);
-						$cet->cumulannuel($nbr_jours_cet);
+						$cet->cumulannuel($fonctions->anneeref(),$nbr_jours_cet);
 						//echo "Avant le store <br>";
 						$msg_erreur = $cet->store();
 						//echo "Apres le store <br>";
@@ -133,7 +133,7 @@
 					{
 						// La variable $msg_erreur est "" ==> Il n'y a pas eu de probleme
 						//echo "Il y a un CET <br>";
-						$cumul = ($cet->cumulannuel());
+						$cumul = ($cet->cumulannuel($fonctions->anneeref()));
 						$cumul = $cumul + $nbr_jours_cet;
 						// On ne peut pas mettre plus de 25 jours par an sur le CET.
 						// 20 jours obligatoires
@@ -143,7 +143,7 @@
 							$msg_erreur = "Le nombre de jour de cumul annuel est supérieur à 25. Vous ne pouvez pas mettre autant de jours dans le CET. <br>";
 						else
 						{
-							$cet->cumulannuel($cumul);
+							$cet->cumulannuel($fonctions->anneeref(),$cumul);
 							$cumul = ($cet->cumultotal());
 							$cumul = $cumul + $nbr_jours_cet;
 							$cet->cumultotal($cumul);
@@ -305,7 +305,7 @@
 			// Pas d'erreur lors du chargement du CET
 			echo "Le CET de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est actuellement : <br>";
 			echo "Date du début du CET : ". $cet->datedebut() . "<br>";
-			echo "Sur l'année " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", il a cumulé " . ($cet->cumulannuel()) . " jour(s) <br>";
+			echo "Sur l'année " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", il a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
 			echo "Le solde de CET est de " . (($cet->cumultotal()-$cet->jrspris())) . " jour(s)<br>";
 
 		}

@@ -66,17 +66,19 @@ class cet {
 			$this->datedebut = $this->fonctions->formatdatedb($date);
 	}
 	
-	function cumulannuel($cumulannee = null)
+	function cumulannuel($annee,$cumulannee = null)
 	{
 		if (is_null($cumulannee))
 		{
 			if (is_null($this->cumulannuel))
 				echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent n'est pas défini !!! <br>";
+			elseif (!isset($this->cumulannuel['cet'.$annee]))
+				return 0;
 			else
-				return $this->cumulannuel;
+				return $this->cumulannuel['cet'.$annee];
 		}
 		elseif (intval($cumulannee) == $cumulannee)
-			$this->cumulannuel = $cumulannee;
+			$this->cumulannuel['cet'.$annee] = $cumulannee;
 		else 
 			echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent doit être un nombre entier <br>";
 	}
@@ -119,22 +121,24 @@ class cet {
 		
 		$agent = new agent($this->dbconnect);
 		$agent->load($agentid);
-		// On charge le cumul annuel
-		$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid   . "' AND TYPEABSENCEID ='cetcu'";
+		// On charge le cumul annuel => tous les 'cet%' mais pas 'cet'
+		$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid   . "' AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
-			echo "Cet->Load (cetcu): " . $erreur . "<br>";
+			echo "Cet->Load (cet%): " . $erreur . "<br>";
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "Cet->Load (cetcu) : Le cumul annuel pour l'agent $agentid non trouvé <br>";
-			$msgerreur = $msgerreur . "Le cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvé <br>";
+			//echo "Cet->Load (cet%) : Aucun cumul annuel pour l'agent $agentid  trouvé <br>";
+			$msgerreur = $msgerreur . "Aucun cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pu être trouvé <br>";
 		}
 
-		$result = mysql_fetch_row($query);
-		$this->agentid = $result[0];
-		$this->idannuel = $result[1];
-		$this->cumulannuel = $result[2];
+		while ($result = mysql_fetch_row($query))
+		{
+			$this->agentid = $result[0];
+			$this->idannuel = $result[1];
+			$this->cumulannuel[$this->idannuel] = $result[2];
+		}
 
 		// On charge le solde du CET
 		$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid   . "' AND TYPEABSENCEID ='cet'";
@@ -178,15 +182,15 @@ class cet {
 		if (is_null($this->idannuel))
 		{
 			//echo "On va creer le solde <br>";
-			if ($solde->load($this->agentid, 'cetcu') <> "")
-				$solde->creersolde('cetcu',$this->agentid);
+			if ($solde->load($this->agentid, 'cet'.$this->fonctions->anneeref()) <> "")
+				$solde->creersolde('cet'.$this->fonctions->anneeref(),$this->agentid);
 			// On recré un nouvel objet pour eviter les effets de bord eventuels
 			unset ($solde);
 			$solde = new solde($this->dbconnect);
 		}
 		//echo "On va recharger le solde... <br>";
-		$solde->load($this->agentid, 'cetcu');
-		$solde->droitaquis($this->cumulannuel);
+		$solde->load($this->agentid, 'cet'.$this->fonctions->anneeref());
+		$solde->droitaquis($this->cumulannuel['cet'.$this->fonctions->anneeref()]);
 		//echo "On va store le solde <br>";
 		$msgerreur =  $msgerreur . $solde->store();
 		
@@ -203,7 +207,7 @@ class cet {
 			$complement = new complement($this->dbconnect);
 			$complement->harpegeid($this->agentid);
 			$complement->complementid('DEBUTCET');
-			if (!$this->fonctions->verifiedate($this->datedebut()))
+			if (!$this->fonctions->verifiedate($this->datedebut))
 			{
 				//echo "CET->Store : Date début n'est pas une date => " . $this->datedebut() . "<br>";
 				$this->datedebut = date("Ymd");
@@ -267,7 +271,7 @@ class cet {
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())) . ' jour(s).');
 			$pdf->Ln(10);
-			$pdf->Cell(40,10,'Cette année, vous avez ajouté ' . ($this->cumulannuel()) . ' jour(s).');
+			$pdf->Cell(40,10,'Cette année, vous avez ajouté ' . ($this->cumulannuel($this->fonctions->anneeref())) . ' jour(s).');
 		}
 		else
 		{
