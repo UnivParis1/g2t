@@ -1,9 +1,22 @@
 <?php
 
+/**
+  * Fonctions
+  * Library of usefull functions
+  * 
+  * @package     G2T
+  * @category    classes
+  * @author     Pascal COMTE
+  * @version    none
+  */
 class fonctions {
 
 	private $dbconnect = null;
 
+   /**
+         * @param object $db the mysql connection
+         * @return 
+   */
 	function __construct($db)
 	{
 		$this->dbconnect = $db;
@@ -14,6 +27,11 @@ class fonctions {
 	}
 
 
+   /**
+         * @param string $date the date to convert into DB format (YYYYMMDD)
+         * Allowed format : DD/MM/YYYY or YYYY-MM-DD or YYYYMMDD
+         * @return string the converted date
+   */
 	public function formatdatedb($date)
 	{
 		if (is_null($date))
@@ -44,6 +62,11 @@ class fonctions {
 		}
 	}
 
+   /**
+         * @param string $date the date to convert into french format (DD/MM/YYYY)
+         * Allowed format : DD/MM/YYYY or YYYY-MM-DD or YYYYMMDD
+         * @return string the converted date
+   */
 	public function formatdate($date)
 	{
 		if (is_null($date))
@@ -74,6 +97,10 @@ class fonctions {
 		}
 	}
 
+   /**
+         * @param 
+         * @return string list (comma separated) of unworked days
+   */
 	public function jourferier()
 	{
 		// Chargement des jours fériers
@@ -97,6 +124,10 @@ class fonctions {
 
 	}
 
+   /**
+         * @param string $date date 
+         * @return string the (french) month name corresponding to the date
+   */
 	public function nommois($date = null)
 	{
 		if (is_null($date))
@@ -107,6 +138,10 @@ class fonctions {
 		return ucfirst($monthname);
 	}
 
+   /**
+         * @param string $date date 
+         * @return string the (french) day name corresponding to the date
+   */
 	public function nomjour($date = null)
 	{
 		if (is_null($date))
@@ -117,6 +152,10 @@ class fonctions {
 		return ucfirst($dayname);
 	}
 
+   /**
+         * @param string $index index of the day (1=Monday 7=Sunday) 
+         * @return string the (french) day name corresponding to the index
+   */
 	public function nomjourparindex($index = null)   // 1 = Lundi   7 = Dimanche
 	{
 		if (is_null($index))
@@ -131,6 +170,11 @@ class fonctions {
 			return ucfirst($dayname);
 		}
 	}
+
+	/**
+         * @param string $categorie optional category. default is NULL 
+         * @return string the list of absence for the given category (or all if not set)
+   */
 	public function listeabsence($categorie = null)
 	{
 		if (is_null($categorie))
@@ -157,6 +201,10 @@ class fonctions {
 
 	}
 
+	/**
+         * @param  
+         * @return string the list of absence category
+   */
 	public function listecategorieabsence()
 	{
 		$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT='abs'";
@@ -176,6 +224,10 @@ class fonctions {
 		return $listecategabs;
 	}
 
+	/**
+         * @param string $date the date to check 
+         * @return boolean TRUE if the date is correct. FALSE otherwise
+   */
 	public function verifiedate($date)
 	{
 		if (is_null($date))
@@ -194,6 +246,10 @@ class fonctions {
 		return checkdate($mois, $jour, $annee)  ;
 	}
 
+	/**
+         * @param  
+         * @return string the beginning of the period in format DDMM (typicaly = 0901 - 1 sept)
+   */
 	public function debutperiode()
 	{
 		$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
@@ -211,6 +267,10 @@ class fonctions {
 		return "$result[0]";
 	}
 
+	/**
+         * @param  
+         * @return string the end of the period in format MMDD (typicaly = 0831 - 31 aug)
+   */
 	public function finperiode()
 	{
 		$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
@@ -228,6 +288,10 @@ class fonctions {
 		return "$result[0]";
 	}
 
+	/**
+         * @param string $date optional date to determin the reference year. If not set the current date is used.
+         * @return string the reference year for the given date (format YYYY)
+   */
 	public function anneeref($date = null)
 	{
 		//echo "La date = " . $date . "<br>";
@@ -246,7 +310,10 @@ class fonctions {
 			echo "Fonctions->anneeref : La date " . $date . " est invalide !!! <br>";
 	}
 
-
+	/**
+         * @param string $typeconge the type of vacation to test
+         * @return boolean True if the type is a vacation (not an absence). False otherwise
+   */
 	public function estunconge($typeconge)
 	{
 		
@@ -278,6 +345,10 @@ class fonctions {
 		}
 	}
 
+	/**
+         * @param  string $constante the constant identifier to read from the database
+         * @return string the constant value readed from the database
+   */
 	public function liredbconstante($constante)
 	{
 		$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = '" .  $constante . "'";
@@ -296,6 +367,11 @@ class fonctions {
 		}
 	}
 
+	/**
+         * @param string $datedebut the beginning date
+         * @param string $datefin the end date
+         * @return integer the number of days between this two dates
+   */
 	public function nbjours_deux_dates($datedebut,$datefin)
 	{
 		//////////////////////////////////////////////////////////////////////////////////////
@@ -309,6 +385,11 @@ class fonctions {
 		return round($tempnbrejour/86400)+1;
 	}
 
+	/**
+         * @param string $mois the month number (1=january, 12=december)
+         * @param string $annee the year
+         * @return integer the number of days in this month/year
+   */
 	public function nbr_jours_dans_mois($mois,$annee)
 	{
 		//// fonction qui permet de retrouver le nombre de jours contenu dans chaque mois d'un année
@@ -317,6 +398,12 @@ class fonctions {
 		return $nbr_jrs_mois;
 	}
 
+	/**
+         * @deprecated  
+         * @param  $mois_dep
+         * @param  $mois_arriv
+         * @return integer the number of month
+   */
 	function diff_mois( $mois_dep , $mois_arriv)
 	{
 		if($mois_dep > $mois_arriv)
@@ -330,7 +417,13 @@ class fonctions {
 		return $nbr_mois;
 	}
 
-
+	/**
+         * @deprecated  
+         * @param  $jour_dep
+         * @param  $mois_dep
+         * @param $annee
+         * @return integer number of working day
+   */
 	function nbr_jrs_travail_mois_deb( $jour_dep,$mois_dep,$annee)
 	{
 		//nbr de jour ds le mois
@@ -342,7 +435,11 @@ class fonctions {
 	}
 
 
- 	public function legende()
+ 	/**  
+         * @param  
+         * @return list of caption
+   */
+	public function legende()
  	{
  		$sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
  				WHERE (ANNEEREF=" . $this->anneeref()  . " OR ANNEEREF=" . ($this->anneeref()-1)  .  ")
@@ -367,6 +464,10 @@ class fonctions {
 
  	}
 
+ 	/**  
+         * @param  
+         * @return html text representing the list of caption
+   */
  	public function legendehtml()
  	{
  		$tablegende = $this->legende();
@@ -385,6 +486,10 @@ class fonctions {
  		return $htmltext;
   	}
 
+ 	/**  
+         * @param  object $pdf the pdf file
+         * @return 
+   */
   	public function legendepdf($pdf)
   	{
  		$tablegende = $this->legende();
@@ -415,7 +520,11 @@ class fonctions {
   	}
 
 
-  	public function html2rgb($color)
+	/**  
+         * @param  string $color the html color (ex : #123456)
+         * @return array of three value (R,G,B) corresponding to the html color 
+   */
+ 	public function html2rgb($color)
   	{
   		// gestion du #...
   		if (substr($color,0,1) == "#") $color = substr($color,1,6);
@@ -426,6 +535,10 @@ class fonctions {
   		return array($col1,$col2,$col3);
   	}
   	
+	/**  
+         * @param  string $codemoment the moment identifier (m or a)
+         * @return the moment name if correct / error message otherwise
+   */
  	public function nommoment($codemoment = null)
  	{
  		if (is_null($codemoment))
@@ -441,6 +554,10 @@ class fonctions {
  		} 
  	}
 
+	/**  
+         * @param  string $codeouinon code (o/n)
+         * @return the oui/non label if correct / error message otherwise
+   */
  	public function ouinonlibelle($codeouinon = null)
  	{
  		if (is_null($codeouinon))
@@ -448,11 +565,15 @@ class fonctions {
  		switch ($codeouinon)
  		{
  			case "o":
+ 			case "O":
  				return "Oui";
  				break;
  			case "n":
+ 			case "N":
  				return "Non";
  				break;
+ 			default: 
+	 			return "Le codeouinon $codeouinon est inconnu";
  		} 
  	}
  	
@@ -470,6 +591,10 @@ class fonctions {
 			echo "Demandestatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
  	}
 
+	/**  
+         * @param  string $statut status code (v,r,a) for part time
+         * @return the status label of the part time if correct / display error message otherwise
+   */
  	public function declarationTPstatutlibelle($statut = null)
  	{
 		if (strcasecmp($statut,'v') == 0)

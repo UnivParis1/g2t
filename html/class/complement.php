@@ -1,5 +1,14 @@
 <?php
 
+/**
+  * Complement
+  * Definition of a complement
+  * 
+  * @package     G2T
+  * @category    classes
+  * @author     Pascal COMTE
+  * @version    none
+  */
 class complement {
 
 	private $harpegeid = null;
@@ -13,6 +22,10 @@ class complement {
 	private $fonctions = null;
 	
 	
+   /**
+         * @param object $db the mysql connection
+         * @return 
+   */
 	function __construct($db)
 	{
 		$this->dbconnect = $db;
@@ -23,6 +36,11 @@ class complement {
 		$this->fonctions = new fonctions($db);
 	}
 	
+   /**
+         * @param string $harpegeid identifier of the agent (harpege)
+         * @param string $complementid identifier of the complement 
+         * @return 
+   */
 	function load($harpegeid, $complementid)
 	{
 		$sql = "SELECT HARPEGEID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE HARPEGEID='$harpegeid' AND COMPLEMENTID='$complementid'";
@@ -46,6 +64,10 @@ class complement {
 		}
 	}
 	
+   /**
+         * @param 
+         * @return 
+   */
 	function store()
 	{
 		if (strlen($this->harpegeid) == 0 or strlen($this->complementid) == 0)
@@ -67,6 +89,10 @@ class complement {
 			echo "Complement->Store (INSERT) : " . $erreur . "<br>";
 	}
 	
+   /**
+         * @param string $agentid identifier of the agent (harpege)
+         * @return string the identifier of the agent if $harpegeid is not set
+   */
 	function harpegeid($agentid = null)
 	{
 		if (is_null($agentid))
@@ -80,6 +106,10 @@ class complement {
 			$this->harpegeid = $agentid;
 	}
 	
+   /**
+         * @param string $complementid identifier of the complement 
+         * @return string the identifier of the complement if $complementid is not set
+   */
 	function complementid($complementid = null)
 	{
 		if (is_null($complementid))
@@ -93,6 +123,10 @@ class complement {
 			$this->complementid = $complementid;
 	}
 
+   /**
+         * @param string $valeur value of the complement 
+         * @return string the value of the complement if $valeur is not set
+   */
 	function valeur($valeur = null)
 	{
 		if (is_null($valeur))

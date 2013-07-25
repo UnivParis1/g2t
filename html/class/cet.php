@@ -1,5 +1,14 @@
 <?php
 
+/**
+  * CET
+  * Definition of a CET (Compte épargne temps)
+  * 
+  * @package     G2T
+  * @category    classes
+  * @author     Pascal COMTE
+  * @version    none
+  */
 class cet {
 
 	private $idannuel = null;
@@ -14,6 +23,10 @@ class cet {
 	private $fonctions = null;
 
 	 
+   /**
+         * @param object $db the mysql connection
+         * @return 
+   */
 	function __construct($db)
 	{
 		$this->dbconnect = $db;
@@ -24,6 +37,10 @@ class cet {
 		$this->fonctions = new fonctions($db);
 	}
 	
+   /**
+         * @param 
+         * @return string id of annual CET
+   */
 	function idannuel()
 	{
 		if (!is_null($this->idannuel))
@@ -32,6 +49,10 @@ class cet {
 			echo "Cet->idannuel : L'identifiant du CET annuel n'est pas initialisé !!! <br>";
 	}
 	
+   /**
+         * @param 
+         * @return string id of total CET
+   */
 	function idtotal()
 	{
 		if (!is_null($this->idtotal))
@@ -40,6 +61,10 @@ class cet {
 			echo "Cet->idtotal : L'identifiant du CET total n'est pas initialisé !!! <br>";
 	}
 	
+   /**
+         * @param string $agentid optional identifier of the agent (harpege)
+         * @return string the identifier of the agent if $agentid is not set
+   */
 	function agentid($agentid = null)
 	{
 		if (is_null($agentid))
@@ -53,6 +78,10 @@ class cet {
 			$this->agentid = $agentid;
 	}
 	
+   /**
+         * @param string $date optional starting date of the CET
+         * @return string the starting date of the CET if $date is not set
+   */
 	function datedebut($date = null)
 	{
 		if (is_null($date))
@@ -66,6 +95,11 @@ class cet {
 			$this->datedebut = $this->fonctions->formatdatedb($date);
 	}
 	
+   /**
+         * @param string $annee  year to get the annual cumul
+         * @param string $cumulannee number of day piled up for the year
+         * @return string number of day piled up for the year if $cumulannee is not set
+   */
 	function cumulannuel($annee,$cumulannee = null)
 	{
 		if (is_null($cumulannee))
@@ -83,6 +117,10 @@ class cet {
 			echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent doit être un nombre entier <br>";
 	}
 
+   /**
+         * @param string $cumultot number of days piled up into CET
+         * @return string number of days piled up if $cumultot is not set
+   */
 	function cumultotal($cumultot = null)
 	{
 		if (is_null($cumultot))
@@ -98,6 +136,10 @@ class cet {
 			echo "Cet->cumultotal : Le cumul total du CET de l'agent doit être un nombre entier <br>";
 	}
 	
+   /**
+         * @param string $nbrejrspris number of days used from CET
+         * @return string number of days used if $nbrejrspris is not set
+   */
 	function jrspris($nbrejrspris = null)
 	{
 		if (is_null($nbrejrspris))
@@ -113,6 +155,10 @@ class cet {
 			echo "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent doit être un nombre entier <br>";
 	}
 	
+   /**
+         * @param string $agentid identifier of the agent (harpege)
+         * @return string empty string if all correct. An error message otherwise
+   */
 	function load($agentid)
 	{
 		$msgerreur = "";
@@ -171,6 +217,10 @@ class cet {
 		return $msgerreur;
 	}
 	
+   /**
+         * @param 
+         * @return string empty string if all correct. An error message otherwise
+   */
 	function store()
 	{
 		//echo "cet->store : Pas encore fait !!!! <br>";
@@ -225,6 +275,12 @@ class cet {
 		return $msgerreur; 
 	}
 	
+   /**
+         * @param string $responsableid the reponsable identifier
+         * @param boolean $ajoutmode optional True if just add days into CET. False if just remove days from CET 
+         * @param string $detail optional Text to be added in the PDF document
+         * @return string PDF file name
+   */
 	function pdf($responsableid, $ajoutmode = TRUE, $detail = null)
 	{
 

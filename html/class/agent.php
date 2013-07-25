@@ -1,5 +1,13 @@
 <?php
-
+/**
+  * Agent
+  * Definition of the agent
+  * 
+  * @package     G2T
+  * @category    classes
+  * @author     Pascal COMTE
+  * @version    none
+  */
 class agent {
 
    private $harpegeid = null;
@@ -12,6 +20,10 @@ class agent {
    
    private $fonctions = null;
    
+   /**
+         * @param object $db the mysql connection
+         * @return 
+   */
    function __construct($db)
    {
       $this->dbconnect = $db;
@@ -22,6 +34,10 @@ class agent {
       $this->fonctions = new fonctions($db);
    }
 
+   /**
+         * @param string $harpegeid the harpege identifier of the current agent
+         * @return boolean TRUE if all correct, FALSE otherwise
+   */
    function load($harpegeid)
    {
    	//echo "Debut Load";
@@ -54,11 +70,19 @@ class agent {
       //echo "Fin...";
    }
 
+   /**
+         * @param 
+         * @return string the harpege identifier of the current agent
+   */
    function harpegeid()
    {
       return $this->harpegeid;
    }
 
+   /**
+         * @param string $name optional the name of the current agent
+         * @return string name of the current agent if $name parameter not set. No return otherwise
+   */
    function nom($name = null)
    {
       if (is_null($name))
@@ -72,7 +96,11 @@ class agent {
          $this->nom = $name;
    }
 
-   function prenom($firstname = null)
+   /**
+         * @param string $firstname optional the firstname of the current agent
+         * @return string firstname of the current agent if $firstname parameter not set. No return otherwise
+   */
+      function prenom($firstname = null)
    {
       if (is_null($firstname))
       {
@@ -85,6 +113,10 @@ class agent {
          $this->prenom = $firstname;
    }
 
+   /**
+         * @param string $civilite optional the civility of the current agent
+         * @return string civility of the current agent if $civilite parameter not set. No return otherwise
+   */
    function civilite($civilite = null)
    {
       if (is_null($civilite))
@@ -98,11 +130,19 @@ class agent {
          $this->civilite = $civilite;
    }
    
+   /**
+         * @param 
+         * @return string the full name of the current agent (civility + firstname + name)
+   */
    function identitecomplete()
    {
    	return $this->civilite() . " " . $this->prenom() . " " . $this->nom();
    }
 
+   /**
+         * @param string $mail optional the mail of the current agent
+         * @return string mail of the current agent if $mail parameter not set. No return otherwise
+   */
    function mail($mail = null)
    {
       if (is_null($mail))
@@ -116,6 +156,10 @@ class agent {
          $this->adressemail = $mail;
    }
 
+   /**
+         * @param string $type optional the type of the current agent
+         * @return string type of the current agent if $type parameter not set. No return otherwise
+   */
    function typepopulation($type = null)
    {
       if (is_null($type))
@@ -129,6 +173,10 @@ class agent {
          $this->codestructure = $type;
    }
 
+   /**
+         * @param 
+         * @return boolean true if the current agent is responsable of a strucuture. false otherwise.
+   */
    function estresponsable()
    {
       $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s'",mysql_real_escape_string($this->harpegeid));
@@ -143,7 +191,11 @@ class agent {
       return (mysql_num_rows($query) != 0);
 	}
 
-   function estgestionnaire()
+   /**
+         * @param 
+         * @return boolean true if the current agent is a manager of a strucuture. false otherwise.
+   */
+	function estgestionnaire()
    {
       $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s'",mysql_real_escape_string($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
@@ -157,6 +209,10 @@ class agent {
       return (mysql_num_rows($query) != 0);
 	}
 
+   /**
+         * @param 
+         * @return boolean true if the current agent is an administrator of the application. false otherwise.
+   */
    function estadministrateur()
    {
       $sql = sprintf("SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID='ESTADMIN'",mysql_real_escape_string($this->harpegeid));
@@ -174,6 +230,11 @@ class agent {
 		return (strcasecmp($result[0], "O")==0);
 	}
 	
+   /**
+         * @param date $debut_interval beginning date of the planning
+         * @param date $fin_interval ending date of the planning
+         * @return object the planning object.
+   */
 	function planning($debut_interval,$fin_interval)
 	{
 		$planning = new planning($this->dbconnect);
@@ -181,6 +242,13 @@ class agent {
 		return $planning; 
 	}
 	
+   /**
+         * @param date $debut_interval beginning date of the planning
+         * @param date $fin_interval ending date of the planning
+         * @param boolean $clickable optional true means that the planning allow click on elements. false otherwise
+         * @param boolean $showpdflink optional true means that a link to display planning in pdf format is allowed. false means the link is hidden
+         * @return string the planning html text.
+   */
 	function planninghtml($debut_interval,$fin_interval,$clickable = FALSE, $showpdflink = TRUE)
 	{
 		$planning = new planning($this->dbconnect);
@@ -188,6 +256,13 @@ class agent {
 		return $htmltext;
 	}
 	
+   /**
+         * @param object $destinataire the mail recipient
+         * @param string $objet the subject of the mail
+         * @param string $message the body of the mail
+         * @param string $piecejointe the name of the document to join to the mail
+         * @return 
+   */
 	function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null)
 	{
 		//----------------------------------
@@ -216,7 +291,7 @@ class agent {
 		$msg .= "Content-Transfer-Encoding:8bit\r\n";
 		$msg .= "\r\n";
 		$msg .= "Bonjour,<br><br>";
-		$msg .= nl2br(htmlentities("$message",ENT_QUOTES,"ISO8859-15",false)) ."<br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
+		$msg .= nl2br(htmlentities("$message",ENT_QUOTES,"ISO8859-15",false)) ."<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
 		
 		//$msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 		$msg .= "\r\n";
@@ -257,6 +332,11 @@ class agent {
 		
 	}
 	
+   /**
+         * @param date $datedebut the beginning date of the interval to search affectations
+         * @param date $datefin the ending date of the interval to search affectations
+         * @return array list of objects affectation
+   */
 	function affectationliste($datedebut,$datefin)
 	{
 		$affectationliste = null;
@@ -288,6 +368,11 @@ class agent {
 		return $affectationliste;
 	}
 	
+   /**
+         * @param date $datedebut the beginning date to check
+         * @param date $datefin the ending date to check
+         * @return boolean true if the declaration of agent is correct. false otherwise
+   */
 	function dossiercomplet($datedebut,$datefin)
 	{
 		// Un dossier est complet si
@@ -314,6 +399,10 @@ class agent {
 		return false;
 	}
 	
+   /**
+         * @param 
+         * @return array list of objects structure where the agent is responsable
+   */
 	function structrespliste()
 	{
 		$structliste = null;
@@ -338,6 +427,10 @@ class agent {
 		return $structliste;
 	}
 	
+   /**
+         * @param 
+         * @return array list of objects structure where the agent is manager
+   */
 	function structgestliste()
 	{
 		$structliste = null;
@@ -362,6 +455,11 @@ class agent {
 		return $structliste;
 	}
 
+   /**
+         * @param sting $anneeref optional year of reference (2012 => 2012/2013, 2013 => 2013/2014). If not set, the current year is used
+         * @param string $erreurmsg concat the errors text with an existing string 
+         * @return array list of objects solde
+   */
    function soldecongesliste($anneeref = null, &$erreurmsg = "")
    {
    	$soldeliste = null;
@@ -460,6 +558,13 @@ class agent {
 		return $soldeliste;
 	}
 
+   /**
+         * @param sting year of reference (2012 => 2012/2013, 2013 => 2013/2014)
+         * @param boolean $infoagent optional display header of solde array if set to TRUE.
+         * @param object $pdf optional pdf object representing the pdf file. if set, the array is append to the existing pdf. If not set a new pdf file is created
+         * @param boolean $header optional if set to true, the header of the array if inserted in the pdf file. no header set in pdf file otherwise
+         * @return 
+   */
 	function soldecongespdf($anneeref, $infoagent = FALSE, $pdf = NULL, $header = TRUE)
 	{
 		$closeafter = FALSE;
@@ -548,6 +653,11 @@ class agent {
 			$pdf->Output();
 	}
 	
+   /**
+         * @param sting year of reference (2012 => 2012/2013, 2013 => 2013/2014)
+         * @param boolean $infoagent optional display header of solde array if set to TRUE.
+         * @return string the html text of the array
+   */
 	function soldecongeshtml($anneeref, $infoagent = FALSE)
 	{
 		//echo "anneeref = " . $anneeref . "<br>";
@@ -602,6 +712,13 @@ class agent {
 		return $htmltext;
 	}
 	
+   /**
+         * @param date $datedebut date of the beginning of the interval
+         * @param date $datefin date of the ending of the interval
+         * @param string $structureid optional the structure identifier 
+         * @param boolean $showlink optional if true, display link to display array in pdf format. hide link otherwise
+         * @return string the html text of the array
+   */
 	function demandeslistehtml($datedebut,$datefin, $structureid = null, $showlink = true)
 	{
 		$demandeliste = null;
@@ -687,6 +804,13 @@ class agent {
 		
 	}
 	
+   /**
+         * @param date $datedebut date of the beginning of the interval
+         * @param date $datefin date of the ending of the interval
+         * @param object $pdf optional the pdf object. if $pdf is set, the array is append to the existing pdf. Otherwise, a new pdf file is created 
+         * @param boolean $header optional if set to true, the header of the array if inserted in the pdf file. no header set in pdf file otherwise
+         * @return 
+   */
 	function demandeslistepdf($datedebut,$datefin, $pdf = NULL, $header = TRUE)
 	{
 		$demandeliste = null;
@@ -795,6 +919,14 @@ class agent {
 			$pdf->Output();
 	}
 	
+   /**
+         * @param date $debut_interval date of the beginning of the interval
+         * @param date $fin_interval date of the ending of the interval
+         * @param string $agentid optional deprecated parameter => not used in code
+         * @param string $mode optional responsable mode or agent mode. default is agent
+         * @param string $cleelement optional deprecated parameter => not used in code
+         * @return string the html text of the array
+   */
 	function demandeslistehtmlpourgestion($debut_interval,$fin_interval, $agentid = null, $mode = "agent", $cleelement = null)
 	{
 
@@ -891,6 +1023,14 @@ class agent {
 		return $htmltext;
 	}
 	
+   /**
+         * @param date $debut_interval date of the beginning of the interval
+         * @param date $fin_interval date of the ending of the interval
+         * @param string $agentid optional the structure's responsable identifier (harpege ident)
+         * @param string $structureid optional deprecated parameter => not used in code
+         * @param string $cleelement optional deprecated parameter => not used in code
+         * @return string the html text of the array
+   */
 	function demandeslistehtmlpourvalidation($debut_interval,$fin_interval, $agentid = null, $structureid = null, $cleelement = null)
 	{
 		$liste = null;
@@ -1009,6 +1149,10 @@ class agent {
 	}
 	
 
+   /**
+         * @param 
+         * @return string the html text of the array
+   */
 	function affichecommentairecongehtml()
 	{
 		$sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE 
@@ -1049,6 +1193,12 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		return $htmltext;
 	}
 	
+   /**
+         * @param string $typeconge optional type of vacation. default is null
+         * @param string $nbrejours optional number of day of the vacation. default is null
+         * @param string $commentaire optional comment for the vacation. default is null
+         * @return 
+   */
 	function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null)
 	{
 		$date =date("d/m/Y");

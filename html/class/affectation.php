@@ -1,5 +1,14 @@
 <?php
 
+/**
+  * Affectation
+  * Definition of an nomination
+  * 
+  * @package     G2T
+  * @category    classes
+  * @author     Pascal COMTE
+  * @version    none
+  */
 class affectation {
 
 	private $affectationid = null;
@@ -15,6 +24,10 @@ class affectation {
 
 	private $fonctions = null;
 
+   /**
+         * @param object $db the mysql connection
+         * @return 
+   */
 	function __construct($db)
 	{
 		$this->dbconnect = $db;
@@ -25,6 +38,10 @@ class affectation {
 		$this->fonctions = new fonctions($db);
 	}
 
+   /**
+         * @param string $idaffectation the nomination identifier
+         * @return 
+   */
 	function load($idaffectation = null)
 	{
 		if (is_null($idaffectation))
@@ -56,6 +73,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		}
 	}
 	
+   /**
+         * @param string $date optional date to search the nomination. Current date if not set
+         * @param string $agentid optional agent identifier (harpege)
+         * @return string the nomination identifier
+   */
 	function loadbydate($date = null, $agentid = null)
 	{
    	if (is_null($date))
@@ -81,6 +103,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		}
 	}
 	
+   /**
+         * @param 
+         * @return string the identifier of the current nomination
+   */
 	function affectationid()
 	{
 		if (is_null($this->affectationid))
@@ -89,6 +115,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->affectationid;
 	}
 	
+   /**
+         * @param 
+         * @return string the agent identifier (harpege) for the current nomination
+   */
 	function agentid()
 	{
 		if (is_null($this->agentid))
@@ -97,6 +127,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->agentid;
 	}
 	
+   /**
+         * @param 
+         * @return string the structure identifier for the current nomination 
+   */
 	function structureid()
 	{
 		if (is_null($this->structureid))
@@ -105,6 +139,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->structureid;
 	}
 	
+   /**
+         * @param 
+         * @return string the starting date of the current nomination 
+   */
 	function datedebut()
 	{
 		if (is_null($this->datedebut))
@@ -113,6 +151,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->fonctions->formatdate($this->datedebut);
 	}
 
+   /**
+         * @param 
+         * @return string the end date of the current nomination 
+   */
 	function datefin()
 	{
 		if (is_null($this->datefin))
@@ -121,6 +163,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->fonctions->formatdate($this->datefin);
 	}
 	
+   /**
+         * @param 
+         * @return string the quota of the current nomination 
+   */
 	function quotite()
 	{
 		if (is_null($this->numerateurquotite) or is_null($this->denominateurquotite))
@@ -133,6 +179,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			
 	}
 	
+   /**
+         * @param 
+         * @return integer the numerator of quota of the current nomination 
+   */
 	function numquotite()
 	{
 		if (is_null($this->numerateurquotite)) 
@@ -141,6 +191,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->numerateurquotite;
 	}
 	
+   /**
+         * @param 
+         * @return integer the denumerator of quota of the current nomination 
+   */
 	function denumquotite()
 	{
 		if (is_null($this->denominateurquotite)) 
@@ -149,6 +203,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->denominateurquotite;
 	}
 	
+   /**
+         * @param 
+         * @return float the quota value of the current nomination 
+   */
 	function quotitevaleur()
 	{
 		$equation = $this->quotite();
@@ -164,6 +222,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		return $return;
 	}
 	
+   /**
+         * @param 
+         * @return string the last modification date 
+   */
 	function datemodif()
 	{
 		if (is_null($this->datemodif))
@@ -172,6 +234,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			return $this->fonctions->formatdate($this->datemodif);
 	}
 	
+   /**
+         * @param string $datedebut the beginning date to search part time
+         * @param string $datefin the end date to search part time
+         * @return array list of part time declaration object
+   */
 	function declarationTPliste($datedebut,$datefin)
 	{
 		//echo "Je suis dans la affectation->declarationTPliste <br>";
@@ -208,6 +275,12 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 	}
 	
 	
+   /**
+         * @param boolean $affiche_declaTP optional if true display the part time declaration
+         * @param boolean $pour_modif optional if true and $affiche_declaTP=true, display the part time declaration in edit mode
+         * @param boolean $mode optional if set to "resp" and $affiche_declaTP=true, display all part time declaration. if set to "agent" and  $affiche_declaTP=true, display only part time declaration that are in current period
+         * @return string HTML text of nomination
+   */
 	function html($affiche_declaTP = false, $pour_modif = false, $mode = "agent")
 	{
 		$agent= new agent($this->dbconnect);
