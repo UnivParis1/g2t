@@ -73,7 +73,7 @@
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
-	//print_r ( $_POST); echo "<br>";
+	print_r ( $_POST); echo "<br>";
 	
 	$reportlist = null;
 	if (isset($_POST['report']))
@@ -82,6 +82,14 @@
 	$cumultotallist = null;
 	if (isset($_POST['cumultotal']))
 		$cumultotallist = $_POST['cumultotal'];
+
+	$array_agent_mail = null;
+	if (isset($_POST['agent_mail']))
+		$array_agent_mail = $_POST['agent_mail'];
+	$array_resp_mail = null;
+	if (isset($_POST['resp_mail']))
+		$array_resp_mail = $_POST['resp_mail'];
+		
 		
 	$datedebutcetlist= null;
 	if (isset($_POST['datedebutcet']))
@@ -146,6 +154,23 @@
 			$structure->store();
 		}
 	}
+	
+	if (isset($array_agent_mail))
+	{
+		// On modifie les codes des envois de mail pour les agents et les responsables
+		foreach ($array_agent_mail as $structkey => $codeinterne)
+		$structure = new structure($dbcon);
+		$structure->load($structkey);
+		$structure->agent_envoyer_a($codeinterne,true);
+	}
+	if (isset($array_resp_mail))
+	{
+		// On modifie les codes des envois de mail pour les agents et les responsables
+		foreach ($array_resp_mail as $structkey => $codeinterne)
+		$structure = new structure($dbcon);
+		$structure->load($structkey);
+		$structure->resp_envoyer_a($codeinterne,true);
+	}
 		
 	echo "<br>";
 	echo "<form name='frm_dossier'  method='post' >";
@@ -182,6 +207,50 @@
 		}
 		else
 			echo $fonctions->ouinonlibelle($structure->affichetoutagent());
+
+		if ($mode == 'resp')
+		{
+			$structure->agent_envoyer_a($codeinterne);
+			echo "<table>";
+			echo "<tr>";
+			echo "<td>";
+			echo "Envoyer les demandes de congés des agents au : ";
+			echo "<SELECT name='agent_mail[" . $structure->id() . "]' size='1'>";
+			echo "<OPTION value=1";
+			if ($codeinterne==1) echo " selected='selected' ";
+			echo ">Responsable du service " . $structure->nomcourt() . "</OPTION>";
+			echo "<OPTION value=2";
+			if ($codeinterne==2) echo " selected='selected' ";
+			echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
+			echo "</SELECT>";
+			echo "</td>";
+			echo "</tr>";
+			
+			$parentstruct = null;
+			$parentstruct = $structure->parentstructure();
+			$structure->resp_envoyer_a($codeinterne);
+			echo "<tr>";
+			echo "<td>";
+			echo "Envoyer les demandes de congés du responsable au : ";
+			echo "<SELECT name='resp_mail[" . $structure->id() . "]' size='1'>";
+			if (!is_null($parentstruct))
+			{
+				echo "<OPTION value=1";
+				if ($codeinterne==1) echo " selected='selected' ";
+				echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+				echo "<OPTION value=2";
+				if ($codeinterne==2) echo " selected='selected' ";
+				echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+			}
+			echo "<OPTION value=3";
+			if ($codeinterne==3) echo " selected='selected' ";
+			echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
+			echo "</SELECT>";
+			echo "</td>";
+			echo "</tr>";
+			echo "<tr><td height=15></td></tr>";
+			echo "</table>";	
+		}
 		echo "<br><br><br>";
 	}	
 	

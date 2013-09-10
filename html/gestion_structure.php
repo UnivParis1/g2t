@@ -66,7 +66,7 @@
 		$responsableliste =  $_POST["resp"];
 	else
 		$responsableliste = array();
-		//print_r ($_POST); echo "<br>";
+	//print_r ($_POST); echo "<br>";
 	
 	if (!is_null($structureid))
 	{
@@ -75,7 +75,12 @@
 		{
 			$structure = new structure($dbcon);
 			//echo "Avant le load <br>";
-			$structure->Load($structid);
+			$structure->load($structid);
+			
+			// On modifie les codes des envois de mail pour les agents et les responsables
+			$structure->resp_envoyer_a($_POST["resp_mail"][$structid],true);
+			$structure->agent_envoyer_a($_POST["agent_mail"][$structid],true);
+			
 			$structure->responsable($responsableliste[$structid]);
 			$structure->gestionnaire($gestionnaireid);
 			$msgerreur = $structure->store();
@@ -128,14 +133,16 @@
 		echo "<table>";
 		foreach ($structureliste as $keystruc => $struct)
 		{
+			
 			echo "<tr>";
-			echo "<td align=center>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->civilite() . " " . $struct->responsable()->nom() . " ". $struct->responsable()->prenom() . "</td>";
+			echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->civilite() . " " . $struct->responsable()->nom() . " ". $struct->responsable()->prenom() . "</td>";
 			echo "</tr>";
 			echo "<tr>";
 			echo "<td align=center>Gestionnaire : ";
 			echo "<select name=gestion[". $struct->id() ."]>";
 			$agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),TRUE); 
 			$gestionnaire = $struct->gestionnaire();
+			
 			foreach ($agentliste as $key => $agent)
 			{
 				echo "<option  value='" . $agent->harpegeid() .  "'";
@@ -144,7 +151,7 @@
 				echo ">" . $agent->civilite() . " " . $agent->nom() . " ". $agent->prenom()  . "</option>";
 			}
 			echo "</select>";
-			echo " Direction : ";
+			echo " &nbsp; Direction : ";
 			echo "<select name=resp[". $struct->id() . "]>";
 			$responsable = $struct->responsable();
 			foreach ($agentliste as $key => $agent)
@@ -158,6 +165,45 @@
 			echo "</select>";
 			echo "</td>";
 			echo "</tr>";
+
+			$struct->agent_envoyer_a($codeinterne);
+			echo "<tr>";
+			echo "<td>";
+			echo "Envoyer les demandes de congés des agents au : ";
+			echo "<SELECT name='agent_mail[" . $struct->id() . "]' size='1'>";
+			echo "<OPTION value=1";
+			if ($codeinterne==1) echo " selected='selected' ";
+			echo ">Responsable du service " . $struct->nomcourt() . "</OPTION>";
+			echo "<OPTION value=2";
+			if ($codeinterne==2) echo " selected='selected' ";
+			echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
+			echo "</SELECT>";
+			echo "</td>";
+			echo "</tr>";
+			
+			$parentstruct = null;
+			$parentstruct = $struct->parentstructure();
+			$struct->resp_envoyer_a($codeinterne);
+			echo "<tr>";
+			echo "<td>";
+			echo "Envoyer les demandes de congés du responsable au : ";
+			echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
+			if (!is_null($parentstruct))
+			{
+				echo "<OPTION value=1";
+				if ($codeinterne==1) echo " selected='selected' ";
+				echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+				echo "<OPTION value=2";
+				if ($codeinterne==2) echo " selected='selected' ";
+				echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+			}
+			echo "<OPTION value=3";
+			if ($codeinterne==3) echo " selected='selected' ";
+			echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
+			echo "</SELECT>";
+			echo "</td>";
+			echo "</tr>";
+			echo "<tr><td height=15></td></tr>";
 		}
 		echo "</table>";
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";

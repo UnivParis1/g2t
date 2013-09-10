@@ -115,7 +115,9 @@
 		{
 			echo "<br>";
 			echo "Solde des agents de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
+			$annerecherche = date("Y") - $previous;
+			$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
+			//$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
 
 			echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 			echo "<input type='hidden' name='userpdf' value='no'>";
@@ -136,10 +138,10 @@
 				
 			foreach ($agentliste as $agentkey => $agent)
 			{
-				echo $agent->soldecongeshtml($fonctions->anneeref(),TRUE);
+				echo $agent->soldecongeshtml($fonctions->anneeref()-$previous,TRUE);
 //				echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
-				echo $agent->demandeslistehtml($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref()+1) . $fonctions->finperiode(),$structure->id(),FALSE);
-				echo $agent->planninghtml($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref()+1) . $fonctions->finperiode(),FALSE,FALSE);
+				echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
+				echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
 				echo "<hr>";
 			}
 			echo "<br>";

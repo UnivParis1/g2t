@@ -56,30 +56,6 @@
 	else
 		$previous = 0;
 	
-// 	// Initialisation de l'utilisateur
-// 	$agentid = $_POST["agentid"];
-// 	$agent = new agent($dbcon);
-// 	if (is_null($agentid) or $agentid == "")
-// 	{
-// 		//echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
-// 		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
-// 		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
-// 		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
-// 		$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
-// 		$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
-// 		$con_ldap=ldap_connect($LDAP_SERVER);
-// 		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-// 		$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
-// 		$filtre="(uid=$uid)";
-// 		$dn=$LDAP_SEARCH_BASE;
-// 		$restriction=array("$LDAP_CODE_AGENT_ATTR");
-// 		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
-// 		$info=ldap_get_entries($con_ldap,$sr);
-// 		//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-// 		$agent->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
-// 	}
-// 	else
-// 		$agent->load($agentid);
 	
 	require ("includes/menu.php");
 	//echo '<html><body class="bodyhtml">';
@@ -155,6 +131,13 @@
 				//echo "boucle => " .$membre->nom() . "<br>";
 				$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 				$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
+
+				// Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
+				//		On doit afficher les congés qui sont dans la période suivante
+				if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) and ($previous==0))
+					$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
+				
+
 				//echo "Debut = $debut     fin = $fin <br>";
 				//echo "structure->id() = " . $structure->id() . "<br>";
 				//echo "Membre = " . $membre->nom() . "<br>";
@@ -246,6 +229,7 @@
 				}	
 			}
 			
+			
 			// A Voir si on affiche les structures filles lorsque l'on est Gestionnaire
 /*
 			$sousstructureliste=$structure->structurefille();
@@ -288,6 +272,36 @@
 			}
 			
 		}
+		
+		$listestruct = $user->structgestcongeliste();
+		//echo "<br>listestruct = "; print_r((array) $listestruct) ; echo "<br>";
+		if (!is_null($listestruct))
+		{
+			foreach ($listestruct as $key => $structure)
+			{
+				$aumoinsunedemande = FALSE;
+				$cleelement = $structure->id();
+				echo "<center><p>Tableau pour le responsable de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
+	
+				$responsable = $structure->responsable();
+				$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
+				$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
+				//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
+				$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				if ($htmltodisplay != "")
+				{
+					echo $htmltodisplay;
+					echo "<br>";
+					$aumoinsunedemande = TRUE;
+				}	
+			}
+			if (!$aumoinsunedemande)
+			{
+				echo "Aucune demande en attente pour cette structure...<br>";
+			}
+			
+		}
+		
 		echo "<input type='hidden' name='mode' value='" . $mode .   "' />";
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid()  .   "' />";
 		echo "<input type='hidden' name='previous' value='" . $previoustxt  .   "' />";

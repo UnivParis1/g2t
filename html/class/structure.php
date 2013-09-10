@@ -184,25 +184,118 @@ class structure {
 		return $agentliste;
 	}
 			
+	function resp_envoyer_a(&$codeinterne = NULL, $update = false)
+	{
+		// La fonction retourne le code de l'agent à qui envoyer le mail
+		// Le paramètre $codeinterne retourne les valeurs 1,2,3... => Nécessaire pour initialisation de la liste
+		//    dans les pages gestion_structure.php par exemple si $update=false
+		// Si $update = true => On met à jour la valeur du champs
+		if ($update==true)
+		{
+			if (is_null($codeinterne))
+			{
+				echo "Structure->resp_envoyer_a : Le codeinterne est NULL<br>";
+			}
+			else 
+			{
+				$sql = "UPDATE STRUCTURE SET DEST_MAIL_RESPONSABLE='" . $codeinterne ."' WHERE STRUCTUREID = '" . $this->structureid . "'";
+				mysql_query ($sql, $this->dbconnect);
+				$erreur=mysql_error();
+				if ($erreur != "")
+					echo "Structure->resp_envoyer_a (UPDATE) : " . $erreur . "<br>";
+			}
+		}
+		else 
+		{
+			//echo "Structure->resp_envoyer_a (SELECT) : Avant le select DEST_MAIL_RESPONSABLE <br>";
+	 		$sql = "SELECT DEST_MAIL_RESPONSABLE FROM STRUCTURE WHERE STRUCTUREID = '" . $this->structureid . "'";
+			$query=mysql_query ($sql, $this->dbconnect);
+			$erreur=mysql_error();
+			if ($erreur != "")
+				echo "Structure->resp_envoyer_a (SELECT) : " . $erreur . "<br>";
+			$result = mysql_fetch_row($query);
+			$codeinterne = $result[0];
+			//echo "codeinterne = $codeinterne <br>";
+			switch ($codeinterne)
+			{
+				case 2: // Envoi au gestionnaire du service parent
+					$parentstruct = $this->parentstructure();
+					if (!is_null($parentstruct))
+						return $parentstruct->gestionnaire();
+					break;
+				case 3: // Envoi au gestionnaire du service courant
+					return $this->gestionnaire();
+					break;
+				default: // $codeinterne = 1 ou $codeinterne non initialisé
+					$codeinterne = 1; // Envoi au responsable du service parent
+					$parentstruct = $this->parentstructure();
+					if (!is_null($parentstruct))
+						return $parentstruct->responsable();
+			}
+		}
+	}
+
+	function agent_envoyer_a(&$codeinterne = NULL, $update = false)
+	{
+		// La fonction retourne le code de l'agent à qui envoyer le mail
+		// Le paramètre $codeinterne retourne les valeurs 1,2,3... => Nécessaire pour initialisation de la liste
+		//    dans les pages gestion_structure.php par exemple si $update=false
+		// Si $update = true => On met à jour la valeur du champs
+		if ($update==true)
+		{
+			if (is_null($codeinterne))
+			{
+				echo "Structure->agent_envoyer_a : Le codeinterne est NULL<br>";
+			}
+			else 
+			{
+				$sql = "UPDATE STRUCTURE SET DEST_MAIL_AGENT='" . $codeinterne ."' WHERE STRUCTUREID = '" . $this->structureid . "'";
+				mysql_query ($sql, $this->dbconnect);
+				$erreur=mysql_error();
+				if ($erreur != "")
+					echo "Structure->agent_envoyer_a (UPDATE) : " . $erreur . "<br>";
+			}
+		}
+		else 
+		{
+	 		$sql = "SELECT DEST_MAIL_AGENT FROM STRUCTURE WHERE STRUCTUREID = '" . $this->structureid . "'";
+			$query=mysql_query ($sql, $this->dbconnect);
+			$erreur=mysql_error();
+			if ($erreur != "")
+				echo "Structure->agent_envoyer_a (SELECT) : " . $erreur . "<br>";
+			$result = mysql_fetch_row($query);
+			$codeinterne = $result[0];
+			switch ($codeinterne)
+			{
+				case 2: // Envoi au gestionnaire du service courant
+					return $this->gestionnaire();
+					break;
+				default: // $codeinterne = 1 ou $codeinterne non initialisé
+					$codeinterne = 1; // Envoi au responsable du service courant
+					return $this->responsable();
+			}
+		}
+	}
 	
 	function parentstructure()
 	{
+		$parentstruct = null;
 		if (is_null($this->parentid))
 			echo "Structure->parentstructure : La structure parente n'est pas définie !!! <br>";
 		else
 		{
 			$parentstruct = new structure($this->dbconnect);
 			$parentstruct->load("$this->parentid");
-			return $parentstruct;
 		}
+		return $parentstruct;
 	}
 
 	function responsable($respid = null)
 	{
 		if (is_null($respid))
 		{
-			if (is_null($this->responsableid))
-				echo "Structure->Responsable : Le responsable de la structure n'est pas défini !!! <br>";
+			if (is_null($this->responsableid) or ($this->responsableid==''))
+				echo "<B><FONT COLOR='#FF0000'>Structure->Responsable : Le responsable de la structure " . $this->structureid  . " n'est pas défini !!! </FONT></B><br>";
 			else
 			{
 				$responsable = new agent($this->dbconnect);
@@ -218,12 +311,14 @@ class structure {
 	{
 		if (is_null($gestid))
 		{
-			if (is_null($this->gestionnaireid))
-				echo "Structure->Gestionnaire : Le gestionnaire de la structure n'est pas défini !!! <br>";
+			if (is_null($this->gestionnaireid) or ($this->gestionnaireid==''))
+				echo "<B><FONT COLOR='#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure " . $this->structureid  . " n'est pas défini !!! </FONT></B><br>";
 			else
 			{
 				$gestionnaire = new agent($this->dbconnect);
+				//echo "Structure->gestionnaire : XXX" . $this->gestionnaireid . "XXXX <br>";
 				$gestionnaire->load("$this->gestionnaireid");
+				//echo "Structure->gestionnaire : Apres le load XXX" . $this->gestionnaireid . "XXXX <br>";
 				return $gestionnaire;
 			}
 		}

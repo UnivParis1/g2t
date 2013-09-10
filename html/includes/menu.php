@@ -361,6 +361,14 @@
 						</form>
 						<a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
 					</li>	
+					<li onclick='document.gest_aff_solde_ant.submit();'>
+						<form name='gest_aff_solde_ant'  method='post' action="affiche_solde.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="mode" value="gestion">
+							<input type="hidden" name="previous" value="yes">
+						</form>
+						<a href="javascript:document.gest_aff_solde_ant.submit();">Affichage du solde des agents de la structure (année précéd.)</a>
+					</li>	
 					<li onclick='document.gest_parametre.submit();'>
 						<form name='gest_parametre'  method='post' action="gestion_dossier.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">

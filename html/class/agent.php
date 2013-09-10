@@ -436,7 +436,7 @@ class agent {
 		$structliste = null;
 		if ($this->estgestionnaire())
 		{
-			//echo "Je suis responsable...<br>";
+			//echo "Je suis gestionnaire...<br>";
 			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s'", mysql_real_escape_string($this->harpegeid));
 			//echo "sql = " . $sql . "<br>";
 			$query=mysql_query ($sql, $this->dbconnect);
@@ -455,6 +455,42 @@ class agent {
 		return $structliste;
 	}
 
+   /**
+         * @param 
+         * @return array list of objects structure where the agent manage the lower structure query 
+   */
+	function structgestcongeliste()
+	{
+		$structliste = null;
+		if ($this->estgestionnaire())
+		{
+			//echo "Je suis gestionnaire...<br>";
+			// Liste des structures donc je suis gestionnaire
+			$structgestliste = $this->structgestliste();
+			//echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
+			foreach ($structgestliste as $structid => $structure)
+			{
+				// Pour chaque structure fille, on regarde si je gère les demandes du responsable
+				$structfilleliste = $structure->structurefille();
+				//echo "<br>structfilleliste = "; print_r((array) $structfilleliste) ; echo "<br>";
+				foreach ($structfilleliste as $structfilleid => $structfille)
+				{
+					//echo "<br>structfilleid = " . $structfilleid . "<br>";
+					//echo "structfille->resp_envoyer_a() = "; print_r($structfille->resp_envoyer_a()); echo "<br>";
+					$agent = $structfille->resp_envoyer_a();
+					if (!is_null($agent))
+					{
+						if ($agent->harpegeid() == $this->harpegeid)
+						{
+							$structliste[$structfilleid] = $structfille;
+						}
+					}
+				}
+			}
+		}
+		return $structliste;
+	}
+	
    /**
          * @param sting $anneeref optional year of reference (2012 => 2012/2013, 2013 => 2013/2014). If not set, the current year is used
          * @param string $erreurmsg concat the errors text with an existing string 
@@ -583,14 +619,19 @@ class agent {
 			$pdf->SetFont('Arial','B',15);
 			$pdf->Ln(15);
 
+			$old_structid="";
 			$affectationliste = $this->affectationliste($this->fonctions->formatdate($anneeref . $this->fonctions->debutperiode()),$this->fonctions->formatdate(($anneeref+1) . $this->fonctions->finperiode()));
 			foreach ($affectationliste as $key => $affectation)
 			{
-				$structure = new structure($this->dbconnect);
-				$structure->load($affectation->structureid());
-				$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
-				$pdf->Cell(60,10,'Service : '. $nomstructure);
-				$pdf->Ln();
+				if ($old_structid != $affectation->structureid())
+				{
+					$structure = new structure($this->dbconnect);
+					$structure->load($affectation->structureid());
+					$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+					$pdf->Cell(60,10,'Service : '. $nomstructure);
+					$pdf->Ln();
+					$old_structid = $affectation->structureid();
+				}
 			}
 			
 			
