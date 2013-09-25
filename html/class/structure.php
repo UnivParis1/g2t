@@ -145,13 +145,12 @@ class structure {
 			{
 				foreach ($structliste as $key => $structure)
 				{
-					$agentliste = array_merge((array)$agentliste, $structure->agentlist($datedebut,$datefin,'o'));
+					$agentliste = array_merge((array)$agentliste, (array)$structure->agentlist($datedebut,$datefin,'o'));
 				}
 			}
  		}
  		
- 		//echo "Liste finale des agents : <br>";
- 		//print_r($this->agentliste); echo "<br>";
+ 		//echo "Liste finale des agents : <br>"; print_r($agentliste); echo "<br>";
  
  		$sql = "SELECT SUBREQ.HARPEGEID FROM ((SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID = '" . $this->structureid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
 		$sql = $sql . " UNION ";
@@ -180,7 +179,10 @@ class structure {
 			//echo "Apres la mise dans le tableau <br>";
 			unset($agent);
 		}
-		ksort($agentliste);
+//		echo "<br>agentliste = "; print_r((array)$agentliste); echo "<br>";
+		if (is_array($agentliste))
+			ksort($agentliste);
+//		echo "<br>agentliste = "; print_r((array)$agentliste); echo "<br>";
 		return $agentliste;
 	}
 			

@@ -375,12 +375,12 @@ WHERE DECLARATIONID=" . $id;
 					$fin= $this->datefin();
 				else
 					$fin = $this->ancienfin;
-				echo "debut = " . $this->fonctions->formatdate($debut) . "   datedebut = " . $this->datedebut() . "<br>";
-				echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "<br>";
+				//echo "debut = " . $this->fonctions->formatdate($debut) . "   datedebut = " . $this->datedebut() . "<br>";
+				//echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "<br>";
 				$demandelistedebut = $this->demandesliste($this->fonctions->formatdate($debut),$this->datedebut());
 				$demandelistefin = $this->demandesliste($this->datefin(),$this->fonctions->formatdate($fin));
 				$demandeliste = array_merge((array)$demandelistedebut,(array)$demandelistefin);
-				echo "demandeliste = "; print_r($demandeliste); echo "<br>"; 
+				//echo "demandeliste = "; print_r($demandeliste); echo "<br>"; 
 				if (is_array($demandeliste))
 				{
 					foreach ($demandeliste as $key => $demande)

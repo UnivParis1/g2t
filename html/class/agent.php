@@ -468,12 +468,12 @@ class agent {
 			// Liste des structures donc je suis gestionnaire
 			$structgestliste = $this->structgestliste();
 			//echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
-			foreach ($structgestliste as $structid => $structure)
+			foreach ((array)$structgestliste as $structid => $structure)
 			{
 				// Pour chaque structure fille, on regarde si je gère les demandes du responsable
 				$structfilleliste = $structure->structurefille();
 				//echo "<br>structfilleliste = "; print_r((array) $structfilleliste) ; echo "<br>";
-				foreach ($structfilleliste as $structfilleid => $structfille)
+				foreach ((array)$structfilleliste as $structfilleid => $structfille)
 				{
 					//echo "<br>structfilleid = " . $structfilleid . "<br>";
 					//echo "structfille->resp_envoyer_a() = "; print_r($structfille->resp_envoyer_a()); echo "<br>";

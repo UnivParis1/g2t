@@ -254,15 +254,18 @@
 			document.frm_demande_conge["fin_mataprem"][1].checked = true;
 	}
 	</script>
+<!-- 
 	<script src="javascripts/jquery-1.8.3.js"></script>
 	<script src="javascripts//jquery-ui.js"></script>
+
 	<script>
 		$(function()
 		{
 			$( ".calendrier" ).datepicker();
 		});
 	</script>
-    <?php	
+ -->
+<?php	
 		
 
 	//echo '<html><body class="bodyhtml">';

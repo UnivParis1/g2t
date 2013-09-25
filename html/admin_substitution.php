@@ -20,7 +20,6 @@
 	$uid=phpCAS::getUser();
 	//echo "UID de l'agent est : " . $uid . "<br>";
 	
-	
 	// Initialisation de l'utilisateur
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
@@ -78,24 +77,29 @@
 	require ("includes/menu.php");
 	//echo '<html><body class="bodyhtml">';
 
-//	echo "<br>Planning de l'agent " . $user->civilite() . " "  . $user->nom() . " " . $user->prenom() . " <br>";
+	//echo "POST = "; print_r($_POST); echo "<br>";
 	
 ?>
+
 <br>
 <form name='subst_agent' method='post' action='index.php'>
-   <input id="userid" name="userid" placeholder="Nom et/ou prenom" />
+   <input id="user" name="user" placeholder="Nom et/ou prenom" />
+   <input type='hidden' id="userid" name="userid" class='user'/>
 
-   <script>
-    $( "#userid" ).autocompleteUser(
-       'https://ticetest.univ-paris1.fr/wsgroups/searchUserCAS', { wantedAttr: "supannEmpId",
-                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } }
-    );
-   </script>
+	<script>
+	    //var input_elt = $( ".token-autocomplete input" );
+	    $( "#user" ).autocompleteUser(
+  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+
+
+  
+	</script>
 
 
 <br> 
-<input type='text' name='userid' >
-
+<!--  <input type='text' name='userid' >
+ -->
 <input type='submit' value='Se faire passer pour...'>
 </form>
 

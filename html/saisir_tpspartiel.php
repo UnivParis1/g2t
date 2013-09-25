@@ -67,14 +67,17 @@
 	
 	require ("includes/menu.php");
 ?>
+<!-- 
 	<script src="javascripts/jquery-1.8.3.js"></script>
 	<script src="javascripts//jquery-ui.js"></script>
-	<script>
+ 
+ 	<script>
 		$(function()
 		{
 			$( ".calendrier" ).datepicker();
 		});
 	</script>
+-->
 <?php	
 	//echo '<html><body class="bodyhtml">';
 

@@ -60,20 +60,20 @@
 	require ("includes/menu.php");
 	
 ?>
-	<script src="javascripts/jquery-1.8.3.js"></script>
-	<script src="javascripts//jquery-ui.js"></script>
+<!-- 
 	<script>
 		$(function()
 		{
 			$( ".calendrier" ).datepicker();
 		});
 	</script>
+ -->
 <?php	
 		
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
-	print_r ( $_POST); echo "<br>";
+	//print_r ( $_POST); echo "<br>";
 	
 	$reportlist = null;
 	if (isset($_POST['report']))
@@ -151,6 +151,21 @@
 			$structure = new structure($dbcon);
 			$structure->load($structureid);
 			$structure->affichetoutagent($valeur);
+			$structure->store();
+		}
+	}
+	
+	$arraygestionnaire = null;
+	if (isset($_POST["gestion"]))
+		$arraygestionnaire = $_POST["gestion"];
+	if (is_array($arraygestionnaire))
+	{
+		foreach ($arraygestionnaire as $structureid => $valeur)
+		{
+			//$structureid = str_replace("'", "", $structureid);
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			$structure->gestionnaire($valeur);
 			$structure->store();
 		}
 	}
@@ -247,6 +262,22 @@
 			echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
 			echo "</SELECT>";
 			echo "</td>";
+			echo "</tr>";
+			$gestionnaire = $structure->gestionnaire();
+			echo "\n<tr>";
+			echo "<td>Nom du gestionnaire : ";
+			echo "<input id='infouser[". $structure->id() ."]' name='infouser[". $structure->id() ."]' placeholder='Nom et/ou prenom' value='";
+			if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
+			echo "' size=40 />";
+			//  
+            echo "<input type='hidden' id='gestion[". $structure->id() ."]' name='gestion[". $structure->id() ."]' value='" . $gestionnaire->harpegeid()  . "' class='infouser[". $structure->id() ."]' /> ";
+?>
+	<script>
+	    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
+	  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+	  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+   </script>
+<?php 
 			echo "</tr>";
 			echo "<tr><td height=15></td></tr>";
 			echo "</table>";	

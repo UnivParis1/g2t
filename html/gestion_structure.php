@@ -51,7 +51,7 @@
 
 	require ("includes/menu.php");
 	//echo '<html><body class="bodyhtml">';
-		
+	
 	if (isset($_POST["structureid"]))
 		$structureid = $_POST["structureid"];
 	else
@@ -97,6 +97,7 @@
 	}
 
 	$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE WHERE length(STRUCTUREID)<='3' ORDER BY NOMCOURT"; //NOMLONG
+	//$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE ORDER BY NOMCOURT"; //NOMLONG
 	$query=mysql_query ($sql,$dbcon);
 	$erreur=mysql_error();
 	if ($erreur != "")
@@ -134,35 +135,42 @@
 		foreach ($structureliste as $keystruc => $struct)
 		{
 			
+			//$agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),'o'); 
+			//echo "<br> agentliste="; print_r((array)$agentliste); echo "<br>";
+			$gestionnaire = $struct->gestionnaire();
 			echo "<tr>";
 			echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->civilite() . " " . $struct->responsable()->nom() . " ". $struct->responsable()->prenom() . "</td>";
 			echo "</tr>";
 			echo "<tr>";
 			echo "<td align=center>Gestionnaire : ";
-			echo "<select name=gestion[". $struct->id() ."]>";
-			$agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),TRUE); 
-			$gestionnaire = $struct->gestionnaire();
+			echo "<input id='infouser[". $struct->id() ."]' name='infouser[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='";
+			if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
+			echo  "' size=40 />";
+			//  
+            echo "<input type='hidden' id='gestion[". $struct->id() ."]' name='gestion[". $struct->id() ."]' value='";
+            if (!is_null($gestionnaire)) $gestionnaire->harpegeid();
+            echo "' class='infouser[". $struct->id() ."]' /> ";
+?>
+	<script>
+	    	$('[id="<?php echo "infouser[". $struct->id() ."]" ?>"]').autocompleteUser(
+	  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+	  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+   </script>
 			
-			foreach ($agentliste as $key => $agent)
-			{
-				echo "<option  value='" . $agent->harpegeid() .  "'";
-				if ($agent->harpegeid() == $gestionnaire->harpegeid())
-					echo " selected ";
-				echo ">" . $agent->civilite() . " " . $agent->nom() . " ". $agent->prenom()  . "</option>";
-			}
-			echo "</select>";
-			echo " &nbsp; Direction : ";
-			echo "<select name=resp[". $struct->id() . "]>";
+<?php 			
 			$responsable = $struct->responsable();
-			foreach ($agentliste as $key => $agent)
-			{
-				echo "<option  value='" . $agent->harpegeid() .  "'";
-				if ($agent->harpegeid() == $responsable->harpegeid())
-					echo " selected ";
-				echo ">" . $agent->civilite() . " " . $agent->nom() . " ". $agent->prenom()  . "</option>";
-			}
+			echo " &nbsp; Direction : ";
+			echo "<input id='responsableinfo[". $struct->id() ."]' name='responsableinfo[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete()  . "' size=40 />";
+			//
+            echo "<input type='hidden' id='resp[". $struct->id() ."]' name='resp[". $struct->id() ."]' value='" . $responsable->harpegeid()  . "' class='responsableinfo[". $struct->id() ."]' /> ";
+?>
+	<script>
+	    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
+	  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+	  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+   </script>
 			
-			echo "</select>";
+<?php 			
 			echo "</td>";
 			echo "</tr>";
 

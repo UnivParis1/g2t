@@ -77,9 +77,38 @@
    <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/jquery-ui.css" type="text/css" media="all">
    <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/ui.theme.css" type="text/css" media="all">
    <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/autocompleteUser.css" type="text/css" media="all">
+
+   <script src="javascripts/jquery-1.8.3.js"></script>
+   <script src="javascripts/jquery-ui.js"></script>
+
+	<script>
+		$(function()
+		{
+			$( ".calendrier" ).datepicker();
+		});
+	</script>
+
+
+<!--  
    <script src="https://wsgroups.univ-paris1.fr/web-widget/jquery-1.7.2.min.js"></script>
    <script src="https://wsgroups.univ-paris1.fr/web-widget/jquery-ui-1.8.21.custom.min.js"></script>
+ -->  
    <script src="https://wsgroups.univ-paris1.fr/web-widget/autocompleteUser.js"></script>
+
+
+<script>
+    var completionAgent = function (event, ui)
+    {
+		// NB: this event is called before the selected value is set in the "input"
+		var form = $(this).closest("form");
+		var selectedInput = document.activeElement;
+		form.find("[id='" + selectedInput.name + "']").val(ui.item.label);
+		form.find("[class='" + selectedInput.name + "']").val (ui.item.value);
+
+
+		return false;
+    };
+</script>
 
 
 <link rel="stylesheet" type="text/css" href="style/style.css" media="screen">
@@ -353,6 +382,14 @@
 							<input type="hidden" name="mode" value="gestion">
 						</form>
 						<a href="javascript:document.gest_valid_conge.submit();">Demandes en attente</a>
+					</li>
+					<li onclick='document.gest_valid_conge_prev.submit();'>
+						<form name='gest_valid_conge_prev'  method='post' action="valider_demande.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="mode" value="gestion">
+							<input type="hidden" name="previous" value="yes">
+						</form>
+						<a href="javascript:document.gest_valid_conge_prev.submit();">Demandes en attente (Année N-1)</a>
 					</li>
 					<li onclick='document.gest_aff_solde.submit();'>
 						<form name='gest_aff_solde'  method='post' action="affiche_solde.php">
