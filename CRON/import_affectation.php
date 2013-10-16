@@ -60,6 +60,7 @@
 		$fp = fopen("$filename","r");
 		while (!feof($fp))
 		{
+			$affectation = null;
 			$ligne = fgets($fp); // lecture du contenu de la ligne
 			if (trim($ligne)!="")
 			{
@@ -74,7 +75,7 @@
 				$structureid = $ligne_element[6];
 				$numquotite = $ligne_element[7];
 				$denomquotite = $ligne_element[8];
-				//echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif \n";
+				echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif \n";
 	
 				$sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'",mysql_real_escape_string($affectationid));
 	//			if ($harpegeid == '9328')
@@ -86,10 +87,11 @@
 				// -------------------------------
 				// Affectation manquante
 				// -------------------------------
-					if (mysql_num_rows($query_aff) == 0) 
+				if (mysql_num_rows($query_aff) == 0) 
 				{
+					echo "On est dans le cas ou l'affectation est manquante : $affectationid \n";
 					//echo "Date de fin de l'affectation  => $datefin \n";
-					if (("$datefin" == "") or ("$datefin" == "0000-00-00") or ("$datefin" == "00000000"))
+					if (("$datefin" == "") or ("$datefin" == "0000-00-00") or ("$datefin" == "00000000") or ("$datefin" == "00/00/0000"))
 						$datefin = "9999-12-31";
 					$sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
 										VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
@@ -117,7 +119,7 @@
 						//echo "datedebut = $datedebut \n";
 						$declarationTP->datedebut($datedebut);
 						//echo "Datefin de la declaration TP  = $datefin \n";
-						if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000")) 
+						if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) 
 							$datefin = "9999-12-31";
 						//echo "datefin = $datefin \n";
 						$declarationTP->datefin($datefin);
@@ -132,9 +134,27 @@
 				// -------------------------------
 				else	
 				{
+					// Pour chaque affectation, on regarde si la date de fin = 00/00/0000
+					// Dans ce cas, on change en 31/12/9999
+					//echo "On est dans le cas ou l'affectation existe : $affectationid \n";
+					$affectation = new affectation($dbcon);
+					$affectation->load($affectationid);
+					//echo "affectation->datefin()  = " . $affectation->datefin() . " \n";
+					if (($affectation->datefin() == "") or ($affectation->datefin() == "00/00/0000"))
+					{
+						echo "Detection d'une affectation $affectationid avec date de fin = 000000000 \n";
+						$sql="UPDATE AFFECTATION SET DATEFIN='9999-12-31' WHERE AFFECTATIONID='" . $affectationid . "'";
+						mysql_query($sql);
+						$erreur_requete=mysql_error();
+						if ($erreur_requete!="")
+							echo "UPDATE AFFECTATION SET DATEFIN => $erreur_requete \n";
+							
+					} 
+					$affectation = null;
 					$res_aff = mysql_fetch_row($query_aff);
 					//echo "res_aff[0]=$res_aff[0]   datemodif =$datemodif \n";
 					// Si on a modifié quelque chose dans l'affectation
+					
 					if ($fonctions->formatdatedb($datemodif) != $fonctions->formatdatedb($res_aff[0]))
 					{
 						$affectation = new affectation($dbcon);
@@ -171,7 +191,7 @@
 								//echo "datedebut = $datedebut \n";
 								$declarationTP->datedebut($datedebut);
 								//echo "Datefin de la declaration TP  = $datefin \n";
-								if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000")) 
+								if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) 
 									$datefin = "9999-12-31";
 								//echo "datefin = $datefin \n";
 								$declarationTP->datefin($datefin);
@@ -207,7 +227,7 @@
 										if (strcasecmp($declarationTP->statut(),"r")!=0)
 										{
 											$declarationTP->datedebut($datedebut);
-											if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000")) 
+											if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) 
 												$datefin = "9999-12-31";
 											$declarationTP->datefin($datefin);
 											$erreur = $declarationTP->store();
@@ -260,7 +280,7 @@
 									{
 										echo "Declaration en cours => "; print_r($declaration); echo " \n";
 										$msg = "";
-										if (strcasestr($declaration->statut(),"r")!=0)
+										if (strcasecmp($declaration->statut(),"r")!=0)
 										{
 											// Si la nvlle date de fin est avant la date de début => On annule la declaration
 											if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($declaration->datedebut()))
@@ -291,8 +311,8 @@
 								mysql_real_escape_string($denomquotite),
 								'N',
 								mysql_real_escape_string($affectationid));
-						if ($harpegeid == '9328')
-							echo "sql = $sql \n";
+						//if ($harpegeid == '9328')
+						//	echo "sql = $sql \n";
 						mysql_query($sql);
 						$erreur_requete=mysql_error();
 						if ($erreur_requete!="")

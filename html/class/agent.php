@@ -621,7 +621,8 @@ class agent {
 
 			$old_structid="";
 			$affectationliste = $this->affectationliste($this->fonctions->formatdate($anneeref . $this->fonctions->debutperiode()),$this->fonctions->formatdate(($anneeref+1) . $this->fonctions->finperiode()));
-			foreach ($affectationliste as $key => $affectation)
+			
+			foreach ((array)$affectationliste as $key => $affectation)
 			{
 				if ($old_structid != $affectation->structureid())
 				{

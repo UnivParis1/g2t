@@ -51,7 +51,8 @@
 	require ("includes/menu.php");
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
-	
+
+	ini_set('max_execution_time', 300); //300 seconds = 5 minutes
 	$mode = $_POST["mode"];
 	if ($mode == "")
 		$mode = "resp";
@@ -71,13 +72,14 @@
 		{
 			echo "<br>";
 			echo "Solde des agents de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-			$annerecherche = date("Y") - $previous;
-			$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
+			$annerecherche = ($fonctions->anneeref()-$previous);
+			$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche.$fonctions->debutperiode()),$fonctions->formatdate(($annerecherche+1).$fonctions->finperiode()));
+			//$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
 			
 			echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 			echo "<input type='hidden' name='userpdf' value='no'>";
 			//$htmltext = $htmltext .    "<input type='hidden' name='previous' value='" . $_POST["previous"]  . "'>";
-			echo "<input type='hidden' name='anneeref' value='" . ($fonctions->anneeref()-$previous) ."'>";
+			echo "<input type='hidden' name='anneeref' value='" . $annerecherche ."'>";
 			$listeagent = "";
 			//echo "Avant le foreach <br>";
 			foreach ($agentliste as $agentkey => $agent)
@@ -115,14 +117,16 @@
 		{
 			echo "<br>";
 			echo "Solde des agents de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-			$annerecherche = date("Y") - $previous;
-			$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
+			$annerecherche = ($fonctions->anneeref()-$previous);
+			$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche.$fonctions->debutperiode()),$fonctions->formatdate(($annerecherche+1).$fonctions->finperiode()));
+			//$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
 			//$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
 
+			//echo "agentliste="; print_r($agentliste); echo "<br>";
 			echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 			echo "<input type='hidden' name='userpdf' value='no'>";
 			//$htmltext = $htmltext .    "<input type='hidden' name='previous' value='" . $_POST["previous"]  . "'>";
-			echo "<input type='hidden' name='anneeref' value='" . ($fonctions->anneeref()-$previous) ."'>";
+			echo "<input type='hidden' name='anneeref' value='" . $annerecherche ."'>";
 			$listeagent = "";
 			//echo "Avant le foreach <br>";
 			foreach ($agentliste as $agentkey => $agent)
@@ -130,6 +134,9 @@
 				$listeagent = $listeagent . "," . $agent->harpegeid(); 
 			}
 			//echo "listeagent = $listeagent <br>";
+			//echo "agentliste Apres ="; print_r($agentliste); echo "<br>";
+			
+			
 			echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";			
 			echo "<input type='hidden' name='typepdf' value='listedemande'>";
 			echo "</form>";
@@ -138,6 +145,7 @@
 				
 			foreach ($agentliste as $agentkey => $agent)
 			{
+				//echo "NOM de l'agent = " . $agent->nom() . "<br>";
 				echo $agent->soldecongeshtml($fonctions->anneeref()-$previous,TRUE);
 //				echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
 				echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);

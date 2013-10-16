@@ -27,6 +27,8 @@
 	
 	//print_r($_POST); echo "<br>";
 	//$agent = new agent($dbcon);
+
+	ini_set('max_execution_time', 300); //300 seconds = 5 minutes
 	
 	$previous = 0;
 	if (isset($_POST["previous"]))

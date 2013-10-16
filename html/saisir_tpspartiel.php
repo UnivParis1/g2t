@@ -492,11 +492,11 @@
 				echo "<table>";
 				echo "<tr>";
 				echo"<td>Date de début de la période :</td>";
-				echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut size=10 ></td>";
+				echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut_" . $affectation->affectationid()  . " size=10 ></td>";
 				echo "</tr>";
 				echo "<tr>";
 				echo "<td>Date de fin de la période :</td>";
-				echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin size=10 ></td>";
+				echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin_" . $affectation->affectationid()  . " size=10 ></td>";
 				echo "</tr>";
 				echo "</table>";
 				$nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
