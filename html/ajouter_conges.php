@@ -106,6 +106,8 @@
 		if (!is_null($nbr_jours_conges))
 		{
 			// On a cliqué sur le bouton validé ==> On va vérifier la saisie
+			$nbr_jours_conges = str_replace(",", ".", $nbr_jours_conges);
+			//echo "nbr_jours_conges = $nbr_jours_conges <br>";
 			if ($nbr_jours_conges == "" or $nbr_jours_conges <= 0) 
 			{
 				$msg_erreur = $msg_erreur . "Vous n'avez pas saisi le nombre de jours à ajouter ou il est inférieur ou égal à 0 <br>";
