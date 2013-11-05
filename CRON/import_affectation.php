@@ -136,14 +136,15 @@
 				{
 					// Pour chaque affectation, on regarde si la date de fin = 00/00/0000
 					// Dans ce cas, on change en 31/12/9999
-					//echo "On est dans le cas ou l'affectation existe : $affectationid \n";
+					echo "On est dans le cas ou l'affectation existe : $affectationid \n";
 					$affectation = new affectation($dbcon);
 					$affectation->load($affectationid);
 					//echo "affectation->datefin()  = " . $affectation->datefin() . " \n";
 					if (($affectation->datefin() == "") or ($affectation->datefin() == "00/00/0000"))
 					{
 						echo "Detection d'une affectation $affectationid avec date de fin = 000000000 \n";
-						$sql="UPDATE AFFECTATION SET DATEFIN='9999-12-31' WHERE AFFECTATIONID='" . $affectationid . "'";
+						$datefin = "9999-12-31";
+						$sql="UPDATE AFFECTATION SET DATEFIN='" . $datefin . "' WHERE AFFECTATIONID='" . $affectationid . "'";
 						mysql_query($sql);
 						$erreur_requete=mysql_error();
 						if ($erreur_requete!="")
@@ -214,7 +215,7 @@
 							echo "Cas ou on est à 100% \n";
 							// Si on a modifié la durée de l'affectation
 							// Alors on doit modifier la durée de la declaration de TP à 100% 
-							echo "datedebut = $datedebut   affectation->datedebut() = " . $affectation->datedebut() . "   datefin = $datefin   affectation->datefin() = " . $affectation->datefin() . "\n";
+							//echo "datedebut = $datedebut   affectation->datedebut() = " . $affectation->datedebut() . "   datefin = $datefin   affectation->datefin() = " . $affectation->datefin() . "\n";
 							if (($fonctions->formatdatedb($datedebut) != $fonctions->formatdatedb($affectation->datedebut())) 
 						      or ($fonctions->formatdatedb($datefin) != $fonctions->formatdatedb($affectation->datefin())))
 						   {
@@ -244,7 +245,10 @@
 						elseif ($numquotite != $denomquotite)
 						{
 							echo "Cas ou on est à temps partiel \n";
+							//echo "affectation debut = " . $affectation->datedebut() . "\n";
+							//echo "affectation fin = " . $affectation->datefin() . "\n";
 							// Si on a repousser le début de l'affectation
+							//echo "Avant le test Cas ou on repousse le début de l'affectation \n";
 							if ($fonctions->formatdatedb($datedebut) > $fonctions->formatdatedb($affectation->datedebut()))
 							{
 								echo "Cas ou on repousse le début de l'affectation \n";
@@ -270,6 +274,8 @@
 								}
 							}
 							// Si on a avancer la fin de l'affectation
+							//echo "Avant le test Cas ou on avance la date de fin \n";
+							//echo "datefin = $datefin \n";
 							if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($affectation->datefin()))
 							{
 								echo "Cas ou on avance la date de fin \n";
