@@ -84,6 +84,16 @@
 	if (isset($_POST["retraitcet"]))
 		$retraitcet = $_POST["retraitcet"];
 	
+	$mutation = null;
+	if (isset($_POST["mutation"]))
+	{
+		if ($_POST["mutation"]=="mutation")
+			$mutation=true;
+		else
+			$mutation=false;
+		
+	}
+		
 	$msg_erreur = "";
 	
 	require ("includes/menu.php");
@@ -119,7 +129,7 @@
 					{
 						// On force $msg_erreur à "" car on se moque de savoir quel est l'erreur
 						$msg_erreur = "";
-						//echo "Il n'y a pas de CET <br>";
+						echo "Il n'y a pas de CET <br>";
 						unset ($cet);
 						$cet = new cet($dbcon);
 						$cet->agentid($agentid);
@@ -272,14 +282,23 @@
 			if (strcasecmp($solde->typeabsenceid(),"ann" . substr(($fonctions->anneeref()-1),2,2))==0)
 			{
 				$nbrejoursprisannuel = $solde->droitpris();
+				if ($mutation==true)
+				{
+					$nbrejoursprisannuel = $nbrejoursprisannuel + $fonctions->liredbconstante("NBJOURS". ($fonctions->anneeref()-1)) - $solde->droitaquis();
+					$nbrejourspris = $nbrejourspris + $fonctions->liredbconstante("NBJOURS". ($fonctions->anneeref()-1)) - $solde->droitaquis();
+				}
 			}
 				
 			// On exclu le CET du nombre de jour pris
 			if (strcasecmp($solde->typeabsenceid(),"cet")!=0)
 				$nbrejourspris = $nbrejourspris + $solde->droitpris();
 		}
+		
+		
+		
 		//$nbrejourspris = ($nbrejourspris/2);
 		//echo "nbrejourspris = " . $nbrejourspris . "<br>";
+		//echo "nbrejoursprisannuel = " . $nbrejoursprisannuel . "<br>";
 		/////// ATTENTION : SI LE NOMBRE DE JOUR PRIS EST > 45
 		///////		ALORS ON LE FIXE A 45 
 		if ($nbrejoursprisannuel > 45)
@@ -300,6 +319,7 @@
 		}
 		$cet = new cet($dbcon);
 		$msg_erreur = $msg_bloquant . $msg_erreur . $cet->load($agentid);
+		
 		if ($msg_erreur == "")
 		{
 			// Pas d'erreur lors du chargement du CET
@@ -309,7 +329,27 @@
 			echo "Le solde de CET est de " . (($cet->cumultotal()-$cet->jrspris())) . " jour(s)<br>";
 
 		}
-		else
+
+		$affectationliste = $agent->affectationliste(($fonctions->anneeref()-1) . $fonctions->debutperiode(), ($fonctions->anneeref()-1) . $fonctions->debutperiode());
+		if (is_null($affectationliste) and (is_null($mutation)))
+		{
+			echo "<br>";
+			echo "<span style='border:solid 1px black; background:lightgray; width:600px; display:block;'>";
+			echo "<form name='frm_ajoutcet'  method='post' >";
+			echo "<input type='checkbox' name='mutation' value='mutation'>Cochez cette case et validez si la personne est issue d'une mutation.<br>";
+			echo "<br>";
+			echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
+			echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
+			echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
+			echo "<input type='hidden' name='ajoutcet' value='yes'>";
+			echo "<input type='hidden' name='mode' value='" . $mode ."'>";
+			echo "<input type='submit' value='Valider' >";
+			echo "</form>";
+			echo "</span>";
+		}
+		
+		
+		if ($msg_erreur != "")
 		{
 			// Ily a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
 			$cet = null;
@@ -324,8 +364,17 @@
 			echo "Vous n'avez pas le droit d'ajouter de jours dans le CET de l'agent (nombre de jours disponibles = $nbrejoursdispo).<br>";
 		
 		echo "<br>";
-		echo "<span style='border:solid 1px black; background:lightgreen; width:450px; display:block;'>";
+		echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
 		echo "<form name='frm_ajoutcet'  method='post' >";
+		if ($mutation==true)
+		{
+			echo "<input type='hidden' name='mutation' value='mutation'>";
+		}
+		elseif ($mutation==false)
+		{
+			echo "<input type='hidden' name='mutation' value=''>";
+		}
+			
 		echo "Nombre de jours à ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
 		echo "<br>";
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
@@ -344,7 +393,7 @@
 			if ((($cet->cumultotal()-$cet->jrspris())) > 20)
 			{
 				echo "<br>";
-				echo "<span style='border:solid 1px black; background:lightsteelblue; width:450px; display:block;'>";
+				echo "<span style='border:solid 1px black; background:lightsteelblue; width:600px; display:block;'>";
 				echo "<form name='frm_retraitcet'  method='post' >";
 				echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
 				// Calcul du nombre de jours disponible en retrait du CET
@@ -362,6 +411,16 @@
 				echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
 				echo "<input type='hidden' name='retraitcet' value='yes'>";
 				echo "<input type='hidden' name='mode' value='" . $mode ."'>";
+
+				if ($mutation==true)
+				{
+					echo "<input type='hidden' name='mutation' value='mutation'>";
+				}
+				elseif ($mutation==false)
+				{
+					echo "<input type='hidden' name='mutation' value=''>";
+				}
+				
 				if ($msg_bloquant == "")
 					echo "<input type='submit' value='Valider' >";
 				echo "</form>";

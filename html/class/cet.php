@@ -227,18 +227,19 @@ class cet {
 		//return;
 		//echo "Avant le test idannuel <br>";
 		//echo "this->idannuel = " . $this->idannuel . "<br>";
+		//echo "is_null(this->idannuel) = " . is_null($this->idannuel) . "<br>";
 		$msgerreur = "";
 		$solde = new solde($this->dbconnect);
-		if (is_null($this->idannuel))
+		if ($solde->load($this->agentid, 'cet'.$this->fonctions->anneeref()) <> "")
 		{
 			//echo "On va creer le solde <br>";
-			if ($solde->load($this->agentid, 'cet'.$this->fonctions->anneeref()) <> "")
-				$solde->creersolde('cet'.$this->fonctions->anneeref(),$this->agentid);
+			//echo "'cet'.this->fonctions->anneeref() = " . 'cet'.$this->fonctions->anneeref(). "<br>";
+			$solde->creersolde('cet'.$this->fonctions->anneeref(),$this->agentid);
 			// On recré un nouvel objet pour eviter les effets de bord eventuels
 			unset ($solde);
 			$solde = new solde($this->dbconnect);
 		}
-		//echo "On va recharger le solde... <br>";
+		//echo "On va charger le solde... <br>";
 		$solde->load($this->agentid, 'cet'.$this->fonctions->anneeref());
 		$solde->droitaquis($this->cumulannuel['cet'.$this->fonctions->anneeref()]);
 		//echo "On va store le solde <br>";
