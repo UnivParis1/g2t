@@ -505,7 +505,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
-		$pdf->Image('images/logo_papeterie.png',70,25,60,20);
+		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
 		
 //		if (is_null($this->structureid) or $this->structureid=="")
 //		{

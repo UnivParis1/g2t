@@ -502,7 +502,7 @@ WHERE DECLARATIONID=" . $id;
 		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
-		$pdf->Image('images/logo_papeterie.png',70,25,60,20);
+		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
 		//echo "Apres l'image... <br>";
 		$pdf->SetFont('Arial','B',14);
 		$pdf->Ln(50);

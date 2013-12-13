@@ -560,7 +560,7 @@ class structure {
 		$pdf->Open();
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
-		$pdf->Image('images/logo_papeterie.png',10,5,60,20);
+		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
 		$pdf->SetFont('Arial','B',15);
 		$pdf->Ln(15);
 		$pdf->Cell(60,10,'Service : '. $this->nomlong().' ('.$this->nomcourt() . ')' );

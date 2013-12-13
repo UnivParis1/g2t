@@ -301,10 +301,16 @@ class fonctions {
 		if ($this->verifiedate($date))
 		{
 			$finperiode = $this->finperiode();
-			if (date("m") <= date("m", date("Y") . $finperiode))
-				return date("Y")  - 1;
+			//echo "Fin periode = $finperiode <br>";
+			//echo "date(m, date(Y) . finperiode)=  " .date("m", date("Y") . $finperiode) . "<br>";
+			$date = $this->formatdatedb($date);
+			$annee = substr($date,0,4);
+			$mois = substr($date,4,2);
+			//echo "annee = $annee   mois = $mois  <br>";
+			if ($mois <= date("m", date("Y") . $finperiode))
+				return ($annee  - 1);
 			else
-				return date("Y");
+				return $annee;
 		}
 		else
 			echo "Fonctions->anneeref : La date " . $date . " est invalide !!! <br>";

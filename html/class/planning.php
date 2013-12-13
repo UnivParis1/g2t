@@ -633,7 +633,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$pdf->Open();
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
-		$pdf->Image('images/logo_papeterie.png',10,5,60,20);
+		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
 		$pdf->SetFont('Arial','B',15);
 		$pdf->Ln(15);
 

@@ -506,13 +506,14 @@ class agent {
 			$erreurmsg = $erreurmsg . "Agent->soldecongesliste : L'année de référence est NULL ==> On fixe à l'année courante !!!! ATTENTION DANGER !!! <br>";
    	}
    	
+ /*
    	if ($anneeref == $this->fonctions->anneeref())
    	{
- /*
 	   	if (is_null($this->dossieractif()))
 	   			return null;
-*/
+
    	}
+*/
    	if (date("m") >= substr($this->fonctions->debutperiode(), 0, 2))
    	{
    		$annee_recouvr=date("Y")+1;
@@ -615,7 +616,7 @@ class agent {
 		if ($header == TRUE)
 		{
 			$pdf->AddPage('L');
-			$pdf->Image('images/logo_papeterie.png',10,5,60,20);
+			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
 			$pdf->SetFont('Arial','B',15);
 			$pdf->Ln(15);
 
@@ -814,7 +815,13 @@ class agent {
 				if ($demande->motifrefus() != "" or strcasecmp($demande->statut(),"r")!=0)
 				{
 					$htmltext = $htmltext . "<tr class='element'>";
- 					$htmltext = $htmltext . "   <td>" . $demande->typelibelle() . "</td>";
+					$libelledemande = $demande->typelibelle();
+					if (strlen($libelledemande)>40)
+					{
+						$libelledemande = substr($demande->typelibelle(),0,40) . "...";
+					}
+					
+ 					$htmltext = $htmltext . "   <td>" . $libelledemande . "</td>";
  					$htmltext = $htmltext . "   <td>" . $demande->date_demande() ."</td>";
  					$htmltext = $htmltext . "   <td>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
  					$htmltext = $htmltext . "   <td>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
@@ -899,7 +906,7 @@ class agent {
 		{
 			$pdf->AddPage('L');
 			//echo "Apres le addpage <br>";
-			$pdf->Image('images/logo_papeterie.png',10,5,60,20);
+			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
 			$pdf->SetFont('Arial','B',15);
 			$pdf->Ln(15);
 			foreach ($affectationliste as $key => $affectation)
@@ -945,10 +952,15 @@ class agent {
 			{
 				if ($demande->motifrefus() != "" or strcasecmp($demande->statut(),"r")!=0)
 				{
-					$pdf->Cell(60,5,$demande->typelibelle(),1,0,'C');
+					$libelledemande = $demande->typelibelle();
+					if (strlen($libelledemande)>40)
+					{
+						$libelledemande = substr($demande->typelibelle(),0,40) . "...";
+					}
+					$pdf->Cell(60,5,$libelledemande,1,0,'C');
 					$pdf->Cell(25,5,$demande->date_demande(),1,0,'C');
-					$pdf->Cell(35,5,$demande->datedebut() . " " . $demande->moment_debut(),1,0,'C');
-					$pdf->Cell(35,5,$demande->datefin() . " " . $demande->moment_fin(),1,0,'C');
+					$pdf->Cell(35,5,$demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()),1,0,'C');
+					$pdf->Cell(35,5,$demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()),1,0,'C');
 					$pdf->Cell(20,5,$demande->nbrejrsdemande(),1,0,'C');
 					$pdf->Cell(20,5,$this->fonctions->demandestatutlibelle($demande->statut()),1,0,'C');
 					$pdf->Cell(80,5,$demande->motifrefus(),1,0,'C');
