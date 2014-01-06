@@ -125,7 +125,7 @@
 
 <div id="mainmenu">
 	<ul class="niveau1">     
-		<li>MENU AGENT 
+		<li onclick="">MENU AGENT 
 			<ul class="niveau2"> 
 				<li onclick='document.accueil.submit();'>
 					<form name='accueil'  method='post' action="index.php">
@@ -205,7 +205,7 @@
 	{
 ?> 
 		<ul class="niveau1">     
-			<li>MENU RESPONSABLE 
+			<li onclick="">MENU RESPONSABLE 
 				<ul class="niveau2"> 
 					<li class="plus">
 						<a>Gestion de l'année en cours</a>
@@ -374,7 +374,7 @@
 	{
 ?>
 		<ul class="niveau1">     
-			<li>MENU GESTIONNAIRE 
+			<li onclick="">MENU GESTIONNAIRE 
 				<ul class="niveau2"> 
 					<li onclick='document.gest_valid_conge.submit();'>
 						<form name='gest_valid_conge'  method='post' action="valider_demande.php">
@@ -477,7 +477,7 @@
 	{
 ?>
 		<ul class="niveau1">     
-			<li>MENU ADMINISTRATEUR 
+			<li onclick="">MENU ADMINISTRATEUR 
 				<ul class="niveau2"> 
 					<li onclick='document.admin_struct_gest.submit();'>
 						<form name='admin_struct_gest'  method='post' action="gestion_structure.php">
