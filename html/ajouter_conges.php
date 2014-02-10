@@ -137,7 +137,7 @@
 				$nouv_solde = ($solde->droitaquis() + $nbr_jours_conges);
 				$solde->droitaquis($nouv_solde);
 				$msg_erreur = $msg_erreur . $solde->store();
-				$msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup,($nbr_jours_conges*2),$commentaire_supp);
+				$msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup,$nbr_jours_conges,$commentaire_supp);
 			   //echo "msg_erreur = $msg_erreur <br>";
 			}
 			if ($msg_erreur != "")
