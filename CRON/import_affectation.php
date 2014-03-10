@@ -305,7 +305,7 @@
 						// Si Quotite <> alors envoyer un mail
 						// Si date fin <> alors envoyer un mail
 						// Faire l'update de la ligne
-						echo "On update l'affectation \n";
+						echo "On update l'affectation (identifiant = " . $affectationid . ")\n";
 						$sql = sprintf("UPDATE AFFECTATION SET HARPEGEID='%s',NUMCONTRAT='%s',DATEDEBUT='%s',DATEFIN='%s',DATEMODIFICATION='%s',STRUCTUREID='%s',NUMQUOTITE='%s',DENOMQUOTITE='%s',OBSOLETE='%s' WHERE AFFECTATIONID='%s'",
 								mysql_real_escape_string($harpegeid),
 								mysql_real_escape_string($numcontrat),
