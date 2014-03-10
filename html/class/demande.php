@@ -524,15 +524,20 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 
 		$agent = $this->agent();
 		$affectationliste = $agent->affectationliste($this->datedebut, $this->datefin);
-		foreach ($affectationliste as $key => $affectation)
+		if (is_array($affectationliste))
+			foreach ($affectationliste as $key => $affectation)
+			{
+				$structure = new structure($this->dbconnect);
+				$structure->load($affectation->structureid());
+				$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+				$pdf->Cell(60,10,'Service : '. $nomstructure);
+				$pdf->Ln();
+			}
+		else
 		{
-			$structure = new structure($this->dbconnect);
-			$structure->load($affectation->structureid());
-			$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
-			$pdf->Cell(60,10,'Service : '. $nomstructure);
+			$pdf->Cell(60,10,'Aucune affectation trouvée pour cette demande.');
 			$pdf->Ln();
 		}
-		
 
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 //		$pdf->Ln(10);
@@ -620,7 +625,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		
 		
 		//$pdf->Output();
-		$pdfname = './pdf/demande_num'.$this->id().'.pdf';
+		$pdfname = '../html/pdf/demande_num'.$this->id().'_' . date("YmdHis")  . '.pdf';
 		//$pdfname = sys_get_temp_dir() . '/demande_num'.$this->id().'.pdf';
 		//echo "Nom du PDF = " . $pdfname . "<br>";
 		$pdf->Output($pdfname);

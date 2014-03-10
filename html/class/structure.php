@@ -38,7 +38,7 @@ class structure {
 				//echo "Structure->Load (STRUCTURE) : Structure $structureid non trouvé <br>";
 	 			$this->nomcourt = "$structureid";
  				$this->nomlong = "Structure inconnue";
-				return;
+				return false;
 			}
 			$result = mysql_fetch_row($query);
  			$this->structureid = "$result[0]";
@@ -50,6 +50,7 @@ class structure {
 			$this->affichesousstruct = "$result[6]";
  			$this->affichetoutagent = "$result[7]";
 		}
+		return true;
 	}
 	
 	function id()

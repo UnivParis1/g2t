@@ -350,6 +350,11 @@ WHERE DECLARATIONID=" . $id;
 		}
 		else
 		{
+			$user = new agent($this->dbconnect);
+			if (isset($_SESSION['phpCAS']['harpegeid']))
+				$user->load($_SESSION['phpCAS']['harpegeid']);
+			else
+				$user->load("-1");  // L'utilisateur -1 est l'utilisateur CRON
 			$this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
 			// c'est une modification ...
 			$sql = "UPDATE DECLARATIONTP SET ";
@@ -387,12 +392,44 @@ WHERE DECLARATIONID=" . $id;
 					{
 						if (strcasecmp($demande->statut(),"r")!=0)
 						{
-							$demande->statut("r");
-							$demande->motifrefus("Modification de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
+							$demande->statut("R");
+							$demande->motifrefus("Modification de la déclaration de temps partiel ou d'affectation - " . $this->datedebut() . "->" . $this->datefin());
 							$demande->datestatut($this->fonctions->formatdatedb(date("d/m/Y")));
 							$msg = $demande->store();
 							if ($msg != "" )
 								echo "STORE de la demande apres modification d'une declaration TP : " . $msg . "<br>";
+							// #############################################################################
+							// ENVOYER UN MAIL A : L'AGENT + RESPONSABLE DE L'ANCIENNE AFFECTATION + ??????
+							// #############################################################################
+							$pdffilename = $demande->pdf($user->harpegeid()); 
+							$agent = $demande->agent();
+							echo "Avant l'envoi du mail a l'agent " . $agent->identitecomplete() . " pour annulation demande (Id=". $demande->id() . ")\n";
+							//echo "Demande -> Statut = " . $demande->statut() ." \n";
+							$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							unset($agent);
+							$affectation = new affectation($this->dbconnect);
+							if (!$affectation->load($this->affectationid))
+							{
+								error_log("Modif de TP => Impossible de charger l'affectation " . $this->affectationid);
+								continue;
+							}
+							//echo "Apres chargement de l'affectation\n";
+							$structure = new structure($this->dbconnect);
+							if (!$structure->load($affectation->structureid()))
+							{
+								error_log("Modif de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
+								continue;
+							}
+							//echo "Apres chargement de la structure\n";
+							$agent = $structure->responsable();
+							echo "Avant l'envoi du mail au responsable de la structure " . $agent->identitecomplete() . " pour annulation demande (id=". $demande->id() . ")\n";
+							//echo "Demande -> Statut = " . $demande->statut() ." \n";
+							$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","La demande de " . $demande->agent()->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							unset($affectation);
+							unset($structure);
+							unset($agent);
+							
+							error_log("Modif de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						}
 					}
 				}
@@ -409,12 +446,44 @@ WHERE DECLARATIONID=" . $id;
 					{
 						if (strcasecmp($demande->statut(),"r")!=0)
 						{
-							$demande->statut("r");
+							$demande->statut("R");
 							$demande->motifrefus("Annulation de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
 							$demande->datestatut($this->fonctions->formatdatedb(date("d/m/Y")));
 							$msg = $demande->store();
 							if ($msg != "" )
 								echo "STORE de la demande apres suppression d'une declaration TP : " . $msg . "<br>";
+							// #############################################################################
+							// ENVOYER UN MAIL A : L'AGENT + RESPONSABLE DE L'ANCIENNE AFFECTATION + ??????
+							// #############################################################################
+							$pdffilename = $demande->pdf($user->harpegeid());
+							$agent = $demande->agent();
+							echo "Avant l'envoi du mail a l'agent " . $agent->identitecomplete() . " pour annulation demande (Id=". $demande->id() . ")\n";
+							//echo "Demande -> Statut = " . $demande->statut() ." \n";
+							$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							unset($agent);
+							$affectation = new affectation($this->dbconnect);
+							if (!$affectation->load($this->affectationid))
+							{
+								error_log("Suppr de TP => Impossible de charger l'affectation " . $this->affectationid);
+								continue;
+							}
+							//echo "Apres chargement de l'affectation\n";
+							$structure = new structure($this->dbconnect);
+							if (!$structure->load($affectation->structureid()))
+							{
+								error_log("Suppr de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
+								continue;
+							}
+							//echo "Apres chargement de la structure\n";
+							$agent = $structure->responsable();
+							echo "Avant l'envoi du mail au responsable de la structure " . $agent->identitecomplete() . " pour annulation demande (id=". $demande->id() . ")\n";
+							//echo "Demande -> Statut = " . $demande->statut() ." \n";
+							$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","La demande de " . $demande->agent()->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							unset($affectation);
+							unset($structure);
+							unset($agent);
+							
+							error_log("Suppr de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						}
 					}
 					
@@ -572,7 +641,8 @@ WHERE DECLARATIONID=" . $id;
 //		$pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
-		$pdfname = './pdf/declarationTP_num'.$this->declarationTPid().'.pdf';
+		$pdfname = '../html/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
+//		$pdfname = './pdf/declarationTP_num'.$this->declarationTPid().'.pdf';
 		//$pdfname = sys_get_temp_dir() . '/autodeclaration_num'.$this->id().'.pdf';
 		//echo "Nom du PDF = " . $pdfname . "<br>";
 		$pdf->Output($pdfname);

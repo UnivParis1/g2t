@@ -47,6 +47,7 @@ class affectation {
 		if (is_null($idaffectation))
 		{
 			echo "Affectation->Load : l'identifiant de l'affectation est NULL <br>";
+			return false;
 		}
 		else
 		{
@@ -56,9 +57,15 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "")
+			{
 				echo "Affectation->Load : " . $erreur . "<br>";
+				return false;
+			}
 			if (mysql_num_rows($query) == 0)
+			{
 				echo "Affectation->Load : Affectation $idaffectation non trouvé <br>";
+				return false;
+			}
 			$result = mysql_fetch_row($query);
 			$this->affectationid = "$result[0]";
 			$this->agentid = "$result[1]";
@@ -71,6 +78,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			$this->denominateurquotite = "$result[7]";
 			$this->obsolete = "$result[8]";				
 		}
+		return true;
 	}
 	
    /**
