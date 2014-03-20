@@ -177,7 +177,10 @@ class structure {
 		if ($erreur != "")
 			echo "Structure->agentlist : " . $erreur . "<br>";
 		if (mysql_num_rows($query) == 0)
-			echo "Structure->agentlist : La structure $this->structureid n'a pas d'agent<br>";
+		{
+			//echo "Structure->agentlist : La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent<br>";
+			echo "La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent<br>";
+		}
 		//echo "Avant le while...<br>";
 		while ($result = mysql_fetch_row($query))
 		{
@@ -326,7 +329,7 @@ class structure {
 		if (is_null($gestid))
 		{
 			if (is_null($this->gestionnaireid) or ($this->gestionnaireid==''))
-				echo "<B><FONT COLOR='#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure " . $this->structureid  . " n'est pas défini !!! </FONT></B><br>";
+				echo "<br><B><FONT COLOR='#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B><br>";
 			else
 			{
 				$gestionnaire = new agent($this->dbconnect);
@@ -342,6 +345,7 @@ class structure {
 	
 	function planning($mois_annee_debut, $mois_annee_fin)
 	{
+		$planningservice = null;
 		if (is_null($mois_annee_debut) or is_null($mois_annee_fin))
 			echo "Structure->planning : Au moins un des paramètres est non défini (null)  <br>";
 
@@ -357,12 +361,15 @@ class structure {
 		//echo "fulldatefin (en lisible)= $fulldatefin     <br>";
 			
 		$listeagent = $this->agentlist($fulldatedebut, $fulldatefin);
-		foreach ($listeagent as $key => $agent)
+		if (is_array($listeagent))
 		{
-			//echo "structure -> planning : Interval du planning a charger pour l'agent : "  . $agent->nom() . " " . $agent->prenom()  ." = " . $fulldatedebut . " --> " .  $fulldatefin . "<br>";
-			$planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin);
-			//echo "structure -> planning : Apres planning de ". $agent->nom() . " " . $agent->prenom() . "<br>";
-		} 
+			foreach ($listeagent as $key => $agent)
+			{
+				//echo "structure -> planning : Interval du planning a charger pour l'agent : "  . $agent->nom() . " " . $agent->prenom()  ." = " . $fulldatedebut . " --> " .  $fulldatefin . "<br>";
+				$planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin);
+				//echo "structure -> planning : Apres planning de ". $agent->nom() . " " . $agent->prenom() . "<br>";
+			} 
+		}
 		return $planningservice;
 	}
 	
@@ -371,6 +378,10 @@ class structure {
 		//echo "Je debute planninghtml <br>";
 		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
 		
+		if (!is_array($planningservice))
+		{
+			return "";   // Si aucun élément du planning => On retourne vide
+		}
 		//echo "Apres le chargement du planning du service <br>";
 		$htmltext = "";
 		$htmltext = $htmltext . "<div id='structplanning'>";
@@ -447,8 +458,8 @@ class structure {
 		
 		$htmltext = "<br>";
 		$htmltext = "<table class='tableausimple'>";
-		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
-		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
+		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=5 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
+		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
 		$agentliste = $this->agentlist(date('d/m/Y'),date('d/m/Y') , 'n');
 		
 		// Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
@@ -468,55 +479,71 @@ class structure {
 					///$responsableliste[$responsable->harpegeid()] = $responsable;
 				}
 			}
-			$agentliste = array_merge($agentliste,$responsableliste);
+			$agentliste = array_merge((array)$agentliste,(array)$responsableliste);
 			ksort($agentliste);
 		}
-		
-		foreach ($agentliste as $key => $membre)
+		if (is_array($agentliste))
 		{
-			//echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
-			if ($membre->harpegeid() != $responsableid)
+			foreach ($agentliste as $key => $membre)
 			{
-				$htmltext = $htmltext . "<tr>";
-				$htmltext = $htmltext . "<center><td class='cellulesimple' style='text-align:center;'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
-				
-				$complement = new complement($this->dbconnect);
-				$complement->load($membre->harpegeid(), "REPORTACTIF");
-				$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>";
-				if ($pourmodif)
+				//echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
+				if ($membre->harpegeid() != $responsableid)
 				{
-					$htmltext = $htmltext . "<select name=report[" . $membre->harpegeid() . "]>";
-					$htmltext = $htmltext . "<option value='n'"; if (strcasecmp($complement->valeur(),"n") == 0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Non</option>";
-					$htmltext = $htmltext . "<option value='o'"; if (strcasecmp($complement->valeur(),"o") == 0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Oui</option>";
-					$htmltext = $htmltext . "</select>";
-				}
-				else
-					$htmltext = $htmltext . $this->fonctions->ouinonlibelle($complement->valeur());
-				$htmltext = $htmltext . "</td></center>";
-				unset($complement);
+					$htmltext = $htmltext . "<tr>";
+					$htmltext = $htmltext . "<center><td class='cellulesimple' style='text-align:center;'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
+					
+					$complement = new complement($this->dbconnect);
+					$complement->load($membre->harpegeid(), "REPORTACTIF");
+					if ($complement->valeur()=="") 
+						$complement->valeur("n"); // Si le complement n'est pas saisi, alors la valeur est "N" (non)
+					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>";
+					if ($pourmodif)
+					{
+						$htmltext = $htmltext . "<select name=report[" . $membre->harpegeid() . "]>";
+						$htmltext = $htmltext . "<option value='n'"; if (strcasecmp($complement->valeur(),"n") == 0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Non</option>";
+						$htmltext = $htmltext . "<option value='o'"; if (strcasecmp($complement->valeur(),"o") == 0) $htmltext = $htmltext . " selected ";    $htmltext = $htmltext . ">Oui</option>";
+						$htmltext = $htmltext . "</select>";
+					}
+					else
+					{
+						$htmltext = $htmltext . $this->fonctions->ouinonlibelle($complement->valeur());
+					}
+					$htmltext = $htmltext . "</td></center>";
+					unset($complement);
 
-				$cet = new cet($this->dbconnect);
-				$msg = $cet->load($membre->harpegeid());
-				$cumultotal = "";
-				$datedebut = "";
-				if ($msg == "")
-				{
-					$cumultotal = $cet->cumultotal();
-					$datedebut = $cet->datedebut();
+					// Ajout du nombre de jours "enfant malade"
+					$complement = new complement($this->dbconnect);
+					$complement->load($membre->harpegeid(), "ENFANTMALADE");
+					$htmltext = $htmltext . "<td class='cellulesimple' >";
+					if ($pourmodif)
+						$htmltext = $htmltext . "<input type='text' style='text-align:center;' name=enfantmalade[" . $membre->harpegeid()  ."] value='" . intval($complement->valeur()) . "'/>";
+					else 
+						$htmltext = $htmltext . "<center>" . intval($complement->valeur()) . "</center>";
+					$htmltext = $htmltext . "</td>";
+										
+					$cet = new cet($this->dbconnect);
+					$msg = $cet->load($membre->harpegeid());
+					$cumultotal = "";
+					$datedebut = "";
+					if ($msg == "")
+					{
+						$cumultotal = $cet->cumultotal();
+						$datedebut = $cet->datedebut();
+					}
+					unset($cet);
+					// Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
+					if (($msg == "") or (!$pourmodif))
+					{
+						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
+						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $datedebut . "</td></center>";
+					}
+					else 
+					{
+						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->harpegeid()  ."] value=''/></td></center>";
+						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->harpegeid()  ."] value=''/></td></center>";
+					}
+					$htmltext = $htmltext . "</tr>";
 				}
-				unset($cet);
-				// Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
-				if (($msg == "") or (!$pourmodif))
-				{
-					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
-					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $datedebut . "</td></center>";
-				}
-				else 
-				{
-					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->harpegeid()  ."] value=''/></td></center>";
-					$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->harpegeid()  ."] value=''/></td></center>";
-				}
-				$htmltext = $htmltext . "</tr>";
 			}
 		}
 		$htmltext = $htmltext . "</table>";

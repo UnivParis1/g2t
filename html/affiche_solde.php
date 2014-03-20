@@ -82,9 +82,12 @@
 			echo "<input type='hidden' name='anneeref' value='" . $annerecherche ."'>";
 			$listeagent = "";
 			//echo "Avant le foreach <br>";
-			foreach ($agentliste as $agentkey => $agent)
+			if (is_array($agentliste))
 			{
-				$listeagent = $listeagent . "," . $agent->harpegeid(); 
+				foreach ($agentliste as $agentkey => $agent)
+				{
+					$listeagent = $listeagent . "," . $agent->harpegeid(); 
+				}
 			}
 			//echo "listeagent = $listeagent <br>";
 			echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";			
@@ -93,19 +96,22 @@
 			echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
 			echo "<br>";
 
-			foreach ($agentliste as $agentkey => $agent)
+			if (is_array($agentliste))
 			{
- 				 //echo "Annee ref = " . $fonctions->anneeref();
- 				 //echo " debut =  " . $fonctions->debutperiode();
- 				 //echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
- 				 //echo " Fin = " . $fonctions->finperiode();
- 				 //echo "Previous = " . $previous ;
-				echo $agent->soldecongeshtml(($fonctions->anneeref()-$previous),TRUE);
-				echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
-				echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
-
-				// Ligne de séparation entre les agents
-				echo "<hr>";
+				foreach ($agentliste as $agentkey => $agent)
+				{
+	 				 //echo "Annee ref = " . $fonctions->anneeref();
+	 				 //echo " debut =  " . $fonctions->debutperiode();
+	 				 //echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
+	 				 //echo " Fin = " . $fonctions->finperiode();
+	 				 //echo "Previous = " . $previous ;
+					echo $agent->soldecongeshtml(($fonctions->anneeref()-$previous),TRUE);
+					echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
+					echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
+	
+					// Ligne de séparation entre les agents
+					echo "<hr>";
+				}
 			}
 			echo "<br>";
 		}
@@ -129,9 +135,12 @@
 			echo "<input type='hidden' name='anneeref' value='" . $annerecherche ."'>";
 			$listeagent = "";
 			//echo "Avant le foreach <br>";
-			foreach ($agentliste as $agentkey => $agent)
+			if (is_array($agentliste))
 			{
-				$listeagent = $listeagent . "," . $agent->harpegeid(); 
+				foreach ($agentliste as $agentkey => $agent)
+				{
+					$listeagent = $listeagent . "," . $agent->harpegeid(); 
+				}
 			}
 			//echo "listeagent = $listeagent <br>";
 			//echo "agentliste Apres ="; print_r($agentliste); echo "<br>";
@@ -143,14 +152,17 @@
 			echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
 			echo "<br>";
 				
-			foreach ($agentliste as $agentkey => $agent)
+			if (is_array($agentliste))
 			{
-				//echo "NOM de l'agent = " . $agent->nom() . "<br>";
-				echo $agent->soldecongeshtml($fonctions->anneeref()-$previous,TRUE);
-//				echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
-				echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
-				echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
-				echo "<hr>";
+				foreach ($agentliste as $agentkey => $agent)
+				{
+					//echo "NOM de l'agent = " . $agent->nom() . "<br>";
+					echo $agent->soldecongeshtml($fonctions->anneeref()-$previous,TRUE);
+	//				echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
+					echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
+					echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
+					echo "<hr>";
+				}
 			}
 			echo "<br>";
 		}

@@ -229,6 +229,63 @@ class agent {
 		$result = mysql_fetch_row($query);
 		return (strcasecmp($result[0], "O")==0);
 	}
+
+   /**
+         * @param string $nbrejrs optional Nombre de jours 'enfant malade' pour l'agent courant
+         * @return string Nombre de jours 'enfant malade' si $nbrejrs est null. Pas de retour sinon
+   */
+   function nbjrsenfantmalade($nbrejrs = null)
+   {
+      $complement = new complement($this->dbconnect);
+      if (is_null($nbrejrs))
+      {
+			$complement->load($this->harpegeid, 'ENFANTMALADE');
+            return intval($complement->valeur());
+      }
+      elseif ((strcasecmp(intval($nbrejrs),$nbrejrs)==0) and (intval($nbrejrs)>=0))  // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
+      {
+      	    $complement->complementid('ENFANTMALADE');
+			$complement->harpegeid($this->harpegeid);
+			$complement->valeur(intval($enfantmaladevalue));
+			$complement->store();
+      }
+      else
+		    echo "Agent->nbjrsenfantmalade (AGENT) : Le nombre de jours 'enfant malade doit etre un nombre positif ou nul'<br>";
+      
+   }
+   
+   /**
+         * @param
+         * @return string Nombre de jours 'enfant malade' pris sur la période courante
+   */
+   function nbjrsenfantmaladeutilise($debut_interval,$fin_interval)
+   {
+		$sql = "SELECT SUM(DEMANDE.NBREJRSDEMANDE) FROM AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP,DEMANDE
+WHERE AFFECTATION.HARPEGEID=" . $this->harpegeid . "
+AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID
+AND DECLARATIONTP.DECLARATIONID=DEMANDEDECLARATIONTP.DECLARATIONID
+AND DEMANDE.DEMANDEID = DEMANDEDECLARATIONTP.DEMANDEID
+AND DEMANDE.TYPEABSENCEID='enmal'
+AND DEMANDE.DATEDEBUT>='" . $this->fonctions->formatdatedb($debut_interval)  . "'
+AND DEMANDE.DATEFIN<='" . $this->fonctions->formatdatedb($fin_interval)   ."'
+AND DEMANDE.STATUT='v'";
+
+		// $this->fonctions->anneeref() . $this->fonctions->debutperiode()
+		// ($this->fonctions->anneeref()  +1) . $this->fonctions->finperiode()
+		echo "SQL = $sql <br>";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+		{
+			echo "Agent->nbjrsenfantmaladeutilise (AGENT) : " . $erreur . "<br>";
+			return NULL;
+      }
+      if (mysql_num_rows($query) == 0)
+			return 0;
+	  $result = mysql_fetch_row($query);
+		  return (floatval($result[0]));
+		
+   }
 	
    /**
          * @param date $debut_interval beginning date of the planning
@@ -1172,7 +1229,14 @@ class agent {
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() ."</td>";
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
-						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+						if ($demande->type()=='enmal')
+						{
+							$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ")</td>";
+						}
+						else 
+						{
+							$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+						}
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
 						$htmltext = $htmltext . "   <td class='cellulesimple'>";
 						$htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]'>";

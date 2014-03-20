@@ -79,6 +79,10 @@
 	if (isset($_POST['report']))
 		$reportlist = $_POST['report'];
 		
+	$enfantmaladelist = null;
+	if (isset($_POST['enfantmalade']))
+		$enfantmaladelist = $_POST['enfantmalade'];
+		
 	$cumultotallist = null;
 	if (isset($_POST['cumultotal']))
 		$cumultotallist = $_POST['cumultotal'];
@@ -104,6 +108,33 @@
 			$complement->harpegeid($harpegeid);
 			$complement->valeur($reportvalue);
 			$complement->store();
+			unset($complement);
+		}
+	}
+	
+	$msgerreur = "";
+	if (is_array($enfantmaladelist))
+	{
+		foreach ($enfantmaladelist as $harpegeid => $enfantmaladevalue)
+		{
+			//echo "strcasecmp(intval ... => " . strcasecmp(intval($enfantmaladevalue),$enfantmaladevalue) . "<br>";
+			//echo "intval >=0 => " . (intval($enfantmaladevalue)>=0) . "<br>";
+			if ((strcasecmp(intval($enfantmaladevalue),$enfantmaladevalue)==0) and (intval($enfantmaladevalue)>=0))  // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
+			{
+				$complement = new complement($dbcon);
+				$complement->complementid('ENFANTMALADE');
+				$complement->harpegeid($harpegeid);
+				$complement->valeur(intval($enfantmaladevalue));
+				$complement->store();
+				unset($complement);
+			}
+			else
+			{
+				$agent = new agent($dbcon);
+				$agent->load($harpegeid);
+				$msgerreur = $msgerreur . "Le nombre de jour 'enfant malade' saisi n'est pas correct pour l'agent " . $agent->identitecomplete() . " <br>";
+				unset($agent);
+			}
 		}
 	}
 	
@@ -188,6 +219,8 @@
 	}
 		
 	echo "<br>";
+	if ($msgerreur != "")
+		echo "<B><P style='color: red'> $msgerreur </P></B>";
 	echo "<form name='frm_dossier'  method='post' >";
 	if ($mode == 'resp')
 		$structliste = $user->structrespliste();
@@ -270,7 +303,9 @@
 			if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
 			echo "' size=40 />";
 			//  
-            echo "<input type='hidden' id='gestion[". $structure->id() ."]' name='gestion[". $structure->id() ."]' value='" . $gestionnaire->harpegeid()  . "' class='infouser[". $structure->id() ."]' /> ";
+            echo "<input type='hidden' id='gestion[". $structure->id() ."]' name='gestion[". $structure->id() ."]' value='";
+            if (!is_null($gestionnaire)) echo $gestionnaire->harpegeid();
+            echo "' class='infouser[". $structure->id() ."]' /> ";
 ?>
 	<script>
 	    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(

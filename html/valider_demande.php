@@ -126,30 +126,33 @@
 			echo "<center><p>Tableau pour les agents de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
 			echo "<form name='frm_validation_conge'  method='post' >";
 			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
-			foreach ($agentliste as $membrekey => $membre)
+			if (is_array($agentliste))
 			{
-				//echo "boucle => " .$membre->nom() . "<br>";
-				$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-				$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
-
-				// Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
-				//		On doit afficher les congés qui sont dans la période suivante
-				if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) and ($previous==0))
-					$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-				
-
-				//echo "Debut = $debut     fin = $fin <br>";
-				//echo "structure->id() = " . $structure->id() . "<br>";
-				//echo "Membre = " . $membre->nom() . "<br>";
-				
-				//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-				$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
-				if ($htmltodisplay != "")
+				foreach ($agentliste as $membrekey => $membre)
 				{
-					echo $htmltodisplay;
-					echo "<br>";
-					$aumoinsunedemande = TRUE;
-				}	
+					//echo "boucle => " .$membre->nom() . "<br>";
+					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
+					$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
+	
+					// Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
+					//		On doit afficher les congés qui sont dans la période suivante
+					if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) and ($previous==0))
+						$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
+					
+	
+					//echo "Debut = $debut     fin = $fin <br>";
+					//echo "structure->id() = " . $structure->id() . "<br>";
+					//echo "Membre = " . $membre->nom() . "<br>";
+					
+					//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
+					$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+					if ($htmltodisplay != "")
+					{
+						echo $htmltodisplay;
+						echo "<br>";
+						$aumoinsunedemande = TRUE;
+					}	
+				}
 			}
 			$sousstructureliste=$structure->structurefille();
 			if (is_array($sousstructureliste))
@@ -197,36 +200,39 @@
 			$cleelement = $structure->id();
 			echo "<center><p>Tableau pour les agents de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
 			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
-			foreach ($agentliste as $membrekey => $membre)
+			if (is_array($agentliste))
 			{
-				//echo "boucle => " .$membre->nom() . "<br>";
-				$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-				// Si on est en mode "previous" alors on considère que la fin est l'année courante
-				if ($previous == 1)
-					$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-				// Si on ne limite pas les congès a la date de fin de la période, il faut prendre plus large que la fin de période
-				// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
-				elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
-					$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-				else
-					$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-				//echo "Debut = $debut     fin = $fin <br>";
-				//echo "structure->id() = " . $structure->id() . "<br>";
-				//echo "Membre = " . $membre->nom() . "<br>";
-				
-				//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
-				// -------------------------------------------------------------
-				// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
-				//$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
-				$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, null,$structure->id(), $cleelement);
-				// -------------------------------------------------------------
-				//echo "htmltodisplay = $htmltodisplay <br>";
-				if ($htmltodisplay != "")
+				foreach ($agentliste as $membrekey => $membre)
 				{
-					echo $htmltodisplay;
-					echo "<br>";
-					$aumoinsunedemande = TRUE;
-				}	
+					//echo "boucle => " .$membre->nom() . "<br>";
+					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
+					// Si on est en mode "previous" alors on considère que la fin est l'année courante
+					if ($previous == 1)
+						$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
+					// Si on ne limite pas les congès a la date de fin de la période, il faut prendre plus large que la fin de période
+					// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
+					elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
+						$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
+					else
+						$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
+					//echo "Debut = $debut     fin = $fin <br>";
+					//echo "structure->id() = " . $structure->id() . "<br>";
+					//echo "Membre = " . $membre->nom() . "<br>";
+					
+					//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+					// -------------------------------------------------------------
+					// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
+					//$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+					$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, null,$structure->id(), $cleelement);
+					// -------------------------------------------------------------
+					//echo "htmltodisplay = $htmltodisplay <br>";
+					if ($htmltodisplay != "")
+					{
+						echo $htmltodisplay;
+						echo "<br>";
+						$aumoinsunedemande = TRUE;
+					}	
+				}
 			}
 			
 			

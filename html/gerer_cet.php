@@ -249,9 +249,12 @@
 			//$agentliste=$user->structure()->agentlist();
 			echo "<optgroup label='". $structure->nomcourt() . "'>";
 			$agentliste=$structure->agentlist($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref()+1) . $fonctions->finperiode());
-			foreach ($agentliste as $keyagent => $membre)
+			if (is_array($agentliste))
 			{
-				echo "<OPTION value='" . $membre->harpegeid() .  "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom()  . "</OPTION>";
+				foreach ($agentliste as $keyagent => $membre)
+				{
+					echo "<OPTION value='" . $membre->harpegeid() .  "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom()  . "</OPTION>";
+				}
 			}
 			echo "</optgroup>";
 		}

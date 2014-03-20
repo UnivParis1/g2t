@@ -148,7 +148,7 @@
 			echo  "' size=40 />";
 			//  
             echo "<input type='hidden' id='gestion[". $struct->id() ."]' name='gestion[". $struct->id() ."]' value='";
-            if (!is_null($gestionnaire)) $gestionnaire->harpegeid();
+            if (!is_null($gestionnaire)) echo $gestionnaire->harpegeid();
             echo "' class='infouser[". $struct->id() ."]' /> ";
 ?>
 	<script>
