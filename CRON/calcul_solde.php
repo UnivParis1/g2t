@@ -25,27 +25,27 @@
 	//echo "Avant le 1er while \n";
 	while ($result = mysql_fetch_row($query_agent))
 	{
-		// !!!!!!! ATTENTION : Les 2 lignes suivantes permettent de ne tester qu'un seul dossier !!!!
-		//if ($result[0]!='3008')
-		//	continue;
-		// !!!!!!! FIN du test d'un seul dossier !!!!
+       // !!!!!!! ATTENTION : Les 2 lignes suivantes permettent de ne tester qu'un seul dossier !!!!
+       //if ($result[0]!='3008')
+       //	continue;
+       // !!!!!!! FIN du test d'un seul dossier !!!!
 		
-		$agentid=$result[0];
-		$agentinfo = $result[1] . " " . $result[2];
+       $agentid=$result[0];
+       $agentinfo = $result[1] . " " . $result[2];
 
-		$solde_agent = 0;
+       $solde_agent = 0;
 
-		$sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid' AND OBSOLETE='N' ORDER BY DATEDEBUT";
+       $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid' AND OBSOLETE='N' ORDER BY DATEDEBUT";
 
-		$query_aff = mysql_query($sql);
-		$erreur_requete=mysql_error();
-		if ($erreur_requete!="")
-			echo "SELECT FROM AFFECTATION (Full) => $erreur_requete \n";
+       $query_aff = mysql_query($sql);
+       $erreur_requete=mysql_error();
+       if ($erreur_requete!="")
+          echo "SELECT FROM AFFECTATION (Full) => $erreur_requete \n";
 
-		$cas_general = true;
-      $nbre_total_jours = 0;
-		if (mysql_num_rows($query_aff) != 0) // On a des d'affectations
-      {
+       $cas_general = true;
+       $nbre_total_jours = 0;
+       if (mysql_num_rows($query_aff) != 0) // On a des d'affectations
+       {
 			while ($result_aff = mysql_fetch_row($query_aff))
 			{
 				if ($result_aff[5]!="0") // Si c'est un contrat
@@ -54,9 +54,14 @@
 					$datearray = date_parse($result_aff[2]);
 					$year = $datearray["year"];
 					//echo "year = $year \n";
-					// Si la fin du contrat est dans plus de 2 ans, alors on raccourci la fin de contrat pour calculer le nombre de jour
-					if (($result_aff[2]=='0000-00-00') or ($year > ($fonctions->anneeref()  +2)))
-						$datefinaff = date("Y-m-d", strtotime("+1 year"));
+//					// Si la fin du contrat est dans plus de 2 ans, alors on raccourci la fin de contrat pour calculer le nombre de jour
+//					if (($result_aff[2]=='0000-00-00') or ($year > ($fonctions->anneeref()  +2)))
+//						$datefinaff = date("Y-m-d", strtotime("+1 year"));
+                    // Si la fin du contrat est vide (0000-00-00) ou si la fin du contrat est postérieur à la fin de période => On force à la fin de période
+                    //echo "Convertion date fin affectation : " . $fonctions->formatdatedb($result_aff[2]) . "\n";
+                    //echo "Calcul fin période = " .($fonctions->anneeref()+1) . $fonctions->finperiode() . "\n";
+                    if (($result_aff[2]=='0000-00-00') or ($fonctions->formatdatedb($result_aff[2])>($fonctions->anneeref()+1) . $fonctions->finperiode()))
+                       $datefinaff = ($fonctions->anneeref()+1) . $fonctions->finperiode();
 					else
 						$datefinaff = $result_aff[2];
 					//echo "datedebutaff = $datedebutaff    datefinaff = $datefinaff\n";
@@ -71,7 +76,7 @@
 				else // Si on trouve une affectation sans contrat alors on est dans le cas général
 					$cas_general = true;
 			}
-      }
+       }
 
 		//echo "nbre_total_jours = $nbre_total_jours pour $agentid ($agentinfo)\n";
       $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid'
