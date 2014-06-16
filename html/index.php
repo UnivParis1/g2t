@@ -5,6 +5,10 @@
  
 	$fonctions = new fonctions($dbcon);
 	
+	// when using a reverse proxy, HTTP_X_FORWARDED_HOST is handled by phpCAS, but it can't know the case proxy is https but real server is http
+	$_SERVER['HTTPS'] = true;
+	$_SERVER['SERVER_PORT'] = 443;
+	
 	// Parametres pour connexion CAS
 	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
 	$CAS_PORT=443;
