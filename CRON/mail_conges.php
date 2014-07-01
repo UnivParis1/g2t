@@ -21,7 +21,7 @@
 
 	$date=date("Ymd");
 
-	echo "Début de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n" ;
+	echo "Dï¿½but de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n" ;
 
 	// On selectionne les demandes en attente de validation
 	$sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a'";
@@ -48,47 +48,51 @@
 		$structure->load($affectation->structureid());
 		
 		
-		// Si ce n'est pas le responsable de la structure qui à fait la demande
+		// Si ce n'est pas le responsable de la structure qui ï¿½ fait la demande
 		// => C'est un agent
-		// On regarde à qui on doit envoyer la demande de congés pour sa structure
-		if ($affectation->agentid() != $structure->responsable()->harpegeid())
-		{
-			$destinatairemail = $structure->agent_envoyer_a($codeinterne);
-			if ($codeinterne==2) // Gestionnaire service courant
-			{
-				if (isset ($mail_gest[$destinatairemail->harpegeid()]))
-					$mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()]+1;
-				else 
-					$mail_gest[$destinatairemail->harpegeid()] = 1;
-			}
-			else // Responsable service courant
-			{
-				if (isset ($mail_resp[$destinatairemail->harpegeid()]))
-					$mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()]+1;
-				else 
-					$mail_resp[$destinatairemail->harpegeid()] = 1;
-			}
-		}
-		// C'est le responsable de la structure qui à fait la demande
-		else
-		{
-			$destinatairemail = $structure->resp_envoyer_a($codeinterne);
-			if (!is_null($destinatairemail))
-			{
-				//echo "destinatairemailid = " . $destinatairemail->harpegeid() . "\n";
-				if ($codeinterne==2 or $codeinterne==3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+		// On regarde ï¿½ qui on doit envoyer la demande de congï¿½s pour sa structure
+		if (is_null($structure->responsable()))
+			echo "Pas de responsable de structure(id : ".$affectation->structureid()."), pas d'envoi de mail. \n";
+		else {
+			if ($affectation->agentid() != $structure->responsable()->harpegeid())
+			{ 
+				$destinatairemail = $structure->agent_envoyer_a($codeinterne);
+				if ($codeinterne==2) // Gestionnaire service courant
 				{
 					if (isset ($mail_gest[$destinatairemail->harpegeid()]))
 						$mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()]+1;
 					else 
 						$mail_gest[$destinatairemail->harpegeid()] = 1;
 				}
-				else // Responsable service parent
+				else // Responsable service courant
 				{
 					if (isset ($mail_resp[$destinatairemail->harpegeid()]))
 						$mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()]+1;
 					else 
 						$mail_resp[$destinatairemail->harpegeid()] = 1;
+				}
+			}
+			// C'est le responsable de la structure qui ï¿½ fait la demande
+			else
+			{
+				$destinatairemail = $structure->resp_envoyer_a($codeinterne);
+				if (!is_null($destinatairemail))
+				{
+					//echo "destinatairemailid = " . $destinatairemail->harpegeid() . "\n";
+					if ($codeinterne==2 or $codeinterne==3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+					{
+						if (isset ($mail_gest[$destinatairemail->harpegeid()]))
+							$mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()]+1;
+						else 
+							$mail_gest[$destinatairemail->harpegeid()] = 1;
+					}
+					else // Responsable service parent
+					{
+						if (isset ($mail_resp[$destinatairemail->harpegeid()]))
+							$mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()]+1;
+						else 
+							$mail_resp[$destinatairemail->harpegeid()] = 1;
+					}
 				}
 			}
 		}
@@ -101,7 +105,7 @@
 	
 	echo "mail_resp="; print_r($mail_resp); echo "\n";
 	echo "mail_gest="; print_r($mail_gest); echo "\n";
-	// Création de l'agent CRON G2T
+	// Crï¿½ation de l'agent CRON G2T
 	$agentcron = new agent($dbcon);
 	// -1 est le code pour l'agent CRON dans G2T
 	$agentcron->load('-1');
@@ -111,7 +115,7 @@
 		$responsable->load($agentid);
 		echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() ." (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid()  .") \n";
 		
-		$agentcron->sendmail($responsable,"En tant que responsable de service, des demandes de congés ou d'autorisations d'absence sont en attentes","Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n",null);
+		$agentcron->sendmail($responsable,"En tant que responsable de service, des demandes de congï¿½s ou d'autorisations d'absence sont en attentes","Il y a $nbredemande demande(s) de congï¿½s ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dï¿½s que possible ï¿½ partir du menu 'Responsable'.\n",null);
 		unset ($responsable);
 	}
 	foreach($mail_gest as $agentid => $nbredemande)
@@ -120,7 +124,7 @@
 		$gestionnaire->load($agentid);
 		echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() ." (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid()  . ") \n";
 		
-		$agentcron->sendmail($gestionnaire,"En tant que gestionnaire de service, des demandes de congés ou d'autorisations d'absence sont en attentes","Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n",null);
+		$agentcron->sendmail($gestionnaire,"En tant que gestionnaire de service, des demandes de congï¿½s ou d'autorisations d'absence sont en attentes","Il y a $nbredemande demande(s) de congï¿½s ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dï¿½s que possible ï¿½ partir du menu 'Gestionnaire'.\n",null);
 		unset ($gestionnaire);
 	}
 	unset ($agentcron);
