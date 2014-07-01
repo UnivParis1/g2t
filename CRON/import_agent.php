@@ -7,9 +7,9 @@
 
 	$date=date("Ymd");
 
-	echo "Début de l'import des agents " . date("d/m/Y H:i:s") . "\n" ;
+	echo "Dï¿½but de l'import des agents " . date("d/m/Y H:i:s") . "\n" ;
 
-	// On vide la table des agents pour la recharger complètement
+	// On vide la table des agents pour la recharger complï¿½tement
 	$sql = "DELETE FROM AGENT";
 	mysql_query($sql);
 	$erreur_requete=mysql_error();
@@ -24,10 +24,33 @@
 	}
 	else
 	{
-		$load_affect=mysql_query("LOAD DATA INFILE '$filename' INTO TABLE AGENT CHARACTER SET LATIN1 FIELDS TERMINATED BY '#'");
-		$erreur_requete=mysql_error();
-		if ($erreur_requete!="")
-			echo "LOAD AGENT FROM FILE => $erreur_requete \n";
+		$fp = fopen("$filename","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode("#",$ligne);
+				$harpegeid = $ligne_element[0];
+				$civilite = $ligne_element[1];
+				$nom = $ligne_element[2];
+				$prenom = $ligne_element[3];
+				$adressemail = $ligne_element[4];
+				$typepop = $ligne_element[5];
+				echo "harpegeid = $harpegeid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
+				$sql = sprintf("INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')",
+				mysql_real_escape_string($harpegeid),mysql_real_escape_string($civilite),mysql_real_escape_string($nom),mysql_real_escape_string($prenom),mysql_real_escape_string($adressemail),mysql_real_escape_string($typepop));
+				
+				mysql_query($sql);
+				$erreur_requete=mysql_error();
+				if ($erreur_requete!="")
+				{
+					echo "INSERT AGENT => $erreur_requete \n";
+					echo "sql = $sql \n";
+				}
+			}
+		}
+		fclose($fp);	
 	}
 	
 	// Ajout manuel de l'agent CRON-G2T avec un harpegeid = -1
