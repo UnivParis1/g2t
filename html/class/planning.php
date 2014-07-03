@@ -14,7 +14,7 @@ class planning {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Planning->construct : La connexion a la base de donnée est NULL !!!<br>";
+			echo "Planning->construct : La connexion a la base de donnï¿½e est NULL !!!<br>";
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -30,7 +30,7 @@ class planning {
 
 		$jrs_feries = $this->fonctions->jourferier();
 
-		//echo "Jours féries = " . $jrs_feries . "<br>";
+		//echo "Jours fï¿½ries = " . $jrs_feries . "<br>";
 
 		unset($listeelement);
 		$autodeclaration = null;
@@ -63,7 +63,7 @@ class planning {
 				//echo "datetemp = " . $this->fonctions->formatdatedb($datetemp) . "    Datefin affectation = " .  $this->fonctions->formatdatedb($affectation->datefin()) .  "<br>"; 
 				if (($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($affectation->datefin())) and ($this->fonctions->formatdatedb($affectation->datefin()) != "00000000")) 
 				{
-					//echo "Je recherche une nouvelle liste d'affectation car hors période <br>";
+					//echo "Je recherche une nouvelle liste d'affectation car hors pï¿½riode <br>";
 					$affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
 					$declarationTPliste = null;
 					$affectation = null;
@@ -76,7 +76,7 @@ class planning {
 			else
 			{
 				$affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
-				//echo "J'ai rechargé les affectations pour la date $datetemp <br>";
+				//echo "J'ai rechargï¿½ les affectations pour la date $datetemp <br>";
 				$declarationTPliste = null;
 			}
 			
@@ -101,7 +101,7 @@ class planning {
 				//echo "Planning->Load : declarationTP = "; if (is_null($declarationTP)) echo "null<br>"; else echo "PAS null<br>";
 				if (!is_null($declarationTP))
 				{
-					// Si on a deja une declaration de TP on vérifie si on peut la garder ou pas (si elle est tjrs dans la période)
+					// Si on a deja une declaration de TP on vï¿½rifie si on peut la garder ou pas (si elle est tjrs dans la pï¿½riode)
 					//echo "Date courante = $datetemp    declarationTP->datefin = " . $this->fonctions->formatdatedb($declarationTP->datefin()) . "<br>";
 					if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
 					{
@@ -122,17 +122,17 @@ class planning {
 				{
 					//echo "declarationTPListe n'est pas null <br>";
 					//echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>"; 
-					// On parcours toutes les declarations de TP pour trouver celle qui est validée (si elle existe)
+					// On parcours toutes les declarations de TP pour trouver celle qui est validï¿½e (si elle existe)
 					for($indexdecla = 0, $nbdecla = count($declarationTPliste); $indexdecla < $nbdecla; $indexdecla++)
 					{
 						//echo "indexdecla = $indexdecla   nbdecla = $nbdecla <br>";
 						$declarationTP = $declarationTPliste[$indexdecla];
 						//echo "Apres le declarationTP = declarationTPliste <br>";
 						//echo "declarationTP->statut() = " . $declarationTP->statut() . "<br>";
-						// Si la déclaration de TP n'est pas validée alors c'est comme si on avait rien
+						// Si la dï¿½claration de TP n'est pas validï¿½e alors c'est comme si on avait rien
 						if ((strcasecmp($declarationTP->statut(),"v")==0) and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
 						{
-							// Si on a trouvée une declatation de TP validée on sort
+							// Si on a trouvï¿½e une declatation de TP validï¿½e on sort
 							//echo "Je break... <br>";
 							$fulldeclarationTPliste[$declarationTP->declarationTPid()] = $declarationTP;
 							break;
@@ -161,26 +161,26 @@ class planning {
 			
 			if (strpos($jrs_feries,";" . $datetemp . ";"))
 			{
-				//echo "C'est un jour férié = $datetemp <br>";
+				//echo "C'est un jour fï¿½riï¿½ = $datetemp <br>";
 				$element->type("ferie");
-				$element->info("jour férié");
+				$element->info("jour fï¿½riï¿½");
 			}
 			elseif ((date("w",strtotime($datetemp)) == 0) or (date("w",strtotime($datetemp)) == 6))
 			{
 				$element->type("WE");
 				$element->info("week-end");
 			}
-			// On est dans le cas ou aucune déclaration de TP n'est faite
+			// On est dans le cas ou aucune dï¿½claration de TP n'est faite
 			elseif (is_null($declarationTP))
 			{
 				$element->type("nondec");
-				$element->info("Période non déclarée");
+				$element->info("Pï¿½riode non dï¿½clarï¿½e");
 			}
-			// On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!! 
+			// On est dans le cas ou le statut n'est pas validï¿½ => C'est comme si on avait rien fait !!! 
 			elseif (strcasecmp($declarationTP->statut(),"v")!=0)
 			{
 				$element->type("nondec");
-				$element->info("Période non déclarée");
+				$element->info("Pï¿½riode non dï¿½clarï¿½e");
 			}
 			elseif ($declarationTP->enTP($element->date(), $element->moment()))
 			{
@@ -203,9 +203,9 @@ class planning {
 			$element->moment("a");
 			if (strpos($jrs_feries,";" . $datetemp . ";"))
 			{
-				//echo "C'est un jour férié = $datetemp <br>";
+				//echo "C'est un jour fï¿½riï¿½ = $datetemp <br>";
 				$element->type("ferie");
-				$element->info("jour férié");
+				$element->info("jour fï¿½riï¿½");
 			}
 			elseif ((date("w",strtotime($datetemp)) == 0) or (date("w",strtotime($datetemp)) == 6))
 			{
@@ -215,13 +215,13 @@ class planning {
 			elseif (is_null($declarationTP))
 			{
 				$element->type("nondec");
-				$element->info("Période non déclarée");
+				$element->info("Pï¿½riode non dï¿½clarï¿½e");
 			}
-			// On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!! 
+			// On est dans le cas ou le statut n'est pas validï¿½ => C'est comme si on avait rien fait !!! 
 			elseif (strcasecmp($declarationTP->statut(),"v")!=0)
 			{
 				$element->type("nondec");
-				$element->info("Période non déclarée");
+				$element->info("Pï¿½riode non dï¿½clarï¿½e");
 			}
 			elseif ($declarationTP->enTP($element->date(), $element->moment()))
 			{
@@ -241,10 +241,10 @@ class planning {
 			//echo "datetemp = " . strtotime($datetemp) . "<br>";
 			$timestamp = strtotime($datetemp);
 			$datetemp = date("Ymd", strtotime("+1days", $timestamp ));  // On passe au jour suivant
-			//echo "On passe à la date : " .$datetemp . "(  " .  strtotime($datetemp)  . ")  <br>";
+			//echo "On passe ï¿½ la date : " .$datetemp . "(  " .  strtotime($datetemp)  . ")  <br>";
 		}
 
-		//echo "Nbre d'élément = " . count($this->listeelement);
+		//echo "Nbre d'ï¿½lï¿½ment = " . count($this->listeelement);
 		//echo "   "  . date("H:i:s") . "<br>";
 		//echo "Planning->Load : fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
 
@@ -266,7 +266,7 @@ class planning {
 					echo "Planning->load : " . $erreur . "<br>";
 				if (mysql_num_rows($query) == 0)
 				{
-					//echo "Planning->load : Pas de congé pour cette agent dans la période demandée <br>";
+					//echo "Planning->load : Pas de congï¿½ pour cette agent dans la pï¿½riode demandï¿½e <br>";
 				}
 				while ($result = mysql_fetch_row($query))
 				{
@@ -304,8 +304,8 @@ class planning {
 			 					$element->agentid($agentid);
 			 					//echo "Planning->load : Type = " . $result[2] . "  Info =  " . $result[15] . "<br>";
 			 					//echo "Planning->load : Type (element) = " . $element->type() . "  Info (element) =  " . $element->info() . "<br>";
-			 					//$element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-			 					//echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
+			 					//$element->couleur($result[16]); ==> La couleur est gï¿½rï¿½e par l'element du planning
+			 					//echo "Le type de l'ï¿½lï¿½ment courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
 			 					if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
 			 					elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(),"nondec")==0)
@@ -329,16 +329,16 @@ class planning {
 			 					$element->statut($demande->statut());
 			 					$element->info($demande->typelibelle()); //motifrefus()
 			 					$element->agentid($agentid);
-			 					// $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
+			 					// $element->couleur($result[16]); ==> La couleur est gï¿½rï¿½e par l'element du planning
 			 					if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
 			 					elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(),"nondec")==0)
 			 						$this->listeelement[$datetemp . $demandetempmoment] = $element;
 			 					unset ($element);
-								//echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
+								//echo "Fin du traitement du demandetempmoment = 'aprï¿½s-midi' <br>";
 							}
-			 			   $demandetempmoment = 'm';
 						}
+			 			$demandetempmoment = 'm';
 						//echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp=  " . $datetemp .  "<br>";
 						$timestamp = strtotime($datetemp);
 						$datetemp = date("Ymd", strtotime("+1days", $timestamp ));  // On passe au jour suivant
@@ -363,7 +363,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 			echo "Planning->load (HARPABSENCE) : " . $erreur . "<br>";
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "Planning->load (HARPABSENCE) : Pas de congé pour cette agent dans la période demandée <br>";
+			//echo "Planning->load (HARPABSENCE) : Pas de congï¿½ pour cette agent dans la pï¿½riode demandï¿½e <br>";
 		}
 		//echo "Avant le while 2 <br>";
 		while ($result = mysql_fetch_row($query))
@@ -386,10 +386,10 @@ WHERE HARPEGEID = '" . $agentid . "'
 						//echo "avant le element date <br>";
 						$element->date($this->fonctions->formatdate($datetemp));
 						$element->moment($demandetempmoment);
-						$element->type("harp");  // ==> Le type de congé est fixé - Ce sont des congés HARPEGE
+						$element->type("harp");  // ==> Le type de congï¿½ est fixï¿½ - Ce sont des congï¿½s HARPEGE
 						$element->info("$result[3]");
 	 					$element->agentid($agentid);
-						// $element->couleur($result[16]);  ==> La couleur est gérée par l'element du planning
+						// $element->couleur($result[16]);  ==> La couleur est gï¿½rï¿½e par l'element du planning
 						//echo "avant le if interne  ==> DateTemp = " .  $datetemp . "  demandetempmoment =  " . $demandetempmoment  . " <br>";
 						if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
 							$this->listeelement[$datetemp . $demandetempmoment] = $element;
@@ -405,10 +405,10 @@ WHERE HARPEGEID = '" . $agentid . "'
 						$element = new planningelement($this->dbconnect);
 						$element->date($this->fonctions->formatdate($datetemp));
 						$element->moment($demandetempmoment);
-						$element->type("harp");  // ==> Le type de congé est fixé - Ce sont des congés HARPEGE
+						$element->type("harp");  // ==> Le type de congï¿½ est fixï¿½ - Ce sont des congï¿½s HARPEGE
 						$element->info("$result[3]");
 	 					$element->agentid($agentid);
-						// $element->couleur($result[16]);  ==> La couleur est gérée par l'element du planning
+						// $element->couleur($result[16]);  ==> La couleur est gï¿½rï¿½e par l'element du planning
 						if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
 							$this->listeelement[$datetemp . $demandetempmoment] = $element;
 						elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "")
@@ -422,7 +422,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 				$datetemp = date("Ymd", strtotime("+1days", $timestamp ));  // On passe au jour suivant
 			}
 		}
-	   //echo "Fin de la procédure Load <br>";
+	   //echo "Fin de la procï¿½dure Load <br>";
 		return  $this->listeelement;
 	}
 
@@ -439,7 +439,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 	function planning()
 	{
 		if (is_null($this->listeelement))
-			echo "Planning->planning : Pas de planning défini !!!!! <br>";
+			echo "Planning->planning : Pas de planning dï¿½fini !!!!! <br>";
 		else
 			return  $this->listeelement;
 	}
@@ -510,7 +510,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 			$htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
 			$htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . ($tempannee-1) ."'>";
 			$htmltext = $htmltext . "</form>";
-			$htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (année précédente)</a>";
+			$htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (annï¿½e prï¿½cï¿½dente)</a>";
 		}
 
  		return $htmltext;
@@ -541,11 +541,11 @@ WHERE HARPEGEID = '" . $agentid . "'
  				//echo "element->type() = " . $element->type() . "<br>";
 	 			if ($element->type() == "" or strcasecmp($element->type(),"WE")==0 or strcasecmp($element->type(),"ferie")==0 or strcasecmp($element->type(),"tppar")==0)
 	 			{
-	 				// On ne fait rien si c'est vide, un WE, un jour férié ou un temp partiel
+	 				// On ne fait rien si c'est vide, un WE, un jour fï¿½riï¿½ ou un temp partiel
 	 			}
 	 			elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(),"nondec")==0)
 	 			{
-	 				// On ne fait rien car on doit ignorer le fait que l'autodéclaration n'est pas faite
+	 				// On ne fait rien car on doit ignorer le fait que l'autodï¿½claration n'est pas faite
 	 			}
 	 			else
 	 			{
@@ -593,10 +593,10 @@ WHERE HARPEGEID = '" . $agentid . "'
  			}
  			if (!$pasdetraitement)
  			{
- 				//echo "On traite l'élément... Type =: " . $element->type() . " <br>";
+ 				//echo "On traite l'ï¿½lï¿½ment... Type =: " . $element->type() . " <br>";
 	 			if ($element->type() == "")
 	 			{
-	 				// On ajoute 1 car "rien de prévu ce jour là" donc c'est un jour ou l'agent travail
+	 				// On ajoute 1 car "rien de prï¿½vu ce jour lï¿½" donc c'est un jour ou l'agent travail
 		 			$nbredemijour++;
 	 			}
  				elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(),"nondec")==0)
@@ -606,7 +606,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 	 			}
 	 			else
 	 			{
-	 				//On ne fait rien car le jour n'est pas travaillé et dispo
+	 				//On ne fait rien car le jour n'est pas travaillï¿½ et dispo
 	 			}
  			}
  			//echo "nbredemijour =" . $nbredemijour . "<br>";
@@ -651,13 +651,13 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$pdf->Cell(60,10,'Planning de  : '. $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom());
 		$pdf->Ln(10);
 		$pdf->SetFont('Arial','B',11);
-		$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
+		$pdf->Cell(60,10,'Editï¿½ le '. date("d/m/Y"));
 		$pdf->Ln(10);
 
 		//echo "Avant le planning <br>";
 
-		/////création du planning suivant le tableau généré
-		///Création des entetes de colones contenant les 31 jours/////
+		/////crï¿½ation du planning suivant le tableau gï¿½nï¿½rï¿½
+		///Crï¿½ation des entetes de colones contenant les 31 jours/////
 
 		$pdf->Cell(30,5,"",1,0,'C');
 		for ($index=1; $index<=31; $index++)
@@ -705,7 +705,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$pdf->Ln(10);
 		$pdf->SetFont('Arial','B',7);
 		$pdf->SetTextColor(0);
-		//////Mise en place de la légende couleurs pour les congés
+		//////Mise en place de la lï¿½gende couleurs pour les congï¿½s
 
 		//echo "Avant legende <br>";
 		$this->fonctions->legendepdf($pdf);
