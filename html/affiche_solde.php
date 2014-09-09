@@ -109,7 +109,7 @@
 					echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
 					echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
 	
-					// Ligne de séparation entre les agents
+					// Ligne de sÃ©paration entre les agents
 					echo "<hr>";
 				}
 			}
@@ -172,7 +172,7 @@
 ?>
 
 <!-- 
-	<a href=".">Retour à la page d'accueil</a>
+	<a href=".">Retour Ã  la page d'accueil</a>
 --> 
 </body></html>
 

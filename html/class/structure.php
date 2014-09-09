@@ -19,7 +19,9 @@ class structure {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Structure->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "Structure->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -31,11 +33,14 @@ class structure {
 			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Structure->Load (STRUCTURE) : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Structure->Load (STRUCTURE) : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			if (mysql_num_rows($query) == 0)
 			{
-				//echo "Structure->Load (STRUCTURE) : Structure $structureid non trouvé <br>";
+				//echo "Structure->Load (STRUCTURE) : Structure $structureid non trouvÃ© <br>";
 	 			$this->nomcourt = "$structureid";
  				$this->nomlong = "Structure inconnue";
 				return false;
@@ -62,8 +67,11 @@ class structure {
 	{
 		if (is_null($name))
 		{
-			if (is_null($this->nomlong))
-				echo "Structure->nomlong : Le nom de la structure n'est pas défini !!! <br>";
+			if (is_null($this->nomlong)) {
+				$errlog = "Structure->nomlong : Le nom de la structure n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->nomlong;
 		}
@@ -75,8 +83,11 @@ class structure {
 	{
 		if (is_null($name))
 		{
-			if (is_null($this->nomcourt))
-				echo "Structure->nomcourt : Le nom de la structure n'est pas défini !!! <br>";
+			if (is_null($this->nomcourt)) {
+				$errlog = "Structure->nomcourt : Le nom de la structure n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->nomcourt;
 		}
@@ -88,8 +99,11 @@ class structure {
 	{
 		if (is_null($affiche))
 		{
-			if (is_null($this->affichetoutagent))
-				echo "Structure->affichetoutagent : Le parametre affichetoutagent de la structure n'est pas défini !!! <br>";
+			if (is_null($this->affichetoutagent)) {
+				$errlog = "Structure->affichetoutagent : Le paramÃ¨tre affichetoutagent de la structure n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->affichetoutagent;
 		}
@@ -102,8 +116,11 @@ class structure {
 	{
 		if (is_null($sousstruct))
 		{
-			if (is_null($this->affichesousstruct))
-				echo "Structure->sousstructure : Le parametre sousstructure de la structure n'est pas défini !!! <br>";
+			if (is_null($this->affichesousstruct)) {
+				$errlog = "Structure->sousstructure : Le paramÃ¨tre sousstructure de la structure n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->affichesousstruct;
 		}
@@ -119,8 +136,11 @@ class structure {
 			$sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT='" . $this->structureid . "'"; 
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Structure->structurefille : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Structure->structurefille : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			if (mysql_num_rows($query) == 0)
 			{
 				//echo "Structure->structurefille : La structure $this->structureid n'a pas de structure fille<br>";
@@ -174,12 +194,17 @@ class structure {
 		//echo "Structure->agentlist : SQL (agentlist) = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Structure->agentlist : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Structure->agentlist : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
 			//echo "Structure->agentlist : La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent<br>";
-			echo "La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent<br>";
+			$errlog = "La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		//echo "Avant le while...<br>";
 		while ($result = mysql_fetch_row($query))
@@ -188,7 +213,7 @@ class structure {
 			//echo "Apres le new et avant le load =" . $result[0]  . "<br>";
 			$agent->load("$result[0]");
 			//echo "Apres le load...<br>";
-			// La clé est NOM + PRENOM + HARPEGEID => permet de trier les tableaux par ordre alphabétique
+			// La clÃ© est NOM + PRENOM + HARPEGEID => permet de trier les tableaux par ordre alphabÃ©tique
 			$agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->harpegeid()] = $agent;
 ///			$agentliste[$agent->harpegeid()] = $agent;
 			//echo "Apres la mise dans le tableau <br>";
@@ -203,23 +228,28 @@ class structure {
 			
 	function resp_envoyer_a(&$codeinterne = NULL, $update = false)
 	{
-		// La fonction retourne le code de l'agent à qui envoyer le mail
-		// Le paramètre $codeinterne retourne les valeurs 1,2,3... => Nécessaire pour initialisation de la liste
+		// La fonction retourne le code de l'agent Ã  qui envoyer le mail
+		// Le paramÃ¨tre $codeinterne retourne les valeurs 1,2,3... => NÃ©cessaire pour initialisation de la liste
 		//    dans les pages gestion_structure.php par exemple si $update=false
-		// Si $update = true => On met à jour la valeur du champs
+		// Si $update = true => On met Ã  jour la valeur du champs
 		if ($update==true)
 		{
 			if (is_null($codeinterne))
 			{
-				echo "Structure->resp_envoyer_a : Le codeinterne est NULL<br>";
+				$errlog = "Structure->resp_envoyer_a : Le codeinterne est NULL";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
 			else 
 			{
 				$sql = "UPDATE STRUCTURE SET DEST_MAIL_RESPONSABLE='" . $codeinterne ."' WHERE STRUCTUREID = '" . $this->structureid . "'";
 				mysql_query ($sql, $this->dbconnect);
 				$erreur=mysql_error();
-				if ($erreur != "")
-					echo "Structure->resp_envoyer_a (UPDATE) : " . $erreur . "<br>";
+				if ($erreur != "") {
+					$errlog = "Structure->resp_envoyer_a (UPDATE) : " . $erreur;
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 			}
 		}
 		else 
@@ -228,8 +258,11 @@ class structure {
 	 		$sql = "SELECT DEST_MAIL_RESPONSABLE FROM STRUCTURE WHERE STRUCTUREID = '" . $this->structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Structure->resp_envoyer_a (SELECT) : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Structure->resp_envoyer_a (SELECT) : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$codeinterne = $result[0];
 			//echo "codeinterne = $codeinterne <br>";
@@ -243,7 +276,7 @@ class structure {
 				case 3: // Envoi au gestionnaire du service courant
 					return $this->gestionnaire();
 					break;
-				default: // $codeinterne = 1 ou $codeinterne non initialisé
+				default: // $codeinterne = 1 ou $codeinterne non initialisÃ©
 					$codeinterne = 1; // Envoi au responsable du service parent
 					$parentstruct = $this->parentstructure();
 					if (!is_null($parentstruct))
@@ -254,23 +287,28 @@ class structure {
 
 	function agent_envoyer_a(&$codeinterne = NULL, $update = false)
 	{
-		// La fonction retourne le code de l'agent à qui envoyer le mail
-		// Le paramètre $codeinterne retourne les valeurs 1,2,3... => Nécessaire pour initialisation de la liste
+		// La fonction retourne le code de l'agent Ã  qui envoyer le mail
+		// Le paramÃ¨tre $codeinterne retourne les valeurs 1,2,3... => NÃ©cessaire pour initialisation de la liste
 		//    dans les pages gestion_structure.php par exemple si $update=false
-		// Si $update = true => On met à jour la valeur du champs
+		// Si $update = true => On met Ã  jour la valeur du champs
 		if ($update==true)
 		{
 			if (is_null($codeinterne))
 			{
-				echo "Structure->agent_envoyer_a : Le codeinterne est NULL<br>";
+				$errlog = "Structure->agent_envoyer_a : Le codeinterne est NULL";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
 			else 
 			{
 				$sql = "UPDATE STRUCTURE SET DEST_MAIL_AGENT='" . $codeinterne ."' WHERE STRUCTUREID = '" . $this->structureid . "'";
 				mysql_query ($sql, $this->dbconnect);
 				$erreur=mysql_error();
-				if ($erreur != "")
-					echo "Structure->agent_envoyer_a (UPDATE) : " . $erreur . "<br>";
+				if ($erreur != "") {
+					$errlog = "Structure->agent_envoyer_a (UPDATE) : " . $erreur;
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 			}
 		}
 		else 
@@ -278,8 +316,11 @@ class structure {
 	 		$sql = "SELECT DEST_MAIL_AGENT FROM STRUCTURE WHERE STRUCTUREID = '" . $this->structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Structure->agent_envoyer_a (SELECT) : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Structure->agent_envoyer_a (SELECT) : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$codeinterne = $result[0];
 			switch ($codeinterne)
@@ -287,7 +328,7 @@ class structure {
 				case 2: // Envoi au gestionnaire du service courant
 					return $this->gestionnaire();
 					break;
-				default: // $codeinterne = 1 ou $codeinterne non initialisé
+				default: // $codeinterne = 1 ou $codeinterne non initialisÃ©
 					$codeinterne = 1; // Envoi au responsable du service courant
 					return $this->responsable();
 			}
@@ -297,8 +338,11 @@ class structure {
 	function parentstructure()
 	{
 		$parentstruct = null;
-		if (is_null($this->parentid))
-			echo "Structure->parentstructure : La structure parente n'est pas définie !!! <br>";
+		if (is_null($this->parentid)) {
+			$errlog = "Structure->parentstructure : La structure parente n'est pas dÃ©finie !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			$parentstruct = new structure($this->dbconnect);
@@ -311,8 +355,11 @@ class structure {
 	{
 		if (is_null($respid))
 		{
-			if (is_null($this->responsableid) or ($this->responsableid==''))
-				echo "<B><FONT COLOR='#FF0000'>Structure->Responsable : Le responsable de la structure " . $this->structureid  . " n'est pas défini !!! </FONT></B><br>";
+			if (is_null($this->responsableid) or ($this->responsableid=='')) {
+				$errlog = "<B><FONT COLOR='#FF0000'>Structure->Responsable : Le responsable de la structure " . $this->structureid  . " n'est pas dÃ©fini !!! </FONT></B>";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				$responsable = new agent($this->dbconnect);
@@ -328,8 +375,11 @@ class structure {
 	{
 		if (is_null($gestid))
 		{
-			if (is_null($this->gestionnaireid) or ($this->gestionnaireid==''))
-				echo "<br><B><FONT COLOR='#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B><br>";
+			if (is_null($this->gestionnaireid) or ($this->gestionnaireid=='')) {
+				$errlog = "<br><B><FONT COLOR='#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas dÃ©fini !!! </FONT></B>";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				$gestionnaire = new agent($this->dbconnect);
@@ -346,8 +396,11 @@ class structure {
 	function planning($mois_annee_debut, $mois_annee_fin)
 	{
 		$planningservice = null;
-		if (is_null($mois_annee_debut) or is_null($mois_annee_fin))
-			echo "Structure->planning : Au moins un des paramètres est non défini (null)  <br>";
+		if (is_null($mois_annee_debut) or is_null($mois_annee_fin)) {
+			$errlog = "Structure->planning : Au moins un des paramÃ¨tres est non defini (null)";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 
 		$fulldatedebut = "01/" . $mois_annee_debut;
 		$tempfulldatefindb = $this->fonctions->formatdatedb("01/" .  $mois_annee_fin);
@@ -373,14 +426,14 @@ class structure {
 		return $planningservice;
 	}
 	
-	function planninghtml($mois_annee_debut)   // Le format doit être MM/YYYY
+	function planninghtml($mois_annee_debut)   // Le format doit Ãªtre MM/YYYY
 	{
 		//echo "Je debute planninghtml <br>";
 		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
 		
 		if (!is_array($planningservice))
 		{
-			return "";   // Si aucun élément du planning => On retourne vide
+			return "";   // Si aucun Ã©lÃ©ment du planning => On retourne vide
 		}
 		//echo "Apres le chargement du planning du service <br>";
 		$htmltext = "";
@@ -412,7 +465,7 @@ class structure {
 			//echo "Je charge l'agent $agentid <br>";
 			$agent = new agent($this->dbconnect);
 			$agent->load($agentid);
-			//echo "l'agent $agentid est chargé ... <br>";
+			//echo "l'agent $agentid est chargÃ© ... <br>";
 			$htmltext = $htmltext . "<tr class='ligneplanning'>";
 			$htmltext = $htmltext ."<td>" . $agent->nom() . " " . $agent->prenom() . "</td>";
 			//echo "Avant chargement des elements <br>";
@@ -445,7 +498,7 @@ class structure {
 		$htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
 		$htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
 		$htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut  . "'>";
-		$htmltext = $htmltext . "<a href='javascript:document.structpreviousplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF (année précédente)</a>";
+		$htmltext = $htmltext . "<a href='javascript:document.structpreviousplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF (annÃ©e prÃ©cÃ©dente)</a>";
 		$htmltext = $htmltext . "</form>";
 		return $htmltext;
 	}
@@ -459,10 +512,10 @@ class structure {
 		$htmltext = "<br>";
 		$htmltext = "<table class='tableausimple'>";
 		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=5 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
-		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
+		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congÃ©s</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de dÃ©but du CET</td></tr>";
 		$agentliste = $this->agentlist(date('d/m/Y'),date('d/m/Y') , 'n');
 		
-		// Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
+		// Si on est en mode 'responsable' <=> le code du responsable de la structure est passÃ© en paramÃ¨tre
 		if (!is_null($responsableid))
 		{
 			// On ajoute les responsables de structures filles
@@ -474,7 +527,7 @@ class structure {
 				{
 					$responsable = $structure->responsable();
 					
-					// La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
+					// La clÃ© NOM + PRENOM + HARPEGEID permet de trier les Ã©lÃ©ments par ordre alphabÃ©tique
 					$responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
 					///$responsableliste[$responsable->harpegeid()] = $responsable;
 				}
@@ -531,7 +584,7 @@ class structure {
 						$datedebut = $cet->datedebut();
 					}
 					unset($cet);
-					// Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
+					// Si on ne modifie rien ou si il y a dÃ©ja un CET => On affiche en mode lecture seule
 					if (($msg == "") or (!$pourmodif))
 					{
 						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
@@ -563,7 +616,9 @@ class structure {
 		$erreur=mysql_error();
 		if ($erreur != "")
 		{
-			echo "Structure->store (STRUCTURE - Sous struct + Affiche) : " . $erreur . "<br>";
+			$errlog = "Structure->store (STRUCTURE - Sous struct + Affiche) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			$msgerreur = $msgerreur . $erreur;
 			
 		}
@@ -574,36 +629,43 @@ class structure {
 		$erreur=mysql_error();
 		if ($erreur != "")
 		{
-			echo "Structure->store (HARP_STRUCTURE) : " . $erreur . "<br>";
+			$errlog = "Structure->store (HARP_STRUCTURE) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			$msgerreur = $msgerreur . $erreur;
 		}
 		return $msgerreur;
 	}
 	
-	function pdf($mois_annee_debut)  // Le format doit être MM/YYYY
+	function pdf($mois_annee_debut)  // Le format doit Ãªtre MM/YYYY
 	{
 		//echo "Avant le new PDF <br>";
-		$pdf=new FPDF();
+		//$pdf=new FPDF();
+		$pdf=new tFPDF();
 		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
+		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
 		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-		$pdf->SetFont('Arial','B',15);
+		//$pdf->SetFont('Arial','B',15);
+		$pdf->SetFont('DejaVu','B',15);
 		$pdf->Ln(15);
 		$pdf->Cell(60,10,'Service : '. $this->nomlong().' ('.$this->nomcourt() . ')' );
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Planning du mois de : '. $this->fonctions->nommois("01/".$mois_annee_debut) . " " . substr($mois_annee_debut, 3));
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',11);
-		$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
+		//$pdf->SetFont('Arial','B',11);
+		$pdf->SetFont('DejaVu','B',11);
+		$pdf->Cell(60,10,'EditÃ© le '. date("d/m/Y"));
 		$pdf->Ln(10);
 	
 		//echo "Avant le planning <br>";
 		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
 	
-		/////création du planning suivant le tableau généré
-		///Création des entetes de colones contenant les 31 jours/////
+		/////crÃ©ation du planning suivant le tableau gÃ©nÃ©rÃ©
+		///CrÃ©ation des entetes de colones contenant les 31 jours/////
 	
 	
 
@@ -612,7 +674,8 @@ class structure {
 		{
  			if ($titre_a_ajouter)
  			{
-				$pdf->SetFont('Arial','B',8);
+				//$pdf->SetFont('Arial','B',8);
+				$pdf->SetFont('DejaVu','B',8);
 				$pdf->Cell(60,5,"",1,0,'C');
 				for ($index=1; $index<=count($planningservice[$agentid]->planning())/2; $index++)
 				{
@@ -630,9 +693,10 @@ class structure {
 			//echo "Je charge l'agent $agentid <br>";
 			$agent = new agent($this->dbconnect);
 			$agent->load($agentid);
-			//echo "l'agent $agentid est chargé ... <br>";
+			//echo "l'agent $agentid est chargÃ© ... <br>";
 			$pdf->Ln(5);
-			$pdf->SetFont('Arial','B',8);
+			//$pdf->SetFont('Arial','B',8);
+			$pdf->SetFont('DejaVu','B',8);
 			$pdf->Cell(60,5,$agent->nom() . " " . $agent->prenom(),1,0,'C');
 			//echo "Avant chargement des elements <br>";
 			$listeelement = $planning->planning();
@@ -650,9 +714,10 @@ class structure {
 	
 		/////MISE EN PLACE DES LEGENDES DU PLANNING
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',7);
+		//$pdf->SetFont('Arial','B',7);
+		$pdf->SetFont('DejaVu','B',7);
 		$pdf->SetTextColor(0);
-		//////Mise en place de la légende couleurs pour les congés
+		//////Mise en place de la lÃ©gende couleurs pour les congÃ©s
 	
 		//echo "Avant legende <br>";
 		$this->fonctions->legendepdf($pdf);

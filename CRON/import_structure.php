@@ -4,10 +4,9 @@
 	require_once('../html/includes/dbconnection.php');
 
 	$fonctions = new fonctions($dbcon);
-
 	$date=date("Ymd");
 
-	echo "Début de l'import des structures " . date("d/m/Y H:i:s") . "\n" ;
+	echo "DÃ©but de l'import des structures " . date("d/m/Y H:i:s") . "\n" ;
 
 	// On parcourt le fichier des structures
 	// 	Si la structure n'existe pas
@@ -45,12 +44,13 @@
 				if (mysql_num_rows($query) == 0) // Structure manquante
 				{
 					$sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID) VALUES('%s','%s','%s','%s','%s')",
-							mysql_real_escape_string($code_struct),mysql_real_escape_string($nom_long_struct),mysql_real_escape_string($nom_court_struct),mysql_real_escape_string($parent_struct),mysql_real_escape_string($resp_struct));
+							$fonctions->my_real_escape_utf8($code_struct),$fonctions->my_real_escape_utf8($nom_long_struct),$fonctions->my_real_escape_utf8($nom_court_struct),$fonctions->my_real_escape_utf8($parent_struct),$fonctions->my_real_escape_utf8($resp_struct));
 				}
 				else
 				{
 					$sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s' WHERE STRUCTUREID='%s'",
-							mysql_real_escape_string($nom_long_struct),mysql_real_escape_string($nom_court_struct),mysql_real_escape_string($parent_struct),mysql_real_escape_string($resp_struct),mysql_real_escape_string($code_struct));
+							$fonctions->my_real_escape_utf8($nom_long_struct),$fonctions->my_real_escape_utf8($nom_court_struct),$fonctions->my_real_escape_utf8($parent_struct),$fonctions->my_real_escape_utf8($resp_struct),$fonctions->my_real_escape_utf8($code_struct));
+					echo $sql."\n";
 				}
 				mysql_query($sql);
 				$erreur_requete=mysql_error();

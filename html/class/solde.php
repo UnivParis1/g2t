@@ -7,13 +7,18 @@ class solde {
 	private $droitaquis = null;
 	private $droitpris = null;
 	
+	private $fonctions = null;
+	
 	function __construct($db)
 	{
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Solde->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "Solde->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
+		$this->fonctions = new fonctions($db);
 	}
 	
 /*	function load($soldeid)
@@ -31,8 +36,8 @@ class solde {
 				echo "Solde->Load : " . $erreur . "<br>";
 			if (mysql_num_rows($query) == 0)
 			{
-				//echo "Solde->Load : Solde $soldeidid non trouvé <br>";
-				return "Le solde $soldeidid n'est pas trouvé <br>";
+				//echo "Solde->Load : Solde $soldeidid non trouvÃ© <br>";
+				return "Le solde $soldeidid n'est pas trouvÃ© <br>";
 			}
 			$result = mysql_fetch_row($query);
 			$this->soldeid = "$result[0]";
@@ -46,21 +51,29 @@ class solde {
 
 	function load($agentid = null, $typecongeid = null)
 	{
-		if (is_null($agentid) or is_null($typecongeid))
-			echo "Solde->loadbytypeagent : L'agent ou le type de conge est NULL... <br>";
+		if (is_null($agentid) or is_null($typecongeid)) {
+			$errlog = "Solde->loadbytypeagent : L'agent ou le type de congÃ© est NULL...";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	   else
 	   {
 			$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $typecongeid . "' AND HARPEGEID='" . $agentid  ."'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Solde->load : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Solde->load : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			if (mysql_num_rows($query) == 0)
 			{
 				$agent = new agent($this->dbconnect);
 				$agent ->load($agentid);
-				//echo "Solde->loadbytypeagent : Solde type = $typecongeid  agent = $agentid non trouvé <br>";
-				return "Le solde de congés pour le type $typecongeid n'est pas déclaré pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " <br>";
+				//echo "Solde->loadbytypeagent : Solde type = $typecongeid  agent = $agentid non trouvÃ© <br>";
+				$errlog = "Le solde de congÃ©s pour le type $typecongeid n'est pas dÃ©clarÃ© pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom();
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				return $errlog."<br/>";
 			}
 			$result = mysql_fetch_row($query);
 			$this->agentid = "$result[0]";
@@ -74,8 +87,11 @@ class solde {
 	{
 		if (is_null($droitaquis))
 		{
-			if (is_null($this->droitaquis))
-				echo "Solde->droitaquis : Les droits aquis ne sont pas définis !!! <br>";
+			if (is_null($this->droitaquis)) {
+				$errlog = "Solde->droitaquis : Les droits aquis ne sont pas dÃ©finis !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return (float)$this->droitaquis; //number_format($this->droitaquis,1);
 		}
@@ -87,8 +103,11 @@ class solde {
 	{
 		if (is_null($droitpris))
 		{
-			if (is_null($this->droitpris))
-				echo "Solde->droitpris : Les droits pris ne sont pas définis !!! <br>";
+			if (is_null($this->droitpris)) {
+				$errlog = "Solde->droitpris : Les droits pris ne sont pas dÃ©finis !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return (float)$this->droitpris; //number_format($this->droitpris,1);
 		}
@@ -105,8 +124,11 @@ class solde {
 	{
 		if (is_null($typeid))
 		{
-			if (is_null($this->typeabsenceid))
-				echo "Solde->typeabsenceid : Les types de congés n'est pas définis !!! <br>";
+			if (is_null($this->typeabsenceid)) {
+				$errlog = "Solde->typeabsenceid : Le type de congÃ©s n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->typeabsenceid;
 		}
@@ -116,17 +138,26 @@ class solde {
 	
 	function typelibelle()
 	{
-		if (is_null($this->typeabsenceid))
-			echo "Solde->typelibelle : Les type de congés n'est pas définis !!! <br>";
+		if (is_null($this->typeabsenceid)) {
+			$errlog = "Solde->typelibelle : Le type de congÃ©s n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			$sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID='" . $this->typeabsenceid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Solde->typelibelle : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "Solde->typelibelle : Libellé du solde $this->typeabsenceid non trouvé <br>";
+			if ($erreur != "") {
+				$errlog = "Solde->typelibelle : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "Solde->typelibelle : LibellÃ© du solde $this->typeabsenceid non trouvÃ©";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$this->typelibelle = "$result[0]";
 		}
@@ -135,8 +166,11 @@ class solde {
 	
 	function agent()
 	{
-		if  (is_null($this->agentid))
-			echo "Solde->agent : L'agent n'est pas définis !!! <br>";
+		if  (is_null($this->agentid)) {
+			$errlog = "Solde->agent : L'agent n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			$agent=new agent($this->dbconnect);
@@ -158,8 +192,11 @@ AND DEMANDE.STATUT='a';";
 		//echo "Solde->demandeenattente SQL : $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Solde->demandeenattente : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Solde->demandeenattente : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			$result = mysql_fetch_row($query);
@@ -169,21 +206,32 @@ AND DEMANDE.STATUT='a';";
 
 	function creersolde($codeconge = null, $codeagent = null)
 	{
-		if (is_null($codeconge))
-			$msgerreur = $msgerreur . "Solde->creersolde : Le code de congé est NULL !!! <br>";
-		if (is_null($codeagent))
-			$msgerreur = $msgerreur . "Solde->creersolde : Le code de l'agent est NULL !!! <br>";
+		if (is_null($codeconge)) {
+			$errlog = "Solde->creersolde : Le code de congÃ© est NULL !!!";
+			$msgerreur = $msgerreur . $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		if (is_null($codeagent)) {
+			$errlog = "Solde->creersolde : Le code de l'agent est NULL !!!";
+			$msgerreur = $msgerreur . $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (is_null($codeconge) or is_null($codeagent))
 		{
-			return "Impossible de créer le solde pour l'agent !!! <br>" . $msgerreur;
+			$errlog = "Impossible de crÃ©er le solde pour l'agent !!!";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			return $errlog. "<br/>" . $msgerreur;
 		}
 		else
 		{
 			$sql = "INSERT INTO SOLDE(HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $codeagent . "','" . $codeconge . "','0','0')";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Solde->creersolde : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Solde->creersolde : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			return $erreur;
 		}
 	}
@@ -195,12 +243,18 @@ AND DEMANDE.STATUT='a';";
 			$sql = "UPDATE SOLDE SET DROITAQUIS='" . $this->droitaquis() . "',DROITPRIS='" . $this->droitpris()   . "' WHERE HARPEGEID='" . $this->agentid . "' AND TYPEABSENCEID='" . $this->typeabsenceid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Solde->store : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Solde->store : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			return $erreur;
 		}
-		else
-			echo "Solde->store : La création d'un solde n'est pas possible ==> Utiliser la méthode 'creersolde' <br>";
+		else {
+			$errlog = "Solde->store : La crÃ©ation d'un solde n'est pas possible ==> Utiliser la mÃ©thode 'creersolde'";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 	
 }

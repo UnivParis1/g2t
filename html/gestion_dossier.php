@@ -119,7 +119,7 @@
 		{
 			//echo "strcasecmp(intval ... => " . strcasecmp(intval($enfantmaladevalue),$enfantmaladevalue) . "<br>";
 			//echo "intval >=0 => " . (intval($enfantmaladevalue)>=0) . "<br>";
-			if ((strcasecmp(intval($enfantmaladevalue),$enfantmaladevalue)==0) and (intval($enfantmaladevalue)>=0))  // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
+			if ((strcasecmp(intval($enfantmaladevalue),$enfantmaladevalue)==0) and (intval($enfantmaladevalue)>=0))  // Ce n'est pas un nombre Ã  virgule, ni une chaine et la valeur est positive
 			{
 				$complement = new complement($dbcon);
 				$complement->complementid('ENFANTMALADE');
@@ -219,8 +219,10 @@
 	}
 		
 	echo "<br>";
-	if ($msgerreur != "")
+	if ($msgerreur != "") {
+		error_log(basename(__FILE__)." ".getdate()." ".$fonctions->stripAccents($msgerreur));
 		echo "<B><P style='color: red'> $msgerreur </P></B>";
+	}
 	echo "<form name='frm_dossier'  method='post' >";
 	if ($mode == 'resp')
 		$structliste = $user->structrespliste();
@@ -234,7 +236,7 @@
 		else
 			echo $structure->dossierhtml(($action == 'modif'));
 
-		echo "Autoriser la consultation du planning de toute les structures filles à tous les agents de cette structure : ";
+		echo "Autoriser la consultation du planning de toute les structures filles Ã  tous les agents de cette structure : ";
 		if ($action == 'modif' )
 		{
 			echo "<select name=displaysousstruct['" . $structure->id() . "']>";
@@ -245,7 +247,7 @@
 		else 
 			echo $fonctions->ouinonlibelle($structure->sousstructure());
 		echo "<br>";
-		echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
+		echo "Autoriser la consultation du planning de la structure Ã  tous les agents de celle-ci : ";
 		if ($action == 'modif' )
 		{
 			echo "<select name=displayallagent['" . $structure->id() . "']>";
@@ -262,7 +264,7 @@
 			echo "<table>";
 			echo "<tr>";
 			echo "<td>";
-			echo "Envoyer les demandes de congés des agents au : ";
+			echo "Envoyer les demandes de congÃ©s des agents au : ";
 			echo "<SELECT name='agent_mail[" . $structure->id() . "]' size='1'>";
 			echo "<OPTION value=1";
 			if ($codeinterne==1) echo " selected='selected' ";
@@ -279,7 +281,7 @@
 			$structure->resp_envoyer_a($codeinterne);
 			echo "<tr>";
 			echo "<td>";
-			echo "Envoyer les demandes de congés du responsable au : ";
+			echo "Envoyer les demandes de congÃ©s du responsable au : ";
 			echo "<SELECT name='resp_mail[" . $structure->id() . "]' size='1'>";
 			if (!is_null($parentstruct))
 			{
@@ -331,7 +333,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<a href=".">Retour Ã  la page d'accueil</a> 
 -->
 </body></html>
 

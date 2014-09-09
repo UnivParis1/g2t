@@ -81,7 +81,7 @@
 <?php	
 	//echo '<html><body class="bodyhtml">';
 
-	// RÈcupÈration de l'affectation correspondant ‡ la dÈclaration TP en cours
+	// R√©cup√©ration de l'affectation correspondant √† la d√©claration TP en cours
 	$affectation = null;
 	if (isset($_POST["affectationid"]))
 	{
@@ -105,13 +105,15 @@
 	
 	
 	$datefausse = false;
-	// RÈcupÈration de la date de dÈbut
+	// R√©cup√©ration de la date de d√©but
 	if (isset($_POST["date_debut"]))
 	{
 		$date_debut = $_POST["date_debut"];
 		if (is_null($date_debut) or $date_debut == "" or !$fonctions->verifiedate($date_debut))
 		{
-			$msg_erreur = $msg_erreur . "La date de dÈbut n'est pas initialisÈe ou est incorrecte (JJ/MM/AAAA) !!! <br>";
+			$errlog = "La date de d√©but n'est pas initialis√©e ou est incorrecte (JJ/MM/AAAA) !!!";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			$datefausse = TRUE;
 		}
 	}
@@ -121,13 +123,15 @@
 		$datefausse = TRUE;
 	}
 	
-	// RÈcupÈration de la date de fin
+	// R√©cup√©ration de la date de fin
 	if (isset($_POST["date_fin"]))
 	{
 		$date_fin = $_POST["date_fin"];
 		if (is_null($date_fin) or $date_fin == "" or !$fonctions->verifiedate($date_fin))
 		{
-			$msg_erreur = $msg_erreur . "La date de fin n'est pas initialisÈe ou est incorrecte (JJ/MM/AAAA) !!! <br>";
+			$errlog = "La date de fin n'est pas initialis√©e ou est incorrecte (JJ/MM/AAAA) !!! ";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			$datefausse = TRUE;
 		}
 	}
@@ -143,19 +147,26 @@
 		$datefindb = $fonctions->formatdatedb($date_fin);
 		if ($datedebutdb > $datefindb)
 		{
-			$msg_erreur = $msg_erreur . "Il y a une incohÈrence entre la date de dÈbut et la date de fin !!! <br>";
+			$errlog = "Il y a une incoh√©rence entre la date de d√©but et la date de fin !!! ";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 		}
-		if (is_null($affectation))
-			echo "Affectation est NULL alors que ca ne devrait pas !!!!";
+		if (is_null($affectation)) {
+			$errlog = "Affectation est NULL alors que ca ne devrait pas !!!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+		}
 		elseif (($datedebutdb < ($fonctions->formatdatedb($affectation->datedebut()))) or ($datefindb > ($fonctions->formatdatedb($affectation->datefin()))))
 		{
-			$msg_erreur = $msg_erreur . "Vous ne pouvez pas faire de dÈclaration en dehors de la pÈriode d'affectation <br>";
+			$errlog = "Vous ne pouvez pas faire de d√©claration en dehors de la p√©riode d'affectation";
+			$msg_erreur .= $errlog;
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 		}
 	}
 	
 	//echo "_POST => "; print_r ($_POST); echo "<br>";
 	
-	// On regarde si on a annulÈ une dÈclaration de TP
+	// On regarde si on a annul√© une d√©claration de TP
 	if (isset($_POST["declaannule"]))
 	{
 		$tabdeclaannule = $_POST["declaannule"];
@@ -168,7 +179,7 @@
 		}
 	}
 
-	// On verifie qu'il y a autant de case ‡ cochÈ marquÈ que de jour de TP a saisir
+	// On verifie qu'il y a autant de case √† cocher marqu√©es que de jour de TP a saisir
 	if ($nbredemiTP != "" and !$datefausse)
 	{
 		$nbsemaineimpaire=0;
@@ -194,23 +205,28 @@
 			}
 		}
 		//echo "nbsemainepaire = $nbsemainepaire   nbsemaineimpaire = $nbsemaineimpaire    nbredemiTP =$nbredemiTP  <br> ";
-		// Si la case ‡ cocher nocheckquotite n'est pas cochÈ on vÈrifie la rÈpartition de la quotitÈ
-		// <=> Si elle est cochÈ on ne fait pas de test de rÈpartition
+		// Si la case √† cocher nocheckquotite n'est pas coch√©e on v√©rifie la r√©partition de la quotit√©
+		// <=> Si elle est coch√©e on ne fait pas de test de r√©partition
 		if ($nocheckquotite != 'yes')
 		{
 			if ($nbsemainepaire != $nbredemiTP or $nbsemaineimpaire != $nbredemiTP)
 			{
-				$msg_erreur = $msg_erreur . "Vous devez saisir $nbredemiTP demie(s) journÈe(s) pour les semaines paires et impaires <br>";
+				$errlog = "Vous devez saisir $nbredemiTP demie(s) journ√©e(s) pour les semaines paires et impaires";
+				$msg_erreur .= $errlog;
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			}
 		}
-		else
-			echo "<br>La fonction 'Pas de controle de la quotitÈ' est activÈe... Aucun contrÙle n'est rÈalisÈ.<br>";  
+		else {
+			$errlog = "La fonction 'Pas de contr√¥le de la quotit√©' est activ√©e... Aucun contr√¥le n'est r√©alis√©.";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+		}
 	}
 	
 	//echo "Apres le check nbredemiTP <br>";
 	if ($msg_erreur == "" and !$datefausse)
 	{
-		// On est sur que les donnÈes sont ok
+		// On est sur que les donn√©es sont ok
 		$declarationliste = $affectation->declarationTPliste($date_debut,$date_fin) ;
 		// On regarde s'il y a une declaration de TP qui inclue la date de debut !!!
 		$msg = "";
@@ -221,7 +237,7 @@
 			{
 				if (strcasecmp($declaration->statut(),"r")!=0)
 				{
-					// Si la date de fin de l'ancienne est aprËs la date de debut de la nouvelle 
+					// Si la date de fin de l'ancienne est apr√®s la date de debut de la nouvelle 
 					$msg = "";
 					// Nouvelle    [--------------]
 					// Ancienne            [------------------]
@@ -241,7 +257,9 @@
 						//echo "Apres le store de l'ID " . $declaration->declarationTPid() .  "... <br>";
 						if ($msg != "")
 						{
-							$msg_erreur = $msg_erreur . "Il y a chevauchement entre la nouvelle declaration et une ancienne declaration !!!! <br>";
+							$errlog = "Il y a chevauchement entre la nouvelle d√©claration et une ancienne d√©claration !!!!";
+							$msg_erreur .= $errlog."<br/>";
+							error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 							$msg_erreur = $msg_erreur . $msg;
 						}
 					}
@@ -256,7 +274,7 @@
 						//echo "formatdb debut = " . $fonctions->formatdatedb($date_debut) . "<br>";
 						$timestamp = strtotime($fonctions->formatdatedb($date_debut));
 						//echo "Avant nvlle date <br>";
-						$nvlledatefin = date("Ymd", strtotime("-1days", $timestamp ));  // On passe au jour d'aprËs (donc le lendemain)
+						$nvlledatefin = date("Ymd", strtotime("-1days", $timestamp ));  // On passe au jour d'apr√®s (donc le lendemain)
 						//echo "nvlledatefin = $nvlledatefin <br>";
 						$declaration->datefin($fonctions->formatdate($nvlledatefin));
 						if (strcasecmp($declaration->statut(),"r")!=0)
@@ -264,7 +282,9 @@
 						//echo "Apres le store de l'ID " . $declaration->declarationTPid() .  "... <br>";
 						if ($msg != "")
 						{
-							$msg_erreur = $msg_erreur . "Il y a chevauchement entre la nouvelle declaration et une ancienne declaration !!!! <br>";
+							$errlog = "Il y a chevauchement entre la nouvelle d√©claration et une ancienne d√©claration !!!!";
+							$msg_erreur .= $errlog."<br/>";
+							error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 							$msg_erreur = $msg_erreur . $msg;
 						}
 					}
@@ -279,7 +299,7 @@
 						//echo "formatdb debut = " . $fonctions->formatdatedb($date_debut) . "<br>";
 						$timestamp = strtotime($fonctions->formatdatedb($date_debut));
 						//echo "Avant nvlle date <br>";
-						$nvlledatefin = date("Ymd", strtotime("-1days", $timestamp ));  // On passe au jour d'aprËs (donc le lendemain)
+						$nvlledatefin = date("Ymd", strtotime("-1days", $timestamp ));  // On passe au jour d'apr√®s (donc le lendemain)
 						//echo "nvlledatefin = $nvlledatefin <br>";
 						$declaration->datefin($fonctions->formatdate($nvlledatefin));
 						if (strcasecmp($declaration->statut(),"r")!=0)
@@ -287,7 +307,9 @@
 						//echo "Apres le store de l'ID " . $declaration->declarationTPid() .  "... <br>";
 						if ($msg != "")
 						{
-							$msg_erreur = $msg_erreur . "Il y a chevauchement entre la nouvelle declaration et une ancienne declaration !!!! <br>";
+							$errlog = "Il y a chevauchement entre la nouvelle d√©claration et une ancienne d√©claration !!!!";
+							$msg_erreur .= $errlog."<br/>";
+							error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 							$msg_erreur = $msg_erreur . $msg;
 						}
 					}
@@ -297,7 +319,7 @@
 					if ($fonctions->formatdatedb($declaration->datedebut()) > $fonctions->formatdatedb($declaration->datefin()))
 					{
 						//echo "----- CAS 4 ------<br>";
-						//echo "La date de dÈbut de la declaration est apres la date de fin !!!! <br>";
+						//echo "La date de d√©but de la declaration est apres la date de fin !!!! <br>";
 						$declaration->statut("r");
 						$msg = $declaration->store();
 						if ($msg != "")
@@ -337,7 +359,7 @@
 		unset($declarationliste);
 */
 		
-		// On va enregistrer la nouvelle dÈclaration de TP
+		// On va enregistrer la nouvelle d√©claration de TP
 
 		//echo "Avant le new... <br>";
 		$declaration = new declarationTP($dbcon);
@@ -351,11 +373,14 @@
 		$msg = $declaration->store();
 		if ($msg != "")
 			$msg_erreur = $msg_erreur . $msg;
-		else
-			echo "<font color='green'>La dÈclaration de temps partiel est bien enregistrÈe.</font><br><br>";
+		else {
+			$errlog = "La d√©claration de temps partiel est bien enregistr√©e.";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+			echo "<font color='green'>".$errlog."</font><br/><br/>";
+		}
 
 //		$timestamp = strtotime($fonctions->formatdatedb($date_debut));
-//		$nvlledatefin = date("d/m/Y", strtotime("+1year", $timestamp ));  // On ajoute un an pour chercher les Èventuelles demandes faites aprËs la fin de pÈriode
+//		$nvlledatefin = date("d/m/Y", strtotime("+1year", $timestamp ));  // On ajoute un an pour chercher les √©ventuelles demandes faites apr√®s la fin de p√©riode
 //		$demandeliste = $agent->demandesliste($date_debut , $nvlledatefin );
 //		if (count($demandeliste) != 0)
 //		{
@@ -366,42 +391,42 @@
 //				{
 //					if ($afficheheader)
 //					{
-//						//echo "Il y a des demandes de congÈs qu'il faudra supprimer !!!!! <br>";
-//						$msg_erreur = $msg_erreur . "Il y a des demandes de congÈs qu'il faudra supprimer !!!!! <br>";
+//						//echo "Il y a des demandes de cong√©s qu'il faudra supprimer !!!!! <br>";
+//						$msg_erreur = $msg_erreur . "Il y a des demandes de cong√©s qu'il faudra supprimer !!!!! <br>";
 //						$afficheheader = FALSE;
 //					}	
-//					$msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la pÈriode du " . $demande->datedebut() . " au "  . $demande->datefin()   . " <br>";
+//					$msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la p√©riode du " . $demande->datedebut() . " au "  . $demande->datefin()   . " <br>";
 //					$demande->statut("r");
-//					$demande->motifrefus("Changement d'autodÈclaration");
+//					$demande->motifrefus("Changement d'autod√©claration");
 //					//echo "Avant le store...<br>";
 //					//print_r($demande); echo "<br>";
 //					$demande->store();
 //					//echo "Apres le store...<br>";
 //
 //					// DANS LE CAS DU MODE RESPONSABLE 
-//					// => 1 mail ‡ l'agent  => expÈditeur = $user et destinataire = $agent
-//					// => 1 mail au responsable => expÈditeur = $user et destinataire = $user
+//					// => 1 mail √† l'agent  => exp√©diteur = $user et destinataire = $agent
+//					// => 1 mail au responsable => exp√©diteur = $user et destinataire = $user
 //					if ($mode=="resp")
 //					{
 //						//echo "Avant le PDF... <br>";
 //						$pdffilename = $demande->pdf($user->harpegeid());
-//						// Mail ‡ l'agent
-//						//echo "Avant le mail ‡ l'agent... <br>";
-//						$user->sendmail($agent,"Annulation d'une demande (Changement d'autodÈclaration)","Votre autodÈclaration a ÈtÈ modifiÈe par " . $user->civilite() . " " . $user->nom() .  " "  . $user->prenom() . "!! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						// Mail √† l'agent
+//						//echo "Avant le mail √† l'agent... <br>";
+//						$user->sendmail($agent,"Annulation d'une demande (Changement d'autod√©claration)","Votre autod√©claration a √©t√© modifi√©e par " . $user->civilite() . " " . $user->nom() .  " "  . $user->prenom() . "!! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
 //						// Mail au responsable (donc c'est un automail)
 //						//echo "Avant le mail AU RESP... <br>";
-//						$user->sendmail($user,"Annulation d'une demande (Changement d'autodÈclaration)","Vous venez de changer l'autodÈclaration de l'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						$user->sendmail($user,"Annulation d'une demande (Changement d'autod√©claration)","Vous venez de changer l'autod√©claration de l'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
 //						//echo "Apres mail resp...<br>";
 //					}
 //					// DANS LE CAS DU MODE AGENT
-//					// => 1 mail ‡ l'agent  => expÈditeur = $agent et destinataire = $agent
-//					// => 1 mail au responsable => expÈditeur = $agent et destinataire = $resp rÈcup a partir de la strcture
+//					// => 1 mail √† l'agent  => exp√©diteur = $agent et destinataire = $agent
+//					// => 1 mail au responsable => exp√©diteur = $agent et destinataire = $resp r√©cup a partir de la strcture
 //					else
 //					{
 //						$pdffilename = $demande->pdf($agent->harpegeid());
-//						$agent->sendmail($agent,"Annulation d'une demande (Changement d'autodÈclaration)","Vous avez changÈ d'autodÈclaration !! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						$agent->sendmail($agent,"Annulation d'une demande (Changement d'autod√©claration)","Vous avez chang√© d'autod√©claration !! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
 //						$resp = $agent->structure()->responsable();
-//						$agent->sendmail($resp,"Annulation d'une demande (Changement d'autodÈclaration)","L'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " a changÈ d'autodÈclaration !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
+//						$agent->sendmail($resp,"Annulation d'une demande (Changement d'autod√©claration)","L'agent "  . $agent->civilite() . " " . $agent->nom() .  " "  . $agent->prenom() . " a chang√© d'autod√©claration !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
 //					}
 //					
 //				}
@@ -461,7 +486,7 @@
 				//echo "juste dans le for .... Quotite = " . $affectation->quotite() . "<br>";
 				if ($affectation->quotite() != "100%")
 				{
-					//echo "La quotitÈ != 100% ==> Je peux poser un tps partiel <br>";
+					//echo "La quotit√© != 100% ==> Je peux poser un tps partiel <br>";
 					$tppossible = true;
 					break;
 				}
@@ -469,39 +494,43 @@
 		}
 		if (!$tppossible)
 		{
-			echo "Vous n'avez aucune affectation ‡ temps partiel entre le " . $fonctions->formatdate($debut_interval) . " et le " . $fonctions->formatdate($fin_interval) . "<br>";
+			$errlog = "Vous n'avez aucune affectation √† temps partiel entre le " . $fonctions->formatdate($debut_interval) . " et le " . $fonctions->formatdate($fin_interval);
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 		}	
 		else
 		{
-//			echo "<b><br>C'est moche => PrÈsentation ‡ revoir !!! </b><br><br>";
+//			echo "<b><br>C'est moche => Pr√©sentation √† revoir !!! </b><br><br>";
 
 
-			echo "<br>";
-			if ($msg_erreur <> "")
+			echo "<br/>";
+			if ($msg_erreur <> "")  {
 				echo "<P style='color: red'>" . $msg_erreur . " </P>";
-			echo "<br>";
+				error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msg_erreur);
+			}
+			echo "<br/>";
 			
-			// $affectationliste = liste des affectations de l'agent pour la pÈriode
+			// $affectationliste = liste des affectations de l'agent pour la p√©riode
 			foreach ($affectationliste as $key => $affectation)
 			{
 				echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
 				echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() ."'>";
 				echo $affectation->html(true,false,$mode);
 
-				echo "<br>Nouvelle dÈclaration de temps partiel<br>";
+				echo "<br>Nouvelle d√©claration de temps partiel<br>";
 				echo "<table>";
 				echo "<tr>";
-				echo"<td>Date de dÈbut de la pÈriode :</td>";
+				echo"<td>Date de d√©but de la p√©riode :</td>";
 				echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut_" . $affectation->affectationid()  . " size=10 ></td>";
 				echo "</tr>";
 				echo "<tr>";
-				echo "<td>Date de fin de la pÈriode :</td>";
+				echo "<td>Date de fin de la p√©riode :</td>";
 				echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin_" . $affectation->affectationid()  . " size=10 ></td>";
 				echo "</tr>";
 				echo "</table>";
 				$nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
 				//echo "nbredemiTP = " . $nbredemiTP . "<br>";
-				echo "<br>Vous devez poser des jours de temps partiel (Nombre de demie-journÈes par semaine = $nbredemiTP )<br>";
+				echo "<br>Vous devez poser des jours de temps partiel (Nombre de demie-journ√©es par semaine = $nbredemiTP )<br>";
 				
 				echo "<div id='planning'>";
 				echo "<table class='tableau'>";
@@ -515,9 +544,9 @@
 				if (strcasecmp($mode,"resp")==0)
 				{
 					echo "<br>";	
-					echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vÈrifier la rÈpartition des jours de temps partiel... <br>";
-					echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne ‡ 50% <br>";
-					echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est ‡ utiliser avec prudence... Il convient de vÈrifier manuellement que la rÈpartion est correcte.<br>";
+					echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas v√©rifier la r√©partition des jours de temps partiel... <br>";
+					echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne √† 50% <br>";
+					echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est √† utiliser avec prudence... Il convient de v√©rifier manuellement que la r√©partion est correcte.<br>";
 				}
 				echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP ."'>";
 				echo "<input type='hidden' name='userid' value='" . $userid ."'>";
@@ -533,7 +562,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour ‡ la page d'accueil</a> 
+<a href=".">Retour √† la page d'accueil</a> 
 -->
  </body></html>
 

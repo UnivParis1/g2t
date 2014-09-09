@@ -54,7 +54,7 @@
 	// 	$agent = new agent($dbcon);
 	// 	if (is_null($agentid) or $agentid == "")
 		// 	{
-		// 		//echo "L'agent n'est pas passÈ en paramËtre.... RÈcupÈration de l'agent ‡ partir du ticket CAS <br>";
+		// 		//echo "L'agent n'est pas pass√© en param√®tre.... R√©cup√©ration de l'agent √† partir du ticket CAS <br>";
 		// 		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
 		// 		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
 		// 		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
@@ -68,7 +68,7 @@
 		// 		$restriction=array("$LDAP_CODE_AGENT_ATTR");
 		// 		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 		// 		$info=ldap_get_entries($con_ldap,$sr);
-		// 		//echo "Le numÈro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+		// 		//echo "Le num√©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 		// 		$agent->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
 		// 	}
 		// 	else
@@ -135,23 +135,29 @@
 			//echo "cleelement = $cleelement  demandeid = $demandeid  <br>";
 			$demande->load($demandeid);
 			$demande->motifrefus($motif);
-			if (strcasecmp($demande->statut(),"v")==0 and $motif == "")
-				echo "<p style='color: red'>Le motif du refus est obligatoire !!!! </p><br>";
+			if (strcasecmp($demande->statut(),"v")==0 and $motif == "") {
+				$errlog = "Le motif du refus est obligatoire !!!!";
+				echo "<p style='color: red'>".$errlog."</p><br/>";
+				error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				$demande->statut("R");
 				$msgerreur = "";
 				$msgerreur = $demande->store();
-				if ($msgerreur != "")
-					echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
+				if ($msgerreur != "") {
+					$errlog = "Pas de sauvegarde car " . $msgerreur;
+					echo "<p style='color: red'>".$errlog."</p><br/>";
+					error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+				}
 				else
 				{
 					$pdffilename = $demande->pdf($user->harpegeid());
 					$agent = $demande->agent();
-					$user->sendmail($agent,"Annulation d'une demande de congÈs ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
+					$user->sendmail($agent,"Annulation d'une demande de cong√©s ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
 					//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 					error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
-					echo "<p style='color: green'>Votre demande a bien ÈtÈ annulÈe!!!</p><br>";
+					echo "<p style='color: green'>Votre demande a bien √©t√© annul√©e!!!</p><br>";
 				}
 			}
 		}
@@ -160,7 +166,7 @@
 	
 	
 	$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-	// Si on est dans le mode "previous" alors on dit que la date de fin est l'annÈe courante
+	// Si on est dans le mode "previous" alors on dit que la date de fin est l'ann√©e courante
 	if ($previous == 1)
 		$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
 	elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
@@ -175,18 +181,18 @@
 	echo "<form name='frm_gest_demande'  method='post' >";
 	if ($noresponsableset)
 	{
-		// => C'est un agent qui veut gÈrer ses demandes
+		// => C'est un agent qui veut g√©rer ses demandes
 		//echo "Pas de responsable.... <br>"; 
 		$htmltext = $agent->demandeslistehtmlpourgestion($debut , $fin, $user->harpegeid(),"agent",null);
 		if ($htmltext != "")
 			echo $htmltext;
 		else
-			echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congÈ ‡ annuler pour la pÈriode de rÈfÈrence en cours.</center><br>";
+			echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun cong√© √† annuler pour la p√©riode de r√©f√©rence en cours.</center><br>";
 		echo "<input type='hidden' name='agentid' value='" . $agentid ."'>";
 	}
 	elseif ($noagentset)
 	{
-		// => On est en mode "responsable" mais aucun agent n'est sÈlectionnÈ
+		// => On est en mode "responsable" mais aucun agent n'est s√©lectionn√©
 		//echo "Avant le chargement structure responsable <br>";
 		$structureliste = $responsable->structrespliste();
 		//echo "Liste de structure = "; print_r($structureliste); echo "<br>";
@@ -209,13 +215,13 @@
 	}
 	else
 	{
-		// => On est en mode "reponsable" et un agent est sÈlectionnÈ 
+		// => On est en mode "reponsable" et un agent est s√©lectionn√© 
 		//echo "Avant le mode responsable <br>";
 		$htmltext = $agent->demandeslistehtmlpourgestion($debut , $fin, $user->harpegeid(),"resp",null);
 		if ($htmltext != "")
 			echo $htmltext;
 		else
-			echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congÈ ‡ annuler pour la pÈriode de rÈfÈrence en cours.</center><br>";
+			echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun cong√© √† annuler pour la p√©riode de r√©f√©rence en cours.</center><br>";
 		echo "<input type='hidden' name='agentid' value='" . $agentid ."'>";
 	}
 
@@ -230,7 +236,7 @@
 
 <br>
 <!-- 
-<a href=".">Retour ‡ la page d'accueil</a> 
+<a href=".">Retour √† la page d'accueil</a> 
 -->
 </body></html>
 

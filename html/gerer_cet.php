@@ -104,19 +104,25 @@
 	
 	if (!is_null($nbr_jours_cet))
 	{
-		if ($nbr_jours_cet <= 0 or $nbr_jours_cet == "")
-			$msg_erreur = $msg_erreur . "Vous n'avez pas saisi le nombre de jours à ajouter ou il est inférieur ou égal à 0 <br>";
-		elseif (intval($nbr_jours_cet) != $nbr_jours_cet)
-			$msg_erreur = $msg_erreur . "Le nombre de jours a ajouter au CET doit être un nombre entier.<br>";
+		if ($nbr_jours_cet <= 0 or $nbr_jours_cet == "") {
+			$errlog = "Vous n'avez pas saisi le nombre de jours Ã  ajouter ou il est infÃ©rieur ou Ã©gal Ã  0 ";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+		}
+		elseif (intval($nbr_jours_cet) != $nbr_jours_cet) {
+			$errlog = "Le nombre de jours Ã  ajouter au CET doit Ãªtre un nombre entier.";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+		}
 		elseif (!is_null($ajoutcet))
 		{
 			$soldeannuel = new solde($dbcon);
-			// On charge le solde de congés Annuel pour vérifier les règles de gestions de prise du CET
+			// On charge le solde de congÃ©s Annuel pour vÃ©rifier les rÃ¨gles de gestions de prise du CET
 			$msg_erreur = $msg_erreur .  $soldeannuel->load($agentid, "ann" . substr(($fonctions->anneeref()-1),2,2));
 			//echo "msg_erreur = " . $msg_erreur . "<br>";
 			if ($msg_erreur == "")
 			{
-				// Si le nombre de jours demande est <= solde de l'année de ref et que l'on demande moins de jours de le nombre de jour dispo
+				// Si le nombre de jours demande est <= solde de l'annÃ©e de ref et que l'on demande moins de jours de le nombre de jour dispo
 				/// C'est un peu 2 fois le meme test .... A simplifier
 				if ($soldeannuel->solde() >= $nbr_jours_cet and $nbrejoursdispo >= $nbr_jours_cet)
 				{
@@ -127,9 +133,10 @@
 					//echo "Apres le load cet (1) <br>";
 					if ($msg_erreur != "")
 					{
-						// On force $msg_erreur à "" car on se moque de savoir quel est l'erreur
+						// On force $msg_erreur Ã  "" car on se moque de savoir quel est l'erreur
 						$msg_erreur = "";
 						echo "Il n'y a pas de CET <br>";
+						error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : Il n'y a pas de CET");
 						unset ($cet);
 						$cet = new cet($dbcon);
 						$cet->agentid($agentid);
@@ -149,8 +156,11 @@
 						// 20 jours obligatoires
 						// Base de calcul = 45 jours
 						// ==> 45 - 20 = 25 jours maxi
-						if ($cumul > 25)
-							$msg_erreur = "Le nombre de jour de cumul annuel est supérieur à 25. Vous ne pouvez pas mettre autant de jours dans le CET. <br>";
+						if ($cumul > 25) {
+							$errlog = "Le nombre de jour de cumul annuel est supÃ©rieur Ã  25. Vous ne pouvez pas mettre autant de jours dans le CET. ";
+							$msg_erreur .= $errlog."<br/>";
+							error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+						}
 						else
 						{
 							$cet->cumulannuel($fonctions->anneeref(),$cumul);
@@ -162,7 +172,7 @@
 							//echo "Apres le store <br>";
 						}
 					}
-					// Si tout c'est bien passé dans le store du CET
+					// Si tout s'est bien passÃ© dans le store du CET
 					if ($msg_erreur == "")
 					{
 						$tempsolde = ($soldeannuel->droitpris());
@@ -170,26 +180,32 @@
 						$soldeannuel->droitpris(($tempsolde));
 						$msg_erreur = $msg_erreur . $soldeannuel->store();
 						$agent->ajoutecommentaireconge("ann" . substr(($fonctions->anneeref()-1),2,2), ($nbr_jours_cet*-1),"Retrait de jours pour alimentation CET");
-						// Envoie d'un mail à l'agent !
+						// Envoi d'un mail Ã  l'agent !
 						//echo "Avant le pdf <br>";
 						$cet = new cet($dbcon);
 						$msg_erreur = $msg_erreur . $cet->load($agentid);
 						$pdffilename = $cet->pdf($userid,TRUE);
 						//echo "Avant l'envoi de mail <br>";
-						$user->sendmail($agent,"Alimentation du CET","Votre CET vient d'être alimenté.", $pdffilename);
+						$user->sendmail($agent,"Alimentation du CET","Votre CET vient d'Ãªtre alimentÃ©.", $pdffilename);
 						//echo "Apres l'envoi de mail <br>";
 					}
 				}
-				elseif ($nbrejoursdispo < $nbr_jours_cet)
-					$msg_erreur = $msg_erreur . "Vos droits à CET sont insuffisants : Demandé " . $nbr_jours_cet . " jour(s)   Autorisé : " . $nbrejoursdispo . " jour(s)<br>";
-				else
-					$msg_erreur = $msg_erreur . "Le solde de jour de congé annuel est insuffisant : Demandé " . $nbr_jours_cet . "   Disponible : " . ($soldeannuel->solde()) . " <br>";
+				elseif ($nbrejoursdispo < $nbr_jours_cet) {
+					$errlog = "Vos droits Ã  CET sont insuffisants : DemandÃ© " . $nbr_jours_cet . " jour(s)   AutorisÃ© : " . $nbrejoursdispo . " jour(s)";
+					$msg_erreur .= $errlog."<br/>";
+					error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+				}
+				else {
+					$errlog = "Le solde de jour de congÃ© annuel est insuffisant : Demande " . $nbr_jours_cet . "   Disponible : " . ($soldeannuel->solde());
+					$msg_erreur .= $errlog."<br/>";
+					error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+				}
 			}
 			
 		}
 		elseif (!is_null($retraitcet))
 		{
-//			echo "Je suis dans une indemnisation de CET  => $nbr_jours_cet jours à retirer sur $nbrejoursdispo jour à retirer du CET maximum !!!<br>";
+//			echo "Je suis dans une indemnisation de CET  => $nbr_jours_cet jours Ã  retirer sur $nbrejoursdispo jour Ã  retirer du CET maximum !!!<br>";
 //			echo "Le type de retrait est : " . $_POST["typeretrait"] . "<br>";
 			$cet = new cet($dbcon);
 			$msg_erreur = $cet->load($agentid);
@@ -205,33 +221,36 @@
 					{
 						$msg_erreur = $agent->ajoutecommentaireconge("cet", ($nbr_jours_cet*-1),"Retrait de jours - Motif : " . $typeretrait);
 						if ($nbr_jours_cet > 1)
-							$detail = $nbr_jours_cet . " jours vous ont été retirés du CET au motif : " . $typeretrait;
+							$detail = $nbr_jours_cet . " jours vous ont Ã©tÃ© retirÃ©s du CET au motif : " . $typeretrait;
 						else 
-							$detail = $nbr_jours_cet . " jour vous a été retiré du CET au motif : " . $typeretrait;
+							$detail = $nbr_jours_cet . " jour vous a Ã©tÃ© retirÃ© du CET au motif : " . $typeretrait;
 						unset ($cet);
 						$cet = new cet($dbcon);
 						$msg_erreur = $msg_erreur . $cet->load($agentid);
 						$pdffilename = $cet->pdf($userid,FALSE,$detail);
 						//echo "Avant l'envoi de mail <br>";
-						$user->sendmail($agent,"Alimentation du CET","Votre CET vient d'être modifié.", $pdffilename);
+						$user->sendmail($agent,"Alimentation du CET","Votre CET vient d'Ãªtre modifiÃ©.", $pdffilename);
 					}
 				}
 				else
 				{
-					$msg_erreur = $msg_erreur . "Vos droits à CET sont insuffisants : Demandé " . $nbr_jours_cet . " jour(s)   Autorisé : " . $nbrejoursdispo . " jour(s)<br>";
+					$msg_erreur = $msg_erreur . "Vos droits Ã  CET sont insuffisants : DemandÃ© " . $nbr_jours_cet . " jour(s)   AutorisÃ© : " . $nbrejoursdispo . " jour(s)<br>";
 				}
 			}
 			
 		}
 		else 
 		{
-			echo "Je ne sais pas ce que je fais ici => Ni un retrait, ni un ajout !!!!! <br>";
+			$errlog = "Je ne sais pas ce que je fais ici => Ni un retrait, ni un ajout !!!!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
 		}
 	}
 	
 	if ($msg_erreur != "")
 	{
 		echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
+		error_log(basename(__FILE__)." ".getdate()." ".$msg_erreur);
 		$msg_erreur = "";
 	}
 		
@@ -273,14 +292,14 @@
 		$soldeliste = $agent->soldecongesliste(($fonctions->anneeref()-1),$msg_bloquant);
 		//echo "Apres le solde Liste<br>";
 		$nbrejourspris = 0;
-		// On initialise le nombre de jour annuel pris à 45 pour que plus tard 45 - 45 = 0 => Pas possibilité de poser de CET. 
+		// On initialise le nombre de jour annuel pris Ã  45 pour que plus tard 45 - 45 = 0 => Pas possibilitÃ© de poser de CET. 
 		$nbrejoursprisannuel = 45;
 		foreach ($soldeliste as $keysolde => $solde)
 		{
 			//echo "ann" . substr(($fonctions->anneeref()-1),2,2) . "<br>";
 			//echo "keySolde = " . $keysolde . "   Solde->Type = " . $solde->typecode() . "<br>";
 
-			// On mémorise le nombre de jours pris sur le conges annuels annXX
+			// On mÃ©morise le nombre de jours pris sur le conges annuels annXX
 			// On s'en sert pour savoir combien de jour on peut mettre sur le CET....
 			if (strcasecmp($solde->typeabsenceid(),"ann" . substr(($fonctions->anneeref()-1),2,2))==0)
 			{
@@ -307,14 +326,14 @@
 		if ($nbrejoursprisannuel > 45)
 			$nbrejoursprisannuel = 45;
 		
-		// L'agent doit avoir pris 20 jours de congés durant l'année de référence
+		// L'agent doit avoir pris 20 jours de congÃ©s durant l'annÃ©e de rÃ©fÃ©rence
 		if ($nbrejourspris < 20)
 		{
-			$msg_bloquant = $msg_bloquant . "L'agent ". $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pris le nombre minimum de jours sur l'année de référence " . ($fonctions->anneeref()-1)  . "<br>";
+			$msg_bloquant = $msg_bloquant . "L'agent ". $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pris le nombre minimum de jours sur l'annÃ©e de rÃ©fÃ©rence " . ($fonctions->anneeref()-1)  . "<br>";
 		}
 		if ($msg_bloquant == "")
-			// Le nombre de jour disponible pour le CET est 45 - le nombre de jours pris (ATTENTION On calcule sur les congés annuels => type annXX)
-			// Le nombre 45 est la base générale de congé  de la fonction publique
+			// Le nombre de jour disponible pour le CET est 45 - le nombre de jours pris (ATTENTION On calcule sur les congÃ©s annuels => type annXX)
+			// Le nombre 45 est la base gÃ©nÃ©rale de congÃ©  de la fonction publique
 			$nbrejoursdispo = 45 - $nbrejoursprisannuel;  // $nbrejourspris;
 		else 
 		{
@@ -327,8 +346,8 @@
 		{
 			// Pas d'erreur lors du chargement du CET
 			echo "Le CET de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est actuellement : <br>";
-			echo "Date du début du CET : ". $cet->datedebut() . "<br>";
-			echo "Sur l'année " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", il a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
+			echo "Date du dÃ©but du CET : ". $cet->datedebut() . "<br>";
+			echo "Sur l'annÃ©e " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", il a cumulÃ© " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
 			echo "Le solde de CET est de " . (($cet->cumultotal()-$cet->jrspris())) . " jour(s)<br>";
 
 		}
@@ -354,17 +373,27 @@
 		
 		if ($msg_erreur != "")
 		{
-			// Ily a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
+			// Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet Ã  NULL
 			$cet = null;
 			echo "<p style='color: red'>" . $msg_erreur . "</p>";
+			error_log(basename(__FILE__)." ".getdate()." ".$msg_erreur);
 		}
-		if ($msg_bloquant != "")
-			echo "Impossible de saisir un CET pour cet agent. <br>";
+		if ($msg_bloquant != "") {
+			$errlog = "Impossible de saisir un CET pour cet agent.";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+		}
 		
-		if ($nbrejoursdispo > 0 )
-			echo "Vous avez le droit de mettre $nbrejoursdispo jour(s) dans le CET de l'agent. <br>";
-		else
-			echo "Vous n'avez pas le droit d'ajouter de jours dans le CET de l'agent (nombre de jours disponibles = $nbrejoursdispo).<br>";
+		if ($nbrejoursdispo > 0 ) {
+			$errlog = "Vous avez le droit de mettre $nbrejoursdispo jour(s) dans le CET de l'agent.";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+		}
+		else {
+			$errlog = "Vous n'avez pas le droit d'ajouter de jours dans le CET de l'agent (nombre de jours disponibles = $nbrejoursdispo).";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+		}
 		
 		echo "<br>";
 		echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
@@ -378,7 +407,7 @@
 			echo "<input type='hidden' name='mutation' value=''>";
 		}
 			
-		echo "Nombre de jours à ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
+		echo "Nombre de jours Ã  ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
 		echo "<br>";
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
@@ -392,17 +421,17 @@
 		
 		if (!is_null($cet))
 		{
-			// Seul les jours au delà de 20 jours de CET peuvent être indemnisé ou ajouté à la RAFP
+			// Seuls les jours au delÃ  de 20 jours de CET peuvent Ãªtre indemnisÃ©s ou ajoutÃ©s Ã  la RAFP
 			if ((($cet->cumultotal()-$cet->jrspris())) > 20)
 			{
 				echo "<br>";
 				echo "<span style='border:solid 1px black; background:lightsteelblue; width:600px; display:block;'>";
 				echo "<form name='frm_retraitcet'  method='post' >";
-				echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
-				// Calcul du nombre de jours disponible en retrait du CET
+				echo "Nombre de jours Ã  retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
+				// Calcul du nombre de jours disponibles en retrait du CET
 				//echo "cet->cumultotal() = " .  $cet->cumultotal() . "<br>";
 				$nbrejoursdispo = ((($cet->cumultotal()-$cet->jrspris()))-20);
-				echo "<br>Le nombre de jours maximum à retirer est : " . $nbrejoursdispo . " jours <br>";
+				echo "<br>Le nombre de jours maximum Ã  retirer est : " . $nbrejoursdispo . " jours <br>";
 				echo "Indiquer le type de retrait : ";
 				echo "<select name='typeretrait'>";
 				echo "<OPTION value='Indemnisation'>Indemnisation</OPTION>";
@@ -430,9 +459,9 @@
 				echo "</span>";
 			}
 		}
-		// Affichage du solde de l'année précédente
+		// Affichage du solde de l'annÃ©e prÃ©cÃ©dente
 		echo $agent->soldecongeshtml($fonctions->anneeref()-1);
-		// Affichage du solde de l'année en cours
+		// Affichage du solde de l'annÃ©e en cours
 		echo $agent->soldecongeshtml($fonctions->anneeref());
 		// On affiche les commentaires pour avoir l'historique
 		echo $agent->affichecommentairecongehtml();
@@ -443,7 +472,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<a href=".">Retour Ã  la page d'accueil</a> 
 -->
 </body></html>
 

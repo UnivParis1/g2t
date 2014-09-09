@@ -31,7 +31,9 @@ class complement {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Complement->construct : La connexion a la base de donnÈe est NULL !!!<br>";
+			$errlog = "Complement->construct : La connexion √† la base de donn√©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -46,8 +48,11 @@ class complement {
 		$sql = "SELECT HARPEGEID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE HARPEGEID='$harpegeid' AND COMPLEMENTID='$complementid'";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Complement->Load : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Complement->Load : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) != 0)
 		{
 			$result = mysql_fetch_row($query);
@@ -60,7 +65,7 @@ class complement {
 	 		$this->harpegeid = "";
 	 		$this->complementid = "";
 			$this->valeur = "";
-			//echo "CET->Load : CET pour agent  $harpegeid et complement $complementid non trouvÈ <br>";
+			//echo "CET->Load : CET pour agent  $harpegeid et complement $complementid non trouv√© <br>";
 		}
 	}
 	
@@ -72,21 +77,29 @@ class complement {
 	{
 		if (strlen($this->harpegeid) == 0 or strlen($this->complementid) == 0)
 		{
-			echo "Complement->Store : Le numÈro HARPEGE (" . $this->harpegeid . ")ou le code du complÈment (". $this->complementid  .") n'est pas initialisÈ<br>";
+			$errlog = "Complement->Store : Le num√©ro HARPEGE (" . $this->harpegeid . ")ou le code du compl√©ment (". $this->complementid  .") n'est pas initialis√©";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return;
 		}
 		$sql = "DELETE FROM COMPLEMENT WHERE HARPEGEID='" . $this->harpegeid . "' AND COMPLEMENTID='" . $this->complementid . "'";
 		//echo "SQL Complement->Store : $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Complement->Store (DELETE) : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Complement->Store (DELETE) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		$sql = "INSERT INTO COMPLEMENT(HARPEGEID,COMPLEMENTID,VALEUR) VALUES('" . $this->harpegeid . "','" . $this->complementid . "','" . str_replace("'", "''", $this->valeur) . "')";
 		//echo "SQL Complement->Store : $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Complement->Store (INSERT) : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Complement->Store (INSERT) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 	
    /**
@@ -97,8 +110,11 @@ class complement {
 	{
 		if (is_null($agentid))
 		{
-			if (is_null($this->harpegeid))
-				echo "Complement->harpegeid : L'Id de l'agent n'est pas dÈfini !!! <br>";
+			if (is_null($this->harpegeid)) {
+				$errlog = "Complement->harpegeid : L'Id de l'agent n'est pas d√©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->harpegeid;
 		}
@@ -114,8 +130,11 @@ class complement {
 	{
 		if (is_null($complementid))
 		{
-			if (is_null($this->complementid))
-				echo "Complement->complementid : L'Id du complement n'est pas dÈfini !!! <br>";
+			if (is_null($this->complementid)) {
+				$errlog = "Complement->complementid : L'Id du compl√©ment n'est pas d√©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->complementid;
 		}
@@ -131,8 +150,11 @@ class complement {
 	{
 		if (is_null($valeur))
 		{
-			if (is_null($this->valeur))
-				echo "Complement->valeur : La valeur du complement n'est pas dÈfinie !!! <br>";
+			if (is_null($this->valeur)) {
+				$errlog = "Complement->valeur : La valeur du compl√©ment n'est pas d√©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->valeur;
 		}

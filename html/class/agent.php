@@ -29,7 +29,9 @@ class agent {
       $this->dbconnect = $db;
       if (is_null($this->dbconnect))
       {
-         echo "Agent->construct : La connexion a la base de donnée est NULL !!!<br>";
+		$errlog = "Agent->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+		echo $errlog."<br/>";
+		error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
       }
       $this->fonctions = new fonctions($db);
    }
@@ -44,18 +46,22 @@ class agent {
       if (is_null($this->harpegeid))
       {
 
-      	$sql = sprintf("SELECT HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION FROM AGENT WHERE HARPEGEID='%s'",mysql_real_escape_string($harpegeid));
+      	$sql = sprintf("SELECT HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION FROM AGENT WHERE HARPEGEID='%s'",$this->fonctions->my_real_escape_utf8($harpegeid));
       	//echo "sql = " . $sql . "<br>";
          $query=mysql_query ($sql, $this->dbconnect);
          $erreur=mysql_error();
          if ($erreur != "")
          {
-            echo "Agent->Load (AGENT) : " . $erreur . "<br>";
+         	$errlog = "Agent->Load (AGENT) : " . $erreur;
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
             return false;
          }
          if (mysql_num_rows($query) == 0)
          {
-            echo "Agent->Load (AGENT) : Agent $harpegeid non trouvé <br>";
+         	$errlog = "Agent->Load (AGENT) : Agent $harpegeid non trouvÃ©";
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
             return false;
          }
          $result = mysql_fetch_row($query);
@@ -87,8 +93,11 @@ class agent {
    {
       if (is_null($name))
       {
-         if (is_null($this->nom))
-            echo "Agent->nom : Le nom de l'agent n'est pas défini !!! <br>";
+         if (is_null($this->nom)) {
+         	$errlog = "Agent->nom : Le nom de l'agent n'est pas dÃ©fini !!!";
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+         }
          else
             return $this->nom;
       }
@@ -104,8 +113,11 @@ class agent {
    {
       if (is_null($firstname))
       {
-         if (is_null($this->prenom))
-            echo "Agent->prenom : Le prénom de l'agent n'est pas défini !!! <br>";
+         if (is_null($this->prenom)) {
+         	$errlog = "Agent->prenom : Le prÃ©nom de l'agent n'est pas dÃ©fini !!!";
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+         }
          else
             return $this->prenom;
       }
@@ -121,8 +133,11 @@ class agent {
    {
       if (is_null($civilite))
       {
-         if (is_null($this->civilite))
-            echo "Agent->civilite : La civilité de l'agent n'est pas définie !!! <br>";
+         if (is_null($this->civilite)) {
+         	$errlog = "Agent->civilite : La civilitÃ© de l'agent n'est pas dÃ©finie !!!";
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+         }
          else
             return $this->civilite;
       }
@@ -147,8 +162,11 @@ class agent {
    {
       if (is_null($mail))
       {
-         if (is_null($this->adressemail))
-            echo "Agent->mail : Le mail de l'agent n'est pas défini !!! <br>";
+         if (is_null($this->adressemail)) {
+         	$errlog = "Agent->mail : Le mail de l'agent n'est pas dÃ©fini !!!";
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+         }
          else
             return $this->adressemail;
       }
@@ -164,8 +182,11 @@ class agent {
    {
       if (is_null($type))
       {
-         if (is_null($this->typepopulation))
-            echo "Agent->typepopulation : Le type de population de l'agent n'est pas défini !!! <br>";
+         if (is_null($this->typepopulation)) {
+         	$errlog = "Agent->typepopulation : Le type de population de l'agent n'est pas dÃ©fini !!!";
+         	echo $errlog."<br/>";
+         	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+         }
          else
             return $this->typepopulation;
       }
@@ -179,13 +200,15 @@ class agent {
    */
    function estresponsable()
    {
-      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s'",mysql_real_escape_string($this->harpegeid));
+      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s'",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
 		{
-			echo "Agent->estresponsable (AGENT) : " . $erreur . "<br>";
+			$errlog = "Agent->estresponsable (AGENT) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return FALSE;
       }
       return (mysql_num_rows($query) != 0);
@@ -197,13 +220,15 @@ class agent {
    */
 	function estgestionnaire()
    {
-      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s'",mysql_real_escape_string($this->harpegeid));
+      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s'",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
 		{
-			echo "Agent->estgestionnaire (AGENT) : " . $erreur . "<br>";
+			$errlog = "Agent->estgestionnaire (AGENT) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return FALSE;
       }
       return (mysql_num_rows($query) != 0);
@@ -215,13 +240,15 @@ class agent {
    */
    function estadministrateur()
    {
-      $sql = sprintf("SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID='ESTADMIN'",mysql_real_escape_string($this->harpegeid));
+      $sql = sprintf("SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID='ESTADMIN'",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
 		{
-			echo "Agent->estadministrateur (AGENT) : " . $erreur . "<br>";
+			$errlog = "Agent->estadministrateur (AGENT) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return FALSE;
       }
       if (mysql_num_rows($query) == 0)
@@ -242,21 +269,24 @@ class agent {
 			$complement->load($this->harpegeid, 'ENFANTMALADE');
             return intval($complement->valeur());
       }
-      elseif ((strcasecmp(intval($nbrejrs),$nbrejrs)==0) and (intval($nbrejrs)>=0))  // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
+      elseif ((strcasecmp(intval($nbrejrs),$nbrejrs)==0) and (intval($nbrejrs)>=0))  // Ce n'est pas un nombre Ã  virgule, ni une chaine et la valeur est positive
       {
       	    $complement->complementid('ENFANTMALADE');
 			$complement->harpegeid($this->harpegeid);
 			$complement->valeur(intval($enfantmaladevalue));
 			$complement->store();
       }
-      else
-		    echo "Agent->nbjrsenfantmalade (AGENT) : Le nombre de jours 'enfant malade doit etre un nombre positif ou nul'<br>";
+      else {
+      	$errlog = "Agent->nbjrsenfantmalade (AGENT) : Le nombre de jours 'enfant malade doit Ãªtre un nombre positif ou nul'";
+      	echo $errlog."<br/>";
+      	error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+      }
       
    }
    
    /**
          * @param
-         * @return string Nombre de jours 'enfant malade' pris sur la période courante
+         * @return string Nombre de jours 'enfant malade' pris sur la pÃ©riode courante
    */
    function nbjrsenfantmaladeutilise($debut_interval,$fin_interval)
    {
@@ -277,7 +307,9 @@ AND DEMANDE.STATUT='v'";
 		$erreur=mysql_error();
 		if ($erreur != "")
 		{
-			echo "Agent->nbjrsenfantmaladeutilise (AGENT) : " . $erreur . "<br>";
+			$errlog = "Agent->nbjrsenfantmaladeutilise (AGENT) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return NULL;
       }
       if (mysql_num_rows($query) == 0)
@@ -323,7 +355,7 @@ AND DEMANDE.STATUT='v'";
 	function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null)
 	{
 		//----------------------------------
-		// Construction de l'entête
+		// Construction de l'entÃªte
 		//----------------------------------
 		$boundary = "-----=".md5(uniqid(rand()));
 		$header  = "Reply-to: " . $this->adressemail . "\r\n";
@@ -338,7 +370,7 @@ AND DEMANDE.STATUT='v'";
 		$msg = "$objet\r\n";
 		
 		//---------------------------------
-		// 1ère partie du message
+		// 1Ã¨re partie du message
 		// Le texte
 		//---------------------------------
 		
@@ -407,8 +439,11 @@ AND DEMANDE.STATUT='v'";
 		//echo "sql = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Agent->affectationliste : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Agent->affectationliste : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
 			//echo "Agent->affectationliste : L'agent $this->harpegeid n'a pas d'affectation entre $datedebut et $datefin <br>";
@@ -433,21 +468,21 @@ AND DEMANDE.STATUT='v'";
 	function dossiercomplet($datedebut,$datefin)
 	{
 		// Un dossier est complet si
-		//		- Il a une affectation durant toute la période
-		//		- Il a une déclaration de TP (validée) sur toute la période
-		// => On charge le planning de l'agent pour la période
-		// => On parcours le planning pour vérifier
+		//		- Il a une affectation durant toute la pÃ©riode
+		//		- Il a une dÃ©claration de TP (validÃ©e) sur toute la pÃ©riode
+		// => On charge le planning de l'agent pour la pÃ©riode
+		// => On parcours le planning pour vÃ©rifier
 		$planning = new planning($this->dbconnect);
 		$planning->load($this->harpegeid, $datedebut,$datefin);
 		if (!is_null($planning))
 		{
-			// pour tous les elements du planning on vérifie...
+			// pour tous les elements du planning on vÃ©rifie...
 			$listeelement = $planning->planning();
 			foreach ($listeelement as $key => $element)
 			{
 				if (strcasecmp($element->type(),"nondec")==0)
 				{
-					//echo "Le premier element non declaré est : " . $key . "<br>";
+					//echo "Le premier element non declarÃ© est : " . $key . "<br>";
 					return false;
 				}
 			}
@@ -466,12 +501,15 @@ AND DEMANDE.STATUT='v'";
 		if ($this->estresponsable())
 		{
 			//echo "Je suis responsable...<br>";
-			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = '%s'", mysql_real_escape_string($this->harpegeid));
+			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = '%s'", $this->fonctions->my_real_escape_utf8($this->harpegeid));
 			//echo "sql = " . $sql . "<br>";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Agent->structrespliste : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Agent->structrespliste : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			while ($result = mysql_fetch_row($query))
 			{
 				//On charge la structure
@@ -494,12 +532,15 @@ AND DEMANDE.STATUT='v'";
 		if ($this->estgestionnaire())
 		{
 			//echo "Je suis gestionnaire...<br>";
-			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s'", mysql_real_escape_string($this->harpegeid));
+			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s'", $this->fonctions->my_real_escape_utf8($this->harpegeid));
 			//echo "sql = " . $sql . "<br>";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Agent->structgestliste : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "Agent->structgestliste : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			while ($result = mysql_fetch_row($query))
 			{
 				//echo "Je charge la structure "  . $result[0] . " <br>";
@@ -527,7 +568,7 @@ AND DEMANDE.STATUT='v'";
 			//echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
 			foreach ((array)$structgestliste as $structid => $structure)
 			{
-				// Pour chaque structure fille, on regarde si je gère les demandes du responsable
+				// Pour chaque structure fille, on regarde si je gÃ¨re les demandes du responsable
 				$structfilleliste = $structure->structurefille();
 				//echo "<br>structfilleliste = "; print_r((array) $structfilleliste) ; echo "<br>";
 				foreach ((array)$structfilleliste as $structfilleid => $structfille)
@@ -559,8 +600,10 @@ AND DEMANDE.STATUT='v'";
    	if (is_null($anneeref))
    	{
    		$anneeref = date("Y");
-			echo "Agent->soldecongesliste : L'année de référence est NULL ==> On fixe à l'année courante !!!! ATTENTION DANGER !!! <br>";
-			$erreurmsg = $erreurmsg . "Agent->soldecongesliste : L'année de référence est NULL ==> On fixe à l'année courante !!!! ATTENTION DANGER !!! <br>";
+   		$errlog = "Agent->soldecongesliste : L'annÃ©e de rÃ©fÃ©rence est NULL ==> On fixe Ã  l'annÃ©e courante !!!! ATTENTION DANGER !!!";
+   		echo $errlog."<br/>";
+   		error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		$erreurmsg = $erreurmsg . $errlog . "<br/>";
    	}
    	
  /*
@@ -591,7 +634,7 @@ AND DEMANDE.STATUT='v'";
    	
    	$complement = new complement($this->dbconnect);
    	$complement->load($this->harpegeid,"REPORTACTIF");
-   	// Si le complement n'est pas initialisé (NULL ou "") alors on active le report
+   	// Si le complement n'est pas initialisÃ© (NULL ou "") alors on active le report
    	if (strcasecmp($complement->valeur(),"O")==0 or strlen($complement->valeur()) == 0)
    		$reportactif = true;
    	else
@@ -611,12 +654,17 @@ AND DEMANDE.STATUT='v'";
    	//echo "sql = " . $sql . "<br>";
    	$query=mysql_query ($sql, $this->dbconnect);
    	$erreur=mysql_error();
-   	if ($erreur != "")
-   		echo "Agent->soldecongesliste : " . $erreur . "<br>";
+   	if ($erreur != "") {
+   		$errlog = "Agent->soldecongesliste : " . $erreur;
+   		echo $errlog."<br/>";
+   		error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+   	}
    	if (mysql_num_rows($query) == 0)
    	{
-   		//echo "Agent->soldecongesliste : L'agent $this->harpegeid n'a pas de solde de congés pour l'année de référence $anneeref. <br>";
-   		$erreurmsg = $erreurmsg . "L'agent ". $this->civilite() . " " . $this->nom() . " " . $this->prenom()  . " n'a pas de solde de congés pour l'année de référence $anneeref. <br>";
+   		//echo "Agent->soldecongesliste : L'agent $this->harpegeid n'a pas de solde de congÃ©s pour l'annÃ©e de rÃ©fÃ©rence $anneeref. <br>";
+   		$errlog = " L'agent ". $this->civilite() . " " . $this->nom() . " " . $this->prenom()  . " n'a pas de solde de congÃ©s pour l'annÃ©e de rÃ©fÃ©rence $anneeref";
+   		$erreurmsg = $erreurmsg.$errlog ;
+   		error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
    	}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -664,17 +712,21 @@ AND DEMANDE.STATUT='v'";
 		$closeafter = FALSE;
 		if (is_null($pdf))
 		{
-			$pdf=new FPDF();
+			//$pdf=new FPDF();
+			$pdf=new tFPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
 			$closeafter = TRUE;
+			$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+			$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		}
 		//echo "Apres le addpage <br>";
 		if ($header == TRUE)
 		{
 			$pdf->AddPage('L');
 			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('Arial','B',15);
+			//$pdf->SetFont('Arial','B',15);
+			$pdf->SetFont('DejaVu','B',15);
 			$pdf->Ln(15);
 
 			$old_structid="";
@@ -698,16 +750,18 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
-			$pdf->SetFont('Arial','B',11);
-			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
+			//$pdf->SetFont('Arial','B',11);
+			$pdf->SetFont('DejaVu','B',11);
+			$pdf->Cell(60,10,'EditÃ© le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		$pdf->SetFont('Arial','',8);
+		//$pdf->SetFont('Arial','',8);
+		$pdf->SetFont('DejaVu','',8);
 		$pdf->Ln(5);
 		
 		if (!$infoagent)
 		{
-			$headertext = "Etat des soldes pour l'année $anneeref / " . ($anneeref+1) . " du " . $this->fonctions->formatdate($anneeref . $this->fonctions->debutperiode()) . " au ";
+			$headertext = "Etat des soldes pour l'annÃ©e $anneeref / " . ($anneeref+1) . " du " . $this->fonctions->formatdate($anneeref . $this->fonctions->debutperiode()) . " au ";
 			if (date("Ymd")>($anneeref+1) . $this->fonctions->finperiode())
 				 $headertext = $headertext. $this->fonctions->formatdate(($anneeref+1) . $this->fonctions->finperiode());
 			else 
@@ -717,7 +771,7 @@ AND DEMANDE.STATUT='v'";
 		else
 			$pdf->Cell(215,5,"Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() ,1,0,'C');
 		$pdf->Ln(5);
-		$pdf->Cell(75,5,"Type congé",1,0,'C');
+		$pdf->Cell(75,5,"Type congÃ©",1,0,'C');
 		$pdf->Cell(30,5,"Droits acquis",1,0,'C');
 		$pdf->Cell(30,5,"Droit pris",1,0,'C');
 		$pdf->Cell(30,5,"Solde actuel",1,0,'C');
@@ -767,11 +821,11 @@ AND DEMANDE.STATUT='v'";
   		$htmltext = $htmltext . "      <center>";
 		$htmltext = $htmltext . "      <table class='tableau'>";
 		if (!$infoagent)
-	  		$htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour l'année $anneeref / " . ($anneeref+1) . "</td></tr>";
+	  		$htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour l'annÃ©e $anneeref / " . ($anneeref+1) . "</td></tr>";
 		else 
 			$htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
 
-  		$htmltext = $htmltext . "         <tr class='entete'><td>Type congé</td><td>Droits acquis</td><td>Droit pris</td><td>Solde actuel</td><td>Demandes en attente</td></tr>";
+  		$htmltext = $htmltext . "         <tr class='entete'><td>Type congÃ©</td><td>Droits acquis</td><td>Droit pris</td><td>Solde actuel</td><td>Demandes en attente</td></tr>";
   		$totaldroitaquis=0;
   		$totaldroitpris=0;
   		$totaldroitrestant=0;
@@ -845,7 +899,7 @@ AND DEMANDE.STATUT='v'";
 			}
 		}
 		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-		// On enlève les doublons des demandes !!!
+		// On enlÃ¨ve les doublons des demandes !!!
 		$uniquedemandeliste = array();
 		if (is_array($demandeliste))
 		{
@@ -862,11 +916,11 @@ AND DEMANDE.STATUT='v'";
 		$htmltext = $htmltext .       "<div id='demandeliste'>";
 		$htmltext = $htmltext .       "<center><table class='tableau' >";
 		if (count($demandeliste) == 0)
-			$htmltext = $htmltext .    "   <tr class='titre'><td>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
+			$htmltext = $htmltext .    "   <tr class='titre'><td>L'agent n'a aucun congÃ© posÃ© pour la pÃ©riode de rÃ©fÃ©rence en cours.</td></tr>";
 		else
 		{
-			$htmltext = $htmltext .    "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
-			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Statut<td>Motif (obligatoire si le congé est annulé)</td></tr>";
+			$htmltext = $htmltext .    "   <tr class='titre'><td colspan=7>Tableau rÃ©capitulatif des demandes</td></tr>";
+			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congÃ©</td><td>Date de dÃ©pot</td><td>Date de dÃ©but</td><td>Date de fin</td><td>Nbr de jours</td><td>Statut<td>Motif (obligatoire si le congÃ© est annulÃ©)</td></tr>";
 			foreach ($demandeliste as $key => $demande)
 			{
 				if ($demande->motifrefus() != "" or strcasecmp($demande->statut(),"r")!=0)
@@ -938,7 +992,7 @@ AND DEMANDE.STATUT='v'";
 				}
 			}
 		}
-		// On enlève les doublons des demandes !!!
+		// On enlÃ¨ve les doublons des demandes !!!
 		$uniquedemandeliste = array();
 		if (is_array($demandeliste))
 		{
@@ -954,17 +1008,21 @@ AND DEMANDE.STATUT='v'";
 		$closeafter = FALSE;
 		if (is_null($pdf))
 		{
-			$pdf=new FPDF();
+			//$pdf=new FPDF();
+			$pdf=new tFPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
 			$closeafter = TRUE;
+			$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+			$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		}
 		if ($header == TRUE)
 		{
 			$pdf->AddPage('L');
 			//echo "Apres le addpage <br>";
 			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('Arial','B',15);
+			$pdf->SetFont('DejaVu','B',15);
+			//$pdf->SetFont('Arial','B',15);
 			$pdf->Ln(15);
 			foreach ($affectationliste as $key => $affectation)
 			{
@@ -976,15 +1034,17 @@ AND DEMANDE.STATUT='v'";
 			}
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
-			$pdf->Cell(60,10,"Période du " . $this->fonctions->formatdate($datedebut) ." au " . $this->fonctions->formatdate($datefin));
+			$pdf->Cell(60,10,"PÃ©riode du " . $this->fonctions->formatdate($datedebut) ." au " . $this->fonctions->formatdate($datefin));
 			$pdf->Ln(10);
-			$pdf->SetFont('Arial','B',11);
-			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
+			//$pdf->SetFont('Arial','B',11);
+			$pdf->SetFont('DejaVu','B',11);
+			$pdf->Cell(60,10,'EditÃ© le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		$pdf->SetFont('Arial','',8);
+		//$pdf->SetFont('Arial','',8);
+		$pdf->SetFont('DejaVu','',8);
 		
-		$headertext = "Tableau récapitulatif des demandes - Congés pris entre " . $this->fonctions->formatdate($datedebut) . " et ";
+		$headertext = "Tableau rÃ©capitulatif des demandes - CongÃ©s pris entre " . $this->fonctions->formatdate($datedebut) . " et ";
 		if (date("Ymd")>$datefin)
 			$headertext = $headertext. $this->fonctions->formatdate($datefin);
 		else
@@ -994,16 +1054,16 @@ AND DEMANDE.STATUT='v'";
 		$pdf->Ln(5);
 		
 		if (count($demandeliste) == 0)
-			$pdf->Cell(275,5,"L'agent n'a aucun congé posé pour la période de référence en cours.",1,0,'C');
+			$pdf->Cell(275,5,"L'agent n'a aucun congÃ© posÃ© pour la pÃ©riode de rÃ©fÃ©rence en cours.",1,0,'C');
 		else
 		{
-			$pdf->Cell(60,5,"Type de congé",1,0,'C');
-			$pdf->Cell(25,5,"Date de dépot",1,0,'C');
-			$pdf->Cell(35,5,"Date de début",1,0,'C');
+			$pdf->Cell(60,5,"Type de congÃ©",1,0,'C');
+			$pdf->Cell(25,5,"Date de dÃ©pot",1,0,'C');
+			$pdf->Cell(35,5,"Date de dÃ©but",1,0,'C');
 			$pdf->Cell(35,5,"Date de fin",1,0,'C');
 			$pdf->Cell(20,5,"Nbr de jours",1,0,'C');
 			$pdf->Cell(20,5,"Statut",1,0,'C');
-			$pdf->Cell(80,5,"Motif (obligatoire si le congé est annulé)",1,0,'C');
+			$pdf->Cell(80,5,"Motif (obligatoire si le congÃ© est annulÃ©)",1,0,'C');
 			$pdf->ln(5);
 			foreach ($demandeliste as $key => $demande)
 			{
@@ -1065,7 +1125,7 @@ AND DEMANDE.STATUT='v'";
 			}
 		}
 		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-		// On enlève les doublons des demandes !!!
+		// On enlÃ¨ve les doublons des demandes !!!
 		$uniquedemandeliste = array();
 		if (is_array($liste))
 		{
@@ -1085,7 +1145,7 @@ AND DEMANDE.STATUT='v'";
 		//$htmltext =                   "<br>";
 		if (count($liste) == 0)
 		{
-			//$htmltext = $htmltext .    "   <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
+			//$htmltext = $htmltext .    "   <tr><td class=titre1 align=center>L'agent n'a aucun congÃ© posÃ© pour la pÃ©riode de rÃ©fÃ©rence en cours.</td></tr>";
 			$htmltext = "";
 		}
 		else
@@ -1101,12 +1161,12 @@ AND DEMANDE.STATUT='v'";
 					{
 						$htmltext = $htmltext .       "<table class='tableausimple'>";
 						$htmltext = $htmltext .    "   <tr ><td class='titresimple' colspan=7 align=center ><font color=#BF3021>Gestion des demandes pour " . $this->civilite() . " " .  $this->nom() . " " . $this->prenom() .  "</font></td></tr>";
-						$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td>";
+						$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de dÃ©but</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congÃ©</td><td class='cellulesimple'>Nbre jours</td>";
 						if (strcasecmp($demande->statut(),"a")==0 and strcasecmp($mode,"agent")==0)
 							$htmltext = $htmltext . "<td class='cellulesimple'>Commentaire</td>";
 						$htmltext = $htmltext . "<td class='cellulesimple'>Annuler</td>";
 						if (strcasecmp($demande->statut(),"v")==0 and strcasecmp($mode,"resp")==0)
-							$htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
+							$htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congÃ© est annulÃ©)</td>";
 						$htmltext = $htmltext . "</tr>";
 						$premieredemande = FALSE;
 					}
@@ -1169,7 +1229,7 @@ AND DEMANDE.STATUT='v'";
 			}
 		}
 		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-		// On enlève les doublons des demandes !!!
+		// On enlÃ¨ve les doublons des demandes !!!
 		$uniquedemandeliste = array();
 		if (is_array($liste))
 		{
@@ -1197,7 +1257,7 @@ AND DEMANDE.STATUT='v'";
 		//$htmltext =                   "<br>";
 		if (count($liste) == 0)
 		{
-			//$htmltext = $htmltext .    "   <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
+			//$htmltext = $htmltext .    "   <tr><td class=titre1 align=center>L'agent n'a aucun congÃ© posÃ© pour la pÃ©riode de rÃ©fÃ©rence en cours.</td></tr>";
 		}
 		else
 		{
@@ -1218,8 +1278,8 @@ AND DEMANDE.STATUT='v'";
 						if ($premieredemande)
 						{
 							$htmltext = $htmltext .       "<table class='tableausimple' width=100%>";
-							$htmltext = $htmltext .    "   <tr><td class=titresimple colspan=7 align=center ><font color=#BF3021>Tableau des demandes à valider pour " . $this->civilite() . " " .  $this->nom() . " " . $this->prenom() .  "</font></td></tr>";
-							$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
+							$htmltext = $htmltext .    "   <tr><td class=titresimple colspan=7 align=center ><font color=#BF3021>Tableau des demandes Ã  valider pour " . $this->civilite() . " " .  $this->nom() . " " . $this->prenom() .  "</font></td></tr>";
+							$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de dÃ©but</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congÃ©</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Motif (obligatoire si le congÃ© est annulÃ©)</td></tr>";
 							$premieredemande = FALSE;
 						}
 						
@@ -1282,8 +1342,10 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		//echo "SQL = " . $sql . "<br>";
 		$query=mysql_query($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
+		if ($erreur != "") {
 			echo "Agent->affichecommentairecongehtml : " . $erreur . "<br>";
+			error_log(basename(__FILE__)." ".getdate()." Agent->affichecommentairecongehtml : " . $erreur);
+		}
 		$htmltext = "";
 		$premiercomment = TRUE;
 		$htmltext = $htmltext . "<center><table class='tableausimple'>";
@@ -1291,8 +1353,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		{
 			if ($premiercomment)
 			{
-				$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
-				$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
+				$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congÃ©s</td></tr>";
+				$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type congÃ©</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
 				$premiercomment = FALSE;
 			}				
 			
@@ -1327,6 +1389,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		if ($erreur != "")
 		{
 			$message = "$erreur";
+			error_log(basename(__FILE__)." ".getdate()." ".$erreur);
 		}
 		
 	}

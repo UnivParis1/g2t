@@ -7,9 +7,9 @@
 
 	$date=date("Ymd");
 
-	echo "D�but de l'import des absences HARPEGE " . date("d/m/Y H:i:s") . "\n" ;
+	echo "Début de l'import des absences HARPEGE " . date("d/m/Y H:i:s") . "\n" ;
 
-	// On vide la table des absences HARPEGE pour la recharger compl�tement
+	// On vide la table des absences HARPEGE pour la recharger complètement
 	$sql = "DELETE FROM HARPABSENCE";
 	mysql_query($sql);
 	$erreur_requete=mysql_error();
@@ -37,7 +37,7 @@
 				$harptype = $ligne_element[3];
 				echo "harpegeid = $harpegeid   datedebut=$datedebut   datefin=$datefin   harptype=$harptype   \n";
 				$sql = sprintf("INSERT INTO HARPABSENCE (HARPEGEID,DATEDEBUT,DATEFIN,HARPTYPE) VALUES('%s','%s	','%s','%s')",
-				mysql_real_escape_string($harpegeid),mysql_real_escape_string($datedebut),mysql_real_escape_string($datefin),mysql_real_escape_string($harptype));
+				$fonctions->my_real_escape_utf8($harpegeid),$fonctions->my_real_escape_utf8($datedebut),$fonctions->my_real_escape_utf8($datefin),$fonctions->my_real_escape_utf8($harptype));
 		
 				mysql_query($sql);
 				$erreur_requete=mysql_error();

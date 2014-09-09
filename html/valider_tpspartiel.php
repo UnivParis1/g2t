@@ -77,8 +77,11 @@
 				$msgerreur = "";
 				$msgerreur = $declaration->store();
 				//echo "Apres le store <br>";
-				if ($msgerreur != "")
-					echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
+				if ($msgerreur != "") {
+					$errlog = "Pas de sauvegarde car " . $msgerreur;
+					echo "<p style='color: red'>".$errlog."</p><br/>";
+					error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+				}
 				else
 				{
 					$pdffilename = $declaration->pdf($user->harpegeid());
@@ -129,7 +132,7 @@
 					$agentid = $autodecla->agentid();
 					$agent = new agent($dbcon);
 					$agent->load($agentid);
-					$user->sendmail($agent,"Validation d'une autodéclaration","Le statut de votre autodéclaration du " . $autodecla->datedebut() . " au " . $autodecla->datefin() . " est " . $autodecla->statut() . ".",$pdffilename);
+					$user->sendmail($agent,"Validation d'une autodÃ©claration","Le statut de votre autodÃ©claration du " . $autodecla->datedebut() . " au " . $autodecla->datefin() . " est " . $autodecla->statut() . ".",$pdffilename);
 					//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 					error_log("Sauvegarde l'autodeclaration " . $autodecla->id() . " avec le statut " . $autodecla->statut());
 				}
@@ -162,7 +165,7 @@
 			echo "<form name='frm_validation_autodecla'  method='post' >";
 			echo "<table class='tableausimple'>";
 			echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong()  . "</td></tr>";
-			echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Statut</td><td class='cellulesimple'>Jours de RTT</td></tr>";
+			echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de dÃ©but</td><td class='cellulesimple'>Date de fin</td><td>Statut</td><td class='cellulesimple'>Jours de RTT</td></tr>";
 			foreach ($agentlist as $key => $membre)
 			{
 				$affectationliste = $membre->affectationliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());
@@ -195,7 +198,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<a href=".">Retour Ã  la page d'accueil</a> 
 -->
 </body></html>
 

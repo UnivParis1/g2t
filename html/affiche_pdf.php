@@ -1,5 +1,5 @@
 <?php
-	header('Content-type: application/pdf');
+	header('Content-type: application/pdf; charset=utf-8');
 	header('Content-Disposition: attachment; filename="downloaded.pdf"');
 
 // header('Content-type: application/pdf');
@@ -20,7 +20,8 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/fpdf.php");
+	require_once("./class/tfpdf/tfpdf.php");
+//	require_once("./class/fpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -56,9 +57,12 @@
 			//echo "Avant le split <br>";
 			$tablisteagent = preg_split("/,/",$listeagent);
 			//print_r($tablisteagent); echo "<br>";
-			$pdf=new FPDF();
+//			$pdf=new FPDF();
+			$pdf=new tFPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
+			$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+			$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 			foreach ($tablisteagent as $key => $agentid)
 			{
 				if ($agentid <> "")
@@ -106,7 +110,7 @@
 			$structure = new structure($dbcon);
 			$structure->load($structid);
 			
-			// On décompose la date mois_annee en mois et année pour éventuellement soustraire un an
+			// On dÃ©compose la date mois_annee en mois et annÃ©e pour Ã©ventuellement soustraire un an
 			// Puis on la reformate
 			// Le format de la variable mois_annee est MM/YYYY (voir fonction structure::planninghtml)
 			$mois_annee = substr($mois_annee,0,3) . (substr($mois_annee,3)-$previous);

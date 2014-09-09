@@ -8,8 +8,8 @@ class planningelement {
 	
 
 	private $date = null;
-	private $moment = null;  // 'm' pour matin / 'a' pour après-midi
-	private $typeelement = null; // WE, congé, absence, férié...
+	private $moment = null;  // 'm' pour matin / 'a' pour aprÃ¨s-midi
+	private $typeelement = null; // WE, congÃ©, absence, fÃ©riÃ©...
 	private $info = null;
 	private $couleur = null;
 	private $dbconnect = null;
@@ -23,7 +23,9 @@ class planningelement {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "PlanningElement->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "PlanningElement->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -32,8 +34,11 @@ class planningelement {
 	{
 		if (is_null($date))
 		{
-			if (is_null($this->date))
-				echo "PlanningElement->date : La date n'est pas définie !!! <br>";
+			if (is_null($this->date)) {
+				$errlog = "PlanningElement->date : La date n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->fonctions->formatdate($this->date);
 		}
@@ -45,8 +50,11 @@ class planningelement {
 	{
 		if (is_null($moment))
 		{
-			if (is_null($this->moment))
-				echo "PlanningElement->moment : Le moment n'est pas défini !!! <br>";
+			if (is_null($this->moment)) {
+				$errlog = "PlanningElement->moment : Le moment n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->moment;
 		}
@@ -58,8 +66,11 @@ class planningelement {
 	{
 		if (is_null($type))
 		{
-			if (is_null($this->typeelement))
-				echo "PlanningElement->type : Le type n'est pas défini !!! <br>";
+			if (is_null($this->typeelement)) {
+				$errlog = "PlanningElement->type : Le type n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->typeelement;
 		}
@@ -71,8 +82,11 @@ class planningelement {
 	{
 		if (is_null($info))
 		{
-			if (is_null($this->info))
-				echo "PlanningElement->info : L'info n'est pas défini !!! <br>";
+			if (is_null($this->info)) {
+				$errlog = "PlanningElement->info : L'info n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->info;
 		}
@@ -90,8 +104,11 @@ class planningelement {
 	{
 		if (is_null($id))
 		{
-			if (is_null($this->agentid))
-				echo "PlanningElement->agentid : L'Id de l'agent n'est pas défini !!! <br>";
+			if (is_null($this->agentid)) {
+				$errlog = "PlanningElement->agentid : L'Id de l'agent n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->agentid;
 		}
@@ -111,10 +128,16 @@ class planningelement {
 		$sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "PlanningElement->couleur : " . $erreur . "<br>";
-		if (mysql_num_rows($query) == 0)
-			echo "PlanningElement->couleur : La couleur pour le type de congé " . $this->typeelement . " non trouvée <br>";
+		if ($erreur != "") {
+			$errlog = "PlanningElement->couleur : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		if (mysql_num_rows($query) == 0) {
+			$errlog = "PlanningElement->couleur : La couleur pour le type de congÃ© " . $this->typeelement . " non trouvÃ©e";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		$result = mysql_fetch_row($query);
 		return $result[1];
 	}
@@ -123,8 +146,11 @@ class planningelement {
 	{
 		if (is_null($statut))
 		{
-			if (is_null($this->statut))
-				echo "PlanningElement->statut : Le statut n'est pas défini !!! <br>";
+			if (is_null($this->statut)) {
+				$errlog = "PlanningElement->statut : Le statut n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->statut;
 		}
@@ -137,10 +163,16 @@ class planningelement {
 				$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
 				$query=mysql_query ($sql, $this->dbconnect);
 				$erreur=mysql_error();
-				if ($erreur != "")
-					echo "PlanningElement->statut : " . $erreur . "<br>";
-				if (mysql_num_rows($query) == 0)
-					echo "PlanningElement->statut : Le libelle pour le type de congé " . $this->typeelement . " non trouvée <br>";
+				if ($erreur != "") {
+					$errlog = "PlanningElement->statut : " . $erreur;
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
+				if (mysql_num_rows($query) == 0) {
+					$errlog = "PlanningElement->statut : Le libellÃ© pour le type de congÃ© " . $this->typeelement . " non trouvÃ©";
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 				$result = mysql_fetch_row($query);
 				$this->info = $result[1] . " : " . $this->info;
 		   }

@@ -1,8 +1,12 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
 <?php
 	require_once('CAS.php');
 	require_once("./class/fonctions.php");
 	require_once('./includes/dbconnection.php');
- 
+
 	$fonctions = new fonctions($dbcon);
 	
 	// when using a reverse proxy, HTTP_X_FORWARDED_HOST is handled by phpCAS, but it can't know the case proxy is https but real server is http
@@ -48,7 +52,7 @@
 	
 	if (is_null($userid) or $userid == "")
 	{
-		//echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
+		//echo "L'agent n'est pas passÃ© en paramÃ¨tre.... RÃ©cupÃ©ration de l'agent Ã  partir du ticket CAS <br>";
 		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
 		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
 		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
@@ -62,10 +66,10 @@
 		$restriction=array("$LDAP_CODE_AGENT_ATTR");
 		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 		$info=ldap_get_entries($con_ldap,$sr);
-		//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+		//echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 		if (!$user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
 		{
-			echo "<br><font color=#FF0000>Vous n'êtes pas authorisé à vous connecter à cette application...</font>";
+			echo "<br><font color=#FF0000>Vous n'Ãªtes pas autorisÃ© Ã  vous connecter Ã  cette application...</font>";
 			return;
 		}
 		$_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
@@ -78,7 +82,7 @@
 	{
 		if (!$user->load($userid))
 		{
-			echo "<br><font color=#FF0000>Vous n'êtes pas authorisé à vous connecter à cette application...</font>";
+			echo "<br><font color=#FF0000>Vous n'Ãªtes pas autorisÃ© Ã  vous connecter Ã  cette application...</font>";
 			return;
 		}
 	}

@@ -33,7 +33,9 @@ class affectation {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Affectation->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "Affectation->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -46,7 +48,9 @@ class affectation {
 	{
 		if (is_null($idaffectation))
 		{
-			echo "Affectation->Load : l'identifiant de l'affectation est NULL <br>";
+			$errlog = "Affectation->Load : l'identifiant de l'affectation est NULL ";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return false;
 		}
 		else
@@ -58,12 +62,16 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			$erreur=mysql_error();
 			if ($erreur != "")
 			{
-				echo "Affectation->Load : " . $erreur . "<br>";
+				$errlog = "Affectation->Load : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$errlog);
 				return false;
 			}
 			if (mysql_num_rows($query) == 0)
 			{
-				echo "Affectation->Load : Affectation $idaffectation non trouvé <br>";
+				$errlog = "Affectation->Load : Affectation $idaffectation non trouvÃ©";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 				return false;
 			}
 			$result = mysql_fetch_row($query);
@@ -95,17 +103,25 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    	
 		if (is_null($agentid))
 		{
-			echo "Affectation->Loadbydate : l'agentId est NULL <br>";
+			$errlog = "Affectation->Loadbydate : l'agentId est NULL";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		else
 		{
 			$sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= '"  .  $date . "' AND ('" . $date . "' <= DATEFIN OR DATEFIN = '0000-00-00')) AND HARPEGEID ='" . $agentid . "' AND OBSOLETE='N'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Affectation->Loadbydate : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "Affectation->Loadbydate : Agent " . $agentid . "n'a pas d'affectation pour la date "  .  $this->fonctions->formatdate($date) . " <br>";
+			if ($erreur != "") {
+				$errlog = "Affectation->Loadbydate : ".$erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "Affectation->Loadbydate : Agent " . $agentid . "n'a pas d'affectation pour la date "  .  $this->fonctions->formatdate($date);
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$this->load("$result[0]");
 		}
@@ -117,8 +133,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function affectationid()
 	{
-		if (is_null($this->affectationid))
-			echo "Affectation->id : L'Id n'est pas défini !!! <br>";
+		if (is_null($this->affectationid)) {
+			$errlog = "Affectation->id : L'Id n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->affectationid;
 	}
@@ -129,8 +148,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function agentid()
 	{
-		if (is_null($this->agentid))
-			echo "Affectation->agentid : L'Id de l'agent n'est pas défini !!! <br>";
+		if (is_null($this->agentid)) {
+			$errlog = "Affectation->agentid : L'Id de l'agent n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->agentid;
 	}
@@ -141,8 +163,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function structureid()
 	{
-		if (is_null($this->structureid))
-			echo "Affectation->structureid : L'Id de la structure n'est pas défini !!! <br>";
+		if (is_null($this->structureid)) {
+			$errlog = "Affectation->structureid : L'Id de la structure n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->structureid;
 	}
@@ -153,8 +178,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function datedebut()
 	{
-		if (is_null($this->datedebut))
-			echo "Affectation->datedebut : La date de début n'est pas définie !!! <br>";
+		if (is_null($this->datedebut)) {
+			$errlog = "Affectation->datedebut : La date de debut n'est pas dÃ©finie !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->fonctions->formatdate($this->datedebut);
 	}
@@ -165,8 +193,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function datefin()
 	{
-		if (is_null($this->datefin))
-			echo "Affectation->datefin : La date de fin n'est pas définie !!! <br>";
+		if (is_null($this->datefin)) {
+			$errlog = "Affectation->datefin : La date de fin n'est pas dÃ©finie !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->fonctions->formatdate($this->datefin);
 	}
@@ -177,8 +208,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function quotite()
 	{
-		if (is_null($this->numerateurquotite) or is_null($this->denominateurquotite))
-			echo "Affectation->quotite : La quotité n'est pas définie !!! <br>";
+		if (is_null($this->numerateurquotite) or is_null($this->denominateurquotite)) {
+			$errlog = "Affectation->quotite : La quotitÃ© n'est pas dÃ©finie !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			if ("$this->denominateurquotite" == "100")
 				return "$this->numerateurquotite%";
@@ -193,8 +227,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function numquotite()
 	{
-		if (is_null($this->numerateurquotite)) 
-			echo "Affectation->numquotite : Le numérateur de la quotité n'est pas définie !!! <br>";
+		if (is_null($this->numerateurquotite)) {
+			$errlog = "Affectation->numquotite : Le numÃ©rateur de la quotitÃ© n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->numerateurquotite;
 	}
@@ -205,8 +242,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function denumquotite()
 	{
-		if (is_null($this->denominateurquotite)) 
-			echo "Affectation->numquotite : Le denumérateur de la quotité n'est pas définie !!! <br>";
+		if (is_null($this->denominateurquotite)) {
+			$errlog = "Affectation->numquotite : Le dÃ©nominateur de la quotitÃ© n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->denominateurquotite;
 	}
@@ -236,8 +276,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
    */
 	function datemodif()
 	{
-		if (is_null($this->datemodif))
-			echo "Affectation->datemodif : La date de modification n'est pas définie !!! <br>";
+		if (is_null($this->datemodif)) {
+			$errlog = "Affectation->datemodif : La date de modification n'est pas dÃ©finie !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->fonctions->formatdate($this->datemodif);
 	}
@@ -261,11 +304,14 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		//echo "affectation->declarationTPliste SQL = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Agent->declarationTPliste : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Agent->declarationTPliste : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "Affectation->declarationTPliste : L'affectation $this->affectationid n'a pas de déclaration de TP entre $datedebut et $datefin <br>";
+			//echo "Affectation->declarationTPliste : L'affectation $this->affectationid n'a pas de dÃ©claration de TP entre $datedebut et $datefin <br>";
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -300,12 +346,12 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
  		$htmltext = "Tableau des temps partiel pour " . $agent->identitecomplete() . "<br>";
  		$htmltext = $htmltext . "<div id='planning'>";
  		$htmltext = $htmltext . "<table class='tableausimple'>";
- 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Structure</td><td class='titresimple'>Quotité</td>";
+ 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date dÃ©but</td><td class='titresimple'>Date fin</td><td class='titresimple'>Structure</td><td class='titresimple'>QuotitÃ©</td>";
 		$htmltext = $htmltext . "</tr>";
 		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->datedebut() . "</td><td class='cellulesimple'>" . $this->datefin() . "</td><td class='cellulesimple'>" . $structure->nomlong() . "</td><td class='cellulesimple'>" . $this->quotite() . "</td></tr>";
 		$htmltext = $htmltext ."</table><br>";
  		$htmltext = $htmltext . "<table class='tableausimple'>";
- 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Statut</td><td class='titresimple'>Répartition du temps partiel</td>";
+ 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date dÃ©but</td><td class='titresimple'>Date fin</td><td class='titresimple'>Statut</td><td class='titresimple'>RÃ©partition du temps partiel</td>";
 // 		if ($pour_modif)
 //				$htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
 		$htmltext = $htmltext . "</tr>";
@@ -318,8 +364,8 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			{
 		 		foreach ($declarationliste as $key => $declaration)
 		 		{
-		 			// Si on est en mode "resp" (responsable de service) on affiche toutes les déclarations de TP
-		 			// qui sont liés à cette affectation
+		 			// Si on est en mode "resp" (responsable de service) on affiche toutes les dÃ©clarations de TP
+		 			// qui sont liÃ©s Ã  cette affectation
 		 			if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp($mode, "resp")==0)
 		 			{
 			 			if (strcasecmp($declaration->statut(),"r")!=0)
@@ -329,7 +375,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			}
 			else
 			{
-				//echo "Pas de déclaration de TP pour l'affectation " . $this->affectationid() . "<br>";
+				//echo "Pas de dÃ©claration de TP pour l'affectation " . $this->affectationid() . "<br>";
 			}
 		}		
 		$htmltext = $htmltext ."</table>";

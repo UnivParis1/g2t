@@ -1,17 +1,18 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr"> 
+<head> 
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<script type="text/javascript">
 <?php
 	if (is_null($user) or is_null($user->harpegeid()))
 	{
-		echo "PROBLEME : L'utilisateur n'est pas renseigné ==> objet \$user!!!! <br>";
+		echo "PROBLEME : L'utilisateur n'est pas renseignÃ© ==> objet \$user!!!! <br>";
 		exit();
 	}
 
 ?>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr"> 
-<head> 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" /> 
-<script type="text/javascript">
 	function montre(id)
 	{
 		var d = document.getElementById(id);
@@ -179,7 +180,7 @@
 						<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>">
 						<input type="hidden" name="typedemande" value="conges">
 					</form>
-					<a href="javascript:document.dem_conge.submit();">Etablir une demande de congé</a>
+					<a href="javascript:document.dem_conge.submit();">Etablir une demande de congÃ©</a>
 				</li>				
 				<li onclick='document.dem_absence.submit();'>
 					<form name='dem_absence'  method='post' action="etablir_demande.php">
@@ -208,7 +209,7 @@
 			<li onclick="">MENU RESPONSABLE 
 				<ul class="niveau2"> 
 					<li class="plus">
-						<a>Gestion de l'année en cours</a>
+						<a>Gestion de l'annÃ©e en cours</a>
                   <ul class="niveau3">
 							<li onclick='document.resp_gest_conge.submit();'>
 								<form name='resp_gest_conge'  method='post' action="gestion_demande.php">
@@ -225,7 +226,7 @@
 									<input type="hidden" name="typedemande" value="conges">
 									<input type="hidden" name="previous" value="no">
 								</form>
-								<a href="javascript:document.resp_conge.submit();">Etablir une demande de congé pour un agent</a>
+								<a href="javascript:document.resp_conge.submit();">Etablir une demande de congÃ© pour un agent</a>
 							</li>
 							<li onclick='document.resp_absence.submit();'>
 								<form name='resp_absence'  method='post' action="etablir_demande.php">
@@ -269,7 +270,7 @@
 								<form name='resp_ajout_conge'  method='post' action="ajouter_conges.php">
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 								</form>
-								<a href="javascript:document.resp_ajout_conge.submit();">Ajout de jours supplémentaires pour un agent</a>
+								<a href="javascript:document.resp_ajout_conge.submit();">Ajout de jours supplÃ©mentaires pour un agent</a>
 							</li>
 							<li onclick='document.resp_aff_solde.submit();'>
 								<form name='resp_aff_solde'  method='post' action="affiche_solde.php">
@@ -280,7 +281,7 @@
 								<a href="javascript:document.resp_aff_solde.submit();">Affichage du solde des agents de la structure</a>
 							
 <?php
-		// Si on est 3 mois avant la fin de la période ==> On peut saisir des jours par anticipation
+		// Si on est 3 mois avant la fin de la pÃ©riode ==> On peut saisir des jours par anticipation
 		$datetemp = ($fonctions->anneeref()+1) . $fonctions->finperiode();
 		$timestamp = strtotime($datetemp);
 		$datetemp = date("Ymd", strtotime("-3month", $timestamp ));  // On remonte de 3 mois
@@ -295,7 +296,7 @@
 									<input type="hidden" name="typedemande" value="conges">
 									<input type="hidden" name="congeanticipe" value="yes">
 								</form>
-								<a href="javascript:document.resp_conge_anticipe.submit();">Etablir une demande de congé anticipé pour un agent</a>
+								<a href="javascript:document.resp_conge_anticipe.submit();">Etablir une demande de congÃ© anticipÃ© pour un agent</a>
 							</li>
 <?php
 		} 
@@ -304,7 +305,7 @@
 						</ul>
 					</li>
 					<li class="plus">
-						<a>Gestion de l'année précédente</a>
+						<a>Gestion de l'annÃ©e prÃ©cÃ©dente</a>
                   <ul class="niveau3">
 							<li onclick='document.resp_gest_conge_previous.submit();'>
 								<form name='resp_gest_conge_previous'  method='post' action="gestion_demande.php">
@@ -321,7 +322,7 @@
 									<input type="hidden" name="typedemande" value="conges">
 									<input type="hidden" name="previous" value="yes">
 								</form>
-								<a href="javascript:document.resp_conge_previous.submit();">Etablir une demande de congé pour un agent</a>
+								<a href="javascript:document.resp_conge_previous.submit();">Etablir une demande de congÃ© pour un agent</a>
 							</li>
 							<li onclick='document.resp_absence_previous.submit();'>
 								<form name='resp_absence_previous'  method='post' action="etablir_demande.php">
@@ -363,7 +364,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="resp">
 						</form>
-						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
+						<a href="javascript:document.resp_parametre.submit();">ParamÃ©trage des dossiers et des structures</a>
 					</li>	
 				</ul> 
 			</li> 
@@ -389,7 +390,7 @@
 							<input type="hidden" name="mode" value="gestion">
 							<input type="hidden" name="previous" value="yes">
 						</form>
-						<a href="javascript:document.gest_valid_conge_prev.submit();">Demandes en attente (Année N-1)</a>
+						<a href="javascript:document.gest_valid_conge_prev.submit();">Demandes en attente (AnnÃ©e N-1)</a>
 					</li>
 					<li onclick='document.gest_aff_solde.submit();'>
 						<form name='gest_aff_solde'  method='post' action="affiche_solde.php">
@@ -404,7 +405,7 @@
 							<input type="hidden" name="mode" value="gestion">
 							<input type="hidden" name="previous" value="yes">
 						</form>
-						<a href="javascript:document.gest_aff_solde_ant.submit();">Affichage du solde des agents de la structure (année précéd.)</a>
+						<a href="javascript:document.gest_aff_solde_ant.submit();">Affichage du solde des agents de la structure (annÃ©e prÃ©cÃ©d.)</a>
 					</li>	
 					<li onclick='document.gest_parametre.submit();'>
 						<form name='gest_parametre'  method='post' action="gestion_dossier.php">
@@ -412,7 +413,7 @@
 							<input type="hidden" name="action" value="lecture">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre.submit();">Affichage paramétrage des dossiers</a>
+						<a href="javascript:document.gest_parametre.submit();">Affichage paramÃ©trage des dossiers</a>
 					</li>				
 					<li onclick='document.gest_struct_planning.submit();'>
 						<form name='gest_struct_planning'  method='post' action="structure_planning.php">
@@ -427,7 +428,7 @@
 							<input type="hidden" name="action" value="modif">
 							<input type="hidden" name="mode" value="gestion">
 						</form>
-						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
+						<a href="javascript:document.gest_parametre_modif.submit();">ParamÃ©trage des dossiers et des structures</a>
 					</li>				
 
 					<li onclick='document.gest_valid_tpspartiel.submit();'>
@@ -449,7 +450,7 @@
 		</ul>
 <?php
 	}
-	// On vérifie que la personne connecté (la vraie personne avec le compte LDAP) est administrateur de l'appli
+	// On vÃ©rifie que la personne connectÃ©e (la vraie personne avec le compte LDAP) est administrateur de l'appli
 	// On n'utilise pas la variable $user car dans le cas de la subtitution (se faire passer pour...) on ne serait plus admin
 	$adminuser = new agent($dbcon);
 	if (!isset($_SESSION['phpCAS']['harpegeid']))
@@ -472,7 +473,7 @@
 		//echo "Je viens de set le param - menu.php<br>";
 	}
 	$adminuser->load($_SESSION['phpCAS']['harpegeid']);
-	//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+	//echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 	if ($adminuser->estadministrateur())
 	{
 ?>
@@ -483,7 +484,7 @@
 						<form name='admin_struct_gest'  method='post' action="gestion_structure.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form>
-						<a href="javascript:document.admin_struct_gest.submit();">Paramétrage des structures</a>
+						<a href="javascript:document.admin_struct_gest.submit();">ParamÃ©trage des structures</a>
 					</li>
 <!-- 
 					<li onclick='document.admin_info_agent.submit();'>

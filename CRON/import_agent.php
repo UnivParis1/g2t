@@ -7,9 +7,9 @@
 
 	$date=date("Ymd");
 
-	echo "D�but de l'import des agents " . date("d/m/Y H:i:s") . "\n" ;
+	echo "Début de l'import des agents " . date("d/m/Y H:i:s") . "\n" ;
 
-	// On vide la table des agents pour la recharger compl�tement
+	// On vide la table des agents pour la recharger complètement
 	$sql = "DELETE FROM AGENT";
 	mysql_query($sql);
 	$erreur_requete=mysql_error();
@@ -39,7 +39,7 @@
 				$typepop = $ligne_element[5];
 				echo "harpegeid = $harpegeid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
 				$sql = sprintf("INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')",
-				mysql_real_escape_string($harpegeid),mysql_real_escape_string($civilite),mysql_real_escape_string($nom),mysql_real_escape_string($prenom),mysql_real_escape_string($adressemail),mysql_real_escape_string($typepop));
+				$fonctions->my_real_escape_utf8($harpegeid),$fonctions->my_real_escape_utf8($civilite),$fonctions->my_real_escape_utf8($nom),$fonctions->my_real_escape_utf8($prenom),$fonctions->my_real_escape_utf8($adressemail),$fonctions->my_real_escape_utf8($typepop));
 				
 				mysql_query($sql);
 				$erreur_requete=mysql_error();

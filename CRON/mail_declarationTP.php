@@ -21,7 +21,7 @@
 
 	$date=date("Ymd");
 
-	echo "Début de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n" ;
+	echo "DÃ©but de l'envoi des mail de dÃ©claration de TP " . date("d/m/Y H:i:s") . "\n" ;
 
 	// On selectionne les demandes en attente de validation 
 	$sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = 'a'";
@@ -42,7 +42,7 @@
 		$structure = new structure($dbcon);
 		$structure->load($affectation->structureid());
 		
-		// Si ce n'est pas le responsable de la structure qui à fait la demande
+		// Si ce n'est pas le responsable de la structure qui a fait la demande
 		if ($affectation->agentid() != $structure->responsable()->harpegeid())
 		{
 			// On ajoute la demande dans la structure de la demande
@@ -52,7 +52,7 @@
 			else 
 				$arraystruct[$structureid] = 1;
 		}
-		// C'est le responsable de la structure qui à fait la demande
+		// C'est le responsable de la structure qui a fait la demande
 		else
 		{
 			// On le met dans la structure parente (si elle existe)
@@ -71,7 +71,7 @@
 	}
 	
 	echo "arraystruct="; print_r($arraystruct); echo "\n";
-	// Création de l'agent CRON G2T
+	// CrÃ©ation de l'agent CRON G2T
 	$agentcron = new agent($dbcon);
 	// -1 est le code pour l'agent CRON dans G2T
 	$agentcron->load('-1');
@@ -83,11 +83,11 @@
 		$responsable = $structure->responsable();
 		echo "Avant le sendmail mail=" . $responsable->mail() ." Structure=" . $structureid  ." \n";
 		
-		$agentcron->sendmail($responsable,"Des demandes de temps partiel sont en attentes","Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nMerci de bien vouloir les valider dès que possible.\n",null);
+		$agentcron->sendmail($responsable,"Des demandes de temps partiel sont en attentes","Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nMerci de bien vouloir les valider dÃ¨s que possible.\n",null);
 		unset ($structure);
 		unset ($responsable);
 	}
 	unset ($agentcron);
-	echo "Fin de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
+	echo "Fin de l'envoi des mail de dÃ©claration de TP " . date("d/m/Y H:i:s") . "\n";
 
 ?>

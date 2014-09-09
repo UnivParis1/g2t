@@ -86,11 +86,14 @@
 			$msgerreur = $structure->store();
 			//echo "Apres le store <br>";
 				
-			if ($msgerreur != "")
-				echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
+			if ($msgerreur != "") {
+				$errlog = "Pas de sauvegarde car " . $msgerreur;
+				echo "<p style='color: red'>".$errlog."</p><br>";
+				error_log(basename(__FILE__)." ".getdate()." ".$fonctions->stripAccents($errlog));
+			}
 			else
 			{
-				// Tout c'est bien passÈ
+				// Tout s'est bien pass√©
 			}
 		}
 		
@@ -100,8 +103,11 @@
 	//$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE ORDER BY NOMCOURT"; //NOMLONG
 	$query=mysql_query ($sql,$dbcon);
 	$erreur=mysql_error();
-	if ($erreur != "")
-		echo "Gestion Structure : " . $erreur . "<br>";
+	if ($erreur != "") {
+		$errlog = "Gestion Structure : " . $erreur;
+		echo $errlog."<br/>";
+		error_log(basename(__FILE__)." ".getdate()." ".$fonctions->stripAccents($errlog));
+	}
 	echo "<form name='selectstructure'  method='post' >";
 	echo "<select name='structureid'>";
 	while ($result = mysql_fetch_row($query))
@@ -126,7 +132,7 @@
 		$structureliste = $structure->structurefille();
 		// On ajoute la structure courante au tableau
 		$structureliste[$structureid] = $structure;
-		// On trie par la clÈ => La clÈ de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
+		// On trie par la cl√© => La cl√© de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
 		ksort($structureliste);
 		//print_r($structureliste); echo "<br>";
 		
@@ -177,7 +183,7 @@
 			$struct->agent_envoyer_a($codeinterne);
 			echo "<tr>";
 			echo "<td>";
-			echo "Envoyer les demandes de congÈs des agents au : ";
+			echo "Envoyer les demandes de cong√©s des agents au : ";
 			echo "<SELECT name='agent_mail[" . $struct->id() . "]' size='1'>";
 			echo "<OPTION value=1";
 			if ($codeinterne==1) echo " selected='selected' ";
@@ -194,7 +200,7 @@
 			$struct->resp_envoyer_a($codeinterne);
 			echo "<tr>";
 			echo "<td>";
-			echo "Envoyer les demandes de congÈs du responsable au : ";
+			echo "Envoyer les demandes de cong√©s du responsable au : ";
 			echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
 			if (!is_null($parentstruct))
 			{
@@ -224,7 +230,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour ‡ la page d'accueil</a> 
+<a href=".">Retour √† la page d'accueil</a> 
 -->
 </body></html>
 

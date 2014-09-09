@@ -105,12 +105,12 @@
 	{
 		if (!is_null($nbr_jours_conges))
 		{
-			// On a cliquÈ sur le bouton validÈ ==> On va vÈrifier la saisie
+			// On a cliqu√© sur le bouton valid√© ==> On va v√©rifier la saisie
 			$nbr_jours_conges = str_replace(",", ".", $nbr_jours_conges);
 			//echo "nbr_jours_conges = $nbr_jours_conges <br>";
 			if ($nbr_jours_conges == "" or $nbr_jours_conges <= 0) 
 			{
-				$msg_erreur = $msg_erreur . "Vous n'avez pas saisi le nombre de jours ‡ ajouter ou il est infÈrieur ou Ègal ‡ 0 <br>";
+				$msg_erreur = $msg_erreur . "Vous n'avez pas saisi le nombre de jours √† ajouter ou il est inf√©rieur ou √©gal √† 0 <br>";
 			}
 			if ($commentaire_supp == "")
 			{
@@ -140,20 +140,28 @@
 				$msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup,$nbr_jours_conges,$commentaire_supp);
 			   //echo "msg_erreur = $msg_erreur <br>";
 			}
-			if ($msg_erreur != "")
-				echo "<P style='color: red'>Les jours supplÈmentaires n'ont pas ÈtÈ enregistrÈs... ==> MOTIF : ".  $msg_erreur . "</P>";
-			elseif (!is_null($solde))
-				echo "<P style='color: green'>Les jours supplÈmentaires ont ÈtÈ enregistrÈs... Nouveau solde = " . $solde->droitaquis() . "</P>";
+			if ($msg_erreur != "") {
+				$errlog = "Les jours suppl√©mentaires n'ont pas √©t√© enregistr√©s... ==> MOTIF : ".  $msg_erreur;
+				echo "<P style='color: red'>".$errlog."</P>";
+				error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+			}
+			elseif (!is_null($solde)) {
+				$errlog = "Les jours suppl√©mentaires ont √©t√© enregistr√©s... Nouveau solde = " . $solde->droitaquis();
+				echo "<P style='color: green'>".$errlog."</P>";
+				error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+			}
 		}
 		else
 		{
-			// On est au premier affichage de l'Ècran apres la selection de l'agent ==> Pas de control de saisi
-			echo "<P style='color: red'>Le motif de l'ajout est obligatoire</P><br>";
+			// On est au premier affichage de l'√©cran apres la selection de l'agent ==> Pas de control de saisi
+			$errlog = "Le motif de l'ajout est obligatoire";
+			echo "<P style='color: red'>".$errlog."</P><br/>";
+			error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
 		}
 
-		echo "Ajout de jours de congÈs supplÈmentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom()  . "<br>";
+		echo "Ajout de jours de cong√©s suppl√©mentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom()  . "<br>";
 		echo "<form name='frm_ajoutconge'  method='post' >";
-	// 	echo "SÈlectionnez l'agent auquel vous voullez ajouter des jours supplÈmentaires : ";
+	// 	echo "S√©lectionnez l'agent auquel vous voullez ajouter des jours suppl√©mentaires : ";
 	// 	$agentliste=$user->structure()->agentlist();
 	// 	echo "<SELECT name='agentid'>";
 	// 	foreach ($agentliste as $keyagent => $membre)
@@ -164,7 +172,7 @@
 		
 	// 	echo "<br>";
 		
-		echo "Nombre de jours supplÈmentaires ‡ ajouter : <input type=text name=nbr_jours_conges id=nbr_jours_conges size=3 >";
+		echo "Nombre de jours suppl√©mentaires √† ajouter : <input type=text name=nbr_jours_conges id=nbr_jours_conges size=3 >";
 		echo "<br>";
 		echo "Motif (Obligatoire) : <input type=text name=commentaire_supp id=commentaire_supp size=25 >";
 		echo "<br>";
@@ -178,7 +186,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour ‡ la page d'accueil</a> 
+<a href=".">Retour √† la page d'accueil</a> 
  -->
 </body></html>
 

@@ -5,7 +5,7 @@
 
 	$fonctions = new fonctions($dbcon);
 
-	echo "Début du calcul des soldes " . date("d/m/Y H:i:s") . "\n" ;
+	echo "DÃ©but du calcul des soldes " . date("d/m/Y H:i:s") . "\n" ;
 
 	$sql="SELECT HARPEGEID,NOM,PRENOM FROM AGENT ORDER BY HARPEGEID";
 	$query_agent = mysql_query($sql);
@@ -57,15 +57,15 @@
 //					// Si la fin du contrat est dans plus de 2 ans, alors on raccourci la fin de contrat pour calculer le nombre de jour
 //					if (($result_aff[2]=='0000-00-00') or ($year > ($fonctions->anneeref()  +2)))
 //						$datefinaff = date("Y-m-d", strtotime("+1 year"));
-                    // Si la fin du contrat est vide (0000-00-00) ou si la fin du contrat est postérieur à la fin de période => On force à la fin de période
+                    // Si la fin du contrat est vide (0000-00-00) ou si la fin du contrat est postÃ©rieur Ã  la fin de pÃ©riode => On force Ã  la fin de pÃ©riode
                     //echo "Convertion date fin affectation : " . $fonctions->formatdatedb($result_aff[2]) . "\n";
-                    //echo "Calcul fin période = " .($fonctions->anneeref()+1) . $fonctions->finperiode() . "\n";
+                    //echo "Calcul fin pÃ©riode = " .($fonctions->anneeref()+1) . $fonctions->finperiode() . "\n";
                     if (($result_aff[2]=='0000-00-00') or ($fonctions->formatdatedb($result_aff[2])>($fonctions->anneeref()+1) . $fonctions->finperiode()))
                        $datefinaff = ($fonctions->anneeref()+1) . $fonctions->finperiode();
 					else
 						$datefinaff = $result_aff[2];
 					//echo "datedebutaff = $datedebutaff    datefinaff = $datefinaff\n";
-					//echo "Numéro de contrat pour $agentid ($agentinfo) = $result_aff[5] Durée (en jours) = " . $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff)   ."\n";
+					//echo "NumÃ©ro de contrat pour $agentid ($agentinfo) = $result_aff[5] DurÃ©e (en jours) = " . $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff)   ."\n";
 					$nbre_total_jours += $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
 					//echo "nbre_total_jours = $nbre_total_jours pour $agentid ($agentinfo)\n";
 					if ($nbre_total_jours < 365)
@@ -73,7 +73,7 @@
 					else
 						$cas_general = true;
 				}
-				else // Si on trouve une affectation sans contrat alors on est dans le cas général
+				else // Si on trouve une affectation sans contrat alors on est dans le cas gÃ©nÃ©ral
 					$cas_general = true;
 			}
        }
@@ -115,9 +115,9 @@
 			$nbre_jour_aff = $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
 			if ($cas_general == false)
 			{
-				// 2.5j x 12 mois / 365 j = 0,082j de congés
+				// 2.5j x 12 mois / 365 j = 0,082j de congÃ©s
 				$solde_agent = $solde_agent + (((2.5*12)/365) * $nbre_jour_aff);
-				echo "Pas dans le cas général pour $agentid ($agentinfo) \n";
+				echo "Pas dans le cas gÃ©nÃ©ral pour $agentid ($agentinfo) \n";
 			}
 			else
 				$solde_agent = $solde_agent + (($nbr_jrs_offert * $nbre_jour_aff) / $nbre_jour_periode) * $quotite;
@@ -142,7 +142,7 @@
 		$erreur_requete=mysql_error();
 		if ($erreur_requete!="")
 			echo "SELECT HARPEGEID,TYPEABSENCEID FROM CONGE => $erreur_requete \n";
-		if (mysql_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
+		if (mysql_num_rows($query) != 0) // le type annXX existe dÃ©ja => On le met Ã  jour
 			$sql = "UPDATE SOLDE SET DROITAQUIS='$solde_agent' WHERE HARPEGEID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
 		else
 			$sql = "INSERT INTO SOLDE(HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $agentid . "','" . $typeabsenceid . "','$solde_agent','0')";

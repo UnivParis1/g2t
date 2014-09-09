@@ -102,7 +102,7 @@
 			{
 				$sousstructliste = $structure->structurefille();
 				$structureliste = array_merge($structureliste, (array)$sousstructliste);
-				// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+				// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
 			}
 		}
 		//echo "StructureListe = "; print_r($structureliste); echo "<br>";
@@ -121,7 +121,7 @@
 			{
 				$sousstructliste = $structure->structurefille();
 				$structureliste = array_merge($structureliste, (array)$sousstructliste);
-				// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+				// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
 			}
 		}
 		//echo "StructureListe = "; print_r($structureliste); echo "<br>";

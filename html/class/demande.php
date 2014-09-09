@@ -16,7 +16,7 @@ class demande {
 	private $motifrefus = null;
 	private $dbconnect = null;
 
-	// Utilisé lors de la sauvegarde !!
+	// UtilisÃ© lors de la sauvegarde !!
 	private $ancienstatut = null;
 	private $agent = null;
 
@@ -27,7 +27,9 @@ class demande {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Demande->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "Demande->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -42,10 +44,16 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			//echo "Demande load sql = $sql <br>";
 			$query=mysql_query ($sql,$this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Demande->Load : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "Demande->Load : Demande $demandeid non trouvée <br>";
+			if ($erreur != "") {
+				$errlog = "Demande->Load : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "Demande->Load : Demande $demandeid non trouvÃ©e";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$this->demandeid = "$result[0]";
 			$this->typeabsenceid = "$result[1]";
@@ -73,8 +81,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($typeid))
 		{
-			if (is_null($this->typeabsenceid))
-				echo "Demande->type : Le type de demande n'est pas défini !!! <br>";
+			if (is_null($this->typeabsenceid)) {
+				$errlog = "Demande->type : Le type de demande n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->typeabsenceid;
 		}
@@ -84,17 +95,26 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	
 	function typelibelle()
 	{
-		if (is_null($this->typeabsenceid))
-			echo "Demande->typelibelle : Le type de demande n'est pas défini !!! <br>";
+		if (is_null($this->typeabsenceid)) {
+			$errlog = "Demande->typelibelle : Le type de demande n'est pas dÃ©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			$sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID='" . $this->typeabsenceid . "'";
 			$query=mysql_query ($sql,$this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Demande->typdemande : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "Demande->typdemande : Libellé du type de demande $this->typeabsenceid non trouvé <br>";
+			if ($erreur != "") {
+				$errlog = "Demande->typdemande : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "Demande->typdemande : LibellÃ© du type de demande $this->typeabsenceid non trouvÃ©";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			return "$result[0]";
 		}
@@ -104,8 +124,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($date_debut))
 		{
-			if (is_null($this->datedebut))
-				echo "Demande->datedebut : La date de début n'est pas défini !!! <br>";
+			if (is_null($this->datedebut)) {
+				$errlog = "Demande->datedebut : La date de dÃ©but n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else 
 			{
 				return $this->fonctions->formatdate($this->datedebut);
@@ -115,8 +138,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		{
 			if (is_null($this->demandeid))
 				$this->datedebut = $this->fonctions->formatdatedb($date_debut);
-			else
-				echo "Demande->datedebut : Impossible de modifier une date si la demande est enregistrée !!! <br>";
+			else {
+				$errlog = "Demande->datedebut : Impossible de modifier une date si la demande est enregistrÃ©e !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 		}
 	}
 
@@ -124,8 +150,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($date_fin))
 		{
-			if (is_null($this->datefin))
-				echo "Demande->datefin : La date de fin n'est pas défini !!! <br>";
+			if (is_null($this->datefin)) {
+				$errlog = "Demande->datefin : La date de fin n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else 
 			{
 				return $this->fonctions->formatdate($this->datefin);
@@ -135,8 +164,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		{
 			if (is_null($this->demandeid))
 				$this->datefin = $this->fonctions->formatdatedb($date_fin);
-			else
-				echo "Demande->datefin : Impossible de modifier une date si la demande est enregistrée !!! <br>";
+			else {
+				$errlog = "Demande->datefin : Impossible de modifier une date si la demande est enregistrÃ©e !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 		}
 	}
 
@@ -144,8 +176,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($moment_deb))
 		{
-			if (is_null($this->momentdebut))
-				echo "Demande->moment_debut : La demie-journée de début n'est pas définie !!! <br>";
+			if (is_null($this->momentdebut)) {
+				$errlog = "Demande->moment_debut : La demie-journÃ©e de dÃ©but n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				if ($this->momentdebut == 'm')
@@ -153,17 +188,23 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 					//return "matin";
 				elseif ($this->momentdebut == 'a') 
 					return "a";
-					//return "après-midi";
-				else 
-					echo "Demande->moment_debut : le moment de début n'est pas connu [momentdebut = $this->momentdebut] !!! <br>";
+					//return "aprÃ¨s-midi";
+				else {
+					$errlog = "Demande->moment_debut : le moment de dÃ©but n'est pas connu [momentdebut = ".$this->momentdebut."] !!!";
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 			}
 		}
 		else
 		{
 			if (is_null($this->demandeid))
 				$this->momentdebut = $moment_deb;
-			else
-				echo "Demande->moment_debut : Impossible de modifier la demie-journée de début si la demande est enregistrée !!! <br>";
+			else {
+				$errlog = "Demande->moment_debut : Impossible de modifier la demie-journÃ©e de dÃ©but si la demande est enregistrÃ©e !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 		}
 	}
 
@@ -171,8 +212,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($moment_fin))
 		{
-			if (is_null($this->momentfin))
-				echo "Demande->moment_fin : La demie-journée de fin n'est pas définie !!! <br>";
+			if (is_null($this->momentfin)) {
+				$errlog = "Demande->moment_fin : La demie-journÃ©e de fin n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				if ($this->momentfin == 'm')
@@ -180,17 +224,23 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 					//return "matin";
 				elseif ($this->momentfin == 'a')
 					return "a";
-					//return "après-midi";
-				else
-					echo "Demande->moment_fin : la demie-journée n'est pas connu [momentfin = $this->momentfin] !!! <br>";
+					//return "aprÃ¨s-midi";
+				else {
+					$errlog = "Demande->moment_fin : la demie-journÃ©e n'est pas connue [momentfin = $this->momentfin] !!!";
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 			}
 		}
 		else
 		{
 			if (is_null($this->demandeid))
 				$this->momentfin = $moment_fin;
-			else
-				echo "Demande->moment_fin : Impossible de modifier la demie-journée de fin si la demande est enregistrée !!! <br>";
+			else {
+				$errlog = "Demande->moment_fin : Impossible de modifier la demie-journÃ©e de fin si la demande est enregistrÃ©e !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 		}
 	}
 	
@@ -207,8 +257,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($nbrejrs))
 		{
-			if (is_null($this->nbrejrsdemande))
-				echo "Demande->nbrejrsdemande : Le nombre de jours demandés n'est pas défini !!! <br>";
+			if (is_null($this->nbrejrsdemande)) {
+				$errlog = "Demande->nbrejrsdemande : Le nombre de jours demandÃ©s n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				return (float)$this->nbrejrsdemande; // number_format($this->nbrejrsdemande,1);
@@ -218,23 +271,32 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		{
 			if (is_null($this->demandeid))
 				$this->nbrejrsdemande = $nbrejrs;
-			else
-				echo "Demande->nbrejrsdemande : Impossible de modifier le nombre de jours si la demande est enregistrée !!! <br>";
+			else {
+				$errlog = "Demande->nbrejrsdemande : Impossible de modifier le nombre de jours si la demande est enregistrÃ©e !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 		}
 	}
 	
 	function date_demande()
 	{
-		if (is_null($this->demandeid))
-			echo "Demande->date_demande : La demande n'est pas enregistrée, donc pas de date de demande !!! <br>";
+		if (is_null($this->demandeid)) {
+			$errlog = "Demande->date_demande : La demande n'est pas enregistrÃ©e, donc pas de date de demande !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->fonctions->formatdate($this->datedemande);
 	}
 
 	function datestatut()
 	{
-		if (is_null($this->demandeid))
-			echo "Demande->datestatut : La demande n'est pas enregistrée, donc pas de date de statut !!! <br>";
+		if (is_null($this->demandeid)) {
+			$errlog = "Demande->datestatut : La demande n'est pas enregistrÃ©e, donc pas de date de statut !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->fonctions->formatdate($this->datestatut);
 	}
@@ -243,14 +305,20 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($statut))
 		{
-			if (is_null($this->demandeid))
-				echo "Demande->statut : La demande n'est pas enregistrée, donc pas de statut !!! <br>";
+			if (is_null($this->demandeid)) {
+				$errlog = "Demande->statut : La demande n'est pas enregistrÃ©e, donc pas de statut !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 			{
 				if (strcasecmp($this->statut,'v')==0 or (strcasecmp($this->statut,'a')==0 or strcasecmp($this->statut,'r')==0))
 					return $this->statut;
-				else
-					echo "Demande->statut : le statut n'est pas connu [statut = $this->statut] !!! <br>";
+				else {
+					$errlog = "Demande->statut : le statut n'est pas connu [statut = $this->statut] !!!";
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 			}
 		}
 		else
@@ -260,21 +328,24 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				$this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
 				$this->statut = $statut;
 			}
-			else
-				echo "Le statut actuel est : " . $this->statut . " ===> Impossible de le passer au statut : " . $statut . "<br>";
+			else {
+				$errlog = "Le statut actuel est : " . $this->statut . " ===> Impossible de le passer au statut : " . $statut;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 		}
 	}
 	
 //	function statutlibelle()
 //	{
 //		if (is_null($this->demandeid))
-//			echo "Demande->statutlibelle : La demande n'est pas enregistrée, donc pas de statut !!! <br>";
+//			echo "Demande->statutlibelle : La demande n'est pas enregistrÃ©e, donc pas de statut !!! <br>";
 //		else
 //		{
 //			if (strcasecmp($this->statut,'v') == 0)
-//				return "Validée";
+//				return "ValidÃ©e";
 //			elseif (strcasecmp($this->statut,'r') == 0)
-//				return "Refusée";
+//				return "RefusÃ©e";
 //			elseif (strcasecmp($this->statut,'a') == 0)
 //				return "En attente";
 //			else
@@ -286,8 +357,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		if (is_null($motif))
 		{
-			if (is_null($this->demandeid))
-				echo "Demande->motifrefus : La demande n'est pas enregistrée, donc pas de motif de refus !!! <br>";
+			if (is_null($this->demandeid)) {
+				$errlog = "Demande->motifrefus : La demande n'est pas enregistrÃ©e, donc pas de motif de refus !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return str_replace("''","'",$this->motifrefus);
 		}
@@ -301,10 +375,16 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		//echo "Demande declarationTPListe sql = $sql <br>";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Demande->declarationTPliste : " . $erreur . "<br>";
-		if (mysql_num_rows($query) == 0)
-			echo "Demande->declarationTPliste : Pas de déclaration de TP pour la demande " . $this->demandeid . " <br>";
+		if ($erreur != "") {
+			$errlog = "Demande->declarationTPliste : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		if (mysql_num_rows($query) == 0) {
+			$errlog = "Demande->declarationTPliste : Pas de dÃ©claration de TP pour la demande " . $this->demandeid;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		$declaliste = null;
 		while ($result = mysql_fetch_row($query))
 		{
@@ -325,10 +405,16 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$sql = $sql . " AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID";
 			$query=mysql_query ($sql,$this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Demande->agent : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "Demande->agent : Pas d'agent trouvé pour la demande " . $this->demandeid . " <br>";
+			if ($erreur != "") {
+				$errlog = "Demande->agent : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "Demande->agent : Pas d'agent trouvÃ© pour la demande " . $this->demandeid;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$agent = new agent($this->dbconnect);
 			$agent->load("$result[0]");
@@ -339,14 +425,16 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	
 	function store($declarationTPListe = null, $ignoreabsenceautodecla = FALSE, $ignoresoldeinsuffisant = FALSE)
 	{
-		//echo "Demande->store : En cours de réécriture !!!!! <br>";
+		//echo "Demande->store : En cours de rÃ©Ã©criture !!!!! <br>";
 		
 	
 		if (is_null($this->demandeid))
 		{
 			if (!is_array($declarationTPListe))
 			{
-				echo "Demande->Store : La liste des declarationsTP n'est pas un tableau <br>";
+				$errlog = "Demande->Store : La liste des dÃ©clarationsTP n'est pas un tableau";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 				return ;
 			}
 	
@@ -356,11 +444,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$affectation = new affectation($this->dbconnect);
 			$affectation->load($affectationid);
 			
-			// On vérifie que le nombre de jour demandé est >= Nbre de jour restant (si c'est un conge !!)
+			// On vÃ©rifie que le nombre de jour demandÃ© est >= Nbre de jour restant (si c'est un conge !!)
 			//echo "Demande->Store : typdemande=". $this->typdemande . "<br>";
 			if ($this->fonctions->estunconge($this->typeabsenceid))
 			{
-				//echo "C'est un congé... <br>";
+				//echo "C'est un congÃ©... <br>";
 				unset ($solde);
 				$solde = new solde($this->dbconnect);
 				$solde->load($affectation->agentid(),$this->typeabsenceid );
@@ -385,8 +473,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$nbjrrestant = 0;
 			if ($this->fonctions->estunconge($this->typeabsenceid))
 			{
-				if (is_null($solde))
-					echo "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $affectation->agentid() . "<br>";
+				if (is_null($solde)) {
+					$errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $affectation->agentid();
+					echo $errlog."<br/>";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				}
 				else
 				{
 					$nbjrrestant = $solde->droitaquis() - $solde->droitpris();
@@ -397,9 +488,12 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			//echo "Nombre de jours restant = " . $nbjrrestant . "   nbredemijrs_demande = " .  $this->nbredemijrs_demande . " <br>";
 			if (($nbjrrestant >= $this->nbrejrsdemande) or (!$this->fonctions->estunconge($this->typeabsenceid)) or ($ignoresoldeinsuffisant == TRUE))
 			{
-				if ($this->nbrejrsdemande == 0)
-					return "Le nombre de jour demandé est égal à 0. <br>";
-				// On est dans le cas d'une création de demande
+				if ($this->nbrejrsdemande == 0) {
+					$errlog = "Le nombre de jour demandÃ© est Ã©gal Ã  0.";
+					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+					return $errlog."<br/>";
+				}
+				// On est dans le cas d'une crÃ©ation de demande
 				$this->datedemande = $this->fonctions->formatdatedb(date("d/m/Y"));
 
 				$sql = "LOCK TABLES DEMANDE WRITE";
@@ -415,8 +509,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				//echo "SQL = " . $sql . "<br>";
 	 			mysql_query($sql,$this->dbconnect);
 	 			$erreur=mysql_error();
-	 			if ($erreur != "")
-	 				echo "Demande->store : " . $erreur . "<br>";
+	 			if ($erreur != "") {
+	 				$errlog = "Demande->store : " . $erreur;
+	 				echo $errlog."<br/>";
+	 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	 			}
 //	 			$sql = "SELECT LAST_INSERT_ID()";
 //	 			$toto = mysql_query($sql,$this->dbconnect);
 //	 			echo "toto = "; print_r($toto); echo "   toto[1] = " . $toto[1]  . "<br>";
@@ -438,8 +535,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	 				//echo "sql = $sql <br>";
 					mysql_query ($sql,$this->dbconnect);
 					$erreur=mysql_error();
-					if ($erreur != "")
-						echo "Demande->store (DEMANDEDECLARATIONTP) : " . $erreur . "<br>";
+					if ($erreur != "") {
+						$errlog = "Demande->store (DEMANDEDECLARATIONTP) : " . $erreur;
+						echo $errlog."<br/>";
+						error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+					}
 	 			}
 
 	 			// On decompte le nombre de jours que l'on vient de poser
@@ -451,20 +551,28 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 					//echo "SQL = $sql  <br>";
 					mysql_query ($sql,$this->dbconnect);
 					$erreur=mysql_error();
-					if ($erreur != "")
-						echo "Demande->store (SOLDE) : " . $erreur . "<br>";
+					if ($erreur != "") {
+						$errlog = "Demande->store (SOLDE) : " . $erreur;
+						echo $errlog."<br/>";
+						error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+					}
 				}
 				$this->ancienstatut = "a";
 			}
-			else
-				return "Nombre de jours insuffisants ==> Demandé = " . ($this->nbrejrsdemande) . " Solde restant : " . ($nbjrrestant) . " !!! <br>";
+			else {
+				$errlog = "Nombre de jours insuffisants ==> Demande = " . ($this->nbrejrsdemande) . " Solde restant : " . ($nbjrrestant) . " !!!";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				return $errlog."<br/>";
+			}
 		}
 		else
 		{
 		
 			if (strcasecmp($this->ancienstatut,"r")==0)
 			{
-				return "Impossible de changer le statut d'une demande 'refusée'!! <br>";
+				$errlog = "Impossible de changer le statut d'une demande 'refusee' !!!";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				return $errlog."<br/>";;
 			}
 			else
 			{
@@ -476,19 +584,25 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				//echo "SQL = $sql  <br>";
 	 			$query=mysql_query ($sql,$this->dbconnect);
 	 			$erreur=mysql_error();
-	 			if ($erreur != "")
-	 				echo "Demande->store : " . $erreur . "<br>";
+	 			if ($erreur != "") {
+	 				$errlog = "Demande->store : " . $erreur;
+	 				echo $errlog."<br/>";
+	 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	 			}
 	 			if (strcasecmp($this->ancienstatut,"r")!=0 and strcasecmp($this->statut,"r")==0)
 	 			{
-	 				// On recrédite le nombre de jours dans les congés....
+	 				// On recrÃ©dite le nombre de jours dans les congÃ©s....
 	 				$sql = "UPDATE SOLDE
 						  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
 								 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $this->agent()->harpegeid()  . "'";
 	 				//echo "SQL = $sql  <br>";
 	 				$query=mysql_query ($sql,$this->dbconnect);
 	 				$erreur=mysql_error();
-	 				if ($erreur != "")
-	 					echo "Demande->store (Modif SOLDE_CMPTE) : " . $erreur . "<br>";
+	 				if ($erreur != "") {
+	 					$errlog = "Demande->store (Modif SOLDE_CMPTE) : " . $erreur;
+	 					echo $errlog."<br/>";
+	 					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	 				}
 	 			}
 			}
 		}
@@ -499,13 +613,16 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	function pdf($valideurid)
 	{
 		//echo "Debut du PDF <br>";
-		$pdf=new FPDF();
+		//$pdf=new FPDF();
+		$pdf=new tFPDF();
 		//echo "Apres le new <br>";
 		//if (!defined('FPDF_FONTPATH')) 
 		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
+		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		
 //		if (is_null($this->structureid) or $this->structureid=="")
 //		{
@@ -516,11 +633,13 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 //			//echo "Apres le load de la structure du responsable... <br>";
 //		}
 		
-		$pdf->SetFont('Arial','B',16);
+		//$pdf->SetFont('Arial','B',16);
+		$pdf->SetFont('DejaVu','B',16);
 		$pdf->Ln(70);
 //		$pdf->Cell(60,10,'Composante : '. $this->structure()->parentstructure()->nomlong() .' ('. $this->structure()->parentstructure()->nomcourt() .')' );
 //		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',12);
+		//$pdf->SetFont('Arial','B',12);
+		$pdf->SetFont('DejaVu','B',12);
 
 		$agent = $this->agent();
 		$affectationliste = $agent->affectationliste($this->datedebut, $this->datefin);
@@ -535,30 +654,32 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			}
 		else
 		{
-			$pdf->Cell(60,10,'Aucune affectation trouvée pour cette demande.');
+			$pdf->Cell(60,10,'Aucune affectation trouvÃ©e pour cette demande.');
 			$pdf->Ln();
 		}
 
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 //		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',12);
+		//$pdf->SetFont('Arial','B',12);
+		$pdf->SetFont('DejaVu','B',12);
 		if ($this->fonctions->estunconge($this->typeabsenceid))
-			$typelib = " de congé ";
+			$typelib = " de congÃ© ";
 		else 
 			$typelib = " d'autorisation d'absence ";
-		$pdf->Cell(60,10,'Demande' . $typelib .  'N°'. $this->id() .' de ' . $this->agent()->civilite() . " " . $this->agent()->nom() . " " . $this->agent()->prenom() );
+		$pdf->Cell(60,10,'Demande' . $typelib .  'NÂ°'. $this->id() .' de ' . $this->agent()->civilite() . " " . $this->agent()->nom() . " " . $this->agent()->prenom() );
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',12);
+		//$pdf->SetFont('Arial','B',12);
+		$pdf->SetFont('DejaVu','B',12);
 		$decision = strtolower($this->fonctions->demandestatutlibelle($this->statut()));
 		
 //		if($this->statut()=='v')
-//			$decision='validée';
+//			$decision='validÃ©e';
 //		else
-//			$decision='refusée';
+//			$decision='refusÃ©e';
 		
 		$pdf->Cell(40,10,'Votre demande ' .  $typelib  . 'du '. $this->datedebut() .' '. $this->fonctions->nommoment($this->momentdebut) . ' au '.$this->datefin().' '.$this->fonctions->nommoment($this->momentfin) . ' ');
 		$pdf->Ln(10);
-		$pdf->Cell(40,10,' a été '.$decision. ' par :');
+		$pdf->Cell(40,10,' a Ã©tÃ© '.$decision. ' par :');
 		
 		$pdf->Ln(10);
 		
@@ -569,15 +690,16 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Ln(10);
 		
 		
-		$pdf->SetFont('Arial','B',10);
-		$pdf->Cell(40,10,'Date de dépot : '. $this->date_demande());
+		//$pdf->SetFont('Arial','B',10);
+		$pdf->SetFont('DejaVu','B',10);
+		$pdf->Cell(40,10,'Date de dÃ©pot : '. $this->date_demande());
 		$pdf->Ln(10);
 		$pdf->Cell(40,10,'Date de validation : '.$this->datestatut());
 		$pdf->Ln(10);
 		if($this->statut()=='v')
 		{
 			if ($this->fonctions->estunconge($this->type()))
-				$pdf->Cell(40,10,'Nombre de jour(s) comptabilisé(s) : '.($this->nbrejrsdemande()));
+				$pdf->Cell(40,10,'Nombre de jour(s) comptabilisÃ©(s) : '.($this->nbrejrsdemande()));
 		}
 		else
 		{
@@ -587,19 +709,22 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$pdf->Cell(40,10,'Motif du refus : ' . str_replace("''", "'", $this->motifrefus()));
 		}
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',12);
+		//$pdf->SetFont('Arial','B',12);
+		$pdf->SetFont('DejaVu','B',12);
 		$pdf->Ln(10);
 		$pdf->Cell(25,10,'');
 		$pdf->Cell(60,10,'Solde en cours');
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','I',9);
+		//$pdf->SetFont('Arial','I',9);
+		$pdf->SetFont('DejaVu','I',9);
 		$pdf->Cell(25,10,'');
-		$pdf->Cell(70,7,'Type de congé',1);
+		$pdf->Cell(70,7,'Type de congÃ©',1);
 		$pdf->Cell(25,7,'Droit acquis',1);
 		$pdf->Cell(25,7,'Droit pris',1);
 		$pdf->Cell(25,7,'Solde actuel',1);
 		$pdf->Ln();
-		$pdf->SetFont('Arial','B',9);
+		//$pdf->SetFont('Arial','B',9);
+		$pdf->SetFont('DejaVu','B',9);
 		$pdf->Cell(25,10,'');
 
 		$tabsolde = $agent->soldecongesliste($this->fonctions->anneeref());
@@ -612,16 +737,17 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				$pdf->Cell(25,7,(string)($solde->droitpris()),1);
 				$pdf->Cell(25,7,(string)($solde->solde()),1);
 				$pdf->Ln();
-				$pdf->SetFont('Arial','B',9);
+				//$pdf->SetFont('Arial','B',9);
+				$pdf->SetFont('DejaVu','B',9);
 				$pdf->Cell(25,10,'');
 			}
 		}
 		
-// 		//Positionnement à 1,5 cm du bas
+// 		//Positionnement Ã  1,5 cm du bas
 // 		$pdf->SetY(-40);
 // 		//Police Arial italique 8
 // 		$pdf->SetFont('Arial','B',7);
-// 		$pdf->Cell(190,1,'Université Panthéon-Sorbonne - Paris 1, 12 place du Panthéon, 75005 PARIS',0,0,'C');
+// 		$pdf->Cell(190,1,'UniversitÃ© PanthÃ©on-Sorbonne - Paris 1, 12 place du PanthÃ©on, 75005 PARIS',0,0,'C');
 		
 		
 		//$pdf->Output();

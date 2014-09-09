@@ -61,12 +61,12 @@
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
-	// Récupération du mode => resp ou gestion
+	// RÃ©cupÃ©ration du mode => resp ou gestion
 	$mode = $_POST["mode"];
 	if (is_null($mode) or $mode == "")
 	{
 		$mode="resp";
-		echo "Le mode n'est pas précisé ==> on met le mode responsable <br>";
+		echo "Le mode n'est pas prÃ©cisÃ© ==> on met le mode responsable <br>";
 	}
 	//echo "_POST = "; print_r($_POST); echo "<br>";
 	$statutliste = null;
@@ -93,8 +93,11 @@
 				if ($statut == 'r')
 					$demande->motifrefus($motif);
 				$demande->statut($statut);
-				if (strcasecmp($statut,"r")==0 and $motif == "")
-					echo "<p style='color: red'>Le motif du refus est obligatoire !!!! </p><br>";
+				if (strcasecmp($statut,"r")==0 and $motif == "") {
+					$errlog = "Le motif du refus est obligatoire !!!!";
+					echo "<p style='color: red'>".$errlog."</p><br/>";
+					error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+				}
 				else
 				{
 					$msgerreur = "";
@@ -105,7 +108,7 @@
 					{
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-						$user->sendmail($agent,"Validation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
+						$user->sendmail($agent,"Validation d'une demande de congÃ©s ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
 					}
@@ -134,8 +137,8 @@
 					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 					$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
 	
-					// Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
-					//		On doit afficher les congés qui sont dans la période suivante
+					// Si on est dans l'annÃ©e courante et si on ne limite pas les conges a la periode =>
+					//		On doit afficher les congÃ©s qui sont dans la pÃ©riode suivante
 					if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) and ($previous==0))
 						$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
 					
@@ -187,7 +190,7 @@
 	}
 	elseif (!$user->estresponsable() and (strcasecmp($mode,"resp")==0))
 	{
-		echo "Vous n'êtes pas responsable, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
+		echo "Vous n'Ãªtes pas responsable, vous ne pouvez pas valdier les demandes de congÃ©s/d'absence <br>";
 	}
 
 	if ($user->estgestionnaire() and (strcasecmp($mode,"gestion")==0))
@@ -206,11 +209,11 @@
 				{
 					//echo "boucle => " .$membre->nom() . "<br>";
 					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-					// Si on est en mode "previous" alors on considère que la fin est l'année courante
+					// Si on est en mode "previous" alors on considÃ¨re que la fin est l'annÃ©e courante
 					if ($previous == 1)
 						$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-					// Si on ne limite pas les congès a la date de fin de la période, il faut prendre plus large que la fin de période
-					// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
+					// Si on ne limite pas les congÃ©s a la date de fin de la pÃ©riode, il faut prendre plus large que la fin de pÃ©riode
+					// On prend la fin de pÃ©riode + 1 an (soit 2 ans par rapport a l'annÃ©e de rÃ©fÃ©rence)
 					elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 						$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
 					else
@@ -221,7 +224,7 @@
 					
 					//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
 					// -------------------------------------------------------------
-					// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
+					// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congÃ©s ??
 					//$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
 					$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, null,$structure->id(), $cleelement);
 					// -------------------------------------------------------------
@@ -250,11 +253,11 @@
 					{
 						$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 	
-						// Si on est en mode "previous" alors on considère que la fin est l'année courante
+						// Si on est en mode "previous" alors on considÃ¨re que la fin est l'annÃ©e courante
 						if ($previous == 1)
 							$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-						// Si on ne limite pas les congès a la date de fin de la période, il faut prendre plus large que la fin de période
-						// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
+						// Si on ne limite pas les congÃ©s a la date de fin de la pÃ©riode, il faut prendre plus large que la fin de pÃ©riode
+						// On prend la fin de pÃ©riode + 1 an (soit 2 ans par rapport a l'annÃ©e de rÃ©fÃ©rence)
 						elseif ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
 							$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
 						else
@@ -317,7 +320,7 @@
 	}
 	elseif (!$user->estgestionnaire() and (strcasecmp($mode,"gestion")==0))
 	{
-		echo "Vous n'êtes pas gestionnaire, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
+		echo "Vous n'Ãªtes pas gestionnaire, vous ne pouvez pas valdier les demandes de congÃ©s/d'absence <br>";
 	}
 	
 	
@@ -325,6 +328,6 @@
 ?>
 <br>
 <!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<a href=".">Retour Ã  la page d'accueil</a> 
 -->
 </body></html>

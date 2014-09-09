@@ -22,7 +22,9 @@ class fonctions {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Fonctions->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "Fonctions->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 	}
 
@@ -34,8 +36,11 @@ class fonctions {
    */
 	public function formatdatedb($date)
 	{
-		if (is_null($date))
-			echo "Fonctions->formatdatedb : La date est NULL !!! <br>";
+		if (is_null($date)) {
+			$errlog = "Fonctions->formatdatedb : La date est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			if (strlen($date) == 10 and substr_count($date,"/") == 2)
@@ -57,7 +62,9 @@ class fonctions {
 			}
 			else
 			{
-				echo "Fonctions->formatdatedb : Le format de la date est inconnu [Date=$date] !! <br>";
+				$errlog = "Fonctions->formatdatedb : Le format de la date est inconnu [Date=$date] !!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
 		}
 	}
@@ -69,8 +76,11 @@ class fonctions {
    */
 	public function formatdate($date)
 	{
-		if (is_null($date))
-			echo "Fonctions->formatdate : La date est NULL !!! <br>";
+		if (is_null($date)) {
+			$errlog = "Fonctions->formatdate : La date est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			if (strlen($date) == 8 and substr_count($date,"/") == 0)
@@ -92,7 +102,9 @@ class fonctions {
 			}
 			else
 			{
-				echo "Fonctions->formatdate : Le format de la date est inconnu [Date=$date] !! <br>";
+				$errlog = "Fonctions->formatdate : Le format de la date est inconnu [Date=$date] !!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
 		}
 	}
@@ -103,15 +115,20 @@ class fonctions {
    */
 	public function jourferier()
 	{
-		// Chargement des jours fériers
+		// Chargement des jours fÃ©riÃ©s
 		$sql = "SELECT NOM,VALEUR FROM CONSTANTES WHERE NOM LIKE 'FERIE%'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->jourferier : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->jourferier : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->jourferier : Pas de jour férié défini dans la base <br>";
+			$errlog = "Fonctions->jourferier : Pas de jour fÃ©riÃ© dÃ©fini dans la base";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$jrs_feries = ";";
 		while ($result = mysql_fetch_row($query))
@@ -119,7 +136,7 @@ class fonctions {
 			$jrs_feries = $jrs_feries . $result[1] . ";";
 		}
 
-		//echo "Jours féries = " . $jrs_feries . "<br>";
+		//echo "Jours fÃ©riÃ©s = " . $jrs_feries . "<br>";
 		return $jrs_feries;
 
 	}
@@ -132,8 +149,8 @@ class fonctions {
 	{
 		if (is_null($date))
 			$date = date ("d/m/Y");
-		if (setlocale(LC_TIME, 'fr_FR') == '')
-			setlocale(LC_TIME, 'FRA');  //correction problème pour windows
+		if (setlocale(LC_TIME, 'fr_FR.UTF8') == '') 
+			setlocale(LC_TIME, 'FRA.UTF8');  //correction problÃ¨me pour windows
 		$monthname = strftime("%B", strtotime($this->formatdatedb($date)));
 		return ucfirst($monthname);
 	}
@@ -146,8 +163,8 @@ class fonctions {
 	{
 		if (is_null($date))
 			$date = date ("d/m/Y");
-		if (setlocale(LC_TIME, 'fr_FR') == '')
-			setlocale(LC_TIME, 'FRA');  //correction problème pour windows
+		if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
+			setlocale(LC_TIME, 'FRA.UTF8');  //correction problÃ¨me pour windows
 		$dayname = strftime("%A", strtotime($this->formatdatedb($date)));
 		return ucfirst($dayname);
 	}
@@ -158,13 +175,16 @@ class fonctions {
    */
 	public function nomjourparindex($index = null)   // 1 = Lundi   7 = Dimanche
 	{
-		if (is_null($index))
-			echo "Fonctions->nomjourparindex : L'index du jour est NULL <br>";
+		if (is_null($index)) {
+			$errlog = "Fonctions->nomjourparindex : L'index du jour est NULL";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 		{
 			$index = $index % 7;
-			if (setlocale(LC_TIME, 'fr_FR') == '')
-				setlocale(LC_TIME, 'FRA');  //correction problème pour windows
+			if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
+				setlocale(LC_TIME, 'FRA.UTF8');  //correction problÃ¨me pour windows
 			// Le 01/01/2012 est un dimanche
 			$dayname = strftime("%A", strtotime("20120101" + $index));
 			return ucfirst($dayname);
@@ -184,11 +204,16 @@ class fonctions {
 
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->listeabsence : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->listeabsence : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->listeabsence : Pas de type d'absences défini dans la base <br>";
+			$errlog = "Fonctions->listeabsence : Pas de type d'absences dÃ©fini dans la base";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -210,11 +235,16 @@ class fonctions {
 		$sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT='abs'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->listecategorieabsence : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->listecategorieabsence : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->listecategorieabsence : Pas de catégorie défini dans la base <br>";
+			$errlog = "Fonctions->listecategorieabsence : Pas de catÃ©gorie dÃ©finie dans la base";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -233,7 +263,7 @@ class fonctions {
 		if (is_null($date))
 			return FALSE;
 
-		// On vérifie avec une REGExp si le format de la date est valide DD/MM/YYYY
+		// On vÃ©rifie avec une REGExp si le format de la date est valide DD/MM/YYYY
 		//if (!ereg("^([0-9]{2})/([0-9]{2})/([0-9]{4})",$date))
 		if (!preg_match("`^([0-9]{2})\/([0-9]{2})\/([0-9]{4})`",$date))
 			return FALSE;
@@ -255,15 +285,20 @@ class fonctions {
 		$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->debutperiode : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->debutperiode : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->debutperiode : Pas de début de période définie dans la base ==> On force à '0901' (1sept).<br>";
+			$errlog = "Fonctions->debutperiode : Pas de dÃ©but de pÃ©riode dÃ©fini dans la base ==> On force Ã  '0901' (1sept).";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return "0901";
 		}
 		$result = mysql_fetch_row($query);
-		//echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
+		//echo "Fonctions->debutperiode : Debut de pÃ©riode ==> " . $result[0] . ".<br>";
 		return "$result[0]";
 	}
 
@@ -276,15 +311,20 @@ class fonctions {
 		$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->finperiode : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->finperiode : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog)); 
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->finperiode : Pas de fin de période définie dans la base ==> On force à '0831' (31aout).<br>";
+			$errlog = "Fonctions->finperiode : Pas de fin de pÃ©riode dÃ©finie dans la base ==> On force Ã  '0831' (31aout).";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return "0831";
 		}
 		$result = mysql_fetch_row($query);
-		//echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
+		//echo "Fonctions->finperiode : fin de pÃ©riode ==> " . $result[0] . ".<br>";
 		return "$result[0]";
 	}
 
@@ -312,8 +352,11 @@ class fonctions {
 			else
 				return $annee;
 		}
-		else
-			echo "Fonctions->anneeref : La date " . $date . " est invalide !!! <br>";
+		else {
+			$errlog = "Fonctions->anneeref : La date " . $date . " est invalide !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 
 	/**
@@ -323,21 +366,26 @@ class fonctions {
 	public function estunconge($typeconge)
 	{
 		
-		// Cas particulier du CET ==> Il n'est pas annuel mais on doit gérer le compteur de jours restant...
+		// Cas particulier du CET ==> Il n'est pas annuel mais on doit gÃ©rer le compteur de jours restant...
 		if ($typeconge == 'cet')
 			return TRUE;
 		//echo "Fonction->estunconge : typeconge = $typeconge <br>";
 		$sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $typeconge . "'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->estunconge : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->estunconge : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->estunconge : Pas de congés '" . $typeconge . "' défini dans la base.<br>";
+			$errlog = "Fonctions->estunconge : Pas de congÃ© '" . $typeconge . "' dÃ©fini dans la base.";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$result = mysql_fetch_row($query);
-		// Si il n'y a pas de référence à une année ==> Ce n'est pas un congé ==> C'est une absence car pas de gestion annuelle
+		// Si il n'y a pas de rÃ©fÃ©rence Ã  une annÃ©e ==> Ce n'est pas un congÃ© ==> C'est une absence car pas de gestion annuelle
 		//echo "Fonctions->estunconge : Result = " . $result[0] . " <br>";
 		if (($result[0] == "") or ($result[0] == 0) or (is_null($result)))
 		{
@@ -360,11 +408,16 @@ class fonctions {
 		$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = '" .  $constante . "'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Fonctions->liredbconstante : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Fonctions->liredbconstante : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			echo "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas défini dans la base.<br>";
+			$errlog = "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas defini dans la base.";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		else
 		{
@@ -384,7 +437,7 @@ class fonctions {
 		// ATTENTION AU CALCUL DE LA DIFFERENCE ENTRE LES 2 DATES !!!!
 		// Au mois de mars avec le changement d'heure c'est ne marche pas bien
 		// On ajoute des heures apres la date pour etre sur qu'avec le changement d'horaire
-		// on reste bien dans la même journée
+		// on reste bien dans la mÃªme journÃ©e
 		$tempdatefin = strtotime($this->formatdatedb($datefin). " 07:00:00");
 		$tempdatedeb = strtotime($this->formatdatedb($datedebut). " 07:00:00");
 		$tempnbrejour = $tempdatefin - $tempdatedeb  ;
@@ -398,8 +451,8 @@ class fonctions {
    */
 	public function nbr_jours_dans_mois($mois,$annee)
 	{
-		//// fonction qui permet de retrouver le nombre de jours contenu dans chaque mois d'un année
-		//// choisie , celle ci tien compte des années bisextiles.
+		//// fonction qui permet de retrouver le nombre de jours contenu dans chaque mois d'un annÃ©e
+		//// choisie , celle ci tien compte des annÃ©es bisextiles.
 		$nbr_jrs_mois=date("t", mktime(0,0,0,$mois,1,$annee));
 		return $nbr_jrs_mois;
 	}
@@ -434,7 +487,7 @@ class fonctions {
 	{
 		//nbr de jour ds le mois
 		$nbr_jrs_mois=$this->nbr_jours_dans_mois($mois_dep,$annee);
-		//nbr de jour ds le mois depuis le jour de début de l'affectation
+		//nbr de jour ds le mois depuis le jour de dÃ©but de l'affectation
 		$nbr_jour_travail=($nbr_jrs_mois+1)-$jour_dep;
 
 		return $nbr_jour_travail;
@@ -455,8 +508,11 @@ class fonctions {
 
  		$query=mysql_query ($sql, $this->dbconnect);
  		$erreur=mysql_error();
- 		if ($erreur != "")
- 			echo "Fonction->legende : " . $erreur . "<br>";
+ 		if ($erreur != "") {
+ 			$errlog = "Fonction->legende : " . $erreur;
+ 			echo $errlog."<br/>";
+ 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+ 		}
  		while ($result = mysql_fetch_row($query))
  		{
 			$libelle = "$result[0]";
@@ -555,7 +611,7 @@ class fonctions {
  				return "matin";
  				break;
  			case "a":
- 				return "après-midi";
+ 				return "aprÃ¨s-midi";
  				break;
  		} 
  	}
@@ -586,11 +642,11 @@ class fonctions {
  	public function demandestatutlibelle($statut = null)
  	{
 		if (strcasecmp($statut,'v') == 0)
-			return "Validée";
+			return "ValidÃ©e";
 		elseif (strcmp($statut,'r') == 0)
-			return "Refusée";
+			return "RefusÃ©e";
 		elseif (strcmp($statut,'R') == 0)
-			return "Annulée";
+			return "AnnulÃ©e";
 		elseif (strcasecmp($statut,'a') == 0)
 			return "En attente";
 		else
@@ -604,13 +660,51 @@ class fonctions {
  	public function declarationTPstatutlibelle($statut = null)
  	{
 		if (strcasecmp($statut,'v') == 0)
-			return "Validée";
+			return "ValidÃ©e";
 		elseif (strcasecmp($statut,'r') == 0)
-			return "Refusée";
+			return "RefusÃ©e";
 		elseif (strcasecmp($statut,'a') == 0)
 			return "En attente";
 		else
 			echo "declarationTPstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+ 	}
+ 	
+ 	/**
+ 	 * @param string $texte 
+ 	 * @return the string without accents
+ 	 */
+ 	public function stripAccents($texte)
+ 	{
+ 		$texte = mb_strtolower($texte, 'UTF-8');
+ 		$texte = str_replace(
+ 				array(
+ 						'Ã ', 'Ã¢', 'Ã¤', 'Ã¡', 'Ã£', 'Ã¥',
+ 						'Ã®', 'Ã¯', 'Ã¬', 'Ã­',
+ 						'Ã´', 'Ã¶', 'Ã²', 'Ã³', 'Ãµ', 'Ã¸',
+ 						'Ã¹', 'Ã»', 'Ã¼', 'Ãº',
+ 						'Ã©', 'Ã¨', 'Ãª', 'Ã«',
+ 						'Ã§', 'Ã¿', 'Ã±',
+ 				),
+ 				array(
+ 						'a', 'a', 'a', 'a', 'a', 'a',
+ 						'i', 'i', 'i', 'i',
+ 						'o', 'o', 'o', 'o', 'o', 'o',
+ 						'u', 'u', 'u', 'u',
+ 						'e', 'e', 'e', 'e',
+ 						'c', 'y', 'n',
+ 				),
+ 				$texte
+ 		);
+ 		return $texte;
+ 	}
+ 	
+ 	/**
+ 	 * @param string $texte
+ 	 * @return the string escaped and utf8-encoded
+ 	 */
+ 	public function my_real_escape_utf8 ($texte)
+ 	{
+ 		return mysql_real_escape_string(utf8_encode($texte));
  	}
 }
 

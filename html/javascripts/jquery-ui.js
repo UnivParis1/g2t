@@ -7272,12 +7272,12 @@ function Datepicker() {
 
 	this.regional[''] = { // Default regional settings
 			closeText: 'Fermer', // Display text for close link
-			prevText: 'Précédent', // Display text for previous month link
+			prevText: 'PrÃ©cÃ©dent', // Display text for previous month link
 			nextText: 'Suivant', // Display text for next month link
 			currentText: 'Aujourd hui', // Display text for current month link
-			monthNames: ['Janvier','Février','Mars','Avril','Mai','Juin',
-				'Juillet','Août','Septembre','Octobre','Novembre','Décembre'], // Names of months for drop-down and formatting
-			monthNamesShort: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aou', 'Sep', 'Oct', 'Nov', 'Déc'], // For formatting
+			monthNames: ['Janvier','FÃ©vrier','Mars','Avril','Mai','Juin',
+				'Juillet','AoÃ»t','Septembre','Octobre','Novembre','DÃ©cembre'], // Names of months for drop-down and formatting
+			monthNamesShort: ['Jan', 'FÃ©v', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aou', 'Sep', 'Oct', 'Nov', 'DÃ©c'], // For formatting
 			dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'], // For formatting
 			dayNamesShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'], // For formatting
 			dayNamesMin: ['Di','Lu','Ma','Me','Je','Ve','Sa'], // Column headings for days starting at Sunday

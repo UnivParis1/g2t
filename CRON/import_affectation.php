@@ -21,10 +21,10 @@
 
 	$date=date("Ymd");
 
-	echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n" ;
+	echo "DÃ©but de l'import des affectations " . date("d/m/Y H:i:s") . "\n" ;
 
 /* ----------------------------------------------------------
-	// On vide la table des absences HARPEGE pour la recharger complètement
+	// On vide la table des absences HARPEGE pour la recharger complÃ¨tement
 	$sql = "DELETE FROM AFFECTATION";
 	mysql_query($sql);
 	$erreur_requete=mysql_error();
@@ -40,7 +40,7 @@
 */
 
 	// On parcours chaque ligne du fichier
-	// Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifié
+	// Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifiÃ©
 	// 	Si DateFin plus petite => Ca se fini plus tard, donc on reduit le TP
 	//		Si NumQuotite ou DenumQuotite ==>
 	$sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='O'");
@@ -77,7 +77,7 @@
 				$denomquotite = $ligne_element[8];
 				echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif \n";
 	
-				$sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'",mysql_real_escape_string($affectationid));
+				$sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'",$fonctions->my_real_escape_utf8($affectationid));
 	//			if ($harpegeid == '9328')
 	//				echo "sql (SELECT) = $sql \n";
 				$query_aff = mysql_query($sql);
@@ -95,15 +95,15 @@
 						$datefin = "9999-12-31";
 					$sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
 										VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
-							mysql_real_escape_string($affectationid),
-							mysql_real_escape_string($harpegeid),
-							mysql_real_escape_string($numcontrat),
-							mysql_real_escape_string($datedebut),
-							mysql_real_escape_string($datefin),
-							mysql_real_escape_string($datemodif),
-							mysql_real_escape_string($structureid),
-							mysql_real_escape_string($numquotite),
-							mysql_real_escape_string($denomquotite),
+							$fonctions->my_real_escape_utf8($affectationid),
+							$fonctions->my_real_escape_utf8($harpegeid),
+							$fonctions->my_real_escape_utf8($numcontrat),
+							$fonctions->my_real_escape_utf8($datedebut),
+							$fonctions->my_real_escape_utf8($datefin),
+							$fonctions->my_real_escape_utf8($datemodif),
+							$fonctions->my_real_escape_utf8($structureid),
+							$fonctions->my_real_escape_utf8($numquotite),
+							$fonctions->my_real_escape_utf8($denomquotite),
 							'N');
 					mysql_query($sql);
 					$erreur_requete=mysql_error();
@@ -130,7 +130,7 @@
 					}
 				}
 				// -------------------------------
-				// L'affectation existe déja dans la base!!!
+				// L'affectation existe dÃ©ja dans la base!!!
 				// -------------------------------
 				else	
 				{
@@ -154,14 +154,14 @@
 					$affectation = null;
 					$res_aff = mysql_fetch_row($query_aff);
 					//echo "res_aff[0]=$res_aff[0]   datemodif =$datemodif \n";
-					// Si on a modifié quelque chose dans l'affectation
+					// Si on a modifiÃ© quelque chose dans l'affectation
 					
 					if ($fonctions->formatdatedb($datemodif) != $fonctions->formatdatedb($res_aff[0]))
 					{
 						$affectation = new affectation($dbcon);
 						$affectation->load($affectationid);
 						// -------------------------------
-						// On a changé la quotité de l'affectation
+						// On a changÃ© la quotitÃ© de l'affectation
 						// -------------------------------
 						if (($affectation->numquotite() != $numquotite) or ($affectation->denumquotite() != $denomquotite))
 						{
@@ -182,10 +182,10 @@
 										echo "Erreur dans le store de la declaration (quotite) " . $declaration->declarationTPid() . " : $msg \n";
 								}
 							}
-							// Si la quotité est à 100% on crée une déclaration de TP
+							// Si la quotitÃ© est Ã  100% on crÃ©e une dÃ©claration de TP
 							if ($numquotite == $denomquotite)
 							{
-								echo "La nvlle quotite est à 100% \n";
+								echo "La nvlle quotitÃ© est Ã  100% \n";
 								$declarationTP = new declarationTP($dbcon);
 								$declarationTP->affectationid($affectationid);
 								$declarationTP->tabtpspartiel(str_repeat("0", 20));
@@ -199,12 +199,12 @@
 								$declarationTP->statut("v");
 								$erreur = $declarationTP->store();
 								if ($erreur!="")
-									echo "Erreur dans la declarationTP->store : " . $erreur . "\n";
+									echo "Erreur dans la dÃ©clarationTP->store : " . $erreur . "\n";
 							}
 							else 
 							{
-								// Quotité != 100% donc on ne crée pas de declaration TP
-								echo "La nvlle quotite n'est pas 100% \n";
+								// QuotitÃ© != 100% donc on ne crÃ©e pas de declaration TP
+								echo "La nvlle quotitÃ© n'est pas 100% \n";
 							}
 						}
 						// -------------------------------
@@ -212,14 +212,14 @@
 						// ------------------------------- 
 						elseif ($numquotite == $denomquotite)
 						{
-							echo "Cas ou on est à 100% \n";
-							// Si on a modifié la durée de l'affectation
-							// Alors on doit modifier la durée de la declaration de TP à 100% 
+							echo "Cas oÃ¹ on est Ã  100% \n";
+							// Si on a modifiÃ© la durÃ©e de l'affectation
+							// Alors on doit modifier la durÃ©e de la declaration de TP Ã  100% 
 							//echo "datedebut = $datedebut   affectation->datedebut() = " . $affectation->datedebut() . "   datefin = $datefin   affectation->datefin() = " . $affectation->datefin() . "\n";
 							if (($fonctions->formatdatedb($datedebut) != $fonctions->formatdatedb($affectation->datedebut())) 
 						      or ($fonctions->formatdatedb($datefin) != $fonctions->formatdatedb($affectation->datefin())))
 						   {
-								echo "Cas ou on modifié la durée de l'affectation\n";
+								echo "Cas oÃ¹ on modifie la durÃ©e de l'affectation\n";
 								$declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()),$fonctions->formatdate($affectation->datefin()));
 								if (!is_null($declarationliste))
 								{
@@ -240,18 +240,18 @@
 							}
 						}
 						// -------------------------------
-						// La quotite n'a pas change et on n'est pas à 100% => C'est un TP
+						// La quotite n'a pas change et on n'est pas Ã  100% => C'est un TP
 						// -------------------------------
 						elseif ($numquotite != $denomquotite)
 						{
-							echo "Cas ou on est à temps partiel \n";
+							echo "Cas oÃ¹ on est Ã  temps partiel \n";
 							//echo "affectation debut = " . $affectation->datedebut() . "\n";
 							//echo "affectation fin = " . $affectation->datefin() . "\n";
-							// Si on a repousser le début de l'affectation
-							//echo "Avant le test Cas ou on repousse le début de l'affectation \n";
+							// Si on a repousser le dÃ©but de l'affectation
+							//echo "Avant le test Cas oÃ¹ on repousse le dÃ©but de l'affectation \n";
 							if ($fonctions->formatdatedb($datedebut) > $fonctions->formatdatedb($affectation->datedebut()))
 							{
-								echo "Cas ou on repousse le début de l'affectation \n";
+								echo "Cas oÃ¹ on repousse le dÃ©but de l'affectation \n";
 								$declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()),$fonctions->formatdate($datedebut));
 								if (!is_null($declarationliste))
 								{
@@ -269,7 +269,7 @@
 											$msg = $declaration->store();
 										}
 										if ($msg != "")
-											echo "Erreur dans le store de la declaration (repousse date debut) " . $declaration->declarationTPid() . " : $msg \n";
+											echo "Erreur dans le store de la dÃ©claration (repousse date dÃ©but) " . $declaration->declarationTPid() . " : $msg \n";
 									}
 								}
 							}
@@ -278,17 +278,17 @@
 							//echo "datefin = $datefin \n";
 							if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($affectation->datefin()))
 							{
-								echo "Cas ou on avance la date de fin \n";
+								echo "Cas oÃ¹ on avance la date de fin \n";
 								$declarationliste = $affectation->declarationTPliste($fonctions->formatdate($datefin),$fonctions->formatdate($affectation->datefin()));
 								if (!is_null($declarationliste))
 								{
 									foreach ($declarationliste as $declaration)
 									{
-										echo "Declaration en cours => "; print_r($declaration); echo " \n";
+										echo "DÃ©claration en cours => "; print_r($declaration); echo " \n";
 										$msg = "";
 										if (strcasecmp($declaration->statut(),"r")!=0)
 										{
-											// Si la nvlle date de fin est avant la date de début => On annule la declaration
+											// Si la nvlle date de fin est avant la date de dÃ©but => On annule la declaration
 											if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($declaration->datedebut()))
 												$declaration->statut("r");
 											else 
@@ -307,16 +307,16 @@
 						// Faire l'update de la ligne
 						echo "On update l'affectation (identifiant = " . $affectationid . ")\n";
 						$sql = sprintf("UPDATE AFFECTATION SET HARPEGEID='%s',NUMCONTRAT='%s',DATEDEBUT='%s',DATEFIN='%s',DATEMODIFICATION='%s',STRUCTUREID='%s',NUMQUOTITE='%s',DENOMQUOTITE='%s',OBSOLETE='%s' WHERE AFFECTATIONID='%s'",
-								mysql_real_escape_string($harpegeid),
-								mysql_real_escape_string($numcontrat),
-								mysql_real_escape_string($datedebut),
-								mysql_real_escape_string($datefin),
-								mysql_real_escape_string($datemodif),
-								mysql_real_escape_string($structureid),
-								mysql_real_escape_string($numquotite),
-								mysql_real_escape_string($denomquotite),
+								$fonctions->my_real_escape_utf8($harpegeid),
+								$fonctions->my_real_escape_utf8($numcontrat),
+								$fonctions->my_real_escape_utf8($datedebut),
+								$fonctions->my_real_escape_utf8($datefin),
+								$fonctions->my_real_escape_utf8($datemodif),
+								$fonctions->my_real_escape_utf8($structureid),
+								$fonctions->my_real_escape_utf8($numquotite),
+								$fonctions->my_real_escape_utf8($denomquotite),
 								'N',
-								mysql_real_escape_string($affectationid));
+								$fonctions->my_real_escape_utf8($affectationid));
 						//if ($harpegeid == '9328')
 						//	echo "sql = $sql \n";
 						mysql_query($sql);
@@ -327,7 +327,7 @@
 					else 
 					{
 						$sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='N' WHERE AFFECTATIONID='%s'",
-							mysql_real_escape_string($affectationid));
+							$fonctions->my_real_escape_utf8($affectationid));
 	//					if ($harpegeid == '9328')
 	//						echo "sql (Statut seul) = $sql \n";
 						mysql_query($sql);
@@ -342,9 +342,9 @@
 	
 		fclose($fp);
 		
-		// Pour toutes les affectations obsolètes 
-		// qui ont des déclarations non supprimées
-		// on doit supprimer les déclarations de temps partiels => suppression des demandes
+		// Pour toutes les affectations obsolÃ¨tes 
+		// qui ont des dÃ©clarations non supprimÃ©es
+		// on doit supprimer les dÃ©clarations de temps partiels => suppression des demandes
 		$sql = "SELECT AFFECTATION.AFFECTATIONID FROM AFFECTATION,DECLARATIONTP ";
 		$sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
 		$sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
@@ -369,7 +369,7 @@
 						$declaration->statut("r");
 						$msg = $declaration->store();
 						if ($msg != "")
-							echo "Problème lors de la suppression de la déclaration " . $declaration->declarationTPid() . " : " . $msg . " \n";
+							echo "ProblÃ¨me lors de la suppression de la dÃ©claration " . $declaration->declarationTPid() . " : " . $msg . " \n";
 					}
 				}
 			}

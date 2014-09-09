@@ -19,7 +19,7 @@
 	 
 	$uid=phpCAS::getUser();
 	//echo "UID de l'agent est : " . $uid . "<br>";
- 
+
 	// Initialisation de l'utilisateur
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
@@ -50,7 +50,7 @@
 	$user = new agent($dbcon);
 	$user->load($userid);
 
-	// Récupération de l'agent reponsable...
+	// RÃ©cupÃ©ration de l'agent reponsable...
 	if (isset($_POST["responsable"]))
 	{
 		$responsableid = $_POST["responsable"];
@@ -63,7 +63,7 @@
 		$responsable = null;
 	}
 	
-	// Si passé en paramètre : Soit 'conges', soit 'absence'
+	// Si passÃ© en paramÃ¨tre : Soit 'conges', soit 'absence'
 	// permet d'afficher la page en mode 'demande d'absence' ou en mode 'demande de conges'
 	if (isset($_POST["typedemande"]))
 	{
@@ -73,7 +73,7 @@
 	{
 		$typedemande = "conges";
 		//$typedemande = "absence";
-		//echo "Le type de page n'est pas renseigné... On le fixe à " .  $typedemande . "<br>";
+		//echo "Le type de page n'est pas renseignÃ©... On le fixe Ã  " .  $typedemande . "<br>";
 	}
 	
 	if (isset($_POST["previous"]))
@@ -94,7 +94,7 @@
 	//echo "agentid = " . $agentid . "<br>";
 	if ((is_null($agentid) or $agentid == "") and is_null($responsable))
 	{
-		//echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
+		//echo "L'agent n'est pas passÃ© en paramÃ¨tre.... RÃ©cupÃ©ration de l'agent Ã  partir du ticket CAS <br>";
 		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
 		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
 		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
@@ -108,7 +108,7 @@
 		$restriction=array("$LDAP_CODE_AGENT_ATTR");
 		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 		$info=ldap_get_entries($con_ldap,$sr);
-		//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+		//echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 		$agent->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
 	}
 	elseif ((!is_null($agentid)) and $agentid != "")
@@ -121,7 +121,7 @@
 	$masquerboutonvalider = FALSE;
 	$msg_erreur = "";
 	
-	// Récupération de la date de début
+	// RÃ©cupÃ©ration de la date de dÃ©but
 	if (isset($_POST["date_debut"]))
 	{
 		$date_debut = $_POST["date_debut"];
@@ -130,19 +130,23 @@
 		if ($date_debut == "" or !$fonctions->verifiedate($date_debut))  //is_null($date_debut) or 
 		{
 			//Echo "La date est fausse !!!! <br>";
-			$msg_erreur = $msg_erreur . "La date de début n'est pas initialisée ou est incorrecte (JJ/MM/AAAA) !!! <br>";
+			$errlog = "La date de dÃ©but n'est pas initialisÃ©e ou est incorrecte (JJ/MM/AAAA) !!! <br/>";
+			$msg_erreur .= $errlog;
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			$datefausse = TRUE;
 		}
 		else
 		{
-			// Récupération du moment de début
+			// RÃ©cupÃ©ration du moment de dÃ©but
 			if (isset($_POST["deb_mataprem"]))
 				$deb_mataprem = $_POST["deb_mataprem"];
 			else
 				$deb_mataprem = null;
 			if (is_null($deb_mataprem) or $deb_mataprem == "")
 			{
-				$msg_erreur = $msg_erreur . "Le moment de début n'est pas initialisé !!! <br>";
+				$errlog = "Le moment de dÃ©but n'est pas initialisÃ© !!! ";
+				$msg_erreur .= $errlog."<br/>";
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			}
 		}
 	}
@@ -152,7 +156,7 @@
 		$datefausse = TRUE;
 	}
 	
-	// Récupération de la date de fin
+	// RÃ©cupÃ©ration de la date de fin
 	if (isset($_POST["date_fin"]))
 	{
 		//echo "date_fin = $date_fin <br>";
@@ -160,19 +164,23 @@
 		$date_fin = $_POST["date_fin"];
 		if ($date_fin == "" or !$fonctions->verifiedate($date_fin))  //is_null($date_fin) or 
 		{
-			$msg_erreur = $msg_erreur . "La date de fin n'est pas initialisée ou est incorrecte !!! <br>";
+			$errlog = "La date de fin n'est pas initialisÃ©e ou est incorrecte !!! ";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			$datefausse = TRUE;
 		}
 		else
 		{
-			// Récupération du moment de fin
+			// RÃ©cupÃ©ration du moment de fin
 			if (isset($_POST["fin_mataprem"]))
 				$fin_mataprem = $_POST["fin_mataprem"];
 			else
 				$fin_mataprem = null;
 			if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem,"m")!=0 and strcasecmp($fin_mataprem,"a")!=0))
 			{
-				$msg_erreur = $msg_erreur . "Le moment de fin n'est pas initialisé !!! <br>";
+				$errlog = "Le moment de fin n'est pas initialisÃ© !!!";
+				$msg_erreur .= $errlog."<br/>";
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			}
 		}
 	}
@@ -188,28 +196,32 @@
 		$datefindb = $fonctions->formatdatedb($date_fin);
 		if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == 'a' and $fin_mataprem == 'm'))
 		{
-			$msg_erreur = $msg_erreur . "Il y a une incohérence entre la date de début et la date de fin !!! <br>";
+			$errlog = "Il y a une incohÃ©rence entre la date de dÃ©but et la date de fin !!! ";
+			$msg_erreur .= $errlog."<br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			$datefausse = true;
 		}
 	}
 
-	## Récupération du type de l'absence (annuel, CET, ...)
+	## RÃ©cupÃ©ration du type de l'absence (annuel, CET, ...)
 	if (isset($_POST["listetype"]))
 		$listetype = $_POST["listetype"];
 	else
 		$listetype =null;
 	if (is_null($listetype) or $listetype== "")
 	{
-		//echo "Le type de demande n'est pas initialisé !!! <br>";
+		//echo "Le type de demande n'est pas initialisÃ© !!! <br>";
 	}
 	
-	## Récupération du commentaire (s'il existe)
+	## RÃ©cupÃ©ration du commentaire (s'il existe)
 	$commentaire = "";
 	if (isset($_POST["commentaire"]))
 		$commentaire = $_POST["commentaire"];
 	if (!is_null($responsable) and $commentaire == "")
 	{
-		$msg_erreur = $msg_erreur . "Le commentaire dans la saisie est obligatoire !!! <br>";	
+		$errlog = "Le commentaire dans la saisie est obligatoire !!! ";
+		$msg_erreur .= $errlog."<br/>";
+		error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 	}
 	//echo "Le commentaire vaut : " . $commentaire . "<br>";
 	
@@ -218,12 +230,14 @@
 	else 
 		$congeanticipe = null;
 	
-	## On regarde si le dossier est complet pour la période demandée ==> Si pas !! Pas de saisie possible
+	## On regarde si le dossier est complet pour la pÃ©riode demandÃ©e ==> Si pas !! Pas de saisie possible
 	if (!is_null($agent) and !$datefausse)
 	{
 		if (!$agent->dossiercomplet($date_debut,$date_fin))
 		{
-			$msg_erreur = $msg_erreur . "<br><b>Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande !!! </b><br>";
+			$errlog = "Le dossier est incomplet sur la pÃ©riode $date_debut -> $date_fin ==> Vous ne pouvez pas Ã©tablir de demande !!! ";
+			$msg_erreur .= "<b>".$errlog."</b><br/>";
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			//$masquerboutonvalider = TRUE;
 		}
 	}
@@ -308,27 +322,27 @@
 	{
 		if (strcasecmp($typedemande,"conges")==0)
 		{
-			echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
+			echo "Demande de congÃ©s pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
 			$solde = new solde($dbcon);
 			$codecongeanticipe =  "ann" . substr($fonctions->anneeref()+1-$previous, 2);
 			$result = $solde->load($agent->harpegeid(),$codecongeanticipe);
 			if ($congeanticipe != "")
 			{
-				// On pose un congé par anticipation
-				//		- Vérifier que l'utilisateur est responsable (ou pas !!!)
-				//		- Vérifier que le solde du congé annuel est = 0
-				//		- Afficher le congé annuel de l'année de ref + 1
+				// On pose un congÃ© par anticipation
+				//		- VÃ©rifier que l'utilisateur est responsable (ou pas !!!)
+				//		- VÃ©rifier que le solde du congÃ© annuel est = 0
+				//		- Afficher le congÃ© annuel de l'annÃ©e de ref + 1
 				if ($result != "")
 				{
 					$result = $solde->creersolde($codecongeanticipe,$agent->harpegeid()) ;
 					if ($result != "")
 					{
-						$msg_erreur = $msg_erreur . "<br><b>" . $result . "</b>";
-						$msg_erreur = $msg_erreur . "<b>Contactez l'administrateur pour qu'il crée le type de congés...</b><br>";
-						$masquerboutonvalider = TRUE;  // Empèche le bouton de s'afficher !!!
+						$msg_erreur = $msg_erreur . "<br/><b>" . $result . "</b>";
+						$msg_erreur = $msg_erreur . "<b>Contactez l'administrateur pour qu'il crÃ©e le type de congÃ©s...</b><br/>";
+						$masquerboutonvalider = TRUE;  // EmpÃªche le bouton de s'afficher !!!
 					}
 					else
-						$msg_erreur = $msg_erreur . "<br><P style='color: green'>Création du solde de congés " . $codecongeanticipe . " pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() ."</P><br>";
+						$msg_erreur = $msg_erreur . "<br/><P style='color: green'>CrÃ©ation du solde de congÃ©s " . $codecongeanticipe . " pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() ."</P><br/>";
 				}
 				else
 				{
@@ -341,8 +355,8 @@
 						{
 							if ($solde->solde() != 0)
 							{
-								$msg_erreur = $msg_erreur . "<br><b>Impossible de poser un congé par anticipation. Il reste " . $solde->solde() . " jours de congés à poser pour " .$solde->typelibelle() . "</b><br>";
-								$masquerboutonvalider = TRUE;  // Empèche le bouton de s'afficher !!!
+								$msg_erreur = $msg_erreur . "<br/><b>Impossible de poser un congÃ© par anticipation. Il reste " . $solde->solde() . " jours de congÃ©s Ã  poser pour " .$solde->typelibelle() . "</b><br/>";
+								$masquerboutonvalider = TRUE;  // EmpÃªche le bouton de s'afficher !!!
 							}
 						}
 					}
@@ -361,22 +375,22 @@
 			//echo "Date fin = " . $date_fin . "<br>";
 			//echo "Date de fin (db) = " . $fonctions->formatdatedb($date_fin) . "<br>";
 			//echo "Annee ref + 1 = " . ($fonctions->anneeref()+1) . "<br>";
-			//echo "Fin de période = ". $fonctions->finperiode() . "<br>";
+			//echo "Fin de pÃ©riode = ". $fonctions->finperiode() . "<br>";
 			//echo "LIMITE CONGE = " . $fonctions->liredbconstante("LIMITE_CONGE_PERIODE") . "<br>";
 			
-			// Si la date de fin est supérieur à la date de début et que l'on accepte que ca déborde
-			// on fait un traitement spécial <=> pas de vérification des autodéclarations
+			// Si la date de fin est supÃ©rieur Ã  la date de dÃ©but et que l'on accepte que ca dÃ©borde
+			// on fait un traitement spÃ©cial <=> pas de vÃ©rification des autodÃ©clarations
 			if ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode() 
 					    and strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 			{
-				// Si la date de fin est suppérieure d'un mois à la date de fin de période ==> On refuse
-				// ==> On accepte que de déborder d'un mois
+				// Si la date de fin est supÃ©rieure d'un mois Ã  la date de fin de pÃ©riode ==> On refuse
+				// ==> On n'accepte que de dÃ©border d'un mois
 				$datetemp = ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode();
 				$timestamp = strtotime($datetemp);
 				$datetemp = date("Ymd", strtotime("+1month", $timestamp ));  // On passe au mois suivant
 				if ($fonctions->formatdatedb($date_fin) > $datetemp)
 				{
-					$msg_erreur = $msg_erreur . "La date de fin est trop loin - en dehors de la période (1 mois)  <br>";
+					$msg_erreur = $msg_erreur . "La date de fin est trop loin - en dehors de la pÃ©riode (1 mois)  <br>";
 					$ignoreabsenceautodecla = FALSE;
 				}
 				else
@@ -387,18 +401,19 @@
 			//Echo "Avant le est present .... <br>";
 			$present =$planning->agentpresent($agent->harpegeid(),$date_debut , $deb_mataprem, $date_fin, $fin_mataprem,$ignoreabsenceautodecla);
 			if (!$present)
-				$msg_erreur = $msg_erreur . $agent->prenom() . "  " . $agent->nom() . " n'est pas présent durant la période du $date_debut au $date_fin......!!! <br>";
+				$msg_erreur = $msg_erreur . $agent->prenom() . "  " . $agent->nom() . " n'est pas prÃ©sent durant la pÃ©riode du $date_debut au $date_fin......!!! <br>";
 		}
 		
 		//echo "Date fausse (2) = " . $datefausse . "<br>";
 		if ($msg_erreur <> "" or $datefausse)
 		{
 			echo "<P style='color: red'>" . $msg_erreur . " </P>";
+			error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msg_erreur);
 			//echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider  <br>";
 		}
 		elseif (!$datefausse)
 		{
-			// On recherche les declarations de TP relatives à cette demande
+			// On recherche les declarations de TP relatives Ã  cette demande
 			$affectationliste = $agent->affectationliste($date_debut, $date_fin);
 			if (!is_null($affectationliste))
 			{
@@ -406,7 +421,7 @@
 				$declarationTPliste = array();
 				foreach ($affectationliste as $affectation)
 				{
-					// On recupère la première affectation
+					// On recupÃ¨re la premiÃ¨re affectation
 	//				$affectation = new affectation($dbcon);
 	//				$affectation = reset($affectationliste);
 					//echo "Datedebut = $date_debut, Date fin = $date_fin <br>";
@@ -435,20 +450,24 @@
 			//echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
 			if ($resultat == "")
 			{
-				echo "<P style='color: green'>Votre demande a été enregistrée... ==> "; 
+				$msgstore = "Votre demande a Ã©tÃ© enregistrÃ©e... ==> ";
 				if (strcasecmp($typedemande,"conges")==0)
 				{
 					if (($demande->nbrejrsdemande())>1)
-						echo $demande->nbrejrsdemande() ." jours vous seront décomptés (" . $demande->typelibelle() .  ").";
+						$msgstore .= $demande->nbrejrsdemande() ." jours vous seront decomptÃ©s (" . $demande->typelibelle() .  ").";
 					else
-						echo $demande->nbrejrsdemande() ." jour vous sera décompté (" . $demande->typelibelle() .  ").";
+						$msgstore .= $demande->nbrejrsdemande() ." jour vous sera decomptÃ© (" . $demande->typelibelle() .  ").";
 				}
 				else
-					echo "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s).";
-				echo "</P>";
+					$msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s).";
+				echo "<P style='color: green'>".$msgstore."</P>";
+				error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msgstore);
 			}
-			else
-				echo "<P style='color: red'>Votre demande n'a pas été enregistrée... ==> MOTIF : ".  $resultat . "</P>";
+			else {
+				$msgstore = "Votre demande n'a pas Ã©tÃ© enregistrÃ©e... ==> MOTIF : ".  $resultat;
+				error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msgstore);
+				echo "<P style='color: red'>".$msgstore."</P>";
+			}
 		}
 		
 		
@@ -459,29 +478,29 @@
 	
 	<table>
 		<tr>
-			<td>Date de début de la demande :</td>
+			<td>Date de dÃ©but de la demande :</td>
 			<td width=1px><input class="calendrier" type=text name=date_debut id=date_debut size=10 ></td>
-			<td align="left"><input type='radio' name='deb_mataprem' value='m' checked >Matin <input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
+			<td align="left"><input type='radio' name='deb_mataprem' value='m' checked >Matin <input type='radio' name='deb_mataprem' value='a'>AprÃ¨s-midi</td>
 		</tr>
 		<tr>
 			<td>Date de fin de la demande :</td>
 			<td width=1px><input class="calendrier" type=text name=date_fin id=date_fin size=10 ></td>
-			<td align="left"><input type='radio' name='fin_mataprem' value='m' >Matin <input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
+			<td align="left"><input type='radio' name='fin_mataprem' value='m' >Matin <input type='radio' name='fin_mataprem' value='a' checked>AprÃ¨s-midi</td>
 		</tr>
 		<tr>
-			<td>Type de congé : </td>
+			<td>Type de congÃ© : </td>
 			<td colspan="2">
 
 <!-- 
-	Date de début de la demande :
+	Date de dÃ©but de la demande :
 	<input class="calendrier" type=text name=date_debut id=date_debut size=10 > <br>
 	<input type='radio' name='deb_mataprem' value='m' checked >Matin
-	<input type='radio' name='deb_mataprem' value='a'>Après-midi
+	<input type='radio' name='deb_mataprem' value='a'>AprÃ¨s-midi
 	<br>
 	Date de fin de la demande :
 	<input class="calendrier" type=text name=date_fin id=date_fin size=10 > <br>
 	<input type='radio' name='fin_mataprem' value='m' >Matin
-	<input type='radio' name='fin_mataprem' value='a' checked>Après-midi
+	<input type='radio' name='fin_mataprem' value='a' checked>AprÃ¨s-midi
 	<br>
  -->	
 <?php
@@ -575,7 +594,7 @@
 			$timestamp = strtotime($datetemp);
 			$datetemp = date("Ymd", strtotime("+1month", $timestamp ));  // On passe au mois suivant
 			$timestamp = strtotime($datetemp);
-			$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe à la veille
+			$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe Ã  la veille
 			echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode()),$datetemp,TRUE);
 		}
 		else
@@ -588,7 +607,7 @@
 ?>
 
 <!-- 
-<a href=".">Retour à la page d'accueil</a>
+<a href=".">Retour Ã  la page d'accueil</a>
 --> 
 </body></html>
 

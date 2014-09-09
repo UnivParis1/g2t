@@ -22,7 +22,9 @@ class declarationTP {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "DeclarationTP->construct : La connexion a la base de donnÈe est NULL !!!<br>";
+			$errlog = "DeclarationTP->construct : La connexion √† la base de donn√©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -31,7 +33,9 @@ class declarationTP {
 	{
 		if (is_null($id))
 		{
-			echo "DeclarationTP->Load : l'identifiant de la dÈclarationTP est NULL <br>";
+			$errlog = "DeclarationTP->Load : l'identifiant de la d√©clarationTP est NULL";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		else
 		{
@@ -40,10 +44,16 @@ FROM DECLARATIONTP
 WHERE DECLARATIONID=" . $id;
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "DeclarationTP->Load : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "DeclarationTP->Load : DeclarationTP $id non trouvÈ <br>";
+			if ($erreur != "") {
+				$errlog = "DeclarationTP->Load : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "DeclarationTP->Load : DeclarationTP $id non trouve";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$this->declarationid = "$result[0]";
 			$this->affectationid = "$result[1]";
@@ -59,8 +69,11 @@ WHERE DECLARATIONID=" . $id;
 
 	function declarationTPid()
 	{
-		if (is_null($this->declarationid))
-			echo "DeclarationTP->id : L'Id n'est pas dÈfini !!! <br>";
+		if (is_null($this->declarationid)) {
+			$errlog = "DeclarationTP->id : L'Id n'est pas d√©fini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		else
 			return $this->declarationid;
 	}
@@ -69,8 +82,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($affectationid))
 		{
-			if (is_null($this->affectationid))
-				echo "DeclarationTP->affectationid : L'Id de l'affectation n'est pas dÈfini !!! <br>";
+			if (is_null($this->affectationid)) {
+				$errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas d√©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->affectationid;
 		}
@@ -82,8 +98,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($statut))
 		{
-			if (is_null($this->statut))
-				echo "DeclarationTP->statut : Le statut n'est pas dÈfini !!! <br>";
+			if (is_null($this->statut)) {
+				$errlog = "DeclarationTP->statut : Le statut n'est pas d√©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->statut;
 		}
@@ -94,13 +113,13 @@ WHERE DECLARATIONID=" . $id;
 //	function statutlibelle()
 //	{
 //		if (is_null($this->declarationid))
-//			echo "DeclarationTP->statutlibelle : La dÈclaration de TP n'est pas enregistrÈe, donc pas de statut !!! <br>";
+//			echo "DeclarationTP->statutlibelle : La d√©claration de TP n'est pas enregistr√©e, donc pas de statut !!! <br>";
 //		else
 //		{
 //			if (strcasecmp($this->statut,'v') == 0)
-//				return "ValidÈe";
+//				return "Valid√©e";
 //			elseif (strcasecmp($this->statut,'r') == 0)
-//				return "RefusÈe";
+//				return "Refus√©e";
 //			elseif (strcasecmp($this->statut,'a') == 0)
 //				return "En attente";
 //			else
@@ -112,8 +131,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($date))
 		{
-			if (is_null($this->datedebut))
-				echo "DeclarationTP->datedebut : La date de dÈbut n'est pas dÈfinie !!! <br>";
+			if (is_null($this->datedebut)) {
+				$errlog = "DeclarationTP->datedebut : La date de d√©but n'est pas d√©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->fonctions->formatdate($this->datedebut);
 		}
@@ -129,8 +151,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($date))
 		{
-			if (is_null($this->datefin))
-				echo "DeclarationTP->datefin : La date de fin n'est pas dÈfinie !!! <br>";
+			if (is_null($this->datefin)) {
+				$errlog = "DeclarationTP->datefin : La date de fin n'est pas d√©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->fonctions->formatdate($this->datefin);
 		}
@@ -146,8 +171,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($date))
 		{
-			if (is_null($this->datedemande))
-				echo "DeclarationTP->datedemande : La date de la demande n'est pas dÈfinie !!! <br>";
+			if (is_null($this->datedemande)) {
+				$errlog = "DeclarationTP->datedemande : La date de la demande n'est pas d√©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->fonctions->formatdate($this->datedemande);
 		}
@@ -159,8 +187,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($date))
 		{
-			if (is_null($this->datestatut))
-				echo "DeclarationTP->datestatut : La date de fin n'est pas dÈfinie !!! <br>";
+			if (is_null($this->datestatut)) {
+				$errlog = "DeclarationTP->datestatut : La date de fin n'est pas d√©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->fonctions->formatdate($this->datestatut);
 		}
@@ -172,8 +203,11 @@ WHERE DECLARATIONID=" . $id;
 	{
 		if (is_null($tableauTP))
 		{
-			if (is_null($this->tabtpspartiel))
-				echo "DeclarationTP->tabtpspartiel : Le tableau des temps partiels n'est pas dÈfini (NULL) !!! <br>";
+			if (is_null($this->tabtpspartiel)) {
+				$errlog = "DeclarationTP->tabtpspartiel : Le tableau des temps partiels n'est pas d√©fini (NULL) !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->tabtpspartiel;
 		}
@@ -234,15 +268,24 @@ WHERE DECLARATIONID=" . $id;
 	
 	function enTP($date = null, $moment = null)
 	{
-		if (is_null($date) or is_null($moment))
-			echo "DeclarationTP->enTP : Au moins un des paramËtres n'est pas dÈfini (NULL) !!! <br>";
-		elseif (is_null($this->tabtpspartiel))
-			echo "DeclarationTP->enTP : Le tableau des RTT n'est pas initialisÈ !!! <br>";
-		if (strlen($this->tabtpspartiel)<20)
-			echo "DeclarationTP->enTP : Le tableau ne contient pas le nombre d'ÈlÈment requis !!! <br>";
+		if (is_null($date) or is_null($moment)) {
+			$errlog = "DeclarationTP->enTP : Au moins un des param√®tres n'est pas d√©fini (NULL) !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		elseif (is_null($this->tabtpspartiel)) {
+			$errlog = "DeclarationTP->enTP : Le tableau des RTT n'est pas initialis√© !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		if (strlen($this->tabtpspartiel)<20) {
+			$errlog = "DeclarationTP->enTP : Le tableau ne contient pas le nombre d'√©l√©ment requis !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 
 		$datedb = $this->fonctions->formatdatedb($date);
-		// recupÈration du numÈro du jour ==> 0 dimanche ... 6 Samedi
+		// recup√©ration du num√©ro du jour ==> 0 dimanche ... 6 Samedi
 		$numerojour = date("w",strtotime($datedb));
 		if ($numerojour == 0)
 		{
@@ -255,7 +298,7 @@ WHERE DECLARATIONID=" . $id;
 			//echo "Samedi ou Dimanche => Donc pas de TP <br>";
 			return false;
 		}
-		// recupÈration du numÈro de la semaine
+		// recup√©ration du num√©ro de la semaine
 		$numsemaine = date("W",strtotime($datedb));
 		//echo "Numero de la semaine = $numsemaine <br>";
 		$semainepaire = !(bool)($numsemaine % 2);
@@ -277,7 +320,7 @@ WHERE DECLARATIONID=" . $id;
 			 
 		$index = (($numerojour - 1) * 2) + ($momentindex) + (10 * $semaineindex) ; 
 		//echo "date =   $date    moment = $moment    index = $index   this->tabtpspartiel = " . $this->tabtpspartiel . "<br>";
-		//echo "Le caractËre= " . substr($this->tabtpspartiel, $index,1) . "<br>";
+		//echo "Le caract√®re= " . substr($this->tabtpspartiel, $index,1) . "<br>";
 		if (substr($this->tabtpspartiel, $index,1) == "1")
 		{
 			//echo "Je return TRUE <br>";
@@ -298,10 +341,16 @@ WHERE DECLARATIONID=" . $id;
 			$sql = $sql . " AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID";
 			$query=mysql_query ($sql,$this->dbconnect);
 			$erreur=mysql_error();
-			if ($erreur != "")
-				echo "Demande->agent : " . $erreur . "<br>";
-			if (mysql_num_rows($query) == 0)
-				echo "Demande->agent : Pas d'agent trouvÈ pour la dÈclaration de TP " . $this->declarationTPid() . " <br>";
+			if ($erreur != "") {
+				$errlog = "Demande->agent : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			if (mysql_num_rows($query) == 0) {
+				$errlog = "Demande->agent : Pas d'agent trouv√© pour la d√©claration de TP " . $this->declarationTPid();
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			$result = mysql_fetch_row($query);
 			$agent = new agent($this->dbconnect);
 			$agent->load("$result[0]");
@@ -318,8 +367,11 @@ WHERE DECLARATIONID=" . $id;
 //		return false;
 		
 		//echo "On teste le nbre de tabrtt = " . count($this->tabrtt) . "<br>";
-		if (strlen($this->tabtpspartiel) != 20)
-			return "Le tableau des temps partiels n'est pas initialisÈ. L'enregistrement est impossible. <br>";
+		if (strlen($this->tabtpspartiel) != 20) {
+			$errlog = "Le tableau des temps partiels n'est pas initialis√©. L'enregistrement est impossible.";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			return $errlog."<br/>";
+		}
 		
 		//echo "id est null ==> " . $this->id . "<br>";
 		if (is_null($this->declarationid))
@@ -363,12 +415,15 @@ WHERE DECLARATIONID=" . $id;
 			//echo "SQL = $sql   <br>";
 			mysql_query($sql,$this->dbconnect);
 	 		$erreur=mysql_error();
-			if ($erreur != "")
-				echo "DeclarationTP->store : " . $erreur . "<br>";
+			if ($erreur != "") {
+				$errlog = "DeclarationTP->store : " . $erreur;
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			if (!is_null($this->anciendebut) or (!is_null($this->ancienfin)))
 			{
 //				echo "###############################<br>";
-//				echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui ne sont plus dans la pÈriode de TP #######<br>";
+//				echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui ne sont plus dans la p√©riode de TP #######<br>";
 //				echo "########################################<br>";
 //				echo "#### CA NE MARCHE PAS !!!!!!! A VERIFIER !!!!<br>";
 //				echo "###############################<br>";
@@ -393,38 +448,41 @@ WHERE DECLARATIONID=" . $id;
 						if (strcasecmp($demande->statut(),"r")!=0)
 						{
 							$demande->statut("R");
-							$demande->motifrefus("Modification de la dÈclaration de temps partiel ou d'affectation - " . $this->datedebut() . "->" . $this->datefin());
+							$demande->motifrefus("Modification de la d√©claration de temps partiel ou d'affectation - " . $this->datedebut() . "->" . $this->datefin());
 							$demande->datestatut($this->fonctions->formatdatedb(date("d/m/Y")));
 							$msg = $demande->store();
-							if ($msg != "" )
-								echo "STORE de la demande apres modification d'une declaration TP : " . $msg . "<br>";
+							if ($msg != "" ) {
+								$errlog = "STORE de la demande apres modification d'une d√©claration TP : " . $msg;
+								echo $errlog."<br/>";
+								error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+							}
 							// #############################################################################
 							// ENVOYER UN MAIL A : L'AGENT + RESPONSABLE DE L'ANCIENNE AFFECTATION + ??????
 							// #############################################################################
 							$pdffilename = $demande->pdf($user->harpegeid()); 
 							$agent = $demande->agent();
-							echo "Avant l'envoi du mail a l'agent " . $agent->identitecomplete() . " pour annulation demande (Id=". $demande->id() . ")\n";
+							echo "Avant l'envoi du mail √† l'agent " . $agent->identitecomplete() . " pour annulation demande (Id=". $demande->id() . ")\n";
 							//echo "Demande -> Statut = " . $demande->statut() ." \n";
-							$user->sendmail($agent,"Annulation d'une demande de congÈs ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							$user->sendmail($agent,"Annulation d'une demande de cong√©s ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
 							unset($agent);
 							$affectation = new affectation($this->dbconnect);
 							if (!$affectation->load($this->affectationid))
 							{
-								error_log("Modif de TP => Impossible de charger l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." ".getdate()." "."Modif de TP => Impossible de charger l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de l'affectation\n";
 							$structure = new structure($this->dbconnect);
 							if (!$structure->load($affectation->structureid()))
 							{
-								error_log("Modif de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." ".getdate()." "."Modif de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de la structure\n";
 							$agent = $structure->responsable();
 							echo "Avant l'envoi du mail au responsable de la structure " . $agent->identitecomplete() . " pour annulation demande (id=". $demande->id() . ")\n";
 							//echo "Demande -> Statut = " . $demande->statut() ." \n";
-							$user->sendmail($agent,"Annulation d'une demande de congÈs ou d'absence","La demande de " . $demande->agent()->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							$user->sendmail($agent,"Annulation d'une demande de cong√©s ou d'absence","La demande de " . $demande->agent()->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
 							unset($affectation);
 							unset($structure);
 							unset($agent);
@@ -437,7 +495,7 @@ WHERE DECLARATIONID=" . $id;
 			if (strcasecmp($this->statut,"r")==0)
 			{
 				//echo "###############################<br>";
-				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associÈes ‡ cette dÈclaration de TP #######<br>";
+				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associ√©es √† cette d√©claration de TP #######<br>";
 				//echo "###############################<br>";
 				$demandeliste = $this->demandesliste($this->datedebut(),$this->datefin());
 				if (!is_null($demandeliste))
@@ -447,11 +505,14 @@ WHERE DECLARATIONID=" . $id;
 						if (strcasecmp($demande->statut(),"r")!=0)
 						{
 							$demande->statut("R");
-							$demande->motifrefus("Annulation de la dÈclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
+							$demande->motifrefus("Annulation de la d√©claration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
 							$demande->datestatut($this->fonctions->formatdatedb(date("d/m/Y")));
 							$msg = $demande->store();
-							if ($msg != "" )
-								echo "STORE de la demande apres suppression d'une declaration TP : " . $msg . "<br>";
+							if ($msg != "" ) {
+								$errlog = "STORE de la demande apr√®s suppression d'une d√©claration TP : " . $msg;
+								echo $errlog."<br/>";
+								error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+							}
 							// #############################################################################
 							// ENVOYER UN MAIL A : L'AGENT + RESPONSABLE DE L'ANCIENNE AFFECTATION + ??????
 							// #############################################################################
@@ -459,31 +520,31 @@ WHERE DECLARATIONID=" . $id;
 							$agent = $demande->agent();
 							echo "Avant l'envoi du mail a l'agent " . $agent->identitecomplete() . " pour annulation demande (Id=". $demande->id() . ")\n";
 							//echo "Demande -> Statut = " . $demande->statut() ." \n";
-							$user->sendmail($agent,"Annulation d'une demande de congÈs ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							$user->sendmail($agent,"Annulation d'une demande de cong√©s ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
 							unset($agent);
 							$affectation = new affectation($this->dbconnect);
 							if (!$affectation->load($this->affectationid))
 							{
-								error_log("Suppr de TP => Impossible de charger l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Impossible de charger l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de l'affectation\n";
 							$structure = new structure($this->dbconnect);
 							if (!$structure->load($affectation->structureid()))
 							{
-								error_log("Suppr de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de la structure\n";
 							$agent = $structure->responsable();
 							echo "Avant l'envoi du mail au responsable de la structure " . $agent->identitecomplete() . " pour annulation demande (id=". $demande->id() . ")\n";
 							//echo "Demande -> Statut = " . $demande->statut() ." \n";
-							$user->sendmail($agent,"Annulation d'une demande de congÈs ou d'absence","La demande de " . $demande->agent()->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
+							$user->sendmail($agent,"Annulation d'une demande de cong√©s ou d'absence","La demande de " . $demande->agent()->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($this->fonctions->demandestatutlibelle($demande->statut())) . ".\nLe motif de l'annulation est : " . $demande->motifrefus() . "." , $pdffilename);
 							unset($affectation);
 							unset($structure);
 							unset($agent);
 							
-							error_log("Suppr de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
+							error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						}
 					}
 					
@@ -524,13 +585,13 @@ WHERE DECLARATIONID=" . $id;
 //			switch ($this->statut())
 //			{
 //				case "v":
-//					$htmltext = $htmltext .  "ValidÈ";
+//					$htmltext = $htmltext .  "Valid√©";
 //					break;
 //				case "a":
 //					$htmltext = $htmltext .  "En attente";
 //					break;
 //				case "r":
-//					$htmltext = $htmltext .  "RefusÈ";
+//					$htmltext = $htmltext .  "Refus√©";
 //					break;
 //			}
 		}
@@ -565,34 +626,40 @@ WHERE DECLARATIONID=" . $id;
 //		return false;
 		
 		//echo "Avant le new <br>";
-		$pdf = new FPDF();
+		//$pdf = new FPDF();		
+		$pdf = new tFPDF();
 		//echo "Avant le define <br>";
 		//if (!defined('FPDF_FONTPATH'))
 		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
+		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		//echo "Apres l'image... <br>";
-		$pdf->SetFont('Arial','B',14);
+		//$pdf->SetFont('Arial','B',14);
+		$pdf->SetFont('DejaVu','B',14);
 		$pdf->Ln(50);
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 		$pdf->Ln(10);
-		$pdf->Cell(60,10,'Demande de temps partiel N∞'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
+		$pdf->Cell(60,10,'Demande de temps partiel N¬∞'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','',10);
+		//$pdf->SetFont('Arial','',10);
+		$pdf->SetFont('DejaVu','',10);
 		//echo "Avant le test statut <br>";
 		$decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
 //		if($this->statut()=='v')
-//			$decision='validÈe';
+//			$decision='valid√©e';
 //		else
-//			$decision='refusÈe';
+//			$decision='refus√©e';
 		
-		$pdf->Cell(40,10,"La demande de temps partiel que vous avez dÈposÈe le " . $this->datedemande() .' a ÈtÈ '.$decision.' le '. $this->datestatut());
+		$pdf->Cell(40,10,"La demande de temps partiel que vous avez d√©pos√©e le " . $this->datedemande() .' a √©t√© '.$decision.' le '. $this->datestatut());
 		$pdf->Ln(10);
-		//echo "Avant test quotitÈ <br>";
-		$pdf->Cell(60,10,'RÈcapitulatif de votre demande de temps partiel pour la pÈriode du '.$this->datedebut().' au '.$this->datefin().'.');
+		//echo "Avant test quotit√© <br>";
+		$pdf->Cell(60,10,'R√©capitulatif de votre demande de temps partiel pour la p√©riode du '.$this->datedebut().' au '.$this->datefin().'.');
 		$pdf->Ln(10);
-		$pdf->SetFont('Arial','B',6);
+		//$pdf->SetFont('Arial','B',6);
+		$pdf->SetFont('DejaVu','B',6);
 		
 		
 		$cellheight = 5;
@@ -638,7 +705,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 		
 		$pdf->Ln(15);
-//		$pdf->Cell(25,5,'TP:Demi-journÈe non travaillÈe pour un temps partiel    WE:Week end');
+//		$pdf->Cell(25,5,'TP:Demi-journ√©e non travaill√©e pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
 		$pdfname = '../html/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
@@ -665,11 +732,14 @@ WHERE DECLARATIONID=" . $id;
 		//echo "declarationTP->demandeliste SQL = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "declarationTP->demandesliste : " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "DeclarationTP->demandesliste : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "declarationTP->demandesliste : Il n'y a pas de demande de congÈ/absence pour ce TP " . $this->declarationid . "<br>";
+			//echo "declarationTP->demandesliste : Il n'y a pas de demande de cong√©/absence pour ce TP " . $this->declarationid . "<br>";
 		}
 		while ($result = mysql_fetch_row($query))
 		{

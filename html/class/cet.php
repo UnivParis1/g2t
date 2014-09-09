@@ -2,7 +2,7 @@
 
 /**
   * CET
-  * Definition of a CET (Compte épargne temps)
+  * Definition of a CET (Compte Ã©pargne temps)
   * 
   * @package     G2T
   * @category    classes
@@ -32,7 +32,9 @@ class cet {
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			echo "Cet->construct : La connexion a la base de donnée est NULL !!!<br>";
+			$errlog = "Cet->construct : La connexion Ã  la base de donnÃ©e est NULL !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
@@ -45,8 +47,11 @@ class cet {
 	{
 		if (!is_null($this->idannuel))
 			return $this->idannuel;
-		else
-			echo "Cet->idannuel : L'identifiant du CET annuel n'est pas initialisé !!! <br>";
+		else {
+			$errlog = "Cet->idannuel : L'identifiant du CET annuel n'est pas initialisÃ© !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 	
    /**
@@ -57,8 +62,11 @@ class cet {
 	{
 		if (!is_null($this->idtotal))
 			return $this->idtotal;
-		else
-			echo "Cet->idtotal : L'identifiant du CET total n'est pas initialisé !!! <br>";
+		else {
+			$errlog = "Cet->idtotal : L'identifiant du CET total n'est pas initialisÃ© !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 	
    /**
@@ -69,8 +77,11 @@ class cet {
 	{
 		if (is_null($agentid))
 		{
-			if (is_null($this->agentid))
-				echo "Cet->agentid : L'Id de l'agent n'est pas défini !!! <br>";
+			if (is_null($this->agentid)) {
+				$errlog = "Cet->agentid : L'Id de l'agent n'est pas dÃ©fini !!! ";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->agentid;
 		}
@@ -86,8 +97,11 @@ class cet {
 	{
 		if (is_null($date))
 		{
-			if (is_null($this->datedebut))
-				echo "Cet->datedebutcet : La date du début du CET de l'agent n'est pas défini !!! <br>";
+			if (is_null($this->datedebut)) {
+				$errlog = "Cet->datedebutcet : La date du dÃ©but du CET de l'agent n'est pas dÃ©finie !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->fonctions->formatdate($this->datedebut);
 		}
@@ -104,8 +118,11 @@ class cet {
 	{
 		if (is_null($cumulannee))
 		{
-			if (is_null($this->cumulannuel))
-				echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent n'est pas défini !!! <br>";
+			if (is_null($this->cumulannuel)) {
+				$errlog = "Cet->cumulannuel : Le cumul annuel du CET de l'agent n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			elseif (!isset($this->cumulannuel['cet'.$annee]))
 				return 0;
 			else
@@ -113,8 +130,11 @@ class cet {
 		}
 		elseif (intval($cumulannee) == $cumulannee)
 			$this->cumulannuel['cet'.$annee] = $cumulannee;
-		else 
-			echo "Cet->cumulannuel : Le cumul annuel du CET de l'agent doit être un nombre entier <br>";
+		else {
+			$errlog = "Cet->cumulannuel : Le cumul annuel du CET de l'agent doit Ãªtre un nombre entier";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 
    /**
@@ -125,15 +145,21 @@ class cet {
 	{
 		if (is_null($cumultot))
 		{
-			if (is_null($this->cumultotal))
-				echo "Cet->cumultotal : Le cumul total du CET de l'agent n'est pas défini !!! <br>";
+			if (is_null($this->cumultotal)) {
+				$errlog = "Cet->cumultotal : Le cumul total du CET de l'agent n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->cumultotal;
 		}
 		elseif (intval($cumultot) == $cumultot)
 			$this->cumultotal = $cumultot;
-		else 
-			echo "Cet->cumultotal : Le cumul total du CET de l'agent doit être un nombre entier <br>";
+		else  {
+			$errlog = "Cet->cumultotal : Le cumul total du CET de l'agent doit Ãªtre un nombre entier";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 	}
 	
    /**
@@ -144,15 +170,21 @@ class cet {
 	{
 		if (is_null($nbrejrspris))
 		{
-			if (is_null($this->jrspris))
-				echo "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent n'est pas défini !!! <br>";
+			if (is_null($this->jrspris)) {
+				$errlog = "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent n'est pas dÃ©fini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
 			else
 				return $this->jrspris;
 		}
 		elseif (intval($nbrejrspris) == $nbrejrspris)
 			$this->jrspris = $nbrejrspris;
-		else
-			echo "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent doit être un nombre entier <br>";
+		else {
+			$errlog = "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent doit Ãªtre un nombre entier";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}	
 	}
 	
    /**
@@ -171,12 +203,17 @@ class cet {
 		$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid   . "' AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "Cet->Load (cet%): " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "Cet->Load (cet%): " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "Cet->Load (cet%) : Aucun cumul annuel pour l'agent $agentid  trouvé <br>";
-			$msgerreur = $msgerreur . "Aucun cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pu être trouvé <br>";
+			//echo "Cet->Load (cet%) : Aucun cumul annuel pour l'agent $agentid  trouvÃ© <br>";
+			$errlog = "Aucun cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pu Ãªtre trouvÃ©";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			$msgerreur = $msgerreur . $errlog."<br/>";
 		}
 
 		while ($result = mysql_fetch_row($query))
@@ -190,25 +227,32 @@ class cet {
 		$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid   . "' AND TYPEABSENCEID ='cet'";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "")
-			echo "(cet): " . $erreur . "<br>";
+		if ($erreur != "") {
+			$errlog = "(cet): " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "Cet->Load (cet) : Le CET pour l'agent $agentid non trouvé <br>";
-			$msgerreur = $msgerreur . "Le CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvé <br>";
+			//echo "Cet->Load (cet) : Le CET pour l'agent $agentid non trouvÃ© <br>";
+			$errlog = "Le CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu Ãªtre trouvÃ©";
+			$msgerreur = $msgerreur . $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$result = mysql_fetch_row($query);
 		$this->cumultotal = $result[2];
 		$this->idtotal = $result[1];
 		$this->jrspris = $result[3];
 		
-		// On charge la date de début du CET
+		// On charge la date de dÃ©but du CET
 		$complement = new complement($this->dbconnect);
 		$complement->load($agentid, "DEBUTCET");
 		if ($complement->harpegeid()=="")
 		{
-			//echo "Cet->Load (date début) : La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvée <br>";
-			$msgerreur = $msgerreur . "La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvée <br>";
+			//echo "Cet->Load (date dÃ©but) : La date de dÃ©but du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvÃ©e <br>";
+			$errlog = "La date de dÃ©but du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu Ãªtre trouvÃ©e";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			$msgerreur = $msgerreur . $errlog."<br/>";
 			$this->datedebut = "";
 		}
 		else
@@ -235,7 +279,7 @@ class cet {
 			//echo "On va creer le solde <br>";
 			//echo "'cet'.this->fonctions->anneeref() = " . 'cet'.$this->fonctions->anneeref(). "<br>";
 			$solde->creersolde('cet'.$this->fonctions->anneeref(),$this->agentid);
-			// On recré un nouvel objet pour eviter les effets de bord eventuels
+			// On recrÃ©e un nouvel objet pour eviter les effets de bord eventuels
 			unset ($solde);
 			$solde = new solde($this->dbconnect);
 		}
@@ -260,7 +304,7 @@ class cet {
 			$complement->complementid('DEBUTCET');
 			if (!$this->fonctions->verifiedate($this->datedebut))
 			{
-				//echo "CET->Store : Date début n'est pas une date => " . $this->datedebut() . "<br>";
+				//echo "CET->Store : Date dÃ©but n'est pas une date => " . $this->datedebut() . "<br>";
 				$this->datedebut = date("Ymd");
 			}
 			//echo "this->datedebut() = " . $this->datedebut() . "<br>";
@@ -290,17 +334,22 @@ class cet {
 		$responsable->load($responsableid);
 		//echo "Apres le load...<br>";
 		
-		$pdf=new FPDF();
+		//$pdf=new FPDF();
+		$pdf=new tFPDF();
 		//echo "Apres le new <br>";
 		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
+		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
+		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		
 		//echo "Apres image <br>";
-		$pdf->SetFont('Arial','B',16);
+		//$pdf->SetFont('Arial','B',16);
+		$pdf->SetFont('DejaVu','B',16);
 		$pdf->Ln(70);
-		$pdf->SetFont('Arial','B',12);
+		//$pdf->SetFont('Arial','B',12);
+		$pdf->SetFont('DejaVu','B',12);
 
 		$agent=new agent($this->dbconnect);
 		$agent->load($this->agentid);
@@ -322,17 +371,17 @@ class cet {
 		if ($ajoutmode)
 		{
 			//echo "Apres le nom du service <br>";
-			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'être alimenté.');
+			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'Ãªtre alimentÃ©.');
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,'La date d\'ouverture de votre CET est : ' . $this->datedebut());
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())) . ' jour(s).');
 			$pdf->Ln(10);
-			$pdf->Cell(40,10,'Cette année, vous avez ajouté ' . ($this->cumulannuel($this->fonctions->anneeref())) . ' jour(s).');
+			$pdf->Cell(40,10,'Cette annÃ©e, vous avez ajoutÃ© ' . ($this->cumulannuel($this->fonctions->anneeref())) . ' jour(s).');
 		}
 		else
 		{
-			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'être modifié.');
+			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'Ãªtre modifiÃ©.');
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,$detail);
 			$pdf->Ln(10);

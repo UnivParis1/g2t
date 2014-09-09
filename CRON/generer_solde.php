@@ -19,8 +19,8 @@
 	
 
 	//		Recherche de tous les services avec un gestionnaire
-	// 		Pour chaque service => Recupération des agents du service
-	//		Génération du PDF => Sauvegarde 
+	// 		Pour chaque service => RÃ©cupÃ©ration des agents du service
+	//		GÃ©nÃ©ration du PDF => Sauvegarde 
 	// 		Envoi par mail du fichier PDF
 
 	$jour = date('j');
@@ -56,7 +56,7 @@
 		
 			$struct = new structure($dbcon);
 			$struct->load("$result[0]");
-			echo "Génération du PDF pour la structure " . $struct->nomcourt() . "\n";
+			echo "GÃ©nÃ©ration du PDF pour la structure " . $struct->nomcourt() . "\n";
 			$tablisteagent = $struct->agentlist($datedebut, $datefin, 'n'); 
 			if (!is_null($tablisteagent))
 			{
@@ -71,10 +71,10 @@
 				$filename= dirname(__FILE__) . '/../html/pdf/solde_' . $struct->nomcourt() . '_' . date('Ymd') . ".pdf";
 				$pdf->Output($filename,'F');   // F = file
 				$gest = $struct->gestionnaire();
-				$cronmail->sendmail($gest , 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(),"Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du ". date("d/m/Y") .".\n",$filename);
+				$cronmail->sendmail($gest , 'RÃ©capitulatif des congÃ©s pour la structure ' . $struct->nomcourt(),"Veuillez trouver ci-joint le rÃ©capitulatif des congÃ©s pour la structure " . $struct->nomcourt() . " Ã  la date du ". date("d/m/Y") .".\n",$filename);
 			}
 		}
-		echo "Fin de la génération .... \n";
+		echo "Fin de la gÃ©nÃ©ration .... \n";
 //	}
 //	else
 //	{

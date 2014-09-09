@@ -3,7 +3,7 @@
 	require_once('CAS.php');
 	require_once("./class/fonctions.php");
 	require_once('./includes/dbconnection.php');
-	
+	//phpinfo();
 	$fonctions = new fonctions($dbcon);
 	
 	// Parametres pour connexion CAS
@@ -40,6 +40,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
+//	require_once("./class/tfpdf/tfpdf.php");
 	require_once("./class/fpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
@@ -59,7 +60,7 @@
 		$timestamp = strtotime($datetemp);
 		$datetemp = date("Ymd", strtotime("+1month", $timestamp ));  // On passe au mois suivant
 		$timestamp = strtotime($datetemp);
-		$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe à la veille
+		$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe Ã  la veille
 		echo $user->planninghtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$datetemp);
 	}
 	else
