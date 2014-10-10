@@ -623,6 +623,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
 		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
 		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
+		$pdf->AddFont('DejaVu','I','DejaVuSansCondensed-Oblique.ttf',true);
 		
 //		if (is_null($this->structureid) or $this->structureid=="")
 //		{
