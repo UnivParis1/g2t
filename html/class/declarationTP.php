@@ -427,18 +427,29 @@ WHERE DECLARATIONID=" . $id;
 //				echo "########################################<br>";
 //				echo "#### CA NE MARCHE PAS !!!!!!! A VERIFIER !!!!<br>";
 //				echo "###############################<br>";
-				if (is_null($this->anciendebut))
+				$demandelistefin = null;
+				$demandelistedebut = null;
+                //echo "anciendebut " . $this->anciendebut . "  datedebut = " . $this->datedebut() . "\n";
+				if (is_null($this->anciendebut) || (strcasecmp($this->fonctions->formatdate($this->anciendebut),$this->datedebut())==0))
 					$debut= $this->datedebut();
 				else
+				{
 					$debut = $this->anciendebut;
-				if (is_null($this->ancienfin))
+					//echo "debut = " . $this->fonctions->formatdate($debut) . "   datedebut = " . $this->datedebut() . "<br>";
+					$demandelistedebut = $this->demandesliste($this->fonctions->formatdate($debut),$this->datedebut());
+				}
+				if (is_null($this->ancienfin) || (strcasecmp($this->fonctions->formatdate($this->ancienfin),$this->datefin())==0))
 					$fin= $this->datefin();
 				else
+				{
 					$fin = $this->ancienfin;
+					$timestamp = strtotime($this->fonctions->formatdatedb($this->datefin()));
+					$nvlledatefin = date("Ymd", strtotime("+1days", $timestamp ));  // On passe au jour d'après (donc le lendemain)
+					//echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "   nvlledatefin = $nvlledatefin <br>";
+					$demandelistefin = $this->demandesliste($nvlledatefin,$this->fonctions->formatdate($fin));
+				}
 				//echo "debut = " . $this->fonctions->formatdate($debut) . "   datedebut = " . $this->datedebut() . "<br>";
 				//echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "<br>";
-				$demandelistedebut = $this->demandesliste($this->fonctions->formatdate($debut),$this->datedebut());
-				$demandelistefin = $this->demandesliste($this->datefin(),$this->fonctions->formatdate($fin));
 				$demandeliste = array_merge((array)$demandelistedebut,(array)$demandelistefin);
 				//echo "demandeliste = "; print_r($demandeliste); echo "<br>"; 
 				if (is_array($demandeliste))
