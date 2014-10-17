@@ -5,7 +5,7 @@
 	require_once('./includes/dbconnection.php');
 	//phpinfo();
 	$fonctions = new fonctions($dbcon);
-	
+
 	// Parametres pour connexion CAS
 	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
 	$CAS_PORT=443;
@@ -16,10 +16,10 @@
 	phpCAS::setNoCasServerValidation();
 	// Recuperation de l'uid
 	phpCAS::forceAuthentication();
-	
+
 	$uid=phpCAS::getUser();
 	//echo "UID de l'agent est : " . $uid . "<br>";
-	
+
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
 	else
@@ -30,7 +30,7 @@
 		header('Location: index.php');
 		exit();
 	}
-	
+
 	require_once("./class/agent.php");
 	require_once("./class/structure.php");
 	require_once("./class/solde.php");
@@ -45,7 +45,7 @@
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
-	
+
 	$user = new agent($dbcon);
 	$user->load($userid);
 
@@ -53,18 +53,18 @@
 	//echo '<html><body class="bodyhtml">';
 
 	echo "<br>Planning de l'agent " . $user->civilite() . " "  . $user->nom() . " " . $user->prenom() . " <br>";
-	
+
 	if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 	{
 		$datetemp = ($fonctions->anneeref()+1) . $fonctions->finperiode();
 		$timestamp = strtotime($datetemp);
 		$datetemp = date("Ymd", strtotime("+1month", $timestamp ));  // On passe au mois suivant
 		$timestamp = strtotime($datetemp);
-		$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe à la veille
+		$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe Ã  la veille
 		echo $user->planninghtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$datetemp);
 	}
 	else
 		echo $user->planninghtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()));
-	
+
 ?>
 </body></html>

@@ -1,7 +1,7 @@
 <?php
 
 class declarationTP {
-	
+
 	private $declarationid = null;
 	private $affectationid = null;
 	private $tabtpspartiel = null;
@@ -10,25 +10,25 @@ class declarationTP {
 	private $datefin = null;
 	private $datestatut = null;
 	private $statut = null;
-	
+
 	private $fonctions = null;
 	private $dbconnect = null;
 	private $agent = null;
 	private $ancienfin = null;
 	private $anciendebut = null;
-	
+
 	function __construct($db)
 	{
 		$this->dbconnect = $db;
 		if (is_null($this->dbconnect))
 		{
-			$errlog = "DeclarationTP->construct : La connexion à la base de donnée est NULL !!!";
+			$errlog = "DeclarationTP->construct : La connexion à la base de données est NULL !!!";
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$this->fonctions = new fonctions($db);
 	}
-	
+
 	function load($id = null)
 	{
 		if (is_null($id))
@@ -65,12 +65,12 @@ WHERE DECLARATIONID=" . $id;
 			$this->statut = "$result[7]";
 		}
 	}
-	
+
 
 	function declarationTPid()
 	{
 		if (is_null($this->declarationid)) {
-			$errlog = "DeclarationTP->id : L'Id n'est pas défini !!!";
+			$errlog = "DeclarationTP->id : L'Id n'est pas dÃ©fini !!!";
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
@@ -83,7 +83,7 @@ WHERE DECLARATIONID=" . $id;
 		if (is_null($affectationid))
 		{
 			if (is_null($this->affectationid)) {
-				$errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas défini !!!";
+				$errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas dÃ©fini !!!";
 				echo $errlog."<br/>";
 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
@@ -93,13 +93,13 @@ WHERE DECLARATIONID=" . $id;
 		else
 			$this->affectationid = $affectationid;
 	}
-	
+
 	function statut($statut = null)
 	{
 		if (is_null($statut))
 		{
 			if (is_null($this->statut)) {
-				$errlog = "DeclarationTP->statut : Le statut n'est pas défini !!!";
+				$errlog = "DeclarationTP->statut : Le statut n'est pas dÃ©fini !!!";
 				echo $errlog."<br/>";
 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
@@ -109,24 +109,24 @@ WHERE DECLARATIONID=" . $id;
 		else
 			$this->statut = $statut;
 	}
-	
+
 //	function statutlibelle()
 //	{
 //		if (is_null($this->declarationid))
-//			echo "DeclarationTP->statutlibelle : La déclaration de TP n'est pas enregistrée, donc pas de statut !!! <br>";
+//			echo "DeclarationTP->statutlibelle : La dÃ©claration de TP n'est pas enregistrÃ©e, donc pas de statut !!! <br>";
 //		else
 //		{
 //			if (strcasecmp($this->statut,'v') == 0)
-//				return "Validée";
+//				return "ValidÃ©e";
 //			elseif (strcasecmp($this->statut,'r') == 0)
-//				return "Refusée";
+//				return "RefusÃ©e";
 //			elseif (strcasecmp($this->statut,'a') == 0)
 //				return "En attente";
 //			else
 //				echo "DeclarationTP->statutlibelle : le statut n'est pas connu [statut = $this->statut] !!! <br>";
 //		}
 //	}
-	
+
 	function datedebut($date = null)
 	{
 		if (is_null($date))
@@ -146,7 +146,7 @@ WHERE DECLARATIONID=" . $id;
 			$this->datedebut = $this->fonctions->formatdatedb($date);
 		}
 	}
-	
+
 	function datefin($date = null)
 	{
 		if (is_null($date))
@@ -166,7 +166,7 @@ WHERE DECLARATIONID=" . $id;
 			$this->datefin = $this->fonctions->formatdatedb($date);
 		}
 	}
-	
+
 	function datedemande($date = null)
 	{
 		if (is_null($date))
@@ -182,7 +182,7 @@ WHERE DECLARATIONID=" . $id;
 		else
 			$this->datedemande = $this->fonctions->formatdatedb($date);
 	}
-	
+
 	function datestatut($date = null)
 	{
 		if (is_null($date))
@@ -198,7 +198,7 @@ WHERE DECLARATIONID=" . $id;
 		else
 			$this->datestatut = $this->fonctions->formatdatedb($date);
 	}
-	
+
 	function tabtpspartiel($tableauTP = null)
 	{
 		if (is_null($tableauTP))
@@ -211,13 +211,13 @@ WHERE DECLARATIONID=" . $id;
 			else
 				return $this->tabtpspartiel;
 		}
-		else 
+		else
 		{
 			$this->tabtpspartiel = $tableauTP;
 		}
 		//echo "DeclarationTP->initTP : "; print_r($this->tabrtt); echo "<br>";
 	}
-	
+
 	function tabtpspartielhtml($pour_modif = false)
 	{
 		$htmltext = "";
@@ -237,8 +237,8 @@ WHERE DECLARATIONID=" . $id;
 	 			$htmltext = $htmltext . "paire</td>";
 	 		else
 	 			$htmltext = $htmltext . "impaire</td>";
-					
-			for ($indexelement=0 ; $indexelement<10 ; $indexelement++) 
+
+			for ($indexelement=0 ; $indexelement<10 ; $indexelement++)
 			{
 				unset($element);
 				$element = new planningelement($this->dbconnect);
@@ -257,7 +257,7 @@ WHERE DECLARATIONID=" . $id;
 				{
 					$element->type("");
 					$element->info("");
-				} 
+				}
 				$htmltext = $htmltext . $element->html(false,$checkboxname);
 				unset($element);
 			}
@@ -265,7 +265,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 		return $htmltext;
 	}
-	
+
 	function enTP($date = null, $moment = null)
 	{
 		if (is_null($date) or is_null($moment)) {
@@ -285,7 +285,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 
 		$datedb = $this->fonctions->formatdatedb($date);
-		// recupération du numéro du jour ==> 0 dimanche ... 6 Samedi
+		// recupÃ©ration du numÃ©ro du jour ==> 0 dimanche ... 6 Samedi
 		$numerojour = date("w",strtotime($datedb));
 		if ($numerojour == 0)
 		{
@@ -298,7 +298,7 @@ WHERE DECLARATIONID=" . $id;
 			//echo "Samedi ou Dimanche => Donc pas de TP <br>";
 			return false;
 		}
-		// recupération du numéro de la semaine
+		// recupÃ©ration du numÃ©ro de la semaine
 		$numsemaine = date("W",strtotime($datedb));
 		//echo "Numero de la semaine = $numsemaine <br>";
 		$semainepaire = !(bool)($numsemaine % 2);
@@ -312,15 +312,15 @@ WHERE DECLARATIONID=" . $id;
 			//echo "Semaine impaire <br>";
 			$semaineindex = 1;
 		}
-		
+
 		if (strcasecmp($moment,"m")==0)
 			$momentindex = 0;
-		else 
+		else
 			$momentindex = 1;
-			 
-		$index = (($numerojour - 1) * 2) + ($momentindex) + (10 * $semaineindex) ; 
+
+		$index = (($numerojour - 1) * 2) + ($momentindex) + (10 * $semaineindex) ;
 		//echo "date =   $date    moment = $moment    index = $index   this->tabtpspartiel = " . $this->tabtpspartiel . "<br>";
-		//echo "Le caractère= " . substr($this->tabtpspartiel, $index,1) . "<br>";
+		//echo "Le caractÃ¨re= " . substr($this->tabtpspartiel, $index,1) . "<br>";
 		if (substr($this->tabtpspartiel, $index,1) == "1")
 		{
 			//echo "Je return TRUE <br>";
@@ -332,7 +332,7 @@ WHERE DECLARATIONID=" . $id;
 			return false;
 		}
 	}
-	
+
 	function agent()
 	{
 		if (is_null($this->agent))
@@ -357,22 +357,22 @@ WHERE DECLARATIONID=" . $id;
 			$this->agent = $agent;
 		}
 		return $this->agent;
-		
+
 	}
-	
+
 	function store()
 	{
-		
+
 //		echo "DeclarationTP->store : non refaite !!!! <br>";
 //		return false;
-		
+
 		//echo "On teste le nbre de tabrtt = " . count($this->tabrtt) . "<br>";
 		if (strlen($this->tabtpspartiel) != 20) {
 			$errlog = "Le tableau des temps partiels n'est pas initialisé. L'enregistrement est impossible.";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			return $errlog."<br/>";
 		}
-		
+
 		//echo "id est null ==> " . $this->id . "<br>";
 		if (is_null($this->declarationid))
 		{
@@ -423,7 +423,7 @@ WHERE DECLARATIONID=" . $id;
 			if (!is_null($this->anciendebut) or (!is_null($this->ancienfin)))
 			{
 //				echo "###############################<br>";
-//				echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui ne sont plus dans la période de TP #######<br>";
+//				echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui ne sont plus dans la pÃ©riode de TP #######<br>";
 //				echo "########################################<br>";
 //				echo "#### CA NE MARCHE PAS !!!!!!! A VERIFIER !!!!<br>";
 //				echo "###############################<br>";
@@ -444,14 +444,14 @@ WHERE DECLARATIONID=" . $id;
 				{
 					$fin = $this->ancienfin;
 					$timestamp = strtotime($this->fonctions->formatdatedb($this->datefin()));
-					$nvlledatefin = date("Ymd", strtotime("+1days", $timestamp ));  // On passe au jour d'apr�s (donc le lendemain)
+					$nvlledatefin = date("Ymd", strtotime("+1days", $timestamp ));  // On passe au jour d'après (donc le lendemain)
 					//echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "   nvlledatefin = $nvlledatefin <br>";
 					$demandelistefin = $this->demandesliste($nvlledatefin,$this->fonctions->formatdate($fin));
 				}
 				//echo "debut = " . $this->fonctions->formatdate($debut) . "   datedebut = " . $this->datedebut() . "<br>";
 				//echo "fin = " . $this->fonctions->formatdate($fin) . "   datefin = " . $this->datefin() . "<br>";
 				$demandeliste = array_merge((array)$demandelistedebut,(array)$demandelistefin);
-				//echo "demandeliste = "; print_r($demandeliste); echo "<br>"; 
+				//echo "demandeliste = "; print_r($demandeliste); echo "<br>";
 				if (is_array($demandeliste))
 				{
 					foreach ($demandeliste as $key => $demande)
@@ -470,7 +470,7 @@ WHERE DECLARATIONID=" . $id;
 							// #############################################################################
 							// ENVOYER UN MAIL A : L'AGENT + RESPONSABLE DE L'ANCIENNE AFFECTATION + ??????
 							// #############################################################################
-							$pdffilename = $demande->pdf($user->harpegeid()); 
+							$pdffilename = $demande->pdf($user->harpegeid());
 							$agent = $demande->agent();
 							echo "Avant l'envoi du mail à l'agent " . $agent->identitecomplete() . " pour annulation demande (Id=". $demande->id() . ")\n";
 							//echo "Demande -> Statut = " . $demande->statut() ." \n";
@@ -497,7 +497,7 @@ WHERE DECLARATIONID=" . $id;
 							unset($affectation);
 							unset($structure);
 							unset($agent);
-							
+
 							error_log("Modif de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						}
 					}
@@ -506,7 +506,7 @@ WHERE DECLARATIONID=" . $id;
 			if (strcasecmp($this->statut,"r")==0)
 			{
 				//echo "###############################<br>";
-				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associées à cette déclaration de TP #######<br>";
+				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associÃ©es Ã  cette dÃ©claration de TP #######<br>";
 				//echo "###############################<br>";
 				$demandeliste = $this->demandesliste($this->datedebut(),$this->datefin());
 				if (!is_null($demandeliste))
@@ -554,17 +554,17 @@ WHERE DECLARATIONID=" . $id;
 							unset($affectation);
 							unset($structure);
 							unset($agent);
-							
+
 							error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						}
 					}
-					
+
 				}
 			}
 		}
 		return "";
 	}
-	
+
 	function html($pourmodif = FALSE, $structid = NULL)
 	{
 //		echo "DeclarationTP->html : non refaite !!!! <br>";
@@ -596,28 +596,28 @@ WHERE DECLARATIONID=" . $id;
 //			switch ($this->statut())
 //			{
 //				case "v":
-//					$htmltext = $htmltext .  "Validé";
+//					$htmltext = $htmltext .  "ValidÃ©";
 //					break;
 //				case "a":
 //					$htmltext = $htmltext .  "En attente";
 //					break;
 //				case "r":
-//					$htmltext = $htmltext .  "Refusé";
+//					$htmltext = $htmltext .  "RefusÃ©";
 //					break;
 //			}
 		}
 		$htmltext = $htmltext . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple'>";
-		
+
 		$elementliste = array(10);
-		
+
 		//echo "Le tableau des TP = " . $this->tabtpspartiel . "<br>";
  		$htmltext = $htmltext . "<div id='planning'>";
 		$htmltext = $htmltext . "<table class='tableau'>";
 		$htmltext = $htmltext . $this->tabtpspartielhtml();
 		$htmltext = $htmltext ."</table>";
 		$htmltext = $htmltext ."</div>";
-		
+
 		$htmltext = $htmltext . "</td>";
 /*
 		if ($pourmodif)
@@ -630,14 +630,14 @@ WHERE DECLARATIONID=" . $id;
 		$htmltext = $htmltext .  "</tr>";
 		return $htmltext;
 	}
-	
+
 	function pdf($valideurid)
 	{
 //		echo "DeclarationTP->pdf : non refaite !!!! <br>";
 //		return false;
-		
+
 		//echo "Avant le new <br>";
-		//$pdf = new FPDF();		
+		//$pdf = new FPDF();
 		$pdf = new tFPDF();
 		//echo "Avant le define <br>";
 		//if (!defined('FPDF_FONTPATH'))
@@ -660,19 +660,19 @@ WHERE DECLARATIONID=" . $id;
 		//echo "Avant le test statut <br>";
 		$decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
 //		if($this->statut()=='v')
-//			$decision='validée';
+//			$decision='validÃ©e';
 //		else
-//			$decision='refusée';
-		
+//			$decision='refusÃ©e';
+
 		$pdf->Cell(40,10,"La demande de temps partiel que vous avez déposée le " . $this->datedemande() .' a été '.$decision.' le '. $this->datestatut());
 		$pdf->Ln(10);
-		//echo "Avant test quotité <br>";
+		//echo "Avant test quotitÃ© <br>";
 		$pdf->Cell(60,10,'Récapitulatif de votre demande de temps partiel pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
 		$pdf->Ln(10);
 		//$pdf->SetFont('Arial','B',6);
 		$pdf->SetFont('DejaVu','B',6);
-		
-		
+
+
 		$cellheight = 5;
 		$pdf->Cell(20,$cellheight,'',1,0,'L',false);
 		// On affiche les 5 jours de la semaine
@@ -685,7 +685,7 @@ WHERE DECLARATIONID=" . $id;
 		$webcolor = $element->couleur();
 		$rgbarray = $this->fonctions->html2rgb($webcolor);
 		$pdf->SetFillColor($rgbarray[0], $rgbarray[1], $rgbarray[2]);
-		
+
 		$pdf->Ln();
 		$pdf->Cell(20,$cellheight,'Semaine paire',1,0,'L',false);
 		for ($cpt = 0; $cpt <10 ; $cpt++)
@@ -693,11 +693,11 @@ WHERE DECLARATIONID=" . $id;
 			if ($this->tabtpspartiel[$cpt] == 1)
 				$fillcel = true;
 			else
-				$fillcel = false; 
-				 
+				$fillcel = false;
+
 			if ($cpt%2 == 0)
 				$pdf->Cell(10,$cellheight,'','LTB',0,'C',$fillcel);
-			else 
+			else
 				$pdf->Cell(10,$cellheight,'','RTB',0,'C',$fillcel);
 		}
 		$pdf->Ln();
@@ -707,16 +707,16 @@ WHERE DECLARATIONID=" . $id;
 			if ($this->tabtpspartiel[$cpt] == 1)
 				$fillcel = true;
 			else
-				$fillcel = false; 
-				 
+				$fillcel = false;
+
 			if ($cpt%2 == 0)
 				$pdf->Cell(10,$cellheight,'','LTB',0,'C',$fillcel);
-			else 
+			else
 				$pdf->Cell(10,$cellheight,'','RTB',0,'C',$fillcel);
 		}
-		
+
 		$pdf->Ln(15);
-//		$pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel    WE:Week end');
+//		$pdf->Cell(25,5,'TP:Demi-journÃ©e non travaillÃ©e pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
 		$pdfname = '../html/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
@@ -725,7 +725,7 @@ WHERE DECLARATIONID=" . $id;
 		//echo "Nom du PDF = " . $pdfname . "<br>";
 		$pdf->Output($pdfname);
 		return $pdfname;
-		
+
 	}
 
 	function demandesliste($debut_interval,$fin_interval)
@@ -733,8 +733,8 @@ WHERE DECLARATIONID=" . $id;
 		$debut_interval = $this->fonctions->formatdatedb($debut_interval);
 		$fin_interval = $this->fonctions->formatdatedb($fin_interval);
 		$demande_liste = null;
-		
-		$sql = "SELECT DISTINCT DEMANDE.DEMANDEID FROM DEMANDEDECLARATIONTP,DEMANDE WHERE DEMANDEDECLARATIONTP.DECLARATIONID = '" . $this->declarationid . "' 
+
+		$sql = "SELECT DISTINCT DEMANDE.DEMANDEID FROM DEMANDEDECLARATIONTP,DEMANDE WHERE DEMANDEDECLARATIONTP.DECLARATIONID = '" . $this->declarationid . "'
   				 AND DEMANDEDECLARATIONTP.DEMANDEID = DEMANDE.DEMANDEID
 		       AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($debut_interval) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($debut_interval) . "')
 					OR (DATEFIN >= '" . $this->fonctions->formatdatedb($fin_interval) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($fin_interval) . "')
@@ -750,7 +750,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "declarationTP->demandesliste : Il n'y a pas de demande de congé/absence pour ce TP " . $this->declarationid . "<br>";
+			//echo "declarationTP->demandesliste : Il n'y a pas de demande de congÃ©/absence pour ce TP " . $this->declarationid . "<br>";
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -761,10 +761,10 @@ WHERE DECLARATIONID=" . $id;
 			$demande_liste[$demande->id()] = $demande;
 			unset($demande);
 		}
-		//echo "declarationTP->demandesliste : demande_liste = "; print_r($demande_liste); echo "<br>"; 
+		//echo "declarationTP->demandesliste : demande_liste = "; print_r($demande_liste); echo "<br>";
 		return $demande_liste;
 	}
-	
-}	
+
+}
 
 ?>

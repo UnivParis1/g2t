@@ -1,5 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr"> 
+<!DOCTYPE html > 
+<html lang="fr"> 
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
 <?php
@@ -10,8 +10,8 @@
 	$fonctions = new fonctions($dbcon);
 	
 	// when using a reverse proxy, HTTP_X_FORWARDED_HOST is handled by phpCAS, but it can't know the case proxy is https but real server is http
-	$_SERVER['HTTPS'] = true;
-	$_SERVER['SERVER_PORT'] = 443;
+	//$_SERVER['HTTPS'] = true;
+	//$_SERVER['SERVER_PORT'] = 443;
 	
 	// Parametres pour connexion CAS
 	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");

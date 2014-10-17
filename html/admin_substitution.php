@@ -3,9 +3,9 @@
 	require_once('CAS.php');
 	require_once("./class/fonctions.php");
 	require_once('./includes/dbconnection.php');
-	
+
 	$fonctions = new fonctions($dbcon);
-	
+
 	// Parametres pour connexion CAS
 	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
 	$CAS_PORT=443;
@@ -16,10 +16,10 @@
 	phpCAS::setNoCasServerValidation();
 	// Recuperation de l'uid
 	phpCAS::forceAuthentication();
-	
+
 	$uid=phpCAS::getUser();
 	//echo "UID de l'agent est : " . $uid . "<br>";
-	
+
 	// Initialisation de l'utilisateur
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
@@ -59,7 +59,7 @@
 	$restriction=array("$LDAP_CODE_AGENT_ATTR");
 	$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 	$info=ldap_get_entries($con_ldap,$sr);
-	//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+	//echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 	$adminuser = new agent($dbcon);
 	$adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
 	if (!$adminuser->estadministrateur())
@@ -68,17 +68,17 @@
 		header('Location: index.php');
 		exit();
 	}
-	
-	
+
+
 	$user = new agent($dbcon);
 	$user->load($userid);
-	
+
 
 	require ("includes/menu.php");
 	//echo '<html><body class="bodyhtml">';
 
 	//echo "POST = "; print_r($_POST); echo "<br>";
-	
+
 ?>
 
 <br>
@@ -93,11 +93,11 @@
   	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
 
 
-  
+
 	</script>
 
 
-<br> 
+<br>
 <!--  <input type='text' name='userid' >
  -->
 <input type='submit' value='Se faire passer pour...'>

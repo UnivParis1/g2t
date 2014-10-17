@@ -3,9 +3,9 @@
 	require_once('CAS.php');
 	require_once("./class/fonctions.php");
 	require_once('./includes/dbconnection.php');
-	
+
 	$fonctions = new fonctions($dbcon);
-	
+
 	// Parametres pour connexion CAS
 	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
 	$CAS_PORT=443;
@@ -16,10 +16,10 @@
 	phpCAS::setNoCasServerValidation();
 	// Recuperation de l'uid
 	phpCAS::forceAuthentication();
-	
+
 	$uid=phpCAS::getUser();
 	//echo "UID de l'agent est : " . $uid . "<br>";
-	
+
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
 	else
@@ -30,7 +30,7 @@
 		header('Location: index.php');
 		exit();
 	}
-	
+
 	require_once("./class/agent.php");
 	require_once("./class/structure.php");
 	require_once("./class/solde.php");
@@ -44,7 +44,7 @@
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
-		
+
 	$user = new agent($dbcon);
 	$user->load($userid);
 
@@ -56,7 +56,7 @@
 	$mode = $_POST["mode"];
 	if ($mode == "")
 		$mode = "resp";
-		
+
 	$previous = "";
 	if (isset($_POST["previous"]))
 		$previous = $_POST["previous"];
@@ -64,7 +64,7 @@
 		$previous = 1;
 	else
 		$previous = 0;
-	
+
 	if (strcasecmp($mode,"resp")==0)
 	{
 		$structureliste = $user->structrespliste();
@@ -75,7 +75,7 @@
 			$annerecherche = ($fonctions->anneeref()-$previous);
 			$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche.$fonctions->debutperiode()),$fonctions->formatdate(($annerecherche+1).$fonctions->finperiode()));
 			//$agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
-			
+
 			echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 			echo "<input type='hidden' name='userpdf' value='no'>";
 			//$htmltext = $htmltext .    "<input type='hidden' name='previous' value='" . $_POST["previous"]  . "'>";
@@ -86,11 +86,11 @@
 			{
 				foreach ($agentliste as $agentkey => $agent)
 				{
-					$listeagent = $listeagent . "," . $agent->harpegeid(); 
+					$listeagent = $listeagent . "," . $agent->harpegeid();
 				}
 			}
 			//echo "listeagent = $listeagent <br>";
-			echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";			
+			echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
 			echo "<input type='hidden' name='typepdf' value='listedemande'>";
 			echo "</form>";
 			echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
@@ -108,8 +108,8 @@
 					echo $agent->soldecongeshtml(($fonctions->anneeref()-$previous),TRUE);
 					echo $agent->demandeslistehtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),$structure->id(),FALSE);
 					echo $agent->planninghtml(($fonctions->anneeref()-$previous) . $fonctions->debutperiode(), ($fonctions->anneeref()+1-$previous) . $fonctions->finperiode(),FALSE,FALSE);
-	
-					// Ligne de séparation entre les agents
+
+					// Ligne de sÃ©paration entre les agents
 					echo "<hr>";
 				}
 			}
@@ -139,19 +139,19 @@
 			{
 				foreach ($agentliste as $agentkey => $agent)
 				{
-					$listeagent = $listeagent . "," . $agent->harpegeid(); 
+					$listeagent = $listeagent . "," . $agent->harpegeid();
 				}
 			}
 			//echo "listeagent = $listeagent <br>";
 			//echo "agentliste Apres ="; print_r($agentliste); echo "<br>";
-			
-			
-			echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";			
+
+
+			echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
 			echo "<input type='hidden' name='typepdf' value='listedemande'>";
 			echo "</form>";
 			echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
 			echo "<br>";
-				
+
 			if (is_array($agentliste))
 			{
 				foreach ($agentliste as $agentkey => $agent)
@@ -166,13 +166,13 @@
 			}
 			echo "<br>";
 		}
-		
+
 	}
 
 ?>
 
-<!-- 
-	<a href=".">Retour à la page d'accueil</a>
---> 
+<!--
+	<a href=".">Retour Ã  la page d'accueil</a>
+-->
 </body></html>
 

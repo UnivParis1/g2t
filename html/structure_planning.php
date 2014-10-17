@@ -3,9 +3,9 @@
 	require_once('CAS.php');
 	require_once("./class/fonctions.php");
 	require_once('./includes/dbconnection.php');
- 
+
 	$fonctions = new fonctions($dbcon);
-	
+
 	// Parametres pour connexion CAS
 	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
 	$CAS_PORT=443;
@@ -16,10 +16,10 @@
 	phpCAS::setNoCasServerValidation();
 	// Recuperation de l'uid
 	phpCAS::forceAuthentication();
-	 
+
 	$uid=phpCAS::getUser();
 	//echo "UID de l'agent est : " . $uid . "<br>";
- 
+
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
 	else
@@ -44,14 +44,14 @@
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
-		
+
 	$user = new agent($dbcon);
 	$user->load($userid);
 
 	//echo "<br><br><br>"; print_r($_POST); echo "<br>";
-	
+
 	require ("includes/menu.php");
-	
+
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	if (isset($_POST["indexmois"]))
@@ -72,12 +72,12 @@
 	if ($indexmois <  $moisdebutperiode)
 		$annee ++;
 	//echo "annee (apres) =  $annee <br>";
-	
+
 	if (isset($_POST["mode"]))
 		$mode = $_POST["mode"]; // Mode = resp ou agent
 	else
 		$mode = "resp";
-	
+
 	echo "<form name='select_mois' method='post'>";
 	echo "<center><select name='indexmois'>";
 	for ($index=1 ; $index <= 12 ; $index ++)
@@ -94,7 +94,7 @@
 	echo "</form>";
 
 	if (strcasecmp($mode,"resp")==0)
-	{ 
+	{
 		$structureliste = $user->structrespliste();
 		foreach ($structureliste as $structkey => $structure)
 		{
@@ -102,7 +102,7 @@
 			{
 				$sousstructliste = $structure->structurefille();
 				$structureliste = array_merge($structureliste, (array)$sousstructliste);
-				// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+				// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
 			}
 		}
 		//echo "StructureListe = "; print_r($structureliste); echo "<br>";
@@ -121,7 +121,7 @@
 			{
 				$sousstructliste = $structure->structurefille();
 				$structureliste = array_merge($structureliste, (array)$sousstructliste);
-				// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+				// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
 			}
 		}
 		//echo "StructureListe = "; print_r($structureliste); echo "<br>";
