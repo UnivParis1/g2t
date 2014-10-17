@@ -35,7 +35,7 @@
 				$parent_struct = $ligne_element[3];
 				$resp_struct = $ligne_element[4];
 				echo "code_struct = $code_struct   nom_long_struct=$nom_long_struct   nom_court_struct=$nom_court_struct   parent_struct=$parent_struct   resp_struct=$resp_struct \n";
-	
+
 				$sql = "SELECT * FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
 				$query = mysql_query($sql);
 				$erreur_requete=mysql_error();

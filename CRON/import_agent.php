@@ -40,7 +40,7 @@
 				echo "harpegeid = $harpegeid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
 				$sql = sprintf("INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')",
 				$fonctions->my_real_escape_utf8($harpegeid),$fonctions->my_real_escape_utf8($civilite),$fonctions->my_real_escape_utf8($nom),$fonctions->my_real_escape_utf8($prenom),$fonctions->my_real_escape_utf8($adressemail),$fonctions->my_real_escape_utf8($typepop));
-				
+
 				mysql_query($sql);
 				$erreur_requete=mysql_error();
 				if ($erreur_requete!="")
@@ -50,9 +50,9 @@
 				}
 			}
 		}
-		fclose($fp);	
+		fclose($fp);
 	}
-	
+
 	// Ajout manuel de l'agent CRON-G2T avec un harpegeid = -1
 	$sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-1','','CRON','G2T','noreply-g2t@univ-paris1.fr','')";
 	mysql_query ($sql,$dbcon);
