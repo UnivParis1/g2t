@@ -12,7 +12,7 @@
 	require_once("../html/class/planning.php");
 	require_once("../html/class/planningelement.php");
 	require_once("../html/class/declarationTP.php");
-	require_once("../html/class/fpdf.php");
+	require_once("../html/class/tfpdf/tfpdf.php");
 	require_once("../html/class/cet.php");
 	require_once("../html/class/affectation.php");
 	require_once("../html/class/complement.php");
@@ -60,7 +60,7 @@
 			$tablisteagent = $struct->agentlist($datedebut, $datefin, 'n'); 
 			if (!is_null($tablisteagent))
 			{
-				$pdf=new FPDF();
+				$pdf=new tFPDF();
 				$pdf->Open();
 				foreach ($tablisteagent as $key => $agent)
 				{

@@ -12,7 +12,7 @@
 	require_once("../html/class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("../html/class/fpdf.php");
+	require_once("../html/class/tfpdf/tfpdf.php");
 	require_once("../html/class/cet.php");
 	require_once("../html/class/affectation.php");
 	require_once("../html/class/complement.php");

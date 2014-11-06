@@ -24,7 +24,7 @@ class fonctions {
 		{
 			$errlog = "Fonctions->construct : La connexion à la base de donnée est NULL !!!";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 	}
 
@@ -39,7 +39,7 @@ class fonctions {
 		if (is_null($date)) {
 			$errlog = "Fonctions->formatdatedb : La date est NULL !!!";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		else
 		{
@@ -64,7 +64,7 @@ class fonctions {
 			{
 				$errlog = "Fonctions->formatdatedb : Le format de la date est inconnu [Date=$date] !!";
 				echo $errlog."<br/>";
-				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 			}
 		}
 	}
@@ -79,7 +79,7 @@ class fonctions {
 		if (is_null($date)) {
 			$errlog = "Fonctions->formatdate : La date est NULL !!!";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		else
 		{
@@ -104,7 +104,7 @@ class fonctions {
 			{
 				$errlog = "Fonctions->formatdate : Le format de la date est inconnu [Date=$date] !!";
 				echo $errlog."<br/>";
-				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 			}
 		}
 	}
@@ -122,13 +122,13 @@ class fonctions {
 		if ($erreur != "") {
 			$errlog = "Fonctions->jourferier : " . $erreur;
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		if (mysql_num_rows($query) == 0)
 		{
 			$errlog = "Fonctions->jourferier : Pas de jour férié défini dans la base";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		$jrs_feries = ";";
 		while ($result = mysql_fetch_row($query))
@@ -178,7 +178,7 @@ class fonctions {
 		if (is_null($index)) {
 			$errlog = "Fonctions->nomjourparindex : L'index du jour est NULL";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		else
 		{
@@ -207,13 +207,13 @@ class fonctions {
 		if ($erreur != "") {
 			$errlog = "Fonctions->listeabsence : " . $erreur;
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		if (mysql_num_rows($query) == 0)
 		{
 			$errlog = "Fonctions->listeabsence : Pas de type d'absences défini dans la base";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -238,13 +238,13 @@ class fonctions {
 		if ($erreur != "") {
 			$errlog = "Fonctions->listecategorieabsence : " . $erreur;
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		if (mysql_num_rows($query) == 0)
 		{
 			$errlog = "Fonctions->listecategorieabsence : Pas de catégorie définie dans la base";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		while ($result = mysql_fetch_row($query))
 		{
@@ -288,13 +288,13 @@ class fonctions {
 		if ($erreur != "") {
 			$errlog = "Fonctions->debutperiode : " . $erreur;
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		if (mysql_num_rows($query) == 0)
 		{
 			$errlog = "Fonctions->debutperiode : Pas de début de période défini dans la base ==> On force à '0901' (1sept).";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 			return "0901";
 		}
 		$result = mysql_fetch_row($query);
@@ -314,13 +314,13 @@ class fonctions {
 		if ($erreur != "") {
 			$errlog = "Fonctions->finperiode : " . $erreur;
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog)); 
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog)); 
 		}
 		if (mysql_num_rows($query) == 0)
 		{
 			$errlog = "Fonctions->finperiode : Pas de fin de période définie dans la base ==> On force à '0831' (31aout).";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 			return "0831";
 		}
 		$result = mysql_fetch_row($query);
@@ -355,7 +355,7 @@ class fonctions {
 		else {
 			$errlog = "Fonctions->anneeref : La date " . $date . " est invalide !!!";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 	}
 
@@ -382,7 +382,7 @@ class fonctions {
 		{
 			$errlog = "Fonctions->estunconge : Pas de congé '" . $typeconge . "' défini dans la base.";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		$result = mysql_fetch_row($query);
 		// Si il n'y a pas de référence à une année ==> Ce n'est pas un congé ==> C'est une absence car pas de gestion annuelle
@@ -411,13 +411,13 @@ class fonctions {
 		if ($erreur != "") {
 			$errlog = "Fonctions->liredbconstante : " . $erreur;
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		if (mysql_num_rows($query) == 0)
 		{
 			$errlog = "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas defini dans la base.";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
 		}
 		else
 		{
@@ -511,7 +511,7 @@ class fonctions {
  		if ($erreur != "") {
  			$errlog = "Fonction->legende : " . $erreur;
  			echo $errlog."<br/>";
- 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+ 			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
  		}
  		while ($result = mysql_fetch_row($query))
  		{

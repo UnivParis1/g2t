@@ -70,7 +70,7 @@ WHERE DECLARATIONID=" . $id;
 	function declarationTPid()
 	{
 		if (is_null($this->declarationid)) {
-			$errlog = "DeclarationTP->id : L'Id n'est pas dÃ©fini !!!";
+			$errlog = "DeclarationTP->id : L'Id n'est pas défini !!!";
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
@@ -83,7 +83,7 @@ WHERE DECLARATIONID=" . $id;
 		if (is_null($affectationid))
 		{
 			if (is_null($this->affectationid)) {
-				$errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas dÃ©fini !!!";
+				$errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas défini !!!";
 				echo $errlog."<br/>";
 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
@@ -99,7 +99,7 @@ WHERE DECLARATIONID=" . $id;
 		if (is_null($statut))
 		{
 			if (is_null($this->statut)) {
-				$errlog = "DeclarationTP->statut : Le statut n'est pas dÃ©fini !!!";
+				$errlog = "DeclarationTP->statut : Le statut n'est pas défini !!!";
 				echo $errlog."<br/>";
 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
@@ -113,13 +113,13 @@ WHERE DECLARATIONID=" . $id;
 //	function statutlibelle()
 //	{
 //		if (is_null($this->declarationid))
-//			echo "DeclarationTP->statutlibelle : La dÃ©claration de TP n'est pas enregistrÃ©e, donc pas de statut !!! <br>";
+//			echo "DeclarationTP->statutlibelle : La déclaration de TP n'est pas enregistrée, donc pas de statut !!! <br>";
 //		else
 //		{
 //			if (strcasecmp($this->statut,'v') == 0)
-//				return "ValidÃ©e";
+//				return "Validée";
 //			elseif (strcasecmp($this->statut,'r') == 0)
-//				return "RefusÃ©e";
+//				return "Refusée";
 //			elseif (strcasecmp($this->statut,'a') == 0)
 //				return "En attente";
 //			else
@@ -285,7 +285,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 
 		$datedb = $this->fonctions->formatdatedb($date);
-		// recupÃ©ration du numÃ©ro du jour ==> 0 dimanche ... 6 Samedi
+		// recupération du numéro du jour ==> 0 dimanche ... 6 Samedi
 		$numerojour = date("w",strtotime($datedb));
 		if ($numerojour == 0)
 		{
@@ -298,7 +298,7 @@ WHERE DECLARATIONID=" . $id;
 			//echo "Samedi ou Dimanche => Donc pas de TP <br>";
 			return false;
 		}
-		// recupÃ©ration du numÃ©ro de la semaine
+		// recupération du numéro de la semaine
 		$numsemaine = date("W",strtotime($datedb));
 		//echo "Numero de la semaine = $numsemaine <br>";
 		$semainepaire = !(bool)($numsemaine % 2);
@@ -320,7 +320,7 @@ WHERE DECLARATIONID=" . $id;
 
 		$index = (($numerojour - 1) * 2) + ($momentindex) + (10 * $semaineindex) ;
 		//echo "date =   $date    moment = $moment    index = $index   this->tabtpspartiel = " . $this->tabtpspartiel . "<br>";
-		//echo "Le caractÃ¨re= " . substr($this->tabtpspartiel, $index,1) . "<br>";
+		//echo "Le caractère= " . substr($this->tabtpspartiel, $index,1) . "<br>";
 		if (substr($this->tabtpspartiel, $index,1) == "1")
 		{
 			//echo "Je return TRUE <br>";
@@ -506,7 +506,7 @@ WHERE DECLARATIONID=" . $id;
 			if (strcasecmp($this->statut,"r")==0)
 			{
 				//echo "###############################<br>";
-				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associÃ©es Ã  cette dÃ©claration de TP #######<br>";
+				//echo "###### WARNING !!!!! Il faut penser a supprimer les demandes qui sont associées à cette déclaration de TP #######<br>";
 				//echo "###############################<br>";
 				$demandeliste = $this->demandesliste($this->datedebut(),$this->datefin());
 				if (!is_null($demandeliste))
@@ -596,13 +596,13 @@ WHERE DECLARATIONID=" . $id;
 //			switch ($this->statut())
 //			{
 //				case "v":
-//					$htmltext = $htmltext .  "ValidÃ©";
+//					$htmltext = $htmltext .  "Validé";
 //					break;
 //				case "a":
 //					$htmltext = $htmltext .  "En attente";
 //					break;
 //				case "r":
-//					$htmltext = $htmltext .  "RefusÃ©";
+//					$htmltext = $htmltext .  "Refusé";
 //					break;
 //			}
 		}
@@ -660,13 +660,13 @@ WHERE DECLARATIONID=" . $id;
 		//echo "Avant le test statut <br>";
 		$decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
 //		if($this->statut()=='v')
-//			$decision='validÃ©e';
+//			$decision='validée';
 //		else
-//			$decision='refusÃ©e';
-
+//			$decision='refusée';
+		
 		$pdf->Cell(40,10,"La demande de temps partiel que vous avez déposée le " . $this->datedemande() .' a été '.$decision.' le '. $this->datestatut());
 		$pdf->Ln(10);
-		//echo "Avant test quotitÃ© <br>";
+		//echo "Avant test quotité <br>";
 		$pdf->Cell(60,10,'Récapitulatif de votre demande de temps partiel pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
 		$pdf->Ln(10);
 		//$pdf->SetFont('Arial','B',6);
@@ -716,7 +716,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 
 		$pdf->Ln(15);
-//		$pdf->Cell(25,5,'TP:Demi-journÃ©e non travaillÃ©e pour un temps partiel    WE:Week end');
+//		$pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
 		$pdfname = '../html/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
@@ -750,7 +750,7 @@ WHERE DECLARATIONID=" . $id;
 		}
 		if (mysql_num_rows($query) == 0)
 		{
-			//echo "declarationTP->demandesliste : Il n'y a pas de demande de congÃ©/absence pour ce TP " . $this->declarationid . "<br>";
+			//echo "declarationTP->demandesliste : Il n'y a pas de demande de congé/absence pour ce TP " . $this->declarationid . "<br>";
 		}
 		while ($result = mysql_fetch_row($query))
 		{

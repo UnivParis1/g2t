@@ -9,7 +9,7 @@
 
 	echo "Début de l'import des absences HARPEGE " . date("d/m/Y H:i:s") . "\n" ;
 
-	// On vide la table des absences HARPEGE pour la recharger complÃ¨tement
+	// On vide la table des absences HARPEGE pour la recharger complètement
 	$sql = "DELETE FROM HARPABSENCE";
 	mysql_query($sql);
 	$erreur_requete=mysql_error();
