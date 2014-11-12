@@ -1119,7 +1119,8 @@ AND DEMANDE.STATUT='v'";
 					{
 						//echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ")  Debut = " . $declarationTP->datedebut() . "   Fin = " . $declarationTP->datefin() . "<br>";
 						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
-						$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
+						//$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
+						$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($debut_interval, $fin_interval));
 					}
 				}
 			}
