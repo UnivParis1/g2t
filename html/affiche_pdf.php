@@ -20,7 +20,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 //	require_once("./class/fpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
@@ -57,12 +57,9 @@
 			//echo "Avant le split <br>";
 			$tablisteagent = preg_split("/,/",$listeagent);
 			//print_r($tablisteagent); echo "<br>";
-//			$pdf=new FPDF();
-			$pdf=new tFPDF();
+			$pdf=new TCPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
-			$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-			$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 			foreach ($tablisteagent as $key => $agentid)
 			{
 				if ($agentid <> "")
@@ -75,6 +72,7 @@
 					$agent->demandeslistepdf($anneeref . $fonctions->debutperiode(),($anneeref+1) . $fonctions->finperiode(),$pdf,FALSE);
 				}
 			}
+			ob_end_clean();
 			$pdf->Output();
 		}
 		else

@@ -335,21 +335,18 @@ class cet {
 		//echo "Apres le load...<br>";
 		
 		//$pdf=new FPDF();
-		$pdf=new tFPDF();
+		$pdf=new TCPDF();
 		//echo "Apres le new <br>";
 		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
+		$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
-		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		
 		//echo "Apres image <br>";
-		//$pdf->SetFont('Arial','B',16);
-		$pdf->SetFont('DejaVu','B',16);
+		$pdf->SetFont('pdfatimesb', '', 16, '', true);
 		$pdf->Ln(70);
-		//$pdf->SetFont('Arial','B',12);
-		$pdf->SetFont('DejaVu','B',12);
+		$pdf->SetFont('pdfatimesb', '', 12, '', true);
 
 		$agent=new agent($this->dbconnect);
 		$agent->load($this->agentid);
@@ -395,9 +392,10 @@ class cet {
 		$pdf->Ln(10);
 		
 		//echo "Nom du fichier....<br>";
-		$pdfname = './pdf/modification_cet_num'.$this->idtotal(). '_' . date("Ydm")  . '.pdf';
+		$pdfname = dirname(dirname(__FILE__)).'/pdf/modification_cet_num'.$this->idtotal(). '_' . date("Ydm")  . '.pdf';
 		//echo "Avant le output... pdfname =   $pdfname <br>";
-		$pdf->Output($pdfname);
+		
+		$pdf->Output($pdfname,'F');
 		//echo "Avant le return. <br>";
 		return $pdfname;
 		

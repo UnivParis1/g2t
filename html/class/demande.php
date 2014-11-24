@@ -614,16 +614,14 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	{
 		//echo "Debut du PDF <br>";
 		//$pdf=new FPDF();
-		$pdf=new tFPDF();
+		$pdf=new TCPDF();
+		$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 		//echo "Apres le new <br>";
 		//if (!defined('FPDF_FONTPATH')) 
 		//	define('FPDF_FONTPATH','fpdffont/');
-		$pdf->Open();
+		//$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
-		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
-		$pdf->AddFont('DejaVu','I','DejaVuSansCondensed-Oblique.ttf',true);
 		
 //		if (is_null($this->structureid) or $this->structureid=="")
 //		{
@@ -634,13 +632,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 //			//echo "Apres le load de la structure du responsable... <br>";
 //		}
 		
-		//$pdf->SetFont('Arial','B',16);
-		$pdf->SetFont('DejaVu','B',16);
+		$pdf->SetFont('pdfatimesb', '', 16, '', true);
 		$pdf->Ln(70);
 //		$pdf->Cell(60,10,'Composante : '. $this->structure()->parentstructure()->nomlong() .' ('. $this->structure()->parentstructure()->nomcourt() .')' );
 //		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',12);
-		$pdf->SetFont('DejaVu','B',12);
+		$pdf->SetFont('pdfatimesb', '', 12, '', true);
 
 		$agent = $this->agent();
 		$affectationliste = $agent->affectationliste($this->datedebut, $this->datefin);
@@ -661,16 +657,14 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 //		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',12);
-		$pdf->SetFont('DejaVu','B',12);
+		$pdf->SetFont('pdfatimesb', '', 12, '', true);
 		if ($this->fonctions->estunconge($this->typeabsenceid))
 			$typelib = " de congé ";
 		else 
 			$typelib = " d'autorisation d'absence ";
 		$pdf->Cell(60,10,'Demande' . $typelib .  'N°'. $this->id() .' de ' . $this->agent()->civilite() . " " . $this->agent()->nom() . " " . $this->agent()->prenom() );
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',12);
-		$pdf->SetFont('DejaVu','B',12);
+		$pdf->SetFont('pdfatimesb', '', 12, '', true);
 		$decision = strtolower($this->fonctions->demandestatutlibelle($this->statut()));
 		
 //		if($this->statut()=='v')
@@ -691,8 +685,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Ln(10);
 		
 		
-		//$pdf->SetFont('Arial','B',10);
-		$pdf->SetFont('DejaVu','B',10);
+		$pdf->SetFont('pdfatimesb', '', 10, '', true);
 		$pdf->Cell(40,10,'Date de dépot : '. $this->date_demande());
 		$pdf->Ln(10);
 		$pdf->Cell(40,10,'Date de validation : '.$this->datestatut());
@@ -710,22 +703,19 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$pdf->Cell(40,10,'Motif du refus : ' . str_replace("''", "'", $this->motifrefus()));
 		}
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',12);
-		$pdf->SetFont('DejaVu','B',12);
+		$pdf->SetFont('pdfatimesb', '', 12, '', true);
 		$pdf->Ln(10);
 		$pdf->Cell(25,10,'');
 		$pdf->Cell(60,10,'Solde en cours');
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','I',9);
-		$pdf->SetFont('DejaVu','I',9);
+		$pdf->SetFont('pdfatimesi', '', 9, '', true);
 		$pdf->Cell(25,10,'');
 		$pdf->Cell(70,7,'Type de congé',1);
 		$pdf->Cell(25,7,'Droit acquis',1);
 		$pdf->Cell(25,7,'Droit pris',1);
 		$pdf->Cell(25,7,'Solde actuel',1);
 		$pdf->Ln();
-		//$pdf->SetFont('Arial','B',9);
-		$pdf->SetFont('DejaVu','B',9);
+		$pdf->SetFont('pdfatimesb', '', 9, '', true);
 		$pdf->Cell(25,10,'');
 
 		$tabsolde = $agent->soldecongesliste($this->fonctions->anneeref());
@@ -738,8 +728,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				$pdf->Cell(25,7,(string)($solde->droitpris()),1);
 				$pdf->Cell(25,7,(string)($solde->solde()),1);
 				$pdf->Ln();
-				//$pdf->SetFont('Arial','B',9);
-				$pdf->SetFont('DejaVu','B',9);
+				$pdf->SetFont('pdfatimesb', '', 9, '', true);
 				$pdf->Cell(25,10,'');
 			}
 		}
@@ -752,10 +741,10 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		
 		
 		//$pdf->Output();
-		$pdfname = '../html/pdf/demande_num'.$this->id().'_' . date("YmdHis")  . '.pdf';
+		$pdfname = dirname(dirname(__FILE__)).'/pdf/demande_num'.$this->id().'_' . date("YmdHis")  . '.pdf';
 		//$pdfname = sys_get_temp_dir() . '/demande_num'.$this->id().'.pdf';
 		//echo "Nom du PDF = " . $pdfname . "<br>";
-		$pdf->Output($pdfname);
+		$pdf->Output($pdfname, 'F');
 		return $pdfname;
 		
 	}

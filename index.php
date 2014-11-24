@@ -33,7 +33,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -48,7 +48,7 @@
 	
 	if (is_null($userid) or $userid == "")
 	{
-		//echo "L'agent n'est pas pass� en param�tre.... R�cup�ration de l'agent � partir du ticket CAS <br>";
+		//echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
 		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
 		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
 		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
@@ -62,10 +62,10 @@
 		$restriction=array("$LDAP_CODE_AGENT_ATTR");
 		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 		$info=ldap_get_entries($con_ldap,$sr);
-		//echo "Le num�ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+		//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 		if (!$user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
 		{
-			echo "<br><font color=#FF0000>Vous n'�tes pas authoris� � vous connecter � cette application...</font>";
+			echo "<br><font color=#FF0000>Vous n'êtes pas authorisé à vous connecter à cette application...</font>";
 			return;
 		}
 		$_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
@@ -78,7 +78,7 @@
 	{
 		if (!$user->load($userid))
 		{
-			echo "<br><font color=#FF0000>Vous n'�tes pas authoris� � vous connecter � cette application...</font>";
+			echo "<br><font color=#FF0000>Vous n'êtes pas authorisé à vous connecter à cette application...</font>";
 			return;
 		}
 	}

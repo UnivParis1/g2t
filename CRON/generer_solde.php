@@ -1,5 +1,8 @@
 <?php
 
+	define('K_PATH_IMAGES', dirname(dirname(__FILE__)).'/html/images/');
+	define('K_PATH_CACHE', dirname(dirname(__FILE__)).'/html/pdf/');
+
 	require_once("../html/class/fonctions.php");
 	require_once('../html/includes/dbconnection.php');
 	
@@ -12,12 +15,11 @@
 	require_once("../html/class/planning.php");
 	require_once("../html/class/planningelement.php");
 	require_once("../html/class/declarationTP.php");
-	require_once("../html/class/tfpdf/tfpdf.php");
+	require_once("../html/class/tcpdf/tcpdf.php");
 	require_once("../html/class/cet.php");
 	require_once("../html/class/affectation.php");
 	require_once("../html/class/complement.php");
 	
-
 	//		Recherche de tous les services avec un gestionnaire
 	// 		Pour chaque service => Récupération des agents du service
 	//		Génération du PDF => Sauvegarde 
@@ -60,15 +62,17 @@
 			$tablisteagent = $struct->agentlist($datedebut, $datefin, 'n'); 
 			if (!is_null($tablisteagent))
 			{
-				$pdf=new tFPDF();
+				$pdf=new TCPDF();
 				$pdf->Open();
+				$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
+				$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
 				foreach ($tablisteagent as $key => $agent)
 				{
 					echo "Agent = " . $agent->identitecomplete() . "\n";
 					$agent->soldecongespdf($anneeref, FALSE,$pdf,TRUE);
 					$agent->demandeslistepdf($anneeref . $fonctions->debutperiode(),($anneeref+1) . $fonctions->finperiode(),$pdf,FALSE);
 				}
-				$filename= dirname(__FILE__) . '/../html/pdf/solde_' . $struct->nomcourt() . '_' . date('Ymd') . ".pdf";
+				$filename= dirname(dirname(__FILE__)) . '/html/pdf/solde_' . $struct->nomcourt() . '_' . date('Ymd') . ".pdf";
 				$pdf->Output($filename,'F');   // F = file
 				$gest = $struct->gestionnaire();
 				$cronmail->sendmail($gest , 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(),"Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du ". date("d/m/Y") .".\n",$filename);

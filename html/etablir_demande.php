@@ -42,7 +42,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -408,7 +408,7 @@
 		if ($msg_erreur <> "" or $datefausse)
 		{
 			echo "<P style='color: red'>" . $msg_erreur . " </P>";
-			error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msg_erreur);
+			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msg_erreur));
 			//echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider  <br>";
 		}
 		elseif (!$datefausse)
@@ -461,11 +461,11 @@
 				else
 					$msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s).";
 				echo "<P style='color: green'>".$msgstore."</P>";
-				error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msgstore);
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msgstore));
 			}
 			else {
 				$msgstore = "Votre demande n'a pas été enregistrée... ==> MOTIF : ".  $resultat;
-				error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msgstore);
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msgstore));
 				echo "<P style='color: red'>".$msgstore."</P>";
 			}
 		}

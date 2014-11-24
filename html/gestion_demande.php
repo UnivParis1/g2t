@@ -40,7 +40,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -156,7 +156,7 @@
 					$agent = $demande->agent();
 					$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
 					//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-					error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
+					error_log($fonctions->stripAccents("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut())));
 					echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
 				}
 			}

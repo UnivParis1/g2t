@@ -641,23 +641,20 @@ class structure {
 	{
 		//echo "Avant le new PDF <br>";
 		//$pdf=new FPDF();
-		$pdf=new tFPDF();
+		$pdf=new TCPDF();
 		//define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
-		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
+		$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
 		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-		//$pdf->SetFont('Arial','B',15);
-		$pdf->SetFont('DejaVu','B',15);
+		$pdf->SetFont('pdfatimesb', '', 15, '', true);
 		$pdf->Ln(15);
 		$pdf->Cell(60,10,'Service : '. $this->nomlong().' ('.$this->nomcourt() . ')' );
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Planning du mois de : '. $this->fonctions->nommois("01/".$mois_annee_debut) . " " . substr($mois_annee_debut, 3));
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',11);
-		$pdf->SetFont('DejaVu','B',11);
+		$pdf->SetFont('pdfatimesb', '', 11, '', true);
 		$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 		$pdf->Ln(10);
 	
@@ -674,8 +671,7 @@ class structure {
 		{
  			if ($titre_a_ajouter)
  			{
-				//$pdf->SetFont('Arial','B',8);
-				$pdf->SetFont('DejaVu','B',8);
+				$pdf->SetFont('pdfatimesb', '', 8, '', true);
 				$pdf->Cell(60,5,"",1,0,'C');
 				for ($index=1; $index<=count($planningservice[$agentid]->planning())/2; $index++)
 				{
@@ -695,8 +691,7 @@ class structure {
 			$agent->load($agentid);
 			//echo "l'agent $agentid est chargé ... <br>";
 			$pdf->Ln(5);
-			//$pdf->SetFont('Arial','B',8);
-			$pdf->SetFont('DejaVu','B',8);
+			$pdf->SetFont('pdfatimesb', '', 8, '', true);
 			$pdf->Cell(60,5,$agent->nom() . " " . $agent->prenom(),1,0,'C');
 			//echo "Avant chargement des elements <br>";
 			$listeelement = $planning->planning();
@@ -714,8 +709,7 @@ class structure {
 	
 		/////MISE EN PLACE DES LEGENDES DU PLANNING
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',7);
-		$pdf->SetFont('DejaVu','B',7);
+		$pdf->SetFont('pdfatimesb', '', 7, '', true);
 		$pdf->SetTextColor(0);
 		//////Mise en place de la légende couleurs pour les congés
 	
@@ -724,6 +718,7 @@ class structure {
 		//echo "Apres legende <br>";
 	
 		$pdf->Ln(8);
+		ob_end_clean();
 		$pdf->Output();
 		// $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
 	

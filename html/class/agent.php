@@ -362,7 +362,7 @@ AND DEMANDE.STATUT='v'";
 //		$header  .= "From: " . $this->adressemail . "\r\n";
 		$header  .= "From: " . $this->prenom() . " " . $this->nom() . "<" . $this->adressemail  . ">\r\n";
 		$header  .= "MIME-Version: 1.0\r\n";
-		$header .= "Content-Type: multipart/mixed; boundary=\"$boundary\"\r\n";
+		$header .= "Content-Type: multipart/mixed; charset=\"utf-8\"; boundary=\"$boundary\"\r\n";
 		$header .= "\r\n";
 		//--------------------------------------------------
 		// Construction du message proprement dit
@@ -380,7 +380,7 @@ AND DEMANDE.STATUT='v'";
 		$msg .= "Content-Transfer-Encoding:8bit\r\n";
 		$msg .= "\r\n";
 		$msg .= "Bonjour,<br><br>";
-		$msg .= nl2br(htmlentities("$message",ENT_QUOTES,"ISO8859-15",false)) ."<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
+		$msg .= nl2br(htmlentities("$message",ENT_QUOTES,"UTF-8",false)) ."<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
 		
 		//$msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 		$msg .= "\r\n";
@@ -713,20 +713,19 @@ AND DEMANDE.STATUT='v'";
 		if (is_null($pdf))
 		{
 			//$pdf=new FPDF();
-			$pdf=new tFPDF();
+			$pdf=new TCPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
+			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$closeafter = TRUE;
-			$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-			$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		}
 		//echo "Apres le addpage <br>";
 		if ($header == TRUE)
 		{
+			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$pdf->AddPage('L');
-			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-			//$pdf->SetFont('Arial','B',15);
-			$pdf->SetFont('DejaVu','B',15);
+			$pdf->Image(dirname(dirname(__FILE__)).'/images/logo_papeterie.png',10,5,60,20);
+			$pdf->SetFont('pdfatimesb', '', 15, '', true);
 			$pdf->Ln(15);
 
 			$old_structid="";
@@ -750,13 +749,11 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
-			//$pdf->SetFont('Arial','B',11);
-			$pdf->SetFont('DejaVu','B',11);
+			$pdf->SetFont('pdfatimesb', '', 11, '', true);
 			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		//$pdf->SetFont('Arial','',8);
-		$pdf->SetFont('DejaVu','',8);
+		$pdf->SetFont('pdfatimes', '', 8, '', true);
 		$pdf->Ln(5);
 		
 		if (!$infoagent)
@@ -803,6 +800,7 @@ AND DEMANDE.STATUT='v'";
 		$pdf->Cell(50,5,$totaldemandeattente . "",1,0,'C');
 		
 		$pdf->Ln(8);
+		//ob_end_clean();
 		if ($closeafter == TRUE)
 			$pdf->Output();
 	}
@@ -1009,20 +1007,19 @@ AND DEMANDE.STATUT='v'";
 		if (is_null($pdf))
 		{
 			//$pdf=new FPDF();
-			$pdf=new tFPDF();
+			$pdf=new TCPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
+			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$closeafter = TRUE;
-			$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-			$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		}
 		if ($header == TRUE)
 		{
 			$pdf->AddPage('L');
 			//echo "Apres le addpage <br>";
+			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('DejaVu','B',15);
-			//$pdf->SetFont('Arial','B',15);
+			$pdf->SetFont('pdfatimesb', '', 15, '', true);
 			$pdf->Ln(15);
 			foreach ($affectationliste as $key => $affectation)
 			{
@@ -1036,13 +1033,11 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,"Période du " . $this->fonctions->formatdate($datedebut) ." au " . $this->fonctions->formatdate($datefin));
 			$pdf->Ln(10);
-			//$pdf->SetFont('Arial','B',11);
-			$pdf->SetFont('DejaVu','B',11);
+			$pdf->SetFont('pdfatimesb', '', 11, '', true);
 			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		//$pdf->SetFont('Arial','',8);
-		$pdf->SetFont('DejaVu','',8);
+		$pdf->SetFont('pdfatimes', '', 8, '', true);
 		
 		$headertext = "Tableau récapitulatif des demandes - Congés pris entre " . $this->fonctions->formatdate($datedebut) . " et ";
 		if (date("Ymd")>$datefin)
@@ -1086,6 +1081,7 @@ AND DEMANDE.STATUT='v'";
 			}
 		}
 		$pdf->Ln(8);
+		//ob_end_clean();
 		if ($closeafter == TRUE)
 			$pdf->Output();
 	}
@@ -1345,7 +1341,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		$erreur=mysql_error();
 		if ($erreur != "") {
 			echo "Agent->affichecommentairecongehtml : " . $erreur . "<br>";
-			error_log(basename(__FILE__)." ".getdate()." Agent->affichecommentairecongehtml : " . $erreur);
+			error_log(basename(__FILE__)." Agent->affichecommentairecongehtml : " . $erreur);
 		}
 		$htmltext = "";
 		$premiercomment = TRUE;
@@ -1390,7 +1386,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		if ($erreur != "")
 		{
 			$message = "$erreur";
-			error_log(basename(__FILE__)." ".getdate()." ".$erreur);
+			error_log(basename(__FILE__)." ".$erreur);
 		}
 		
 	}

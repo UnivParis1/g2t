@@ -40,7 +40,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -136,7 +136,7 @@
 						// On force $msg_erreur à "" car on se moque de savoir quel est l'erreur
 						$msg_erreur = "";
 						echo "Il n'y a pas de CET <br>";
-						error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : Il n'y a pas de CET");
+						error_log(basename(__FILE__)." uid : ".$agentid." : Il n'y a pas de CET");
 						unset ($cet);
 						$cet = new cet($dbcon);
 						$cet->agentid($agentid);
@@ -243,14 +243,14 @@
 		{
 			$errlog = "Je ne sais pas ce que je fais ici => Ni un retrait, ni un ajout !!!!!";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+			error_log(basename(__FILE__)." ".$errlog);
 		}
 	}
 	
 	if ($msg_erreur != "")
 	{
 		echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
-		error_log(basename(__FILE__)." ".getdate()." ".$msg_erreur);
+		error_log(basename(__FILE__)." ".$msg_erreur);
 		$msg_erreur = "";
 	}
 		
@@ -376,23 +376,23 @@
 			// Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
 			$cet = null;
 			echo "<p style='color: red'>" . $msg_erreur . "</p>";
-			error_log(basename(__FILE__)." ".getdate()." ".$msg_erreur);
+			error_log(basename(__FILE__)." ".$msg_erreur);
 		}
 		if ($msg_bloquant != "") {
 			$errlog = "Impossible de saisir un CET pour cet agent.";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+			error_log(basename(__FILE__)." ".$errlog);
 		}
 		
 		if ($nbrejoursdispo > 0 ) {
 			$errlog = "Vous avez le droit de mettre $nbrejoursdispo jour(s) dans le CET de l'agent.";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+			error_log(basename(__FILE__)." ".$errlog);
 		}
 		else {
 			$errlog = "Vous n'avez pas le droit d'ajouter de jours dans le CET de l'agent (nombre de jours disponibles = $nbrejoursdispo).";
 			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".getdate()." ".$errlog);
+			error_log(basename(__FILE__)." ".$errlog);
 		}
 		
 		echo "<br>";

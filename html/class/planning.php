@@ -640,16 +640,13 @@ WHERE HARPEGEID = '" . $agentid . "'
 		
 		//echo "Apres le load <br>";
 		//$pdf=new FPDF();
-		$pdf=new tFPDF();
-		//define('FPDF_FONTPATH','fpdffont/');
+		$pdf=new TCPDF();
+		$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 		//$pdf->Open();
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
 		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
-		$pdf->SetFont('DejaVu','B',15);
-		//$pdf->SetFont('Arial','B',15);
+		$pdf->SetFont('pdfatimesb', '', 15, '', true);
 		$pdf->Ln(15);
 
 		$affectationliste = $agent->affectationliste($datedebut, $datefin);
@@ -665,8 +662,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Planning de  : '. $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom());
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',11);
-		$pdf->SetFont('DejaVu','B',10);
+		$pdf->SetFont('pdfatimesb', '', 10, '', true);
 		$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 		$pdf->Ln(10);
 
@@ -719,8 +715,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		/////MISE EN PLACE DES LEGENDES DU PLANNING
 
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',7);
-		$pdf->SetFont('DejaVu','B',7);
+		$pdf->SetFont('pdfatimesb', '', 7, '', true);
 		$pdf->SetTextColor(0);
 		//////Mise en place de la légende couleurs pour les congés
 
@@ -729,6 +724,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		//echo "Apres legende <br>";
 
 		$pdf->Ln(8);
+		ob_end_clean();
 		$pdf->Output();
 		// $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
 

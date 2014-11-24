@@ -479,14 +479,14 @@ WHERE DECLARATIONID=" . $id;
 							$affectation = new affectation($this->dbconnect);
 							if (!$affectation->load($this->affectationid))
 							{
-								error_log(basename(__FILE__)." ".getdate()." "."Modif de TP => Impossible de charger l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." Modif de TP => Impossible de charger l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de l'affectation\n";
 							$structure = new structure($this->dbconnect);
 							if (!$structure->load($affectation->structureid()))
 							{
-								error_log(basename(__FILE__)." ".getdate()." "."Modif de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." Modif de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de la structure\n";
@@ -536,14 +536,14 @@ WHERE DECLARATIONID=" . $id;
 							$affectation = new affectation($this->dbconnect);
 							if (!$affectation->load($this->affectationid))
 							{
-								error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Impossible de charger l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." Suppr de TP => Impossible de charger l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de l'affectation\n";
 							$structure = new structure($this->dbconnect);
 							if (!$structure->load($affectation->structureid()))
 							{
-								error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
+								error_log(basename(__FILE__)." Suppr de TP => Impossible de charger la structure " . $affectation->structureid() ." dans l'affectation " . $this->affectationid);
 								continue;
 							}
 							//echo "Apres chargement de la structure\n";
@@ -555,7 +555,7 @@ WHERE DECLARATIONID=" . $id;
 							unset($structure);
 							unset($agent);
 
-							error_log(basename(__FILE__)." ".getdate()." "."Suppr de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
+							error_log(basename(__FILE__)." Suppr de TP => Sauvegarde la demande " . $demande->id() . " avec le statut " . $this->fonctions->demandestatutlibelle($demande->statut()));
 						}
 					}
 
@@ -638,25 +638,22 @@ WHERE DECLARATIONID=" . $id;
 
 		//echo "Avant le new <br>";
 		//$pdf = new FPDF();
-		$pdf = new tFPDF();
+		$pdf = new TCPDF();
+		$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 		//echo "Avant le define <br>";
 		//if (!defined('FPDF_FONTPATH'))
 		//	define('FPDF_FONTPATH','fpdffont/');
 		$pdf->Open();
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
-		$pdf->AddFont('DejaVu','','DejaVuSansCondensed.ttf',true);
-		$pdf->AddFont('DejaVu','B','DejaVuSansCondensed-Bold.ttf',true);
 		//echo "Apres l'image... <br>";
-		//$pdf->SetFont('Arial','B',14);
-		$pdf->SetFont('DejaVu','B',14);
+		$pdf->SetFont('pdfatimesb', '', 14, '', true);
 		$pdf->Ln(50);
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Demande de temps partiel N°'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','',10);
-		$pdf->SetFont('DejaVu','',10);
+		$pdf->SetFont('pdfatimes', '', 10, '', true);
 		//echo "Avant le test statut <br>";
 		$decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
 //		if($this->statut()=='v')
@@ -669,8 +666,7 @@ WHERE DECLARATIONID=" . $id;
 		//echo "Avant test quotité <br>";
 		$pdf->Cell(60,10,'Récapitulatif de votre demande de temps partiel pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
 		$pdf->Ln(10);
-		//$pdf->SetFont('Arial','B',6);
-		$pdf->SetFont('DejaVu','B',6);
+		$pdf->SetFont('pdfatimesb', '', 6, '', true);
 
 
 		$cellheight = 5;
@@ -719,11 +715,11 @@ WHERE DECLARATIONID=" . $id;
 //		$pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel    WE:Week end');
 		$pdf->Ln(10);
 
-		$pdfname = '../html/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
+		$pdfname = dirname(dirname(__FILE__)).'/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
 //		$pdfname = './pdf/declarationTP_num'.$this->declarationTPid().'.pdf';
 		//$pdfname = sys_get_temp_dir() . '/autodeclaration_num'.$this->id().'.pdf';
 		//echo "Nom du PDF = " . $pdfname . "<br>";
-		$pdf->Output($pdfname);
+		$pdf->Output($pdfname, 'F');
 		return $pdfname;
 
 	}

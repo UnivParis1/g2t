@@ -40,7 +40,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -506,7 +506,7 @@
 			echo "<br/>";
 			if ($msg_erreur <> "")  {
 				echo "<P style='color: red'>" . $msg_erreur . " </P>";
-				error_log(basename(__FILE__)." ".getdate()." uid : ".$agentid." : ".$msg_erreur);
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$msg_erreur);
 			}
 			echo "<br/>";
 			

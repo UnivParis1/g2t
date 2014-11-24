@@ -41,7 +41,7 @@
 	require_once("./class/declarationTP.php");
 //	require_once("./class/autodeclaration.php");
 //	require_once("./class/dossier.php");
-	require_once("./class/tfpdf/tfpdf.php");
+	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
 	require_once("./class/complement.php");
@@ -220,7 +220,7 @@
 		
 	echo "<br>";
 	if ($msgerreur != "") {
-		error_log(basename(__FILE__)." ".getdate()." ".$fonctions->stripAccents($msgerreur));
+		error_log(basename(__FILE__)." ".$fonctions->stripAccents($msgerreur));
 		echo "<B><P style='color: red'> $msgerreur </P></B>";
 	}
 	echo "<form name='frm_dossier'  method='post' >";

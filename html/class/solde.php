@@ -6,7 +6,7 @@ class solde {
 	private $typeabsenceid = null;
 	private $droitaquis = null;
 	private $droitpris = null;
-	
+	private $typelibelle = null;
 	private $fonctions = null;
 	
 	function __construct($db)
