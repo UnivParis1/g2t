@@ -722,7 +722,6 @@ AND DEMANDE.STATUT='v'";
 		//echo "Apres le addpage <br>";
 		if ($header == TRUE)
 		{
-			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$pdf->AddPage('L');
 			$pdf->Image(dirname(dirname(__FILE__)).'/images/logo_papeterie.png',10,5,60,20);
 			$pdf->SetFont('pdfatimesb', '', 15, '', true);
@@ -801,7 +800,7 @@ AND DEMANDE.STATUT='v'";
 		
 		$pdf->Ln(8);
 		//ob_end_clean();
-		if ($closeafter == TRUE)
+		if ($closeafter == TRUE) 
 			$pdf->Output();
 	}
 	
@@ -1012,6 +1011,7 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Open();
 			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$closeafter = TRUE;
+			echo 'coucou';
 		}
 		if ($header == TRUE)
 		{
@@ -1083,7 +1083,10 @@ AND DEMANDE.STATUT='v'";
 		$pdf->Ln(8);
 		//ob_end_clean();
 		if ($closeafter == TRUE)
+		{
+			ob_end_clean();
 			$pdf->Output();
+		}
 	}
 	
    /**

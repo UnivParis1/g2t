@@ -20,6 +20,7 @@
 	require_once("../html/class/affectation.php");
 	require_once("../html/class/complement.php");
 	
+
 	//		Recherche de tous les services avec un gestionnaire
 	// 		Pour chaque service => Récupération des agents du service
 	//		Génération du PDF => Sauvegarde 
