@@ -647,13 +647,13 @@ WHERE DECLARATIONID=" . $id;
 		$pdf->AddPage();
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
 		//echo "Apres l'image... <br>";
-		$pdf->SetFont('pdfatimesb', '', 14, '', true);
+		$pdf->SetFont('helvetica', 'B', 14, '', true);
 		$pdf->Ln(50);
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Demande de temps partiel N°'.$this->declarationTPid().' de '. $this->agent()->identitecomplete());
 		$pdf->Ln(10);
-		$pdf->SetFont('pdfatimes', '', 10, '', true);
+		$pdf->SetFont('helvetica', '', 10, '', true);
 		//echo "Avant le test statut <br>";
 		$decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
 //		if($this->statut()=='v')
@@ -666,7 +666,7 @@ WHERE DECLARATIONID=" . $id;
 		//echo "Avant test quotité <br>";
 		$pdf->Cell(60,10,'Récapitulatif de votre demande de temps partiel pour la période du '.$this->datedebut().' au '.$this->datefin().'.');
 		$pdf->Ln(10);
-		$pdf->SetFont('pdfatimesb', '', 6, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 
 
 		$cellheight = 5;

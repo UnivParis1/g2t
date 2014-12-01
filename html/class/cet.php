@@ -344,9 +344,9 @@ class cet {
 		$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
 		
 		//echo "Apres image <br>";
-		$pdf->SetFont('pdfatimesb', '', 16, '', true);
+		$pdf->SetFont('helvetica', 'B', 16, '', true);
 		$pdf->Ln(70);
-		$pdf->SetFont('pdfatimesb', '', 12, '', true);
+		$pdf->SetFont('helvetica', 'B', 12, '', true);
 
 		$agent=new agent($this->dbconnect);
 		$agent->load($this->agentid);

@@ -646,7 +646,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
 		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-		$pdf->SetFont('pdfatimesb', '', 15, '', true);
+		$pdf->SetFont('helvetica', 'B', 15, '', true);
 		$pdf->Ln(15);
 
 		$affectationliste = $agent->affectationliste($datedebut, $datefin);
@@ -662,7 +662,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Planning de  : '. $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom());
 		$pdf->Ln(10);
-		$pdf->SetFont('pdfatimesb', '', 10, '', true);
+		$pdf->SetFont('helvetica', 'B', 10, '', true);
 		$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 		$pdf->Ln(10);
 
@@ -715,7 +715,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 		/////MISE EN PLACE DES LEGENDES DU PLANNING
 
 		$pdf->Ln(10);
-		$pdf->SetFont('pdfatimesb', '', 7, '', true);
+		$pdf->SetFont('helvetica', 'B', 7, '', true);
 		$pdf->SetTextColor(0);
 		//////Mise en place de la légende couleurs pour les congés
 

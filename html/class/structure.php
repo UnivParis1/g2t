@@ -648,13 +648,13 @@ class structure {
 		$pdf->AddPage('L');
 		//echo "Apres le addpage <br>";
 		$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-		$pdf->SetFont('pdfatimesb', '', 15, '', true);
+		$pdf->SetFont('helvetica', 'B', 15, '', true);
 		$pdf->Ln(15);
 		$pdf->Cell(60,10,'Service : '. $this->nomlong().' ('.$this->nomcourt() . ')' );
 		$pdf->Ln(10);
 		$pdf->Cell(60,10,'Planning du mois de : '. $this->fonctions->nommois("01/".$mois_annee_debut) . " " . substr($mois_annee_debut, 3));
 		$pdf->Ln(10);
-		$pdf->SetFont('pdfatimesb', '', 11, '', true);
+		$pdf->SetFont('helvetica', 'B', 11, '', true);
 		$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 		$pdf->Ln(10);
 	
@@ -671,7 +671,7 @@ class structure {
 		{
  			if ($titre_a_ajouter)
  			{
-				$pdf->SetFont('pdfatimesb', '', 8, '', true);
+				$pdf->SetFont('helvetica', 'B', 8, '', true);
 				$pdf->Cell(60,5,"",1,0,'C');
 				for ($index=1; $index<=count($planningservice[$agentid]->planning())/2; $index++)
 				{
@@ -691,7 +691,7 @@ class structure {
 			$agent->load($agentid);
 			//echo "l'agent $agentid est chargé ... <br>";
 			$pdf->Ln(5);
-			$pdf->SetFont('pdfatimesb', '', 8, '', true);
+			$pdf->SetFont('helvetica', 'B', 8, '', true);
 			$pdf->Cell(60,5,$agent->nom() . " " . $agent->prenom(),1,0,'C');
 			//echo "Avant chargement des elements <br>";
 			$listeelement = $planning->planning();
@@ -709,7 +709,7 @@ class structure {
 	
 		/////MISE EN PLACE DES LEGENDES DU PLANNING
 		$pdf->Ln(10);
-		$pdf->SetFont('pdfatimesb', '', 7, '', true);
+		$pdf->SetFont('helvetica', 'B', 7, '', true);
 		$pdf->SetTextColor(0);
 		//////Mise en place de la légende couleurs pour les congés
 	

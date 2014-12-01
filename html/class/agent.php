@@ -724,7 +724,7 @@ AND DEMANDE.STATUT='v'";
 		{
 			$pdf->AddPage('L');
 			$pdf->Image(dirname(dirname(__FILE__)).'/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('pdfatimesb', '', 15, '', true);
+			$pdf->SetFont('helvetica', 'B', 15, '', true);
 			$pdf->Ln(15);
 
 			$old_structid="";
@@ -748,11 +748,11 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
-			$pdf->SetFont('pdfatimesb', '', 11, '', true);
+			$pdf->SetFont('helvetica', 'B', 11, '', true);
 			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		$pdf->SetFont('pdfatimes', '', 8, '', true);
+		$pdf->SetFont('helvetica', '', 8, '', true);
 		$pdf->Ln(5);
 		
 		if (!$infoagent)
@@ -1018,7 +1018,7 @@ AND DEMANDE.STATUT='v'";
 			//echo "Apres le addpage <br>";
 			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('pdfatimesb', '', 15, '', true);
+			$pdf->SetFont('helvetica', 'B', 15, '', true);
 			$pdf->Ln(15);
 			foreach ($affectationliste as $key => $affectation)
 			{
@@ -1032,11 +1032,11 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,"Période du " . $this->fonctions->formatdate($datedebut) ." au " . $this->fonctions->formatdate($datefin));
 			$pdf->Ln(10);
-			$pdf->SetFont('pdfatimesb', '', 11, '', true);
+			$pdf->SetFont('helvetica', 'B', 11, '', true);
 			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		$pdf->SetFont('pdfatimes', '', 8, '', true);
+		$pdf->SetFont('helvetica', '', 8, '', true);
 		
 		$headertext = "Tableau récapitulatif des demandes - Congés pris entre " . $this->fonctions->formatdate($datedebut) . " et ";
 		if (date("Ymd")>$datefin)
