@@ -1011,7 +1011,6 @@ AND DEMANDE.STATUT='v'";
 			$pdf->Open();
 			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$closeafter = TRUE;
-			echo 'coucou';
 		}
 		if ($header == TRUE)
 		{
