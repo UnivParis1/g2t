@@ -149,7 +149,7 @@
 				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			}
 			// date de début antérieure à la période
-			if ($fonctions->formatdatedb($date_debut) < $fonctions->anneeref().$fonctions->debutperiode())
+			if ($fonctions->formatdatedb($date_debut) < ($fonctions->anneeref()-$previous).$fonctions->debutperiode())
 			{
 				$errlog = "La date de début ne doit pas être antérieure au début de la période !!!";
 				$msg_erreur .= $errlog."<br/>";
