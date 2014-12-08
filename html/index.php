@@ -4,30 +4,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
 <?php
 	require_once('CAS.php');
-	require_once("./class/fonctions.php");
-	require_once('./includes/dbconnection.php');
+	include './includes/casconnection.php';
 
-	$fonctions = new fonctions($dbcon);
-	
-	// when using a reverse proxy, HTTP_X_FORWARDED_HOST is handled by phpCAS, but it can't know the case proxy is https but real server is http
-	//$_SERVER['HTTPS'] = true;
-	//$_SERVER['SERVER_PORT'] = 443;
-	
-	// Parametres pour connexion CAS
-	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
-	$CAS_PORT=443;
-	$CAS_PATH=$fonctions->liredbconstante("CASPATH");
-	phpCAS::client(CAS_VERSION_2_0,$CAS_SERVER,$CAS_PORT,$CAS_PATH);
-	//phpCAS::setDebug("D:\Apache\logs\phpcas.log");
-	//      phpCAS::setFixedServiceURL("http://mod11.parc.univ-paris1.fr/ReturnURL.html");
-	phpCAS::setNoCasServerValidation();
-	// Recuperation de l'uid
-	phpCAS::forceAuthentication();
-	 
-	$uid=phpCAS::getUser();
-	//echo "UID de l'agent est : " . $uid . "<br>";
- 
-	
 	require_once("./class/agent.php");
 	require_once("./class/structure.php");
 	require_once("./class/solde.php");

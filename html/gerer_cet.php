@@ -1,25 +1,8 @@
 <?php
 
 	require_once('CAS.php');
-	require_once("./class/fonctions.php");
-	require_once('./includes/dbconnection.php');
-	
-	$fonctions = new fonctions($dbcon);
-	
-	// Parametres pour connexion CAS
-	$CAS_SERVER=$fonctions->liredbconstante("CASSERVER");
-	$CAS_PORT=443;
-	$CAS_PATH=$fonctions->liredbconstante("CASPATH");
-	phpCAS::client(CAS_VERSION_2_0,$CAS_SERVER,$CAS_PORT,$CAS_PATH);
-	//phpCAS::setDebug("D:\Apache\logs\phpcas.log");
-	//      phpCAS::setFixedServiceURL("http://mod11.parc.univ-paris1.fr/ReturnURL.html");
-	phpCAS::setNoCasServerValidation();
-	// Recuperation de l'uid
-	phpCAS::forceAuthentication();
-	
-	$uid=phpCAS::getUser();
-	//echo "UID de l'agent est : " . $uid . "<br>";
-	
+	include './includes/casconnection.php';
+
 	if (isset($_POST["userid"]))
 		$userid = $_POST["userid"];
 	else
@@ -376,7 +359,7 @@
 			// Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
 			$cet = null;
 			echo "<p style='color: red'>" . $msg_erreur . "</p>";
-			error_log(basename(__FILE__)." ".$msg_erreur);
+			error_log(basename(__FILE__)." ".$fonctions->stripAccents($msg_erreur));
 		}
 		if ($msg_bloquant != "") {
 			$errlog = "Impossible de saisir un CET pour cet agent.";
