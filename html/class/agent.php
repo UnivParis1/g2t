@@ -302,7 +302,7 @@ AND DEMANDE.STATUT='v'";
 
 		// $this->fonctions->anneeref() . $this->fonctions->debutperiode()
 		// ($this->fonctions->anneeref()  +1) . $this->fonctions->finperiode()
-		echo "SQL = $sql <br>";
+		//echo "SQL = $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "")
@@ -873,6 +873,7 @@ AND DEMANDE.STATUT='v'";
 	function demandeslistehtml($datedebut,$datefin, $structureid = null, $showlink = true)
 	{
 		$demandeliste = null;
+		$synthesetab = array();
 		$affectationliste = $this->affectationliste($datedebut, $datefin);
 		$affectation = new affectation($this->dbconnect);
 		$declarationTP = new declarationTP($this->dbconnect);
@@ -937,12 +938,37 @@ AND DEMANDE.STATUT='v'";
 	 				$htmltext = $htmltext . "   <td>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</td>";
  					$htmltext = $htmltext . "   <td>" . $demande->motifrefus() . "</td>";
 					$htmltext = $htmltext . "</tr>";
+					if (strcasecmp($demande->statut(),"r")!=0) // Si la demande n'est pas annulée ou refusée
+					{
+						if (isset($synthesetab[$demande->typelibelle()]))
+							$synthesetab[$demande->typelibelle()]=$synthesetab[$demande->typelibelle()]+$demande->nbrejrsdemande();
+						else 
+							$synthesetab[$demande->typelibelle()]=$demande->nbrejrsdemande();
+					}
 				}
 			}
 		}
 		$htmltext = $htmltext .    "</table></center>";
 		$htmltext = $htmltext .    "</div>";
-
+		if (count($demandeliste) > 0)
+		{
+			$htmltext = $htmltext .    "<br>";
+//			$htmltext = $htmltext .    print_r($synthesetab,true);
+			$htmltext = $htmltext .       "<div id='demandeliste'>";
+			$htmltext = $htmltext .       "<center><table class='tableau' >";
+			$htmltext = $htmltext .    "   <tr class='titre'><td colspan=2>Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin) ."</td></tr>";
+			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Droit pris</td></tr>";
+			ksort($synthesetab);
+			foreach ($synthesetab as $key => $nbrejrs)
+			{
+				$htmltext = $htmltext . "<tr class='element'>";
+				$htmltext = $htmltext . "<td>" . $key . "</td>";
+				$htmltext = $htmltext . "<td>" .$nbrejrs . "</td>" ;
+				$htmltext = $htmltext . "</tr>";
+			}
+			$htmltext = $htmltext . "</table></center>";
+			$htmltext = $htmltext . "</div>";
+		}
 		if ($showlink == TRUE)
 		{
 	//		$htmltext = $htmltext .    "<br>";
@@ -971,6 +997,7 @@ AND DEMANDE.STATUT='v'";
 	function demandeslistepdf($datedebut,$datefin, $pdf = NULL, $header = TRUE)
 	{
 		$demandeliste = null;
+		$synthesetab = array();
 		$affectationliste = $this->affectationliste($datedebut, $datefin);
 		$affectation = new affectation($this->dbconnect);
 		$declarationTP = new declarationTP($this->dbconnect);
@@ -1076,10 +1103,48 @@ AND DEMANDE.STATUT='v'";
 					$pdf->Cell(20,5,$this->fonctions->demandestatutlibelle($demande->statut()),1,0,'C');
 					$pdf->Cell(80,5,$demande->motifrefus(),1,0,'C');
 					$pdf->ln(5);
+
+					if (strcasecmp($demande->statut(),"r")!=0) // Si la demande n'est pas annulée ou refusée
+					{
+						if (isset($synthesetab[$demande->typelibelle()]))
+							$synthesetab[$demande->typelibelle()]=$synthesetab[$demande->typelibelle()]+$demande->nbrejrsdemande();
+						else
+							$synthesetab[$demande->typelibelle()]=$demande->nbrejrsdemande();
+					}
 				}
 			}
 		}
+
+		if (count($demandeliste) > 0)
+		{
+			$pdf->Ln(8);
+			$headertext = "Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " et ";
+			if (date("Ymd")>$datefin)
+				$headertext = $headertext. $this->fonctions->formatdate($datefin);
+			else
+				$headertext = $headertext . date("d/m/Y");
+			$pdf->Cell(100,5,$headertext,1,0,'C');
+			$pdf->Ln(5);
+			$pdf->Cell(80,5,"Type de congé",1,0,'C');
+			$pdf->Cell(20,5,"Droit pris",1,0,'C');
+			$pdf->ln(5);
+			ksort($synthesetab);
+			foreach ($synthesetab as $key => $nbrejrs)
+			{
+				$libelledemande = $key;
+				if (strlen($key)>40)
+				{
+					$libelledemande = substr($key,0,40) . "...";
+				}
+				$pdf->Cell(80,5,$libelledemande,1,0,'C');
+				$pdf->Cell(20,5,$nbrejrs,1,0,'C');
+				$pdf->ln(5);
+			}
+		}
+		
 		$pdf->Ln(8);
+		
+		
 		//ob_end_clean();
 		if ($closeafter == TRUE)
 		{
