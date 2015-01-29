@@ -351,7 +351,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->datedebut() . "</td><td class='cellulesimple'>" . $this->datefin() . "</td><td class='cellulesimple'>" . $structure->nomlong() . "</td><td class='cellulesimple'>" . $this->quotite() . "</td></tr>";
 		$htmltext = $htmltext ."</table><br>";
  		$htmltext = $htmltext . "<table class='tableausimple'>";
- 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Statut</td><td class='titresimple'>Répartition du temps partiel</td>";
+ 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Etat de la demande</td><td class='titresimple'>Répartition du temps partiel</td>";
 // 		if ($pour_modif)
 //				$htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
 		$htmltext = $htmltext . "</tr>";

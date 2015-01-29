@@ -918,7 +918,7 @@ AND DEMANDE.STATUT='v'";
 		else
 		{
 			$htmltext = $htmltext .    "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
-			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Statut<td>Motif (obligatoire si le congé est annulé)</td></tr>";
+			$htmltext = $htmltext .    "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Etat de la demande</td><td>Motif (obligatoire si le congé est annulé)</td></tr>";
 			foreach ($demandeliste as $key => $demande)
 			{
 				if ($demande->motifrefus() != "" or strcasecmp($demande->statut(),"r")!=0)
@@ -1080,10 +1080,10 @@ AND DEMANDE.STATUT='v'";
 		{
 			$pdf->Cell(60,5,"Type de congé",1,0,'C');
 			$pdf->Cell(25,5,"Date de dépot",1,0,'C');
-			$pdf->Cell(35,5,"Date de début",1,0,'C');
-			$pdf->Cell(35,5,"Date de fin",1,0,'C');
+			$pdf->Cell(30,5,"Date de début",1,0,'C');
+			$pdf->Cell(30,5,"Date de fin",1,0,'C');
 			$pdf->Cell(20,5,"Nbr de jours",1,0,'C');
-			$pdf->Cell(20,5,"Statut",1,0,'C');
+			$pdf->Cell(30,5,"Etat de la demande",1,0,'C');
 			$pdf->Cell(80,5,"Motif (obligatoire si le congé est annulé)",1,0,'C');
 			$pdf->ln(5);
 			foreach ($demandeliste as $key => $demande)
@@ -1097,10 +1097,10 @@ AND DEMANDE.STATUT='v'";
 					}
 					$pdf->Cell(60,5,$libelledemande,1,0,'C');
 					$pdf->Cell(25,5,$demande->date_demande(),1,0,'C');
-					$pdf->Cell(35,5,$demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()),1,0,'C');
-					$pdf->Cell(35,5,$demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()),1,0,'C');
+					$pdf->Cell(30,5,$demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()),1,0,'C');
+					$pdf->Cell(30,5,$demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()),1,0,'C');
 					$pdf->Cell(20,5,$demande->nbrejrsdemande(),1,0,'C');
-					$pdf->Cell(20,5,$this->fonctions->demandestatutlibelle($demande->statut()),1,0,'C');
+					$pdf->Cell(30,5,$this->fonctions->demandestatutlibelle($demande->statut()),1,0,'C');
 					$pdf->Cell(80,5,$demande->motifrefus(),1,0,'C');
 					$pdf->ln(5);
 
@@ -1343,7 +1343,7 @@ AND DEMANDE.STATUT='v'";
 						{
 							$htmltext = $htmltext .       "<table class='tableausimple' width=100%>";
 							$htmltext = $htmltext .    "   <tr><td class=titresimple colspan=7 align=center ><font color=#BF3021>Tableau des demandes à valider pour " . $this->civilite() . " " .  $this->nom() . " " . $this->prenom() .  "</font></td></tr>";
-							$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
+							$htmltext = $htmltext .    "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Etat de la demande</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
 							$premieredemande = FALSE;
 						}
 						

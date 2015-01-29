@@ -60,6 +60,7 @@
 			$pdf=new TCPDF();
 			//define('FPDF_FONTPATH','fpdffont/');
 			$pdf->Open();
+			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			foreach ($tablisteagent as $key => $agentid)
 			{
 				if ($agentid <> "")
