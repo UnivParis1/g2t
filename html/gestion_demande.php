@@ -113,7 +113,7 @@
 			$motif = "";
 			if (isset($_POST["motif"][$demandeid]))
 				$motif = $_POST["motif"][$demandeid];
-			echo "Motif = $motif";
+			//echo "Motif = $motif";
 			$demande = new demande($dbcon);
 			//echo "cleelement = $cleelement  demandeid = $demandeid  <br>";
 			$demande->load($demandeid);
