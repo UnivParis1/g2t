@@ -12,11 +12,12 @@
         //phpCAS::setDebug("D:\Apache\logs\phpcas.log");
         //      phpCAS::setFixedServiceURL("http://mod11.parc.univ-paris1.fr/ReturnURL.html");
         phpCAS::setNoCasServerValidation();
-        phpCAS::handleLogoutRequests();
+        phpCAS::handleLogoutRequests(false);
         if (!phpCAS::isAuthenticated())
         {
                 // Recuperation de l'uid
                 phpCAS::forceAuthentication();
         }
         $uid=phpCAS::getUser();
+        //echo "uid= $uid <br>";
 ?>
