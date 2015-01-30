@@ -46,6 +46,9 @@
        $nbre_total_jours = 0;
        if (mysql_num_rows($query_aff) != 0) // On a des d'affectations
        {
+       		$datedebaffprec = date('Y-m-d',0);
+       		$datefinaffprec = date('Y-m-d',0);
+       		$duree_aff_ante_periode = 0;
 			while ($result_aff = mysql_fetch_row($query_aff))
 			{
 				if ($result_aff[5]!="0") // Si c'est un contrat
@@ -60,30 +63,77 @@
                     // Si la fin du contrat est vide (0000-00-00) ou si la fin du contrat est postérieur à la fin de période => On force à la fin de période
                     //echo "Convertion date fin affectation : " . $fonctions->formatdatedb($result_aff[2]) . "\n";
                     //echo "Calcul fin période = " .($fonctions->anneeref()+1) . $fonctions->finperiode() . "\n";
-                    if (($result_aff[2]=='0000-00-00') or ($fonctions->formatdatedb($result_aff[2])>($fonctions->anneeref()+1) . $fonctions->finperiode()))
-                       $datefinaff = ($fonctions->anneeref()+1) . $fonctions->finperiode();
+                    if (($result_aff[2]=='0000-00-00') or ($fonctions->formatdatedb($result_aff[2])>($fonctions->anneeref()+2) . $fonctions->finperiode()))
+                       $datefinaff = ($fonctions->anneeref()+2) . $fonctions->finperiode();
 					else
 						$datefinaff = $result_aff[2];
+					$duree_aff = $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
 					//echo "datedebutaff = $datedebutaff    datefinaff = $datefinaff\n";
 					//echo "Numéro de contrat pour $agentid ($agentinfo) = $result_aff[5] Durée (en jours) = " . $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff)   ."\n";
-					$nbre_total_jours += $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
-					//echo "nbre_total_jours = $nbre_total_jours pour $agentid ($agentinfo)\n";
-					if ($nbre_total_jours < 365)
-						$cas_general = false;
-					else
-						$cas_general = true;
+//					echo "datedebutaff = $datedebutaff    datefinaff = $datefinaff\n";
+					if (($datedebutaff != $datedebaffprec) && ($datefinaff != $datefinaffprec))
+					{
+						if ($datedebutaff == date("Y-m-d", strtotime("+1 day", strtotime($datefinaffprec))) ) 
+						{
+							$nbre_total_jours += $duree_aff;
+							if ($fonctions->formatdatedb($datedebutaff) < $date_deb_period)
+								if ($fonctions->formatdatedb($datefinaff) < $date_deb_period)
+									$duree_aff_ante_periode += $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
+								else
+									$duree_aff_ante_periode += $fonctions->nbjours_deux_dates($datedebutaff, $date_deb_period) - 1;
+						}
+						else 
+						{
+							$nbre_total_jours = $duree_aff;
+							$duree_aff_ante_periode = 0;
+							if ($fonctions->formatdatedb($datedebutaff) < $date_deb_period)
+								if ($fonctions->formatdatedb($datefinaff) < $date_deb_period)
+									$duree_aff_ante_periode = $fonctions->nbjours_deux_dates($datedebutaff,$datefinaff);
+								else
+									$duree_aff_ante_periode = $fonctions->nbjours_deux_dates($datedebutaff, $date_deb_period) - 1;
+							if ($nbre_total_jours >= 365)
+								$nbre_jours_manquants = 0;
+							else 
+								if (($fonctions->formatdatedb($datefinaff) >= $date_fin_period))
+									$nbre_jours_manquants = 365;
+						}
+					}
+//					echo "nbre_total_jours = $nbre_total_jours    duree_aff = $duree_aff     duree_aff_ante_periode = $duree_aff_ante_periode     pour $agentid ($agentinfo)\n";
+					if ($fonctions->formatdatedb($datedebutaff) < $date_fin_period && $fonctions->formatdatedb($datefinaff) > $date_deb_period && $cas_general)
+					{
+						if ($duree_aff >= 365 || $duree_aff_ante_periode >= 365 || $nbre_total_jours - $duree_aff >= 365)
+						{
+							$cas_general = true;
+						}
+						else
+						{
+							$cas_general = false;
+							// calcul du nombre de jours manquants pour obtenir une ancienneté d'1 an à partir de la date de début de période
+							$nbre_jours_manquants = 365 - ($nbre_total_jours - $duree_aff) - $fonctions->nbjours_deux_dates($datedebutaff, $date_deb_period) + 1;
+							if ($nbre_jours_manquants < 0)
+								$nbre_jours_manquants = 0;
+							//echo "nbre_jours_manquants = $nbre_jours_manquants \n";
+						}
+					}
 				}
 				else // Si on trouve une affectation sans contrat alors on est dans le cas général
-					$cas_general = true;
+				{
+					// On vérifie qu'il n'y a pas de contrats sur la période avec ancienneté totale consécutive < 1 an
+					if ($cas_general)
+						$cas_general = true;
+//					echo "CARRIERE datedebutaff = $result_aff[1]    datefinaff = $result_aff[2]    \n";
+				}
+				$datefinaffprec = $datefinaff;
+				$datedebaffprec = $datedebutaff;
 			}
        }
 
 		//echo "nbre_total_jours = $nbre_total_jours pour $agentid ($agentinfo)\n";
       $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid'
 		      AND OBSOLETE='N'
-				AND (('$date_deb_period' <= DATEDEBUT AND DATEDEBUT < '$date_fin_period')
-				 OR ('$date_deb_period' < DATEFIN AND DATEFIN <= '$date_fin_period')
-				 OR (DATEDEBUT < '$date_deb_period' AND (DATEFIN > '$date_fin_period' OR DATEFIN = '00000000'))) ORDER BY DATEDEBUT";
+			  AND DATEDEBUT < '$date_fin_period'
+			  AND DATEFIN > '$date_deb_period'
+              ORDER BY DATEDEBUT";
 
 		$query_aff = mysql_query($sql);
 		$erreur_requete=mysql_error();
@@ -108,7 +158,7 @@
 			else
 				$datefinaff = $result[2];
 			//echo "datefinaff = $datefinaff   date_fin_period=$date_fin_period \n";
-			if (($fonctions->formatdatedb($datefinaff)>$fonctions->formatdatedb($date_fin_period)) or ($fonctions->formatdatedb($datefinaff)=='00000000'))
+			if (($fonctions->formatdatedb($datefinaff)>$fonctions->formatdatedb($date_fin_period)) || ($fonctions->formatdatedb($datefinaff)=='00000000'))
 				$datefinaff = $date_fin_period;
 
 			$quotite = $result[3] / $result[4];
@@ -116,8 +166,26 @@
 			if ($cas_general == false)
 			{
 				// 2.5j x 12 mois / 365 j = 0,082j de congés
-				$solde_agent = $solde_agent + (((2.5*12)/365) * $nbre_jour_aff);
-				echo "Pas dans le cas général pour $agentid ($agentinfo) \n";
+				if ($result[5] == "0")
+				{
+					$nbr_jour_cont = 0;
+					$nbre_jours_equ_titu = $nbre_jour_aff;
+				}
+				else
+				{
+					$nbr_jour_cont = min(array($nbre_jour_aff, $nbre_jours_manquants));
+					$nbre_jours_equ_titu = 0;
+					if ($nbr_jour_cont < $nbre_jour_aff)
+						$nbre_jours_equ_titu = $nbre_jour_aff - $nbr_jour_cont;
+				}
+				$solde_agent = $solde_agent + ((((2.5*12)/365) * $nbr_jour_cont) + (($nbr_jrs_offert * $nbre_jours_equ_titu) / $nbre_jour_periode)) * $quotite;
+				echo "Pas dans le cas général pour $agentid ($agentinfo) \n"; 
+				//echo " nbre_jours_manquants = $nbre_jours_manquants \n";
+				if ($nbre_jours_equ_titu > 0 || $nbre_jours_manquants == $nbre_jour_aff)
+					$nbre_jours_manquants = 0;
+				else 
+					if ($nbre_jours_manquants > $nbre_jour_aff)
+						$nbre_jours_manquants -= $nbre_jour_aff;
 			}
 			else
 				$solde_agent = $solde_agent + (($nbr_jrs_offert * $nbre_jour_aff) / $nbre_jour_periode) * $quotite;
