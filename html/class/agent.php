@@ -200,7 +200,7 @@ class agent {
    */
    function estresponsable()
    {
-      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s'",$this->fonctions->my_real_escape_utf8($this->harpegeid));
+      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s' AND DATECLOTURE>=DATE(NOW())",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
@@ -220,7 +220,7 @@ class agent {
    */
 	function estgestionnaire()
    {
-      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s'",$this->fonctions->my_real_escape_utf8($this->harpegeid));
+      $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s' AND DATECLOTURE>=DATE(NOW())",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
@@ -501,7 +501,7 @@ AND DEMANDE.STATUT='v'";
 		if ($this->estresponsable())
 		{
 			//echo "Je suis responsable...<br>";
-			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = '%s'", $this->fonctions->my_real_escape_utf8($this->harpegeid));
+			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = '%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->harpegeid));
 			//echo "sql = " . $sql . "<br>";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
@@ -532,7 +532,7 @@ AND DEMANDE.STATUT='v'";
 		if ($this->estgestionnaire())
 		{
 			//echo "Je suis gestionnaire...<br>";
-			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s'", $this->fonctions->my_real_escape_utf8($this->harpegeid));
+			$sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->harpegeid));
 			//echo "sql = " . $sql . "<br>";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
