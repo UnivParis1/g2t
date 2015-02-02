@@ -206,9 +206,41 @@ class planningelement {
 			$checkboxtext = "";
 		
 		if ($this->moment == 'm')
-			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
+		{
+//			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
+			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+			if (strlen($this->info())!=0) 
+			{
+				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">"; 
+			} 
+			if (strlen($checkboxtext)!=0)
+				$htmltext = $htmltext . $checkboxtext;
+			else
+				$htmltext = $htmltext .  "&nbsp;";
+			if (strlen($this->info())!=0)  
+			{
+				$htmltext = $htmltext . "</span>"; 
+			} 
+			$htmltext = $htmltext  ."</td>";
+		}
 		else
-			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
+		{
+//			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
+			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+			if (strlen($this->info())!=0)
+			{
+				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">";
+			}
+			if (strlen($checkboxtext)!=0)
+				$htmltext = $htmltext . $checkboxtext;
+			else
+				$htmltext = $htmltext . "&nbsp;";
+			if (strlen($this->info())!=0)
+			{
+				$htmltext = $htmltext . "</span>";
+			}
+			$htmltext = $htmltext  ."</td>";
+		}
 /*		
 		if ($this->typeelement == "atten")
 			$htmltext = $htmltext ."</a>";

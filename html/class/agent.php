@@ -930,12 +930,72 @@ AND DEMANDE.STATUT='v'";
 						$libelledemande = substr($demande->typelibelle(),0,40) . "...";
 					}
 					
- 					$htmltext = $htmltext . "   <td>" . $libelledemande . "</td>";
- 					$htmltext = $htmltext . "   <td>" . $demande->date_demande() ."</td>";
- 					$htmltext = $htmltext . "   <td>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
- 					$htmltext = $htmltext . "   <td>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
- 					$htmltext = $htmltext . "   <td>" . $demande->nbrejrsdemande() . "</td>";
-	 				$htmltext = $htmltext . "   <td>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</td>";
+ 					$htmltext = $htmltext . "   <td>";
+ 					if (strlen($demande->commentaire())!=0) 
+ 					{
+ 					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
+ 					} 
+ 					$htmltext = $htmltext . $libelledemande;
+ 					if (strlen($demande->commentaire())!=0)  
+ 					{
+ 					   $htmltext = $htmltext . "</span>"; 
+ 					} 
+ 					$htmltext = $htmltext . "</td>";
+ 					$htmltext = $htmltext . "   <td>";
+ 					if (strlen($demande->commentaire())!=0) 
+ 					{
+ 					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
+ 					} 
+ 					$htmltext = $htmltext . $demande->date_demande();
+ 					if (strlen($demande->commentaire())!=0)  
+ 					{
+ 					   $htmltext = $htmltext . "</span>"; 
+ 					} 
+ 					$htmltext = $htmltext ."</td>";
+ 					$htmltext = $htmltext . "   <td>";
+ 					if (strlen($demande->commentaire())!=0) 
+ 					{
+ 					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
+ 					} 
+ 					$htmltext = $htmltext . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut());
+ 					if (strlen($demande->commentaire())!=0)  
+ 					{
+ 					   $htmltext = $htmltext . "</span>"; 
+ 					} 
+ 					$htmltext = $htmltext . "</td>";
+ 					$htmltext = $htmltext . "   <td>";
+ 					if (strlen($demande->commentaire())!=0) 
+ 					{
+ 					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
+ 					} 
+ 					$htmltext = $htmltext . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin());
+ 					if (strlen($demande->commentaire())!=0)  
+ 					{
+ 					   $htmltext = $htmltext . "</span>"; 
+ 					} 
+ 					$htmltext = $htmltext . "</td>";
+ 					$htmltext = $htmltext . "   <td>";
+ 					if (strlen($demande->commentaire())!=0) 
+ 					{
+ 					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
+ 					} 
+ 					$htmltext = $htmltext . $demande->nbrejrsdemande();
+ 					if (strlen($demande->commentaire())!=0)  
+ 					{
+ 					   $htmltext = $htmltext . "</span>"; 
+ 					} 
+ 					$htmltext = $htmltext . "</td>";
+	 				$htmltext = $htmltext . "   <td>";
+ 					if (strlen($demande->commentaire())!=0) 
+ 					{
+ 					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
+ 					} 
+ 					$htmltext = $htmltext . $this->fonctions->demandestatutlibelle($demande->statut());
+ 					if (strlen($demande->commentaire())!=0)  
+ 					{
+ 					   $htmltext = $htmltext . "</span>"; 
+ 					} 
+ 					$htmltext = $htmltext . "</td>";
  					$htmltext = $htmltext . "   <td>" . $demande->motifrefus() . "</td>";
 					$htmltext = $htmltext . "</tr>";
 					if (strcasecmp($demande->statut(),"r")!=0) // Si la demande n'est pas annulée ou refusée
