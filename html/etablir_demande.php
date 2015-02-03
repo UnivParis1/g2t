@@ -241,7 +241,7 @@
 		//alert("planning_click => " + date + "  "  + moment);
 		document.getElementById("date_debut").value = date;
 		
-		if (strcasecmp(moment,"m")==0)
+		if (moment.toLowerCase() =="m")
 			document.frm_demande_conge["deb_mataprem"][0].checked = true;
 		else
 			document.frm_demande_conge["deb_mataprem"][1].checked = true;
@@ -252,7 +252,7 @@
 		//alert("planning_click => " + date + "  "  + moment);
 		document.getElementById("date_fin").value = date;
 		
-		if (strcasecmp(moment,"m")==0)
+		if (moment.toLowerCase() =="m")
 			document.frm_demande_conge["fin_mataprem"][0].checked = true;
 		else
 			document.frm_demande_conge["fin_mataprem"][1].checked = true;
