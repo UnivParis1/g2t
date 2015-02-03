@@ -71,6 +71,8 @@
 				$numcontrat = $ligne_element[2];
 				$datedebut = $ligne_element[3];
 				$datefin = $ligne_element[4];
+				if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) 
+					$datefin = "9999-12-31";
 				$datemodif = $ligne_element[5];
 				$structureid = $ligne_element[6];
 				$numquotite = $ligne_element[7];
@@ -216,6 +218,12 @@
 							// Si on a modifié la durée de l'affectation
 							// Alors on doit modifier la durée de la declaration de TP à 100% 
 							//echo "datedebut = $datedebut   affectation->datedebut() = " . $affectation->datedebut() . "   datefin = $datefin   affectation->datefin() = " . $affectation->datefin() . "\n";
+							
+							//echo "datefin = $datefin length(datefin) = " . strlen($datefin)  ."  et Affectation->Datefin=" . $affectation->datefin() . "\n";
+							//if (is_null($datefin)) echo "datefin est null   "; else echo "datefin NOT null   ";
+							//if (is_null($affectation->datefin())) echo "affectation->datefin() est null   "; else echo "affectation->datefin() NOT null   ";
+							//echo "\n";
+							
 							if (($fonctions->formatdatedb($datedebut) != $fonctions->formatdatedb($affectation->datedebut())) 
 						      or ($fonctions->formatdatedb($datefin) != $fonctions->formatdatedb($affectation->datefin())))
 						   {
