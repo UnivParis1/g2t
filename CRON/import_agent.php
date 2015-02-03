@@ -33,8 +33,8 @@
 				$ligne_element = explode("#",$ligne);
 				$harpegeid = $ligne_element[0];
 				$civilite = $ligne_element[1];
-				$nom = $ligne_element[2];
-				$prenom = $ligne_element[3];
+				$nom = str_replace("\'", "'", $ligne_element[2]);
+				$prenom = str_replace("\'", "'", $ligne_element[3]);
 				$adressemail = $ligne_element[4];
 				$typepop = $ligne_element[5];
 				echo "harpegeid = $harpegeid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
