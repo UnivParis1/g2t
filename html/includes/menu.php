@@ -119,6 +119,48 @@
 <body class="bodyhtml"> 
 
 <?php 
+	// On vérifie que la personne connectée (la vraie personne avec le compte LDAP) est administrateur de l'appli
+	// On n'utilise pas la variable $user car dans le cas de la subtitution (se faire passer pour...) on ne serait plus admin
+	$adminuser = new agent($dbcon);
+	if (!isset($_SESSION['phpCAS']['harpegeid']))
+	{
+		$uid=phpCAS::getUser();
+		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
+		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
+		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
+		$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
+		$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
+		$con_ldap=ldap_connect($LDAP_SERVER);
+		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+		$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
+		$filtre="(uid=$uid)";
+		$dn=$LDAP_SEARCH_BASE;
+		$restriction=array("$LDAP_CODE_AGENT_ATTR");
+		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+		$info=ldap_get_entries($con_ldap,$sr);
+		$_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+		//echo "Je viens de set le param - menu.php<br>";
+	}
+	$adminuser->load($_SESSION['phpCAS']['harpegeid']);
+	//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+	
+	
+	// Si on est en mode "MAINTENANCE"
+	if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'),'o')==0)
+	{
+		if ($adminuser->estadministrateur()) // Si un administrateur est connecté
+		{
+			echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIVE -- APPLICATION EN MAINTENANCE !!!</B></U></FONT></CENTER></P><BR>";
+		}
+		else // C'est un utilisateur simple => Affichage de la page de maintenance
+		{
+			echo "<img width=144 height=79 src='https://ent-data.univ-paris1.fr/esup/canal/maintenance/maintenance.gif' align=left hspace=12>";
+			echo "L'application de gestion des congés est en maintenance, elle sera bientôt à nouveau en ligne.<br>Veuillez nous excuser pour la gêne occasionnée.";
+			echo "</body></html>";
+			die();
+		}
+	}
+	
 	if ($user->harpegeid() != $_SESSION['phpCAS']['harpegeid'])
 		echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT></CENTER></P><BR>";
 ?>
@@ -450,30 +492,6 @@
 		</ul>
 <?php
 	}
-	// On vérifie que la personne connectée (la vraie personne avec le compte LDAP) est administrateur de l'appli
-	// On n'utilise pas la variable $user car dans le cas de la subtitution (se faire passer pour...) on ne serait plus admin
-	$adminuser = new agent($dbcon);
-	if (!isset($_SESSION['phpCAS']['harpegeid']))
-	{
-		$uid=phpCAS::getUser();
-		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
-		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
-		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
-		$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
-		$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
-		$con_ldap=ldap_connect($LDAP_SERVER);
-		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-		$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
-		$filtre="(uid=$uid)";
-		$dn=$LDAP_SEARCH_BASE;
-		$restriction=array("$LDAP_CODE_AGENT_ATTR");
-		$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
-		$info=ldap_get_entries($con_ldap,$sr);
-		$_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-		//echo "Je viens de set le param - menu.php<br>";
-	}
-	$adminuser->load($_SESSION['phpCAS']['harpegeid']);
-	//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 	if ($adminuser->estadministrateur())
 	{
 ?>
