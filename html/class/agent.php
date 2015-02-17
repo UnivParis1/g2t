@@ -782,7 +782,14 @@ AND DEMANDE.STATUT='v'";
 		foreach ((array)$soldeliste as $key => $tempsolde)
 		{
 			$pdf->Cell(75,5,$tempsolde->typelibelle(),1,0,'C');
-			$pdf->Cell(30,5,$tempsolde->droitaquis() . "",1,0,'C');
+
+			$textdroitaquis = $tempsolde->droitaquis() . "";
+			if (strcmp(substr($tempsolde->typeabsenceid(), 0,3), 'ann')==0) // Si c'est un congé annuel
+			{
+				if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3,2))) // On regarde si il y a une demande de congés bonifiés
+					$textdroitaquis = $textdroitaquis . " (C. BONIF.)";
+			}
+			$pdf->Cell(30,5,$textdroitaquis,1,0,'C');
 			$pdf->Cell(30,5,$tempsolde->droitpris() . "",1,0,'C');
 			$pdf->Cell(30,5,$tempsolde->solde() . "",1,0,'C');
 			$pdf->Cell(50,5,$tempsolde->demandeenattente() . "",1,0,'C');
@@ -836,8 +843,14 @@ AND DEMANDE.STATUT='v'";
 			foreach ($soldecongesliste as $key => $tempsolde)
 			{
 				$htmltext = $htmltext . "      <tr class='element'>";
-	      	$htmltext = $htmltext . "         <td>" . $tempsolde->typelibelle() . "</td>";
-				$htmltext = $htmltext . "         <td>" . $tempsolde->droitaquis() ."</td>";
+	      		$htmltext = $htmltext . "         <td>" . $tempsolde->typelibelle() . "</td>";
+				$htmltext = $htmltext . "         <td>" . $tempsolde->droitaquis();
+				if (strcmp(substr($tempsolde->typeabsenceid(), 0,3), 'ann')==0) // Si c'est un congé annuel
+				{
+					if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3,2)))  // On regarde si il y a une demande de congés bonifiés
+						$htmltext = $htmltext . " (C. BONIF.)";
+				}
+				$htmltext = $htmltext ."</td>";
 				$htmltext = $htmltext . "         <td>" . $tempsolde->droitpris() . "</td>";
 				$htmltext = $htmltext . "         <td>" . $tempsolde->solde() ."</td>";
 				$htmltext = $htmltext . "         <td>" . $tempsolde->demandeenattente() ."</td>";
@@ -1515,6 +1528,28 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 			$message = "$erreur";
 			error_log(basename(__FILE__)." ".$erreur);
 		}
+		
+	}
+	
+	function aunedemandecongesbonifies($anneeref)
+	{
+		$demande=null;
+		$debutperiode = $this->fonctions->formatdatedb($anneeref . $this->fonctions->debutperiode());
+		$finperiode = $this->fonctions->formatdatedb(($anneeref+1) . $this->fonctions->finperiode());
+		$sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='" . $this->harpegeid ."' AND HARPTYPE='CONGE_BONIFIE' AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
+		$query = mysql_query($sql, $this->dbconnect);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			error_log(basename(__FILE__)." ".$erreur_requete);
+		if (mysql_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
+		{
+			$resultcongbonif = mysql_fetch_row($query);
+			$demande = new demande($this->dbconnect);
+			$demande->datedebut($resultcongbonif[1]);
+			$demande->datefin($resultcongbonif[2]);
+			$demande->type('harp');
+		}
+		return $demande;
 		
 	}
 	

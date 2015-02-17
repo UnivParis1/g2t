@@ -26,8 +26,8 @@
 	while ($result = mysql_fetch_row($query_agent))
 	{
        // !!!!!!! ATTENTION : Les 2 lignes suivantes permettent de ne tester qu'un seul dossier !!!!
-       //if ($result[0]!='3008')
-       //	continue;
+       //if ($result[0]!='8823')
+       //		continue;
        // !!!!!!! FIN du test d'un seul dossier !!!!
 		
        $agentid=$result[0];
@@ -203,7 +203,24 @@
 
 			echo "apres traitement : $solde_agent \n";
 		}
-
+		
+		
+		// On vérifie si une demande de congé bonifié débute dans la période
+		$debutperiode = $fonctions->anneeref(). $fonctions->debutperiode();
+		$finperiode = ($fonctions->anneeref()+1) . $fonctions->finperiode(); 
+		$sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='$agentid' AND HARPTYPE='CONGE_BONIFIE' AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
+		$query = mysql_query($sql);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			echo "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE => $erreur_requete \n";
+		if (mysql_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
+		{
+			$resultcongbonif = mysql_fetch_row($query);
+			$solde_agent = 0;
+			echo "L'agent $agentid ($agentinfo) a une demande de congés bonifiés (du " . $resultcongbonif[1] . " au " . $resultcongbonif[2] . ") => Solde à 0 \n";
+		}
+		
+		
 		$typeabsenceid = "ann" . substr($fonctions->anneeref(),2,2);
 		$sql = "SELECT HARPEGEID,TYPEABSENCEID FROM SOLDE WHERE HARPEGEID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
 		$query = mysql_query($sql);
