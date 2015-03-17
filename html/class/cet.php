@@ -302,7 +302,7 @@ class cet {
 			$complement = new complement($this->dbconnect);
 			$complement->harpegeid($this->agentid);
 			$complement->complementid('DEBUTCET');
-			if (!$this->fonctions->verifiedate($this->datedebut))
+			if (!$this->fonctions->verifiedate($this->datedebut()))
 			{
 				//echo "CET->Store : Date début n'est pas une date => " . $this->datedebut() . "<br>";
 				$this->datedebut = date("Ymd");
