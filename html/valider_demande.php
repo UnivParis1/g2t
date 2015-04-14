@@ -99,12 +99,16 @@
 			}
 		} 
 	}
+
+	echo "Changez l'état de chacune des demandes en \"Validée\" ou \"Refusée\", puis enregistrez les modifications en cliquant sur le bouton \"Valider\" <br>Laissez l'état des demandes à \"En attente\" si vous ne souhaitez pas faire de modification.<br><U>Attention :</U> La saisie du motif est obligatoire dans le cas d'un refus.<br><br>";
+	
 	
 	if ($user->estresponsable() and (strcasecmp($mode,"resp")==0))
 	{
 		$listestruct = $user->structrespliste();
 		//print_r($listestruct); echo "<br>";
 		echo "<form name='frm_validation_conge'  method='post' >";
+		echo "<input type='submit' value='Valider' />";
 		foreach ($listestruct as $key => $structure)
 		{
 			$aumoinsunedemande = False;
@@ -179,6 +183,7 @@
 	if ($user->estgestionnaire() and (strcasecmp($mode,"gestion")==0))
 	{
 		echo "<form name='frm_validation_conge'  method='post' >";
+		echo "<input type='submit' value='Valider' />";
 		$listestruct = $user->structgestliste();
 		foreach ($listestruct as $key => $structure)
 		{
