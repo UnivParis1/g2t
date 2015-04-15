@@ -149,11 +149,15 @@
 			{
 				foreach ($sousstructureliste as $ssstructkey => $structfille)
 				{
+					$htmltodisplay = "";
 					$responsable = $structfille->responsable();
 					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 					$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
 					//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-					$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+					if (!is_null($responsable))
+					{
+						$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+					}
 					if ($htmltodisplay != "")
 					{
 						echo $htmltodisplay;
@@ -276,6 +280,7 @@
 		{
 			foreach ($listestruct as $key => $structure)
 			{
+				$htmltodisplay = "";
 				$aumoinsunedemande = FALSE;
 				$cleelement = $structure->id();
 				echo "<center><p>Tableau pour le responsable de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
@@ -284,7 +289,10 @@
 				$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
 				$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
 				//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-				$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				if (!is_null($responsable))
+				{
+					$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+				}
 				if ($htmltodisplay != "")
 				{
 					echo $htmltodisplay;

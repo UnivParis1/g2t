@@ -43,31 +43,36 @@
 		$structure->load($affectation->structureid());
 		
 		// Si ce n'est pas le responsable de la structure qui a fait la demande
-		if ($affectation->agentid() != $structure->responsable()->harpegeid())
+		$responsable = $structure->responsable();
+		if (!is_null($responsable))
 		{
-			// On ajoute la demande dans la structure de la demande
-			$structureid = $structure->id();
-			if (isset ($arraystruct[$structureid]))
-				$arraystruct[$structureid] = $arraystruct[$structureid]+1;
-			else 
-				$arraystruct[$structureid] = 1;
-		}
-		// C'est le responsable de la structure qui a fait la demande
-		else
-		{
-			// On le met dans la structure parente (si elle existe)
-			$parentstructid = $structure->parentstructure()->id();
-			if (isset($arraystruct[$parentstructid]))
-				$arraystruct[$parentstructid] = $arraystruct[$parentstructid]+1;
-			else 
-				$arraystruct[$parentstructid] = 1;
-			
+			if ($affectation->agentid() != $responsable()->harpegeid())
+			{
+				// On ajoute la demande dans la structure de la demande
+				$structureid = $structure->id();
+				if (isset ($arraystruct[$structureid]))
+					$arraystruct[$structureid] = $arraystruct[$structureid]+1;
+				else 
+					$arraystruct[$structureid] = 1;
+			}
+			// C'est le responsable de la structure qui a fait la demande
+			else
+			{
+				// On le met dans la structure parente (si elle existe)
+				$parentstructid = $structure->parentstructure()->id();
+				if (isset($arraystruct[$parentstructid]))
+					$arraystruct[$parentstructid] = $arraystruct[$parentstructid]+1;
+				else 
+					$arraystruct[$parentstructid] = 1;
+				
+			}
 		}
 		unset ($demande);
 		unset ($structure);
 		unset ($declarationliste);
 		unset ($declaration);
 		unset ($affectation);
+		unset ($responsable);
 	}
 	
 	echo "arraystruct="; print_r($arraystruct); echo "\n";
@@ -81,9 +86,12 @@
 		$structure->load($structureid);
 		//echo "Avant le load du responsable\n";
 		$responsable = $structure->responsable();
-		echo "Avant le sendmail mail=" . $responsable->mail() ." Structure=" . $structureid  ." \n";
-		
-		$agentcron->sendmail($responsable,"Des demandes de temps partiel sont en attentes","Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nMerci de bien vouloir les valider dès que possible.\n",null);
+		if (!is_null($responsable))
+		{
+			echo "Avant le sendmail mail=" . $responsable->mail() ." Structure=" . $structureid  ." \n";
+			
+			$agentcron->sendmail($responsable,"Des demandes de temps partiel sont en attentes","Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nMerci de bien vouloir les valider dès que possible.\n",null);
+		}
 		unset ($structure);
 		unset ($responsable);
 	}
