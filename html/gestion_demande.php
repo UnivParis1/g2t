@@ -186,6 +186,17 @@
 			//echo "Liste de agents = "; print_r($agentliste); echo "<br>";
 			$agentlistefull = array_merge((array)$agentlistefull, (array)$agentliste);
 			//echo "fin du select <br>";
+			$structfille=$structure->structurefille();
+			if (!is_null($structfille))
+			{
+				foreach ($structfille as $fille)
+				{
+					$agentliste = null;
+					$respfille = $fille->responsable();
+					$agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
+					$agentlistefull = array_merge((array)$agentlistefull, (array)$agentliste);
+				}
+			}
 		}
 		ksort($agentlistefull);
 		echo "<SELECT name='agentid'>";
