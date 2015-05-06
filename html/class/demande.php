@@ -688,7 +688,10 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->SetFont('helvetica', 'B', 10, '', true);
 		$pdf->Cell(40,10,'Date de dépot : '. $this->date_demande());
 		$pdf->Ln(10);
-		$pdf->Cell(40,10,'Date de validation : '.$this->datestatut());
+        if (strcasecmp($this->statut(),'r')==0)
+        	$pdf->Cell(40,10,'Date du refus/de l\'annulation : '.$this->datestatut());
+        else
+        	$pdf->Cell(40,10,'Date de validation : '.$this->datestatut());
 		$pdf->Ln(10);
 		if($this->statut()=='v')
 		{
