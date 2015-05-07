@@ -215,6 +215,7 @@ class planningelement {
                     else
                     {
 			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+                    }
 			if (strlen($this->info())!=0) 
 			{
 				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">"; 
@@ -239,6 +240,7 @@ class planningelement {
                     else
                     {
 			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+                    }
 			if (strlen($this->info())!=0)
 			{
 				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">";
