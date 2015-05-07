@@ -208,6 +208,12 @@ class planningelement {
 		if ($this->moment == 'm')
 		{
 //			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
+                    if ($this->date == date("Ymd"))
+                    {
+			$htmltext = $htmltext ."<td class='planningelement_jour_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+                    }
+                    else
+                    {
 			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
 			if (strlen($this->info())!=0) 
 			{
@@ -226,6 +232,12 @@ class planningelement {
 		else
 		{
 //			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
+                    if ($this->date == date("Ymd"))
+                    {
+			$htmltext = $htmltext ."<td class='planningelement_jour_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+                    }
+                    else
+                    {
 			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
 			if (strlen($this->info())!=0)
 			{

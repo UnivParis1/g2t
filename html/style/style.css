@@ -363,7 +363,24 @@
    PADDING-LEFT: 1px;
 /*	width:250px; */   
 }
-
+#planning TR.ligneplanning TD.planningelement_jour_matin {
+   cursor:pointer; 
+   border-left:3px solid red; 
+   border-top:3px solid red; 
+   border-right:0px solid red; 
+   border-bottom:3px solid red; 
+   PADDING-RIGHT: 1px; 
+   PADDING-LEFT: 1px;
+}
+#planning TR.ligneplanning TD.planningelement_jour_aprem {
+   cursor:pointer; 
+   border-left:0px solid red; 
+   border-top:3px solid red; 
+   border-right:3px solid red; 
+   border-bottom:3px solid red; 
+   PADDING-RIGHT: 1px; 
+   PADDING-LEFT: 1px;
+}
 /****************************************************
 / PLANNING D'UNE STRUCTURE
 /****************************************************/
@@ -414,7 +431,7 @@
    BORDER-BOTTOM: black 1px solid;  
    text-align : left; 
 }
-#structplanning TR.ligneplanning TD.planningelement_matin {
+#structplanning TR.ligneplanning TD.planningelement_matin, #structplanning TR.ligneplanning TD.planningelement_jour_matin {
    cursor:pointer; 
    border-left:2px solid black; 
    border-top:2px solid black; 
@@ -423,7 +440,7 @@
    PADDING-RIGHT: 1px; 
    PADDING-LEFT: 1px;
 }
-#structplanning TR.ligneplanning TD.planningelement_aprem {
+#structplanning TR.ligneplanning TD.planningelement_aprem, #structplanning TR.ligneplanning TD.planningelement_jour_aprem {
    cursor:pointer; 
    border-left:0px solid black; 
    border-top:2px solid black; 
