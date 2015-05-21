@@ -91,7 +91,11 @@
 					{
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-						$user->sendmail($agent,"Validation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename);
+                                                if ($statut == 'v')
+                                                {
+                                                    $ics = $demande->ics($agent->mail());
+                                                }
+						$user->sendmail($agent,"Validation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename, $ics);
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
 					}

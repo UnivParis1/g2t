@@ -352,7 +352,7 @@ AND DEMANDE.STATUT='v'";
          * @param string $piecejointe the name of the document to join to the mail
          * @return 
    */
-	function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null)
+	function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null, $ics = null)
 	{
 		//----------------------------------
 		// Construction de l'entête
@@ -385,6 +385,18 @@ AND DEMANDE.STATUT='v'";
 		//$msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 		$msg .= "\r\n";
 		
+                if (!is_null($ics)) 
+                {
+                    $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement. Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>" ;
+                    $msg .= "\r\n";
+                    $msg .= "--$boundary\r\n";
+                    $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
+                    $msg .= "Content-Transfer-Encoding: 8bit\n\n";
+                    $msg .= $ics;
+                    $msg .= "\r\n\r\n";
+                }
+		$msg .= "\r\n";
+                
 		if (!is_null($piecejointe ))
 		{
 			//---------------------------------

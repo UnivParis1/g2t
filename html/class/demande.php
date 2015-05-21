@@ -751,6 +751,48 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		return $pdfname;
 		
 	}
+        
+    function ics($mail) {
+        $dtstart = str_replace('-','',$this->datedebut).'T';
+        if ($this->moment_debut() == 'm')
+        {
+            $dtstart .= '090000';
+        }
+        else
+        {
+            $dtstart .= '123000';
+        }
+        $dtend = str_replace('-','',$this->datefin).'T';
+        if ($this->moment_fin() == 'm')
+        {
+            $dtend .= '133000';
+        }
+        else
+        {
+            $dtend .= '170000';
+        }
+        $cal_uid = date('md').'T'.date('His')."-".rand()."@echange.univ-paris1.fr";
+        //$todaystamp = date("Ymd\THis\Z");
+        $meeting_description = 'Congé(s)';
+        $subject = 'Congé(s)';
+        $ics = "BEGIN:VCALENDAR
+PRODID:-//The Horde Project//Horde Application Framework 3.1//EN
+VERSION:2.0
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:$dtstart
+DTEND:$dtend
+TRANSP:OPAQUE
+SEQUENCE:0
+UID:$cal_uid
+DESCRIPTION:$meeting_description
+SUMMARY:$subject
+ORGANIZER;MAILTO:$mail
+CLASS:PUBLIC
+END:VEVENT
+END:VCALENDAR";
+        return $ics;
+    }
 }
 
 	
