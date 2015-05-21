@@ -760,12 +760,12 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         }
         else
         {
-            $dtstart .= '123000';
+            $dtstart .= '133000';
         }
         $dtend = str_replace('-','',$this->datefin).'T';
         if ($this->moment_fin() == 'm')
         {
-            $dtend .= '133000';
+            $dtend .= '123000';
         }
         else
         {
