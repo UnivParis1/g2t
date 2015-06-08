@@ -366,6 +366,92 @@
 		{
 			while ($result = mysql_fetch_row($query))
 			{
+				// On recherche si une affectation avec les mêmes critères existe
+				$sql = "SELECT AFFNEW.AFFECTATIONID ";
+				$sql = $sql . " FROM AFFECTATION AFFNEW, AFFECTATION AFFOLD ";
+				$sql = $sql . " WHERE AFFNEW.DATEDEBUT = AFFOLD.DATEDEBUT ";
+				$sql = $sql . "   AND AFFNEW.DATEFIN = AFFOLD.DATEFIN ";
+				$sql = $sql . "   AND AFFNEW.STRUCTUREID = AFFOLD.STRUCTUREID ";
+				$sql = $sql . "   AND AFFNEW.NUMQUOTITE = AFFOLD.NUMQUOTITE ";
+				$sql = $sql . "   AND AFFNEW.DENOMQUOTITE = AFFOLD.DENOMQUOTITE ";
+				$sql = $sql . "   AND AFFNEW.OBSOLETE = 'N' ";
+				$sql = $sql . "   AND AFFNEW.AFFECTATIONID != AFFOLD.AFFECTATIONID ";
+				$sql = $sql . "   AND AFFNEW.HARPEGEID = AFFOLD.HARPEGEID ";
+				$sql = $sql . "   AND AFFOLD.AFFECTATIONID = " . $result[0] ;
+				$query2 = mysql_query($sql,$dbcon);
+				//echo "SQL = " . $sql . "\n";
+				$erreur_requete=mysql_error();
+				if ($erreur_requete!="")
+					echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
+				if (mysql_num_rows($query2) > 0) // Il y a une affectations nouvelles avec les mêmes critères qu'une ancienne
+				{
+					//echo "Il y a des affectations nouvelles avec les mêmes critères qu'une ancienne \n";
+					$result2 = mysql_fetch_row($query2);
+					$affnew = new affectation($dbcon);
+					$affold = new affectation($dbcon);
+					$affnew->load($result2[0]);  // On charge la nouvelle affectation
+					$affold->load($result[0]);   // On charge l'ancienne affectation
+					//echo "Avant le test 100% quotité \n";
+					if ($affold->numquotite() != $affold->denumquotite()) // Si ce n'est pas une affectation à 100%, on va cloner les demandes de TP associées à l'ancienne Affectation
+					{
+						//echo "On charge les declarationTP Old \n ";
+						$declarationliste = $affold->declarationTPliste($fonctions->formatdate($affold->datedebut()), $fonctions->formatdate($affold->datefin()));
+						$oldTP = new $declarationTP($dbcon);
+						foreach ($declarationliste as $oldTP)
+						{ 
+							//echo "On va cloner les nouvelle declarationTP \n";
+							$newTP = new declarationTP($dbcon);
+							$newTP->affectationid($affnew->affectationid());
+							$newTP->tabtpspartiel($oldTP->tabtpspartiel());
+							$newTP->datedebut($oldTP->datedebut());
+							$newTP->datefin($oldTP->datefin());
+							$newTP->statut($oldTP->statut());
+							// $newTP->datedemande($oldTP->datedemande()); => Initialisé dans la fonction STORE
+							// $newTP->datestatut($oldTP->datestatut()); => Initialisé dans la fonction STORE
+							//echo "Avant le store ... \n"; 
+							$erreur = $newTP->store();
+							if ($erreur != "")
+							{
+								echo "ERREUR DANS LE STORE (CLONE DU TP " . $oldTP->declarationTPid() . ") => $erreur \n";
+							}
+						}
+					}
+					// On a maintenant les TP qui sont déclarés comme dans l'ancienne affectation
+					// On va les recharger 
+					$affnew = new affectation($dbcon);
+					$affold = new affectation($dbcon);
+					//echo "Avant le load affnew ..... \n";
+					$affnew->load($result2[0]);  // On charge la nouvelle affectation
+					//echo "Avant le load affold ..... \n";
+					$affold->load($result[0]);   // On charge l'ancienne affectation
+					//echo "Avant le declartationTP pour Old \n";
+					$olddeclarationliste = $affold->declarationTPliste($fonctions->formatdate($affold->datedebut()), $fonctions->formatdate($affold->datefin()));
+					//echo "Avant le declartationTP pour New \n";
+					$newdeclarationliste = $affnew->declarationTPliste($fonctions->formatdate($affold->datedebut()), $fonctions->formatdate($affold->datefin()));
+					//echo "olddeclarationliste = "; print_r($olddeclarationliste); echo "\n";
+					//echo "newdeclarationliste = "; print_r($newdeclarationliste); echo "\n";
+					if (!is_null($olddeclarationliste))
+					{
+						$indexnewTP = 0;
+						foreach ($olddeclarationliste as $oldTP)
+						{ 
+							$newTP = $newdeclarationliste[$indexnewTP];
+							//echo "newTP->declarationTPid() = " . $newTP->declarationTPid() . "    oldTP->declarationTPid() = " . $oldTP->declarationTPid() . "\n";
+							// On va maintenant raccrocher les anciennes demandes de congés à la nouvelle declarationTP
+							$sql = "UPDATE DEMANDEDECLARATIONTP SET DECLARATIONID = " . $newTP->declarationTPid() . " WHERE DECLARATIONID = " . $oldTP->declarationTPid();
+							//echo "SQL (UPDATE DEMANDEDECLARATIONTP....) = " . $sql . "\n";
+							mysql_query($sql,$dbcon);
+							$erreur_requete=mysql_error();
+							if ($erreur_requete!="")
+							{
+								echo "ERREUR DANS LE DEPLACEMENT DES DEMANDE => Ancien TP.ID=" . $oldTP->declarationTPid() . "  Nouveau TP.ID=" . $newTP->declarationTPid() . "\n"; 
+							}
+							$indexnewTP = $indexnewTP + 1;
+									
+						}
+					} 
+				}
+				
 				unset($affectation);
 				$affectation = new affectation($dbcon);
 				$affectation->load($result[0]);
