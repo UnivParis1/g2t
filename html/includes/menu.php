@@ -518,7 +518,13 @@
 						</form>
 						<a href="javascript:document.admin_subst_agent.submit();">Se faire passer pour un autre agent</a>
 					</li>
- 				</ul> 
+					<li onclick='document.admin_import_conges.submit();'>
+						<form name='admin_import_conges'  method='post' action="import_conges.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form>
+						<a href="javascript:document.admin_import_conges.submit();">Importer des congés</a>
+					</li>
+					</ul> 
 			</li> 
 		</ul>  
 <?php
