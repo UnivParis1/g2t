@@ -364,9 +364,11 @@
 			echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
 		if (mysql_num_rows($query) > 0) // Il y a des affectation obsoletes
 		{
+			echo "ATTENTION : Il y a des affectations obsoletes \n";
 			while ($result = mysql_fetch_row($query))
 			{
 				// On recherche si une affectation avec les mêmes critères existe
+				echo "On regarde s'il y a une affectation identique pour l'ancienne affectation " . $result[0] . " : ";
 				$sql = "SELECT AFFNEW.AFFECTATIONID ";
 				$sql = $sql . " FROM AFFECTATION AFFNEW, AFFECTATION AFFOLD ";
 				$sql = $sql . " WHERE AFFNEW.DATEDEBUT = AFFOLD.DATEDEBUT ";
@@ -385,7 +387,7 @@
 					echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
 				if (mysql_num_rows($query2) > 0) // Il y a une affectations nouvelles avec les mêmes critères qu'une ancienne
 				{
-					//echo "Il y a des affectations nouvelles avec les mêmes critères qu'une ancienne \n";
+					echo "OUI =>   nouvelle affectation = " . $result2[0]  . "\n";
 					$result2 = mysql_fetch_row($query2);
 					$affnew = new affectation($dbcon);
 					$affold = new affectation($dbcon);
@@ -451,6 +453,10 @@
 						}
 					} 
 				}
+				else
+				{
+					echo "NON \n";
+				}
 				
 				unset($affectation);
 				$affectation = new affectation($dbcon);
@@ -467,6 +473,10 @@
 					}
 				}
 			}
+		}
+		else 
+		{
+			echo "Pas d'affectation obsolete.... \n";
 		}
 		
 	}	
