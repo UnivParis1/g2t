@@ -353,7 +353,7 @@
 		// Pour toutes les affectations obsolètes 
 		// qui ont des déclarations non supprimées
 		// on doit supprimer les déclarations de temps partiels => suppression des demandes
-		$sql = "SELECT AFFECTATION.AFFECTATIONID FROM AFFECTATION,DECLARATIONTP ";
+		$sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID FROM AFFECTATION,DECLARATIONTP ";
 		$sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
 		$sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
 		$sql = $sql . "   AND DECLARATIONTP.STATUT != 'r'";
@@ -368,11 +368,11 @@
 			while ($result = mysql_fetch_row($query))
 			{
 				// On recherche si une affectation avec les mêmes critères existe
-				echo "On regarde s'il y a une affectation identique pour l'ancienne affectation " . $result[0] . " : ";
+				echo "On regarde s'il y a une affectation identique pour l'ancienne affectation " . $result[0] . " (HarpegeId = " . $result[1]  . ") : ";
 				$sql = "SELECT AFFNEW.AFFECTATIONID ";
 				$sql = $sql . " FROM AFFECTATION AFFNEW, AFFECTATION AFFOLD ";
 				$sql = $sql . " WHERE AFFNEW.DATEDEBUT = AFFOLD.DATEDEBUT ";
-				$sql = $sql . "   AND AFFNEW.DATEFIN = AFFOLD.DATEFIN ";
+				$sql = $sql . "   AND (AFFNEW.DATEFIN = AFFOLD.DATEFIN OR AFFOLD.DATEFIN >= '" . date('Y-m-d') . "') "; // AFFOLD.DATEFIN = '9999-12-31') ";
 				$sql = $sql . "   AND AFFNEW.STRUCTUREID = AFFOLD.STRUCTUREID ";
 				$sql = $sql . "   AND AFFNEW.NUMQUOTITE = AFFOLD.NUMQUOTITE ";
 				$sql = $sql . "   AND AFFNEW.DENOMQUOTITE = AFFOLD.DENOMQUOTITE ";
@@ -387,8 +387,8 @@
 					echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
 				if (mysql_num_rows($query2) > 0) // Il y a une affectations nouvelles avec les mêmes critères qu'une ancienne
 				{
-					echo "OUI =>   nouvelle affectation = " . $result2[0]  . "\n";
 					$result2 = mysql_fetch_row($query2);
+					echo "OUI => nouvelle affectation = " . $result2[0]  . "\n";
 					$affnew = new affectation($dbcon);
 					$affold = new affectation($dbcon);
 					$affnew->load($result2[0]);  // On charge la nouvelle affectation
@@ -437,13 +437,17 @@
 						$indexnewTP = 0;
 						foreach ($olddeclarationliste as $oldTP)
 						{ 
+							
 							$newTP = $newdeclarationliste[$indexnewTP];
 							//echo "newTP->declarationTPid() = " . $newTP->declarationTPid() . "    oldTP->declarationTPid() = " . $oldTP->declarationTPid() . "\n";
 							// On va maintenant raccrocher les anciennes demandes de congés à la nouvelle declarationTP
-							$sql = "UPDATE DEMANDEDECLARATIONTP SET DECLARATIONID = " . $newTP->declarationTPid() . " WHERE DECLARATIONID = " . $oldTP->declarationTPid();
+							$sql = "UPDATE DEMANDEDECLARATIONTP SET DECLARATIONID = " . $newTP->declarationTPid() . " WHERE DECLARATIONID = " . $oldTP->declarationTPid() . "  ";
+							$sql = $sql . " AND DEMANDEID IN (SELECT DEMANDEID FROM DEMANDE WHERE DATEFIN <= '" . $fonctions->formatdatedb($newTP->datefin())  . "')"; 
 							//echo "SQL (UPDATE DEMANDEDECLARATIONTP....) = " . $sql . "\n";
-							mysql_query($sql,$dbcon);
+							$result_update = mysql_query($sql,$dbcon);
 							$erreur_requete=mysql_error();
+							$nbreligne = mysql_affected_rows(); //  => Savoir combien de lignes ont été modifiées
+							echo "\tIl y a $nbreligne demandes de congés qui ont été déplacées. \n";
 							if ($erreur_requete!="")
 							{
 								echo "ERREUR DANS LE DEPLACEMENT DES DEMANDE => Ancien TP.ID=" . $oldTP->declarationTPid() . "  Nouveau TP.ID=" . $newTP->declarationTPid() . "\n"; 
@@ -456,6 +460,29 @@
 				else
 				{
 					echo "NON \n";
+/*
+					// On cherche pour chaque demandes de l'ancienne affectation/declarationTP si une déclaration de TP la couvre avec la même quotité
+					$sql = "SELECT AGENT.HARPEGEID,AGENT.NOM, DEMANDE.DEMANDEID, DEMANDE.TYPEABSENCEID,DEMANDE.DATEDEBUT,DEMANDE.MOMENTDEBUT,DEMANDE.DATEFIN,DEMANDE.MOMENTFIN,DEMANDE.STATUT ";
+					$sql = $sql . "FROM AGENT,AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP,DEMANDE "; 
+					$sql = $sql . "WHERE DEMANDE.STATUT = 'v' ";
+  					$sql = $sql . "AND DEMANDE.DEMANDEID=DEMANDEDECLARATIONTP.DEMANDEID ";
+  					$sql = $sql . "AND DEMANDEDECLARATIONTP.DECLARATIONID=DECLARATIONTP.DECLARATIONID ";
+  					$sql = $sql . "AND DECLARATIONTP.AFFECTATIONID=AFFECTATION.AFFECTATIONID ";
+  					$sql = $sql . "AND AFFECTATION.HARPEGEID=AGENT.HARPEGEID ";
+  					$sql = $sql . "AND AFFECTATION.AFFECTATIONID = " . $result[0];
+  					$query2 = mysql_query($sql,$dbcon);
+  					$erreur_requete=mysql_error();
+  					if ($erreur_requete!="")
+  						echo "SELECT DEMANDE  => $erreur_requete \n";
+  					if (mysql_num_rows($query2) > 0) // Il y a des demandes qui sont orphelines
+  					{
+  						while ($result2 = mysql_fetch_row($query2))
+  						{
+  							
+  						}
+  					}
+*/  							
+							
 				}
 				
 				unset($affectation);
