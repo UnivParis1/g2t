@@ -498,7 +498,13 @@
 		<ul class="niveau1">     
 			<li onclick="">MENU ADMINISTRATEUR 
 				<ul class="niveau2"> 
-					<li onclick='document.admin_struct_gest.submit();'>
+					<li onclick='document.admin_mode_maintenance.submit();'>
+						<form name='admin_mode_maintenance'  method='post' action="admin_maintenance.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form>
+						<a href="javascript:document.admin_mode_maintenance.submit();">Activer/désactiver maintenance</a>
+					</li>
+				    <li onclick='document.admin_struct_gest.submit();'>
 						<form name='admin_struct_gest'  method='post' action="gestion_structure.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form>
