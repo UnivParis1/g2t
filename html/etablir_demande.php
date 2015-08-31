@@ -198,10 +198,13 @@
 		$listetype = $_POST["listetype"];
 	else
 		$listetype =null;
-	if (is_null($listetype) or $listetype== "")
-	{
-		//echo "Le type de demande n'est pas initialisé !!! <br>";
-	}
+	if ((is_null($listetype) or $listetype== "") and ($msg_erreur == "" and !$datefausse))
+    {
+		// echo "Le type de demande n'est pas initialisé !!! <br>";
+		$errlog = "Le type de demande n'est pas initialisé ! " ;
+		$msg_erreur .= $errlog."<br/>";
+		error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+    }
 	
 	## Récupération du commentaire (s'il existe)
 	$commentaire = "";
@@ -513,13 +516,20 @@
 				//print_r ($soldeliste); echo "<br>";
 				if (!is_null($soldeliste))
 				{
-			   	echo "<select name='listetype'>";
+			   		echo "<select name='listetype'>";
+			   		$nbretype=0;
 					foreach ($soldeliste as $keysolde => $solde)
 					{
 						if ($solde->solde() != 0)
+						{
 							echo "<OPTION value='" . $solde->typeabsenceid() .  "'>" . $solde->typelibelle()  . "</OPTION>";
+							$nbretype=$nbretype+1;
+						}
 					}
 					echo "</select>";
+                    //echo "nbretype = $nbretype <br>";
+                    if ($nbretype==0)
+						$masquerboutonvalider=true;
 				}
 				echo "<input type='hidden' name='typedemande' value='conges' ?>";
 			}
