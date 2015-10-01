@@ -51,6 +51,13 @@
 		$responsableliste = array();
 	//print_r ($_POST); echo "<br>";
 	
+	$showall = false;
+	if (isset($_POST['showall']))
+	{
+		if ($_POST['showall'] == 'true')
+			$showall = true;
+	}
+	
 	if (!is_null($structureid))
 	{
 		// On parcours touts les gestionnaires - mais on pourrait prendre les responsables
@@ -102,6 +109,10 @@
 	}
 	echo "</select>";
 	echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
+	echo "<br><input type='checkbox' name='showall' value='true'";
+	if ($showall == true)
+		echo " checked ";
+	echo ">Afficher les structures fermées<br>";
 	echo " <input type='submit' name= 'Valid_struct' value='Valider' >";
 	echo "</form>";
 	echo "<br>";
@@ -126,81 +137,88 @@
 			
 			//$agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),'o'); 
 			//echo "<br> agentliste="; print_r((array)$agentliste); echo "<br>";
-			$gestionnaire = $struct->gestionnaire();
-			echo "<tr>";
-			echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->civilite() . " " . $struct->responsable()->nom() . " ". $struct->responsable()->prenom() . "</td>";
-			echo "</tr>";
-			echo "<tr>";
-			echo "<td align=center>Gestionnaire : ";
-			echo "<input id='infouser[". $struct->id() ."]' name='infouser[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='";
-			if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
-			echo  "' size=40 />";
-			//  
-            echo "<input type='hidden' id='gestion[". $struct->id() ."]' name='gestion[". $struct->id() ."]' value='";
-            if (!is_null($gestionnaire)) echo $gestionnaire->harpegeid();
-            echo "' class='infouser[". $struct->id() ."]' /> ";
-?>
-	<script>
-	    	$('[id="<?php echo "infouser[". $struct->id() ."]" ?>"]').autocompleteUser(
-	  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-	  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-   </script>
-			
-<?php 			
-			$responsable = $struct->responsable();
-			echo " &nbsp; Direction : ";
-			echo "<input id='responsableinfo[". $struct->id() ."]' name='responsableinfo[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete()  . "' size=40 />";
-			//
-            echo "<input type='hidden' id='resp[". $struct->id() ."]' name='resp[". $struct->id() ."]' value='" . $responsable->harpegeid()  . "' class='responsableinfo[". $struct->id() ."]' /> ";
-?>
-	<script>
-	    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
-	  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-	  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-   </script>
-			
-<?php 			
-			echo "</td>";
-			echo "</tr>";
-
-			$struct->agent_envoyer_a($codeinterne);
-			echo "<tr>";
-			echo "<td>";
-			echo "Envoyer les demandes de congés des agents au : ";
-			echo "<SELECT name='agent_mail[" . $struct->id() . "]' size='1'>";
-			echo "<OPTION value=1";
-			if ($codeinterne==1) echo " selected='selected' ";
-			echo ">Responsable du service " . $struct->nomcourt() . "</OPTION>";
-			echo "<OPTION value=2";
-			if ($codeinterne==2) echo " selected='selected' ";
-			echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
-			echo "</SELECT>";
-			echo "</td>";
-			echo "</tr>";
-			
-			$parentstruct = null;
-			$parentstruct = $struct->parentstructure();
-			$struct->resp_envoyer_a($codeinterne);
-			echo "<tr>";
-			echo "<td>";
-			echo "Envoyer les demandes de congés du responsable au : ";
-			echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
-			if (!is_null($parentstruct))
+			if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true))
 			{
+				$gestionnaire = $struct->gestionnaire();
+				echo "<tr>";
+				echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->civilite() . " " . $struct->responsable()->nom() . " ". $struct->responsable()->prenom() . " ";
+				if ($showall)
+					echo "(Date fermeture : " . $struct->datecloture() . ") ";
+				echo "</td>";
+				echo "</tr>";
+				echo "<tr>";
+				echo "<td align=center>Gestionnaire : ";
+				echo "<input id='infouser[". $struct->id() ."]' name='infouser[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='";
+				if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
+				echo  "' size=40 />";
+				//  
+	            echo "<input type='hidden' id='gestion[". $struct->id() ."]' name='gestion[". $struct->id() ."]' value='";
+	            if (!is_null($gestionnaire)) echo $gestionnaire->harpegeid();
+	            echo "' class='infouser[". $struct->id() ."]' /> ";
+	?>
+		<script>
+		    	$('[id="<?php echo "infouser[". $struct->id() ."]" ?>"]').autocompleteUser(
+		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+	   </script>
+				
+	<?php 			
+				$responsable = $struct->responsable();
+				echo " &nbsp; Direction : ";
+				echo "<input id='responsableinfo[". $struct->id() ."]' name='responsableinfo[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete()  . "' size=40 />";
+				//
+	            echo "<input type='hidden' id='resp[". $struct->id() ."]' name='resp[". $struct->id() ."]' value='" . $responsable->harpegeid()  . "' class='responsableinfo[". $struct->id() ."]' /> ";
+	?>
+		<script>
+		    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
+		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+	   </script>
+				
+	<?php 			
+				echo "</td>";
+				echo "</tr>";
+
+				$struct->agent_envoyer_a($codeinterne);
+				echo "<tr>";
+				echo "<td>";
+				echo "Envoyer les demandes de congés des agents au : ";
+				echo "<SELECT name='agent_mail[" . $struct->id() . "]' size='1'>";
 				echo "<OPTION value=1";
 				if ($codeinterne==1) echo " selected='selected' ";
-				echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+				echo ">Responsable du service " . $struct->nomcourt() . "</OPTION>";
 				echo "<OPTION value=2";
 				if ($codeinterne==2) echo " selected='selected' ";
-				echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+				echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
+				echo "</SELECT>";
+				echo "</td>";
+				echo "</tr>";
+				
+				$parentstruct = null;
+				$parentstruct = $struct->parentstructure();
+				$struct->resp_envoyer_a($codeinterne);
+				echo "<tr>";
+				echo "<td>";
+				echo "Envoyer les demandes de congés du responsable au : ";
+				echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
+				if (!is_null($parentstruct))
+				{
+					echo "<OPTION value=1";
+					if ($codeinterne==1) echo " selected='selected' ";
+					echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+					echo "<OPTION value=2";
+					if ($codeinterne==2) echo " selected='selected' ";
+					echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+				}
+				echo "<OPTION value=3";
+				if ($codeinterne==3) echo " selected='selected' ";
+				echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
+				echo "</SELECT>";
+				echo "</td>";
+				echo "</tr>";
+				echo "<tr><td height=15></td></tr>";
 			}
-			echo "<OPTION value=3";
-			if ($codeinterne==3) echo " selected='selected' ";
-			echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
-			echo "</SELECT>";
-			echo "</td>";
-			echo "</tr>";
-			echo "<tr><td height=15></td></tr>";
+				
 		}
 		echo "</table>";
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";

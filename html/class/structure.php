@@ -10,6 +10,7 @@ class structure {
 	private $gestionnaireid = null;
 	private $affichesousstruct = null; // permet d'afficher les agents des sous structures
 	private $affichetoutagent = null; // permet d'afficher le planning de la structure pour tous les agents de la stucture
+	private $datecloture = null;
 	
 	private $fonctions = null;
 	
@@ -30,7 +31,7 @@ class structure {
 	{
 		if (is_null($this->structureid))
 		{
-			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
+			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "") {
@@ -54,6 +55,11 @@ class structure {
  			$this->gestionnaireid = "$result[5]";
 			$this->affichesousstruct = "$result[6]";
  			$this->affichetoutagent = "$result[7]";
+ 			if (trim($result[8]) != '')
+	 			$this->datecloture = "$result[8]";
+ 			else // En théorie on ne doit jamais passer par là, car la date de cloture est forcée lors de l'import....
+ 				$this->datecloture = '31/12/9999';
+ 			
 		}
 		return true;
 	}
@@ -351,6 +357,13 @@ class structure {
 		return $parentstruct;
 	}
 
+	function datecloture()
+	{
+		return $this->fonctions->formatdate($this->datecloture);
+	}
+	
+	
+	
 	function responsable($respid = null)
 	{
 		if (is_null($respid))
