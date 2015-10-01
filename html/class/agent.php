@@ -811,12 +811,13 @@ AND DEMANDE.STATUT='v'";
 			$totaldemandeattente = $totaldemandeattente + $tempsolde->demandeenattente();
 			$pdf->Ln(5);
 		}
+/*
 		$pdf->Cell(75,5,"Total",1,0,'C');
 		$pdf->Cell(30,5,$totaldroitaquis . "",1,0,'C');
 		$pdf->Cell(30,5,$totaldroitpris . "",1,0,'C');
 		$pdf->Cell(30,5,$totaldroitrestant . "",1,0,'C');
 		$pdf->Cell(50,5,$totaldemandeattente . "",1,0,'C');
-		
+*/		
 		$pdf->Ln(8);
 		//ob_end_clean();
 		if ($closeafter == TRUE) 
@@ -873,6 +874,7 @@ AND DEMANDE.STATUT='v'";
 				$totaldemandeattente = $totaldemandeattente + $tempsolde->demandeenattente();
 			}
 		}
+/*
 		$htmltext = $htmltext . "         <tr class='element'>";
 		$htmltext = $htmltext . "	          <td>Total</td>";
 		$htmltext = $htmltext . "	          <td>". $totaldroitaquis ."</td>"; //number_format($totaldroitaquis,1) ."</td>";
@@ -880,6 +882,7 @@ AND DEMANDE.STATUT='v'";
 		$htmltext = $htmltext . "	          <td>". $totaldroitrestant ."</td>"; //number_format($totaldroitrestant,1) ."</td>";
 		$htmltext = $htmltext . "	          <td>". $totaldemandeattente ."</td>";
 		$htmltext = $htmltext . "	       </tr>";
+*/
 		$htmltext = $htmltext . "      </table>";
 		$htmltext = $htmltext . "      </center>";
 		$htmltext = $htmltext . "</div>";
