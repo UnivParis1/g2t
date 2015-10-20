@@ -168,6 +168,21 @@
 			$structure->store();
 		}
 	}
+
+	$displayrespsousstructlist = null;
+	if (isset($_POST["displayrespsousstruct"]))
+		$displayrespsousstructlist = $_POST["displayrespsousstruct"];
+	if (is_array($displayrespsousstructlist))
+	{
+		foreach ($displayrespsousstructlist as $structureid => $valeur)
+		{
+			$structureid = str_replace("'", "", $structureid);
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			$structure->afficherespsousstruct($valeur);
+			$structure->store();
+		}
+	}
 	
 	$arraygestionnaire = null;
 	if (isset($_POST["gestion"]))
@@ -219,7 +234,7 @@
 		else
 			echo $structure->dossierhtml(($action == 'modif'));
 
-		echo "Autoriser la consultation du planning de toute les structures filles à tous les agents de cette structure : ";
+		echo "Autoriser l'affichage du planning tous les agents des sous-structures (responsable/gestionnaire) : ";
 		if ($action == 'modif' )
 		{
 			echo "<select name=displaysousstruct['" . $structure->id() . "']>";
@@ -229,6 +244,19 @@
 		}
 		else 
 			echo $fonctions->ouinonlibelle($structure->sousstructure());
+
+		echo "<br>";
+		echo "Autoriser l'affichage uniquement du planning des responsables des sous-structures (responsable/gestionnaire) : ";
+		if ($action == 'modif' )
+		{
+			echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
+			echo "<option value='o'"; if (strcasecmp($structure->afficherespsousstruct(),"o")==0) echo " selected "; echo ">Oui</option>";
+			echo "<option value='n'"; if (strcasecmp($structure->afficherespsousstruct(),"n")==0) echo " selected "; echo ">Non</option>";
+			echo "</select>";
+		}
+		else
+			echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
+		
 		echo "<br>";
 		echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
 		if ($action == 'modif' )
@@ -240,7 +268,7 @@
 		}
 		else
 			echo $fonctions->ouinonlibelle($structure->affichetoutagent());
-
+		
 		if ($mode == 'resp')
 		{
 			$structure->agent_envoyer_a($codeinterne);

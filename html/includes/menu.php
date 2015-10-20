@@ -196,11 +196,13 @@
 	{
 		$affectation = reset($affectationliste);
 		$structureid = $affectation->structureid();
-		$structure->load($structureid);
+		if ($structure->load($structureid) == false)
+			$structure->affichetoutagent("n");  // Si impossible de charger la structure => On force la valeur à 'n'
 	}
 	else
 	{
 		$structure->affichetoutagent("n");
+		
 	}
 	if (strcasecmp($structure->affichetoutagent(), "o") == 0) 
 //	if ($user->structure()->affichetoutagent() == "o")

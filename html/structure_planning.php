@@ -94,6 +94,16 @@
 			echo "<br>";
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
+		
+		$structureliste = $user->structrespliste();
+		foreach ($structureliste as $structkey => $structure)
+		{
+			if (strcasecmp($structure->afficherespsousstruct(), "o") ==0 )
+			{
+				echo "<br>";
+				echo $structure->planningresponsablesousstructhtml($indexmois . "/"  . $annee);
+			}
+		}
 	}
 	elseif (strcasecmp($mode,"gestion")==0)
 	{
@@ -113,6 +123,16 @@
 			echo "<br>";
 			echo $structure->planninghtml($indexmois . "/"  . $annee);
 		}
+
+		$structureliste = $user->structgestliste();
+		foreach ($structureliste as $structkey => $structure)
+		{
+			if (strcasecmp($structure->afficherespsousstruct(), "o") ==0 )
+			{
+				echo "<br>";
+				echo $structure->planningresponsablesousstructhtml($indexmois . "/"  . $annee);
+			}
+		}
 	}
 	else
 	{
@@ -126,7 +146,7 @@
 			{
 				echo "<br>";
 //				echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-				echo $structure->planninghtml($indexmois . "/"  . $annee);
+				echo $structure->planninghtml($indexmois . "/"  . $annee, 'n');  // 'n' car l'agent ne doit pas voir les conges des sous-structures (si autorisé)
 			}
 		}
 	}

@@ -447,13 +447,13 @@
 				if (strcasecmp($typedemande,"conges")==0)
 				{
 					if (($demande->nbrejrsdemande())>1)
-						$msgstore .= $demande->nbrejrsdemande() ." jours vous seront decomptés (" . $demande->typelibelle() .  ").";
+						$msgstore .= $demande->nbrejrsdemande() ." jours vous seront decomptés (" . $demande->typelibelle() .  ")";
 					else
-						$msgstore .= $demande->nbrejrsdemande() ." jour vous sera decompté (" . $demande->typelibelle() .  ").";
+						$msgstore .= $demande->nbrejrsdemande() ." jour vous sera decompté (" . $demande->typelibelle() .  ")";
 				}
 				else
-					$msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s).";
-				echo "<P style='color: green'>".$msgstore."</P>";
+					$msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s)";
+				echo "<P style='color: green'>".$msgstore." sous réserve du respect des règles de gestion.</P>";
 				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msgstore));
 			}
 			else {

@@ -91,10 +91,10 @@
 					{
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-                                                if ($statut == 'v')
-                                                {
-                                                    $ics = $demande->ics($agent->mail());
-                                                }
+                        if ($statut == 'v')
+                        {
+                           $ics = $demande->ics($agent->mail());
+                        }
 						$user->sendmail($agent,"Validation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename, $ics);
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
@@ -148,7 +148,9 @@
 					}	
 				}
 			}
+			
 			$sousstructureliste=$structure->structurefille();
+			// echo "On passe aux reponsables....<br>";
 			if (is_array($sousstructureliste))
 			{
 				foreach ($sousstructureliste as $ssstructkey => $structfille)
@@ -159,8 +161,20 @@
 					$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
 					//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
 					if (!is_null($responsable))
-					{
-						$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+					{   
+						$oktodisplay = true;
+						if (is_array($agentliste))
+						{
+							// On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
+							if (array_key_exists ($responsable->nom() . " " . $responsable->prenom() . " " .$responsable->harpegeid(), $agentliste))
+								$oktodisplay=false;
+						}
+						if ($oktodisplay)
+						{
+							$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+							// On ajoute le responsable dans la liste des agents à afficher
+							$agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+						}
 					}
 					if ($htmltodisplay != "")
 					{

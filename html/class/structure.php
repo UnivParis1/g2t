@@ -10,6 +10,7 @@ class structure {
 	private $gestionnaireid = null;
 	private $affichesousstruct = null; // permet d'afficher les agents des sous structures
 	private $affichetoutagent = null; // permet d'afficher le planning de la structure pour tous les agents de la stucture
+	private $afficherespsousstruct = null; // permet d'afficher le planning des responsables des sous structures
 	private $datecloture = null;
 	
 	private $fonctions = null;
@@ -31,7 +32,7 @@ class structure {
 	{
 		if (is_null($this->structureid))
 		{
-			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
+			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "") {
@@ -59,7 +60,7 @@ class structure {
 	 			$this->datecloture = "$result[8]";
  			else // En théorie on ne doit jamais passer par là, car la date de cloture est forcée lors de l'import....
  				$this->datecloture = '31/12/9999';
- 			
+ 			$this->afficherespsousstruct = "$result[9]";
 		}
 		return true;
 	}
@@ -132,6 +133,23 @@ class structure {
 		}
 		else
 			$this->affichesousstruct = $sousstruct;
+	}
+	
+	function afficherespsousstruct($respsousstruct = null)
+	{
+		if (is_null($respsousstruct))
+		{
+			if (is_null($this->afficherespsousstruct)) {
+				$errlog = "Structure->afficherespsousstruct : Le paramètre afficherespsousstruct de la structure n'est pas défini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			else
+				return $this->afficherespsousstruct;
+		}
+		else
+			$this->afficherespsousstruct = $respsousstruct;
+		
 	}
 	
 	function structurefille()
@@ -406,7 +424,7 @@ class structure {
 			$this->gestionnaireid = $gestid;
 	}
 	
-	function planning($mois_annee_debut, $mois_annee_fin)
+	function planning($mois_annee_debut, $mois_annee_fin, $showsousstruct = null)
 	{
 		$planningservice = null;
 		if (is_null($mois_annee_debut) or is_null($mois_annee_fin)) {
@@ -426,7 +444,7 @@ class structure {
 		$fulldatefin =  date("d/m/Y",strtotime("-1day", $timestampfin ));
 		//echo "fulldatefin (en lisible)= $fulldatefin     <br>";
 			
-		$listeagent = $this->agentlist($fulldatedebut, $fulldatefin);
+		$listeagent = $this->agentlist($fulldatedebut, $fulldatefin, $showsousstruct);
 		if (is_array($listeagent))
 		{
 			foreach ($listeagent as $key => $agent)
@@ -439,10 +457,10 @@ class structure {
 		return $planningservice;
 	}
 	
-	function planninghtml($mois_annee_debut)   // Le format doit être MM/YYYY
+	function planninghtml($mois_annee_debut, $showsousstruct = null)   // Le format doit être MM/YYYY
 	{
 		//echo "Je debute planninghtml <br>";
-		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
+		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct);
 		
 		if (!is_array($planningservice))
 		{
@@ -513,6 +531,91 @@ class structure {
 		$htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut  . "'>";
 		$htmltext = $htmltext . "<a href='javascript:document.structpreviousplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF (année précédente)</a>";
 		$htmltext = $htmltext . "</form>";
+		return $htmltext;
+	}
+	
+	function planningresponsablesousstructhtml($mois_annee_debut) // Le format doit être MM/YYYY
+	{
+		$fulldatedebut = "01/" . $mois_annee_debut;
+		$tempfulldatefindb = $this->fonctions->formatdatedb("01/" .  $mois_annee_debut);
+		$timestampfin = strtotime($tempfulldatefindb);
+		//echo "timestampfin = $timestampfin    <br>";
+		$fulldatefin =  date("Ym",strtotime("+1month", $timestampfin )) . "01";
+		//echo "fulldatefin = $fulldatefin     <br>";
+		$timestampfin = strtotime($fulldatefin);
+		//echo "timestampfin = $timestampfin    <br>";
+		$fulldatefin =  date("d/m/Y",strtotime("-1day", $timestampfin ));
+		//echo "fulldatefin (en lisible)= $fulldatefin     <br>";
+		
+		
+		$structure = new structure($this->dbconnect);
+		$structfilleliste = $this->structurefille();
+		$resplist = null;
+		if (!is_array($structfilleliste))
+		{  // Si pas de strcuture fille => On sort
+			return "";
+		}
+		foreach ($structfilleliste as $structkey => $structure)
+		{
+			if (!is_null($structure->responsable()))
+			{
+				$resplist[$structure->responsable()->harpegeid()] = $structure->responsable();
+			}
+		}
+		if (is_array($resplist))
+		{
+			$htmltext = "";
+			$htmltext = $htmltext . "<div id='structplanning'>";
+			$htmltext = $htmltext . "<table class='tableau'>";
+			
+			$titre_a_ajouter = TRUE;
+			foreach ($resplist as $agentid => $responsable)
+			{
+				$planning = $responsable->planning($fulldatedebut, $fulldatefin)->planning();
+/*
+				echo "Planning = ";
+				print_r($planning);
+				echo "<br>";
+*/
+//				echo 'count(planning) = ' .count($planning) . '<br>'; 
+				if ($titre_a_ajouter)
+				{
+					$htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planning) + 1) .  " align=center ><font color=#BF3021>Planning des responsables des sous-structures " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
+					$monthname = $this->fonctions->nommois("01/" .  $mois_annee_debut) . " " . date("Y",strtotime($this->fonctions->formatdatedb("01/" .  $mois_annee_debut)));
+					//echo "Nom du mois = " . $monthname . "<br>";
+					$htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planning) + 1) .  "'>" .  $monthname  . "</td></tr>";
+					//echo "Nbre de jour = " . count($planningservice[$agentid]->planning()) . "<br>";
+					$htmltext = $htmltext . "<tr class='entete'><td>Agent</td>";
+					for ($indexjrs=0; $indexjrs<(count($planning)/2); $indexjrs++)
+					{
+					   //echo "indexjrs = $indexjrs <br>";
+					   $nomjour = $this->fonctions->nomjour(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut);
+					   $titre = $nomjour . " " . str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . " " . $monthname;
+							$htmltext = $htmltext . "<td colspan='2' title='" . $titre . "'>" . str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "</td>";
+					}
+					$htmltext = $htmltext . "</tr>";
+					$titre_a_ajouter = FALSE;
+				}
+				$htmltext = $htmltext . "<tr class='ligneplanning'>";
+				$htmltext = $htmltext ."<td>" . $responsable->nom() . " " . $responsable->prenom() . "</td>";
+				//echo "Avant chargement des elements <br>";
+				$listeelement = $responsable->planning($fulldatedebut, $fulldatefin)->planning();
+				//echo "Apres chargement des elements <br>";
+				foreach ($listeelement as $keyelement => $element)
+				{
+					//echo "Boucle sur l'element <br>";
+					$htmltext = $htmltext . $element->html();
+				}
+				//echo "Fin boucle sur les elements <br>";
+				$htmltext = $htmltext . "</tr>";
+						
+			}
+			$htmltext = $htmltext . "</table>";
+			$htmltext = $htmltext . "</div>";
+			
+			$htmltext = $htmltext . $this->fonctions->legendehtml();
+			$htmltext = $htmltext . "<br>";
+		}
 		return $htmltext;
 	}
 	
@@ -623,7 +726,7 @@ class structure {
 //		echo "structure->store : Non refaite !!!!! <br>";
 //		return false;
 		$msgerreur = null;
-		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' WHERE STRUCTUREID='" . $this->id() . "'";
+		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' , AFFICHERESPSOUSSTRUCT='" . $this->afficherespsousstruct() . "' WHERE STRUCTUREID='" . $this->id() . "'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();

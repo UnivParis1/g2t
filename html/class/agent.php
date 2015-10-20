@@ -818,6 +818,8 @@ AND DEMANDE.STATUT='v'";
 		$pdf->Cell(30,5,$totaldroitrestant . "",1,0,'C');
 		$pdf->Cell(50,5,$totaldemandeattente . "",1,0,'C');
 */		
+		// $pdf->Ln(8);
+		$pdf->Cell(8,5,"Soldes de congés donnés sous réserve du respect des règles de gestion");
 		$pdf->Ln(8);
 		//ob_end_clean();
 		if ($closeafter == TRUE) 
@@ -884,6 +886,7 @@ AND DEMANDE.STATUT='v'";
 		$htmltext = $htmltext . "	       </tr>";
 */
 		$htmltext = $htmltext . "      </table>";
+		$htmltext = $htmltext . "<font color='#EF4001'>Soldes de congés donnés sous réserve du respect des règles de gestion</font>";
 		$htmltext = $htmltext . "      </center>";
 		$htmltext = $htmltext . "</div>";
 		$htmltext = $htmltext . "<br>";
