@@ -89,6 +89,7 @@
 						echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
 					else
 					{
+						$ics = null;
 						$pdffilename = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
                         if ($statut == 'v')
