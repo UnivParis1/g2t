@@ -496,48 +496,52 @@
 			// $affectationliste = liste des affectations de l'agent pour la période
 			foreach ($affectationliste as $key => $affectation)
 			{
-				echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
-				echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() ."'>";
-				echo $affectation->html(true,false,$mode);
-
-				echo "<br>Nouvelle déclaration de temps partiel<br>";
-				echo "<table>";
-				echo "<tr>";
-				echo"<td>Date de début de la période :</td>";
-				echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut_" . $affectation->affectationid()  . " size=10 ></td>";
-				echo "</tr>";
-				echo "<tr>";
-				echo "<td>Date de fin de la période :</td>";
-				echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin_" . $affectation->affectationid()  . " size=10 ></td>";
-				echo "</tr>";
-				echo "</table>";
-				$nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
-				//echo "nbredemiTP = " . $nbredemiTP . "<br>";
-				echo "<br>Vous devez poser des jours de temps partiel (Nombre de demie-journées par semaine = $nbredemiTP )<br>";
-				
-				echo "<div id='planning'>";
-				echo "<table class='tableau'>";
-				$declaration = new declarationTP($dbcon);
-				$declaration->tabtpspartiel(str_repeat("0", 20));
-				echo $declaration->tabtpspartielhtml(true);
-				echo "</table>";
-				echo "</div>";
-
-				echo "<br>";
-				if (strcasecmp($mode,"resp")==0)
+				if ($affectation->quotite() != "100%")
 				{
-					echo "<br>";	
-					echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel... <br>";
-					echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
-					echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est à utiliser avec prudence... Il convient de vérifier manuellement que la répartion est correcte.<br>";
+					echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
+					echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() ."'>";
+					echo $affectation->html(true,false,$mode);
+	
+					echo "<br>Nouvelle déclaration de temps partiel<br>";
+					echo "<table>";
+					echo "<tr>";
+					echo"<td>Date de début de la période :</td>";
+					echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut_" . $affectation->affectationid()  . " size=10 ></td>";
+					echo "</tr>";
+					echo "<tr>";
+					echo "<td>Date de fin de la période :</td>";
+					echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin_" . $affectation->affectationid()  . " size=10 ></td>";
+					echo "</tr>";
+					echo "</table>";
+					$nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
+					//echo "nbredemiTP = " . $nbredemiTP . "<br>";
+					echo "<br>Vous devez poser des jours de temps partiel (Nombre de demie-journées par semaine = $nbredemiTP )<br>";
+					
+					echo "<div id='planning'>";
+					echo "<table class='tableau'>";
+					$declaration = new declarationTP($dbcon);
+					$declaration->tabtpspartiel(str_repeat("0", 20));
+					echo $declaration->tabtpspartielhtml(true);
+					echo "</table>";
+					echo "</div>";
+	
+					echo "<br>";
+					if (strcasecmp($mode,"resp")==0)
+					{
+						echo "<br>";	
+						echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel... <br>";
+						echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
+						echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est à utiliser avec prudence... Il convient de vérifier manuellement que la répartion est correcte.<br>";
+					}
+					echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP ."'>";
+					echo "<input type='hidden' name='userid' value='" . $userid ."'>";
+					echo "<input type='hidden' name='agentid' value='" . $agentid ."'>";
+					echo "<input type='hidden' name='mode' value='" . $mode ."'>";
+					echo "<input type='submit' value='Valider' />";
+					
+					echo "</form>";
+					echo "<br>";
 				}
-				echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP ."'>";
-				echo "<input type='hidden' name='userid' value='" . $userid ."'>";
-				echo "<input type='hidden' name='agentid' value='" . $agentid ."'>";
-				echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-				echo "<input type='submit' value='Valider' />";
-				
-				echo "</form>";
 			}
 		}
 	}

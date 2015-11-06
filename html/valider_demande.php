@@ -156,34 +156,36 @@
 			{
 				foreach ($sousstructureliste as $ssstructkey => $structfille)
 				{
-					$htmltodisplay = "";
-					$responsable = $structfille->responsable();
-					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-					$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
-					//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-					if (!is_null($responsable))
-					{   
-						$oktodisplay = true;
-						if (is_array($agentliste))
-						{
-							// On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
-							if (array_key_exists ($responsable->nom() . " " . $responsable->prenom() . " " .$responsable->harpegeid(), $agentliste))
-								$oktodisplay=false;
-						}
-						if ($oktodisplay)
-						{
-							$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
-							// On ajoute le responsable dans la liste des agents à afficher
-							$agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
-						}
-					}
-					if ($htmltodisplay != "")
+					if ($fonctions->formatdatedb($structfille->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
 					{
-						echo $htmltodisplay;
-						echo "<br>";
-						$aumoinsunedemande = TRUE;
-					}	
-									
+						$htmltodisplay = "";
+						$responsable = $structfille->responsable();
+						$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
+						$fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous) . $fonctions->finperiode());
+						//echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
+						if (!is_null($responsable))
+						{   
+							$oktodisplay = true;
+							if (is_array($agentliste))
+							{
+								// On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
+								if (array_key_exists ($responsable->nom() . " " . $responsable->prenom() . " " .$responsable->harpegeid(), $agentliste))
+									$oktodisplay=false;
+							}
+							if ($oktodisplay)
+							{
+								$htmltodisplay =  $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+								// On ajoute le responsable dans la liste des agents à afficher
+								$agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+							}
+						}
+						if ($htmltodisplay != "")
+						{
+							echo $htmltodisplay;
+							echo "<br>";
+							$aumoinsunedemande = TRUE;
+						}	
+					}
 				}
 			}	
 			if (!$aumoinsunedemande)

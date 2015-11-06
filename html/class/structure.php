@@ -190,7 +190,10 @@ class structure {
 			{
 				foreach ($structliste as $key => $structure)
 				{
-					$agentliste = array_merge((array)$agentliste, (array)$structure->agentlist($datedebut,$datefin,'o'));
+					if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd")))
+					{
+						$agentliste = array_merge((array)$agentliste, (array)$structure->agentlist($datedebut,$datefin,'o'));
+					}
 				}
 			}
  		}
@@ -557,9 +560,13 @@ class structure {
 		}
 		foreach ($structfilleliste as $structkey => $structure)
 		{
-			if (!is_null($structure->responsable()))
+			// Si la structure n'est pas fermée on cherche le responsable
+			if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd")))
 			{
-				$resplist[$structure->responsable()->harpegeid()] = $structure->responsable();
+				if (!is_null($structure->responsable()))
+				{
+					$resplist[$structure->responsable()->harpegeid()] = $structure->responsable();
+				}
 			}
 		}
 		if (is_array($resplist))
@@ -641,11 +648,14 @@ class structure {
 			{
 				foreach ($structureliste as $key => $structure)
 				{
-					$responsable = $structure->responsable();
+					if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd")))
+					{
+						$responsable = $structure->responsable();
 					
-					// La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
-					$responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
-					///$responsableliste[$responsable->harpegeid()] = $responsable;
+						// La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
+						$responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+						///$responsableliste[$responsable->harpegeid()] = $responsable;
+					}
 				}
 			}
 			$agentliste = array_merge((array)$agentliste,(array)$responsableliste);

@@ -81,14 +81,35 @@
 		$structureliste = $user->structrespliste();
 		foreach ($structureliste as $structkey => $structure)
 		{
-			if (strcasecmp($structure->sousstructure(), "o") ==0 )
+			// Si la structure est ouverte => On la garde
+			if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
 			{
-				$sousstructliste = $structure->structurefille();
-				$structureliste = array_merge($structureliste, (array)$sousstructliste);
-				// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
+				if (strcasecmp($structure->sousstructure(), "o") ==0 )
+				{
+					$sousstructliste = $structure->structurefille();
+					foreach ((array)$sousstructliste as $key => $struct)
+					{
+						// Si la structure est fermée.... On la supprime de la liste
+						if ($fonctions->formatdatedb($struct->datecloture()) < $fonctions->formatdatedb(date("Ymd")))
+						{
+							// echo "Index = " . array_search($struct, $sousstructliste) . "    Key = " . $key . "<br>";
+							// echo "<br>sousstructliste AVANT = "; print_r($sousstructliste); echo "<br>";
+							unset ($sousstructliste["$key"]);
+							// echo "<br>sousstructliste APRES = "; print_r($sousstructliste); echo "<br>";
+						}
+					}
+					//echo "<br>sousstructliste = "; print_r($sousstructliste); echo "<br>";
+					$structureliste = array_merge($structureliste, (array)$sousstructliste);
+					// Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+				}
+			}
+			else // La strcuture est fermée... Donc on la supprime de la liste.
+			{
+				//echo "    structkey = " . $structkey . "<br>";
+				unset ($structureliste["$structkey"]);
 			}
 		}
-		//echo "StructureListe = "; print_r($structureliste); echo "<br>";
+		//echo "<br>StructureListe = "; print_r($structureliste); echo "<br>";
 		foreach ($structureliste as $structkey => $structure)
 		{
 			echo "<br>";
@@ -110,11 +131,31 @@
 		$structureliste = $user->structgestliste();
 		foreach ($structureliste as $structkey => $structure)
 		{
-			if (strcasecmp($structure->sousstructure(), "o") ==0 )
+			// Si la structure est ouverte => On la garde
+			if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
 			{
-				$sousstructliste = $structure->structurefille();
-				$structureliste = array_merge($structureliste, (array)$sousstructliste);
-				// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
+				if (strcasecmp($structure->sousstructure(), "o") ==0 )
+				{
+					$sousstructliste = $structure->structurefille();
+					foreach ((array)$sousstructliste as $key => $struct)
+					{
+						// Si la structure est fermée.... On la supprime de la liste
+						if ($fonctions->formatdatedb($struct->datecloture()) < $fonctions->formatdatedb(date("Ymd")))
+						{
+							// echo "Index = " . array_search($struct, $sousstructliste) . "    Key = " . $key . "<br>";
+							// echo "<br>sousstructliste AVANT = "; print_r($sousstructliste); echo "<br>";
+							unset ($sousstructliste["$key"]);
+							// echo "<br>sousstructliste APRES = "; print_r($sousstructliste); echo "<br>";
+						}
+					}
+					$structureliste = array_merge($structureliste, (array)$sousstructliste);
+					// Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
+				}
+			}
+			else // La strcuture est fermée... Donc on la supprime de la liste.
+			{
+				//echo "    structkey = " . $structkey . "<br>";
+				unset ($structureliste["$structkey"]);
 			}
 		}
 		//echo "StructureListe = "; print_r($structureliste); echo "<br>";

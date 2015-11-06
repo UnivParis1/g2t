@@ -585,14 +585,18 @@ AND DEMANDE.STATUT='v'";
 				//echo "<br>structfilleliste = "; print_r((array) $structfilleliste) ; echo "<br>";
 				foreach ((array)$structfilleliste as $structfilleid => $structfille)
 				{
-					//echo "<br>structfilleid = " . $structfilleid . "<br>";
-					//echo "structfille->resp_envoyer_a() = "; print_r($structfille->resp_envoyer_a()); echo "<br>";
-					$agent = $structfille->resp_envoyer_a();
-					if (!is_null($agent))
+					// Si la structure est encore ouverte...
+					if ($this->fonctions->formatdatedb($structfille->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd")))
 					{
-						if ($agent->harpegeid() == $this->harpegeid)
+						//echo "<br>structfilleid = " . $structfilleid . "<br>";
+						//echo "structfille->resp_envoyer_a() = "; print_r($structfille->resp_envoyer_a()); echo "<br>";
+						$agent = $structfille->resp_envoyer_a();
+						if (!is_null($agent))
 						{
-							$structliste[$structfilleid] = $structfille;
+							if ($agent->harpegeid() == $this->harpegeid)
+							{
+								$structliste[$structfilleid] = $structfille;
+							}
 						}
 					}
 				}

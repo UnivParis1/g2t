@@ -47,7 +47,7 @@
 	
 //	if ($jour == 1)  // Premier jour du mois
 //	{
-		$sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID!='' AND NOT ISNULL(GESTIONNAIREID)";
+		$sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID!='' AND NOT ISNULL(GESTIONNAIREID) AND DATECLOTURE >='" . $fonctions->formatdatedb(date("Ymd")) . "'";
 		$query=mysql_query ($sql, $dbcon);
 		$erreur=mysql_error();
 		if ($erreur != "")
@@ -59,24 +59,29 @@
 		
 			$struct = new structure($dbcon);
 			$struct->load("$result[0]");
-			echo "Génération du PDF pour la structure " . $struct->nomcourt() . "\n";
-			$tablisteagent = $struct->agentlist($datedebut, $datefin, 'n'); 
-			if (!is_null($tablisteagent))
+			// Si la structure est encore ouverte...
+			if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
 			{
-				$pdf=new TCPDF();
-				$pdf->Open();
-				$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
-				$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
-				foreach ($tablisteagent as $key => $agent)
+					
+				echo "Génération du PDF pour la structure " . $struct->nomcourt() . "\n";
+				$tablisteagent = $struct->agentlist($datedebut, $datefin, 'n'); 
+				if (!is_null($tablisteagent))
 				{
-					echo "Agent = " . $agent->identitecomplete() . "\n";
-					$agent->soldecongespdf($anneeref, FALSE,$pdf,TRUE);
-					$agent->demandeslistepdf($anneeref . $fonctions->debutperiode(),($anneeref+1) . $fonctions->finperiode(),$pdf,FALSE);
+					$pdf=new TCPDF();
+					$pdf->Open();
+					$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
+					$pdf->Image('../html/images/logo_papeterie.png',70,25,60,20);
+					foreach ($tablisteagent as $key => $agent)
+					{
+						echo "Agent = " . $agent->identitecomplete() . "\n";
+						$agent->soldecongespdf($anneeref, FALSE,$pdf,TRUE);
+						$agent->demandeslistepdf($anneeref . $fonctions->debutperiode(),($anneeref+1) . $fonctions->finperiode(),$pdf,FALSE);
+					}
+					$filename= dirname(dirname(__FILE__)) . '/html/pdf/solde_' . str_replace('/','_', $struct->nomcourt()) . '_' . date('Ymd') . ".pdf";
+					$pdf->Output($filename,'F');   // F = file
+					$gest = $struct->gestionnaire();
+					$cronmail->sendmail($gest , 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(),"Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du ". date("d/m/Y") .".\n",$filename);
 				}
-				$filename= dirname(dirname(__FILE__)) . '/html/pdf/solde_' . $struct->nomcourt() . '_' . date('Ymd') . ".pdf";
-				$pdf->Output($filename,'F');   // F = file
-				$gest = $struct->gestionnaire();
-				$cronmail->sendmail($gest , 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(),"Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du ". date("d/m/Y") .".\n",$filename);
 			}
 		}
 		echo "Fin de la génération .... \n";

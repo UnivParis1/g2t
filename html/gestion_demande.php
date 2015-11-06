@@ -191,10 +191,13 @@
 			{
 				foreach ($structfille as $fille)
 				{
-					$agentliste = null;
-					$respfille = $fille->responsable();
-					$agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
-					$agentlistefull = array_merge((array)$agentlistefull, (array)$agentliste);
+					if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
+					{
+						$agentliste = null;
+						$respfille = $fille->responsable();
+						$agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
+						$agentlistefull = array_merge((array)$agentlistefull, (array)$agentliste);
+					}
 				}
 			}
 		}
