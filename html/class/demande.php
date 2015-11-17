@@ -438,11 +438,24 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				return ;
 			}
 	
+			if (count($declarationTPListe) == 0)
+			{
+				$errlog = "Demande->Store : La liste des déclarationsTP est un tableau vide";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				return $errlog;
+			}
 			$declarationTP = new declarationTP($this->dbconnect);
 			$declarationTP = reset($declarationTPListe);
 			$affectationid = $declarationTP->affectationid();
 			$affectation = new affectation($this->dbconnect);
-			$affectation->load($affectationid);
+			if ($affectation->load($affectationid) == false)
+			{
+				$errlog = "Demande->Store : Impossible de trouver l'affectation correspondante !!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+				return $errlog;
+			}
 			
 			// On vérifie que le nombre de jour demandé est >= Nbre de jour restant (si c'est un conge !!)
 			//echo "Demande->Store : typdemande=". $this->typdemande . "<br>";

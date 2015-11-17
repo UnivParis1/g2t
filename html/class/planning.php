@@ -586,7 +586,7 @@ WHERE HARPEGEID = '" . $agentid . "'
  		}
  		$index=0;
  		$nbredemijour=0;
- 		foreach ($listeelement as $key => $element)
+ 		foreach ((array)$listeelement as $key => $element)
  		{
  			$pasdetraitement = FALSE;
  			if ($index == 0 and $paslepremier)

@@ -46,7 +46,7 @@
 		$responsable = $structure->responsable();
 		if (!is_null($responsable))
 		{
-			if ($affectation->agentid() != $responsable()->harpegeid())
+			if ($affectation->agentid() != $responsable->harpegeid())
 			{
 				// On ajoute la demande dans la structure de la demande
 				$structureid = $structure->id();
