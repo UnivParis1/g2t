@@ -155,6 +155,7 @@
    PADDING-TOP: 0px; 
    POSITION: absolute; 
    TOP: -1px;
+   Z-INDEX: 1
 }
 #mainmenu LI {
    PADDING-RIGHT: 2px; 
