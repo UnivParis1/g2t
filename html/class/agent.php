@@ -1575,6 +1575,189 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		
 	}
 	
+	function creertimeline()
+	{
+		
+		$sql = "SELECT HARPEGEID, NUMLIGNE, TYPESTATUT,DATEDEBUT,DATEFIN FROM W_STATUT WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
+		$querystatut = mysql_query($sql, $this->dbconnect);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			error_log(basename(__FILE__)." ".$erreur_requete);
+		if (mysql_num_rows($querystatut) == 0) // Il n'y a pas de STATUT pour cet agent => On sort
+		{
+			echo "<br>Pas de statut pour cet agent " . $this->harpegeid . "!!!<br>";
+			return "<br>Pas de statut pour cet agent " . $this->harpegeid . "!!!<br>";
+		}
+		$sql = "SELECT HARPEGEID, NUMLIGNE, IDSTRUCT, DATEDEBUT, DATEFIN FROM W_STRUCTURE WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
+		$querystruct = mysql_query($sql, $this->dbconnect);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			error_log(basename(__FILE__)." ".$erreur_requete);
+		if (mysql_num_rows($querystruct) == 0) // Il n'y a pas de STRUCTURE pour cet agent => On sort
+		{
+			echo "<br>Pas de structure pour cet agent " . $this->harpegeid . "!!!<br>";
+			return "<br>Pas de structure pour cet agent " . $this->harpegeid . "!!!<br>";
+		}
+		$sql = "SELECT HARPEGEID, NUMLIGNE, QUOTITE, DATEDEBUT, DATEFIN FROM W_MODALITE WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
+		$queryquotite = mysql_query($sql, $this->dbconnect);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			error_log(basename(__FILE__)." ".$erreur_requete);
+		if (mysql_num_rows($queryquotite) == 0) // Il n'y a pas de QUOTITE pour cet agent => On sort
+		{
+			echo "<br>Pas de quotité pour cet agent " . $this->harpegeid . "!!!<br>";
+			return "<br>Pas de quotité pour cet agent " . $this->harpegeid . "!!!<br>";
+		}
+
+		$curentstruct = mysql_fetch_row($querystruct);
+		$curentstatut = mysql_fetch_row($querystatut);
+		$curentquotite = mysql_fetch_row($queryquotite);
+		
+		$strresultat = '';
+		$tabresult = array();
+		
+		while ($curentstruct and $curentstatut and $curentquotite)
+		{
+			$structharpegeid = $curentstruct[0];
+			$structnumligne = $curentstruct[1];
+			$structid = trim($curentstruct[2]);
+			$structdatedebut = $curentstruct[3];
+			$structdatefin = $curentstruct[4];
+			
+			$statutharpegeid = $curentstatut[0];
+			$statutnumligne = $curentstatut[1];
+			$statutid = trim($curentstatut[2]);
+			$statutdatedebut = $curentstatut[3];
+			$statutdatefin = $curentstatut[4];
+				
+			$quotiteharpegeid = $curentquotite[0];
+			$quotitenumligne = $curentquotite[1];
+			$quotitevalue = trim($curentquotite[2]);
+			$quotitedatedebut = $curentquotite[3];
+			$quotitedatefin = $curentquotite[4];
+				
+			$datedebut = '1899-12-31';
+			$datefin = '9999-12-31';
+			
+			if ($structdatedebut > $datedebut)
+				$datedebut = $structdatedebut;
+			if ($statutdatedebut > $datedebut)
+				$datedebut = $statutdatedebut;
+			if ($quotitedatedebut > $datedebut)
+				$datedebut = $quotitedatedebut;
+			
+			if ($structdatefin < $datefin)
+				$datefin = $structdatefin;
+			if ($statutdatefin < $datefin)
+				$datefin = $statutdatefin;
+			if ($quotitedatefin < $datefin)
+				$datefin = $quotitedatefin;
+			
+			if ($datefin < $datedebut)
+			{
+				echo "Detection de datefin ($datefin) < datedebut ($datedebut) => On ignore pour agent " . $this->harpegeid . "!!!<br>\n";
+			}
+			else
+			{
+				$strresultat = $structharpegeid . '_' . $structnumligne . '_' . $statutnumligne . '_' . $quotitenumligne;
+	        	$strresultat = $strresultat . ';' . $structharpegeid;
+	        	if (substr($statutid,0,5) <> 'CONTR')
+	        		$statutid = '';
+	        	$strresultat = $strresultat . ';' . $statutid;
+	        	$strresultat = $strresultat . ';' . $datedebut;
+	          	$strresultat = $strresultat . ';' . $datefin;
+	          	$strresultat = $strresultat . ';' . $datedebut;
+	          	$strresultat = $strresultat . ';' . $structid;
+	          	$strresultat = $strresultat . ';' . $quotitevalue;
+	          	$strresultat = $strresultat . ';' . '100';
+	          	$strresultat = $strresultat . ';';
+	
+	          	
+	//          	echo $strresultat . '<br>';
+	          	$tabresult[] = $strresultat;
+			}
+          	if ($datefin == $structdatefin)
+          		$curentstruct = mysql_fetch_row($querystruct);
+          	if ($datefin == $statutdatefin)
+          		$curentstatut = mysql_fetch_row($querystatut);
+          	if ($datefin == $quotitedatefin)
+          		$curentquotite = mysql_fetch_row($queryquotite);
+		}
+		return $tabresult;
+		
+	}
+	
+	function controlecongesTP($datedebut, $datefin)
+	{
+		
+		echo "Pas encore implémentée....\n";
+		return;
+		
+		$demandeliste = null;
+		$affectationliste = $this->affectationliste($datedebut, $datefin);
+		$affectation = new affectation($this->dbconnect);
+		$declarationTP = new declarationTP($this->dbconnect);
+		$demande = new demande($this->dbconnect);
+		if (!is_null($affectationliste))
+		{
+			foreach ($affectationliste as $key => $affectation)
+			{
+				//echo "<br><br>Affectation (".  $affectation->affectationid()  .")  date debut = " . $affectation->datedebut() . "  Date fin = " . $affectation->datefin() . "<br>";
+				unset($declarationTPliste);
+				$declarationTPliste = $affectation->declarationTPliste($datedebut, $datefin);
+				if (!is_null($declarationTPliste))
+				{
+					foreach ($declarationTPliste as $key => $declarationTP)
+					{
+						//echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ")  Debut = " . $declarationTP->datedebut() . "   Fin = " . $declarationTP->datefin() . "<br>";
+						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
+						$demandeliste = array_merge((array)$demandeliste,(array)$declarationTP->demandesliste($datedebut, $datefin));
+					}
+				}
+			}
+		}
+		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
+		// On enlève les doublons des demandes !!!
+		$uniquedemandeliste = array();
+		if (is_array($demandeliste))
+		{
+			foreach ($demandeliste as $key => $demande)
+			{
+				if (($demande->statut() == 'v') or ($demande->statut() == 'a')) 
+				{
+					$uniquedemandeliste[$demande->id()] = $demande;
+				}
+			}
+			$demandeliste = $uniquedemandeliste;
+			unset($uniquedemandeliste);
+		}
+		
+		foreach ($demandeliste as $key => $demande)
+		{
+			$plan  = new planning($this->dbconnect);
+			$plan->load($this->harpegeid, $demande->datedebut(), $demande->datefin());
+			$elementlist = $plan->planning();
+			$nbelement = 0;
+			foreach ($elementlist as $element)
+			{
+				if ($this->fonctions->estunconge($element->type()))
+				{
+					$nbelement = $nbelement + 1;
+				}
+			}
+			if ($demande->moment_debut()  == 'a')
+				$nbelement = $nbelement - 1;
+			if ($demande->moment_fin()  == 'm')
+				$nbelement = $nbelement - 1;
+			$nbelement = $nbelement  / 2;
+			if ($nbelement != $demande->nbrejrsdemande())
+			{
+				echo "Il y a un problème !!!! Nbre jours de la demande = " . $demande->nbrejrsdemande() . "   Nbre jours recalcules = $nbelement (demande Id = ". $demande->id() . ")\n"; 
+			}
+		}
+		
+	}
+	
 	
 }
 

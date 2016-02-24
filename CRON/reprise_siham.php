@@ -20,153 +20,160 @@
 	$fonctions = new fonctions($dbcon);
 	
 
+	$skipreadfile = false;
+	if (isset($argv[1]))
+	{
+		if ($argv[1] == 'noimport')
+			$skipreadfile = true;
+	}
+	
+	if (!$skipreadfile)
+	{
+		echo "Import des MODALITES D'AFFECTATION \n";
+		// Import des affectations-modalite.txt
+		$sql = "DELETE FROM W_MODALITE";
+		mysql_query($sql);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			echo "DELETE W_MODALITE => $erreur_requete \n";
+		
+		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
+		if (!file_exists($filename))
+		{
+			echo "Le fichier $filename n'existe pas !!! \n";
+		}
+		else
+		{
+			$fp = fopen("$filename","r");
+			while (!feof($fp))
+			{
+				$ligne = fgets($fp); // lecture du contenu de la ligne
+				if (trim($ligne)!="")
+				{
+					$ligne_element = explode(";",$ligne);
+					$harpegeid = trim($ligne_element[0]);
+					$numligne = trim($ligne_element[1]);
+					$quotite = trim($ligne_element[2]);
+					$datedebut = trim($ligne_element[3]);
+					$datefin = trim($ligne_element[4]);
+					echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
+					$sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
+							$fonctions->my_real_escape_utf8($harpegeid),
+							$fonctions->my_real_escape_utf8($numligne),
+							$fonctions->my_real_escape_utf8($quotite),
+							$fonctions->my_real_escape_utf8($datedebut),
+							$fonctions->my_real_escape_utf8($datefin));
+		
+					mysql_query($sql);
+					$erreur_requete=mysql_error();
+					if ($erreur_requete!="")
+					{
+						echo "INSERT W_MODALITE => $erreur_requete \n";
+						echo "sql = $sql \n";
+					}
+				}
+			}
+			fclose($fp);
+		}
+		
+		echo "Import des STATUTS D'AFFECTATION \n";
+		// Import des affectations-statut.txt
+		$sql = "DELETE FROM W_STATUT";
+		mysql_query($sql);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			echo "DELETE W_STATUT => $erreur_requete \n";
+		
+		// On charge la table des absences HARPEGE avec le fichier
+		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
+		if (!file_exists($filename))
+		{
+			echo "Le fichier $filename n'existe pas !!! \n";
+		}
+		else
+		{
+			$fp = fopen("$filename","r");
+			while (!feof($fp))
+			{
+				$ligne = fgets($fp); // lecture du contenu de la ligne
+				if (trim($ligne)!="")
+				{
+					$ligne_element = explode(";",$ligne);
+					$harpegeid = trim($ligne_element[0]);
+					$numligne = trim($ligne_element[1]);
+					$statut = trim($ligne_element[2]);
+					$datedebut = trim($ligne_element[3]);
+					$datefin = trim($ligne_element[4]);
+					echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
+					$sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
+							$fonctions->my_real_escape_utf8($harpegeid),
+							$fonctions->my_real_escape_utf8($numligne),
+							$fonctions->my_real_escape_utf8($statut),
+							$fonctions->my_real_escape_utf8($datedebut),
+							$fonctions->my_real_escape_utf8($datefin));
+		
+					mysql_query($sql);
+					$erreur_requete=mysql_error();
+					if ($erreur_requete!="")
+					{
+						echo "INSERT W_STATUT => $erreur_requete \n";
+						echo "sql = $sql \n";
+					}
+				}
+			}
+			fclose($fp);
+		}
+		
+		echo "Import des STRUCTURES D'AFFECTATION \n";
+		// Import des affectations-structure.txt
+		$sql = "DELETE FROM W_STRUCTURE";
+		mysql_query($sql);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			echo "DELETE W_STRUCTURE => $erreur_requete \n";
+		
+		// On charge la table des absences HARPEGE avec le fichier
+		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
+		if (!file_exists($filename))
+		{
+			echo "Le fichier $filename n'existe pas !!! \n";
+		}
+		else
+		{
+			$fp = fopen("$filename","r");
+			while (!feof($fp))
+			{
+				$ligne = fgets($fp); // lecture du contenu de la ligne
+				if (trim($ligne)!="")
+				{
+					$ligne_element = explode(";",$ligne);
+					$harpegeid = trim($ligne_element[0]);
+					$numligne = trim($ligne_element[1]);
+					$idstruct = trim($ligne_element[2]);
+					$datedebut = trim($ligne_element[3]);
+					$datefin = trim($ligne_element[4]);
+					echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
+					$sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
+							$fonctions->my_real_escape_utf8($harpegeid),
+							$fonctions->my_real_escape_utf8($numligne),
+							$fonctions->my_real_escape_utf8($idstruct),
+							$fonctions->my_real_escape_utf8($datedebut),
+							$fonctions->my_real_escape_utf8($datefin));
+		
+					mysql_query($sql);
+					$erreur_requete=mysql_error();
+					if ($erreur_requete!="")
+					{
+						echo "INSERT W_STRUCTURE => $erreur_requete \n";
+						echo "sql = $sql \n";
+					}
+				}
+			}
+			fclose($fp);
+		}
+	}
 
-	
-	echo "Import des MODALITES D'AFFECTATION \n";
-	// Import des affectations-modalite.txt
-	$sql = "DELETE FROM W_MODALITE";
-	mysql_query($sql);
-	$erreur_requete=mysql_error();
-	if ($erreur_requete!="")
-		echo "DELETE W_MODALITE => $erreur_requete \n";
-	
-	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations-modalite.txt";
-	if (!file_exists($filename))
-	{
-		echo "Le fichier $filename n'existe pas !!! \n";
-	}
-	else
-	{
-		$fp = fopen("$filename","r");
-		while (!feof($fp))
-		{
-			$ligne = fgets($fp); // lecture du contenu de la ligne
-			if (trim($ligne)!="")
-			{
-				$ligne_element = explode(";",$ligne);
-				$harpegeid = trim($ligne_element[0]);
-				$numligne = trim($ligne_element[1]);
-				$quotite = trim($ligne_element[2]);
-				$datedebut = trim($ligne_element[3]);
-				$datefin = trim($ligne_element[4]);
-				echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
-				$sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
-						$fonctions->my_real_escape_utf8($harpegeid),
-						$fonctions->my_real_escape_utf8($numligne),
-						$fonctions->my_real_escape_utf8($quotite),
-						$fonctions->my_real_escape_utf8($datedebut),
-						$fonctions->my_real_escape_utf8($datefin));
-	
-				mysql_query($sql);
-				$erreur_requete=mysql_error();
-				if ($erreur_requete!="")
-				{
-					echo "INSERT W_MODALITE => $erreur_requete \n";
-					echo "sql = $sql \n";
-				}
-			}
-		}
-		fclose($fp);
-	}
-	
-	echo "Import des STATUTS D'AFFECTATION \n";
-	// Import des affectations-statut.txt
-	$sql = "DELETE FROM W_STATUT";
-	mysql_query($sql);
-	$erreur_requete=mysql_error();
-	if ($erreur_requete!="")
-		echo "DELETE W_STATUT => $erreur_requete \n";
-	
-	// On charge la table des absences HARPEGE avec le fichier
-	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations-status.txt";
-	if (!file_exists($filename))
-	{
-		echo "Le fichier $filename n'existe pas !!! \n";
-	}
-	else
-	{
-		$fp = fopen("$filename","r");
-		while (!feof($fp))
-		{
-			$ligne = fgets($fp); // lecture du contenu de la ligne
-			if (trim($ligne)!="")
-			{
-				$ligne_element = explode(";",$ligne);
-				$harpegeid = trim($ligne_element[0]);
-				$numligne = trim($ligne_element[1]);
-				$statut = trim($ligne_element[2]);
-				$datedebut = trim($ligne_element[3]);
-				$datefin = trim($ligne_element[4]);
-				echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
-				$sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
-						$fonctions->my_real_escape_utf8($harpegeid),
-						$fonctions->my_real_escape_utf8($numligne),
-						$fonctions->my_real_escape_utf8($statut),
-						$fonctions->my_real_escape_utf8($datedebut),
-						$fonctions->my_real_escape_utf8($datefin));
-	
-				mysql_query($sql);
-				$erreur_requete=mysql_error();
-				if ($erreur_requete!="")
-				{
-					echo "INSERT W_STATUT => $erreur_requete \n";
-					echo "sql = $sql \n";
-				}
-			}
-		}
-		fclose($fp);
-	}
-	
-	echo "Import des STRUCTURES D'AFFECTATION \n";
-	// Import des affectations-structure.txt
-	$sql = "DELETE FROM W_STRUCTURE";
-	mysql_query($sql);
-	$erreur_requete=mysql_error();
-	if ($erreur_requete!="")
-		echo "DELETE W_STRUCTURE => $erreur_requete \n";
-	
-	// On charge la table des absences HARPEGE avec le fichier
-	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations-structures.txt";
-	if (!file_exists($filename))
-	{
-		echo "Le fichier $filename n'existe pas !!! \n";
-	}
-	else
-	{
-		$fp = fopen("$filename","r");
-		while (!feof($fp))
-		{
-			$ligne = fgets($fp); // lecture du contenu de la ligne
-			if (trim($ligne)!="")
-			{
-				$ligne_element = explode(";",$ligne);
-				$harpegeid = trim($ligne_element[0]);
-				$numligne = trim($ligne_element[1]);
-				$idstruct = trim($ligne_element[2]);
-				$datedebut = trim($ligne_element[3]);
-				$datefin = trim($ligne_element[4]);
-				echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
-				$sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
-						$fonctions->my_real_escape_utf8($harpegeid),
-						$fonctions->my_real_escape_utf8($numligne),
-						$fonctions->my_real_escape_utf8($idstruct),
-						$fonctions->my_real_escape_utf8($datedebut),
-						$fonctions->my_real_escape_utf8($datefin));
-	
-				mysql_query($sql);
-				$erreur_requete=mysql_error();
-				if ($erreur_requete!="")
-				{
-					echo "INSERT W_STRUCTURE => $erreur_requete \n";
-					echo "sql = $sql \n";
-				}
-			}
-		}
-		fclose($fp);
-	}
-	
-
-	$agentidprecedent = "";
+	$agentprecedent = new agent($dbcon);
 	$indicetabaffectation = 0;
 	
 	$sql = "SELECT AFFECTATION.AFFECTATIONID, AFFECTATION.HARPEGEID, AFFECTATION.DATEDEBUT, AFFECTATION.DATEFIN 
@@ -188,8 +195,15 @@
 //		echo "SQL (UPDATE 1) = " . $sql . "\n";
 		mysql_query($sql, $dbcon);
 		
-		if ($agent->harpegeid() != $agentidprecedent)
+		if ($agent->harpegeid() != $agentprecedent->harpegeid())
 		{
+/*
+			if (!is_null($agentprecedent->harpegeid()))
+			{
+				echo "Ancien agent => contrôle des demandes de congés / TP\n";
+				$agentprecedent->controlecongesTP('20140901', '20160831');
+			}
+*/
 			echo "Nouvel agent => creation de la timeline\n";
 			// Création de la timeLine pour l'agent courant !!
 			$tabaffectation = $agent->creertimeline();
@@ -285,7 +299,7 @@
 				
 				if ($nombretheoriquededemiejrs != $nombrededemiejrs)
 				{
-					echo "Detection incoherence : numquotite = $numquotite  declarationtp[2] = $declarationtp[2] \n";
+					echo "Detection incoherence : numquotite = $numquotite  declarationtp[2] = $declarationtp[2] => Pas de création de la déclaration de TP\n";
 				}
 				else
 				{
@@ -309,8 +323,8 @@
 				}
 			}
 		} 
-		echo "agentidprecedent = $agentidprecedent   Maintenant il devient : " . $agent->harpegeid() . "\n";
-		$agentidprecedent = $agent->harpegeid();
+		echo "agentprecedent = " . $agentprecedent->harpegeid() . "   Maintenant il devient : " . $agent->harpegeid() . "\n";
+		$agentprecedent = $agent;
 		$indicetabaffectation = $indicetabaffectation + 1;
 		echo "On est passe à l'indice suivant de la tabaffectation => " . $indicetabaffectation . "\n" ;
 	}
