@@ -15,6 +15,7 @@ class planningelement {
 	private $dbconnect = null;
 	private $statut = null;
 	private $agentid = null;
+	private $demandeid = null;
 	
 	private $fonctions = null;
 	
@@ -114,7 +115,18 @@ class planningelement {
 		}
 		else
 			$this->agentid = $id;
-		
+	}
+	
+	function demandeid($id = null)
+	{
+		if (is_null($id))
+		{
+			return $this->demandeid;
+		}
+		else
+		{
+			$this->demandeid = $id;
+		}
 	}
 	
 	function couleur()

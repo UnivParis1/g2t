@@ -148,7 +148,7 @@
 			echo "<form name='frm_validation_autodecla'  method='post' >";
 			echo "<table class='tableausimple'>";
 			echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong()  . "</td></tr>";
-			echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Etat de la demande</td><td class='cellulesimple'>Jours de RTT</td></tr>";
+			echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Etat de la demande</td><td class='cellulesimple'>Jours de temps partiel</td></tr>";
 			foreach ($agentlist as $key => $membre)
 			{
 				$affectationliste = $membre->affectationliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());

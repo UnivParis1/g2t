@@ -22,6 +22,10 @@
 	$date=date("Ymd");
 
 	echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n" ;
+	
+	$modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
+	$statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
+	$structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
 
 	$skipreadfile = false;
 	if (isset($argv[1]))
@@ -32,6 +36,29 @@
 	
 	if (!$skipreadfile)
 	{
+		$exit = false;
+		echo "Vérification existance des fichiers....\n";
+		if (!file_exists($modalitefile))
+		{
+			echo "Le fichier $modalitefile n'existe pas !!! \n";
+			$exit = true;
+		}
+		if (!file_exists($statutfile))
+		{
+			echo "Le fichier $statutfile n'existe pas !!! \n";
+			$exit = true;
+		}
+		if (!file_exists($structurefile))
+		{
+			echo "Le fichier $structurefile n'existe pas !!! \n";
+			$exit = true;
+		}
+		if ($exit == true)
+		{
+			echo "Il manque au moins un fichier => Aucune mise à jour réalisée !!! \n";
+			exit;
+		}
+		
 		echo "Import des MODALITES D'AFFECTATION \n";
 		// Import des affectations-modalite.txt
 		$sql = "DELETE FROM W_MODALITE";
@@ -40,14 +67,13 @@
 		if ($erreur_requete!="")
 			echo "DELETE W_MODALITE => $erreur_requete \n";
 		
-		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
-		if (!file_exists($filename))
+		if (!file_exists($modalitefile))
 		{
-			echo "Le fichier $filename n'existe pas !!! \n";
+			echo "Le fichier $modalitefile n'existe pas !!! \n";
 		}
 		else
 		{
-			$fp = fopen("$filename","r");
+			$fp = fopen("$modalitefile","r");
 			while (!feof($fp))
 			{
 				$ligne = fgets($fp); // lecture du contenu de la ligne
@@ -88,14 +114,13 @@
 			echo "DELETE W_STATUT => $erreur_requete \n";
 		
 		// On charge la table des absences HARPEGE avec le fichier
-		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
-		if (!file_exists($filename))
+		if (!file_exists($statutfile))
 		{
-			echo "Le fichier $filename n'existe pas !!! \n";
+			echo "Le fichier $statutfile n'existe pas !!! \n";
 		}
 		else
 		{
-			$fp = fopen("$filename","r");
+			$fp = fopen("$statutfile","r");
 			while (!feof($fp))
 			{
 				$ligne = fgets($fp); // lecture du contenu de la ligne
@@ -136,14 +161,13 @@
 			echo "DELETE W_STRUCTURE => $erreur_requete \n";
 		
 		// On charge la table des absences HARPEGE avec le fichier
-		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
-		if (!file_exists($filename))
+		if (!file_exists($structurefile))
 		{
-			echo "Le fichier $filename n'existe pas !!! \n";
+			echo "Le fichier $structurefile n'existe pas !!! \n";
 		}
 		else
 		{
-			$fp = fopen("$filename","r");
+			$fp = fopen("$structurefile","r");
 			while (!feof($fp))
 			{
 				$ligne = fgets($fp); // lecture du contenu de la ligne
@@ -490,13 +514,25 @@
 		echo "ATTENTION : Il y a des affectations obsoletes \n";
 		while ($result = mysql_fetch_row($query))
 		{
-			$sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'",
-					$fonctions->my_real_escape_utf8($result[2]));
-			echo "SQL (Suite obsolete) => $sql \n";
+			$sql = sprintf("UPDATE AFFECTATION SET DATEMODIFICATION='%s' WHERE AFFECTATIONID = '%s'",
+					$fonctions->my_real_escape_utf8($result[0]),
+					$fonctions->my_real_escape_utf8(date("Ymd")));
+			echo "SQL (UPDATE DATEMODIF) => $sql \n";
 			mysql_query($sql);
 			$erreur_requete=mysql_error();
 			if ($erreur_requete!="")
+			{
+				echo "UPDATE AFFECTATION (Mise du date de modification)=> $erreur_requete \n";
+			}	
+			$sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'",
+					$fonctions->my_real_escape_utf8($result[2]));
+			echo "SQL (UPDATE STATUT) => $sql \n";
+			mysql_query($sql);
+			$erreur_requete=mysql_error();
+			if ($erreur_requete!="")
+			{
 				echo "UPDATE DECLARATIONTP (Mise du Statut à 'r')=> $erreur_requete \n";
+			}
 		}
 	}
 	// Pas d'affectation obsolete !!!

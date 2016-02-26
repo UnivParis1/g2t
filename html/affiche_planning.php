@@ -36,17 +36,22 @@
 
 	echo "<br>Planning de l'agent " . $user->civilite() . " "  . $user->nom() . " " . $user->prenom() . " <br>";
 
+	$datedebut = $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode());
 	if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
 	{
-		$datetemp = ($fonctions->anneeref()+1) . $fonctions->finperiode();
-		$timestamp = strtotime($datetemp);
-		$datetemp = date("Ymd", strtotime("+1month", $timestamp ));  // On passe au mois suivant
-		$timestamp = strtotime($datetemp);
-		$datetemp = date("Ymd", strtotime("-1days", $timestamp ));  // On passe Ã  la veille
-		echo $user->planninghtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$datetemp);
+		$datefin = ($fonctions->anneeref()+1) . $fonctions->finperiode();
+		$timestamp = strtotime($datefin);
+		$datefin = date("Ymd", strtotime("+1month", $timestamp ));  // On passe au mois suivant
+		$timestamp = strtotime($datefin);
+		$datefin = date("Ymd", strtotime("-1days", $timestamp ));  // On passe Ã  la veille	
 	}
 	else
-		echo $user->planninghtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()));
+	{
+		$datefin = $fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode());
+	}
+	echo $user->planninghtml($datedebut,$datefin);		
+
+	echo "<br>";
 
 ?>
 </body></html>

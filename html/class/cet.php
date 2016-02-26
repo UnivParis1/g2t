@@ -212,7 +212,8 @@ class cet {
 		{
 			//echo "Cet->Load (cet%) : Aucun cumul annuel pour l'agent $agentid  trouvé <br>";
 			$errlog = "Aucun cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pu être trouvé";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			// Suppression de la trace car pas une erreur
+			//error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			$msgerreur = $msgerreur . $errlog."<br/>";
 		}
 
@@ -237,7 +238,8 @@ class cet {
 			//echo "Cet->Load (cet) : Le CET pour l'agent $agentid non trouvé <br>";
 			$errlog = "Le CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvé";
 			$msgerreur = $msgerreur . $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			// Suppression de la trace car pas une erreur
+			//error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
 		$result = mysql_fetch_row($query);
 		$this->cumultotal = $result[2];
@@ -251,7 +253,8 @@ class cet {
 		{
 			//echo "Cet->Load (date début) : La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvée <br>";
 			$errlog = "La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvée";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			// Suppression de la trace car pas une erreur
+			//error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			$msgerreur = $msgerreur . $errlog."<br/>";
 			$this->datedebut = "";
 		}

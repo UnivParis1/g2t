@@ -39,24 +39,25 @@
 ---------------------------------------------------------
 */
 
-	// On parcours chaque ligne du fichier
-	// Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifié
-	// 	Si DateFin plus petite => Ca se fini plus tard, donc on reduit le TP
-	//		Si NumQuotite ou DenumQuotite ==>
-	$sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='O'");
-	$query_aff = mysql_query($sql);
-	$erreur_requete=mysql_error();
-	if ($erreur_requete!="")
-		echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
-
 
 	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/har_affectations_$date.dat";
 	if (!file_exists($filename))
 	{
 		echo "Le fichier $filename n'existe pas !!! \n";
+		exit;
 	}
 	else
 	{
+		// On parcours chaque ligne du fichier
+		// Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifié
+		// 	Si DateFin plus petite => Ca se fini plus tard, donc on reduit le TP
+		//		Si NumQuotite ou DenumQuotite ==>
+		$sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='O'");
+		$query_aff = mysql_query($sql);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
+	
 		$fp = fopen("$filename","r");
 		while (!feof($fp))
 		{
@@ -66,17 +67,17 @@
 			{
 		//		echo "Ligne = $ligne \n";
 				$ligne_element = explode(";",$ligne);
-				$affectationid = $ligne_element[0];
-				$harpegeid = $ligne_element[1];
-				$numcontrat = $ligne_element[2];
-				$datedebut = $ligne_element[3];
-				$datefin = $ligne_element[4];
+				$affectationid = trim($ligne_element[0]);
+				$harpegeid = trim($ligne_element[1]);
+				$numcontrat = trim($ligne_element[2]);
+				$datedebut = trim($ligne_element[3]);
+				$datefin = trim($ligne_element[4]);
 				if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) 
 					$datefin = "9999-12-31";
-				$datemodif = $ligne_element[5];
-				$structureid = $ligne_element[6];
-				$numquotite = $ligne_element[7];
-				$denomquotite = $ligne_element[8];
+				$datemodif = trim($ligne_element[5]);
+				$structureid = trim($ligne_element[6]);
+				$numquotite = trim($ligne_element[7]);
+				$denomquotite = trim($ligne_element[8]);
 				echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif \n";
 	
 				$sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'",$fonctions->my_real_escape_utf8($affectationid));

@@ -379,7 +379,7 @@ AND DEMANDE.STATUT='v'";
 		//$msg .= "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n";
 		$msg .= "Content-Transfer-Encoding:8bit\r\n";
 		$msg .= "\r\n";
-		$msg .= "Bonjour,<br><br>";
+		$msg .= "Bonjour " . ucwords(strtolower($destinataire->identitecomplete()))  . ",<br><br>";
 		$msg .= nl2br(htmlentities("$message",ENT_QUOTES,"UTF-8",false)) ."<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) ."\r\n";
 		
 		//$msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
@@ -740,10 +740,12 @@ AND DEMANDE.STATUT='v'";
 		{
 			$pdf->AddPage('L');
 			$pdf->Image(dirname(dirname(__FILE__)).'/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('helvetica', 'B', 15, '', true);
+			$pdf->SetFont('helvetica', 'B', 8, '', true);
 			$pdf->Ln(15);
 
 			$old_structid="";
+			
+/*			
 			$affectationliste = $this->affectationliste($this->fonctions->formatdate($anneeref . $this->fonctions->debutperiode()),$this->fonctions->formatdate(($anneeref+1) . $this->fonctions->finperiode()));
 			
 			foreach ((array)$affectationliste as $key => $affectation)
@@ -758,18 +760,28 @@ AND DEMANDE.STATUT='v'";
 					$old_structid = $affectation->structureid();
 				}
 			}
-			
+*/
+			$affectationliste = $this->affectationliste(date('d/m/Y'), date('d/m/Y')); // On récupère l'affectation de l'agent à la date du jour 
+			if (is_array($affectationliste))
+			{
+				//echo "affectationliste = " . print_r($affectationliste, true) . "<br>";
+				$affectation = reset($affectationliste); //    ATTENTION : Reset permet de récupérer le premier élément du tableau => On ne connait pas la clé
+				$structure = new structure($this->dbconnect);
+				$structure->load($affectation->structureid());
+				$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+				$pdf->Cell(60,10,'Service : '. $nomstructure);
+			}
+				
 			
 //			$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('.$this->structure()->nomcourt() . ')' );
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
-			$pdf->SetFont('helvetica', 'B', 11, '', true);
+			$pdf->SetFont('helvetica', 'B', 8, '', true);
 			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
-			$pdf->Ln(10);
 		}
-		$pdf->SetFont('helvetica', '', 8, '', true);
-		$pdf->Ln(5);
+		$pdf->SetFont('helvetica', '', 6, '', true);
+		$pdf->Ln(10);
 		
 		if (!$infoagent)
 		{
@@ -901,6 +913,56 @@ AND DEMANDE.STATUT='v'";
    /**
          * @param date $datedebut date of the beginning of the interval
          * @param date $datefin date of the ending of the interval
+         * @return array list of query objects 
+   */
+	function demandesliste($datedebut,$datefin)
+	{
+		$debut_interval = $this->fonctions->formatdatedb($datedebut);
+		$fin_interval = $this->fonctions->formatdatedb($datefin);
+		$demande_liste = array();
+
+		$sql = "SELECT DISTINCT DEMANDE.DEMANDEID
+				FROM DEMANDE,AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP 
+				WHERE DEMANDEDECLARATIONTP.DEMANDEID= DEMANDE.DEMANDEID
+				   AND DEMANDEDECLARATIONTP.DECLARATIONID = DECLARATIONTP.DECLARATIONID
+				   AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID
+				   AND AFFECTATION.HARPEGEID = '". $this->harpegeid()  . "'
+			       AND ((DEMANDE.DATEDEBUT <= '" . $debut_interval . "' AND DEMANDE.DATEFIN >='" . $debut_interval . "')
+						OR (DEMANDE.DATEFIN >= '" . $fin_interval . "' AND DEMANDE.DATEDEBUT <='" . $fin_interval . "')
+						OR (DEMANDE.DATEDEBUT >= '" . $debut_interval . "' AND DEMANDE.DATEFIN <= '" . $fin_interval . "'))
+				ORDER BY DEMANDE.DATEDEBUT";
+
+		//echo "Agent->demandesliste SQL = $sql <br>";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "") {
+			$errlog = "Agent->demandesliste : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		if (mysql_num_rows($query) == 0)
+		{
+			//echo "Agent->demandesliste : Il n'y a pas de demande de congé/absence pour cet agent " . $this->harpegeid()  . " dans l'interval de temps  " . $this->fonctions->formatdate($debut_interval) .  " -> " . $this->fonctions->formatdate($debut_interval) . "<br>";
+		}
+		while ($result = mysql_fetch_row($query))
+		{
+			$demande = new demande($this->dbconnect);
+			//echo "Agent->demandesliste : Avant le load " . $result[0]  . "<br>";
+			$demande->load("$result[0]");
+			//echo "Agent->demandesliste : Apres le load <br>";
+			$demande_liste[$demande->id()] = $demande;
+			unset($demande);
+		}
+		//echo "declarationTP->demandesliste : demande_liste = "; print_r($demande_liste); echo "<br>";
+		return $demande_liste;
+				
+		
+	}
+	
+	
+   /**
+         * @param date $datedebut date of the beginning of the interval
+         * @param date $datefin date of the ending of the interval
          * @param string $structureid optional the structure identifier 
          * @param boolean $showlink optional if true, display link to display array in pdf format. hide link otherwise
          * @return string the html text of the array
@@ -909,10 +971,13 @@ AND DEMANDE.STATUT='v'";
 	{
 		$demandeliste = null;
 		$synthesetab = array();
+/*
 		$affectationliste = $this->affectationliste($datedebut, $datefin);
 		$affectation = new affectation($this->dbconnect);
 		$declarationTP = new declarationTP($this->dbconnect);
 		$demande = new demande($this->dbconnect);
+		
+
 		if (!is_null($affectationliste))
 		{
 			foreach ($affectationliste as $key => $affectation)
@@ -944,7 +1009,9 @@ AND DEMANDE.STATUT='v'";
 			unset($uniquedemandeliste);
 		}
 		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
+*/	
 		
+		$demandeliste = $this->demandesliste($datedebut, $datefin);
 		$htmltext =                   "<br>";
 		$htmltext = $htmltext .       "<div id='demandeliste'>";
 		$htmltext = $htmltext .       "<center><table class='tableau' >";
@@ -1093,6 +1160,8 @@ AND DEMANDE.STATUT='v'";
 	{
 		$demandeliste = null;
 		$synthesetab = array();
+		
+/*
 		$affectationliste = $this->affectationliste($datedebut, $datefin);
 		$affectation = new affectation($this->dbconnect);
 		$declarationTP = new declarationTP($this->dbconnect);
@@ -1123,7 +1192,9 @@ AND DEMANDE.STATUT='v'";
 			unset($uniquedemandeliste);
 		}
 		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
-				
+*/
+
+		$demandeliste = $this->demandesliste($datedebut, $datefin);
 		$closeafter = FALSE;
 		if (is_null($pdf))
 		{
@@ -1140,8 +1211,9 @@ AND DEMANDE.STATUT='v'";
 			//echo "Apres le addpage <br>";
 			$pdf->SetHeaderData('', 0, '', '', array(0,0,0), array(255,255,255));
 			$pdf->Image('../html/images/logo_papeterie.png',10,5,60,20);
-			$pdf->SetFont('helvetica', 'B', 15, '', true);
+			$pdf->SetFont('helvetica', 'B', 8, '', true);
 			$pdf->Ln(15);
+/*
 			foreach ($affectationliste as $key => $affectation)
 			{
 				$structure = new structure($this->dbconnect);
@@ -1150,15 +1222,29 @@ AND DEMANDE.STATUT='v'";
 				$pdf->Cell(60,10,'Service : '. $nomstructure);
 				$pdf->Ln();
 			}
+*/
+			$affectationliste = $this->affectationliste(date('d/m/Y'), date('d/m/Y')); // On récupère l'affectation courante
+			if (is_array($affectationliste))
+			{
+				//echo "affectationliste = " . print_r($affectationliste, true) . "<br>";
+				$affectation = reset($affectationliste); //    ATTENTION : Reset permet de récupérer le premier élément du tableau => On ne connait pas la clé
+				$structure = new structure($this->dbconnect);
+				$structure->load($affectation->structureid());
+				$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+				$pdf->Cell(60,10,'Service : '. $nomstructure);
+				$pdf->Ln();
+			}
+				
+			
 			$pdf->Cell(60,10,'Historique des demandes de  : '. $this->civilite() . " " . $this->nom() . " " . $this->prenom());
 			$pdf->Ln(5);
 			$pdf->Cell(60,10,"Période du " . $this->fonctions->formatdate($datedebut) ." au " . $this->fonctions->formatdate($datefin));
 			$pdf->Ln(10);
-			$pdf->SetFont('helvetica', 'B', 11, '', true);
+			$pdf->SetFont('helvetica', 'B', 6, '', true);
 			$pdf->Cell(60,10,'Edité le '. date("d/m/Y"));
 			$pdf->Ln(10);
 		}
-		$pdf->SetFont('helvetica', '', 8, '', true);
+		$pdf->SetFont('helvetica', '', 6, '', true);
 		
 		$headertext = "Tableau récapitulatif des demandes - Congés pris entre " . $this->fonctions->formatdate($datedebut) . " et ";
 		if (date("Ymd")>$datefin)
@@ -1260,6 +1346,8 @@ AND DEMANDE.STATUT='v'";
 	{
 
 		$liste = null;
+		
+/*		
 		$affectationliste = $this->affectationliste($debut_interval, $fin_interval);
 		$affectation = new affectation($this->dbconnect);
 		$declarationTP = new declarationTP($this->dbconnect);
@@ -1296,7 +1384,9 @@ AND DEMANDE.STATUT='v'";
 			unset($uniquedemandeliste);
 		}
 		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
-		
+*/
+
+		$liste = $this->demandesliste($debut_interval,$fin_interval);
 		$debut_interval = $this->fonctions->formatdatedb($debut_interval);
 		$fin_interval = $this->fonctions->formatdatedb($fin_interval);
 
@@ -1364,6 +1454,7 @@ AND DEMANDE.STATUT='v'";
 	function demandeslistehtmlpourvalidation($debut_interval,$fin_interval, $agentid = null, $structureid = null, $cleelement = null)
 	{
 		$liste = null;
+/*
 		$affectationliste = $this->affectationliste($debut_interval, $fin_interval);
 		$affectation = new affectation($this->dbconnect);
 		$declarationTP = new declarationTP($this->dbconnect);
@@ -1400,7 +1491,8 @@ AND DEMANDE.STATUT='v'";
 			unset($uniquedemandeliste);
 		}
 		//echo "#######demandeliste (Count=" . count($demandeliste) .")  = "; print_r($demandeliste); echo "<br>";
-		
+*/
+		$liste = $this->demandesliste($debut_interval, $fin_interval);
 		$debut_interval = $this->fonctions->formatdatedb($debut_interval);
 		$fin_interval = $this->fonctions->formatdatedb($fin_interval);
 			
@@ -1666,7 +1758,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 	        	$strresultat = $strresultat . ';' . $statutid;
 	        	$strresultat = $strresultat . ';' . $datedebut;
 	          	$strresultat = $strresultat . ';' . $datefin;
-	          	$strresultat = $strresultat . ';' . $datedebut;
+	          	$strresultat = $strresultat . ';' . date("Ymd");
 	          	$strresultat = $strresultat . ';' . $structid;
 	          	$strresultat = $strresultat . ';' . $quotitevalue;
 	          	$strresultat = $strresultat . ';' . '100';
@@ -1690,71 +1782,24 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 	function controlecongesTP($datedebut, $datefin)
 	{
 		
-		echo "Pas encore implémentée....\n";
-		return;
+		$analyse = array();
+		$demandeliste = $this->demandesliste($datedebut, $datefin);
 		
-		$demandeliste = null;
-		$affectationliste = $this->affectationliste($datedebut, $datefin);
-		$affectation = new affectation($this->dbconnect);
-		$declarationTP = new declarationTP($this->dbconnect);
-		$demande = new demande($this->dbconnect);
-		if (!is_null($affectationliste))
+		foreach ($demandeliste as $demande)
 		{
-			foreach ($affectationliste as $key => $affectation)
+			if (!$demande->controlenbrejrs($nbrejrscalcule))
 			{
-				//echo "<br><br>Affectation (".  $affectation->affectationid()  .")  date debut = " . $affectation->datedebut() . "  Date fin = " . $affectation->datefin() . "<br>";
-				unset($declarationTPliste);
-				$declarationTPliste = $affectation->declarationTPliste($datedebut, $datefin);
-				if (!is_null($declarationTPliste))
-				{
-					foreach ($declarationTPliste as $key => $declarationTP)
-					{
-						//echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ")  Debut = " . $declarationTP->datedebut() . "   Fin = " . $declarationTP->datefin() . "<br>";
-						//echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
-						$demandeliste = array_merge((array)$demandeliste,(array)$declarationTP->demandesliste($datedebut, $datefin));
-					}
-				}
+				$analyse[$demande->id()] = "Il y a un probleme !!!! Nbre jours de la demande = " . $demande->nbrejrsdemande() . "   Nbre jours recalcules = $nbrejrscalcule (demande Id = ". $demande->id() . ")\n<br>";
 			}
-		}
-		//echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-		// On enlève les doublons des demandes !!!
-		$uniquedemandeliste = array();
-		if (is_array($demandeliste))
-		{
-			foreach ($demandeliste as $key => $demande)
+			// La fonction retourne vrai mais avec un nombre de jour nul => La demande est annulée ou refusée
+			elseif ($nbrejrscalcule == 0)
 			{
-				if (($demande->statut() == 'v') or ($demande->statut() == 'a')) 
-				{
-					$uniquedemandeliste[$demande->id()] = $demande;
-				}
+				$analyse[$demande->id()] = "Aucune vérification faite car la demande ". $demande->id() . " est annulée ou refusée...\n<br>";
 			}
-			$demandeliste = $uniquedemandeliste;
-			unset($uniquedemandeliste);
 		}
 		
-		foreach ($demandeliste as $key => $demande)
-		{
-			$plan  = new planning($this->dbconnect);
-			$plan->load($this->harpegeid, $demande->datedebut(), $demande->datefin());
-			$elementlist = $plan->planning();
-			$nbelement = 0;
-			foreach ($elementlist as $element)
-			{
-				if ($this->fonctions->estunconge($element->type()))
-				{
-					$nbelement = $nbelement + 1;
-				}
-			}
-			if ($demande->moment_debut()  == 'a')
-				$nbelement = $nbelement - 1;
-			if ($demande->moment_fin()  == 'm')
-				$nbelement = $nbelement - 1;
-			$nbelement = $nbelement  / 2;
-			if ($nbelement != $demande->nbrejrsdemande())
-			{
-				echo "Il y a un problème !!!! Nbre jours de la demande = " . $demande->nbrejrsdemande() . "   Nbre jours recalcules = $nbelement (demande Id = ". $demande->id() . ")\n"; 
-			}
-		}
+		
+		return $analyse;
 		
 	}
 	

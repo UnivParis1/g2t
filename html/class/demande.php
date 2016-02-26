@@ -423,6 +423,47 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		return $this->agent;
 	}
 	
+	function controlenbrejrs(&$nbrejrscalcule)
+	{
+		//echo "\n\n<br><br>On est sur la demande : Datedebut = " . $this->datedebut() . "    date fin = " . $this->datefin() . "\n<br>";
+		$nbredemiejrs = 0;
+		$nbrejrscalcule = 0;
+		$agent = $this->agent();
+		//echo "identite de l'agent => " . $agent->identitecomplete() . "<br>";
+		if (($this->statut() == 'v') or ($this->statut() == 'a'))
+		{
+			$planning = new planning($this->dbconnect);
+			$planning->load($agent->harpegeid(), $this->datedebut(), $this->datefin());
+			$listelement = $planning->planning();
+			//echo "<br>Liste des elements => " . print_r($listelement,true) . "\n<br>";
+			foreach ((array)$listelement as $element)
+			{
+				//echo "Dans la boucle .... Id de la demande courante = ". $this->demandeid  . "   L'element Id = " . $element->demandeid()  . "\n<br>";
+				if ($element->demandeid() == $this->demandeid)
+				{
+					//echo "Yes !!! +1 \n<br>";
+					$nbredemiejrs = $nbredemiejrs + 1;
+				}
+			}
+			
+			$nbrejrscalcule = $nbredemiejrs / 2;
+			//echo "Fin de la boucle nbrejrscalcules = $nbrejrscalcules    nbrejrsdemande = " . $this->nbrejrsdemande() . "\n<br>";
+			if ($nbrejrscalcule != $this->nbrejrsdemande())
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		// Pas de vérification car la demande est annulée ou refusée !
+		else
+		{
+			return true;
+		}
+	}
+	
 	function store($declarationTPListe = null, $ignoreabsenceautodecla = FALSE, $ignoresoldeinsuffisant = FALSE)
 	{
 		//echo "Demande->store : En cours de réécriture !!!!! <br>";
@@ -649,7 +690,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Ln(70);
 //		$pdf->Cell(60,10,'Composante : '. $this->structure()->parentstructure()->nomlong() .' ('. $this->structure()->parentstructure()->nomcourt() .')' );
 //		$pdf->Ln(10);
-		$pdf->SetFont('helvetica', 'B', 12, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 
 		$agent = $this->agent();
 		$affectationliste = $agent->affectationliste($this->datedebut, $this->datefin);
@@ -670,14 +711,14 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 
 //		$pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
 //		$pdf->Ln(10);
-		$pdf->SetFont('helvetica', 'B', 12, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 		if ($this->fonctions->estunconge($this->typeabsenceid))
 			$typelib = " de congé ";
 		else 
 			$typelib = " d'autorisation d'absence ";
 		$pdf->Cell(60,10,'Demande' . $typelib .  'N°'. $this->id() .' de ' . $this->agent()->civilite() . " " . $this->agent()->nom() . " " . $this->agent()->prenom() );
 		$pdf->Ln(10);
-		$pdf->SetFont('helvetica', 'B', 12, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 		$decision = strtolower($this->fonctions->demandestatutlibelle($this->statut()));
 		
 //		if($this->statut()=='v')
@@ -698,7 +739,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		$pdf->Ln(10);
 		
 		
-		$pdf->SetFont('helvetica', 'B', 10, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 		$pdf->Cell(40,10,'Date de dépot : '. $this->date_demande());
 		$pdf->Ln(10);
         if (strcasecmp($this->statut(),'r')==0)
@@ -719,19 +760,19 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$pdf->Cell(40,10,'Motif du refus : ' . str_replace("''", "'", $this->motifrefus()));
 		}
 		$pdf->Ln(10);
-		$pdf->SetFont('helvetica', 'B', 12, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 		$pdf->Ln(10);
 		$pdf->Cell(25,10,'');
 		$pdf->Cell(60,10,'Solde en cours');
 		$pdf->Ln(10);
-		$pdf->SetFont('helvetica', 'I', 9, '', true);
+		$pdf->SetFont('helvetica', 'I', 6, '', true);
 		$pdf->Cell(25,10,'');
 		$pdf->Cell(70,7,'Type de congé',1);
 		$pdf->Cell(25,7,'Droit acquis',1);
 		$pdf->Cell(25,7,'Droit pris',1);
 		$pdf->Cell(25,7,'Solde actuel',1);
 		$pdf->Ln();
-		$pdf->SetFont('helvetica', 'B', 9, '', true);
+		$pdf->SetFont('helvetica', 'B', 6, '', true);
 		$pdf->Cell(25,10,'');
 
 		$tabsolde = $agent->soldecongesliste($this->fonctions->anneeref());
@@ -744,7 +785,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				$pdf->Cell(25,7,(string)($solde->droitpris()),1);
 				$pdf->Cell(25,7,(string)($solde->solde()),1);
 				$pdf->Ln();
-				$pdf->SetFont('helvetica', 'B', 9, '', true);
+				$pdf->SetFont('helvetica', 'B', 6, '', true);
 				$pdf->Cell(25,10,'');
 			}
 		}

@@ -150,9 +150,9 @@ class fonctions {
 		if (is_null($date))
 			$date = date ("d/m/Y");
 		if (setlocale(LC_TIME, 'fr_FR.UTF8') == '') 
-			setlocale(LC_TIME, 'FRA.UTF8');  //correction problème pour windows
+			setlocale(LC_TIME, 'FRA.UTF8', 'fra');  //correction problème pour windows
 		$monthname = strftime("%B", strtotime($this->formatdatedb($date)));
-		return ucfirst($monthname);
+		return utf8_encode(ucfirst($monthname));
 	}
 
    /**
@@ -164,9 +164,9 @@ class fonctions {
 		if (is_null($date))
 			$date = date ("d/m/Y");
 		if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-			setlocale(LC_TIME, 'FRA.UTF8');  //correction problème pour windows
+			setlocale(LC_TIME, 'FRA.UTF8','fra');  //correction problème pour windows
 		$dayname = strftime("%A", strtotime($this->formatdatedb($date)));
-		return ucfirst($dayname);
+		return utf8_encode(ucfirst($dayname));
 	}
 
    /**
@@ -184,10 +184,10 @@ class fonctions {
 		{
 			$index = $index % 7;
 			if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-				setlocale(LC_TIME, 'FRA.UTF8');  //correction problème pour windows
+				setlocale(LC_TIME, 'FRA.UTF8','fra');  //correction problème pour windows
 			// Le 01/01/2012 est un dimanche
 			$dayname = strftime("%A", strtotime("20120101" + $index));
-			return ucfirst($dayname);
+			return utf8_encode(ucfirst($dayname));
 		}
 	}
 
@@ -367,13 +367,17 @@ class fonctions {
 	{
 		
 		// Cas particulier du CET ==> Il n'est pas annuel mais on doit gérer le compteur de jours restant...
-		if ($typeconge == 'cet')
+		if (strcasecmp($typeconge,'cet')==0)
 			return TRUE;
+		// Cas particulier du WE ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
+		if (strcasecmp($typeconge,"WE")==0)
+			return false;
 		//echo "Fonction->estunconge : typeconge = $typeconge <br>";
 		$sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $typeconge . "'";
 		$query=mysql_query ($sql,$this->dbconnect);
 		$erreur=mysql_error();
-		if ($erreur != "") {
+		if ($erreur != "")
+		{
 			$errlog = "Fonctions->estunconge : " . $erreur;
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));

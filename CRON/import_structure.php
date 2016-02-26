@@ -18,6 +18,7 @@
 	if (!file_exists($filename))
 	{
 		echo "Le fichier $filename n'existe pas !!! \n";
+		exit;
 	}
 	else
 	{
@@ -29,12 +30,12 @@
 			{
 		//		echo "Ligne = $ligne \n";
 				$ligne_element = explode(";",$ligne);
-				$code_struct = $ligne_element[0];
-				$nom_long_struct = $ligne_element[1];
-				$nom_court_struct = $ligne_element[2];
-				$parent_struct = $ligne_element[3];
-				$resp_struct = $ligne_element[4];
-				$date_cloture = $ligne_element[5];
+				$code_struct = trim($ligne_element[0]);
+				$nom_long_struct = trim($ligne_element[1]);
+				$nom_court_struct = trim($ligne_element[2]);
+				$parent_struct = trim($ligne_element[3]);
+				$resp_struct = trim($ligne_element[4]);
+				$date_cloture = trim($ligne_element[5]);
 				if (is_null($date_cloture) or $date_cloture=="")
 					$date_cloture='2999-12-31';
 				echo "code_struct = $code_struct   nom_long_struct=$nom_long_struct   nom_court_struct=$nom_court_struct   parent_struct=$parent_struct   resp_struct=$resp_struct date_cloture=$date_cloture\n";

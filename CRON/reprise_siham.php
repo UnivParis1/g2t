@@ -19,7 +19,22 @@
 	
 	$fonctions = new fonctions($dbcon);
 	
+	/////// VERIFICATION POUR NE PAS POUVOIR LANCER 2 FOIS LA REPRISE SUR LA BASE
+	$sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE AFFECTATIONID LIKE '%\_%\_%'";
+	$queryverif = mysql_query($sql);
+	$erreur_requete=mysql_error();
+	if ($erreur_requete!="")
+		error_log(basename(__FILE__)." ".$erreur_requete);
+	if (mysql_num_rows($queryverif) > 0) // Si des affectationID au format %_%_% sont déja présents => On ne fait pas la reprise !! Elle est déja faite
+	{
+		echo "La reprise est déjà faite !!!!! \n";
+		exit;
+	}
 
+	$modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
+	$statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
+	$structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
+	
 	$skipreadfile = false;
 	if (isset($argv[1]))
 	{
@@ -29,6 +44,30 @@
 	
 	if (!$skipreadfile)
 	{
+		$exit = false;
+		echo "Vérification existance des fichiers....\n";
+		if (!file_exists($modalitefile))
+		{
+			echo "Le fichier $modalitefile n'existe pas !!! \n";
+			$exit = true;
+		}
+		if (!file_exists($statutfile))
+		{
+			echo "Le fichier $statutfile n'existe pas !!! \n";
+			$exit = true;
+		}
+		if (!file_exists($structurefile))
+		{
+			echo "Le fichier $structurefile n'existe pas !!! \n";
+			$exit = true;
+		}
+		if ($exit == true)
+		{
+			echo "Il manque au moins un fichier => Aucune mise à jour réalisée !!! \n";
+			exit;
+		}
+		
+		
 		echo "Import des MODALITES D'AFFECTATION \n";
 		// Import des affectations-modalite.txt
 		$sql = "DELETE FROM W_MODALITE";
@@ -37,14 +76,13 @@
 		if ($erreur_requete!="")
 			echo "DELETE W_MODALITE => $erreur_requete \n";
 		
-		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
-		if (!file_exists($filename))
+		if (!file_exists($modalitefile))
 		{
-			echo "Le fichier $filename n'existe pas !!! \n";
+			echo "Le fichier $modalitefile n'existe pas !!! \n";
 		}
 		else
 		{
-			$fp = fopen("$filename","r");
+			$fp = fopen("$modalitefile","r");
 			while (!feof($fp))
 			{
 				$ligne = fgets($fp); // lecture du contenu de la ligne
@@ -85,14 +123,13 @@
 			echo "DELETE W_STATUT => $erreur_requete \n";
 		
 		// On charge la table des absences HARPEGE avec le fichier
-		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
-		if (!file_exists($filename))
+		if (!file_exists($statutfile))
 		{
-			echo "Le fichier $filename n'existe pas !!! \n";
+			echo "Le fichier $statutfile n'existe pas !!! \n";
 		}
 		else
 		{
-			$fp = fopen("$filename","r");
+			$fp = fopen("$statutfile","r");
 			while (!feof($fp))
 			{
 				$ligne = fgets($fp); // lecture du contenu de la ligne
@@ -133,14 +170,13 @@
 			echo "DELETE W_STRUCTURE => $erreur_requete \n";
 		
 		// On charge la table des absences HARPEGE avec le fichier
-		$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
-		if (!file_exists($filename))
+		if (!file_exists($structurefile))
 		{
-			echo "Le fichier $filename n'existe pas !!! \n";
+			echo "Le fichier $structurefile n'existe pas !!! \n";
 		}
 		else
 		{
-			$fp = fopen("$filename","r");
+			$fp = fopen("$structurefile","r");
 			while (!feof($fp))
 			{
 				$ligne = fgets($fp); // lecture du contenu de la ligne

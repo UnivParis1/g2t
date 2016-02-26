@@ -1,0 +1,111 @@
+<?php
+
+	require_once("../html/class/fonctions.php");
+	require_once('../html/includes/dbconnection.php');
+	
+	require_once("../html/class/agent.php");
+	require_once("../html/class/structure.php");
+	require_once("../html/class/solde.php");
+	require_once("../html/class/demande.php");
+	require_once("../html/class/planning.php");
+	require_once("../html/class/planningelement.php");
+	require_once("../html/class/declarationTP.php");
+	//	require_once("../html/class/autodeclaration.php");
+	//	require_once("../html/class/dossier.php");
+	require_once("../html/class/tcpdf/tcpdf.php");
+	require_once("../html/class/cet.php");
+	require_once("../html/class/affectation.php");
+	require_once("../html/class/complement.php");
+	
+	$fonctions = new fonctions($dbcon);
+	
+	echo "Début des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n" ;
+	
+	$cron = new agent($dbcon);
+	$cron->load('-1'); // L'utilisateur -1 est l'utilisateur CRON
+	
+	$tabadministrateur = array();
+	$sql = "SELECT HARPEGEID FROM COMPLEMENT WHERE COMPLEMENTID = 'ESTADMIN' AND VALEUR = 'O'";
+	$query = mysql_query($sql);
+	$erreur_requete=mysql_error();
+	if ($erreur_requete!="")
+		error_log(basename(__FILE__)." ".$erreur_requete);
+	while ($harpid = mysql_fetch_row($query))
+	{
+		$admin = new agent($dbcon);
+		//echo "Avant le load \n";
+		$admin->load($harpid[0]);
+		//echo "Apres le load \n";
+		$tabadministrateur[$admin->harpegeid()] = $admin;
+		unset($admin);
+	}
+
+	//echo "Liste des admins : " . print_r($tabadministrateur,true) . "\n";
+	
+	echo "Recherche des soldes négatifs...\n";
+	$sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS 
+			FROM SOLDE 
+			WHERE DROITPRIS > DROITAQUIS 
+  			  AND SOLDE.TYPEABSENCEID IN (SELECT TYPEABSENCEID FROM TYPEABSENCE WHERE ANNEEREF IN ('". $fonctions->anneeref()  . "','" . ($fonctions->anneeref()-1)  . "'));";
+	$query = mysql_query($sql);
+	$erreur_requete=mysql_error();
+	if ($erreur_requete!="")
+		error_log(basename(__FILE__)." ".$erreur_requete);
+	while ($harpid = mysql_fetch_row($query)) // Des agents ont des soldes négatifs !!!
+	{
+		$agent = new agent($dbcon);
+		$agent->load($harpid[0]);
+		foreach ($tabadministrateur as $admin)
+		{	// On envoie un mail aux administrateurs pour informer le solde négatif
+			//////////////////////////////////////
+			//$cron->sendmail($admin,"Solde de congés négatifs pour l'agent " . $agent->identitecomplete(), "Vérifiez le dossier de l'agent car son solde pour " . $harpid[1] . " est négatif." );
+			//////////////////////////////////////
+		}
+		unset($agent);
+	}
+
+	echo "Recherche des demandes de congés ou d'absences incohérentes...\n";
+
+	$datedebut = $fonctions->formatdate(($fonctions->anneeref()-1) . $fonctions->debutperiode());
+	$datefin = $fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode());
+
+	echo "Période => début  : $datedebut    fin : $datefin \n";
+	
+	$sql = "SELECT DISTINCT AFFECTATION.HARPEGEID 
+			FROM AFFECTATION,AGENT 
+			WHERE OBSOLETE = 'N' 
+			  AND DATEFIN >= '" . date("Ymd") .  "' 
+			  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID 
+			ORDER BY AFFECTATION.HARPEGEID";  // DATEMODIFICATION = " . date('Ymd');
+	$query = mysql_query($sql);
+	$erreur_requete=mysql_error();
+	if ($erreur_requete!="")
+		error_log(basename(__FILE__)." ".$erreur_requete);
+	
+	while ($harpid = mysql_fetch_row($query)) // Des agents ont des affectations modifiées !!!
+	{
+		$agent = new agent($dbcon);
+		$agent->load($harpid[0]);
+		echo "Recherche pour l'agent : " . $agent->identitecomplete() . " (Id = " .  $agent->harpegeid()  . "\n";
+		$tabanalyse = $agent->controlecongesTP($datedebut , $datefin);
+		$text = "";
+		//echo "tabanalyse = " . print_r($tabanalyse,true) . "\n";
+		foreach ($tabanalyse as $demandeid => $textanalyse)
+		{
+			$demande = new demande($dbcon);
+			$demande->load($demandeid);
+			if (strcasecmp($demande->statut(), 'r') != 0 ) // Si la demande n'est pas annulée ou refusée !
+			{
+				$text .= "Compte-rendu de l'analyse de la demande du " . $demande->datedebut() . " au " . $demande->datefin() . "\n" . $textanalyse . "\n";
+			}
+			unset($demande);
+		}
+		if ($text != "")
+		{
+			echo "Corps du mail = " . $text;
+		}
+	}
+
+	echo "Fin des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n" ;
+	
+?>
