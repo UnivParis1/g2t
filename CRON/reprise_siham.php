@@ -31,9 +31,11 @@
 		exit;
 	}
 
-	$modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
-	$statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
-	$structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
+	$date=date("Ymd");
+
+	$modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
+	$statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_status_$date.dat";
+	$structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_structures_$date.dat";
 	
 	$skipreadfile = false;
 	if (isset($argv[1]))

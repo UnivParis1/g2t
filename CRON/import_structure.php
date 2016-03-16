@@ -14,7 +14,7 @@
 	// 	Sinon
 	//			on update les infos
 
-	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/har_structures_$date.dat";
+	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_structures_$date.dat";
 	if (!file_exists($filename))
 	{
 		echo "Le fichier $filename n'existe pas !!! \n";

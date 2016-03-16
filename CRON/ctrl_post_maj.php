@@ -58,7 +58,7 @@
 		foreach ($tabadministrateur as $admin)
 		{	// On envoie un mail aux administrateurs pour informer le solde négatif
 			//////////////////////////////////////
-			//$cron->sendmail($admin,"Solde de congés négatifs pour l'agent " . $agent->identitecomplete(), "Vérifiez le dossier de l'agent car son solde pour " . $harpid[1] . " est négatif." );
+			$cron->sendmail($admin,"Solde de congés négatifs pour l'agent " . $agent->identitecomplete(), "Vérifiez le dossier de l'agent car son solde pour " . $harpid[1] . " est négatif." );
 			//////////////////////////////////////
 		}
 		unset($agent);
@@ -86,7 +86,7 @@
 	{
 		$agent = new agent($dbcon);
 		$agent->load($harpid[0]);
-		echo "Recherche pour l'agent : " . $agent->identitecomplete() . " (Id = " .  $agent->harpegeid()  . "\n";
+		echo "Recherche pour l'agent : " . $agent->identitecomplete() . " (Id = " .  $agent->harpegeid()  . ")\n";
 		$tabanalyse = $agent->controlecongesTP($datedebut , $datefin);
 		$text = "";
 		//echo "tabanalyse = " . print_r($tabanalyse,true) . "\n";
@@ -103,6 +103,7 @@
 		if ($text != "")
 		{
 			echo "Corps du mail = " . $text;
+			echo "ATTENTION => IL N'Y A PAS D'ENVOI DE MAIL !!!!!   IL FAUT COMPLETER LE CODE !!!! \n";
 		}
 	}
 

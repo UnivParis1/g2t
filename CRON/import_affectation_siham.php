@@ -23,9 +23,9 @@
 
 	echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n" ;
 	
-	$modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_modalite.txt";
-	$statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_status.txt";
-	$structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/affectations_structures.txt";
+	$modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
+	$statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_status_$date.dat";
+	$structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_structures_$date.dat";
 
 	$skipreadfile = false;
 	if (isset($argv[1]))
@@ -515,8 +515,8 @@
 		while ($result = mysql_fetch_row($query))
 		{
 			$sql = sprintf("UPDATE AFFECTATION SET DATEMODIFICATION='%s' WHERE AFFECTATIONID = '%s'",
-					$fonctions->my_real_escape_utf8($result[0]),
-					$fonctions->my_real_escape_utf8(date("Ymd")));
+					$fonctions->my_real_escape_utf8(date("Ymd")),
+					$fonctions->my_real_escape_utf8($result[0]));
 			echo "SQL (UPDATE DATEMODIF) => $sql \n";
 			mysql_query($sql);
 			$erreur_requete=mysql_error();

@@ -11,15 +11,28 @@ if [ $numjour -ne 6 -a $numjour -ne 0 ]
 then
    php import_agent.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php import_absence.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-   php import_structure.php  >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-   php import_affectation.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   php import_structure.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   php import_affectation_siham.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php calcul_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-
-## php migration_v2_v3.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-
    php p1_specific_update.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+
+
+###########################################################
+## VERSION HARPEGE DE LA SYNCHRONISATION
+###########################################################
+##    php import_agent.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+##    php import_absence.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+##    php import_structure.php  >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+##    php import_affectation.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+##    php calcul_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+
+############ php migration_v2_v3.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+
+##   php p1_specific_update.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+##    php mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+##    php mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 fi
 
 numjour=`date +%d`

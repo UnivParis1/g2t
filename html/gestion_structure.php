@@ -58,11 +58,30 @@
 			$showall = true;
 	}
 	
+//	echo "Responsable Liste = " . print_r($responsableliste,true) . "<br>";
+//	echo "Gestionnaire Liste = " . print_r($gestionnaireliste,true) . "<br>";
+	
+	
+	
 	if (!is_null($structureid))
 	{
+
+		//echo "Super on check !!!!<br>";
+		// Initialisation des infos LDAP
+		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
+		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
+		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
+		$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
+		$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
+		$con_ldap=ldap_connect($LDAP_SERVER);
+		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+		$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
+//		echo "Connexion au LDAP => Ok ??<br>";
 		// On parcours touts les gestionnaires - mais on pourrait prendre les responsables
+		// ATTENTION : $gestionnaireid contient UID de l'agent et non son numéro HARPEGE si celui ci est modifié !!!
 		foreach ($gestionnaireliste as $structid => $gestionnaireid)
 		{
+			//echo "On boucle sur les gestionnaires....<br>";
 			$structure = new structure($dbcon);
 			//echo "Avant le load <br>";
 			$structure->load($structid);
@@ -71,8 +90,37 @@
 			$structure->resp_envoyer_a($_POST["resp_mail"][$structid],true);
 			$structure->agent_envoyer_a($_POST["agent_mail"][$structid],true);
 			
-			$structure->responsable($responsableliste[$structid]);
-			$structure->gestionnaire($gestionnaireid);
+			
+			// On va chercher dans le LDAP la correspondance UID => HARPEGEID
+			$filtre="(uid=" . $responsableliste[$structid] . ")";
+			$dn=$LDAP_SEARCH_BASE;
+			$restriction=array("$LDAP_CODE_AGENT_ATTR");
+			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+			$info=ldap_get_entries($con_ldap,$sr);
+			//echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+			$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			// Si le harpegeid n'est pas vide ou null
+			if ($harpegeid <> '' and (!is_null($harpegeid)))
+			{
+				//echo "On fixe le responsable !!!!<br>";
+				$structure->responsable($harpegeid);
+			}
+			
+			// On va chercher dans le LDAP la correspondance UID => HARPEGEID
+			$filtre="(uid=" . $gestionnaireid . ")";
+			$dn=$LDAP_SEARCH_BASE;
+			$restriction=array("$LDAP_CODE_AGENT_ATTR");
+			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+			$info=ldap_get_entries($con_ldap,$sr);
+			//echo "Le numéro HARPEGE du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+			$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			// Si le harpegeid n'est pas vide ou null
+			if ($harpegeid <> '' and (!is_null($harpegeid)))
+			{
+				//echo "On fixe le gestionnaire !!!!<br>";
+				$structure->gestionnaire($harpegeid);
+			}
+			
 			$msgerreur = $structure->store();
 			//echo "Apres le store <br>";
 				
@@ -158,7 +206,7 @@
 	?>
 		<script>
 		    	$('[id="<?php echo "infouser[". $struct->id() ."]" ?>"]').autocompleteUser(
-		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
 		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
 	   </script>
 				
@@ -171,7 +219,7 @@
 	?>
 		<script>
 		    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
-		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
 		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
 	   </script>
 				

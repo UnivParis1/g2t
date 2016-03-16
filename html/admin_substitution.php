@@ -5,9 +5,13 @@
 
 	// Initialisation de l'utilisateur
 	if (isset($_POST["userid"]))
+	{
 		$userid = $_POST["userid"];
+	}
 	else
+	{
 		$userid = null;
+	}
 	if (is_null($userid) or ($userid==""))
 	{
 		error_log (basename(__FILE__)  . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
@@ -42,7 +46,7 @@
 	$restriction=array("$LDAP_CODE_AGENT_ATTR");
 	$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 	$info=ldap_get_entries($con_ldap,$sr);
-	//echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+	//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 	$adminuser = new agent($dbcon);
 	$adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
 	if (!$adminuser->estadministrateur())

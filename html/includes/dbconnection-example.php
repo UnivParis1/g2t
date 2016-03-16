@@ -2,7 +2,7 @@
 
 	// Connexion à la base de données
 	$db_host='localhost';
-	$db_user='pacomte';
+	$db_user='g2t';
 	$db_pwd='xxx';
 	$dbcon = mysql_connect($db_host,$db_user,$db_pwd);
 	if (!$dbcon)

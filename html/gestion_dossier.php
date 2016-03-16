@@ -187,15 +187,40 @@
 	$arraygestionnaire = null;
 	if (isset($_POST["gestion"]))
 		$arraygestionnaire = $_POST["gestion"];
+	
 	if (is_array($arraygestionnaire))
 	{
+		
+		// Initialisation des infos LDAP
+		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
+		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
+		$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
+		$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
+		$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
+		$con_ldap=ldap_connect($LDAP_SERVER);
+		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+		$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
+		
+		// ATTENTION : La $valeur est soit le HARPEGEID soit le UID si on vient de le modifier !!
 		foreach ($arraygestionnaire as $structureid => $valeur)
 		{
-			//$structureid = str_replace("'", "", $structureid);
-			$structure = new structure($dbcon);
-			$structure->load($structureid);
-			$structure->gestionnaire($valeur);
-			$structure->store();
+			// On va chercher dans le LDAP la correspondance UID => HARPEGEID
+			$filtre="(uid=" . $valeur . ")";
+			$dn=$LDAP_SEARCH_BASE;
+			$restriction=array("$LDAP_CODE_AGENT_ATTR");
+			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+			$info=ldap_get_entries($con_ldap,$sr);
+			//echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+			$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			// Si le harpegeid n'est pas vide ou null
+			if ($harpegeid <> '' and (!is_null($harpegeid)))
+			{
+				//$structureid = str_replace("'", "", $structureid);
+				$structure = new structure($dbcon);
+				$structure->load($structureid);
+				$structure->gestionnaire($harpegeid);
+				$structure->store();
+			}
 		}
 	}
 	
@@ -203,17 +228,21 @@
 	{
 		// On modifie les codes des envois de mail pour les agents et les responsables
 		foreach ($array_agent_mail as $structkey => $codeinterne)
-		$structure = new structure($dbcon);
-		$structure->load($structkey);
-		$structure->agent_envoyer_a($codeinterne,true);
+		{
+			$structure = new structure($dbcon);
+			$structure->load($structkey);
+			$structure->agent_envoyer_a($codeinterne,true);
+		}
 	}
 	if (isset($array_resp_mail))
 	{
 		// On modifie les codes des envois de mail pour les agents et les responsables
 		foreach ($array_resp_mail as $structkey => $codeinterne)
-		$structure = new structure($dbcon);
-		$structure->load($structkey);
-		$structure->resp_envoyer_a($codeinterne,true);
+		{
+			$structure = new structure($dbcon);
+			$structure->load($structkey);
+			$structure->resp_envoyer_a($codeinterne,true);
+		}
 	}
 		
 	echo "<br>";
@@ -229,108 +258,111 @@
 	//print_r($structliste); echo "<br>";
 	foreach ($structliste as $key => $structure)
 	{
-		if ($mode == 'resp')
-			echo $structure->dossierhtml(($action == 'modif'),$userid);
-		else
-			echo $structure->dossierhtml(($action == 'modif'));
-
-		echo "Autoriser l'affichage du planning tous les agents des sous-structures (responsable/gestionnaire) : ";
-		if ($action == 'modif' )
+		if (is_array($structure->agentlist(date('d/m/Y'),date('d/m/Y') , 'n')))
 		{
-			echo "<select name=displaysousstruct['" . $structure->id() . "']>";
-			echo "<option value='o'"; if (strcasecmp($structure->sousstructure(), "o")==0) echo " selected "; echo ">Oui</option>";
-			echo "<option value='n'"; if (strcasecmp($structure->sousstructure(), "n")==0) echo " selected "; echo ">Non</option>";
-			echo "</select>";
-		}
-		else 
-			echo $fonctions->ouinonlibelle($structure->sousstructure());
-
-		echo "<br>";
-		echo "Autoriser l'affichage uniquement du planning des responsables des sous-structures (responsable/gestionnaire) : ";
-		if ($action == 'modif' )
-		{
-			echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
-			echo "<option value='o'"; if (strcasecmp($structure->afficherespsousstruct(),"o")==0) echo " selected "; echo ">Oui</option>";
-			echo "<option value='n'"; if (strcasecmp($structure->afficherespsousstruct(),"n")==0) echo " selected "; echo ">Non</option>";
-			echo "</select>";
-		}
-		else
-			echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
-		
-		echo "<br>";
-		echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
-		if ($action == 'modif' )
-		{
-			echo "<select name=displayallagent['" . $structure->id() . "']>";
-			echo "<option value='o'"; if (strcasecmp($structure->affichetoutagent(),"o")==0) echo " selected "; echo ">Oui</option>";
-			echo "<option value='n'"; if (strcasecmp($structure->affichetoutagent(),"n")==0) echo " selected "; echo ">Non</option>";
-			echo "</select>";
-		}
-		else
-			echo $fonctions->ouinonlibelle($structure->affichetoutagent());
-		
-		if ($mode == 'resp')
-		{
-			$structure->agent_envoyer_a($codeinterne);
-			echo "<table>";
-			echo "<tr>";
-			echo "<td>";
-			echo "Envoyer les demandes de congés des agents au : ";
-			echo "<SELECT name='agent_mail[" . $structure->id() . "]' size='1'>";
-			echo "<OPTION value=1";
-			if ($codeinterne==1) echo " selected='selected' ";
-			echo ">Responsable du service " . $structure->nomcourt() . "</OPTION>";
-			echo "<OPTION value=2";
-			if ($codeinterne==2) echo " selected='selected' ";
-			echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
-			echo "</SELECT>";
-			echo "</td>";
-			echo "</tr>";
-			
-			$parentstruct = null;
-			$parentstruct = $structure->parentstructure();
-			$structure->resp_envoyer_a($codeinterne);
-			echo "<tr>";
-			echo "<td>";
-			echo "Envoyer les demandes de congés du responsable au : ";
-			echo "<SELECT name='resp_mail[" . $structure->id() . "]' size='1'>";
-			if (!is_null($parentstruct))
+			if ($mode == 'resp')
+				echo $structure->dossierhtml(($action == 'modif'),$userid);
+			else
+				echo $structure->dossierhtml(($action == 'modif'));
+	
+			echo "Autoriser l'affichage du planning tous les agents des sous-structures (responsable/gestionnaire) : ";
+			if ($action == 'modif' )
 			{
+				echo "<select name=displaysousstruct['" . $structure->id() . "']>";
+				echo "<option value='o'"; if (strcasecmp($structure->sousstructure(), "o")==0) echo " selected "; echo ">Oui</option>";
+				echo "<option value='n'"; if (strcasecmp($structure->sousstructure(), "n")==0) echo " selected "; echo ">Non</option>";
+				echo "</select>";
+			}
+			else 
+				echo $fonctions->ouinonlibelle($structure->sousstructure());
+	
+			echo "<br>";
+			echo "Autoriser l'affichage uniquement du planning des responsables des sous-structures (responsable/gestionnaire) : ";
+			if ($action == 'modif' )
+			{
+				echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
+				echo "<option value='o'"; if (strcasecmp($structure->afficherespsousstruct(),"o")==0) echo " selected "; echo ">Oui</option>";
+				echo "<option value='n'"; if (strcasecmp($structure->afficherespsousstruct(),"n")==0) echo " selected "; echo ">Non</option>";
+				echo "</select>";
+			}
+			else
+				echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
+			
+			echo "<br>";
+			echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
+			if ($action == 'modif' )
+			{
+				echo "<select name=displayallagent['" . $structure->id() . "']>";
+				echo "<option value='o'"; if (strcasecmp($structure->affichetoutagent(),"o")==0) echo " selected "; echo ">Oui</option>";
+				echo "<option value='n'"; if (strcasecmp($structure->affichetoutagent(),"n")==0) echo " selected "; echo ">Non</option>";
+				echo "</select>";
+			}
+			else
+				echo $fonctions->ouinonlibelle($structure->affichetoutagent());
+			
+			if ($mode == 'resp')
+			{
+				$structure->agent_envoyer_a($codeinterne);
+				echo "<table>";
+				echo "<tr>";
+				echo "<td>";
+				echo "Envoyer les demandes de congés des agents au : ";
+				echo "<SELECT name='agent_mail[" . $structure->id() . "]' size='1'>";
 				echo "<OPTION value=1";
 				if ($codeinterne==1) echo " selected='selected' ";
-				echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+				echo ">Responsable du service " . $structure->nomcourt() . "</OPTION>";
 				echo "<OPTION value=2";
 				if ($codeinterne==2) echo " selected='selected' ";
-				echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+				echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
+				echo "</SELECT>";
+				echo "</td>";
+				echo "</tr>";
+				
+				$parentstruct = null;
+				$parentstruct = $structure->parentstructure();
+				$structure->resp_envoyer_a($codeinterne);
+				echo "<tr>";
+				echo "<td>";
+				echo "Envoyer les demandes de congés du responsable au : ";
+				echo "<SELECT name='resp_mail[" . $structure->id() . "]' size='1'>";
+				if (!is_null($parentstruct))
+				{
+					echo "<OPTION value=1";
+					if ($codeinterne==1) echo " selected='selected' ";
+					echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+					echo "<OPTION value=2";
+					if ($codeinterne==2) echo " selected='selected' ";
+					echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+				}
+				echo "<OPTION value=3";
+				if ($codeinterne==3) echo " selected='selected' ";
+				echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
+				echo "</SELECT>";
+				echo "</td>";
+				echo "</tr>";
+				$gestionnaire = $structure->gestionnaire();
+				echo "\n<tr>";
+				echo "<td>Nom du gestionnaire : ";
+				echo "<input id='infouser[". $structure->id() ."]' name='infouser[". $structure->id() ."]' placeholder='Nom et/ou prenom' value='";
+				if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
+				echo "' size=40 />";
+				//  
+	            echo "<input type='hidden' id='gestion[". $structure->id() ."]' name='gestion[". $structure->id() ."]' value='";
+	            if (!is_null($gestionnaire)) echo $gestionnaire->harpegeid();
+	            echo "' class='infouser[". $structure->id() ."]' /> ";
+	?>
+		<script>
+		    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
+		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+	   </script>
+	<?php 
+				echo "</tr>";
+				echo "<tr><td height=15></td></tr>";
+				echo "</table>";	
 			}
-			echo "<OPTION value=3";
-			if ($codeinterne==3) echo " selected='selected' ";
-			echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
-			echo "</SELECT>";
-			echo "</td>";
-			echo "</tr>";
-			$gestionnaire = $structure->gestionnaire();
-			echo "\n<tr>";
-			echo "<td>Nom du gestionnaire : ";
-			echo "<input id='infouser[". $structure->id() ."]' name='infouser[". $structure->id() ."]' placeholder='Nom et/ou prenom' value='";
-			if (!is_null($gestionnaire)) echo $gestionnaire->identitecomplete();
-			echo "' size=40 />";
-			//  
-            echo "<input type='hidden' id='gestion[". $structure->id() ."]' name='gestion[". $structure->id() ."]' value='";
-            if (!is_null($gestionnaire)) echo $gestionnaire->harpegeid();
-            echo "' class='infouser[". $structure->id() ."]' /> ";
-?>
-	<script>
-	    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
-	  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-	  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-   </script>
-<?php 
-			echo "</tr>";
-			echo "<tr><td height=15></td></tr>";
-			echo "</table>";	
+			echo "<br><br><br>";
 		}
-		echo "<br><br><br>";
 	}	
 	
 	echo "<input type='hidden' name='userid' value=" . $user->harpegeid() .">";

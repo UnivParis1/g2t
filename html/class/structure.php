@@ -226,29 +226,35 @@ class structure {
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
-		if (mysql_num_rows($query) == 0)
-		{
-			//echo "Structure->agentlist : La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent<br>";
-			$errlog = "La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent";
-			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
-		}
 		//echo "Avant le while...<br>";
 		while ($result = mysql_fetch_row($query))
 		{
 			$agent = new agent($this->dbconnect);
 			//echo "Apres le new et avant le load =" . $result[0]  . "<br>";
-			$agent->load("$result[0]");
-			//echo "Apres le load...<br>";
-			// La clé est NOM + PRENOM + HARPEGEID => permet de trier les tableaux par ordre alphabétique
-			$agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->harpegeid()] = $agent;
-///			$agentliste[$agent->harpegeid()] = $agent;
-			//echo "Apres la mise dans le tableau <br>";
-			unset($agent);
+			if ($agent->load("$result[0]"))
+			{
+				//echo "Apres le load...<br>";
+				// La clé est NOM + PRENOM + HARPEGEID => permet de trier les tableaux par ordre alphabétique
+				$agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->harpegeid()] = $agent;
+	///			$agentliste[$agent->harpegeid()] = $agent;
+				//echo "Apres la mise dans le tableau <br>";
+				unset($agent);
+			}
 		}
 //		echo "<br>agentliste = "; print_r((array)$agentliste); echo "<br>";
 		if (is_array($agentliste))
 			ksort($agentliste);
+
+		if (count((array)$agentliste) == 0)
+		{
+			//echo "Structure->agentlist : La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent<br>";
+			$errlog = "La structure $this->nomcourt (Identifiant $this->structureid) n'a pas d'agent";
+			//echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		
+
+
 //		echo "<br>agentliste = "; print_r((array)$agentliste); echo "<br>";
 		return $agentliste;
 	}
