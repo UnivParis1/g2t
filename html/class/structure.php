@@ -379,7 +379,11 @@ class structure {
 		else
 		{
 			$parentstruct = new structure($this->dbconnect);
-			$parentstruct->load("$this->parentid");
+			if (!$parentstruct->load("$this->parentid"))
+			{
+				// Si on ne peut pas charger la structure parente  => On retourne null
+				$parentstruct = null;
+			}
 		}
 		return $parentstruct;
 	}
@@ -396,7 +400,7 @@ class structure {
 		if (is_null($respid))
 		{
 			if (is_null($this->responsableid) or ($this->responsableid=='')) {
-				$errlog = "<B><FONT COLOR='#FF0000'>Structure->Responsable : Le responsable de la structure " . $this->structureid  . " n'est pas défini !!! </FONT></B>";
+				$errlog = "<B><FONT COLOR='#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B>";
 				echo $errlog."<br/>";
 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}

@@ -34,6 +34,25 @@
 	if (isset($_POST["agentid"]))
 	{
 		$agentid = $_POST["agentid"];
+		if (!is_numeric($agentid))
+		{
+			$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
+			$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
+			$LDAP_BIND_PASS=$fonctions->liredbconstante("LDAPPASSWD");
+			$LDAP_SEARCH_BASE=$fonctions->liredbconstante("LDAPSEARCHBASE");
+			$LDAP_CODE_AGENT_ATTR=$fonctions->liredbconstante("LDAPATTRIBUTE");
+			$con_ldap=ldap_connect($LDAP_SERVER);
+			ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+			$r=ldap_bind($con_ldap, $LDAP_BIND_LOGIN,$LDAP_BIND_PASS);
+			$filtre="(uid=" . $agentid . ")";
+			$dn=$LDAP_SEARCH_BASE;
+			$restriction=array("$LDAP_CODE_AGENT_ATTR");
+			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+			$info=ldap_get_entries($con_ldap,$sr);
+			//echo "Le numÃ©ro HARPEGE de l'agent sÃ©lectionnÃ© est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+			$agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+		}
+		
 		$agent = new agent($dbcon);
 		$agent->load($agentid);
 	}
@@ -237,6 +256,33 @@
 		$msg_erreur = "";
 	}
 		
+	if (strcasecmp($mode, "gestrh")==0)
+	{
+		echo "Personne à rechercher : <br>";
+		echo "<form name='selectagentcet'  method='post' >";
+		echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
+		if (isset($_POST["agent"])) 
+			echo $_POST["agent"]; 
+		echo "' size=40 />";
+		echo "<input type='hidden' id='agentid' name='agentid' value='"; 
+		if (isset($_POST["agentid"])) 
+			echo $_POST["agentid"]; 
+		echo "' class='agent' /> ";
+		?>
+		<script>
+		    	$("#agent").autocompleteUser(
+		  	       'https://wsgroups.univ-paris1.fr/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+	   </script>
+		<?php 			
+		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
+		echo "<input type='hidden' name='mode' value='" . $mode ."'>";
+		echo "<input type='submit' value='Valider' >";
+		echo "</form>";
+		echo "<br>";
+		echo "<br>";
+	}
+/*	
 	if (is_null($agent))
 	{
 		if (strcasecmp($mode,"gest")==0)
@@ -269,6 +315,8 @@
 		
 	}
 	else
+*/
+	if (!is_null($agent))
 	{
 		//echo "On a choisit un agent <br>";
 		$msg_bloquant = "";
@@ -330,7 +378,7 @@
 			// Pas d'erreur lors du chargement du CET
 			echo "Le CET de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est actuellement : <br>";
 			echo "Date du début du CET : ". $cet->datedebut() . "<br>";
-			echo "Sur l'année " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", il a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
+			echo "Sur l'année " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", " . $agent->identitecomplete() . " a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
 			echo "Le solde de CET est de " . (($cet->cumultotal()-$cet->jrspris())) . " jour(s)<br>";
 
 		}

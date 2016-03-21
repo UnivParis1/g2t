@@ -249,7 +249,7 @@
 		}
 		else
 		{
-			echo "On est dans le même agent $agentidprecedent et indicetabaffectation = $indicetabaffectation \n";
+			echo "On est dans le même agent " . $agentprecedent->harpegeid() . " et indicetabaffectation = $indicetabaffectation \n";
 		}
 		
 		if ($agent->harpegeid() == '52257')
@@ -307,7 +307,7 @@
 			$erreur_requete=mysql_error();
 			if ($erreur_requete!="")
 			{
-				echo "INSERT AFFECTATION SIHAM (agentidprecedent=$agentidprecedent et harpegeid=" . $agent->harpegeid() . ") => $erreur_requete \n";
+				echo "INSERT AFFECTATION SIHAM (Id de l'agent precedent=" . $agentprecedent->harpegeid() . " et harpegeid=" . $agent->harpegeid() . ") => $erreur_requete \n";
 			}
 			
 			// $affectation[0] = Identifiant de l'ancienne affectation HARPEGE 

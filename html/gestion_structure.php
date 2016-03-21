@@ -27,7 +27,7 @@
 	require_once("./class/tcpdf/tcpdf.php");
 	require_once("./class/cet.php");
 	require_once("./class/affectation.php");
-	require_once("./class/complement.php");
+	require_once("./class/complement.php");	
 	
 	$user = new agent($dbcon);
 	$user->load($userid);
@@ -57,6 +57,41 @@
 		if ($_POST['showall'] == 'true')
 			$showall = true;
 	}
+
+	function affichestructureliste($structure, $niveau=0 )
+	{
+		global $dbcon;
+		global $structureid;
+		global $fonctions;
+		global $showall;
+		//$fonctions = new fonctions($dbcon);
+		if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))))
+		{
+			echo "<option value='". $structure->id() . "'";
+			if ($structure->id() == $structureid)
+			{
+				echo " selected ";
+			}
+			if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd")))
+			{
+				echo " style='color:red;' ";
+			}
+			echo ">";
+			for ($cpt = 0 ; $cpt < $niveau ; $cpt++)
+			{
+				echo "&nbsp;&nbsp;&nbsp;&nbsp;";
+			}
+			echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
+			echo "</option>";
+
+			$sousstruclist = $structure->structurefille();
+			foreach ((array)$sousstruclist as $keystruct => $soustruct)
+			{
+				affichestructureliste($soustruct, $niveau+1);
+			}
+		}
+	}
+	
 	
 //	echo "Responsable Liste = " . print_r($responsableliste,true) . "<br>";
 //	echo "Gestionnaire Liste = " . print_r($gestionnaireliste,true) . "<br>";
@@ -136,7 +171,26 @@
 		}
 		
 	}
-
+		
+	$sql="SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = ''"; //NOMLONG
+	$query=mysql_query ($sql,$dbcon);
+	$erreur=mysql_error();
+	if ($erreur != "") {
+		$errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
+		echo $errlog."<br/>";
+		error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+	}
+	echo "<form name='selectstructure'  method='post' >";
+	echo "<select size='1' id='structureid' name='structureid'>";
+	while ($result = mysql_fetch_row($query))
+	{
+		$struct = new structure($dbcon);
+		$struct->load($result[0]);
+		affichestructureliste($struct,0);
+	}
+	echo "</select>";
+	
+/*	
 	$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE WHERE length(STRUCTUREID)<='3' ORDER BY NOMCOURT"; //NOMLONG
 	//$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE ORDER BY NOMCOURT"; //NOMLONG
 	$query=mysql_query ($sql,$dbcon);
@@ -156,6 +210,8 @@
 		echo ">" . $result[2] . " (" . $result[1] . ")" . "</option>";
 	}
 	echo "</select>";
+*/	
+	
 	echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 	echo "<br><input type='checkbox' name='showall' value='true'";
 	if ($showall == true)
@@ -167,29 +223,40 @@
 	
 	if (!is_null($structureid))
 	{
+		
+		//echo "Le structureid = $structureid <br>";
 		$structure = new structure($dbcon);
 		$structure->load($structureid);
 
 		// On utilise la liste des structures filles pour afficher la structure courante et les structures filles
 		$structureliste = $structure->structurefille();
 		// On ajoute la structure courante au tableau
-		$structureliste[$structureid] = $structure;
+		// ATTENTION : On met la clé à -1 pour qu'elle soit la première lors du tri !!!!
+		$structureliste[-1] = $structure;
 		// On trie par la clé => La clé de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
 		ksort($structureliste);
-		//print_r($structureliste); echo "<br>";
-		
+		//echo "Le tableau des structures files : " . print_r($structureliste, true) . "<br>";
+
 		echo "<form name='paramstructure'  method='post' >";
 		echo "<table>";
 		foreach ($structureliste as $keystruc => $struct)
 		{
 			
+			
+			//echo "REsponsable = " . $struct->responsable()->identitecomplete() . "<br>";
 			//$agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),'o'); 
 			//echo "<br> agentliste="; print_r((array)$agentliste); echo "<br>";
+			
+			//echo "Date cloture (Structure : " . $struct->id()  .  ") = " . $struct->datecloture()  . "<br>";
+			//echo "On est dans la boucle => " . $struct->nomlong()  ."<br>";
 			if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true))
 			{
 				$gestionnaire = $struct->gestionnaire();
+				//echo "Apres recup du gestionnaire.... <br>";
 				echo "<tr>";
-				echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->civilite() . " " . $struct->responsable()->nom() . " ". $struct->responsable()->prenom() . " ";
+				//echo "Avant l'affichage du nom...<br>";
+				echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->identitecomplete() . " ";
+				//echo "Apres affichage du nom... <br>";
 				if ($showall)
 					echo "(Date fermeture : " . $struct->datecloture() . ") ";
 				echo "</td>";
@@ -210,8 +277,10 @@
 		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
 	   </script>
 				
-	<?php 			
+	<?php 		
+				//echo "Avant recup du responsable <br>";
 				$responsable = $struct->responsable();
+				//echo "Apres recup du responsable <br>";
 				echo " &nbsp; Direction : ";
 				echo "<input id='responsableinfo[". $struct->id() ."]' name='responsableinfo[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete()  . "' size=40 />";
 				//
@@ -244,13 +313,13 @@
 				
 				$parentstruct = null;
 				$parentstruct = $struct->parentstructure();
-				$struct->resp_envoyer_a($codeinterne);
 				echo "<tr>";
 				echo "<td>";
 				echo "Envoyer les demandes de congés du responsable au : ";
 				echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
 				if (!is_null($parentstruct))
 				{
+					$struct->resp_envoyer_a($codeinterne);
 					echo "<OPTION value=1";
 					if ($codeinterne==1) echo " selected='selected' ";
 					echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";

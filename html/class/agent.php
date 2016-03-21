@@ -258,6 +258,51 @@ class agent {
 	}
 
    /**
+	 * @param string $typeprofil optional Type de profil RH demandé => 1 = RHCET, 2 = RHCONGE. Si null => tous les profils
+	 * @return boolean true if the current agent is an administrator of the application. false otherwise.
+	 */
+	function estprofilrh($typeprofil = null)
+	{
+		$sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID IN (";
+		if (is_null($typeprofil))
+		{
+			$sql = $sql . "'RHCET', 'RHCONGE'";
+		}
+		elseif ($typeprofil == 1)  
+		{
+			$sql = $sql . "'RHCET'";
+		}
+		elseif ($typeprofil == 2)  
+		{
+			$sql = $sql . "'RHCONGE'";
+		}
+		else 
+		{
+			$errlog = "Agent->estprofilrh (AGENT) : Type de profil demandé inconnu (typeprofil = $typeprofil)";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			return FALSE;
+		}
+		$sql = $sql . ")";
+		$sql = sprintf($sql,$this->fonctions->my_real_escape_utf8($this->harpegeid));
+		//echo "sql = " . $sql . "<br>";
+		$query=mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+		{
+			$errlog = "Agent->estprofilrh (AGENT) : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			return FALSE;
+		}
+		if (mysql_num_rows($query) == 0)
+			return FALSE;
+		$result = mysql_fetch_row($query);
+		return (strcasecmp($result[0], "O")==0);
+	}
+	
+
+	/**
          * @param string $nbrejrs optional Nombre de jours 'enfant malade' pour l'agent courant
          * @return string Nombre de jours 'enfant malade' si $nbrejrs est null. Pas de retour sinon
    */
@@ -1789,12 +1834,12 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		{
 			if (!$demande->controlenbrejrs($nbrejrscalcule))
 			{
-				$analyse[$demande->id()] = "Il y a un probleme !!!! Nbre jours de la demande = " . $demande->nbrejrsdemande() . "   Nbre jours recalcules = $nbrejrscalcule (demande Id = ". $demande->id() . ")\n<br>";
+				$analyse[$demande->id()] = "Incohérence détectée : Nombre de jours de la demande = " . $demande->nbrejrsdemande() . " / Nombre de jours recalculé = $nbrejrscalcule (demande Id = ". $demande->id() . ")";
 			}
 			// La fonction retourne vrai mais avec un nombre de jour nul => La demande est annulée ou refusée
 			elseif ($nbrejrscalcule == 0)
 			{
-				$analyse[$demande->id()] = "Aucune vérification faite car la demande ". $demande->id() . " est annulée ou refusée...\n<br>";
+				$analyse[$demande->id()] = "Aucune vérification faite car la demande ". $demande->id() . " est annulée ou refusée...";
 			}
 		}
 		
