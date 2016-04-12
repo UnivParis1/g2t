@@ -152,7 +152,14 @@ class fonctions {
 		if (setlocale(LC_TIME, 'fr_FR.UTF8') == '') 
 			setlocale(LC_TIME, 'FRA.UTF8', 'fra');  //correction problème pour windows
 		$monthname = strftime("%B", strtotime($this->formatdatedb($date)));
-		return utf8_encode(ucfirst($monthname));
+		if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true))
+		{
+			return ucfirst($monthname);
+		}
+		else
+		{
+			return utf8_encode(ucfirst($monthname));
+		}
 	}
 
    /**
@@ -166,7 +173,14 @@ class fonctions {
 		if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
 			setlocale(LC_TIME, 'FRA.UTF8','fra');  //correction problème pour windows
 		$dayname = strftime("%A", strtotime($this->formatdatedb($date)));
-		return utf8_encode(ucfirst($dayname));
+		if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true))
+		{
+			return ucfirst($dayname);
+		}
+		else
+		{
+			return utf8_encode(ucfirst($dayname));
+		}
 	}
 
    /**
@@ -187,7 +201,15 @@ class fonctions {
 				setlocale(LC_TIME, 'FRA.UTF8','fra');  //correction problème pour windows
 			// Le 01/01/2012 est un dimanche
 			$dayname = strftime("%A", strtotime("20120101" + $index));
-			return utf8_encode(ucfirst($dayname));
+
+			if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true))
+			{
+				return ucfirst($dayname);
+			}
+			else
+			{
+				return utf8_encode(ucfirst($dayname));
+			}
 		}
 	}
 
@@ -371,6 +393,9 @@ class fonctions {
 			return TRUE;
 		// Cas particulier du WE ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
 		if (strcasecmp($typeconge,"WE")==0)
+			return false;
+		// Cas particulier de la période 'non déclarée' ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
+		if (strcasecmp($typeconge,"nondec")==0)
 			return false;
 		//echo "Fonction->estunconge : typeconge = $typeconge <br>";
 		$sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $typeconge . "'";
@@ -710,6 +735,62 @@ class fonctions {
  	{
  		return mysql_real_escape_string(utf8_encode($texte));
  	}
+
+ 	/**
+ 	 * @param string $typeprofil optional Type de profil RH demandé => 1 = RHCET, 2 = RHCONGE, 3 = RHANOMALIE. Si null => tous les profils
+ 	 * @return array list of user with selected profiles.
+ 	 */
+ 	function listeprofilrh($typeprofil = null)
+ 	{
+ 		$agentarray = array();
+ 		$sql = "SELECT HARPEGEID FROM COMPLEMENT WHERE COMPLEMENTID IN (";
+ 		//$sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID IN (";
+ 		if (is_null($typeprofil))
+ 		{
+ 			$sql = $sql . "'RHCET', 'RHCONGE', 'RHANOMALIE'";
+ 		}
+ 		elseif ($typeprofil == 1)
+ 		{
+ 			$sql = $sql . "'RHCET'";
+ 		}
+ 		elseif ($typeprofil == 2)
+ 		{
+ 			$sql = $sql . "'RHCONGE'";
+ 		}
+ 		elseif ($typeprofil == 3)
+ 		{
+ 			$sql = $sql . "'RHANOMALIE'";
+ 		}
+ 		else
+ 		{
+ 			$errlog = "Agent->listeprofilrh (AGENT) : Type de profil demandé inconnu (typeprofil = $typeprofil)";
+ 			echo $errlog."<br/>";
+ 			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
+ 			return $agentarray;
+ 		}
+ 		$sql = $sql . ")";
+ 		//echo "sql = " . $sql . "<br>";
+ 		$query=mysql_query ($sql, $this->dbconnect);
+ 		$erreur=mysql_error();
+ 		if ($erreur != "")
+ 		{
+ 			$errlog = "Agent->listeprofilrh (AGENT) : " . $erreur;
+ 			echo $errlog."<br/>";
+ 			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
+ 			return $agentarray;
+  		}
+  		while ($result = mysql_fetch_row($query))
+  		{
+  			$agentrh = new agent($this->dbconnect);
+  			if ($agentrh->load("$result[0]"))
+  			{
+				$agentarray[$agentrh->harpegeid()] = $agentrh;
+  			}
+  			unset($agentrh);
+  		}
+ 		return $agentarray;
+ 	}
+ 	
 }
 
 ?>

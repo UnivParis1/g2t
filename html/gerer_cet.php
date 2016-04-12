@@ -50,11 +50,22 @@
 			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 			$info=ldap_get_entries($con_ldap,$sr);
 			//echo "Le numÃ©ro HARPEGE de l'agent sÃ©lectionnÃ© est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-			$agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+			{
+				$agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			}
 		}
 		
-		$agent = new agent($dbcon);
-		$agent->load($agentid);
+		if (!is_numeric($agentid))
+		{
+			$agentid=null;
+			$agent = null;
+		}
+		else
+		{
+			$agent = new agent($dbcon);
+			$agent->load($agentid);
+		}
 	}
 	else
 	{
@@ -124,6 +135,9 @@
 			//echo "msg_erreur = " . $msg_erreur . "<br>";
 			if ($msg_erreur == "")
 			{
+// --------------------------------------------------------------------
+// --------- Suppression du bloc avec contrôle --------------------------
+/*
 				// Si le nombre de jours demande est <= solde de l'année de ref et que l'on demande moins de jours de le nombre de jour dispo
 				/// C'est un peu 2 fois le meme test .... A simplifier
 				if ($soldeannuel->solde() >= $nbr_jours_cet and $nbrejoursdispo >= $nbr_jours_cet)
@@ -197,8 +211,85 @@
 					$msg_erreur .= $errlog."<br/>";
 					error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 				}
-				else {
+				else
+				{
 					$errlog = "Le solde de jour de congé annuel est insuffisant : Demande " . $nbr_jours_cet . "   Disponible : " . ($soldeannuel->solde());
+					$msg_erreur .= $errlog."<br/>";
+					error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+				}
+*/
+// ------ Fin suppression bloc avec controle ----------------------
+// --------------------------------------------------------------
+				// Si le solde de congés est suffisant.......
+				if ($soldeannuel->solde() >= $nbr_jours_cet)
+				{				//echo "Avant le new cet (1) <br>";
+					$cet = new cet($dbcon);
+					// On regarde s'il existe deja un CET
+					$msg_erreur = $msg_erreur . $cet->load($agentid);
+					//echo "Apres le load cet (1) <br>";
+					if ($msg_erreur != "")
+					{
+						// On force $msg_erreur à "" car on se moque de savoir quel est l'erreur
+						$msg_erreur = "";
+						echo "Il n'y a pas de CET <br>";
+						error_log(basename(__FILE__)." uid : ".$agentid." : Il n'y a pas de CET");
+						unset ($cet);
+						// On crée un nouveau CET que l'on instancie avec les valeurs courantes
+						$cet = new cet($dbcon);
+						$cet->agentid($agentid);
+						$cet->cumultotal($nbr_jours_cet);
+						$cet->cumulannuel($fonctions->anneeref(),$nbr_jours_cet);
+						//echo "Avant le store <br>";
+						$msg_erreur = $cet->store();
+						//echo "Apres le store <br>";
+					}
+					else
+					{
+						// La variable $msg_erreur est "" ==> Il n'y a pas eu de probleme
+						//echo "Il y a un CET <br>";
+						$cumul = ($cet->cumulannuel($fonctions->anneeref()));
+						$cumul = $cumul + $nbr_jours_cet;
+						// On ne peut pas mettre plus de 25 jours par an sur le CET.
+						// 20 jours obligatoires
+						// Base de calcul = 45 jours
+						// ==> 45 - 20 = 25 jours maxi
+						if ($cumul > 25) {
+							$errlog = "Le nombre de jour de cumul annuel est supérieur à 25. Vous ne pouvez pas mettre autant de jours dans le CET. ";
+							$msg_erreur .= $errlog."<br/>";
+							error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+						}
+						else
+						{
+							$cet->cumulannuel($fonctions->anneeref(),$cumul);
+							$cumul = ($cet->cumultotal());
+							$cumul = $cumul + $nbr_jours_cet;
+							$cet->cumultotal($cumul);
+							//echo "Avant le store <br>";
+							$msg_erreur = $cet->store();
+							//echo "Apres le store <br>";
+						}
+					}
+					// Si tout s'est bien passé dans le store du CET (création d'un nouveau CET ou ajout de jour dans un CET existant)
+					if ($msg_erreur == "")
+					{
+						$tempsolde = ($soldeannuel->droitpris());
+						$tempsolde = $tempsolde + $nbr_jours_cet;
+						$soldeannuel->droitpris(($tempsolde));
+						$msg_erreur = $msg_erreur . $soldeannuel->store();
+						$agent->ajoutecommentaireconge("ann" . substr(($fonctions->anneeref()-1),2,2), ($nbr_jours_cet*-1),"Retrait de jours pour alimentation CET");
+						// Envoi d'un mail à l'agent !
+						//echo "Avant le pdf <br>";
+						$cet = new cet($dbcon);
+						$msg_erreur = $msg_erreur . $cet->load($agentid);
+						$pdffilename = $cet->pdf($userid,TRUE);
+						//echo "Avant l'envoi de mail <br>";
+						$user->sendmail($agent,"Alimentation du CET","Votre CET vient d'être alimenté.", $pdffilename);
+						//echo "Apres l'envoi de mail <br>";
+					}
+				}
+				else
+				{
+					$errlog = "Le solde est insuffisant : Vous avez demandé " . $nbr_jours_cet . " jour(s) alors qu'il n'y a que " . ($soldeannuel->solde()) . " jour(s) de disponible sur '" . $soldeannuel->typelibelle() . "'.";
 					$msg_erreur .= $errlog."<br/>";
 					error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 				}
@@ -414,7 +505,7 @@
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$errlog);
 		}
-		
+/*		
 		if ($nbrejoursdispo > 0 ) {
 			$errlog = "Vous avez le droit de mettre $nbrejoursdispo jour(s) dans le CET de l'agent.";
 			echo $errlog."<br/>";
@@ -425,7 +516,7 @@
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$errlog);
 		}
-		
+*/		
 		echo "<br>";
 		echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
 		echo "<form name='frm_ajoutcet'  method='post' >";
@@ -458,11 +549,13 @@
 				echo "<br>";
 				echo "<span style='border:solid 1px black; background:lightsteelblue; width:600px; display:block;'>";
 				echo "<form name='frm_retraitcet'  method='post' >";
-				echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
+				echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > <br>";
 				// Calcul du nombre de jours disponibles en retrait du CET
 				//echo "cet->cumultotal() = " .  $cet->cumultotal() . "<br>";
+				
 				$nbrejoursdispo = ((($cet->cumultotal()-$cet->jrspris()))-20);
 				echo "<br>Le nombre de jours maximum à retirer est : " . $nbrejoursdispo . " jours <br>";
+				
 				echo "Indiquer le type de retrait : ";
 				echo "<select name='typeretrait'>";
 				echo "<OPTION value='Indemnisation'>Indemnisation</OPTION>";

@@ -505,13 +505,27 @@
 		<ul class="niveau1">     
 			<li onclick="">MENU GESTION RH 
 				<ul class="niveau2"> 
+<?php
+		if ($user->estprofilrh('1'))  // PROFIL RH = 1 ==> GESTIONNAIRE RH DE CET
+		{ 
+?>
 					<li onclick='document.gestrh_gestcet.submit();'>
 						<form name='gestrh_gestcet'  method='post' action="gerer_cet.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 							<input type="hidden" name="mode" value="gestrh">
 						</form>
-						<a href="javascript:document.gestrh_gestcet.submit();">Gestion du CET d'un agent</a>
+						<a href="javascript:document.gestrh_gestcet.submit();">Alimentation / Indemnisation des CET</a>
 					</li>
+					<li onclick='document.gestrh_creercet.submit();'>
+						<form name='gestrh_creercet'  method='post' action="creer_cet.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="mode" value="gestrh">
+						</form>
+						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
+					</li>
+<?php
+		} 
+?>
 				</ul> 
 			</li> 
 		</ul>

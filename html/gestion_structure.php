@@ -133,7 +133,10 @@
 			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 			$info=ldap_get_entries($con_ldap,$sr);
 			//echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-			$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+				$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			else 
+				$harpegeid = '';
 			// Si le harpegeid n'est pas vide ou null
 			if ($harpegeid <> '' and (!is_null($harpegeid)))
 			{
@@ -148,7 +151,10 @@
 			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
 			$info=ldap_get_entries($con_ldap,$sr);
 			//echo "Le numéro HARPEGE du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-			$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+				$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+			else 
+				$harpegeid = '';
 			// Si le harpegeid n'est pas vide ou null
 			if ($harpegeid <> '' and (!is_null($harpegeid)))
 			{

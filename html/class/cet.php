@@ -353,6 +353,7 @@ class cet {
 
 		$agent=new agent($this->dbconnect);
 		$agent->load($this->agentid);
+/*
 		$affectationliste = $agent->affectationliste($this->fonctions->anneeref() . $this->fonctions->debutperiode(), ($this->fonctions->anneeref()+1) . $this->fonctions->finperiode()); 
 		foreach ($affectationliste as $key => $affectation)
 		{
@@ -362,6 +363,19 @@ class cet {
 			$pdf->Cell(60,10,'Service : '. $nomstructure);
 			$pdf->Ln();
 		}
+*/
+		$affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y')); // On récupère l'affectation de l'agent à la date du jour
+		if (is_array($affectationliste))
+		{
+			//echo "affectationliste = " . print_r($affectationliste, true) . "<br>";
+			$affectation = reset($affectationliste); //    ATTENTION : Reset permet de récupérer le premier élément du tableau => On ne connait pas la clé
+			$structure = new structure($this->dbconnect);
+			$structure->load($affectation->structureid());
+			$nomstructure = $structure->nomlong() . " (" . $structure->nomcourt()  .")";
+			$pdf->Cell(60,10,'Service : '. $nomstructure);
+			$pdf->Ln(10);
+		}
+		
 /*		
 		$pdf->Cell(60,10,'Composante : '. $responsable->structure()->parentstructure()->nomlong() .' ('. $responsable->structure()->parentstructure()->nomcourt() .')' );
 		$pdf->Ln(10);
@@ -395,7 +409,7 @@ class cet {
 		$pdf->Ln(10);
 		
 		//echo "Nom du fichier....<br>";
-		$pdfname = dirname(dirname(__FILE__)).'/pdf/modification_cet_num'.$this->idtotal(). '_' . date("Ydm")  . '.pdf';
+		$pdfname = dirname(dirname(__FILE__)).'/pdf/modification_cet_'.$agent->harpegeid(). '_' . date("YmdHis")  . '.pdf';
 		//echo "Avant le output... pdfname =   $pdfname <br>";
 		
 		$pdf->Output($pdfname,'F');

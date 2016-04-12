@@ -209,10 +209,16 @@
 	## Récupération du commentaire (s'il existe)
 	$commentaire = "";
 	if (isset($_POST["commentaire"]))
-		$commentaire = $_POST["commentaire"];
+		$commentaire = trim($_POST["commentaire"]);
 	if (!is_null($responsable) and $commentaire == "")
 	{
 		$errlog = "Le commentaire dans la saisie est obligatoire !!! ";
+		$msg_erreur .= $errlog."<br/>";
+		error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+	}
+	elseif ($commentaire == "" and $listetype == 'spec') 
+	{
+		$errlog = "Le commentaire dans la saisie est obligatoire pour ce type d'absence ($listetype)!!! ";
 		$msg_erreur .= $errlog."<br/>";
 		error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 	}
@@ -447,22 +453,55 @@
 				if (strcasecmp($typedemande,"conges")==0)
 				{
 					if (($demande->nbrejrsdemande())>1)
+					{
 						$msgstore .= $demande->nbrejrsdemande() ." jours vous seront decomptés (" . $demande->typelibelle() .  ")";
+					}
 					else
+					{
 						$msgstore .= $demande->nbrejrsdemande() ." jour vous sera decompté (" . $demande->typelibelle() .  ")";
+					}
+					if (strcasecmp($demande->type(),"cet")==0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
+					{
+						$arrayagentrh = $fonctions->listeprofilrh("1");  // Profil = 1 ==> GESTIONNAIRE RH DE CET
+						foreach ($arrayagentrh as $gestrh)
+						{
+							$corpmail = "Une demande de congés a été saisie sur le CET de " . $agent->identitecomplete() . ".\n";
+							$corpmail = $corpmail . "\n";
+							$corpmail = $corpmail . "Détail de la demande :\n";
+							$corpmail = $corpmail . "- Date de début : ". $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
+							$corpmail = $corpmail . "- Date de fin : ". $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
+							$corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
+							$corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
+							if (!is_null($responsable))
+							{
+								$responsable->sendmail($gestrh,"Demande de congés sur CET",$corpmail);
+							}
+							else
+							{
+								$agent->sendmail($gestrh,"Demande de congés sur CET",$corpmail);
+							}
+						} 
+					}
 				}
 				else
+				{
 					$msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s)";
+				}
 				echo "<P style='color: green'>".$msgstore." sous réserve du respect des règles de gestion.</P>";
 				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msgstore));
 			}
-			else {
+			else
+			{
 				$msgstore = "Votre demande n'a pas été enregistrée... ==> MOTIF : ".  $resultat;
 				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msgstore));
 				echo "<P style='color: red'>".$msgstore."</P>";
 			}
 		}
-		
+		echo "<span style='border:solid 1px black; background:orange; width:600px; display:block;'>";
+		echo "<P style='color: black'>";
+		echo "Les situations particulières (notamment liées à des problèmes de santé) ne font pas l'objet d'un suivi dans G2T. Vous devez pour ces cas précis vous rapprocher de votre chef de service.<br>";
+		echo "</P>";
+		echo "</span>";
 		
 ?>
 	<form name="frm_demande_conge"  method="post" >
@@ -520,7 +559,7 @@
 			   		$nbretype=0;
 					foreach ($soldeliste as $keysolde => $solde)
 					{
-						if ($solde->solde() != 0)
+						if ($solde->solde() > 0)
 						{
 							echo "<OPTION value='" . $solde->typeabsenceid() .  "'>" . $solde->typelibelle()  . "</OPTION>";
 							$nbretype=$nbretype+1;
@@ -537,8 +576,9 @@
 		else
 		{
 			echo "<SELECT name='listetype'>";
-	   	$listecateg = $fonctions->listecategorieabsence();
-			foreach ($listecateg as $keycateg => $nomcateg)
+		   	$listecateg = $fonctions->listecategorieabsence();
+			echo "<OPTION value=''></OPTION>";
+		   	foreach ($listecateg as $keycateg => $nomcateg)
 			{
 				echo "<optgroup label='" . str_replace("_", " ", $nomcateg) . "'>";
 				$listeabs = $fonctions->listeabsence($keycateg);
@@ -567,7 +607,7 @@
 		}
 		elseif (strcasecmp($typedemande,"conges")!=0) 
 		{
-			echo "Commentaire (facultatif) : <br>";
+			echo "Commentaire (obligatoire pour les 'Absences autorisées par l'établissement', sinon facultatif) : <br>";
 			echo "<textarea rows='4' cols='60' name='commentaire'></textarea> <br>";
 			echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
 			echo "<br>";

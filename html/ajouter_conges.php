@@ -90,10 +90,12 @@
 		{
 			// On a cliqué sur le bouton validé ==> On va vérifier la saisie
 			$nbr_jours_conges = str_replace(",", ".", $nbr_jours_conges);
+			if (!is_numeric($nbr_jours_conges))
+				$nbr_jours_conges = 0;
 			//echo "nbr_jours_conges = $nbr_jours_conges <br>";
 			if ($nbr_jours_conges == "" or $nbr_jours_conges <= 0) 
 			{
-				$msg_erreur = $msg_erreur . "Vous n'avez pas saisi le nombre de jours à ajouter ou il est inférieur ou égal à 0 <br>";
+				$msg_erreur = $msg_erreur . "Vous n'avez pas saisi le nombre de jours à ajouter ou il est inférieur ou égal à 0 ou ce n'est pas une valeur nunérique.<br>";
 			}
 			if ($commentaire_supp == "")
 			{
@@ -116,11 +118,11 @@
 					$msg_erreur = $msg_erreur . $solde->load($agentid, $lib_sup);
 					//echo "msg_erreur = $msg_erreur <br>";
 				}
-				$commentaire_supp = $commentaire_supp . " (par " . $user->prenom() . " " . $user->nom() . ")";
+				$commentaire_supp_complet = $commentaire_supp . " (par " . $user->prenom() . " " . $user->nom() . ")";
 				$nouv_solde = ($solde->droitaquis() + $nbr_jours_conges);
 				$solde->droitaquis($nouv_solde);
 				$msg_erreur = $msg_erreur . $solde->store();
-				$msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup,$nbr_jours_conges,$commentaire_supp);
+				$msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup,$nbr_jours_conges,$commentaire_supp_complet);
 			   //echo "msg_erreur = $msg_erreur <br>";
 			}
 			if ($msg_erreur != "") {
@@ -129,9 +131,17 @@
 				error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
 			}
 			elseif (!is_null($solde)) {
-				$errlog = "Les jours supplémentaires ont été enregistrés... Nouveau solde = " . $solde->droitaquis();
+				$errlog = "Les jours supplémentaires ont été enregistrés... Nouveau solde = " . ($solde->droitaquis()- $solde->droitpris());
 				echo "<P style='color: green'>".$errlog."</P>";
 				error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
+				$agentrhlist = $fonctions->listeprofilrh("2");  // Le profil 2 est le profil de gestion des congés
+				foreach ($agentrhlist as $agentrh)
+				{
+					$corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n" ;
+					$corpmail = $corpmail . "Le motif de cet ajout est : " . $commentaire_supp . ".\n";
+					$corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+					$user->sendmail($agentrh,"Ajout de jours complémentaires pour ". $agent->identitecomplete(), $corpmail);
+				}
 			}
 		}
 		else

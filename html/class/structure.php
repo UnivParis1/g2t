@@ -644,8 +644,12 @@ class structure {
 		
 		$htmltext = "<br>";
 		$htmltext = "<table class='tableausimple'>";
-		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=5 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
-		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
+		//// --- Masquage des infos sur le CET
+		// $htmltext = $htmltext . "<tr><td class='titresimple' colspan=5 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
+		// $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
+		//// --- Fin masquage des infos sur le CET
+		$htmltext = $htmltext . "<tr><td class='titresimple' colspan=3 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " .  $this->nomlong() . " (" . $this->nomcourt() .  ")</font></td></tr>";
+		$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td></tr>";
 		$agentliste = $this->agentlist(date('d/m/Y'),date('d/m/Y') , 'n');
 		
 		// Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
@@ -709,28 +713,30 @@ class structure {
 					else 
 						$htmltext = $htmltext . "<center>" . intval($complement->valeur()) . "</center>";
 					$htmltext = $htmltext . "</td>";
-										
-					$cet = new cet($this->dbconnect);
-					$msg = $cet->load($membre->harpegeid());
-					$cumultotal = "";
-					$datedebut = "";
-					if ($msg == "")
-					{
-						$cumultotal = $cet->cumultotal();
-						$datedebut = $cet->datedebut();
-					}
-					unset($cet);
-					// Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
-					if (($msg == "") or (!$pourmodif))
-					{
-						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
-						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $datedebut . "</td></center>";
-					}
-					else 
-					{
-						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->harpegeid()  ."] value=''/></td></center>";
-						$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->harpegeid()  ."] value=''/></td></center>";
-					}
+
+					//// --- Masquage des infos sur le CET
+					// $cet = new cet($this->dbconnect);
+					// $msg = $cet->load($membre->harpegeid());
+					// $cumultotal = "";
+					// $datedebut = "";
+					// if ($msg == "")
+					// {
+					// 	$cumultotal = $cet->cumultotal();
+					// 	$datedebut = $cet->datedebut();
+					// }
+					// unset($cet);
+					// // Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
+					// if (($msg == "") or (!$pourmodif))
+					// {
+					// 	$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
+					// 	$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $datedebut . "</td></center>";
+					// }
+					// else 
+					// {
+					// 	$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->harpegeid()  ."] value=''/></td></center>";
+					// 	$htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->harpegeid()  ."] value=''/></td></center>";
+					// }
+					//// --- Fin masquage des infos sur le CET
 					$htmltext = $htmltext . "</tr>";
 				}
 			}

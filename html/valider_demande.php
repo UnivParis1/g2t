@@ -96,7 +96,26 @@
                         {
                            $ics = $demande->ics($agent->mail());
                         }
-						$user->sendmail($agent,"Validation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . strtolower($fonctions->demandestatutlibelle($demande->statut())) . ".", $pdffilename, $ics);
+                        $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " .  mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
+						$user->sendmail($agent,"Modification d'une demande de congés ou d'absence",$corpmail, $pdffilename, $ics);
+
+						if (strcasecmp($demande->type(),"cet")==0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
+						{
+							$arrayagentrh = $fonctions->listeprofilrh("1");  // Profil = 1 ==> GESTIONNAIRE RH DE CET
+							foreach ($arrayagentrh as $gestrh)
+							{
+								$corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8')  . " sur le CET de " . $agent->identitecomplete() . ".\n";
+								$corpmail = $corpmail . "\n";
+								$corpmail = $corpmail . "Détail de la demande :\n";
+								$corpmail = $corpmail . "- Date de début : ". $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
+								$corpmail = $corpmail . "- Date de fin : ". $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
+								$corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
+								//$corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
+								$user->sendmail($gestrh,"Changement de statut d'une demande de congés sur CET",$corpmail);
+							}
+						}
+						
+
 						//echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
 						error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
 					}

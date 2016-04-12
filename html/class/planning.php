@@ -45,9 +45,85 @@ class planning {
 		//echo "datetemp= $datetemp <br>";
 		// On boucle sur tous les jours
 		$declarationTP = null;
+//		echo "Début For : " . date("d/m/Y H:i:s") . "<br>";
+		
+		$fulldeclarationTPliste = array();
+		$affectationliste = $agent->affectationliste($datedebut, $datefin);
+		
+		foreach ((array)$affectationliste as $affectation)
+		{
+			$declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datedebut),$this->fonctions->formatdate($datefin));
+			$fulldeclarationTPliste[$affectation->affectationid()] = $declarationTPliste;
+		}
+		if (is_array($affectationliste))
+			$affectation = reset($affectationliste); // On récupère la première affectation
+
+/*		
+		echo "Affectationliste = " . print_r($affectationliste,true) . "<br>";
+		echo "----------------------------------------------------------------------------------<br>";
+		echo "fulldeclarationTPliste = " . print_r($fulldeclarationTPliste,true) . "<br>";
+*/		
 		for ($index=0; $index <= $nbre_jour-1 ; $index++)
 		{
 			//echo "datetemp= $datetemp <br>";
+			
+			
+			// Si on a déja une affectation
+			if (!is_null($affectation))
+			{
+				// On regarde si l'affectation est terminée.....
+				if ($this->fonctions->formatdatedb($affectation->datefin()) < $this->fonctions->formatdatedb($datetemp))
+				{
+					// Oui elle ai terminée => On remet tout à 0
+					$affectation = null;
+					$declarationTP = null;
+					// On recherche s'il y a une affectation correspondant au jour courant
+					foreach ($affectationliste as $tempaffectation)
+					{
+						if (($this->fonctions->formatdatedb($tempaffectation->datedebut()) <= $this->fonctions->formatdatedb($datetemp)) and ($this->fonctions->formatdatedb($tempaffectation->datefin()) >= $this->fonctions->formatdatedb($datetemp)))
+						{
+							// C'est la bonne affectation !
+							$affectation = $tempaffectation; 
+							break;
+						}
+					}
+				}
+			}
+			// Si on a déjà une declaration de TP <=> On a pas changé d'affectation
+			if (!is_null($declarationTP))
+			{
+				// On regarde si la déclaration de TP est toujours valide
+				if ($this->fonctions->formatdatedb($declarationTP->datefin()) < $this->fonctions->formatdatedb($datetemp))
+				{
+					// Non elle n'est plus valide => On la met à null
+					$declarationTP = null;
+				}
+			}
+			
+			// Si on a une affectation courante (soit parce que c'est la même qu'au tour d'avant, soit on vient de la charger à partir de la liste 'affectationliste' 
+			if (!is_null($affectation))
+			{
+				// On récupère la liste des declaration de TP pour cette affectation
+				$declarationTPliste = $fulldeclarationTPliste[$affectation->affectationid()];
+				// On recherche s'il y a une declaration de TP correspondant au jour courant
+				foreach((array)$declarationTPliste as $tempdeclarationTP)
+				{
+					if (($this->fonctions->formatdatedb($tempdeclarationTP->datedebut()) <= $this->fonctions->formatdatedb($datetemp)) and ($this->fonctions->formatdatedb($tempdeclarationTP->datefin()) >= $this->fonctions->formatdatedb($datetemp)))
+					{
+						// Si la déclaration de TP est validée
+						if (strcasecmp($tempdeclarationTP->statut(),"v")==0)
+						{
+							// C'est la bonne declaration de TP !
+							$declarationTP = $tempdeclarationTP;
+							break;
+						}
+					}
+				}
+			}
+			
+			
+			
+/*			
 			// Si la declaration de TP existe et que la date de fin est avant la date en cours 
 			// (donc on se moque de cette declaration de TP) => On dit qu'on en n'a pas !!! 
 			if (!is_null($declarationTP))
@@ -66,6 +142,7 @@ class planning {
 				if (($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($affectation->datefin())) and ($this->fonctions->formatdatedb($affectation->datefin()) != "00000000")) 
 				{
 					//echo "Je recherche une nouvelle liste d'affectation car hors période <br>";
+					echo "Je recherche une nouvelle liste d'affectation car hors période : " . date("d/m/Y H:i:s") . "<br>";
 					$affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
 					$declarationTPliste = null;
 					$affectation = null;
@@ -79,6 +156,7 @@ class planning {
 			{
 				$affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
 				//echo "J'ai rechargé les affectations pour la date $datetemp <br>";
+				echo "J'ai rechargé les affectations pour la date $datetemp : " . date("d/m/Y H:i:s") . "<br>";
 				$declarationTPliste = null;
 			}
 			
@@ -116,6 +194,7 @@ class planning {
 				if (is_null($declarationTPliste))
 				{
 					//echo "On recherche les declarations pour cette affectation !!! " . $this->fonctions->formatdate($datetemp) . "<br>";
+					echo "On recherche les declarations pour cette affectation !!! " . $this->fonctions->formatdate($datetemp) . " : " . date("d/m/Y H:i:s") . "<br>";
 					$declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
 					//echo "apres la recherche des declaration pour l'affectation en cours !!! Count = " . count($declarationTPliste) . "<br>";
 				}
@@ -153,6 +232,9 @@ class planning {
 			{
 				//echo "affectationliste EST NULL <br>";
 			}
+			
+*/			
+
 			//echo "Apres le for...<br>";
 			//echo "fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
 			//if (is_null($declarationTP)) echo "declarationTP est NULL <br>"; else echo "declarationTP = " . $declarationTP->declarationTPid() . "<br>"; 
@@ -580,7 +662,11 @@ WHERE HARPEGEID = '" . $agentid . "'
  		//echo "datedebut = $datedebut   datefin = $datefin <br>";
 //		$this->listeelement = null;
  		if (is_null($this->listeelement))
+ 		{
+			//echo "Début chargement : " . date("d/m/Y H:i:s") . "<br>";
  			$this->load($agentid,$datedebut,$datefin);
+			//echo "Fin chargement : " . date("d/m/Y H:i:s") . "<br>";
+ 		}
 
  		$htmltext = "";
  		$htmltext = $htmltext . "<div id='planning'>";

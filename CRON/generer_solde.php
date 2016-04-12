@@ -77,7 +77,7 @@
 						$agent->soldecongespdf($anneeref, FALSE,$pdf,TRUE);
 						$agent->demandeslistepdf($anneeref . $fonctions->debutperiode(),($anneeref+1) . $fonctions->finperiode(),$pdf,FALSE);
 					}
-					$filename= dirname(dirname(__FILE__)) . '/html/pdf/solde_' . str_replace('/','_', $struct->nomcourt()) . '_' . date('Ymd') . ".pdf";
+					$filename= dirname(dirname(__FILE__)) . '/html/pdf/solde_' . str_replace('/','_', $struct->nomcourt()) . '_' . date("YmdHis") . ".pdf";
 					$pdf->Output($filename,'F');   // F = file
 					$gest = $struct->gestionnaire();
 					$cronmail->sendmail($gest , 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(),"Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du ". date("d/m/Y") .".\n",$filename);

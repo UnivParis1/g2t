@@ -20,6 +20,10 @@
 	
 	echo "Début des controles post mise à jour de la base...." . date ( "d/m/Y H:i:s" ) . "\n";
 	
+	// récupération des gestionnaires RH des anomalies
+	$gestrhanolist = $fonctions->listeprofilrh(3); // 3 = Profil RHANOMALIE
+	
+	
 	$cron = new agent ( $dbcon );
 	$cron->load ( '-1' ); // L'utilisateur -1 est l'utilisateur CRON
 	
@@ -66,15 +70,21 @@
 			$corpmail = $corpmail . "Nous vous invitons donc prendre contact avec l'agent " . $agent->identitecomplete() . " afin de régulariser la situation.\n";
 			$corpmail = $corpmail . "\n";
 		    //////////////////////////////////////
-			$cron->sendmail ( $struct->responsable() , "Solde de congés négatifs pour l'agent " . $agent->identitecomplete (), $corpmail );
+			$cron->sendmail ( $struct->responsable() , "Solde de congés négatif pour l'agent " . $agent->identitecomplete (), $corpmail );
 			//////////////////////////////////////
+			foreach ((array) $gestrhanolist as $gestrhano)
+			{
+				$cron->sendmail ( $gestrhano, "Solde de congés négatif pour l'agent " . $agent->identitecomplete(), $corpmail );
+			}
+				
 		}
 		unset ( $agent );
 	}
 	
 	echo "Recherche des demandes de congés ou d'absences incohérentes...\n";
 	
-	$datedebut = $fonctions->formatdate ( ($fonctions->anneeref () - 1) . $fonctions->debutperiode () );
+//	$datedebut = $fonctions->formatdate ( ($fonctions->anneeref () - 1) . $fonctions->debutperiode () );
+	$datedebut = $fonctions->formatdate ( ($fonctions->anneeref ()) . $fonctions->debutperiode () );
 	$datefin = $fonctions->formatdate ( ($fonctions->anneeref () + 1) . $fonctions->finperiode () );
 	
 	echo "Période => début  : $datedebut    fin : $datefin \n";
@@ -117,10 +127,9 @@
 			$corpmail = $corpmail . "Afin de rectifier votre demande, vous devez demander, à votre responsable de service, d'annuler votre demande de congés.\n";
 			$corpmail = $corpmail . "Il vous faudra ensuite recréer la demande, via l'application. Le nombre de jours correct sera alors calculé.\n";
 			$corpmail = $corpmail . "\n";
-			$text = $corpmail . $text;
-			echo "Corps du mail = " . $text;
-//			echo "ATTENTION => IL N'Y A PAS D'ENVOI DE MAIL !!!!!   IL FAUT COMPLETER LE CODE !!!! \n";
-			$cron->sendmail ( $agent, "Incohérence dans une ou plusieurs demandes", $text );
+			$corpmail = $corpmail . $text;
+			echo "Corps du mail = " . $corpmail;
+			$cron->sendmail ( $agent, "Incohérence dans une ou plusieurs demandes", $corpmail );
 	    }
 	}
 	
