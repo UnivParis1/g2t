@@ -104,8 +104,9 @@ while ( $result = mysql_fetch_row ( $query_agent ) ) {
 						// echo "nbre_jours_manquants = $nbre_jours_manquants \n";
 					}
 				}
-			} else // Si on trouve une affectation sans contrat alors on est dans le cas général
-{
+			}
+			else // Si on trouve une affectation sans contrat alors on est dans le cas général
+			{
 				// On vérifie qu'il n'y a pas de contrats sur la période avec ancienneté totale consécutive < 1 an
 				if ($cas_general)
 					$cas_general = true;
@@ -189,7 +190,7 @@ while ( $result = mysql_fetch_row ( $query_agent ) ) {
 	// On vérifie si une demande de congé bonifié débute dans la période
 	$debutperiode = $fonctions->anneeref () . $fonctions->debutperiode ();
 	$finperiode = ($fonctions->anneeref () + 1) . $fonctions->finperiode ();
-	$sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='$agentid' AND HARPTYPE='CONGE_BONIFIE' AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
+	$sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='$agentid' AND (HARPTYPE='CONGE_BONIFIE' OR HARPTYPE LIKE 'Cg% Bonifi% (FPS)') AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
 	$query = mysql_query ( $sql );
 	$erreur_requete = mysql_error ();
 	if ($erreur_requete != "")
