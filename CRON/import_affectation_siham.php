@@ -253,7 +253,7 @@
 			}
 			else
 			{
-				$numcontrat = $ligne_element[2];
+				$numcontrat = $ligne_element[2]; // Pourrait être remplacé par $numcontrat = 0 car lors de l'insertion SQL, si $numcontrat = '' => SQL prend la valeur par défaut = 0
 			}
 			$datedebut = $ligne_element[3];
 			$datefin = $ligne_element[4];
@@ -337,6 +337,7 @@
 				if ( ($fonctions->formatdatedb($affectation->datedebut()) == $fonctions->formatdatedb($datedebut))
 				 and ($fonctions->formatdatedb($affectation->datefin()) == $fonctions->formatdatedb($datefin))
 				 and ($affectation->numquotite() == $numquotite)
+				 and ($affectation->structureid() == $structureid)
 				   )
 				{
 					echo "Reactivation de la ligne d'affectation car tout est pareil \n";
@@ -365,15 +366,26 @@
 							$fonctions->my_real_escape_utf8($denomquotite),
 							'N',
 							$fonctions->my_real_escape_utf8($affectationid));
-					if ($harpegeid == '9328')
-					{
-						echo "sql = $sql \n";
-					}
+					
+					//if ($harpegeid == '9328')
+					//{
+					//	echo "sql = $sql \n";
+					//}
+					
 					mysql_query($sql);
 					$erreur_requete=mysql_error();
 					if ($erreur_requete!="")
 						echo "UPDATE AFFECTATION => $erreur_requete \n";
 						
+					// ------------------------------------------------
+					// Cas ou la structure est modifiée
+					// On ne modifie rien car le changement de structure n'a aucun impact sur les autres informations
+					// ------------------------------------------------
+					if ($affectation->structureid() != $structureid)
+					{
+						echo "Changement de structure d'affectation : Ancienne structure = " . $affectation->structureid() . "  Nouvelle structure = " . $structureid . "\n";
+					}
+					
 					// ------------------------------------------------
 					// Cas ou la quotité est modifiée
 					//	On annule la déclaration de TP correspondante
