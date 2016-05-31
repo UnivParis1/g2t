@@ -838,6 +838,7 @@ DTSTART:$dtstart
 DTEND:$dtend
 TRANSP:OPAQUE
 SEQUENCE:0
+ATTENDEE;
 UID:$cal_uid
 DESCRIPTION:$meeting_description
 SUMMARY:$subject
