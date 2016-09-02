@@ -596,8 +596,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 					}
 	 			}
 
-	 			// On decompte le nombre de jours que l'on vient de poser
-				if ($this->fonctions->estunconge($this->typeabsenceid))
+	 			// On decompte le nombre de jours que l'on vient de poser sauf si c'est un CET
+				if ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp($this->typeabsenceid,'cet')!=0))
 				{
 					$sql = "UPDATE SOLDE
 					  		 SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
@@ -621,7 +621,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 		}
 		else
 		{
-		
+			// Si le statut de la demande était déja annulé/refusé => On ne fait rien
 			if (strcasecmp($this->ancienstatut,"r")==0)
 			{
 				$errlog = "Impossible de changer le statut d'une demande 'refusee' !!!";
@@ -643,19 +643,25 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 	 				echo $errlog."<br/>";
 	 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 	 			}
+	 			// Si le nouveau statut est annulé => On doit recréditer le nombre de jour....
 	 			if (strcasecmp($this->ancienstatut,"r")!=0 and strcasecmp($this->statut,"r")==0)
 	 			{
-	 				// On recrédite le nombre de jours dans les congés....
-	 				$sql = "UPDATE SOLDE
-						  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
-								 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $this->agent()->harpegeid()  . "'";
-	 				//echo "SQL = $sql  <br>";
-	 				$query=mysql_query ($sql,$this->dbconnect);
-	 				$erreur=mysql_error();
-	 				if ($erreur != "") {
-	 					$errlog = "Demande->store (Modif SOLDE_CMPTE) : " . $erreur;
-	 					echo $errlog."<br/>";
-	 					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	 				// Si ce n'est pas un CET on doit recréditer le nombre de jour
+	 				if (strcasecmp($this->typeabsenceid,'cet')!=0)
+	 				{
+		 				// On recrédite le nombre de jours dans les congés....
+		 				$sql = "UPDATE SOLDE
+							  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
+									 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $this->agent()->harpegeid()  . "'";
+		 				//echo "SQL = $sql  <br>";
+		 				$query=mysql_query ($sql,$this->dbconnect);
+		 				$erreur=mysql_error();
+		 				if ($erreur != "")
+		 				{
+		 					$errlog = "Demande->store (Modif SOLDE_CMPTE) : " . $erreur;
+		 					echo $errlog."<br/>";
+		 					error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		 				}
 	 				}
 	 			}
 			}

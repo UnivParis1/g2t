@@ -651,7 +651,7 @@ AND DEMANDE.STATUT='v'";
 	}
 	
    /**
-         * @param sting $anneeref optional year of reference (2012 => 2012/2013, 2013 => 2013/2014). If not set, the current year is used
+         * @param string $anneeref optional year of reference (2012 => 2012/2013, 2013 => 2013/2014). If not set, the current year is used
          * @param string $erreurmsg concat the errors text with an existing string 
          * @return array list of objects solde
    */
@@ -744,9 +744,9 @@ AND DEMANDE.STATUT='v'";
 		{
 			//echo "Avant la comparaison date <br>";
 			//echo "cet->datedebut() = " . $cet->datedebut() . "<br>";
-			///echo "formatdatedb(cet->datedebut()) = " . $this->fonctions->formatdatedb($cet->datedebut()) . "<br>";
+			//echo "formatdatedb(cet->datedebut()) = " . $this->fonctions->formatdatedb($cet->datedebut()) . "<br>";
 			//echo "this->fonctions->anneeref() = " . $this->fonctions->anneeref() . "<br>";
-			// "anneeref+1 = " . ($anneeref+1) . "<br>";
+			//echo "anneeref+1 = " . ($anneeref+1) . "<br>";
 			//echo "this->fontions->finperiode() = " . $this->fonctions->finperiode() . "<br>";
 			if ($this->fonctions->formatdatedb($cet->datedebut()) <= ($anneeref+1) . $this->fonctions->finperiode())
 			{

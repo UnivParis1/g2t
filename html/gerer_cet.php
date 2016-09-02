@@ -79,7 +79,7 @@
 	
 	$nbr_jours_cet = null;
 	if (isset($_POST["nbr_jours_cet"]))
-		$nbr_jours_cet = $_POST["nbr_jours_cet"];
+		$nbr_jours_cet = str_ireplace(",", ".", $_POST["nbr_jours_cet"]);
 	
 	if (isset($_POST["nbrejoursdispo"]))
 		$nbrejoursdispo = $_POST["nbrejoursdispo"];
@@ -96,6 +96,9 @@
 	$retraitcet = null;
 	if (isset($_POST["retraitcet"]))
 		$retraitcet = $_POST["retraitcet"];
+	$utilisationcet = null;
+	if (isset($_POST["utilisationcet"]))
+		$utilisationcet = $_POST["utilisationcet"];
 	
 	$mutation = null;
 	if (isset($_POST["mutation"]))
@@ -117,12 +120,30 @@
 	
 	if (!is_null($nbr_jours_cet))
 	{
-		if ($nbr_jours_cet <= 0 or $nbr_jours_cet == "") {
-			$errlog = "Vous n'avez pas saisi le nombre de jours à ajouter ou il est inférieur ou égal à 0 ";
+		if (!is_null($utilisationcet))
+		{
+			if ($nbr_jours_cet == 0 or $nbr_jours_cet == "")
+			{
+				$errlog = "Le nombre de jours saisi est vide ou il est égal à 0 ";
+				$msg_erreur .= $errlog."<br/>";
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+			}
+			echo "floatval = " . (floatval($nbr_jours_cet)*2) . "    Intval = " . (intval($nbr_jours_cet*2)) . " <br>";
+			if ((floatval($nbr_jours_cet)*2) != (intval($nbr_jours_cet*2)))  // Si le $nbr_jours_cet * 2 n'est pas un nombre entier => problème 
+			{
+				$errlog = "Le nombre de jours saisi doit être entier ou en demi-journée ";
+				$msg_erreur .= $errlog."<br/>";
+				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
+			}
+		}
+		if (($nbr_jours_cet <= 0 or $nbr_jours_cet == "") and is_null($utilisationcet))
+		{
+			$errlog = "Le nombre de jours saisi est vide ou il est inférieur ou égal à 0 ";
 			$msg_erreur .= $errlog."<br/>";
 			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 		}
-		elseif (intval($nbr_jours_cet) != $nbr_jours_cet) {
+		elseif ((intval($nbr_jours_cet) != $nbr_jours_cet) and is_null($utilisationcet)) // Dans le cas d'une utilisation de CET (dépot d'un congé) on a droit aux 1/2 jrs 
+		{
 			$errlog = "Le nombre de jours à ajouter au CET doit être un nombre entier.";
 			$msg_erreur .= $errlog."<br/>";
 			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
@@ -332,7 +353,46 @@
 			}
 			
 		}
-		else 
+		elseif (!is_null($utilisationcet) and ($msg_erreur == ""))
+		{
+			// On va déduire le nombre de jours du solde du CET
+			//echo "utilisationcet = $utilisationcet <br>";
+			$solde = new solde($dbcon);
+			$msg_erreur = $solde->load($agentid,'cet');
+			//echo "msg_erreur = $msg_erreur <br>";
+			if ($msg_erreur == "")
+			{
+				//echo "Calcul du solde restant .... => " . ($solde->droitaquis()-$solde->droitpris()) . "  nbr_jours_cet = $nbr_jours_cet <br>"; 
+				if (($solde->droitaquis()-$solde->droitpris()) >= $nbr_jours_cet)
+				{
+					$nvsoldepris = $solde->droitpris() + $nbr_jours_cet;
+					//echo "nvsoldepris = $nvsoldepris <br>";
+					$solde->droitpris($nvsoldepris); 
+					$msg_erreur = $solde->store();
+					if ($msg_erreur == "")
+					{
+						if ($nbr_jours_cet < -1) // inférieur à -1 
+							$detail = abs($nbr_jours_cet) . " jours vous ont été recrédités sur votre CET au motif : Annulation d'une demande de congé sur le solde du CET";
+						elseif ($nbr_jours_cet < 0) // compris entre -1 et 0
+							$detail = abs($nbr_jours_cet) . " jour vous a été recrédité sur votre CET au motif : Annulation d'une demande de congé sur le solde du CET";
+						elseif ($nbr_jours_cet > 1) // Supérieur à 1
+							$detail = $nbr_jours_cet . " jours vous ont été retirés du CET au motif : Utilisation du CET pour poser un congé";
+						else // Compris entre 0 et 1
+							$detail = $nbr_jours_cet . " jour vous a été retiré du CET au motif : Utilisation du CET pour poser un congé";
+						$user->sendmail($agent,"Utilisation du CET pour poser des congés", "Le solde de votre CET vient d'être modifié.\n $detail");
+					}
+					else
+					{
+						echo "msg_erreur (après le store) = $msg_erreur <br>";
+					}
+				}
+				else
+				{
+					$msg_erreur = $msg_erreur . "Vos droits à CET sont insuffisants : Demandé " . $nbr_jours_cet . " jour(s)   Autorisé : " . ($solde->droitaquis()-$solde->droitpris()) . " jour(s)<br>";
+				}
+			}
+		}
+		elseif ($msg_erreur == "")
 		{
 			$errlog = "Je ne sais pas ce que je fais ici => Ni un retrait, ni un ajout !!!!!";
 			echo $errlog."<br/>";
@@ -468,7 +528,7 @@
 		{
 			// Pas d'erreur lors du chargement du CET
 			echo "Le CET de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est actuellement : <br>";
-			echo "Date du début du CET : ". $cet->datedebut() . "<br>";
+			//echo "Date du début du CET : ". $cet->datedebut() . "<br>";
 			echo "Sur l'année " .  ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref()  . ", " . $agent->identitecomplete() . " a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
 			echo "Le solde de CET est de " . (($cet->cumultotal()-$cet->jrspris())) . " jour(s)<br>";
 
@@ -518,6 +578,35 @@
 		}
 */		
 		echo "<br>";
+		if (!is_null($cet))
+		{
+			echo "<span style='border:solid 1px black; background:lightgrey; width:600px; display:block;'>";
+			echo "<form name='frm_utilisationcet'  method='post' >";
+			if ($mutation==true)
+			{
+				echo "<input type='hidden' name='mutation' value='mutation'>";
+			}
+			elseif ($mutation==false)
+			{
+				echo "<input type='hidden' name='mutation' value=''>";
+			}
+			
+			echo "Nombre de jours de CET utilisés/restitués comme congés : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
+			echo "<br>";
+			echo "<B>ATTENTION :</B> A n'utiliser que dans le cas d'une utilisation du solde de CET comme congés ou de l'annulation d'une demande de congés sur le solde du CET<br>";
+			echo "Mettre un nombre positif pour utiliser des jours du CET.<br>Mettre un nombre négatif pour restituer des jours au CET.<br>";
+			echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
+			echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
+			echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
+			echo "<input type='hidden' name='utilisationcet' value='yes'>";
+			echo "<input type='hidden' name='mode' value='" . $mode ."'>";
+			if ($msg_bloquant == "")
+				echo "<input type='submit' value='Valider' >";
+			echo "</form>";
+			echo "</span>";
+		}
+		
+		echo "<br>";
 		echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
 		echo "<form name='frm_ajoutcet'  method='post' >";
 		if ($mutation==true)
@@ -531,6 +620,7 @@
 			
 		echo "Nombre de jours à ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
 		echo "<br>";
+		echo "<B>ATTENTION :</B> A n'utiliser que dans le cas d'une alimentation du CET à partir des reliquats<br>";
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
 		echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";

@@ -460,28 +460,6 @@
 					{
 						$msgstore .= $demande->nbrejrsdemande() ." jour vous sera decompté (" . $demande->typelibelle() .  ")";
 					}
-					if (strcasecmp($demande->type(),"cet")==0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
-					{
-						$arrayagentrh = $fonctions->listeprofilrh("1");  // Profil = 1 ==> GESTIONNAIRE RH DE CET
-						foreach ($arrayagentrh as $gestrh)
-						{
-							$corpmail = "Une demande de congés a été saisie sur le CET de " . $agent->identitecomplete() . ".\n";
-							$corpmail = $corpmail . "\n";
-							$corpmail = $corpmail . "Détail de la demande :\n";
-							$corpmail = $corpmail . "- Date de début : ". $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
-							$corpmail = $corpmail . "- Date de fin : ". $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
-							$corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
-							$corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
-							if (!is_null($responsable))
-							{
-								$responsable->sendmail($gestrh,"Demande de congés sur CET",$corpmail);
-							}
-							else
-							{
-								$agent->sendmail($gestrh,"Demande de congés sur CET",$corpmail);
-							}
-						} 
-					}
 				}
 				else
 				{

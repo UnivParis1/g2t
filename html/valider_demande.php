@@ -99,7 +99,7 @@
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " .  mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
 						$user->sendmail($agent,"Modification d'une demande de congés ou d'absence",$corpmail, $pdffilename, $ics);
 
-						if (strcasecmp($demande->type(),"cet")==0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
+						if (strcasecmp($demande->type(),"cet")==0 and strcasecmp($statut,"v")==0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
 						{
 							$arrayagentrh = $fonctions->listeprofilrh("1");  // Profil = 1 ==> GESTIONNAIRE RH DE CET
 							foreach ($arrayagentrh as $gestrh)

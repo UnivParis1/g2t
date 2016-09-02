@@ -343,7 +343,7 @@
 									<input type="hidden" name="typedemande" value="conges">
 									<input type="hidden" name="congeanticipe" value="yes">
 								</form>
-								<a href="javascript:document.resp_conge_anticipe.submit();">Etablir une demande de congé anticipé pour un agent</a>
+								<a href="javascript:document.resp_conge_anticipe.submit();">Etablir une demande de congé par anticipation pour un agent</a>
 							</li>
 <?php
 		} 
@@ -514,7 +514,7 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 							<input type="hidden" name="mode" value="gestrh">
 						</form>
-						<a href="javascript:document.gestrh_gestcet.submit();">Alimentation / Indemnisation des CET</a>
+						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
 					</li>
 					<li onclick='document.gestrh_creercet.submit();'>
 						<form name='gestrh_creercet'  method='post' action="creer_cet.php">
