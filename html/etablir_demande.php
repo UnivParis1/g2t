@@ -530,6 +530,13 @@
 			else
 			{
 				$soldeliste = $agent->soldecongesliste($fonctions->anneeref()-$previous);
+				// Si on est dans l'année précédente, on peut poser des congés avec le solde de l'année future
+				// Exemple : On peut poser des congés en Aout 2015/2016, avec le solde 2016/2017 (s'il existe <=> S'il est calculé)
+				if ($previous != 0)
+				{
+					$soldelisteannee = $agent->soldecongesliste($fonctions->anneeref());
+					$soldeliste = array_merge((array)$soldeliste, (array)$soldelisteannee);
+				}
 				//print_r ($soldeliste); echo "<br>";
 				if (!is_null($soldeliste))
 				{
