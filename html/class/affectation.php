@@ -343,25 +343,21 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		$structure = new structure($this->dbconnect);
 		$structure->load($this->structureid());
 		
- 		$htmltext = "Tableau des temps partiel pour " . $agent->identitecomplete() . "<br>";
+ 		$htmltext = "Informations sur le temps partiel déclaré dans Siham pour " . $agent->identitecomplete() . "<br>";
  		$htmltext = $htmltext . "<div id='planning'>";
  		$htmltext = $htmltext . "<table class='tableausimple'>";
  		$htmltext = $htmltext . "<tr><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Structure</td><td class='titresimple'>Quotité</td>";
 		$htmltext = $htmltext . "</tr>";
 		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->datedebut() . "</td><td class='cellulesimple'>" . $this->datefin() . "</td><td class='cellulesimple'>" . $structure->nomlong() . "</td><td class='cellulesimple'>" . $this->quotite() . "</td></tr>";
 		$htmltext = $htmltext ."</table><br>";
- 		$htmltext = $htmltext . "<table class='tableausimple'>";
- 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Etat de la demande</td><td class='titresimple'>Répartition du temps partiel</td>";
-// 		if ($pour_modif)
-//				$htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
-		$htmltext = $htmltext . "</tr>";
 
 		if ($affiche_declaTP)
 		{
+			$premiereligne = true;
 			$declarationliste = $this->declarationTPliste($this->datedebut(),$this->datefin());
-
 			if (!is_null($declarationliste))
 			{
+
 		 		foreach ($declarationliste as $key => $declaration)
 		 		{
 		 			// Si on est en mode "resp" (responsable de service) on affiche toutes les déclarations de TP
@@ -369,13 +365,32 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		 			if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp($mode, "resp")==0)
 		 			{
 			 			if (strcasecmp($declaration->statut(),"r")!=0)
-				 			$htmltext = $htmltext . $declaration->html($pour_modif);
+			 			{
+			 				if ($premiereligne)
+			 				{
+						 		$htmltext = $htmltext . "Tableau des temps partiels déclarés dans G2T pour " . $agent->identitecomplete() . "<br>";
+			 					$htmltext = $htmltext . "<table class='tableausimple'>";
+						 		$htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Etat de la demande</td><td class='titresimple'>Répartition du temps partiel</td>";
+						// 		if ($pour_modif)
+						//				$htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
+								$htmltext = $htmltext . "</tr>";
+								$premiereligne = false;
+			 				}
+			 				$htmltext = $htmltext . $declaration->html($pour_modif);
+			 			}
 		 			} 
 		 		}
 			}
 			else
 			{
 				//echo "Pas de déclaration de TP pour l'affectation " . $this->affectationid() . "<br>";
+			}
+			if ($premiereligne)  // Si on a affiché aucune ligne de déclaration de TP
+			{
+				if (strcasecmp($mode, "resp")==0) // Si on est en mode responsable
+					$htmltext = $htmltext . "<B>" . $agent->identitecomplete() ." n'a aucune déclaration de temps partiel saisie dans G2T.</B><br>";
+				else
+					$htmltext = $htmltext . "<B>" . $agent->identitecomplete() ." n'a aucune déclaration de temps partiel active dans G2T.</B><br>";
 			}
 		}		
 		$htmltext = $htmltext ."</table>";

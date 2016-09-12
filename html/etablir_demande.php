@@ -113,7 +113,7 @@
 		if ($date_debut == "" or !$fonctions->verifiedate($date_debut))  //is_null($date_debut) or 
 		{
 			//Echo "La date est fausse !!!! <br>";
-			$errlog = "La date de début n'est pas initialisée ou est incorrecte (JJ/MM/AAAA) !!! <br/>";
+			$errlog = "La date de début n'est pas initialisée ou est incorrecte !!! <br/>";
 			$msg_erreur .= $errlog;
 			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($errlog));
 			$datefausse = TRUE;
@@ -270,13 +270,6 @@
 <!-- 
 	<script src="javascripts/jquery-1.8.3.js"></script>
 	<script src="javascripts//jquery-ui.js"></script>
-
-	<script>
-		$(function()
-		{
-			$( ".calendrier" ).datepicker();
-		});
-	</script>
  -->
 <?php	
 		
@@ -406,7 +399,13 @@
 		//echo "Date fausse (2) = " . $datefausse . "<br>";
 		if ($msg_erreur <> "" or $datefausse)
 		{
-			echo "<P style='color: red'>" . $msg_erreur . " </P>";
+		
+			echo "<P style='color: red'><B><FONT SIZE='5pt'>";
+			if ($msg_erreur<> "")
+			{
+				echo "Votre demande n'a pas été enregistrée... <BR>";
+			}
+			echo $msg_erreur . " </B></FONT></P>";
 			error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msg_erreur));
 			//echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider  <br>";
 		}
@@ -472,7 +471,7 @@
 			{
 				$msgstore = "Votre demande n'a pas été enregistrée... ==> MOTIF : ".  $resultat;
 				error_log(basename(__FILE__)." uid : ".$agentid." : ".$fonctions->stripAccents($msgstore));
-				echo "<P style='color: red'>".$msgstore."</P>";
+				echo "<P style='color: red'><B><FONT SIZE='5pt'>" . $msgstore . " </B></FONT></P>";
 			}
 		}
 		echo "<span style='border:solid 1px black; background:orange; width:600px; display:block;'>";
@@ -489,30 +488,47 @@
 	<table>
 		<tr>
 			<td>Date de début de la demande :</td>
-			<td width=1px><input class="calendrier" type=text name=date_debut id=date_debut size=10 ></td>
+<?php
+			// Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
+			$calendrierid_deb = "date_debut";
+			$calendrierid_fin = "date_fin";
+			echo '
+<script>
+$(function() 
+{
+	$( "#' . $calendrierid_deb . '" ).datepicker({minDate: $( "#' . $calendrierid_deb . '" ).attr("minperiode"), maxDate: $( "#' . $calendrierid_deb . '" ).attr("maxperiode")});
+	$( "#' . $calendrierid_deb . '").change(function () {
+			$("#' . $calendrierid_fin . '").datepicker("destroy");
+			$("#' . $calendrierid_fin . '").datepicker({minDate: $("#' . $calendrierid_deb . '").datepicker("getDate"), maxDate: $( "#' . $calendrierid_fin . '" ).attr("maxperiode")});
+	});
+});
+</script> 
+';
+			echo '
+<script>
+$(function()
+{
+	$( "#' . $calendrierid_fin . '" ).datepicker({minDate: $( "#' . $calendrierid_fin . '" ).attr("minperiode"), maxDate: $( "#' . $calendrierid_fin . '" ).attr("maxperiode")});
+	$( "#' . $calendrierid_fin . '").change(function () {
+			$("#' . $calendrierid_deb . '").datepicker("destroy");
+			$("#' . $calendrierid_deb . '").datepicker({minDate: $( "#' . $calendrierid_fin . '" ).attr("minperiode"), maxDate: $("#' . $calendrierid_fin . '").datepicker("getDate")});
+	});
+});
+</script>
+';
+?>
+			<br>
+			<td width=1px><input class="calendrier" type=text name=date_debut id=<?php echo $calendrierid_deb ?> size=10 minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode()); ?>' maxperiode='<?php if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) { $indexmois = substr($fonctions->debutperiode(),0,2); $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous)); echo $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois); } else { echo $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode()); } ?>'></td>
 			<td align="left"><input type='radio' name='deb_mataprem' value='m' checked >Matin <input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
 		</tr>
 		<tr>
 			<td>Date de fin de la demande :</td>
-			<td width=1px><input class="calendrier" type=text name=date_fin id=date_fin size=10 ></td>
+			<td width=1px><input class="calendrier" type=text name=date_fin id=<?php echo $calendrierid_fin ?> size=10  minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode()); ?>' maxperiode='<?php if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) { $indexmois = substr($fonctions->debutperiode(),0,2); $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous)); echo $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois); } else { echo $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode()); } ?>'></td>
 			<td align="left"><input type='radio' name='fin_mataprem' value='m' >Matin <input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
 		</tr>
 		<tr>
 			<td>Type de congé : </td>
 			<td colspan="2">
-
-<!-- 
-	Date de début de la demande :
-	<input class="calendrier" type=text name=date_debut id=date_debut size=10 > <br>
-	<input type='radio' name='deb_mataprem' value='m' checked >Matin
-	<input type='radio' name='deb_mataprem' value='a'>Après-midi
-	<br>
-	Date de fin de la demande :
-	<input class="calendrier" type=text name=date_fin id=date_fin size=10 > <br>
-	<input type='radio' name='fin_mataprem' value='m' >Matin
-	<input type='radio' name='fin_mataprem' value='a' checked>Après-midi
-	<br>
- -->	
 <?php
 		if (strcasecmp($typedemande,"conges")==0)
 		{

@@ -53,13 +53,6 @@
 <!-- 
 	<script src="javascripts/jquery-1.8.3.js"></script>
 	<script src="javascripts//jquery-ui.js"></script>
- 
- 	<script>
-		$(function()
-		{
-			$( ".calendrier" ).datepicker();
-		});
-	</script>
 -->
 <?php	
 	//echo '<html><body class="bodyhtml">';
@@ -502,15 +495,44 @@
 					echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() ."'>";
 					echo $affectation->html(true,false,$mode);
 	
-					echo "<br>Nouvelle déclaration de temps partiel<br>";
+					echo "<br>Réaliser une nouvelle déclaration de temps partiel<br>";
 					echo "<table>";
 					echo "<tr>";
 					echo"<td>Date de début de la période :</td>";
-					echo "<td width=1px><input class='calendrier' type=text name=date_debut id=date_debut_" . $affectation->affectationid()  . " size=10 ></td>";
+					
+					// Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
+					$calendrierid_deb = "date_debut_" . $affectation->affectationid();
+					$calendrierid_fin = "date_fin_" . $affectation->affectationid();
+
+					echo '
+<script>
+$(function()
+{
+	$( "#' . $calendrierid_deb . '" ).datepicker({minDate: $( "#' . $calendrierid_deb . '" ).attr("minperiode"), maxDate: $( "#' . $calendrierid_deb . '" ).attr("maxperiode")});
+	$( "#' . $calendrierid_deb . '").change(function () {
+			$("#' . $calendrierid_fin . '").datepicker("destroy");
+			$("#' . $calendrierid_fin . '").datepicker({minDate: $("#' . $calendrierid_deb . '").datepicker("getDate"), maxDate: $( "#' . $calendrierid_fin . '" ).attr("maxperiode")});
+	});
+});
+</script>
+';
+					echo '
+<script>
+$(function()
+{
+	$( "#' . $calendrierid_fin . '" ).datepicker({minDate: $( "#' . $calendrierid_fin . '" ).attr("minperiode"), maxDate: $( "#' . $calendrierid_fin . '" ).attr("maxperiode")});
+	$( "#' . $calendrierid_fin . '").change(function () {
+			$("#' . $calendrierid_deb . '").datepicker("destroy");
+			$("#' . $calendrierid_deb . '").datepicker({minDate: $( "#' . $calendrierid_fin . '" ).attr("minperiode"), maxDate: $("#' . $calendrierid_fin . '").datepicker("getDate")});
+	});
+});
+</script>
+';
+					echo "<td width=1px><input class='calendrier' type=text name=date_debut id=" . $calendrierid_deb  . " size=10 minperiode='" . $affectation->datedebut() . "' maxperiode='" . $affectation->datefin() . "'></td>";
 					echo "</tr>";
 					echo "<tr>";
 					echo "<td>Date de fin de la période :</td>";
-					echo "<td width=1px><input class='calendrier' type=text name=date_fin id=date_fin_" . $affectation->affectationid()  . " size=10 ></td>";
+					echo "<td width=1px><input class='calendrier' type=text name=date_fin id=" . $calendrierid_fin . " size=10 minperiode='" . $affectation->datedebut() . "' maxperiode='" . $affectation->datefin() . "'></td>";
 					echo "</tr>";
 					echo "</table>";
 					$nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));

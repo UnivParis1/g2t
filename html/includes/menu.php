@@ -1,9 +1,11 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr" lang="fr"> 
 <head> 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.8" />
+<link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/jquery-ui.css" type="text/css" media="all" ></link>
+<link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/ui.theme.css" type="text/css" media="all" ></link>
+<link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/autocompleteUser.css" type="text/css" media="all" ></link>
 <script type="text/javascript">
 <?php
 	if (is_null($user) or is_null($user->harpegeid()))
@@ -62,34 +64,22 @@
    	window.open(url, nom, "width=520,height=500,scrollbars=yes, status=yes");
 	}
 
-	</script>
-
-<!-- P1 INLINE PORTLET DEBUT -->
-<!--
-<script type="text/javascript">
-
-	window.cssToLoadIfInsideIframe = "https://esup-data.univ-paris1.fr/esup/canal/css/g2t.css";
-
 </script>
--->
+
+
 <script type="text/javascript">window.bandeau_ENT={current:'g2t'};</script>
-<script type="text/javascript" src="https://esup-data.univ-paris1.fr/esup/outils/postMessage-resize-iframe-in-parent.js">
-</script>
+<script type="text/javascript" src="https://esup-data.univ-paris1.fr/esup/outils/postMessage-resize-iframe-in-parent.js"></script>
+<script src="javascripts/jquery-1.8.3.js"></script>
+<script src="javascripts/jquery-ui.js"></script>
 
-   <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/jquery-ui.css" type="text/css" media="all">
-   <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/ui.theme.css" type="text/css" media="all">
-   <link rel="stylesheet" href="https://wsgroups.univ-paris1.fr/web-widget/autocompleteUser.css" type="text/css" media="all">
-
-   <script src="javascripts/jquery-1.8.3.js"></script>
-   <script src="javascripts/jquery-ui.js"></script>
-
+<!--   
 	<script>
 		$(function()
 		{
-			$( ".calendrier" ).datepicker();
+			$( ".calendrier" ).datepicker({minDate: $( ".calendrier" ).attr("minperiode"), maxDate: $( ".calendrier" ).attr("maxperiode")});
 		});
 	</script>
-
+ -->  
 
 <!--  
    <script src="https://wsgroups.univ-paris1.fr/web-widget/jquery-1.7.2.min.js"></script>
@@ -113,8 +103,8 @@
 </script>
 
 
-<link rel="stylesheet" type="text/css" href="style/style.css" media="screen">
-<link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen">
+<link rel="stylesheet" type="text/css" href="style/style.css" media="screen"></link>
+<link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen"></link>
 </head> 
 
 <body class="bodyhtml"> 
@@ -163,7 +153,7 @@
 	}
 	
 	if ($user->harpegeid() != $_SESSION['phpCAS']['harpegeid'])
-		echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT></CENTER></P><BR>";
+		echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->harpegeid()  .")</CENTER></P><BR>";
 ?>
 
 

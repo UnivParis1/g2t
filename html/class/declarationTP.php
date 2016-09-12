@@ -606,7 +606,12 @@ WHERE DECLARATIONID=" . $id;
 //			$htmltext = $htmltext . "<input type='hidden' name='" .  $structid. "_" . $this->agent()->harpegeid() . "_autodeclaid_" . $this->declarationTPid() . "' value='" . $this->declarationTPid() ."'>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedemande() . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedebut() . "</td>";
-		$htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datefin() . "</td>";
+		$htmltext = $htmltext . "<td class='cellulesimple' align=center >";
+		if ($this->fonctions->formatdatedb($this->datefin()) >= date("Ymd")) // Si la date de fin est postérieur à aujourd'hui
+			$htmltext = $htmltext . $this->datefin();
+		else // Si la date est inférieur à aujourd'hui, on modifie la tipographie (couleur, gras....)
+			$htmltext = $htmltext . "<B><FONT COLOR='#FF0000'>" . $this->datefin() . "</FONT></B>";
+		$htmltext = $htmltext . "</td>";
 		$htmltext = $htmltext . "<td class='cellulesimple' align=center >";
 		if ($pourmodif and strcasecmp($this->statut(),"a")==0)
 		{

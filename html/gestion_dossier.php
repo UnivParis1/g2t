@@ -42,17 +42,6 @@
 	//echo "Apres le chargement du user !!! <br>";
 	require ("includes/menu.php");
 	
-?>
-<!-- 
-	<script>
-		$(function()
-		{
-			$( ".calendrier" ).datepicker();
-		});
-	</script>
- -->
-<?php	
-		
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 	
