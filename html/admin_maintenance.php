@@ -97,7 +97,7 @@ Gestion du mode maintenance... <br>
 
 
 <br>
-<input type='submit' value='Valider'>
+<input type='submit' value='Soumettre'>
 </form>
 
 </body></html>

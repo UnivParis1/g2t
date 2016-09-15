@@ -428,7 +428,7 @@
 		<?php 			
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 		echo "<br>";
 		echo "<br>";
@@ -461,7 +461,7 @@
 				
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 		
 	}
@@ -547,7 +547,7 @@
 			echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
 			echo "<input type='hidden' name='ajoutcet' value='yes'>";
 			echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-			echo "<input type='submit' value='Valider' >";
+			echo "<input type='submit' value='Soumettre' >";
 			echo "</form>";
 			echo "</span>";
 		}
@@ -601,7 +601,7 @@
 			echo "<input type='hidden' name='utilisationcet' value='yes'>";
 			echo "<input type='hidden' name='mode' value='" . $mode ."'>";
 			if ($msg_bloquant == "")
-				echo "<input type='submit' value='Valider' >";
+				echo "<input type='submit' value='Soumettre' >";
 			echo "</form>";
 			echo "</span>";
 		}
@@ -627,7 +627,7 @@
 		echo "<input type='hidden' name='ajoutcet' value='yes'>";
 		echo "<input type='hidden' name='mode' value='" . $mode ."'>";
 		if ($msg_bloquant == "")
-			echo "<input type='submit' value='Valider' >";
+			echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 		echo "</span>";
 		
@@ -668,7 +668,7 @@
 				}
 				
 				if ($msg_bloquant == "")
-					echo "<input type='submit' value='Valider' >";
+					echo "<input type='submit' value='Soumettre' >";
 				echo "</form>";
 				echo "</span>";
 			}

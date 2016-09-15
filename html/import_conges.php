@@ -184,7 +184,7 @@ Exemple :<br>
 <?php 
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 ?>
-<input type='submit' value='Valider' >
+<input type='submit' value='Soumettre' >
 </form>
 
 <br>

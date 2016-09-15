@@ -73,7 +73,7 @@
 	echo "</select>";
 	echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
 	echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-	echo "<input type='submit' value='Valider' /></center>";
+	echo "<input type='submit' value='Soumettre' /></center>";
 	echo "</form>";
 
 	if (strcasecmp($mode,"resp")==0)

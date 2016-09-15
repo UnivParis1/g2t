@@ -244,7 +244,7 @@
 		echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
 	echo "<input type='hidden' name='userid' value='" . $userid ."'>";
 	echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
-	echo "<input type='submit' value='Valider' />";
+	echo "<input type='submit' value='Soumettre' />";
 	
 	echo "</form>"
 ?>

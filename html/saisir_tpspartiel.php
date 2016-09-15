@@ -437,7 +437,7 @@
 			
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 		
 	}
@@ -559,7 +559,7 @@ $(function()
 					echo "<input type='hidden' name='userid' value='" . $userid ."'>";
 					echo "<input type='hidden' name='agentid' value='" . $agentid ."'>";
 					echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-					echo "<input type='submit' value='Valider' />";
+					echo "<input type='submit' value='Soumettre' />";
 					
 					echo "</form>";
 					echo "<br>";

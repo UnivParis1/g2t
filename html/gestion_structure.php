@@ -223,7 +223,7 @@
 	if ($showall == true)
 		echo " checked ";
 	echo ">Afficher les structures fermées<br>";
-	echo " <input type='submit' name= 'Valid_struct' value='Valider' >";
+	echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
 	echo "</form>";
 	echo "<br>";
 	

@@ -362,7 +362,7 @@
 	echo "<input type='hidden' name='mode' value='" . $mode ."'>";
 	
 	if ($action == 'modif') 
-		echo "<input type='submit' value='Valider' />";
+		echo "<input type='submit' value='Soumettre' />";
 	echo "</form>";
 	
 ?>

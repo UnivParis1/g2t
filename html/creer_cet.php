@@ -174,7 +174,7 @@
 		<?php 			
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='mode' value='" . $mode ."'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 		echo "<br>";
 		echo "<br>";
@@ -218,7 +218,7 @@
 		}
 		if ($msg_bloquant == "")
 		{
-			echo "<br><input type='submit' value='Valider' >";
+			echo "<br><input type='submit' value='Soumettre' >";
 		}
 		else 
 		{

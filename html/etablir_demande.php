@@ -195,7 +195,22 @@
 
 	## Récupération du type de l'absence (annuel, CET, ...)
 	if (isset($_POST["listetype"]))
+	{
 		$listetype = $_POST["listetype"];
+		$anneeref = $fonctions->congesanneeref($listetype);
+		if ($anneeref != '' and  !$datefausse)
+		{
+			// On ajoute 2 car un congés 2014 est valable jusqu'en Mars 2016 => soit 2 ans de plus !!!
+			$datelimite = ($anneeref+2) . $fonctions->liredbconstante('FIN_REPORT');
+			$datedebutdb = $fonctions->formatdatedb($date_debut);
+			//echo "Date limite report = $datelimite <br>";
+			if ($datedebutdb > $datelimite)
+			{
+				$errlog = "Le type de congés utilisé n'est pas valide pour la période demandée ! " ;
+				$msg_erreur .= $errlog."<br/>";
+			}
+		}
+	}
 	else
 		$listetype =null;
 	if ((is_null($listetype) or $listetype== "") and ($msg_erreur == "" and !$datefausse))
@@ -307,7 +322,7 @@
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe  . "'>";
 		echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 	   echo "</form>";
 	}
 	else
@@ -401,7 +416,7 @@
 		{
 		
 			echo "<P style='color: red'><B><FONT SIZE='5pt'>";
-			if ($msg_erreur<> "")
+			if ($msg_erreur<> "" and isset($_POST["valider"]))
 			{
 				echo "Votre demande n'a pas été enregistrée... <BR>";
 			}
@@ -618,7 +633,7 @@ $(function()
 		echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe  . "'>";
 		echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
 		if (!$masquerboutonvalider)	
-			echo "<input type='submit' value='Valider' />";
+			echo "<input type='submit' name='valider' id='valider' value='Soumettre' />";
 		echo "<br><br>";
 ?>
 	</form>

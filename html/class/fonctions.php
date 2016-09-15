@@ -429,6 +429,39 @@ class fonctions {
 	}
 
 	/**
+	 * @param string $typeconge the type of vacation to test
+	 * @return string Reference year for type of vacation
+	 */
+	public function congesanneeref($typeconge)
+	{
+		$sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $typeconge . "'";
+		$query=mysql_query ($sql,$this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+		{
+			$errlog = "Fonctions->anneeref : " . $erreur;
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		if (mysql_num_rows($query) == 0)
+		{
+			$errlog = "Fonctions->anneeref : Le type '" . $typeconge . "' n'est pas défini dans la base.";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
+		}
+		$result = mysql_fetch_row($query);
+		if (($result[0] == "") or ($result[0] == 0) or (is_null($result)))
+		{
+			return "";
+		}
+		else
+		{
+			return $result[0];
+		}
+	}
+
+	
+	/**
          * @param  string $constante the constant identifier to read from the database
          * @return string the constant value readed from the database
    */

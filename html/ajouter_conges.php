@@ -81,7 +81,7 @@
 		echo "<br>";
 
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 	}
 	else
@@ -172,7 +172,7 @@
 		
 		echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";
 		echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() ."'>";
-		echo "<input type='submit' value='Valider' >";
+		echo "<input type='submit' value='Soumettre' >";
 		echo "</form>";
 	}
 
