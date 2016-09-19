@@ -1179,15 +1179,28 @@ AND DEMANDE.STATUT='v'";
 		if ($showlink == TRUE)
 		{
 	//		$htmltext = $htmltext .    "<br>";
-			$htmltext = $htmltext .    "<form name='userlistedemandepdf_" . $this->harpegeid() . "_" . $structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+			$tempannee = substr($this->fonctions->formatdatedb($datedebut),0,4) ;
+			$htmltext = $htmltext .    "<form name='userlistedemandepdf_" . $this->harpegeid() . "_" . $structureid . "_" . $tempannee . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 			$htmltext = $htmltext .    "<input type='hidden' name='agentid' value='" . $this->harpegeid()   ."'>";
 			$htmltext = $htmltext .    "<input type='hidden' name='userpdf' value='no'>";
 	//		$htmltext = $htmltext .    "<input type='hidden' name='previous' value='" . $_POST["previous"]  . "'>";
-			$tempannee = substr($this->fonctions->formatdatedb($datedebut),0,4) ;
 			$htmltext = $htmltext .    "<input type='hidden' name='anneeref' value='" . $tempannee ."'>";
 			$htmltext = $htmltext .    "<input type='hidden' name='typepdf' value='listedemande'>";
 			$htmltext = $htmltext .    "</form>";
-			$htmltext = $htmltext .    "<a href='javascript:document.userlistedemandepdf_" . $this->harpegeid() . "_" . $structureid . ".submit();'>Liste des demandes en PDF</a>";
+			$htmltext = $htmltext .    "<a href='javascript:document.userlistedemandepdf_" . $this->harpegeid() . "_" . $structureid . "_" . $tempannee . ".submit();'>Liste des demandes en PDF</a>";
+
+			$htmltext = $htmltext .    "<br>";
+			// Année précédente
+			$tempannee = substr($this->fonctions->formatdatedb($datedebut),0,4) - 1 ;
+			$htmltext = $htmltext .    "<form name='userlistedemandepdf_" . $this->harpegeid() . "_" . $structureid . "_" . $tempannee. "'  method='post' action='affiche_pdf.php' target='_blank'>";
+			$htmltext = $htmltext .    "<input type='hidden' name='agentid' value='" . $this->harpegeid()   ."'>";
+			$htmltext = $htmltext .    "<input type='hidden' name='userpdf' value='no'>";
+			//		$htmltext = $htmltext .    "<input type='hidden' name='previous' value='" . $_POST["previous"]  . "'>";
+			$htmltext = $htmltext .    "<input type='hidden' name='anneeref' value='" . $tempannee ."'>";
+			$htmltext = $htmltext .    "<input type='hidden' name='typepdf' value='listedemande'>";
+			$htmltext = $htmltext .    "</form>";
+			$htmltext = $htmltext .    "<a href='javascript:document.userlistedemandepdf_" . $this->harpegeid() . "_" . $structureid . "_" . $tempannee. ".submit();'>Liste des demandes en PDF de l'année précédente</a>";
+				
 		}
 		$htmltext = $htmltext .    "<br><br>";
 		return $htmltext;
