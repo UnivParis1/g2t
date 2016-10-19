@@ -1074,7 +1074,7 @@ AND DEMANDE.STATUT='v'";
 					$libelledemande = $demande->typelibelle();
 					if (strlen($libelledemande)>40)
 					{
-						$libelledemande = substr($demande->typelibelle(),0,40) . "...";
+						$libelledemande = mb_substr($demande->typelibelle(),0,40,'UTF-8') . "...";
 					}
 					
  					$htmltext = $htmltext . "   <td>";

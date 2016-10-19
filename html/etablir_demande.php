@@ -463,6 +463,29 @@
 			//echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
 			if ($resultat == "")
 			{
+				// Si on est en mode "responsable" alors la demande doit être validée automatiquement
+				if (!is_null($responsable))
+				{
+					// Insertion code pour validation de la demande automatique....
+					$demandeid = $demande->id();
+					unset ($demande);
+					$demande = new demande($dbcon);
+					$demande->load($demandeid);
+					$demande->statut("v");
+					$msgerreur = "";
+					$msgerreur = $demande->store();
+					if ($msgerreur != "")
+						echo "<p style='color: red'>Pas de validation automatique de la demande car " . $msgerreur . "</p><br>";
+					else
+					{
+						$ics = null;
+						$pdffilename = $demande->pdf($user->harpegeid());
+						$agent = $demande->agent();
+						$ics = $demande->ics($agent->mail());
+						$corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " .  mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
+						$user->sendmail($agent,"Modification d'une demande de congés ou d'absence",$corpmail, $pdffilename, $ics);
+					}
+				}
 				$msgstore = "Votre demande a été enregistrée... ==> ";
 				if (strcasecmp($typedemande,"conges")==0)
 				{
