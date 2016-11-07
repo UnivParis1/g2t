@@ -59,6 +59,74 @@
 			exit;
 		}
 		
+		// On verifie que tous les fichiers ont un bon format !!!!
+		$separateur=';';
+		// Vérification que le fichier d'entree est bien conforme 
+		// => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+		$fp = fopen("$modalitefile","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $modalitefile n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+			}
+		}
+		fclose($fp);
+
+		// Vérification que le fichier d'entree est bien conforme 
+		// => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+		$fp = fopen("$statutfile","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $statutfile n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+			}
+		}
+		fclose($fp);
+		
+		// Vérification que le fichier d'entree est bien conforme 
+		// => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+		$fp = fopen("$structurefile","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $structurefile n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+			}
+		}
+		fclose($fp);
+		
 		echo "Import des MODALITES D'AFFECTATION \n";
 		// Import des affectations-modalite.txt
 		$sql = "DELETE FROM W_MODALITE";
@@ -79,7 +147,7 @@
 				$ligne = fgets($fp); // lecture du contenu de la ligne
 				if (trim($ligne)!="")
 				{
-					$ligne_element = explode(";",$ligne);
+					$ligne_element = explode($separateur,$ligne);
 					$harpegeid = trim($ligne_element[0]);
 					$numligne = trim($ligne_element[1]);
 					$quotite = trim($ligne_element[2]);
@@ -126,7 +194,7 @@
 				$ligne = fgets($fp); // lecture du contenu de la ligne
 				if (trim($ligne)!="")
 				{
-					$ligne_element = explode(";",$ligne);
+					$ligne_element = explode($separateur,$ligne);
 					$harpegeid = trim($ligne_element[0]);
 					$numligne = trim($ligne_element[1]);
 					$statut = trim($ligne_element[2]);
@@ -173,7 +241,7 @@
 				$ligne = fgets($fp); // lecture du contenu de la ligne
 				if (trim($ligne)!="")
 				{
-					$ligne_element = explode(";",$ligne);
+					$ligne_element = explode($separateur,$ligne);
 					$harpegeid = trim($ligne_element[0]);
 					$numligne = trim($ligne_element[1]);
 					$idstruct = trim($ligne_element[2]);

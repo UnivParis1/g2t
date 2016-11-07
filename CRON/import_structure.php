@@ -8,11 +8,57 @@
 
 	echo "Début de l'import des structures " . date("d/m/Y H:i:s") . "\n" ;
 
+	// On regarde si le fichier des fonctions est present
+	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_fonctions_$date.dat";
+	if (file_exists($filename))
+	{
+		$separateur='|';
+		// On ouvre le fichier des fonctions et on charge le contenu dans un tableau
+		$fp = fopen("$filename","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $filename n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+				$harpegeid = trim($ligne_element[0]);
+				$code_fonction = trim($ligne_element[1]);
+				$libelle_fctn_cours = trim($ligne_element[2]);
+				$libelle_fctn_long = trim($ligne_element[3]);
+				$code_struct = trim($ligne_element[4]);
+				
+				if ($code_struct != "")
+				{
+					$tabfonctions[$code_struct]["#". intval("$code_fonction")] = $harpegeid;
+				}
+			}
+		}
+		fclose($fp);
+	}
+	else
+	{
+		echo "Le fichier des fonctions $filename n'existe pas ....\n";
+		$tabfonctions = array();
+	}
+	
+	echo "tabfonctions = " . print_r($tabfonctions,true) . " \n";
+	
+	
 	// On parcourt le fichier des structures
 	// 	Si la structure n'existe pas
 	//			on insert la structure
 	// 	Sinon
 	//			on update les infos
+	
 
 	$filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_structures_$date.dat";
 	if (!file_exists($filename))
@@ -22,6 +68,29 @@
 	}
 	else
 	{
+		$separateur=';';
+		// Vérification que le fichier d'entree est bien conforme 
+		// => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+		$fp = fopen("$filename","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $filename n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+			}
+		}
+		fclose($fp);
+		
 		// Initialisation du LDAP
 		$LDAP_SERVER=$fonctions->liredbconstante("LDAPSERVER");
 		$LDAP_BIND_LOGIN=$fonctions->liredbconstante("LDAPLOGIN");
@@ -35,16 +104,88 @@
 		$fp = fopen("$filename","r");
 		while (!feof($fp))
 		{
-			$ligne = fgets($fp); // lecture du contenu de la ligne
+			$ligne = fgets($fp); // lecture du contenu de la ligne du fichier des structures
 			if (trim($ligne)!="")
 			{
 		//		echo "Ligne = $ligne \n";
-				$ligne_element = explode(";",$ligne);
+				$ligne_element = explode($separateur,$ligne);
+				echo "---------------------------------------------------\n";
 				$code_struct = trim($ligne_element[0]);
 				$nom_long_struct = trim($ligne_element[1]);
 				$nom_court_struct = trim($ligne_element[2]);
 				$parent_struct = trim($ligne_element[3]);
-				$resp_struct = trim($ligne_element[4]);
+				
+				if (array_key_exists("#1", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1"; // Président d'université
+				elseif (array_key_exists("#1447", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1447"; // Directeur général des services
+				elseif (array_key_exists("#1044", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1044"; // Agent comptable
+				elseif (array_key_exists("#1521", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1521"; // Chef de service
+				elseif (array_key_exists("#1522", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1522"; // Directeur(ice)
+				elseif (array_key_exists("#1615", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1615"; // Chef de département
+				elseif (array_key_exists("#1860", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1860"; // Chef d'atelier
+				elseif (array_key_exists("#1087", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1087"; // Responsable Administratif de Composante
+				elseif (array_key_exists("#41", (array)$tabfonctions[$code_struct]))
+					$codefonction = "41"; // Dir. de services communs d'universités
+				elseif (array_key_exists("#1016", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1016"; // Dir. éco. Inst. Uni - Hors arrêté 13/9/90
+				elseif (array_key_exists("#1529", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1529"; // Directeur(ice) d'institut
+				elseif (array_key_exists("#1530", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1530"; // Directeur(ice) d'UMR
+				elseif (array_key_exists("#1532", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1532"; // Directeur(ice) de laboratoire
+				elseif (array_key_exists("#38", (array)$tabfonctions[$code_struct]))
+					$codefonction = "38"; // Dir. d'UFR
+				elseif (array_key_exists("#1525", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1525"; // Directeur adjoint
+				elseif (array_key_exists("#1523", (array)$tabfonctions[$code_struct]))
+					$codefonction = "1523"; // Adjoint(e)
+				else
+					$codefonction = "";
+				
+				if ($codefonction != "")
+				{
+					echo "On a une fonction $codefonction pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
+					$resp_struct = $tabfonctions[$code_struct]["#". intval("$codefonction")];
+				}
+				else
+				{
+					echo "Pas de fonction pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) dans le fichier des fonctions\n";
+					echo "On recupere le responsable de la structure s'il est defini dans le fichier des structures\n";
+					$resp_struct = trim($ligne_element[4]);
+					// Si pas de responsable défini dans le fichier de structure
+					if ($resp_struct == "")
+					{
+						// On regarde si un responsable de la structure est défini dans la table STRUCTURE
+						// => Si oui, on ne le change pas.... Soit c'est un ancien responsable, soit il a été forcé à la main
+						// à partir de l'insterface de gestion des structures
+						echo "Recherche du responsable dans la table des structures\n";
+						$sql = "SELECT RESPONSABLEID FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
+						$query = mysql_query($sql);
+						$erreur_requete=mysql_error();
+						if ($erreur_requete!="")
+							echo "SELECT STRUCTURE pour responsable => $erreur_requete \n";
+						if (mysql_num_rows($query) > 0) // La structure existe bien déjà dans la base....
+						{
+							$result = mysql_fetch_row($query);
+							$resp_struct = trim($result[0]);
+						}
+						// Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
+						if ($resp_struct == "")
+						{
+							echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
+							$resp_struct = '-1';
+						}
+					}
+				}
+				echo "Le code du responsable est : $resp_struct \n";
 				$date_cloture = trim($ligne_element[5]);
 				if (is_null($date_cloture) or $date_cloture=="")
 					$date_cloture='2999-12-31';
@@ -99,7 +240,7 @@
 				$info=ldap_get_entries($con_ldap,$sr);
 				//echo "Info = " . print_r($info,true) . "\n";
 				$oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
-				echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle strucutre : $code_struct \n";
+				echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
 				
 				$oldsql  = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,
 						           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 

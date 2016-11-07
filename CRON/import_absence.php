@@ -18,6 +18,30 @@
 	}
 	else
 	{
+		$separateur=';';
+		// Vérification que le fichier d'entree est bien conforme 
+		// => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+		$fp = fopen("$filename","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $filename n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+			}
+		}
+		fclose($fp);
+		
+			
 		// On vide la table des absences HARPEGE pour la recharger complètement
 		$sql = "DELETE FROM HARPABSENCE";
 		mysql_query($sql);
@@ -32,7 +56,7 @@
 			$ligne = fgets($fp); // lecture du contenu de la ligne
 			if (trim($ligne)!="")
 			{
-				$ligne_element = explode(";",$ligne);
+				$ligne_element = explode($separateur,$ligne);
 				$harpegeid = trim($ligne_element[0]);
 				$datedebut = trim($ligne_element[1]);
 				$datefin = trim($ligne_element[2]);

@@ -172,6 +172,22 @@
 			$structure->store();
 		}
 	}
+
+	$respvalidsousstructlist = null;
+	if (isset($_POST["respvalidsousstruct"]))
+		$respvalidsousstructlist = $_POST["respvalidsousstruct"];
+	if (is_array($respvalidsousstructlist))
+	{
+		foreach ($respvalidsousstructlist as $structureid => $valeur)
+		{
+			$structureid = str_replace("'", "", $structureid);
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			$structure->respvalidsousstruct($valeur);
+			$structure->store();
+		}
+	}
+	
 	
 	$arraygestionnaire = null;
 	if (isset($_POST["gestion"]))
@@ -291,7 +307,19 @@
 			}
 			else
 				echo $fonctions->ouinonlibelle($structure->affichetoutagent());
-			
+
+			echo "<br>";
+			echo "Autoriser la validation des demandes d'une sous-structure par le responsable de la structure parente : ";
+			if ($action == 'modif' )
+			{
+				echo "<select name=respvalidsousstruct['" . $structure->id() . "']>";
+				echo "<option value='o'"; if (strcasecmp($structure->respvalidsousstruct(),"o")==0) echo " selected "; echo ">Oui</option>";
+				echo "<option value='n'"; if (strcasecmp($structure->respvalidsousstruct(),"n")==0) echo " selected "; echo ">Non</option>";
+				echo "</select>";
+			}
+			else
+				echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
+				
 			if ($mode == 'resp')
 			{
 				$structure->agent_envoyer_a($codeinterne);

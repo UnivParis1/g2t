@@ -139,7 +139,9 @@
 			$cleelement = $structure->id();
 			echo "<center><p>Tableau pour les agents de " .  $structure->nomlong() . " (" . $structure->nomcourt() .")</p></center>";
 			echo "<form name='frm_validation_conge'  method='post' >";
-			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
+			$validsousstruct = strtolower($structure->respvalidsousstruct());
+			//echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
+			$agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"),$validsousstruct);
 			if (is_array($agentliste))
 			{
 				foreach ($agentliste as $membrekey => $membre)

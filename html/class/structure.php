@@ -11,6 +11,7 @@ class structure {
 	private $affichesousstruct = null; // permet d'afficher les agents des sous structures
 	private $affichetoutagent = null; // permet d'afficher le planning de la structure pour tous les agents de la stucture
 	private $afficherespsousstruct = null; // permet d'afficher le planning des responsables des sous structures
+	private $respvalidsousstruct = null; // permet au responsable de la structure de valider les demandes des agents d'une structure fille 
 	private $datecloture = null;
 	
 	private $fonctions = null;
@@ -32,7 +33,7 @@ class structure {
 	{
 		if (is_null($this->structureid))
 		{
-			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
+			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "") {
@@ -61,6 +62,7 @@ class structure {
  			else // En théorie on ne doit jamais passer par là, car la date de cloture est forcée lors de l'import....
  				$this->datecloture = '31/12/9999';
  			$this->afficherespsousstruct = "$result[9]";
+ 			$this->respvalidsousstruct = "$result[10]";
 		}
 		return true;
 	}
@@ -118,6 +120,21 @@ class structure {
 			$this->affichetoutagent = $affiche;
 	}
 	
+	function respvalidsousstruct($valide = null)
+	{
+		if (is_null($valide))
+		{
+			if (is_null($this->respvalidsousstruct)) {
+				$errlog = "Structure->respvalidsousstruct : Le paramètre respvalidsousstruct de la structure n'est pas défini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			else
+				return $this->respvalidsousstruct;
+		}
+		else
+			$this->respvalidsousstruct = $valide;
+	}
 	
 	function sousstructure($sousstruct = null)
 	{
@@ -407,8 +424,17 @@ class structure {
 			else
 			{
 				$responsable = new agent($this->dbconnect);
-				$responsable->load("$this->responsableid");
-				return $responsable;
+				if ($responsable->load("$this->responsableid"))
+				{
+					return $responsable;
+				}
+				else
+				{
+					$responsable->civilite('');
+					$responsable->nom('INCONNU');
+					$responsable->prenom('INCONNU');
+					return $responsable;
+				}
 			}
 		}
 		else
@@ -428,9 +454,18 @@ class structure {
 			{
 				$gestionnaire = new agent($this->dbconnect);
 				//echo "Structure->gestionnaire : XXX" . $this->gestionnaireid . "XXXX <br>";
-				$gestionnaire->load("$this->gestionnaireid");
-				//echo "Structure->gestionnaire : Apres le load XXX" . $this->gestionnaireid . "XXXX <br>";
-				return $gestionnaire;
+				if ($gestionnaire->load("$this->gestionnaireid"))
+				{
+					//echo "Structure->gestionnaire : Apres le load XXX" . $this->gestionnaireid . "XXXX <br>";
+					return $gestionnaire;
+				}
+				else
+				{
+					$gestionnaire->civilite('');
+					$gestionnaire->nom('INCONNU');
+					$gestionnaire->prenom('INCONNU');
+					return $gestionnaire;
+				}
 			}
 		}
 		else
@@ -752,7 +787,7 @@ class structure {
 //		echo "structure->store : Non refaite !!!!! <br>";
 //		return false;
 		$msgerreur = null;
-		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' , AFFICHERESPSOUSSTRUCT='" . $this->afficherespsousstruct() . "' WHERE STRUCTUREID='" . $this->id() . "'";
+		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' , AFFICHERESPSOUSSTRUCT='" . $this->afficherespsousstruct() . "' , RESPVALIDSOUSSTRUCT='" . $this->respvalidsousstruct() . "' WHERE STRUCTUREID='" . $this->id() . "'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();

@@ -48,6 +48,29 @@
 	}
 	else
 	{
+		$separateur=';';
+		// Vérification que le fichier d'entree est bien conforme 
+		// => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+		$fp = fopen("$filename","r");
+		while (!feof($fp))
+		{
+			$ligne = fgets($fp); // lecture du contenu de la ligne
+			if (trim($ligne)!="")
+			{
+				$ligne_element = explode($separateur,$ligne);
+				if (count($ligne_element)==0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+				{
+					// On doit arréter tout !!!!
+					echo "#######################################################";
+					echo "ALERTE : Le format du fichier $filename n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+					echo "#######################################################";
+					fclose($fp);
+					exit;
+				}
+			}
+		}		
+		fclose($fp);
+		
 		// On parcours chaque ligne du fichier
 		// Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifié
 		// 	Si DateFin plus petite => Ca se fini plus tard, donc on reduit le TP
@@ -66,7 +89,7 @@
 			if (trim($ligne)!="")
 			{
 		//		echo "Ligne = $ligne \n";
-				$ligne_element = explode(";",$ligne);
+				$ligne_element = explode($separateur,$ligne);
 				$affectationid = trim($ligne_element[0]);
 				$harpegeid = trim($ligne_element[1]);
 				$numcontrat = trim($ligne_element[2]);
