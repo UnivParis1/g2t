@@ -193,6 +193,11 @@
 	if (isset($_POST["gestion"]))
 		$arraygestionnaire = $_POST["gestion"];
 	
+	$arrayinfouser = null;
+	if (isset($_POST["infouser"]))
+		$arrayinfouser = $_POST["infouser"];
+	
+	
 	if (is_array($arraygestionnaire))
 	{
 		
@@ -209,25 +214,36 @@
 		// ATTENTION : La $valeur est soit le HARPEGEID soit le UID si on vient de le modifier !!
 		foreach ($arraygestionnaire as $structureid => $valeur)
 		{
-			// On va chercher dans le LDAP la correspondance UID => HARPEGEID
-			$filtre="(uid=" . $valeur . ")";
-			$dn=$LDAP_SEARCH_BASE;
-			$restriction=array("$LDAP_CODE_AGENT_ATTR");
-			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
-			$info=ldap_get_entries($con_ldap,$sr);
-			//echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-			if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-				$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-			else
-				$harpegeid = "";
-			// Si le harpegeid n'est pas vide ou null
-			if ($harpegeid <> '' and (!is_null($harpegeid)))
+			// Si on n'a pas de nom dans la zone de saisie du gestionnaire => On doit effacer le gestionnaire
+			if (trim($arrayinfouser[$structureid]) == "")
 			{
-				//$structureid = str_replace("'", "", $structureid);
 				$structure = new structure($dbcon);
 				$structure->load($structureid);
-				$structure->gestionnaire($harpegeid);
+				$structure->gestionnaire("");
 				$structure->store();
+			}
+			else
+			{
+				// On va chercher dans le LDAP la correspondance UID => HARPEGEID
+				$filtre="(uid=" . $valeur . ")";
+				$dn=$LDAP_SEARCH_BASE;
+				$restriction=array("$LDAP_CODE_AGENT_ATTR");
+				$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+				$info=ldap_get_entries($con_ldap,$sr);
+				//echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+				if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+					$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+				else
+					$harpegeid = "";
+				// Si le harpegeid n'est pas vide ou null
+				if ($harpegeid <> '' and (!is_null($harpegeid)))
+				{
+					//$structureid = str_replace("'", "", $structureid);
+					$structure = new structure($dbcon);
+					$structure->load($structureid);
+					$structure->gestionnaire($harpegeid);
+					$structure->store();
+				}
 			}
 		}
 	}

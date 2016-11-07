@@ -40,6 +40,10 @@
 	else
 		$structureid = null;
 		
+	$arrayinfouser = null;
+	if (isset($_POST["infouser"]))
+		$arrayinfouser = $_POST["infouser"];
+	
 	if (isset($_POST["gestion"]))
 		$gestionnaireliste =  $_POST["gestion"];
 	else
@@ -49,7 +53,6 @@
 		$responsableliste =  $_POST["resp"];
 	else
 		$responsableliste = array();
-	//print_r ($_POST); echo "<br>";
 	
 	$showall = false;
 	if (isset($_POST['showall']))
@@ -58,6 +61,8 @@
 			$showall = true;
 	}
 
+	//print_r ($_POST); echo "<br>";
+	
 	function affichestructureliste($structure, $niveau=0 )
 	{
 		global $dbcon;
@@ -125,7 +130,6 @@
 			$structure->resp_envoyer_a($_POST["resp_mail"][$structid],true);
 			$structure->agent_envoyer_a($_POST["agent_mail"][$structid],true);
 			
-			
 			// On va chercher dans le LDAP la correspondance UID => HARPEGEID
 			$filtre="(uid=" . $responsableliste[$structid] . ")";
 			$dn=$LDAP_SEARCH_BASE;
@@ -144,22 +148,30 @@
 				$structure->responsable($harpegeid);
 			}
 			
-			// On va chercher dans le LDAP la correspondance UID => HARPEGEID
-			$filtre="(uid=" . $gestionnaireid . ")";
-			$dn=$LDAP_SEARCH_BASE;
-			$restriction=array("$LDAP_CODE_AGENT_ATTR");
-			$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
-			$info=ldap_get_entries($con_ldap,$sr);
-			//echo "Le numéro HARPEGE du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-			if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-				$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-			else 
-				$harpegeid = '';
-			// Si le harpegeid n'est pas vide ou null
-			if ($harpegeid <> '' and (!is_null($harpegeid)))
+			// Si on n'a pas de nom dans la zone de saisie du gestionnaire => On doit effacer le gestionnaire
+			if (trim($arrayinfouser[$structid]) == "")
 			{
-				//echo "On fixe le gestionnaire !!!!<br>";
-				$structure->gestionnaire($harpegeid);
+				$structure->gestionnaire("");
+			}
+			else
+			{
+				// On va chercher dans le LDAP la correspondance UID => HARPEGEID
+				$filtre="(uid=" . $gestionnaireid . ")";
+				$dn=$LDAP_SEARCH_BASE;
+				$restriction=array("$LDAP_CODE_AGENT_ATTR");
+				$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+				$info=ldap_get_entries($con_ldap,$sr);
+				//echo "Le numéro HARPEGE du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+				if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+					$harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+				else 
+					$harpegeid = '';
+				// Si le harpegeid n'est pas vide ou null
+				if ($harpegeid <> '' and (!is_null($harpegeid)))
+				{
+					//echo "On fixe le gestionnaire !!!!<br>";
+					$structure->gestionnaire($harpegeid);
+				}
 			}
 			
 			$msgerreur = $structure->store();
