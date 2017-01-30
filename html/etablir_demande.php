@@ -201,10 +201,11 @@
 		if ($anneeref != '' and  !$datefausse)
 		{
 			// On ajoute 2 car un congés 2014 est valable jusqu'en Mars 2016 => soit 2 ans de plus !!!
+			// ATTENTION : Pour l'année en cours on accepte que le debut soit postérieur au report
 			$datelimite = ($anneeref+2) . $fonctions->liredbconstante('FIN_REPORT');
 			$datedebutdb = $fonctions->formatdatedb($date_debut);
 			//echo "Date limite report = $datelimite <br>";
-			if ($datedebutdb > $datelimite)
+			if (($datedebutdb > $datelimite) and (($anneeref+2)<>substr($datedebutdb,0,4))) 
 			{
 				$errlog = "Le type de congés utilisé n'est pas valide pour la période demandée ! " ;
 				$msg_erreur .= $errlog."<br/>";
