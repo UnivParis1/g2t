@@ -1771,7 +1771,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		{
 			$structharpegeid = $curentstruct[0];
 			$structnumligne = $curentstruct[1];
-			$structid = trim($curentstruct[2]);
+			$structid = $this->fonctions->labo2ufr(trim($curentstruct[2]));
 			$structdatedebut = $curentstruct[3];
 			$structdatefin = $curentstruct[4];
 			

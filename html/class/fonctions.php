@@ -824,6 +824,31 @@ class fonctions {
  		return $agentarray;
  	}
  	
+ 	/**
+ 	 * @param string $structid Code de la structure à convertir
+ 	 * @return Code de la structure correspondante.
+ 	 */
+ 	public function labo2ufr($structid)
+ 	{
+ 		$sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = '" . $structid . "'";
+ 		$query=mysql_query ($sql, $this->dbconnect);
+ 		$erreur=mysql_error();
+ 		if ($erreur != "")
+ 		{
+ 			$errlog = "labo2ufr : " . $erreur;
+ 			echo $errlog."<br/>";
+ 			error_log(basename(__FILE__)." ".$this->stripAccents($errlog));
+ 			return $structid;
+ 		}
+ 		if (mysql_num_rows($query) == 0)
+ 		{
+  			return $structid;
+ 		}
+		$result = mysql_fetch_row($query);
+		$querryresult = $result[1];
+		return $querryresult;
+ 	}
+ 	
 }
 
 ?>
