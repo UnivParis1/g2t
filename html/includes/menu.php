@@ -174,16 +174,20 @@
 			}
 			else
 			{
-				echo "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur !!! <br>";
+				$errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->harpegeid()  . ") !!!";
+				echo "$errlog<br>";
 				echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
+                error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
 				exit;
 			}
 		}
 		// Pas de groupe pour cet utilisateur => On doit s'arréter
 		else
 		{
-			echo "L'utilisateur ne fait parti d'aucun groupe LDAP.... <br>";	
+			$errlog =  "L'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->harpegeid()  . ") ne fait parti d'aucun groupe LDAP....";	
+            echo "$errlog <br>";
 			echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
+            error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
 			exit;
 		}
 	}
