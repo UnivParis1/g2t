@@ -288,7 +288,12 @@
 					</form>
 					<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
 				</li>
-			</ul> 
+				<li onclick='document.agent_aide.submit();'>
+					<form name='agent_aide'  method='post' TARGET=_BLANK action="https://ent.univ-paris1.fr/assets/aide/canal/g2t.html">
+					</form>
+					<a href="javascript:document.agent_aide.submit();">Manuel utilisateur</a>
+				</li>
+				</ul> 
 		</li> 
 	</ul>
 <?php 
