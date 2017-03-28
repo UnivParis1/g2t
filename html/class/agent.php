@@ -1640,9 +1640,9 @@ AND DEMANDE.STATUT='v'";
          * @param 
          * @return string the html text of the array
    */
-	function affichecommentairecongehtml()
+	function affichecommentairecongehtml($showonlycomplement = false)
 	{
-		$sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE 
+		$sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID 
 FROM COMMENTAIRECONGE,TYPEABSENCE 
 WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(),2,2) . "' 
                                              OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref()-1),2,2)  ."' 
@@ -1660,22 +1660,25 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		$htmltext = $htmltext . "<center><table class='tableausimple'>";
 		while ($result = mysql_fetch_row($query))
 		{
-			if ($premiercomment)
+			if (($showonlycomplement and (strcasecmp(substr($result[5],0,3),"sup"))==0) or ($showonlycomplement == false))
 			{
-				$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
-				$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
-				$premiercomment = FALSE;
-			}				
-			
-			$htmltext = $htmltext . "<tr align=center>";
-			$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1]  ."</td>";
-			$htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2])  ."</td>";
-			if ($result[4] > 0)
-				$htmltext = $htmltext . "<td class='cellulesimple'>+" . (real)($result[4])  ."</td>";
-			else
-				$htmltext = $htmltext . "<td class='cellulesimple'>" . (real)($result[4])  ."</td>";
-			$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[3]  ."</td>";
-			$htmltext = $htmltext . "</tr>";
+				if ($premiercomment)
+				{
+					$htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
+					$htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
+					$premiercomment = FALSE;
+				}				
+				
+				$htmltext = $htmltext . "<tr align=center>";
+				$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1]  ."</td>";
+				$htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2])  ."</td>";
+				if ($result[4] > 0)
+					$htmltext = $htmltext . "<td class='cellulesimple'>+" . (real)($result[4])  ."</td>";
+				else
+					$htmltext = $htmltext . "<td class='cellulesimple'>" . (real)($result[4])  ."</td>";
+				$htmltext = $htmltext . "<td class='cellulesimple'>" . $result[3]  ."</td>";
+				$htmltext = $htmltext . "</tr>";
+			}
 		}
 		$htmltext = $htmltext . "</table></center>";
 		$htmltext = $htmltext . "<br>";
