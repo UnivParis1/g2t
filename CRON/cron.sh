@@ -43,6 +43,8 @@ if [ $numjour -eq 1 ]
 then
    echo "Avant generation solde" >>./log/trace_cron_$mydate.log
    php generer_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   echo "Avant generation de l'historique des CET" >>./log/trace_cron_$mydate.log
+   php demande_cet.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 fi
 
 echo `date`  fin de traitement >>./log/trace_cron_$mydate.log

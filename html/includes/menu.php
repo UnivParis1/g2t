@@ -559,6 +559,13 @@
 		if ($user->estprofilrh('1'))  // PROFIL RH = 1 ==> GESTIONNAIRE RH DE CET
 		{ 
 ?>
+					<li onclick='document.gestrh_utilisationcet.submit();'>
+						<form name='gestrh_utilisationcet'  method='post' action="utilisation_cet.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="mode" value="gestrh">
+						</form>
+						<a href="javascript:document.gestrh_utilisationcet.submit();">Utilisation d'un CET existant</a>
+					</li>
 					<li onclick='document.gestrh_gestcet.submit();'>
 						<form name='gestrh_gestcet'  method='post' action="gerer_cet.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">

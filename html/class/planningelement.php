@@ -5,6 +5,7 @@ class planningelement {
 	const COULEUR_VIDE = '#FFFFFF';
 	const COULEUR_WE = '#999999';
 	const COULEUR_NON_DECL = '#775420';
+	const COULEUR_NOIRE = '#424242'; ///'#000000';
 	
 
 	private $date = null;
@@ -129,7 +130,7 @@ class planningelement {
 		}
 	}
 	
-	function couleur()
+	function couleur($noiretblanc = false)
 	{
 		if ($this->typeelement == "")
 			return self::COULEUR_VIDE;
@@ -137,6 +138,12 @@ class planningelement {
 		   return self::COULEUR_NON_DECL;
 		elseif (strcasecmp($this->typeelement,"WE")==0)
 		   return self::COULEUR_WE;
+		if ( $this->typeelement <> 'ferie') //$this->typeelement <> 'tppar' and
+		{
+			if ($noiretblanc == true)
+			   return self::COULEUR_NOIRE;
+				
+		}
 		$sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
@@ -191,7 +198,7 @@ class planningelement {
 		}
 	}
 	
-	function html($clickable = FALSE, $checkboxname = null)
+	function html($clickable = FALSE, $checkboxname = null, $noiretblanc = false)
 	{
 		$htmltext = "";
 		//$htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" ></td>";
@@ -222,13 +229,13 @@ class planningelement {
 //			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
                     if ($this->date == date("Ymd"))
                     {
-			$htmltext = $htmltext ."<td class='planningelement_jour_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+			$htmltext = $htmltext ."<td class='planningelement_jour_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
                     }
                     else
                     {
-			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
                     }
-			if (strlen($this->info())!=0) 
+			if (strlen($this->info())!=0 and $noiretblanc == false) 
 			{
 				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">"; 
 			} 
@@ -247,13 +254,13 @@ class planningelement {
 //			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
                     if ($this->date == date("Ymd"))
                     {
-			$htmltext = $htmltext ."<td class='planningelement_jour_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+			$htmltext = $htmltext ."<td class='planningelement_jour_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
                     }
                     else
                     {
-			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' >";
+			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
                     }
-			if (strlen($this->info())!=0)
+			if (strlen($this->info())!=0 and $noiretblanc == false)
 			{
 				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">";
 			}

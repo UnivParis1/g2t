@@ -100,6 +100,7 @@ class complement {
 			echo $errlog."<br/>";
 			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 		}
+		return $erreur;
 	}
 	
    /**

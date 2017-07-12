@@ -578,6 +578,7 @@
 		}
 */		
 		echo "<br>";
+/*
 		if (!is_null($cet))
 		{
 			echo "<span style='border:solid 1px black; background:lightgrey; width:600px; display:block;'>";
@@ -605,7 +606,7 @@
 			echo "</form>";
 			echo "</span>";
 		}
-		
+*/		
 		echo "<br>";
 		echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
 		echo "<form name='frm_ajoutcet'  method='post' >";

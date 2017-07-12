@@ -657,7 +657,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 			return  $this->listeelement;
 	}
 
- 	function planninghtml($agentid,$datedebut,$datefin, $clickable = FALSE, $showpdflink = TRUE)
+ 	function planninghtml($agentid,$datedebut,$datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE)
  	{
  		//echo "datedebut = $datedebut   datefin = $datefin <br>";
 //		$this->listeelement = null;
@@ -697,7 +697,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 
  				$currentmonth = $month;
  			}
- 			$htmltext =  $htmltext . $planningelement->html($clickable);
+ 			$htmltext =  $htmltext . $planningelement->html($clickable,null,$noiretblanc);
  		}
 		$htmltext = $htmltext ."</tr>";
 		$htmltext = $htmltext ."</table>";
@@ -708,7 +708,10 @@ WHERE HARPEGEID = '" . $agentid . "'
 		$tempannee = substr($tempdate,0,4);
 		
 		//echo "Avant affichage legende <br>";
-		$htmltext = $htmltext . $this->fonctions->legendehtml();
+		if ($noiretblanc == false)
+		{
+		   $htmltext = $htmltext . $this->fonctions->legendehtml();
+		}
 		//echo "Apres affichage legende <br>";
 		if ($showpdflink == TRUE)
 		{
@@ -833,7 +836,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 
  	}
 
- 	function pdf($agentid,$datedebut,$datefin)
+ 	function pdf($agentid,$datedebut,$datefin,$noiretblanc = FALSE)
  	{
 		
  		//echo "Début fonction PDF <br>";
@@ -921,7 +924,7 @@ WHERE HARPEGEID = '" . $agentid . "'
 			// -------------------------------------------
 			// Convertir les couleur HTML en RGB
 			// -------------------------------------------
-			list($col_part1,$col_part2,$col_part3)=$this->fonctions->html2rgb($planningelement->couleur());
+			list($col_part1,$col_part2,$col_part3)=$this->fonctions->html2rgb($planningelement->couleur($noiretblanc));
 			$pdf->SetFillColor($col_part1,$col_part2,$col_part3);
 			if (strcasecmp($planningelement->moment(),"m")!=0)
 				$pdf->Cell(4,5,"",'TBR',0,'C',1);

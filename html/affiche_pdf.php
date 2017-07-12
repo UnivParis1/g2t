@@ -106,6 +106,11 @@
 		{
 			$structid = $_POST["structid"];
 			$mois_annee = $_POST["mois_annee"];
+			$noiretblanc = $_POST["noiretblanc"];
+			if (strcasecmp($noiretblanc,"yes")==0)
+				$noiretblanc = true;
+			else
+				$noiretblanc = false;
 			$structure = new structure($dbcon);
 			$structure->load($structid);
 			
@@ -113,7 +118,7 @@
 			// Puis on la reformate
 			// Le format de la variable mois_annee est MM/YYYY (voir fonction structure::planninghtml)
 			$mois_annee = substr($mois_annee,0,3) . (substr($mois_annee,3)-$previous);
-			$structure->pdf(($mois_annee));
+			$structure->pdf(($mois_annee),$noiretblanc);
 		}
 	}	
 ?>

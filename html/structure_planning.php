@@ -187,7 +187,7 @@
 			{
 				echo "<br>";
 //				echo "Planning de la structure : " . $structure->nomlong() . " ("   . $structure->nomcourt() . ") <br>";
-				echo $structure->planninghtml($indexmois . "/"  . $annee, 'n');  // 'n' car l'agent ne doit pas voir les conges des sous-structures (si autorisé)
+				echo $structure->planninghtml($indexmois . "/"  . $annee, 'n',true);  // 'n' car l'agent ne doit pas voir les conges des sous-structures (si autorisé)
 			}
 		}
 	}

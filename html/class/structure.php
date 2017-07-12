@@ -505,7 +505,7 @@ class structure {
 		return $planningservice;
 	}
 	
-	function planninghtml($mois_annee_debut, $showsousstruct = null)   // Le format doit être MM/YYYY
+	function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false)   // Le format doit être MM/YYYY
 	{
 		//echo "Je debute planninghtml <br>";
 		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct);
@@ -553,7 +553,7 @@ class structure {
 			foreach ($listeelement as $keyelement => $element)
 			{
 				//echo "Boucle sur l'element <br>";
-				$htmltext = $htmltext . $element->html();
+				$htmltext = $htmltext . $element->html(false,null,$noiretblanc);
 			}
 			//echo "Fin boucle sur les elements <br>";
 		   $htmltext = $htmltext . "</tr>";
@@ -562,12 +562,20 @@ class structure {
 		$htmltext = $htmltext . "</table>";
 		$htmltext = $htmltext . "</div>";
 
-		$htmltext = $htmltext . $this->fonctions->legendehtml();
+		if ($noiretblanc == false)
+		{
+	  		$htmltext = $htmltext . $this->fonctions->legendehtml();
+		}
+		
 		$htmltext = $htmltext . "<br>";
 		$htmltext = $htmltext . "<form name='structplanningpdf_" . $this->structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
 		$htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid ."'>";
 		$htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
 		$htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
+		if ($noiretblanc)
+			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='yes'>";
+		else 
+			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
 		$htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut  . "'>";
 		$htmltext = $htmltext . "<a href='javascript:document.structplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF</a>";
 		$htmltext = $htmltext . "</form>";
@@ -576,6 +584,10 @@ class structure {
 		$htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid ."'>";
 		$htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
 		$htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
+		if ($noiretblanc)
+			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='yes'>";
+		else 
+			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
 		$htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut  . "'>";
 		$htmltext = $htmltext . "<a href='javascript:document.structpreviousplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF (année précédente)</a>";
 		$htmltext = $htmltext . "</form>";
@@ -814,7 +826,7 @@ class structure {
 		return $msgerreur;
 	}
 	
-	function pdf($mois_annee_debut)  // Le format doit être MM/YYYY
+	function pdf($mois_annee_debut,$noiretblanc = false)  // Le format doit être MM/YYYY
 	{
 		//echo "Avant le new PDF <br>";
 		//$pdf=new FPDF();
@@ -875,7 +887,7 @@ class structure {
 			//echo "Apres chargement des elements <br>";
 			foreach ($listeelement as $keyelement => $element)
 			{
-				list($col_part1,$col_part2,$col_part3)=$this->fonctions->html2rgb($element->couleur());
+				list($col_part1,$col_part2,$col_part3)=$this->fonctions->html2rgb($element->couleur($noiretblanc));
 				$pdf->SetFillColor($col_part1,$col_part2,$col_part3);
 				if (strcasecmp($element->moment(),"m")!=0)
 					$pdf->Cell(3,5,"",'TBR',0,'C',1);
@@ -891,7 +903,8 @@ class structure {
 		//////Mise en place de la légende couleurs pour les congés
 	
 		//echo "Avant legende <br>";
-		$this->fonctions->legendepdf($pdf);
+		if ($noiretblanc == false)
+			$this->fonctions->legendepdf($pdf);
 		//echo "Apres legende <br>";
 	
 		$pdf->Ln(8);

@@ -430,41 +430,68 @@ AND DEMANDE.STATUT='v'";
 		//$msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 		$msg .= "\r\n";
 		
-                if (!is_null($ics)) 
-                {
-                    $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement. Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>" ;
-                    $msg .= "\r\n";
-                    $msg .= "--$boundary\r\n";
-                    $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
-                    $msg .= "Content-Transfer-Encoding: 8bit\n\n";
-                    $msg .= $ics;
-                    $msg .= "\r\n\r\n";
-                }
+        if (!is_null($ics)) 
+        {
+           $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement. Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>" ;
+           $msg .= "\r\n";
+           $msg .= "--$boundary\r\n";
+           $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
+           $msg .= "Content-Transfer-Encoding: 8bit\n\n";
+           $msg .= $ics;
+           $msg .= "\r\n\r\n";
+        }
 		$msg .= "\r\n";
                 
 		if (!is_null($piecejointe ))
 		{
-			//---------------------------------
-			// 2nde partie du message
-			// Le fichier (inline)
-			//---------------------------------
-			$file = "$piecejointe";
-			$basename = basename($file);
-			//echo "basename = " . $basename . "<br>";
-			$fp   = fopen($file, "rb");
-			$attachment = fread($fp, filesize($file));
-			fclose($fp);
-			$attachment = chunk_split(base64_encode($attachment));
-			
-			$msg .= "--$boundary\r\n";
-//			$msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
-			$msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
-			$msg .= "Content-Transfer-Encoding: base64\r\n";
-//			$msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
-			$msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
-			$msg .= "\r\n";
-			$msg .= $attachment . "\r\n";
-			$msg .= "\r\n\r\n";
+			if (is_string($piecejointe))
+			{
+				//---------------------------------
+				// 2nde partie du message
+				// Le fichier (inline)
+				//---------------------------------
+				$file = "$piecejointe";
+				$basename = basename($file);
+				//echo "basename = " . $basename . "<br>";
+				$fp   = fopen($file, "rb");
+				$attachment = fread($fp, filesize($file));
+				fclose($fp);
+				$attachment = chunk_split(base64_encode($attachment));
+				
+				$msg .= "--$boundary\r\n";
+	//			$msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
+				$msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
+				$msg .= "Content-Transfer-Encoding: base64\r\n";
+	//			$msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
+				$msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
+				$msg .= "\r\n";
+				$msg .= $attachment . "\r\n";
+				$msg .= "\r\n\r\n";
+			}
+			else // C'est un tableau
+			{
+				foreach ($piecejointe as $file)
+				{
+//					$file = "$piecejointe";
+					$basename = basename($file);
+					//echo "basename = " . $basename . "<br>";
+					//echo "File = $file <br>";
+					$fp   = fopen($file, "rb");
+					$attachment = fread($fp, filesize($file));
+					fclose($fp);
+					$attachment = chunk_split(base64_encode($attachment));
+					
+					$msg .= "--$boundary\r\n";
+					//			$msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
+					$msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
+					$msg .= "Content-Transfer-Encoding: base64\r\n";
+					//			$msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
+					$msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
+					$msg .= "\r\n";
+					$msg .= $attachment . "\r\n";
+					$msg .= "\r\n\r\n";
+				}
+			}
 		}		
 		$msg .= "--$boundary--\r\n\r\n";
 		
@@ -1864,7 +1891,50 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 		return $analyse;
 		
 	}
-	
+
+	function CETaverifier($datedebut)
+	{
+		$sql = "SELECT DEMANDE.DEMANDEID 
+				FROM DEMANDE,DEMANDEDECLARATIONTP,DECLARATIONTP,AFFECTATION,AGENT 
+				WHERE AFFECTATION.AFFECTATIONID = DECLARATIONTP.AFFECTATIONID 
+				  AND DECLARATIONTP.DECLARATIONID = DEMANDEDECLARATIONTP.DECLARATIONID 
+				  AND DEMANDEDECLARATIONTP.DEMANDEID = DEMANDE.DEMANDEID 
+				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
+				  AND AGENT.HARPEGEID = '" . $this->harpegeid() . "' 
+				  AND DEMANDE.TYPEABSENCEID = 'cet' 
+				  AND (DEMANDE.DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "'
+				    OR DEMANDE.DATESTATUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' )
+			    ORDER BY DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
+		$query = mysql_query($sql, $this->dbconnect);
+		$erreur_requete=mysql_error();
+		if ($erreur_requete!="")
+			error_log(basename(__FILE__)." ".$erreur_requete);
+		$demandeliste = array();
+		// Si pas de demande de CET, on retourne le tableau vide
+		if (mysql_num_rows($query) == 0) 
+		{
+			return $demandeliste;
+		}
+		while ($result = mysql_fetch_row($query))
+		{
+			$demandeid = $result[0];
+			$demande = new demande($this->dbconnect);
+			$demande->load($demandeid);
+			
+			$complement = new complement($this->dbconnect);
+			$complement->load($this->harpegeid(),'DEM_CET_' . $demandeid );
+			
+			if ($demande->statut() == 'v' and $complement->harpegeid() == '')  // Si la demande est validée mais que le complément n'existe pas => On doit le controler
+			{
+				$demandeliste[] = $demande;
+			}
+			if ($demande->statut() == 'R' and $complement->valeur() == 'v') // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
+			{
+				$demandeliste[] = $demande;
+			}
+		}
+		return $demandeliste;
+	}
 	
 }
 

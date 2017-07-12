@@ -8,7 +8,8 @@ del .\log\trace_cron_error.log
 %PHPDIR%\php import_structure.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 %PHPDIR%\php p1_specific_update.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 %PHPDIR%\php import_affectation_siham.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
-%PHPDIR%\php calcul_solde.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
+%PHPDIR%\php p1_post_affectation.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
+REM %PHPDIR%\php calcul_solde.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 
 
 
@@ -21,3 +22,4 @@ REM %PHPDIR%\php migration_v2_v3.php -d error_log=./log/PHP_Log.log >>./log/trac
 REM %PHPDIR%\php mail_conges.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 REM %PHPDIR%\php mail_declarationTP.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 REM %PHPDIR%\php generer_solde.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
+REM %PHPDIR%\php demande_cet.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
