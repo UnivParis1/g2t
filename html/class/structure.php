@@ -12,6 +12,7 @@ class structure {
 	private $affichetoutagent = null; // permet d'afficher le planning de la structure pour tous les agents de la stucture
 	private $afficherespsousstruct = null; // permet d'afficher le planning des responsables des sous structures
 	private $respvalidsousstruct = null; // permet au responsable de la structure de valider les demandes des agents d'une structure fille 
+	private $gestvalidagent = null; // autorise le gestionnaire à valider les demandes des congés des agents
 	private $datecloture = null;
 	
 	private $fonctions = null;
@@ -33,7 +34,7 @@ class structure {
 	{
 		if (is_null($this->structureid))
 		{
-			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
+			$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "") {
@@ -63,6 +64,7 @@ class structure {
  				$this->datecloture = '31/12/9999';
  			$this->afficherespsousstruct = "$result[9]";
  			$this->respvalidsousstruct = "$result[10]";
+ 			$this->gestvalidagent = "$result[11]";
 		}
 		return true;
 	}
@@ -134,6 +136,22 @@ class structure {
 		}
 		else
 			$this->respvalidsousstruct = $valide;
+	}
+	
+	function gestvalidagent($valide = null)
+	{
+		if (is_null($valide))
+		{
+			if (is_null($this->gestvalidagent)) {
+				$errlog = "Structure->gestvalidagent : Le paramètre gestvalidagent de la structure n'est pas défini !!!";
+				echo $errlog."<br/>";
+				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+			}
+			else
+				return $this->gestvalidagent;
+		}
+		else
+			$this->gestvalidagent = $valide;
 	}
 	
 	function sousstructure($sousstruct = null)
@@ -799,7 +817,7 @@ class structure {
 //		echo "structure->store : Non refaite !!!!! <br>";
 //		return false;
 		$msgerreur = null;
-		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' , AFFICHERESPSOUSSTRUCT='" . $this->afficherespsousstruct() . "' , RESPVALIDSOUSSTRUCT='" . $this->respvalidsousstruct() . "' WHERE STRUCTUREID='" . $this->id() . "'";
+		$sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent()   . "' , AFFICHERESPSOUSSTRUCT='" . $this->afficherespsousstruct() . "' , RESPVALIDSOUSSTRUCT='" . $this->respvalidsousstruct() . "', GESTVALIDAGENT='" . $this->gestvalidagent()  . "' WHERE STRUCTUREID='" . $this->id() . "'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();

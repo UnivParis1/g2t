@@ -258,34 +258,45 @@
 			{
 				foreach ($agentliste as $membrekey => $membre)
 				{
-					//echo "boucle => " .$membre->nom() . "<br>";
-					$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-					// Si on est en mode "previous" alors on considère que la fin est l'année courante
-					if ($previous == 1)
-						$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-					// Si on ne limite pas les congés a la date de fin de la période, il faut prendre plus large que la fin de période
-					// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
-					elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
-						$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-					else
-						$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-					//echo "Debut = $debut     fin = $fin <br>";
-					//echo "structure->id() = " . $structure->id() . "<br>";
-					//echo "Membre = " . $membre->nom() . "<br>";
-					
-					//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
-					// -------------------------------------------------------------
-					// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
-					//$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
-					$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, null,$structure->id(), $cleelement);
-					// -------------------------------------------------------------
-					//echo "htmltodisplay = $htmltodisplay <br>";
-					if ($htmltodisplay != "")
+					$todisplay = true;
+					if (strcasecmp($structure->gestvalidagent(), "n") == 0) // Si le gestionnaire ne peux valider que les responsables 
 					{
-						echo $htmltodisplay;
-						echo "<br>";
-						$aumoinsunedemande = TRUE;
-					}	
+						if ($membre->estresponsable()==false) // Si le membre n'est pas un responsable ==> On n'affiche pas
+						{
+							$todisplay = false;
+						}
+					}
+					if ($todisplay)
+					{
+						//echo "boucle => " .$membre->nom() . "<br>";
+						$debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
+						// Si on est en mode "previous" alors on considère que la fin est l'année courante
+						if ($previous == 1)
+							$fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
+						// Si on ne limite pas les congés a la date de fin de la période, il faut prendre plus large que la fin de période
+						// On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
+						elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
+							$fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
+						else
+							$fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
+						//echo "Debut = $debut     fin = $fin <br>";
+						//echo "structure->id() = " . $structure->id() . "<br>";
+						//echo "Membre = " . $membre->nom() . "<br>";
+						
+						//echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+						// -------------------------------------------------------------
+						// Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
+						//$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+						$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, null,$structure->id(), $cleelement);
+						// -------------------------------------------------------------
+						//echo "htmltodisplay = $htmltodisplay <br>";
+						if ($htmltodisplay != "")
+						{
+							echo $htmltodisplay;
+							echo "<br>";
+							$aumoinsunedemande = TRUE;
+						}	
+					}
 				}
 			}
 			

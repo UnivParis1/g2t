@@ -188,6 +188,20 @@
 		}
 	}
 	
+	$gestvalidagent = null;
+	if (isset($_POST["gestvalidagent"]))
+		$gestvalidagent = $_POST["gestvalidagent"];
+	if (is_array($gestvalidagent))
+	{
+		foreach ($gestvalidagent as $structureid => $valeur)
+		{
+			$structureid = str_replace("'", "", $structureid);
+			$structure = new structure($dbcon);
+			$structure->load($structureid);
+			$structure->gestvalidagent($valeur);
+			$structure->store();
+		}
+	}	
 	
 	$arraygestionnaire = null;
 	if (isset($_POST["gestion"]))
@@ -336,6 +350,20 @@
 			else
 				echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
 				
+			if ($mode == 'resp')
+			{
+				echo "<br>";
+				echo "Autoriser la validation des demandes des agents par le gestionnaire : ";
+				if ($action == 'modif' )
+				{
+					echo "<select name=gestvalidagent['" . $structure->id() . "']>";
+					echo "<option value='o'"; if (strcasecmp($structure->gestvalidagent(),"o")==0) echo " selected "; echo ">Oui</option>";
+					echo "<option value='n'"; if (strcasecmp($structure->gestvalidagent(),"n")==0) echo " selected "; echo ">Non</option>";
+					echo "</select>";
+				}
+				else
+					echo $fonctions->ouinonlibelle($structure->gestvalidagent());
+			}
 			if ($mode == 'resp')
 			{
 				$structure->agent_envoyer_a($codeinterne);
