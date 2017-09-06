@@ -730,10 +730,12 @@ class structure {
 					if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd")))
 					{
 						$responsable = $structure->responsable();
-					
-						// La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
-						$responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
-						///$responsableliste[$responsable->harpegeid()] = $responsable;
+						if ($responsable->harpegeid() <> '-1')
+						{
+							// La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
+							$responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+							///$responsableliste[$responsable->harpegeid()] = $responsable;
+						}
 					}
 				}
 			}
