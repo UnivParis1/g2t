@@ -70,6 +70,19 @@
 			//echo "Liste de agents = "; print_r($agentliste); echo "<br>";
 			$agentlistefull = array_merge((array)$agentlistefull, (array)$agentliste);
 			//echo "fin du select <br>";
+			$structurefille = $structure->structurefille();
+			foreach ((array)$structurefille as $structure)
+			{
+				$responsable = $structure->responsable();
+				if ($responsable->harpegeid() <> '-1')
+				{
+					$agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+				}
+			}
+		}
+		if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]))
+		{
+			unset ($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
 		}
 		ksort($agentlistefull);
 		echo "<SELECT name='agentid'>";
