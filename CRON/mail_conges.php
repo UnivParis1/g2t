@@ -54,44 +54,48 @@
 		if (is_null($structure->responsable()))
 			echo "Pas de responsable de structure(id : ".$affectation->structureid()."), pas d'envoi de mail. \n";
 		else {
-			if ($affectation->agentid() != $structure->responsable()->harpegeid())
-			{ 
-				$destinatairemail = $structure->agent_envoyer_a($codeinterne);
-				if ($codeinterne==2) // Gestionnaire service courant
-				{
-					if (isset ($mail_gest[$destinatairemail->harpegeid()]))
-						$mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()]+1;
-					else 
-						$mail_gest[$destinatairemail->harpegeid()] = 1;
-				}
-				else // Responsable service courant
-				{
-					if (isset ($mail_resp[$destinatairemail->harpegeid()]))
-						$mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()]+1;
-					else 
-						$mail_resp[$destinatairemail->harpegeid()] = 1;
-				}
-			}
-			// C'est le responsable de la structure qui a fait la demande
-			else
+			// Si l'affectation correspondant à la demande est commencée => Sinon on ne dit rien !!! 
+			if ($fonctions->formatdatedb($affectation->datedebut()) <= $fonctions->formatdatedb($date))
 			{
-				$destinatairemail = $structure->resp_envoyer_a($codeinterne);
-				if (!is_null($destinatairemail))
-				{
-					//echo "destinatairemailid = " . $destinatairemail->harpegeid() . "\n";
-					if ($codeinterne==2 or $codeinterne==3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+				if ($affectation->agentid() != $structure->responsable()->harpegeid())
+				{ 
+					$destinatairemail = $structure->agent_envoyer_a($codeinterne);
+					if ($codeinterne==2) // Gestionnaire service courant
 					{
 						if (isset ($mail_gest[$destinatairemail->harpegeid()]))
 							$mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()]+1;
 						else 
 							$mail_gest[$destinatairemail->harpegeid()] = 1;
 					}
-					else // Responsable service parent
+					else // Responsable service courant
 					{
 						if (isset ($mail_resp[$destinatairemail->harpegeid()]))
 							$mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()]+1;
 						else 
 							$mail_resp[$destinatairemail->harpegeid()] = 1;
+					}
+				}
+				// C'est le responsable de la structure qui a fait la demande
+				else
+				{
+					$destinatairemail = $structure->resp_envoyer_a($codeinterne);
+					if (!is_null($destinatairemail))
+					{
+						//echo "destinatairemailid = " . $destinatairemail->harpegeid() . "\n";
+						if ($codeinterne==2 or $codeinterne==3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+						{
+							if (isset ($mail_gest[$destinatairemail->harpegeid()]))
+								$mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()]+1;
+							else 
+								$mail_gest[$destinatairemail->harpegeid()] = 1;
+						}
+						else // Responsable service parent
+						{
+							if (isset ($mail_resp[$destinatairemail->harpegeid()]))
+								$mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()]+1;
+							else 
+								$mail_resp[$destinatairemail->harpegeid()] = 1;
+						}
 					}
 				}
 			}

@@ -723,7 +723,7 @@ AND DEMANDE.STATUT='v'";
    	$complement = new complement($this->dbconnect);
    	$complement->load($this->harpegeid,"REPORTACTIF");
    	// Si le complement n'est pas initialisé (NULL ou "") alors on active le report
-   	if (strcasecmp($complement->valeur(),"O")==0 or strlen($complement->valeur()) == 0)
+   	if (strcasecmp($complement->valeur(),"O")==0) // or strlen($complement->valeur()) == 0)
    		$reportactif = true;
    	else
 			$reportactif = FALSE;
@@ -1588,6 +1588,8 @@ AND DEMANDE.STATUT='v'";
 // 			$listerespsousstruct = $value->responsable()->demandesliste($debut_interval,$fin_interval);
 // 			$liste = array_merge($liste,$listerespsousstruct);
 // 		}
+
+//		echo "#######liste (Count=" . count($liste) .")  = "; print_r($liste); echo "<br>";
 		
 		$htmltext = "";
 		//$htmltext =                   "<br>";
