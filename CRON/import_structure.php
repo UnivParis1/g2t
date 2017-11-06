@@ -242,61 +242,68 @@
 				$oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
 				echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
 				
-				$oldsql  = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,
-						           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 
-						    FROM STRUCTURE
-						    WHERE STRUCTUREID = '$oldstructid' ";
-				$oldquery = mysql_query($oldsql);
-				$erreur_requete=mysql_error();
-				if ($erreur_requete!="")
-					echo "SELECT OLD STRUCTURE => $erreur_requete \n";
-				if (mysql_num_rows($oldquery) == 0) // Structure manquante
+				if ($oldstructid == $code_struct)
 				{
-					echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
+					echo "On détecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
 				}
 				else
 				{
-					$result = mysql_fetch_row($oldquery);
-					if ($fonctions->formatdatedb($result[10]) > "20151231") // Si l'ancienne structuture n'est pas fermée
+					$oldsql  = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,
+							           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 
+							    FROM STRUCTURE
+							    WHERE STRUCTUREID = '$oldstructid' ";
+					$oldquery = mysql_query($oldsql);
+					$erreur_requete=mysql_error();
+					if ($erreur_requete!="")
+						echo "SELECT OLD STRUCTURE => $erreur_requete \n";
+					if (mysql_num_rows($oldquery) == 0) // Structure manquante
 					{
-						$sql = "UPDATE STRUCTURE 
-						        SET GESTIONNAIREID ='$result[5]', 
-						            AFFICHESOUSSTRUCT = '$result[6]', 
-						            AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
-						            DEST_MAIL_RESPONSABLE = '$result[8]', 
-						            DEST_MAIL_AGENT = '$result[9]', 
-						            AFFICHERESPSOUSSTRUCT = '$result[11]' 
-						        WHERE STRUCTUREID = '$code_struct'";
-						if (substr($code_struct,0,3) == 'DGH')
+						echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
+					}
+					else
+					{
+						$result = mysql_fetch_row($oldquery);
+						if ($fonctions->formatdatedb($result[10]) > "20151231") // Si l'ancienne structuture n'est pas fermée
 						{
-							//echo "SQL complement new struct = $sql \n";
-						}
-						mysql_query($sql);
-						$erreur_requete=mysql_error();
-						if ($erreur_requete!="")
-						{
-							echo "UPDATE STRUCTURE (migration) => $erreur_requete \n";
-							echo "sql = $sql \n";
-						}
-						else
-						{
-							$sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$oldstructid'";
+							$sql = "UPDATE STRUCTURE 
+							        SET GESTIONNAIREID ='$result[5]', 
+							            AFFICHESOUSSTRUCT = '$result[6]', 
+							            AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
+							            DEST_MAIL_RESPONSABLE = '$result[8]', 
+							            DEST_MAIL_AGENT = '$result[9]', 
+							            AFFICHERESPSOUSSTRUCT = '$result[11]' 
+							        WHERE STRUCTUREID = '$code_struct'";
+							if (substr($code_struct,0,3) == 'DGH')
+							{
+								//echo "SQL complement new struct = $sql \n";
+							}
 							mysql_query($sql);
 							$erreur_requete=mysql_error();
 							if ($erreur_requete!="")
 							{
-								echo "UPDATE STRUCTURE (cloture) => $erreur_requete \n";
+								echo "UPDATE STRUCTURE (migration) => $erreur_requete \n";
 								echo "sql = $sql \n";
 							}
 							else
 							{
-								echo "==> Fermeture de l'ancienne structure '$oldstructid' à la date du 31/12/2015\n";
+								$sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$oldstructid'";
+								mysql_query($sql);
+								$erreur_requete=mysql_error();
+								if ($erreur_requete!="")
+								{
+									echo "UPDATE STRUCTURE (cloture) => $erreur_requete \n";
+									echo "sql = $sql \n";
+								}
+								else
+								{
+									echo "==> Fermeture de l'ancienne structure '$oldstructid' à la date du 31/12/2015\n";
+								}
 							}
 						}
-					}
-					else
-					{
-						echo "L'ancienne structure $oldstructid est déja fermée => Pas de récupération de données \n";
+						else
+						{
+							echo "L'ancienne structure $oldstructid est déja fermée => Pas de récupération de données \n";
+						}
 					}
 				}
 			}
