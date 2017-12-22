@@ -63,13 +63,25 @@
 
 	echo "<form name='select_mois' method='post'>";
 	echo "<center><select name='indexmois'>";
-	for ($index=1 ; $index <= 12 ; $index ++)
+	
+	// On reprend le mois de début de période
+	$index = $moisdebutperiode;
+	// L'année c'est l'année de référence
+	$anneemois = $fonctions->anneeref(); 
+	//echo "index = $index <br>";
+	for ($indexcpt=1 ; $indexcpt <= 12 ; $indexcpt ++)
 	{
 		echo "<option value='$index'";
 		if ($index == $indexmois)
 			echo " selected ";
-		echo ">" . $fonctions->nommois("01/" . str_pad($index,2,"0",STR_PAD_LEFT) . "/" . date("Y")) . "</option>";
+		echo ">" . $fonctions->nommois("01/" . str_pad($index,2,"0",STR_PAD_LEFT) . "/" . date("Y")) . "  " . $anneemois . "</option>";
+		// On calcule le modulo
+		$index = ($index % 12)+1 ;
+		// Si le mois est > 12 ou égal à 1 alors c'est qu'on est passé à l'année suivante
+		if ($index > 12 or $index == 1)
+			$anneemois = $anneemois+1;
 	}
+
 	echo "</select>";
 	echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
 	echo "<input type='hidden' name='mode' value='" . $mode . "' />";
