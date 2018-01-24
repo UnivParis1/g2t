@@ -114,6 +114,7 @@
 				$nom_long_struct = trim($ligne_element[1]);
 				$nom_court_struct = trim($ligne_element[2]);
 				$parent_struct = trim($ligne_element[3]);
+				$statut_struct = trim($ligne_element[7]);
 				
 				if (array_key_exists("#1", (array)$tabfonctions[$code_struct]))
 					$codefonction = "1"; // Président d'université
@@ -186,125 +187,172 @@
 					}
 				}
 				echo "Le code du responsable est : $resp_struct \n";
-				$date_cloture = trim($ligne_element[5]);
-				if (is_null($date_cloture) or $date_cloture=="")
-					$date_cloture='2999-12-31';
-				//echo "code_struct = $code_struct   nom_long_struct=$nom_long_struct   nom_court_struct=$nom_court_struct   parent_struct=$parent_struct   resp_struct=$resp_struct date_cloture=$date_cloture\n";
-
-				$sql = "SELECT * FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
-				$query = mysql_query($sql);
-				$erreur_requete=mysql_error();
-				if ($erreur_requete!="")
-					echo "SELECT STRUCTURE => $erreur_requete \n";
-				if (mysql_num_rows($query) == 0) // Structure manquante
-				{
-					echo "Création d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
-					$sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE) VALUES('%s','%s','%s','%s','%s','%s')",
-							$fonctions->my_real_escape_utf8($code_struct),$fonctions->my_real_escape_utf8($nom_long_struct),$fonctions->my_real_escape_utf8($nom_court_struct),$fonctions->my_real_escape_utf8($parent_struct),$fonctions->my_real_escape_utf8($resp_struct),$fonctions->my_real_escape_utf8($date_cloture));
-				}
-				else
-				{
-					echo "Mise à jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
-					$sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s' WHERE STRUCTUREID='%s'",
-							$fonctions->my_real_escape_utf8($nom_long_struct),$fonctions->my_real_escape_utf8($nom_court_struct),$fonctions->my_real_escape_utf8($parent_struct),$fonctions->my_real_escape_utf8($resp_struct),$fonctions->my_real_escape_utf8($date_cloture),$fonctions->my_real_escape_utf8($code_struct));
-					//echo $sql."\n";
-				}
-				mysql_query($sql);
-				$erreur_requete=mysql_error();
-				if ($erreur_requete!="")
-				{
-					echo "INSERT/UPDATE STRUCTURE => $erreur_requete \n";
-					echo "sql = $sql \n";
-				}
-				// On regarde dans le LDAP s'il y a une correspondance avec une vieille strcture
-				// On cherche le code de l'ancienne structure avec le filtre supannRefId={SIHAM.UO} + Code Nvelle (par exemple : supannRefId={SIHAM.UO}DGHA_4)
-				// Si une correspondance existe :
-				//		On charge la vieille structure de G2T => supannCodeEntite: DGHA
-				// 		Si la structure est ouverte => date de cloture > '20151231'
-				//			On recopie les informations structurantes dans la nouvelle structure :
-				//				- GESTIONNAIREID varchar(10) 
-				//				- AFFICHESOUSSTRUCT varchar(1) 
-				//				- AFFICHEPLANNINGTOUTAGENT varchar(1) 
-				//				- DEST_MAIL_RESPONSABLE varchar(1) 
-				//				- DEST_MAIL_AGENT varchar(1) 
-				//				- AFFICHERESPSOUSSTRUCT varchar(1)
-				//			On sauvegarde la nouvelle structure
-				//			On ferme l'ancienne avec la date du '20151231'
-				//			On sauvegarde l'ancienne structure
-				//		Fin Si (structure ouverte)
-				//	Fin Si (Correspondance existe)
-				$filtre="supannRefId={SIHAM.UO}" . $code_struct;
-				$dn=$LDAP_SEARCH_BASE;
-				$restriction=array("$LDAP_CODE_STRUCT_ATTR");
-				$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
-				$info=ldap_get_entries($con_ldap,$sr);
-				//echo "Info = " . print_r($info,true) . "\n";
-				$oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
-				echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
+				echo "Le code SIHAM du statut de la structure est : $statut_struct \n";
 				
-				if ($oldstructid == $code_struct)
+				// Si la structure est active 'ACT'
+				if (strcasecmp($statut_struct, 'ACT') == 0)
 				{
-					echo "On détecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
-				}
-				else
-				{
-					$oldsql  = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,
-							           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 
-							    FROM STRUCTURE
-							    WHERE STRUCTUREID = '$oldstructid' ";
-					$oldquery = mysql_query($oldsql);
+					$date_cloture = trim($ligne_element[5]);
+					if (is_null($date_cloture) or $date_cloture=="")
+						$date_cloture='2999-12-31';
+					//echo "code_struct = $code_struct   nom_long_struct=$nom_long_struct   nom_court_struct=$nom_court_struct   parent_struct=$parent_struct   resp_struct=$resp_struct date_cloture=$date_cloture\n";
+	
+					$sql = "SELECT * FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
+					$query = mysql_query($sql);
 					$erreur_requete=mysql_error();
 					if ($erreur_requete!="")
-						echo "SELECT OLD STRUCTURE => $erreur_requete \n";
-					if (mysql_num_rows($oldquery) == 0) // Structure manquante
+						echo "SELECT STRUCTURE => $erreur_requete \n";
+					if (mysql_num_rows($query) == 0) // Structure manquante
 					{
-						echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
+						echo "Création d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
+						$sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE) VALUES('%s','%s','%s','%s','%s','%s')",
+								$fonctions->my_real_escape_utf8($code_struct),$fonctions->my_real_escape_utf8($nom_long_struct),$fonctions->my_real_escape_utf8($nom_court_struct),$fonctions->my_real_escape_utf8($parent_struct),$fonctions->my_real_escape_utf8($resp_struct),$fonctions->my_real_escape_utf8($date_cloture));
 					}
 					else
 					{
-						$result = mysql_fetch_row($oldquery);
-						if ($fonctions->formatdatedb($result[10]) > "20151231") // Si l'ancienne structuture n'est pas fermée
+						echo "Mise à jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
+						$sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s' WHERE STRUCTUREID='%s'",
+								$fonctions->my_real_escape_utf8($nom_long_struct),$fonctions->my_real_escape_utf8($nom_court_struct),$fonctions->my_real_escape_utf8($parent_struct),$fonctions->my_real_escape_utf8($resp_struct),$fonctions->my_real_escape_utf8($date_cloture),$fonctions->my_real_escape_utf8($code_struct));
+						//echo $sql."\n";
+					}
+					mysql_query($sql);
+					$erreur_requete=mysql_error();
+					if ($erreur_requete!="")
+					{
+						echo "INSERT/UPDATE STRUCTURE => $erreur_requete \n";
+						echo "sql = $sql \n";
+					}
+					// On regarde dans le LDAP s'il y a une correspondance avec une vieille strcture
+					// On cherche le code de l'ancienne structure avec le filtre supannRefId={SIHAM.UO} + Code Nvelle (par exemple : supannRefId={SIHAM.UO}DGHA_4)
+					// Si une correspondance existe :
+					//		On charge la vieille structure de G2T => supannCodeEntite: DGHA
+					// 		Si la structure est ouverte => date de cloture > '20151231'
+					//			On recopie les informations structurantes dans la nouvelle structure :
+					//				- GESTIONNAIREID varchar(10) 
+					//				- AFFICHESOUSSTRUCT varchar(1) 
+					//				- AFFICHEPLANNINGTOUTAGENT varchar(1) 
+					//				- DEST_MAIL_RESPONSABLE varchar(1) 
+					//				- DEST_MAIL_AGENT varchar(1) 
+					//				- AFFICHERESPSOUSSTRUCT varchar(1)
+					//			On sauvegarde la nouvelle structure
+					//			On ferme l'ancienne avec la date du '20151231'
+					//			On sauvegarde l'ancienne structure
+					//		Fin Si (structure ouverte)
+					//	Fin Si (Correspondance existe)
+					$filtre="supannRefId={SIHAM.UO}" . $code_struct;
+					$dn=$LDAP_SEARCH_BASE;
+					$restriction=array("$LDAP_CODE_STRUCT_ATTR");
+					$sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
+					$info=ldap_get_entries($con_ldap,$sr);
+					//echo "Info = " . print_r($info,true) . "\n";
+					$oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
+					echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
+					
+					if ($oldstructid == $code_struct)
+					{
+						echo "On détecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
+					}
+					else
+					{
+						$oldsql  = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,
+								           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 
+								    FROM STRUCTURE
+								    WHERE STRUCTUREID = '$oldstructid' ";
+						$oldquery = mysql_query($oldsql);
+						$erreur_requete=mysql_error();
+						if ($erreur_requete!="")
+							echo "SELECT OLD STRUCTURE => $erreur_requete \n";
+						if (mysql_num_rows($oldquery) == 0) // Structure manquante
 						{
-							$sql = "UPDATE STRUCTURE 
-							        SET GESTIONNAIREID ='$result[5]', 
-							            AFFICHESOUSSTRUCT = '$result[6]', 
-							            AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
-							            DEST_MAIL_RESPONSABLE = '$result[8]', 
-							            DEST_MAIL_AGENT = '$result[9]', 
-							            AFFICHERESPSOUSSTRUCT = '$result[11]' 
-							        WHERE STRUCTUREID = '$code_struct'";
-							if (substr($code_struct,0,3) == 'DGH')
+							echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
+						}
+						else
+						{
+							$result = mysql_fetch_row($oldquery);
+							if ($fonctions->formatdatedb($result[10]) > "20151231") // Si l'ancienne structuture n'est pas fermée
 							{
-								//echo "SQL complement new struct = $sql \n";
-							}
-							mysql_query($sql);
-							$erreur_requete=mysql_error();
-							if ($erreur_requete!="")
-							{
-								echo "UPDATE STRUCTURE (migration) => $erreur_requete \n";
-								echo "sql = $sql \n";
-							}
-							else
-							{
-								$sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$oldstructid'";
+								$sql = "UPDATE STRUCTURE 
+								        SET GESTIONNAIREID ='$result[5]', 
+								            AFFICHESOUSSTRUCT = '$result[6]', 
+								            AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
+								            DEST_MAIL_RESPONSABLE = '$result[8]', 
+								            DEST_MAIL_AGENT = '$result[9]', 
+								            AFFICHERESPSOUSSTRUCT = '$result[11]' 
+								        WHERE STRUCTUREID = '$code_struct'";
+								if (substr($code_struct,0,3) == 'DGH')
+								{
+									//echo "SQL complement new struct = $sql \n";
+								}
 								mysql_query($sql);
 								$erreur_requete=mysql_error();
 								if ($erreur_requete!="")
 								{
-									echo "UPDATE STRUCTURE (cloture) => $erreur_requete \n";
+									echo "UPDATE STRUCTURE (migration) => $erreur_requete \n";
 									echo "sql = $sql \n";
 								}
 								else
 								{
-									echo "==> Fermeture de l'ancienne structure '$oldstructid' à la date du 31/12/2015\n";
+									$sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$oldstructid'";
+									mysql_query($sql);
+									$erreur_requete=mysql_error();
+									if ($erreur_requete!="")
+									{
+										echo "UPDATE STRUCTURE (cloture) => $erreur_requete \n";
+										echo "sql = $sql \n";
+									}
+									else
+									{
+										echo "==> Fermeture de l'ancienne structure '$oldstructid' à la date du 31/12/2015\n";
+									}
 								}
+							}
+							else
+							{
+								echo "L'ancienne structure $oldstructid est déja fermée => Pas de récupération de données \n";
+							}
+						}
+					}
+				}
+				elseif (strcasecmp($statut_struct, 'INA') == 0)
+				// La structure est inactive ==> On doit la fermer si ce n'est pas déjà fait
+				{
+					$sql = "SELECT DATECLOTURE FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
+					$query = mysql_query($sql);
+					$erreur_requete=mysql_error();
+					if ($erreur_requete!="")
+						echo "SELECT STRUCTURE (inactif) => $erreur_requete \n";
+					if (mysql_num_rows($query) == 0) // Structure manquante
+					{
+						echo "La structure : $nom_long_struct (Id = $code_struct) est inactive dans SIHAM mais n'existe pas dans G2T ! On l'ignore...\n";
+					}
+					else
+					{
+						$result = mysql_fetch_row($query);
+						$date_cloture_g2t = $result[0];
+						// Si la date de cloture dans G2T est postérieure à la date du jour, alors on met la date de la veille en cloture
+						if ($fonctions->formatdatedb($date_cloture_g2t) >= date("Ymd"))
+						{
+							echo "Mise à jour de la date de cloture d'une structure pour la rendre inactive : $nom_long_struct (Id = $code_struct) \n";	
+							$date_veille = strftime("%Y-%m-%d", mktime(0, 0, 0, date('m'), date('d')-1, date('y')));
+							echo "Date de la veille = "  . $fonctions->formatdatedb($date_veille). " \n";
+							$sql = 	"UPDATE STRUCTURE SET DATECLOTURE='" . $fonctions->formatdatedb($date_veille) . "'  WHERE STRUCTUREID = '$code_struct'";  		
+							mysql_query($sql);
+							$erreur_requete=mysql_error();
+							if ($erreur_requete!="")
+							{
+								echo "INSERT/UPDATE STRUCTURE (inactif) => $erreur_requete \n";
+								echo "sql = $sql \n";
 							}
 						}
 						else
 						{
-							echo "L'ancienne structure $oldstructid est déja fermée => Pas de récupération de données \n";
+							echo "La structure est deja close (date de fermeture = $date_cloture_g2t) => On ne fait rien\n";
 						}
 					}
+				}
+				else 
+				{
+					echo "La structure : $nom_long_struct (Id = $code_struct) a un statut dans SIHAM non reconnu par G2T (statut = $statut_struct)...\n";
 				}
 			}
 		}
