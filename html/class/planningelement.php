@@ -227,14 +227,15 @@ class planningelement {
 		if ($this->moment == 'm')
 		{
 //			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
-                    if ($this->date == date("Ymd"))
-                    {
-			$htmltext = $htmltext ."<td class='planningelement_jour_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
-                    }
-                    else
-                    {
-			$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
-                    }
+            if ($this->date == date("Ymd"))
+            {
+            	//echo "Le matin du jour " . $this->date . " <br>";
+				$htmltext = $htmltext ."<td class='planningelement_jour_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+            }
+            else
+            {
+				$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+            }
 			if (strlen($this->info())!=0 and $noiretblanc == false) 
 			{
 				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">"; 
@@ -252,14 +253,15 @@ class planningelement {
 		else
 		{
 //			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur() . "' title=\"" . $this->info()  . "\" >" . $checkboxtext ."</td>";
-                    if ($this->date == date("Ymd"))
-                    {
-			$htmltext = $htmltext ."<td class='planningelement_jour_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
-                    }
-                    else
-                    {
-			$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
-                    }
+            if ($this->date == date("Ymd"))
+            {
+            	//echo "Le soir du jour " . $this->date . " <br>";
+            	$htmltext = $htmltext ."<td class='planningelement_jour_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+            }
+            else
+            {
+				$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+            }
 			if (strlen($this->info())!=0 and $noiretblanc == false)
 			{
 				$htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) .">";

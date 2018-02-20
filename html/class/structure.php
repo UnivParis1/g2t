@@ -553,7 +553,13 @@ class structure {
  					//echo "indexjrs = $indexjrs <br>";
  					$nomjour = $this->fonctions->nomjour(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut);
  					$titre = $nomjour . " " . str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . " " . $monthname;
- 					$htmltext = $htmltext . "<td colspan='2' title='" . $titre . "'>" . str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "</td>";
+ 					$htmltext = $htmltext . "<td colspan='2' title='" . $titre . "'";
+ 					//echo "Date case = " . $this->fonctions->formatdatedb(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut) . " Date jour =  " . date("Ymd") . "<br>";
+ 					if ($this->fonctions->formatdatedb(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut) == date("Ymd"))
+ 					{
+ 						$htmltext = $htmltext . " bgcolor='#3FC6FF'";
+ 					}
+ 					$htmltext = $htmltext . ">" . str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "</td>";
  				}
  				$htmltext = $htmltext . "</tr>";
   				$titre_a_ajouter = FALSE;
