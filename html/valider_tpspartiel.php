@@ -156,7 +156,9 @@
 				{
 					foreach ($affectationliste as $key => $affectation)
 					{
-						$declaTPliste = $affectation->declarationTPliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+1).$fonctions->finperiode());
+						// BugFix : Ticket GLPI 76387
+						// On met +99 et non +1, afin de permettre aux demandes futures de s'afficher (année de référence + 99 ans)
+						$declaTPliste = $affectation->declarationTPliste($fonctions->anneeref().$fonctions->debutperiode(),($fonctions->anneeref()+99).$fonctions->finperiode());
 						if (is_array($declaTPliste))
 						{
 							foreach ($declaTPliste as $declaration)
