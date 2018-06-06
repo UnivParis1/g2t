@@ -67,13 +67,30 @@ class planning {
 		{
 			//echo "datetemp= $datetemp <br>";
 			
-			
+			// S'il y a des affectations dans la liste et que l'affectation courante est null, je cherche s'il y en a une correspondant à la date du jour....
+			if (is_array($affectationliste) and (is_null($affectation)))
+			{
+				$affectation = null;
+				$declarationTP = null;
+				// On recherche s'il y a une affectation correspondant au jour courant
+				foreach ($affectationliste as $tempaffectation)
+				{
+					if (($this->fonctions->formatdatedb($tempaffectation->datedebut()) <= $this->fonctions->formatdatedb($datetemp)) and ($this->fonctions->formatdatedb($tempaffectation->datefin()) >= $this->fonctions->formatdatedb($datetemp)))
+					{
+						// C'est la bonne affectation !
+						$affectation = $tempaffectation;
+						break;
+					}
+				}
+			} 
 			// Si on a déja une affectation
-			if (!is_null($affectation))
+			elseif (!is_null($affectation))
 			{
 				// On regarde si l'affectation est terminée.....
 				if ($this->fonctions->formatdatedb($affectation->datefin()) < $this->fonctions->formatdatedb($datetemp))
 				{
+					// On supprime l'affectation terminée (pour optimiser les boucles foreach...)
+					unset($affectationliste[$affectation->affectationid()]);
 					// Oui elle ai terminée => On remet tout à 0
 					$affectation = null;
 					$declarationTP = null;
@@ -237,7 +254,9 @@ class planning {
 
 			//echo "Apres le for...<br>";
 			//echo "fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
-			//if (is_null($declarationTP)) echo "declarationTP est NULL <br>"; else echo "declarationTP = " . $declarationTP->declarationTPid() . "<br>"; 
+			//if (is_null($affectation)) echo "affectation est NULL <br>"; else echo "affectation = " . $affectation->affectationid() . "<br>";
+			//if (is_null($declarationTP)) echo "declarationTP est NULL <br>"; else echo "declarationTP = " . $declarationTP->declarationTPid() . "<br>";
+			 
 			// Le matin du jour en cours de traitement
 			$element = new planningelement($this->dbconnect);
 			$element->date($this->fonctions->formatdate($datetemp));
