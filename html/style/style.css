@@ -101,7 +101,10 @@
 /* DEFINITION DU BODY (Police, taille, couleur, ...)   */
 /*******************************************************/
 .bodyhtml {
-	FONT-SIZE: 14px; FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif; COLOR: #000000; 
+	FONT-SIZE: 14px; 
+	FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif; 
+	COLOR: #000000; 
+	background-color: white;
 }
 
 /*******************************************************/
