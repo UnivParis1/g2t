@@ -1,5 +1,4 @@
 <?php
-
 	require_once('CAS.php');
 	include './includes/casconnection.php';
 
