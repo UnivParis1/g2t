@@ -1,5 +1,6 @@
 <?php
-	require_once('CAS.php');
+	
+    require_once('CAS.php');
 	include './includes/casconnection.php';
 
 	require_once("./class/agent.php");
