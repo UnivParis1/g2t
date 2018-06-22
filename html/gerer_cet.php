@@ -522,7 +522,8 @@
 			$nbrejoursdispo = 0;
 		}
 		$cet = new cet($dbcon);
-		$msg_erreur = $msg_bloquant . $msg_erreur . $cet->load($agentid);
+		$msg_erreur_load = $cet->load($agentid);
+		$msg_erreur = $msg_bloquant . $msg_erreur . $msg_erreur_load;
 		
 		if ($msg_erreur == "")
 		{
@@ -553,7 +554,7 @@
 		}
 		
 		
-		if ($msg_erreur != "")
+		if ($msg_erreur_load != "")
 		{
 			// Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
 			$cet = null;
@@ -632,9 +633,12 @@
 		echo "</form>";
 		echo "</span>";
 		
+		echo 'Avant le test null(CET) <br>';
+		
 		if (!is_null($cet))
 		{
 			// Seuls les jours au delà de 20 jours de CET peuvent être indemnisés ou ajoutés à la RAFP
+			echo 'Cumul total = ' . $cet->cumultotal() . '  JrsPris =  ' . $cet->jrspris() . '<br>';
 			if ((($cet->cumultotal()-$cet->jrspris())) > 20)
 			{
 				echo "<br>";

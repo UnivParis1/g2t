@@ -10,7 +10,6 @@
 	//echo "<br><br>WSGROUPURL = $WSGROUPURL <br>";
 ?>
 
-
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL"?>/web-widget/jquery-ui.css" type="text/css" media="all" ></link>
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL"?>/web-widget/ui.theme.css" type="text/css" media="all" ></link>
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.css" type="text/css" media="all" ></link>
@@ -80,6 +79,12 @@
 <script src="javascripts/jquery-1.8.3.js"></script>
 <script src="javascripts/jquery-ui.js"></script>
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+<script>$(document).ready(function() {
+    $('#structureid').select2();
+});</script>
 <!--   
 	<script>
 		$(function()
@@ -192,7 +197,7 @@
 		}
 	}
 	// Si on est en mode "MAINTENANCE"
-	if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'),'o')==0)
+	if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'),'n')!=0)
 	{
 		if ($adminuser->estadministrateur()) // Si un administrateur est connecté
 		{
