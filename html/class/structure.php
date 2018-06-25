@@ -526,6 +526,13 @@ class structure {
 	function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false)   // Le format doit être MM/YYYY
 	{
 		//echo "Je debute planninghtml <br>";
+		list($jour, $indexmois,$annee) = split('[/.-]','01/' . $mois_annee_debut);
+		if (($annee. $indexmois <= date('Ym')) and ($noiretblanc==true))
+		{
+			echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Les informations antérieures à la date du jour ont été masquées.</font></B><br>";
+//			echo "<font color=#FF0000></font><br>";
+		}
+		
 		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct);
 		
 		if (!is_array($planningservice))
@@ -876,11 +883,18 @@ class structure {
 		//echo "Avant le planning <br>";
 		$planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
 	
+
+		list($jour, $indexmois,$annee) = split('[/.-]','01/' . $mois_annee_debut);
+		if (($annee. $indexmois <= date('Ym')) and ($noiretblanc==true))
+		{
+			$pdf->SetTextColor(204,0,0);
+			$pdf->Cell(60,10,"Attention : Les informations antérieures à la date du jour ont été masquées.");
+			$pdf->SetTextColor(0,0,0);
+			$pdf->Ln(10);
+		}
+		
 		/////création du planning suivant le tableau généré
 		///Création des entetes de colones contenant les 31 jours/////
-	
-	
-
 		$titre_a_ajouter = TRUE;
 		foreach ($planningservice as $agentid => $planning)
 		{

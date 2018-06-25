@@ -190,6 +190,13 @@
 	else
 	{
 		$affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
+/*
+		if ($annee. $indexmois <= date('Ym'))
+		{
+			echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Des données ont été masquées en raison de restrictions d'accès....</font></B><br>";
+			echo "<font color=#FF0000>Les informations antérieures à la date du jour, ont été masquées.</font><br>";
+		}
+*/
 		foreach ($affectationliste as $affectkey => $affectation)
 		{
 			$structureid = $affectation->structureid();
