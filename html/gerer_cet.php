@@ -632,12 +632,12 @@
 		echo "</form>";
 		echo "</span>";
 		
-		echo 'Avant le test null(CET) <br>';
+//		echo 'Avant le test null(CET) <br>';
 		
 		if (!is_null($cet))
 		{
 			// Seuls les jours au delà de 20 jours de CET peuvent être indemnisés ou ajoutés à la RAFP
-			echo 'Cumul total = ' . $cet->cumultotal() . '  JrsPris =  ' . $cet->jrspris() . '<br>';
+//			echo 'Cumul total = ' . $cet->cumultotal() . '  JrsPris =  ' . $cet->jrspris() . '<br>';
 			if ((($cet->cumultotal()-$cet->jrspris())) > 20)
 			{
 				echo "<br>";
