@@ -134,9 +134,12 @@ class planningelement {
 	{
 		// Si la date se situe dans le passé et qu'on affiche en noir et blanc alors met la case en noir
 		// ==> Evite que les agents "surveillent" si un autre agent à bien posé des congés dans le passé....
-		if (($this->fonctions->formatdatedb($this->date())<date('Ymd')) and ($noiretblanc == true) and $this->typeelement == "")
+		if (is_null($this->date)==false)
 		{
-			return self::COULEUR_NOIRE;
+    		if (($this->fonctions->formatdatedb($this->date())<date('Ymd')) and ($noiretblanc == true) and $this->typeelement == "")
+	   	    {
+			    return self::COULEUR_NOIRE;
+		    }
 		}
 		if ($this->typeelement == "")
 			return self::COULEUR_VIDE;
