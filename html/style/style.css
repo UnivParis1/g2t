@@ -475,6 +475,16 @@
    PADDING-LEFT: 1px;
 }
 
+.rayureplanning {
+  background: repeating-linear-gradient(
+    45deg,
+    #606dbc,
+    #606dbc 2px,
+    #465298 2px,
+    #465298 4px
+  );
+}
+
 /****************************************************
 / BULLE D'INFORMATION
 /****************************************************/

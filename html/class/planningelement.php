@@ -6,6 +6,7 @@ class planningelement {
 	const COULEUR_WE = '#999999';
 	const COULEUR_NON_DECL = '#775420';
 	const COULEUR_NOIRE = '#424242'; ///'#000000';
+	const COULEUR_HACHURE = '#1C1C1C';  //'#2E2E2E';
 	
 
 	private $date = null;
@@ -132,13 +133,14 @@ class planningelement {
 	
 	function couleur($noiretblanc = false)
 	{
-		// Si la date se situe dans le passé et qu'on affiche en noir et blanc alors met la case en noir
+		// Si la date se situe dans le passé et qu'on affiche en noir et blanc sauf si c'est un WE ou un jour férier alors met la case achurée
 		// ==> Evite que les agents "surveillent" si un autre agent à bien posé des congés dans le passé....
 		if (is_null($this->date)==false)
 		{
-    		if (($this->fonctions->formatdatedb($this->date())<date('Ymd')) and ($noiretblanc == true) and $this->typeelement == "")
+		    if (($this->fonctions->formatdatedb($this->date())<date('Ymd')) and ($noiretblanc == true) and ($this->typeelement <> 'ferie') and (strcasecmp($this->typeelement,"WE")<>0)) //$this->typeelement == "" or '
 	   	    {
-			    return self::COULEUR_NOIRE;
+			    // return self::COULEUR_NOIRE;
+			    return self::COULEUR_HACHURE;
 		    }
 		}
 		if ($this->typeelement == "")
@@ -243,7 +245,15 @@ class planningelement {
             }
             else
             {
-				$htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                $htmlbackcolor = $this->couleur($noiretblanc);
+                if ($htmlbackcolor == self::COULEUR_HACHURE)
+                {
+                    $htmltext = $htmltext ."<td class='planningelement_matin rayureplanning' " . $clickabletext . " >";
+                }
+                else
+                {
+                    $htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $htmlbackcolor . "' >";
+                }
             }
 			if (strlen($this->info())!=0 and $noiretblanc == false) 
 			{
@@ -269,7 +279,15 @@ class planningelement {
             }
             else
             {
-				$htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                $htmlbackcolor = $this->couleur($noiretblanc);
+                if ($htmlbackcolor == self::COULEUR_HACHURE)
+                {
+                    $htmltext = $htmltext ."<td class='planningelement_aprem rayureplanning' " . $clickabletext . "  >";
+                }
+                else 
+                {
+                    $htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                }
             }
 			if (strlen($this->info())!=0 and $noiretblanc == false)
 			{
