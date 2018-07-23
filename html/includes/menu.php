@@ -115,8 +115,9 @@
     };
 </script>
 
-
-<link rel="stylesheet" type="text/css" href="style/style.css" media="screen"></link>
+<!-- On rend la CSS "dynamique" en lui passant en paramètre le timestamp Unix de dernière modification du fichier -->
+<!-- Donc à chaque changement de CSS, on force le chargement de la nouvelle CSS -->
+<link rel="stylesheet" type="text/css" href="style/style.css?<?php echo filemtime('style/style.css')  ?>" media="screen"></link>
 <link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen"></link>
 </head> 
 
