@@ -305,7 +305,7 @@ class cet {
 			$complement = new complement($this->dbconnect);
 			$complement->harpegeid($this->agentid);
 			$complement->complementid('DEBUTCET');
-			if (!$this->fonctions->verifiedate($this->datedebut()))
+			if (!$this->fonctions->verifiedate($this->datedebut))
 			{
 				//echo "CET->Store : Date début n'est pas une date => " . $this->datedebut() . "<br>";
 				$this->datedebut = date("Ymd");
@@ -387,7 +387,7 @@ class cet {
 			//echo "Apres le nom du service <br>";
 			$pdf->Cell(40,10,'Votre "Compte Epargne Temps" (CET) vient d\'être alimenté.');
 			$pdf->Ln(10);
-			$pdf->Cell(40,10,'La date d\'ouverture de votre CET est : ' . $this->datedebut());
+			//$pdf->Cell(40,10,'La date d\'ouverture de votre CET est : ' . $this->datedebut());
 			$pdf->Ln(10);
 			$pdf->Cell(40,10,'Le solde actuel de votre CET est : ' . (($this->cumultotal()-$this->jrspris())) . ' jour(s).');
 			$pdf->Ln(10);
@@ -405,7 +405,11 @@ class cet {
 		$pdf->Ln(10);
 		
 
-		$pdf->Cell(40,10,$responsable->civilite() . " " . $responsable->nom() . " " . $responsable->prenom());
+		$pdf->Ln(10);
+		$pdf->Ln(10);
+		$pdf->Cell(40,10,"Pour le service de la Direction des ressources humaines");
+		$pdf->Ln(10);
+		$pdf->Cell(40,10,$responsable->identitecomplete());
 		$pdf->Ln(10);
 		
 		//echo "Nom du fichier....<br>";
