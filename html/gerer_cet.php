@@ -104,7 +104,7 @@
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
 		
-	print_r($_POST); echo "<br><br>";
+	//print_r($_POST); echo "<br><br>";
 
 	if (strcasecmp($mode, "gestrh")==0)
 	{
