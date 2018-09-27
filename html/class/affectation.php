@@ -21,6 +21,7 @@ class affectation {
 	private $denominateurquotite = null;
 	private $obsolete = null;
 	private $dbconnect = null;
+	private $numcontrat = null;
 
 	private $fonctions = null;
 
@@ -55,7 +56,7 @@ class affectation {
 		}
 		else
 		{
-			$sql = "SELECT AFFECTATIONID,HARPEGEID,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE
+			$sql = "SELECT AFFECTATIONID,HARPEGEID,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE, NUMCONTRAT
 FROM AFFECTATION
 WHERE AFFECTATIONID='" . $idaffectation . "'";
 			$query=mysql_query ($sql, $this->dbconnect);
@@ -84,7 +85,8 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 			$this->structureid = "$result[5]";
 			$this->numerateurquotite = "$result[6]";
 			$this->denominateurquotite = "$result[7]";
-			$this->obsolete = "$result[8]";				
+			$this->obsolete = "$result[8]";	
+			$this->numcontrat = "$result[9]";
 		}
 		return true;
 	}
@@ -283,6 +285,21 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
 		}
 		else
 			return $this->fonctions->formatdate($this->datemodif);
+	}
+	
+   /**
+         * @param 
+         * @return string the contract number 
+   */
+	function numcontrat()
+	{
+	    if (is_null($this->numcontrat)) {
+			$errlog = "Affectation->numcontrat : Le numero de contrat n'est pas défini !!!";
+			echo $errlog."<br/>";
+			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		}
+		else
+		    return $this->numcontrat;
 	}
 	
    /**

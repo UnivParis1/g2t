@@ -1,5 +1,12 @@
 <?php
 
+    ////////////////////////////////////////////////////////////////
+    /// ATTENTION : Debug = True ne traite pas tous les agents  ////
+    ///             ni toutes les parties du scripts            ////
+    ///  A MANIPULER AVEC PRUDENCE !!!!                         ////
+    ////////////////////////////////////////////////////////////////
+    // $debug=true;
+    ////////////////////////////////////////////////////////////////
 	require_once("../html/class/fonctions.php");
 	require_once('../html/includes/dbconnection.php');
 
@@ -153,7 +160,8 @@
 					$quotite = trim($ligne_element[2]);
 					$datedebut = trim($ligne_element[3]);
 					$datefin = trim($ligne_element[4]);
-					echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
+					if (!isset($debug) or $debug==false)
+					    echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
 					$sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
 							$fonctions->my_real_escape_utf8($harpegeid),
 							$fonctions->my_real_escape_utf8($numligne),
@@ -200,7 +208,8 @@
 					$statut = trim($ligne_element[2]);
 					$datedebut = trim($ligne_element[3]);
 					$datefin = trim($ligne_element[4]);
-					echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
+					if (!isset($debug) or $debug==false)
+					   echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
 					$sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
 							$fonctions->my_real_escape_utf8($harpegeid),
 							$fonctions->my_real_escape_utf8($numligne),
@@ -247,7 +256,8 @@
 					$idstruct = trim($ligne_element[2]);
 					$datedebut = trim($ligne_element[3]);
 					$datefin = trim($ligne_element[4]);
-					echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
+					if (!isset($debug) or $debug==false)
+					    echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
 					$sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')",
 							$fonctions->my_real_escape_utf8($harpegeid),
 							$fonctions->my_real_escape_utf8($numligne),
@@ -287,12 +297,16 @@
 		/////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////
 		// -- PERMET DE NE TESTER QU'UN SEUL DOSSIER !! -- //
-		/*
-		if ($harpid[0] != '9328')
+		if (isset($debug))
 		{
-			continue;
+		    if ($debug==true)
+		    {
+		       if ($harpid[0] != '83940' and $harpid[0] != '9328')
+		       {
+			      continue;
+		       }
+		    }
 		}
-		*/
 		/////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////
 		
@@ -306,7 +320,7 @@
 		else
 		{
 			$tabaffectation = $agent->creertimeline();
-			//echo "Timeline de l'agent " . $agent->harpegeid() . " => " . print_r($tabaffectation,true) . "\n";
+			echo "Timeline de l'agent " . $agent->harpegeid() . " => " . print_r($tabaffectation,true) . "\n";
 		}
 		
 		foreach ((array)$tabaffectation as $ligneaffectation)
@@ -321,7 +335,8 @@
 			}
 			else
 			{
-				$numcontrat = $ligne_element[2]; // Pourrait être remplacé par $numcontrat = 0 car lors de l'insertion SQL, si $numcontrat = '' => SQL prend la valeur par défaut = 0
+			    // Si le numéro du contrat est vide alors on le force à 0 ==> Ce n'est pas une contrat
+				$numcontrat = '0'; // $ligne_element[2]; // Pourrait être remplacé par $numcontrat = 0 car lors de l'insertion SQL, si $numcontrat = '' => SQL prend la valeur par défaut = 0
 			}
 			$datedebut = $ligne_element[3];
 			$datefin = $ligne_element[4];
@@ -338,7 +353,7 @@
 			if ($fonctions->formatdatedb($datedebut) <'20160101')
 					continue;
 			
-			$sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'",$fonctions->my_real_escape_utf8($affectationid));
+			$sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AFFECTATIONID='%s'",$fonctions->my_real_escape_utf8($affectationid));
 			//			if ($harpegeid == '9328')
 			//				echo "sql (SELECT) = $sql \n";
 			$query_aff = mysql_query($sql);
@@ -406,6 +421,7 @@
 				 and ($fonctions->formatdatedb($affectation->datefin()) == $fonctions->formatdatedb($datefin))
 				 and ($affectation->numquotite() == $numquotite)
 				 and ($affectation->structureid() == $structureid)
+				 and ($affectation->numcontrat() == $numcontrat)
 				   )
 				{
 					echo "Reactivation de la ligne d'affectation car tout est pareil \n";
@@ -452,6 +468,16 @@
 					if ($affectation->structureid() != $structureid)
 					{
 						echo "Changement de structure d'affectation : Ancienne structure = " . $affectation->structureid() . "  Nouvelle structure = " . $structureid . "\n";
+					}
+					
+					// ------------------------------------------------
+					// Cas ou le num contrat est modifié
+					// On ne modifie rien car le changement de numcontrat n'a aucun impact sur les autres informations
+					// Ca n'impacte que le nombre de jour calculé
+					// ------------------------------------------------
+					if ($affectation->numcontrat() != $numcontrat)
+					{
+					    echo "Changement de numero de contrat : Ancien numcontrat = " . $affectation->numcontrat() . "  Nouveau numcontrat = " . $numcontrat . "\n";
 					}
 					
 					// ------------------------------------------------
@@ -591,28 +617,31 @@
 		echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
 	if (mysql_num_rows($query) > 0) // Il y a des affectations obsoletes
 	{
-		echo "ATTENTION : Il y a des affectations obsoletes \n";
-		while ($result = mysql_fetch_row($query))
-		{
-			$sql = sprintf("UPDATE AFFECTATION SET DATEMODIFICATION='%s' WHERE AFFECTATIONID = '%s'",
-					$fonctions->my_real_escape_utf8(date("Ymd")),
-					$fonctions->my_real_escape_utf8($result[0]));
-			echo "SQL (UPDATE DATEMODIF) => $sql \n";
-			mysql_query($sql);
-			$erreur_requete=mysql_error();
-			if ($erreur_requete!="")
-			{
-				echo "UPDATE AFFECTATION (Mise du date de modification)=> $erreur_requete \n";
-			}	
-			$sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'",
-					$fonctions->my_real_escape_utf8($result[2]));
-			echo "SQL (UPDATE STATUT) => $sql \n";
-			mysql_query($sql);
-			$erreur_requete=mysql_error();
-			if ($erreur_requete!="")
-			{
-				echo "UPDATE DECLARATIONTP (Mise du Statut à 'r')=> $erreur_requete \n";
-			}
+	    if (!isset($debug) or ($debug==false))
+	    {
+    		echo "ATTENTION : Il y a des affectations obsoletes \n";
+    		while ($result = mysql_fetch_row($query))
+    		{
+    			$sql = sprintf("UPDATE AFFECTATION SET DATEMODIFICATION='%s' WHERE AFFECTATIONID = '%s'",
+    					$fonctions->my_real_escape_utf8(date("Ymd")),
+    					$fonctions->my_real_escape_utf8($result[0]));
+    			echo "SQL (UPDATE DATEMODIF) => $sql \n";
+    			mysql_query($sql);
+    			$erreur_requete=mysql_error();
+    			if ($erreur_requete!="")
+    			{
+    				echo "UPDATE AFFECTATION (Mise du date de modification)=> $erreur_requete \n";
+    			}	
+    			$sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'",
+    					$fonctions->my_real_escape_utf8($result[2]));
+    			echo "SQL (UPDATE STATUT) => $sql \n";
+    			mysql_query($sql);
+    			$erreur_requete=mysql_error();
+    			if ($erreur_requete!="")
+    			{
+    				echo "UPDATE DECLARATIONTP (Mise du Statut à 'r')=> $erreur_requete \n";
+    			}
+    		}
 		}
 	}
 	// Pas d'affectation obsolete !!!
