@@ -199,6 +199,8 @@
 		$mois = str_pad($mois,2,"0",STR_PAD_LEFT);
 		$datedebut = "01/" . $mois . "/" . $annee;
 		
+		$datedebut = "01/01/2017";
+		
 		$cetliste = $agent->CETaverifier($datedebut);
 		
 		if (count($cetliste)==0) // Si pas d'élément....
