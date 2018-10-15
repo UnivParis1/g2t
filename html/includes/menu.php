@@ -264,8 +264,9 @@
 					<form name='agent_struct_planning'  method='post' action="structure_planning.php">
 						<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						<input type="hidden" name="mode" value="agent">
+						<input type="hidden" name="previous" value="no">
 					</form>
-					<a href="javascript:document.agent_struct_planning.submit();">Plannings de la structure</a>
+					<a href="javascript:document.agent_struct_planning.submit();">Planning de la structure</a>
 				</li>
 <?php 		
 	}
@@ -382,7 +383,15 @@
 									<input type="hidden" name="previous" value="no">
 								</form>
 								<a href="javascript:document.resp_aff_solde.submit();">Affichage du solde des agents de la structure</a>
-							
+							</li>
+        					<li onclick='document.resp_struct_planning.submit();'>
+        						<form name='resp_struct_planning'  method='post' action="structure_planning.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+        							<input type="hidden" name="mode" value="resp">
+        							<input type="hidden" name="previous" value="no">
+        						</form>
+        						<a href="javascript:document.resp_struct_planning.submit();">Planning de la structure</a>
+        					</li>
 <?php
 		// Si on est 3 mois avant la fin de la période ==> On peut saisir des jours par anticipation
 		$datetemp = ($fonctions->anneeref()+1) . $fonctions->finperiode();
@@ -452,14 +461,15 @@
 								</form>
 								<a href="javascript:document.resp_aff_solde_previous.submit();">Affichage du solde des agents de la structure</a>
 							</li>	
+        					<li onclick='document.resp_struct_planning_previous.submit();'>
+        						<form name='resp_struct_planning_previous'  method='post' action="structure_planning.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+        							<input type="hidden" name="mode" value="resp">
+        							<input type="hidden" name="previous" value="yes">
+        						</form>
+        						<a href="javascript:document.resp_struct_planning_previous.submit();">Planning de la structure</a>
+        					</li>
 						</ul>
-					</li>
-					<li onclick='document.resp_struct_planning.submit();'>
-						<form name='resp_struct_planning'  method='post' action="structure_planning.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="mode" value="resp">
-						</form>
-						<a href="javascript:document.resp_struct_planning.submit();">Plannings de la structure</a>
 					</li>
 					<li onclick='document.resp_parametre.submit();'>
 						<form name='resp_parametre'  method='post' action="gestion_dossier.php">
@@ -522,8 +532,17 @@
 						<form name='gest_struct_planning'  method='post' action="structure_planning.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 							<input type="hidden" name="mode" value="gestion">
+							<input type="hidden" name="previous" value="no">
 						</form>
-						<a href="javascript:document.gest_struct_planning.submit();">Plannings de la structure</a>
+						<a href="javascript:document.gest_struct_planning.submit();">Planning de la structure</a>
+					</li>
+					<li onclick='document.gest_struct_planning_previous.submit();'>
+						<form name='gest_struct_planning_previous'  method='post' action="structure_planning.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="mode" value="gestion">
+							<input type="hidden" name="previous" value="yes">
+						</form>
+						<a href="javascript:document.gest_struct_planning_previous.submit();">Planning de la structure (année précéd.)</a>
 					</li>
 					<li onclick='document.gest_parametre_modif.submit();'>
 						<form name='gest_parametre_modif'  method='post' action="gestion_dossier.php">

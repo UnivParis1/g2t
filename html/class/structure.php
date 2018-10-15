@@ -611,17 +611,17 @@ class structure {
 		$htmltext = $htmltext . "<a href='javascript:document.structplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF</a>";
 		$htmltext = $htmltext . "</form>";
 		
-		$htmltext = $htmltext . "<form name='structpreviousplanningpdf_" . $this->structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
-		$htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid ."'>";
-		$htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
-		$htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
-		if ($noiretblanc)
-			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='yes'>";
-		else 
-			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
-		$htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut  . "'>";
-		$htmltext = $htmltext . "<a href='javascript:document.structpreviousplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF (année précédente)</a>";
-		$htmltext = $htmltext . "</form>";
+//		$htmltext = $htmltext . "<form name='structpreviousplanningpdf_" . $this->structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+//		$htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid ."'>";
+//		$htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
+//		$htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
+//		if ($noiretblanc)
+//			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='yes'>";
+//		else 
+//			$htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
+//		$htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut  . "'>";
+//		$htmltext = $htmltext . "<a href='javascript:document.structpreviousplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF (année précédente)</a>";
+//		$htmltext = $htmltext . "</form>";
 		return $htmltext;
 	}
 	

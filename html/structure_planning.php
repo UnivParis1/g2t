@@ -37,6 +37,16 @@
 
 	//echo '<html><body class="bodyhtml">';
 	echo "<br>";
+
+	if (isset($_POST["previous"]))
+	    $previoustxt = $_POST["previous"];
+	else
+	    $previoustxt = null;
+	if (strcasecmp($previoustxt,"yes")==0)
+	    $previous=1;
+	 else
+	    $previous=0;
+	
 	if (isset($_POST["indexmois"]))
 		$indexmois = $_POST["indexmois"];
 	else
@@ -46,7 +56,7 @@
 		$indexmois = date("m");
 	$indexmois = str_pad($indexmois,2,"0",STR_PAD_LEFT);
 	//echo "indexmois (apres) =  $indexmois <br>";
-	$annee = $fonctions->anneeref();
+	$annee = $fonctions->anneeref() - $previous;
 	//echo "annee =  $annee <br>";
 	$debutperiode = $fonctions->debutperiode();
 	//echo "debut periode = $debutperiode <br>";
@@ -67,7 +77,7 @@
 	// On reprend le mois de début de période
 	$index = $moisdebutperiode;
 	// L'année c'est l'année de référence
-	$anneemois = $fonctions->anneeref(); 
+	$anneemois = $fonctions->anneeref()- $previous; 
 	//echo "index = $index <br>";
 	for ($indexcpt=1 ; $indexcpt <= 12 ; $indexcpt ++)
 	{
@@ -85,6 +95,7 @@
 	echo "</select>";
 	echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
 	echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+	echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
 	echo "<input type='submit' value='Soumettre' /></center>";
 	echo "</form>";
 
