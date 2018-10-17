@@ -1120,7 +1120,7 @@ AND DEMANDE.STATUT='v'";
  					{
  					   $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) .">"; 
  					} 
- 					$htmltext = $htmltext . $demande->date_demande();
+ 					$htmltext = $htmltext . $demande->date_demande() . " " . $demande->heure_demande();
  					if (strlen($demande->commentaire())!=0)  
  					{
  					   $htmltext = $htmltext . "</span>"; 
@@ -1507,7 +1507,7 @@ AND DEMANDE.STATUT='v'";
 
 					$htmltext = $htmltext . "<tr align=center >";
 					//					$htmltext = $htmltext . "   <td>" . $this->nom() . " " . $this->prenom() . "</td>";
-					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() ."</td>";
+					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() ."</td>";
 					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
 					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
 					$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
@@ -1624,7 +1624,7 @@ AND DEMANDE.STATUT='v'";
 						$htmltext = $htmltext . "<tr align=center >";
 	//					$htmltext = $htmltext . "   <td>" . $this->nom() . " " . $this->prenom() . "</td>";
 
-						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() ."</td>";
+						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() ."</td>";
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datedebut()) . " " . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
 						$htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datefin()) . " " . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
 						if ($demande->type()=='enmal')

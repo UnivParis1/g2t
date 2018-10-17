@@ -15,6 +15,7 @@ class demande {
 	private $statut = null;
 	private $motifrefus = null;
 	private $dbconnect = null;
+	private $heuredemande = null;
 
 	// Utilisé lors de la sauvegarde !!
 	private $ancienstatut = null;
@@ -39,7 +40,7 @@ class demande {
 //		if (is_null($this->$demandeid))
 		if (!isset($this->$demandeid))
 		{
-			$sql = "SELECT DEMANDEID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATEDEMANDE,DATESTATUT,STATUT,MOTIFREFUS
+			$sql = "SELECT DEMANDEID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE)
 FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			//echo "Demande load sql = $sql <br>";
 			$query=mysql_query ($sql,$this->dbconnect);
@@ -67,6 +68,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			$this->datestatut = "$result[9]";
 			$this->statut = "$result[10]";
 			$this->motifrefus = str_replace("'","''",$result[11]);
+			$this->heuredemande = "$result[12]";
 			
 			$this->ancienstatut = $this->statut;
 		}
@@ -290,6 +292,23 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 			return $this->fonctions->formatdate($this->datedemande);
 	}
 
+	function heure_demande()
+	{
+	    if (is_null($this->demandeid)) {
+	        $errlog = "Demande->heure_demande : La demande n'est pas enregistrée, donc pas d'heure de demande !!!";
+	        echo $errlog."<br/>";
+	        error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	    }
+	    else
+	    {
+	        if ($this->heuredemande == "00:00:00")
+	            return "";
+	        else
+	           return $this->heuredemande;
+	    }
+	        
+	}
+	
 	function datestatut()
 	{
 		if (is_null($this->demandeid)) {
@@ -549,6 +568,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				}
 				// On est dans le cas d'une création de demande
 				$this->datedemande = $this->fonctions->formatdatedb(date("d/m/Y"));
+				$this->heuredemande = date("H:i:s");
 
 				$sql = "LOCK TABLES DEMANDE WRITE";
 	 			mysql_query($sql,$this->dbconnect);
@@ -559,7 +579,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 				$sql = $sql . "VALUES('" . $this->typeabsenceid . "','" . $this->fonctions->formatdatedb($this->datedebut) . "',";
 				$sql = $sql . "'" . $this->momentdebut . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->momentfin . "',";
 				$sql = $sql . "'" . $this->commentaire . "',";
-				$sql = $sql . "'" . $this->nbrejrsdemande . "','" . $this->fonctions->formatdatedb($this->datedemande) . "','','a','')";
+				$sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '','a','')";
 				//echo "SQL = " . $sql . "<br>";
 	 			mysql_query($sql,$this->dbconnect);
 	 			$erreur=mysql_error();
