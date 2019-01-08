@@ -12,6 +12,7 @@
 		error_log (basename(__FILE__)  . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
 		header('Location: index.php');
 		exit();
+		
 	}
 	
 	require_once("./class/agent.php");
