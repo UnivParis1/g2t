@@ -1,0 +1,6 @@
+.metadata/
+.project
+.classpath
+html/pdf/
+CRON/log/
+INPUT_FILES_V3/
