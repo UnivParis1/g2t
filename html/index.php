@@ -43,6 +43,9 @@
 		//echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 		if (!$user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
 		{
+           echo '<head>' ;
+           echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+           echo '</head>';
            $errlog = "L'utilisateur " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " (Informations LDAP : " . $info[0]["dn"] . ") n'est pas référencé dans la base de donnée !!!";
            echo "$errlog<br>";
            echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
@@ -60,7 +63,10 @@
 	{
 		if (!$user->load($userid))
 		{
-           $errlog = "L'utilisateur " . $userid . " (Informations LDAP : " . $_SESSION['phpCAS']['dn'] . ") n'est pas référencé dans la base de donnée !!!";
+		   echo '<head>' ;
+		   echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+		   echo '</head>';
+		   $errlog = "L'utilisateur " . $userid . " (Informations LDAP : " . $_SESSION['phpCAS']['dn'] . ") n'est pas référencé dans la base de donnée !!!";
            echo "$errlog<br>";
            echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
            error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
