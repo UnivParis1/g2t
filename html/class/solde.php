@@ -181,7 +181,7 @@ class solde {
 	
 	function demandeenattente()
 	{
-		$sql = "SELECT COUNT(DEMANDE.DEMANDEID) FROM DEMANDE, DECLARATIONTP, AFFECTATION, DEMANDEDECLARATIONTP
+		$sql = "SELECT COUNT(DISTINCT DEMANDE.DEMANDEID) FROM DEMANDE, DECLARATIONTP, AFFECTATION, DEMANDEDECLARATIONTP
 WHERE DEMANDE.TYPEABSENCEID='" . $this->typeabsenceid  ."'
 AND DEMANDE.DEMANDEID = DEMANDEDECLARATIONTP.DEMANDEID
 AND DEMANDEDECLARATIONTP.DECLARATIONID = DECLARATIONTP.DECLARATIONID
@@ -189,7 +189,7 @@ AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID
 AND AFFECTATION.HARPEGEID='" . $this->agentid  . "'
 AND DEMANDE.STATUT='a';";
 		
-		//echo "Solde->demandeenattente SQL : $sql <br>";
+		echo "Solde->demandeenattente SQL : $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "") {
@@ -200,6 +200,7 @@ AND DEMANDE.STATUT='a';";
 		else
 		{
 			$result = mysql_fetch_row($query);
+			echo "Nbre de demande en attente = " . $result[0] . "<br>";
 			return "$result[0]";
 		}
 	}
