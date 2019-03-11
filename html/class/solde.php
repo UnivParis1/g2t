@@ -189,7 +189,7 @@ AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID
 AND AFFECTATION.HARPEGEID='" . $this->agentid  . "'
 AND DEMANDE.STATUT='a';";
 		
-		echo "Solde->demandeenattente SQL : $sql <br>";
+		//echo "Solde->demandeenattente SQL : $sql <br>";
 		$query=mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
 		if ($erreur != "") {
@@ -200,7 +200,7 @@ AND DEMANDE.STATUT='a';";
 		else
 		{
 			$result = mysql_fetch_row($query);
-			echo "Nbre de demande en attente = " . $result[0] . "<br>";
+			//echo "Nbre de demande en attente = " . $result[0] . "<br>";
 			return "$result[0]";
 		}
 	}
