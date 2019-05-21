@@ -393,10 +393,10 @@
         						<a href="javascript:document.resp_struct_planning.submit();">Planning de la structure</a>
         					</li>
 <?php
-		// Si on est 3 mois avant la fin de la période ==> On peut saisir des jours par anticipation
+		// Si on est 6 mois avant la fin de la période ==> On peut saisir des jours par anticipation
 		$datetemp = ($fonctions->anneeref()+1) . $fonctions->finperiode();
 		$timestamp = strtotime($datetemp);
-		$datetemp = date("Ymd", strtotime("-3month", $timestamp ));  // On remonte de 3 mois
+		$datetemp = date("Ymd", strtotime("-6month", $timestamp ));  // On remonte de 6 mois
 		//echo "TimeStamp = " . $datetemp . "<br>";
 		if (date("Ymd") > $datetemp)
 		{
