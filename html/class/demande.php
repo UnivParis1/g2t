@@ -853,8 +853,17 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         }
         $cal_uid = date('md').'T'.date('His')."-".rand()."@echange.univ-paris1.fr";
         //$todaystamp = date("Ymd\THis\Z");
-        $meeting_description = 'Congé(s)';
-        $subject = 'Congé(s)';
+        if ($this->fonctions->estunconge($this->typeabsenceid))
+        {
+            $meeting_description = 'Congé';
+            $subject = 'Congé';
+        }
+        else
+        {
+            $meeting_description = 'Absence';
+            $subject = 'Absence';
+        }
+
         $ics = "BEGIN:VCALENDAR
 PRODID:-//The Horde Project//Horde Application Framework 3.1//EN
 VERSION:2.0
