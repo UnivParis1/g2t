@@ -137,7 +137,7 @@
 				{
 					$pdffilename = $demande->pdf($user->harpegeid());
 					$agent = $demande->agent();
-					$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".", $pdffilename);
+					$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".\n\nPensez à supprimer manuellement l'évènement dans votre agenda.\n", $pdffilename);
 					
 					if (strcasecmp($demande->type(),"cet")==0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
 					{
