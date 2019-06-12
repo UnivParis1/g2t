@@ -114,43 +114,59 @@
 				$nom_long_struct = trim($ligne_element[1]);
 				$nom_court_struct = trim($ligne_element[2]);
 				$parent_struct = trim($ligne_element[3]);
+				$type_struct = trim($ligne_element[6]);
 				$statut_struct = trim($ligne_element[7]);
 				
-				if (array_key_exists("#1", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1"; // Président d'université
-				elseif (array_key_exists("#1447", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1447"; // Directeur général des services
-				elseif (array_key_exists("#1044", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1044"; // Agent comptable
-				elseif (array_key_exists("#1521", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1521"; // Chef de service
-				elseif (array_key_exists("#1522", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1522"; // Directeur(ice)
-				elseif (array_key_exists("#1615", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1615"; // Chef de département
-				elseif (array_key_exists("#1860", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1860"; // Chef d'atelier
-				elseif (array_key_exists("#1087", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1087"; // Responsable Administratif de Composante
-				elseif (array_key_exists("#41", (array)$tabfonctions[$code_struct]))
-					$codefonction = "41"; // Dir. de services communs d'universités
-				elseif (array_key_exists("#1016", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1016"; // Dir. éco. Inst. Uni - Hors arrêté 13/9/90
-				elseif (array_key_exists("#1529", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1529"; // Directeur(ice) d'institut
-				elseif (array_key_exists("#1530", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1530"; // Directeur(ice) d'UMR
-				elseif (array_key_exists("#1532", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1532"; // Directeur(ice) de laboratoire
-				elseif (array_key_exists("#38", (array)$tabfonctions[$code_struct]))
-					$codefonction = "38"; // Dir. d'UFR
-				elseif (array_key_exists("#1525", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1525"; // Directeur adjoint
-				elseif (array_key_exists("#1523", (array)$tabfonctions[$code_struct]))
-					$codefonction = "1523"; // Adjoint(e)
-				else
-					$codefonction = "";
 				
+				$type_struct_RA = array('');
+				$type_struct_RA = array('UFR','EDO','DPT','SCO','UFO','UNR');
+				
+				
+				// UFR = Les UFR
+				// EDO = Les Ecoles Doctorales
+				// SCO = Service commun
+				// UFO = Les Unités de formation
+				// UNR = Les Unités de recherche ??
+				$codefonction = "";
+				if (array_key_exists($code_struct,(array)$tabfonctions))
+				{
+    				if (array_key_exists("#1087", (array)$tabfonctions[$code_struct]) and in_array($type_struct,$type_struct_RA) )
+    				    $codefonction = "1087"; // Responsable Administratif de Composante => Il est prioritaire pour ce type de structure
+    				elseif (array_key_exists("#1", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1"; // Président d'université
+    				elseif (array_key_exists("#1447", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1447"; // Directeur général des services
+    				elseif (array_key_exists("#1044", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1044"; // Agent comptable
+    				elseif (array_key_exists("#1521", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1521"; // Chef de service
+    				elseif (array_key_exists("#1522", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1522"; // Directeur(ice)
+    				elseif (array_key_exists("#1615", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1615"; // Chef de département
+    				elseif (array_key_exists("#1860", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1860"; // Chef d'atelier
+    				elseif (array_key_exists("#1087", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1087"; // Responsable Administratif de Composante
+    				elseif (array_key_exists("#41", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "41"; // Dir. de services communs d'universités
+    				elseif (array_key_exists("#1016", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1016"; // Dir. éco. Inst. Uni - Hors arrêté 13/9/90
+    				elseif (array_key_exists("#1529", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1529"; // Directeur(ice) d'institut
+    				elseif (array_key_exists("#1530", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1530"; // Directeur(ice) d'UMR
+    				elseif (array_key_exists("#1532", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1532"; // Directeur(ice) de laboratoire
+    				elseif (array_key_exists("#38", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "38"; // Dir. d'UFR
+    				elseif (array_key_exists("#1525", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1525"; // Directeur adjoint
+    				elseif (array_key_exists("#1523", (array)$tabfonctions[$code_struct]))
+    					$codefonction = "1523"; // Adjoint(e)
+    				else
+    					$codefonction = "";
+				}
 				if ($codefonction != "")
 				{
 					echo "On a une fonction $codefonction pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
