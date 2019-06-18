@@ -92,7 +92,7 @@
 						$ics = null;
 						$pdffilename[0] = $demande->pdf($user->harpegeid());
 						$agent = $demande->agent();
-						if ((strcasecmp($statut,'v')==0) or (strcasecmp($statut,'r')==0))
+						if ((strcasecmp($statut,'v')==0) or (strcmp($statut,'R')==0))
                         {
                            $ics = $demande->ics($agent->mail());
                         }
