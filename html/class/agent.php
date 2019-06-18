@@ -392,10 +392,11 @@ AND DEMANDE.STATUT='v'";
 	
 	/**
 	 * @param string $ics the ics string content
-	 * @return
+	 * @return string empty string if ok, error description if ko 
 	 */
 	function updatecalendar($ics = null)
 	{
+	    $errlog= "";
 	    if (!is_null($ics))
 	    {
 //    	    echo "ICS n'est pas nul...<br>";
@@ -418,8 +419,8 @@ AND DEMANDE.STATUT='v'";
     	        else 
     	        {
         	        $url = $url . "user=". $this->adressemail;
-        	        $errlog = "Agent->updatecalendar (AGENT) : URL = " . $url;
-        	        error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+        	        //$errlog = "Agent->updatecalendar (AGENT) : URL = " . $url;
+        	        //error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
         	        
         	        //echo "URL = $url <br>";
             	    $ch = curl_init($url);
@@ -437,19 +438,19 @@ AND DEMANDE.STATUT='v'";
         	        $result = curl_exec($ch);
         	        if(curl_errno($ch))
         	        {
-        	            $curlerror = 'Curl error: '.curl_error($ch);
+        	            $curlerror = 'Curl error: '.curl_error($ch). ' URL = '. $url;
         	            $errlog = "Agent->updatecalendar (AGENT) : " . $curlerror ;
         	            error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
         	        }
-        	        $errlog = "Agent->updatecalendar (AGENT) : Résultat = " . $result;
-        	        error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+        	        //$errlog = "Agent->updatecalendar (AGENT) : Résultat = " . $result;
+        	        //error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
         	        //echo "Résultat = " . $result . "<br>";
         	        // Close cURL session handle
         	        curl_close($ch);
     	        }
     	    }
 	    }
-	    
+	    return $errlog;
 	}
 	
    /**
@@ -495,15 +496,20 @@ AND DEMANDE.STATUT='v'";
         if (!is_null($ics)) 
         {
            // Si le fichier ics existe ==> On met à jour le calendrier de l'agent
-           $destinataire->updatecalendar($ics);
-            
-           $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement. Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>" ;
-           $msg .= "\r\n";
-           $msg .= "--$boundary\r\n";
-           $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
-           $msg .= "Content-Transfer-Encoding: 8bit\n\n";
-           $msg .= $ics;
-           $msg .= "\r\n\r\n";
+           $errormsg = $destinataire->updatecalendar($ics);
+           // Si tout c'est bien passé, pas la peine de joindre l'ICS....
+           //echo "Error Msg = XXX" .$errormsg . "XXX<br>";
+           
+           //if ($errormsg <> "")
+           //{
+               $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>" ;
+               $msg .= "\r\n";
+               $msg .= "--$boundary\r\n";
+               $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
+               $msg .= "Content-Transfer-Encoding: 8bit\n\n";
+               $msg .= preg_replace("#UID:(.*)#","UID:EXTERNAL-$1",$ics);
+               $msg .= "\r\n\r\n";
+           //}
         }
 		$msg .= "\r\n";
                 

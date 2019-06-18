@@ -128,17 +128,27 @@
 				$demande->statut("R");
 				$msgerreur = "";
 				$msgerreur = $demande->store();
-				if ($msgerreur != "") {
+				if ($msgerreur != "")
+				{
 					$errlog = "Pas de sauvegarde car " . $msgerreur;
 					echo "<p style='color: red'>".$errlog."</p><br/>";
 					error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
 				}
 				else
 				{
-					$pdffilename = $demande->pdf($user->harpegeid());
-					$agent = $demande->agent();
-					$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence","Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".\n\nPensez à supprimer manuellement l'évènement dans votre agenda.\n", $pdffilename);
-					
+				    unset($demande);
+				    $demande = new demande($dbcon);
+				    $demande->load($demandeid);
+				    if (is_null($responsableid) == false) // Il y a un responsable ==> On envoie le mail
+				    {
+    				    $pdffilename = $demande->pdf($user->harpegeid());
+    					$agent = $demande->agent();
+    					$ics=null;
+    					$ics = $demande->ics($agent->mail());
+    					$corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".\n\n";
+    					//$corpmail = $corpmail . "Pensez à supprimer manuellement l'évènement dans votre agenda.\n";
+    					$user->sendmail($agent,"Annulation d'une demande de congés ou d'absence",$corpmail, $pdffilename,$ics);
+				    }
 					if (strcasecmp($demande->type(),"cet")==0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
 					{
 						// Si on n'est pas en mode responsable envoi du mail au gestionnaire RH.... (Sinon c'est l'agent qui a annulé sa propre demande => donc pas d'envoi)

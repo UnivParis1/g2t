@@ -851,7 +851,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         {
             $dtend .= '170000';
         }
-        $cal_uid = date('md').'T'.date('His')."-".rand()."@echange.univ-paris1.fr";
+        $cur_agent = $this->agent();
+        $cal_uid = 'G2T' . '-' . $cur_agent->harpegeid() . '-' . $this->demandeid; //."@echange.univ-paris1.fr" ;    /// date('md').'T'.date('His')."-".rand()."@echange.univ-paris1.fr";
         //$todaystamp = date("Ymd\THis\Z");
         if ($this->fonctions->estunconge($this->typeabsenceid))
         {
@@ -863,18 +864,35 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             $meeting_description = 'Absence';
             $subject = 'Absence';
         }
+        
+        if 	(strcasecmp($this->statut,'v')==0)
+            // La demande est validée
+        {
+            $ics_status = 'CONFIRMED';
+        }
+        elseif (strcasecmp($this->statut,'R')==0)
+            // La demande est refusée ou annulée
+        {
+            $ics_status = 'CANCELLED';
+        }
+        elseif (strcasecmp($this->statut,'a')==0)
+            // La demande est en attente
+        {
+            $ics_status = 'TENTATIVE';
+        }
 
         $ics = "BEGIN:VCALENDAR
 PRODID:-//The Horde Project//Horde Application Framework 3.1//EN
 VERSION:2.0
 METHOD:REQUEST
 BEGIN:VEVENT
+UID:$cal_uid
 DTSTART:$dtstart
 DTEND:$dtend
 TRANSP:OPAQUE
 SEQUENCE:0
 ATTENDEE:
-UID:$cal_uid
+STATUS:$ics_status
 DESCRIPTION:$meeting_description
 SUMMARY:$subject
 ORGANIZER;MAILTO:$mail
