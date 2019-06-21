@@ -23,8 +23,10 @@
 
 	echo "Début de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n" ;
 
-	// On selectionne les demandes en attente de validation
-	$sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a'";
+	// On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente)
+	// Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.
+	$sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a' AND DATEDEBUT >='" . ($fonctions->anneeref()-1) . $fonctions->debutperiode()  .  "'";
+	//echo "SQL des demandes = $sql \n";
 	$query=mysql_query ($sql,$dbcon);
 	$erreur_requete=mysql_error();
 	if ($erreur_requete!="")
@@ -39,10 +41,34 @@
 		$demande = new demande($dbcon);
 		$demande->load($result[0]);
 		
+		/*
 		$declarationliste = $demande->declarationTPliste();
 		$declaration = reset($declarationliste);
 		$affectation = new affectation($dbcon);
 		$affectation->load($declaration->affectationid());
+		*/
+		
+		// On récupère le demandeur 
+		$demandeur = $demande->agent();
+		// On récupère la liste des affectation du demandeur à la date du jour
+		$affliste = $demandeur->affectationliste($fonctions->formatdatedb($date), $fonctions->formatdatedb($date));
+		
+		/*
+		echo "Liste des affectations : \n";
+		print_r($affliste);
+		echo "\n";
+		*/
+		
+		if (is_null($affliste) or count($affliste)==0)
+		{
+		    // Si le demandeur n'est plus affecté ==> On ne traite pas sa demande
+		    continue;
+		}
+		// On conserve la première affectation (et sans doute la seule)
+		$affectation = current($affliste);
+		
+		//echo "l'affectation de l'agent " . $demandeur->identitecomplete() . " est : " . print_r($affectation,true) . "\n";
+		
 		
 		$structure = new structure($dbcon);
 		$structure->load($affectation->structureid());
@@ -105,6 +131,7 @@
 		unset ($declarationliste);
 		unset ($declaration);
 		unset ($affectation);
+		unset ($affliste);
 	}
 	
 	echo "mail_resp="; print_r($mail_resp); echo "\n";
