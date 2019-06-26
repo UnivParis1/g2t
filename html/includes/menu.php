@@ -312,7 +312,7 @@
 				<ul class="niveau2"> 
 					<li class="plus">
 						<a>Gestion de l'année en cours</a>
-                  <ul class="niveau3">
+                        <ul class="niveau3">
 							<li onclick='document.resp_gest_conge.submit();'>
 								<form name='resp_gest_conge'  method='post' action="gestion_demande.php">
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
@@ -418,7 +418,7 @@
 					</li>
 					<li class="plus">
 						<a>Gestion de l'année précédente</a>
-                  <ul class="niveau3">
+                        <ul class="niveau3">
 							<li onclick='document.resp_gest_conge_previous.submit();'>
 								<form name='resp_gest_conge_previous'  method='post' action="gestion_demande.php">
 									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
@@ -471,6 +471,11 @@
         					</li>
 						</ul>
 					</li>
+<?php 
+    // Un agent responsable (sens strict) peut modifier le paramétrage de la structure
+	//if ($user->estresponsable(false))
+	//{
+?> 
 					<li onclick='document.resp_parametre.submit();'>
 						<form name='resp_parametre'  method='post' action="gestion_dossier.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
@@ -479,6 +484,9 @@
 						</form>
 						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
 					</li>	
+<?php
+	//}
+?>
 				</ul> 
 			</li> 
 		</ul> 

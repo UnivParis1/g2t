@@ -15,6 +15,8 @@ class structure {
 	private $gestvalidagent = null; // autorise le gestionnaire à valider les demandes des congés des agents
 	private $datecloture = null;
 	
+	private $delegueid=null;
+	
 	private $fonctions = null;
 	
 	
@@ -65,6 +67,24 @@ class structure {
  			$this->afficherespsousstruct = "$result[9]";
  			$this->respvalidsousstruct = "$result[10]";
  			$this->gestvalidagent = "$result[11]";
+ 			
+ 			// Prise en compte du cas de la délégation
+ 			$sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
+ 			$query=mysql_query ($sql, $this->dbconnect);
+ 			$erreur=mysql_error();
+ 			if ($erreur != "") {
+ 			    $errlog = "Structure->Load (STRUCTURE DELEGUE) : " . $erreur;
+ 			    echo $errlog."<br/>";
+ 			    error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+ 			}
+ 			if (mysql_num_rows($query) <> 0)
+ 			{
+ 			    $result = mysql_fetch_row($query);
+ 			    if ("$result[0]" <> "")
+ 			    {
+     			    $this->delegueid = "$result[0]";
+ 			    }
+ 			}
 		}
 		return true;
 	}
@@ -429,6 +449,29 @@ class structure {
 	}
 	
 	
+	function responsablesiham()
+	{
+        if (is_null($this->responsableid) or ($this->responsableid=='')) {
+            $errlog = "<B><FONT COLOR='#FF0000'>Structure->Responsablesiham : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B>";
+            echo $errlog."<br/>";
+            error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+        }
+        else
+        {
+            $responsable = new agent($this->dbconnect);
+            if ($responsable->load("$this->responsableid"))
+            {
+                return $responsable;
+            }
+            else
+            {
+                $responsable->civilite('');
+                $responsable->nom('INCONNU');
+                $responsable->prenom('INCONNU');
+                return $responsable;
+            }
+        }
+	}
 	
 	function responsable($respid = null)
 	{
@@ -442,16 +485,25 @@ class structure {
 			else
 			{
 				$responsable = new agent($this->dbconnect);
-				if ($responsable->load("$this->responsableid"))
+				// Si le délégué est renseigné ==> On retourne le délégué comme responsable 
+				if (!is_null($this->delegueid) and ($this->delegueid <> ""))
 				{
-					return $responsable;
+				    if ($responsable->load("$this->delegueid"))
+				    {
+				        return $responsable;
+				    }
+				    else
+				    {
+				        $responsable->civilite('');
+				        $responsable->nom('INCONNU');
+				        $responsable->prenom('INCONNU');
+				        return $responsable;
+				    }
 				}
+				// Sinon c'est le responsable SIHAM qu'il faut retourner
 				else
 				{
-					$responsable->civilite('');
-					$responsable->nom('INCONNU');
-					$responsable->prenom('INCONNU');
-					return $responsable;
+				    return $this->responsablesiham();
 				}
 			}
 		}
@@ -845,7 +897,19 @@ class structure {
 			
 		}
 		
-		$sql = "UPDATE STRUCTURE SET GESTIONNAIREID='" . $this->gestionnaireid .   "', RESPONSABLEID='" . $this->responsableid . "' WHERE STRUCTUREID='" . $this->id() ."'";
+		$sql = "UPDATE STRUCTURE SET GESTIONNAIREID='" . $this->gestionnaireid .   "' WHERE STRUCTUREID='" . $this->id() ."'";
+		//echo "SQL = " . $sql . "<br>";
+		mysql_query ($sql, $this->dbconnect);
+		$erreur=mysql_error();
+		if ($erreur != "")
+		{
+		    $errlog = "Structure->store (HARP_STRUCTURE) : " . $erreur;
+		    echo $errlog."<br/>";
+		    error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		    $msgerreur = $msgerreur . $erreur;
+		}
+		
+		$sql = "UPDATE STRUCTURE SET RESPONSABLEID='" . $this->responsableid . "' WHERE STRUCTUREID='" . $this->id() ."'";
 		//echo "SQL = " . $sql . "<br>";
 		mysql_query ($sql, $this->dbconnect);
 		$erreur=mysql_error();
@@ -955,7 +1019,65 @@ class structure {
 	
 	}
 	
+	function getdelegation(&$delegationuserid, &$datedebutdeleg,&$datefindeleg)
+	{
+	    //echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>La récupération de la délégation pour une structure n'est pas implémentée.<BR> Les valeurs retournée sont fixes !!!!</B></FONT> <br>";
+	    $delegationuserid = "";
+	    $datedebutdeleg = "";
+	    $datefindeleg = "";
+	    
+	    $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID = '" . $this->id() ."' AND IDDELEG <> ''";
+	    $query=mysql_query ($sql, $this->dbconnect);
+	    $erreur=mysql_error();
+	    if ($erreur != "") {
+	        $errlog = "Structure->getdelegation : " . $erreur;
+	        echo $errlog."<br/>";
+	        error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	    }
+	    if (mysql_num_rows($query) > 0)
+	    {
+	        $result = mysql_fetch_row($query);
+	        $delegationuserid = "$result[0]";
+	        if ("$result[1]" <> "")
+	        {
+    	        $datedebutdeleg = $this->fonctions->formatdate("$result[1]");
+	        }
+	        if ("$result[2]" <> "")
+	        {
+	            $datefindeleg = $this->fonctions->formatdate("$result[2]");
+	        }
+	    }
+	}
+	
+	function setdelegation($delegationuserid,$datedebutdeleg,$datefindeleg)
+	{
+	    //echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Il manque l'enregistrement de la délégation..... </B></FONT><br>  Harpege Id = $delegationuserid   Début = $datedebutdeleg   fin  = $datefindeleg <br>";
+	    if ($datedebutdeleg <> "")
+	    {
+	        $datedebutdeleg = $this->fonctions->formatdatedb($datedebutdeleg);
+	    }
+	    if ($datefindeleg <> "")
+	    {
+	        $datefindeleg = $this->fonctions->formatdatedb($datefindeleg);
+	    }
+	    $sql = "UPDATE STRUCTURE SET IDDELEG='" . $delegationuserid .   "', DATEDEBUTDELEG='" . $datedebutdeleg . "',DATEFINDELEG='" . $datefindeleg ."'  WHERE STRUCTUREID='" . $this->id() ."'";
+	    //echo "SQL = " . $sql . "<br>";
+	    mysql_query ($sql, $this->dbconnect);
+	    $erreur=mysql_error();
+	    $msgerreur='';
+	    if ($erreur != "")
+	    {
+	        $errlog = "Structure->setdelegation : " . $erreur;
+	        echo $errlog."<br/>";
+	        error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+	        $msgerreur = $msgerreur . $erreur;
+	    }
+	    $this->delegueid = $delegationuserid;
+	    return $msgerreur;
+	    
+	}
 	
 }
+
 
 ?>

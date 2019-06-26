@@ -273,7 +273,7 @@
 				//echo "Apres recup du gestionnaire.... <br>";
 				echo "<tr>";
 				//echo "Avant l'affichage du nom...<br>";
-				echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsable()->identitecomplete() . " ";
+				echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() .  " - Responsable : " . $struct->responsablesiham()->identitecomplete() . " ";
 				//echo "Apres affichage du nom... <br>";
 				if ($showall)
 					echo "(Date fermeture : " . $struct->datecloture() . ") ";
@@ -297,7 +297,7 @@
 				
 	<?php 		
 				//echo "Avant recup du responsable <br>";
-				$responsable = $struct->responsable();
+				$responsable = $struct->responsablesiham();
 				//echo "Apres recup du responsable <br>";
 				echo " &nbsp; Direction : ";
 				echo "<input id='responsableinfo[". $struct->id() ."]' name='responsableinfo[". $struct->id() ."]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete()  . "' size=40 />";
@@ -313,7 +313,24 @@
 	<?php 			
 				echo "</td>";
 				echo "</tr>";
-
+				
+				// Si il y a une délégation ==> On l'affiche
+				// Delegation <=> Le responsable SIHAM n'est pas le responable retourné par la fonction "responsable"
+				if ($struct->responsable()->harpegeid() != $responsable->harpegeid())
+				{
+    				echo "<tr>";
+    				echo "<td>";
+    				$delegueid  = "";
+    				$datedebutdeleg = "";
+    				$datefindeleg = "";
+    				$struct->getdelegation($delegueid,$datedebutdeleg,$datefindeleg);
+    				$delegue = new agent($dbcon);
+    				$delegue->load($delegueid);
+    				
+    				echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg </B></FONT><br>";
+    				echo "</td>";
+    				echo "</tr>";
+				}
 				$struct->agent_envoyer_a($codeinterne);
 				echo "<tr>";
 				echo "<td>";

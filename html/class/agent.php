@@ -195,30 +195,63 @@ class agent {
    }
 
    /**
-         * @param 
+         * @param boolean $includedeleg optional if true delegated agent is responsable.
          * @return boolean true if the current agent is responsable of a strucuture. false otherwise.
    */
-   function estresponsable()
+   function estresponsable($includedeleg = true)
    {
+       
+      // On regarde si l'agent est un vrai responsable
       $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s' AND DATECLOTURE>=DATE(NOW())",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
-		$query=mysql_query ($sql, $this->dbconnect);
-		$erreur=mysql_error();
-		if ($erreur != "")
-		{
-			$errlog = "Agent->estresponsable (AGENT) : " . $erreur;
-			echo $errlog."<br/>";
-			error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
-			return FALSE;
+	  $query=mysql_query ($sql, $this->dbconnect);
+	  $erreur=mysql_error();
+	  if ($erreur != "")
+	  {
+		  $errlog = "Agent->estresponsable (AGENT) : " . $erreur;
+		  echo $errlog."<br/>";
+		  error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+		  return FALSE;
       }
-      return (mysql_num_rows($query) != 0);
+      $resp_return = mysql_num_rows($query);
+      //echo "resp_return = $resp_return <br>" ;
+      
+      $deleg_return = 0;
+      if ($includedeleg)
+      {
+          $deleg_return = $this->estdelegue();
+      }
+      //echo "deleg_return = $deleg_return<br>";
+
+      return ($resp_return + $deleg_return >0);
 	}
+	
+	/**
+	 * @param
+	 * @return boolean true if the current agent is a delagated of a strucuture. false otherwise.
+	 */
+	function estdelegue()
+   {
+       $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG='%s' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG",$this->fonctions->my_real_escape_utf8($this->harpegeid));
+       //echo "sql = " . $sql . "<br>";
+       $query=mysql_query ($sql, $this->dbconnect);
+       $erreur=mysql_error();
+       if ($erreur != "")
+       {
+           $errlog = "Agent->estdelegue : " . $erreur;
+           echo $errlog."<br/>";
+           error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+           return FALSE;
+       }
+       return (mysql_num_rows($query) > 0);
+       
+   }
 
    /**
          * @param 
          * @return boolean true if the current agent is a manager of a strucuture. false otherwise.
    */
-	function estgestionnaire()
+   function estgestionnaire()
    {
       $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s' AND DATECLOTURE>=DATE(NOW())",$this->fonctions->my_real_escape_utf8($this->harpegeid));
       //echo "sql = " . $sql . "<br>";
@@ -647,10 +680,10 @@ AND DEMANDE.STATUT='v'";
 	}
 	
    /**
-         * @param 
+         * @param boolean $includedeleg optional if true delegated agent get responsable structure list.
          * @return array list of objects structure where the agent is responsable
    */
-	function structrespliste()
+	function structrespliste($includedeleg = true)
 	{
 		$structliste = null;
 		if ($this->estresponsable())
@@ -661,7 +694,7 @@ AND DEMANDE.STATUT='v'";
 			$query=mysql_query ($sql, $this->dbconnect);
 			$erreur=mysql_error();
 			if ($erreur != "") {
-				$errlog = "Agent->structrespliste : " . $erreur;
+				$errlog = "Agent->structrespliste (RESPONSABLE) : " . $erreur;
 				echo $errlog."<br/>";
 				error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
 			}
@@ -673,7 +706,29 @@ AND DEMANDE.STATUT='v'";
 				$structliste[$struct->id()] = $struct;
 				unset($struct);
 			}
+			
+    	    if ($includedeleg)
+    	    {
+    	        $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG='%s' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG",$this->fonctions->my_real_escape_utf8($this->harpegeid));
+    	        //echo "sql = " . $sql . "<br>";
+    	        $query=mysql_query ($sql, $this->dbconnect);
+    	        $erreur=mysql_error();
+    	        if ($erreur != "") {
+    	            $errlog = "Agent->structrespliste (DELEGUE) : " . $erreur;
+    	            echo $errlog."<br/>";
+    	            error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
+    	        }
+    	        while ($result = mysql_fetch_row($query))
+    	        {
+    	            //On charge la structure
+    	            $struct = new structure($this->dbconnect);
+    	            $struct->load("$result[0]");
+    	            $structliste[$struct->id()] = $struct;
+    	            unset($struct);
+    	        }
+    	    }
 		}
+
 		return $structliste;
 	}
 	
