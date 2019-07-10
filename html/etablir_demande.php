@@ -211,7 +211,7 @@
 			// ------------------------------------------------------------------------------------
 			
 			// ------------------------------------------------------------------------------------
-			// A commenter pour autoriser le reliquat à être pris après la fin du report
+			// A décommenter pour autoriser le reliquat à être pris après la fin du report
 			$datedebutdb = $fonctions->formatdatedb($date_debut);
 			// ATTENTION : Pour l'année en cours on accepte que le debut soit postérieur au report
 			if (($datedebutdb > $datelimite) and (($anneeref+2)<>substr($datedebutdb,0,4)))
