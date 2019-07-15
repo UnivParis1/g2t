@@ -537,7 +537,9 @@ $(function()
 					echo "</table>";
 					$nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
 					//echo "nbredemiTP = " . $nbredemiTP . "<br>";
-					echo "<br>Vous devez poser des jours de temps partiel (Nombre de demie-journées par semaine = $nbredemiTP )<br>";
+					echo "<br>Veuillez cocher les demi-journées où vous êtes absent au titre du temps partiel.";
+			        echo "<br> Validez votre saisie en cliquant sur le bouton 'Soumettre'.";
+					echo "<br>Au regard de votre quotité de travail, vous devez cocher $nbredemiTP demi-journée(s) par semaine<br><br>";
 					
 					echo "<div id='planning'>";
 					echo "<table class='tableau'>";
@@ -551,9 +553,9 @@ $(function()
 					if (strcasecmp($mode,"resp")==0)
 					{
 						echo "<br>";	
-						echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel... <br>";
+						echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel. <br>";
 						echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
-						echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est à utiliser avec prudence... Il convient de vérifier manuellement que la répartion est correcte.<br>";
+						echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est à utiliser avec prudence. Il convient de vérifier manuellement que la répartion est correcte.<br>";
 					}
 					echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP ."'>";
 					echo "<input type='hidden' name='userid' value='" . $userid ."'>";
