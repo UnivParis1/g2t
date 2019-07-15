@@ -55,7 +55,7 @@
         // Cela permet d'éviter d'envoyer des mails aux agents qui ne sont pas dans G2T.
         $anneeref = substr(($fonctions->anneeref() - 1),2,2);
         $sql = "SELECT HARPEGEID FROM SOLDE WHERE DROITAQUIS - DROITPRIS > 0 AND DROITPRIS > 0  AND TYPEABSENCEID = 'ann" . $anneeref . "'";
-        $sql = "SELECT HARPEGEID FROM SOLDE WHERE DROITAQUIS - DROITPRIS > 0 AND DROITPRIS > 0  AND TYPEABSENCEID = 'ann" . $anneeref . "' AND HARPEGEID=9328";
+        //$sql = "SELECT HARPEGEID FROM SOLDE WHERE DROITAQUIS - DROITPRIS > 0 AND DROITPRIS > 0  AND TYPEABSENCEID = 'ann" . $anneeref . "' AND HARPEGEID=9328";
         //echo "SQL des soldes = $sql \n";
         $query = mysql_query($sql, $dbcon);
         $erreur_requete = mysql_error();
