@@ -1,4 +1,5 @@
-set PHPDIR=d:\php
+REM set PHPDIR=d:\php
+set PHPDIR=C:\wamp\bin\php\php5.5.12
 
 del .\log\trace_cron.log
 del .\log\trace_cron_error.log
@@ -18,8 +19,8 @@ REM ----------------------------------------
 REM -- SCRIPT DE MIGRATION V2 - V3
 REM %PHPDIR%\php migration_v2_v3.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 
-
-%PHPDIR%\php mail_conges.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
+%PHPDIR%\php mail_alerte_reliquats.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
+REM %PHPDIR%\php mail_conges.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 REM %PHPDIR%\php mail_declarationTP.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 REM %PHPDIR%\php generer_solde.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log
 REM %PHPDIR%\php demande_cet.php -d error_log=./log/PHP_Log.log >>./log/trace_cron.log 2>>./log/trace_cron_error.log

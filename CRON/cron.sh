@@ -49,6 +49,8 @@ then
    echo "Avant generation de l'historique des CET" >>./log/trace_cron_$mydate.log
    php demande_cet.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 fi
+php mail_alerte_reliquats.php >>./log/trace_cron_$mydate.log
+
 
 echo `date`  fin de traitement >>./log/trace_cron_$mydate.log
 
