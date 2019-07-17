@@ -125,6 +125,7 @@
     }
     
     if (is_array($structlist)) {
+        echo "Remarque : Les personnes affectées à temps plein ne sont pas affichées dans cet écran.<br><br>";
         foreach ($structlist as $keystruct => $structure) {
             $agentlist = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
             if (! is_array($agentlist)) {
@@ -138,13 +139,17 @@
                 $affectationliste = $membre->affectationliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 1) . $fonctions->finperiode());
                 if (is_array($affectationliste)) {
                     foreach ($affectationliste as $key => $affectation) {
-                        // BugFix : Ticket GLPI 76387
-                        // On met +99 et non +1, afin de permettre aux demandes futures de s'afficher (année de référence + 99 ans)
-                        $declaTPliste = $affectation->declarationTPliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 99) . $fonctions->finperiode());
-                        if (is_array($declaTPliste)) {
-                            foreach ($declaTPliste as $declaration) {
-                                if (strcasecmp($declaration->statut(), "r") != 0)
-                                    echo $declaration->html(TRUE, $structure->id());
+                        // echo "quotitevaleur=" . $affectation->quotitevaleur() . "   Quotite=" . $affectation->quotite() . "   <br> " ;
+                        // echo "Calcul = " . round($affectation->quotite(),2) . "<br>";
+                        if ($affectation->quotitevaleur() < 1) {  // Les affectations à 100% ne sont pas affichées 
+                            // BugFix : Ticket GLPI 76387
+                            // On met +99 et non +1, afin de permettre aux demandes futures de s'afficher (année de référence + 99 ans)
+                            $declaTPliste = $affectation->declarationTPliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 99) . $fonctions->finperiode());
+                            if (is_array($declaTPliste)) {
+                                foreach ($declaTPliste as $declaration) {
+                                    if (strcasecmp($declaration->statut(), "r") != 0)
+                                        echo $declaration->html(TRUE, $structure->id());
+                                }
                             }
                         }
                     }

@@ -272,7 +272,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
         $equation = preg_replace("/([+-])([0-9]+)(%)/", "*(1\$1.\$2)", $equation);
         // you could use str_replace on this next line
         // if you really, really want to fine-tune this equation
-        $equation = preg_replace("/([0-9]+)(%)/", ".\$1", $equation);
+        //$equation = preg_replace("/([0-9]+)(%)/", ".\$1", $equation);  // Ne fonctionne pas pour 100% ==> 0.100 et non 1
+        $equation = preg_replace("/([0-9]+)(%)/", "$1", $equation);
+        $equation = ($equation/100);
+        
         if ($equation == "")
             $return = 0;
         else
