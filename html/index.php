@@ -88,13 +88,41 @@
     // $tempstructid = $user->structure()->id();
     echo "<br><br>";
     
-    /*
-     * echo "<br>";
-     * if ($user->dossiercomplet($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode())))
-     * echo "Le dossier est complet <br>";
-     * else
-     * echo "Le dossier est INcomplet <br>";
-     */
+    
+    $affectationliste = $user->affectationliste($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()));
+    
+    // L'agent a-t-il des affectation ?
+    if (count((array)$affectationliste) >0)
+    {
+        // Pour chaque affectation  
+        foreach ((array) $affectationliste as $affectation)
+        {
+            // Si c'est un temps partiel, on verifie que le temps partiel est bien saisi et validé
+            if ($affectation->quotitevaleur() < 1)
+            {
+                $datedebut = "29991231";  // La date de début est dans le futur
+                $datefin = "19000101";    // La date de fin est dans le passé
+                if ($fonctions->formatdatedb($affectation->datedebut()) < $datedebut)
+                    $datedebut = $fonctions->formatdatedb($affectation->datedebut());
+                if ($datefin < $fonctions->formatdatedb($affectation->datefin()))
+                    $datefin = $fonctions->formatdatedb($affectation->datefin());
+                if ($datedebut < $fonctions->anneeref() . $fonctions->debutperiode())
+                    $datedebut = $fonctions->anneeref() . $fonctions->debutperiode();
+                if ($datefin > ($fonctions->anneeref()+1) . $fonctions->finperiode())
+                    $datefin = ($fonctions->anneeref()+1) . $fonctions->finperiode();
+            
+                //echo "datedebut = $datedebut    datefin = $datefin <br>";
+                // On verifie que sur l'affectation en cours, il n'y a pas de période non déclaré.
+                if (!$user->dossiercomplet($datedebut,$datefin))
+                {
+                    echo "<font color=#FF0000>";
+                    echo "<b>ATTENTION : </b>Il existe au moins une affection à temps partiel pour laquelle vous n'avez pas de déclaration validée.<br>";
+                    echo "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.";
+                    echo "</font><br>";
+                }
+            }
+        }
+    }
     /*
      * $structure = new structure($dbcon);
      * $structure->load("DGH");
