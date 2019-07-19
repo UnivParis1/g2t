@@ -117,8 +117,9 @@
                 {
                     echo "<font color=#FF0000>";
                     echo "<b>ATTENTION : </b>Il existe au moins une affection à temps partiel pour laquelle vous n'avez pas de déclaration validée.<br>";
-                    echo "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.";
-                    echo "</font><br>";
+                    echo "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.<br>";
+                    echo "Votre planning contiendra donc des cases \"Période non déclarée\" lors de son affichage.<br>";
+                    echo "</font>";
                 }
             }
         }
