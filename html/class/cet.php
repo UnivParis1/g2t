@@ -160,9 +160,13 @@ class cet
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->cumultotal;
-        } elseif (intval($cumultot) == $cumultot)
+        } elseif ((intval($cumultot) <> $cumultot) and (intval($this->cumultotal) <> $this->cumultotal)) {
+            //echo "Dans le cas ou le solde est deja avec des virgule et on ajoute un nombre entier ==> On a forcément des virgules <br>";
             $this->cumultotal = $cumultot;
-        else {
+        } elseif (intval($cumultot) == $cumultot) {
+            //echo "Dans le cas ou le solde n'a pas deja avec des virgule et on ajoute un nombre entier ==> On a forcément des virgules <br>";
+            $this->cumultotal = $cumultot;
+        } else {
             $errlog = "Cet->cumultotal : Le cumul total du CET de l'agent doit être un nombre entier";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
