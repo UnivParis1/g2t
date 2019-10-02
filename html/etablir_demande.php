@@ -180,15 +180,15 @@
             
             // ------------------------------------------------------------------------------------
             // A décommenter pour empécher le reliquat d'être pris après la date de fin du report
-            // $datefindb = $fonctions->formatdatedb($date_fin);
-            // if ($datefindb > $datelimite)
+            $datefindb = $fonctions->formatdatedb($date_fin);
+            if ($datefindb > $datelimite)
             // ------------------------------------------------------------------------------------
             
             // ------------------------------------------------------------------------------------
             // A décommenter pour autoriser le reliquat à être pris après la fin du report
-            $datedebutdb = $fonctions->formatdatedb($date_debut);
+            // $datedebutdb = $fonctions->formatdatedb($date_debut);
             // ATTENTION : Pour l'année en cours on accepte que le debut soit postérieur au report
-            if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4))) 
+            // if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4))) 
             // ------------------------------------------------------------------------------------
             {
                 $errlog = "Le type de congés utilisé n'est pas valide pour la période demandée ! ";
