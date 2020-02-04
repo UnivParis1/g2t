@@ -91,13 +91,18 @@
     if (isset($_POST["retraitcet"]))
         $retraitcet = $_POST["retraitcet"];
     
+    $nocheck = 'no';
+    if (isset($_POST["nocheck"]))
+        $nocheck = $_POST["nocheck"];
+        
+    
     $msg_erreur = "";
     
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
     
-    // print_r($_POST); echo "<br><br>";
+    //print_r($_POST); echo "<br><br>";
     
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
@@ -134,7 +139,7 @@
             $errlog = "Le nombre de jours saisi est vide, inférieur à 0 ou est nul";
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-        } elseif (intval($nbr_jours_cet) != $nbr_jours_cet) {
+        } elseif ((intval($nbr_jours_cet) != $nbr_jours_cet) and ($nocheck == 'no')) {
             if (! is_null($ajoutcet))
                 $errlog = "Le nombre de jours à ajouter au CET doit être un nombre entier.";
             else
@@ -217,6 +222,7 @@
         } elseif (! is_null($retraitcet)) {
             // echo "Je suis dans une indemnisation de CET => $nbr_jours_cet jours à retirer sur $nbrejoursdispo jour à retirer du CET maximum !!!<br>";
             // echo "Le type de retrait est : " . $_POST["typeretrait"] . "<br>";
+            //$nbr_jours_cet = str_replace(',', '.', $nbr_jours_cet);
             $cet = new cet($dbcon);
             $msg_erreur = $cet->load($agentid);
             if ($msg_erreur == "") {
@@ -328,7 +334,8 @@
                 // Calcul du nombre de jours disponibles en retrait du CET
                 // echo "cet->cumultotal() = " . $cet->cumultotal() . "<br>";
                 
-                echo "<br>Le nombre de jours maximum à retirer est : " . $nbrejoursdispo . " jour(s) <br>";
+                echo "Le nombre de jours maximum à retirer est : " . $nbrejoursdispo . " jour(s) <br>";
+                echo "<input type='checkbox' name='nocheck' value='yes'>Ne pas vérifier le nombre de jours saisi. <b><u>ATTENTION :</u></b> A utiliser avec précaution.<br><br>";
                 
                 echo "Indiquer le type de retrait : ";
                 echo "<select name='typeretrait'>";

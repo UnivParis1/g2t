@@ -188,12 +188,15 @@ class cet
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->jrspris;
-        } elseif (intval($nbrejrspris) == $nbrejrspris)
+        } /* elseif (intval($nbrejrspris) == $nbrejrspris)
             $this->jrspris = $nbrejrspris;
         else {
             $errlog = "Cet->jrspris : Le nombre de jours pris dans le CET de l'agent doit être un nombre entier";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        } */
+        else {
+             $this->jrspris = $nbrejrspris;
         }
     }
 
