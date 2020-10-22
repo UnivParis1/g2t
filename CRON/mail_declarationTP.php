@@ -30,6 +30,9 @@
         echo "SELECT DEMANDEID => $erreur_requete \n";
     
     $arraystruct = array();
+    $mail_gest = array();
+    $mail_resp = array();
+    $codeinterne = "";
     
     while ($result = mysql_fetch_row($query)) {
         $declaration = new declarationTP($dbcon);
