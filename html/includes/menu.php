@@ -161,7 +161,38 @@
     }
     $adminuser->load($_SESSION['phpCAS']['harpegeid']);
     // echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+
+    $arraystructpartielle = array();
+    // $arraystructpartielle = array_merge($arraystructpartielle,array('SC4_3','IU1_3','IU4_3','IU21_4','IU22_4','IU24_4','IU25_4','IU23_4','IU2C_4','IU2D_4'));
     
+    // **********************************************************************************
+    // Pas de mise en production de cette fonctionnalité pour le moment
+    //$arraystructpartielle = array_merge($arraystructpartielle,array('IU3_3','UR028_4','UR02C_4','UR031_4','UR035_4','UR038_4','UR032_4','UR048_4','UR083_4','UR084_4','UR03C_4','UR082_4','UR097_4','UR099_4','UR094_4','UR09A_4','UR09E_4','UR09B_4','UR09C_4','UR09G_4','UR098_4','UR093_4'));
+    //$arraystructpartielle = array_merge($arraystructpartielle,array('UR102_4','UR104_4','UR109_4','UR101_4','UR115_4','UR152_4','UR211_4','UR272_4','UR274_4'));
+    //$arraystructpartielle = array_merge($arraystructpartielle,array('EDO04_4','EDO08_4','EDO06_4','EDO02_4','EDO09_4','EDO05_4','EDO10_4','EDO03_4'));
+    //$arraystructpartielle = array_merge($arraystructpartielle,array('UF04SI_4','UF04_3','UF09_3','UF109_4','UF10_3','UF11T_4','UF11_3','UF21_3','UF27_3','UF27T_4'));
+    // **********************************************************************************
+    
+    // $arraystructpartielle = array_merge($arraystructpartielle,array('DGHA_4'));
+    $arraystructpartielle = array_map('strtoupper', $arraystructpartielle);
+    
+    $affectationarray = $adminuser->affectationliste(date("d/m/Y"), date("d/m/Y"));
+    $hidemenu = '';
+    $structurepartielle = false;
+    if (is_array($affectationarray))
+    { // S'il y a une affectation
+        $affectation = current($affectationarray);
+        
+        //echo "Code structure = " . $affectation->structureid() . "    Liste structure : " . print_r($arraystructpartielle,true) . "<br><br>";
+        
+        if (in_array(strtoupper($affectation->structureid()), $arraystructpartielle))
+        {
+            $structurepartielle = true;
+            $hidemenu = ' style="display:none;" ';
+        }
+    } 
+    
+
     // On verifie que la personne est dans le groupe G2T du LDAP
     $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
     $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
@@ -170,7 +201,8 @@
     $LDAP_MEMBER_ATTR = $fonctions->liredbconstante("LDAPMEMBERATTR");
     $LDAP_GROUP_NAME = $fonctions->liredbconstante("LDAPGROUPNAME");
     // Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
-    if (trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "") {
+    // Si l'utilisateur est dans une strucuture a accès partiel ==> On ne vérifie pas s'il est membre du groupe LDAP
+    if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "") and ($structurepartielle == false)) {
         $uid = phpCAS::getUser();
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -222,6 +254,28 @@
     
     if ($user->harpegeid() != $_SESSION['phpCAS']['harpegeid'])
         echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->harpegeid() . ")</CENTER></P><BR>";
+            
+    if ($structurepartielle == true)
+    {
+        //echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : Vous avez un accès partiel à l'application G2T !!!</B></U></FONT><BR></CENTER></P><BR>";
+    }
+    
+//     $affectationarray = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));
+//     if (is_array($affectationarray)) 
+//     { // S'il y a une affectation
+//         $affectation = current($affectationarray);    
+        
+//         //echo "Code structure = " . $affectation->structureid() . "    Liste structure : " . print_r($arraystructpartielle,true) . "<br><br>";
+        
+//         if (in_array(strtoupper($affectation->structureid()), $arraystructpartielle))
+//         {
+//             $hidemenu = ' style="display:none;" ';
+//         }
+//     }
+    
+    unset($arraystructpartielle);
+    unset($affectationarray);
+    unset($affectation);
 ?>
 
 
@@ -236,7 +290,7 @@
 						
 						</form> <a href="javascript:document.accueil.submit();">Accueil</a>
 					</li>
-					<li onclick='document.planning.submit();'>
+					<li onclick='document.planning.submit();' <?php echo $hidemenu; ?> >
 						<form name='planning' method='post' action="affiche_planning.php">
 							<input type="hidden" name="userid"
 								value="<?php echo $user->harpegeid(); ?>">
@@ -268,7 +322,7 @@
     // if ($user->structure()->affichetoutagent() == "o")
     {
 ?>
-				<li onclick='document.agent_struct_planning.submit();'>
+				<li onclick='document.agent_struct_planning.submit();' <?php echo $hidemenu; ?> >
 						<form name='agent_struct_planning' method='post'
 							action="structure_planning.php">
 							<input type="hidden" name="userid"
@@ -283,7 +337,7 @@
 <?php
     }
 ?>	
-				<li onclick='document.dem_conge.submit();'>
+				<li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
 						<form name='dem_conge' method='post' action="etablir_demande.php">
 							<input type="hidden" name="userid"
 								value="<?php echo $user->harpegeid(); ?>"> <input type="hidden"
@@ -316,7 +370,7 @@
 							des temps partiels</a>
 					</li>
 					<li onclick='document.agent_aide.submit();'>
-						<form name='agent_aide' method='post' TARGET=_BLANK
+						<form name='agent_aide' method='get' TARGET=_BLANK
 							action="https://ent.univ-paris1.fr/assets/aide/canal/g2t.html">
 						</form> <a href="javascript:document.agent_aide.submit();">Manuel
 							utilisateur</a>
