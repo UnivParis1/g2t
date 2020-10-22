@@ -534,3 +534,15 @@ span[data-tip]{
   left: -5px; 
   top: -10px;
 }
+
+/*************************************************
+/ CSS SIHAM pour affichage CET dans module agent de l'ENT
+/*************************************************/
+.siham_css {
+	font-family: Verdana;
+	font-size: 8pt;
+	text-align: left;
+	color: #616162; 
+	background: inherit; 
+	border-width: 0;
+}
