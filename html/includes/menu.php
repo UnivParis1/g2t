@@ -304,8 +304,7 @@
 								value="<?php echo $user->harpegeid(); ?>"> <input type="hidden"
 								name="agentid" value="<?php echo $user->harpegeid(); ?>">
 						
-						</form> <a href="javascript:document.agentannulation.submit();">Annulation
-							de demandes</a>
+						</form> <a href="javascript:document.agentannulation.submit();">Annulation de congé ou d'absence</a>
 					</li>				
 <?php
     $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
@@ -395,8 +394,7 @@
 										value="<?php echo $user->harpegeid(); ?>"> <input
 											type="hidden" name="previous" value="no">
 								
-								</form> <a href="javascript:document.resp_gest_conge.submit();">Annulation
-									de demandes</a>
+								</form> <a href="javascript:document.resp_gest_conge.submit();">Annulation de congé ou d'absence</a>
 							</li>
 							<li onclick='document.resp_conge.submit();'>
 								<form name='resp_conge' method='post'
