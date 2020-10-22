@@ -768,6 +768,14 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 
     function ics($mail)
     {
+        if (strcasecmp($this->typeabsenceid, 'teletrav') == 0  or strcasecmp($this->typeabsenceid, 'travdist') == 0)
+        {
+            // L'agent travaille donc il ne doit pas être mis en 'absence' ou en 'congés' dans l'agenda
+            // Pas de mise à jour de l'agenda ==> Pas de création d'un ICS
+            return null;
+        }
+            
+        
         $dtstart = str_replace('-', '', $this->datedebut) . 'T';
         if ($this->moment_debut() == 'm') {
             $dtstart .= '090000';
