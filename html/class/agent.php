@@ -864,12 +864,27 @@ AND DEMANDE.STATUT='v'";
             $erreurmsg = $erreurmsg . $errlog;
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        while ($result = mysql_fetch_row($query)) {
-            $solde = new solde($this->dbconnect);
-            $solde->load($this->harpegeid, "$result[0]");
-            $soldeliste[$solde->typeabsenceid()] = $solde;
-            unset($solde);
+        
+        $soldetodisplay = true;
+        // Si on est dans une structure partiel le solde annuel n'est pas affiché
+        if (isset($GLOBALS["structurepartielle"]))
+        {
+            if ($GLOBALS["structurepartielle"] == true)
+            {
+                $soldetodisplay = false;
+            }
         }
+        
+        if ($soldetodisplay == true)
+        {
+            while ($result = mysql_fetch_row($query)) {
+                $solde = new solde($this->dbconnect);
+                $solde->load($this->harpegeid, "$result[0]");
+                $soldeliste[$solde->typeabsenceid()] = $solde;
+                unset($solde);
+            }
+        }
+        
         
         // echo "Avant le new.. <br>";
         $cet = new cet($this->dbconnect);
@@ -1729,6 +1744,20 @@ AND DEMANDE.STATUT='v'";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datefin()) . " " . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         if ($demande->type() == 'enmal') {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ")</td>";
+                        }
+                        elseif ($demande->type() == 'spec')
+                        {
+                            $htmltext = $htmltext . "   <td class='cellulesimple'>";
+                            if (strlen($demande->commentaire()) != 0)
+                            {
+                                $htmltext = $htmltext . " <span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                            }
+                            $htmltext = $htmltext. $demande->typelibelle();
+                            if (strlen($demande->commentaire()) != 0)
+                            {
+                                $htmltext = $htmltext . "</span>";
+                            }
+                            $htmltext = $htmltext . "</td>";
                         } else {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         }
