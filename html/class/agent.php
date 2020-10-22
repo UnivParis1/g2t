@@ -393,9 +393,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $debut_interval
+     * @param string $debut_interval
      *            beginning date of the planning
-     * @param date $fin_interval
+     * @param string $fin_interval
      *            ending date of the planning
      * @return object the planning object.
      */
@@ -408,9 +408,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $debut_interval
+     * @param string $debut_interval
      *            beginning date of the planning
-     * @param date $fin_interval
+     * @param string $fin_interval
      *            ending date of the planning
      * @param boolean $clickable
      *            optional true means that the planning allow click on elements. false otherwise
@@ -608,9 +608,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $datedebut
+     * @param string $datedebut
      *            the beginning date of the interval to search affectations
-     * @param date $datefin
+     * @param string $datefin
      *            the ending date of the interval to search affectations
      * @return array list of objects affectation
      */
@@ -648,9 +648,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $datedebut
+     * @param string $datedebut
      *            the beginning date to check
-     * @param date $datefin
+     * @param string $datefin
      *            the ending date to check
      * @return boolean true if the declaration of agent is correct. false otherwise
      */
@@ -1112,9 +1112,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $datedebut
+     * @param string $datedebut
      *            date of the beginning of the interval
-     * @param date $datefin
+     * @param string $datefin
      *            date of the ending of the interval
      * @return array list of query objects
      */
@@ -1160,9 +1160,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $datedebut
+     * @param string $datedebut
      *            date of the beginning of the interval
-     * @param date $datefin
+     * @param string $datefin
      *            date of the ending of the interval
      * @param string $structureid
      *            optional the structure identifier
@@ -1346,9 +1346,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $datedebut
+     * @param string $datedebut
      *            date of the beginning of the interval
-     * @param date $datefin
+     * @param string $datefin
      *            date of the ending of the interval
      * @param object $pdf
      *            optional the pdf object. if $pdf is set, the array is append to the existing pdf. Otherwise, a new pdf file is created
@@ -1539,9 +1539,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $debut_interval
+     * @param string $debut_interval
      *            date of the beginning of the interval
-     * @param date $fin_interval
+     * @param string $fin_interval
      *            date of the ending of the interval
      * @param string $agentid
      *            optional deprecated parameter => not used in code
@@ -1647,9 +1647,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param date $debut_interval
+     * @param string $debut_interval
      *            date of the beginning of the interval
-     * @param date $fin_interval
+     * @param string $fin_interval
      *            date of the ending of the interval
      * @param string $agentid
      *            optional the structure's responsable identifier (harpege ident)
