@@ -208,6 +208,10 @@
             }
         }
         ksort($agentlistefull);
+        //echo "<br>"; print_r($agentlistefull); echo "<br>";
+        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
+            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+        }
         echo "<SELECT name='agentid'>";
         foreach ($agentlistefull as $keyagent => $membre) {
             echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
