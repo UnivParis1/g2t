@@ -24,7 +24,7 @@
 	media="screen"></link>
 <?php 
     echo "</head>";
-    echo "<body style='margin: 0'>";
+    echo "<body style='margin: 0 ; overflow: hidden'>";
     //echo "<p style='font-family: Verdana; font-size: 8pt; text-align: left; color: #616162; background: inherit; border-width: 0;'>";
     echo "<p class='siham_css'>";
     
