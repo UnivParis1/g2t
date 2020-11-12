@@ -22,9 +22,9 @@
     
     echo "Début de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n";
     
-    // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente)
+    // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente) mais qui ne sont pas postérieure à la période en cours (< Anneeref +1 + debut_période)
     // Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.
-    $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "'";
+    $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "' AND DATEDEBUT < '" . ($fonctions->anneeref() + 1) . $fonctions->debutperiode() . "'";
     // echo "SQL des demandes = $sql \n";
     $query = mysql_query($sql, $dbcon);
     $erreur_requete = mysql_error();
@@ -34,6 +34,8 @@
     $arraystruct = array();
     $mail_gest = array();
     $mail_resp = array();
+    
+    $codeinterne = null;
     
     while ($result = mysql_fetch_row($query)) {
         $demande = new demande($dbcon);
@@ -82,15 +84,15 @@
                     if ($codeinterne == 2) // Gestionnaire service courant
                     {
                         if (isset($mail_gest[$destinatairemail->harpegeid()]))
-                            $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] + 1;
+                            $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] . $demande->id() . ',' ;
                         else
-                            $mail_gest[$destinatairemail->harpegeid()] = 1;
+                            $mail_gest[$destinatairemail->harpegeid()] = $demande->id() . ',';
                     } else // Responsable service courant
                     {
                         if (isset($mail_resp[$destinatairemail->harpegeid()]))
-                            $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] + 1;
+                            $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] . $demande->id() . ',';
                         else
-                            $mail_resp[$destinatairemail->harpegeid()] = 1;
+                            $mail_resp[$destinatairemail->harpegeid()] = $demande->id() . ',';
                     }
                 }            // C'est le responsable de la structure qui a fait la demande
                 else {
@@ -100,15 +102,15 @@
                         if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                         {
                             if (isset($mail_gest[$destinatairemail->harpegeid()]))
-                                $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] + 1;
+                                $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] . $demande->id() . ',';
                             else
-                                $mail_gest[$destinatairemail->harpegeid()] = 1;
+                                $mail_gest[$destinatairemail->harpegeid()] = $demande->id() . ',';
                         } else // Responsable service parent
                         {
                             if (isset($mail_resp[$destinatairemail->harpegeid()]))
-                                $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] + 1;
+                                $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] . $demande->id() . ',';
                             else
-                                $mail_resp[$destinatairemail->harpegeid()] = 1;
+                                $mail_resp[$destinatairemail->harpegeid()] = $demande->id() . ',';
                         }
                     }
                 }
@@ -132,18 +134,20 @@
     $agentcron = new agent($dbcon);
     // -1 est le code pour l'agent CRON dans G2T
     $agentcron->load('-1');
-    foreach ($mail_resp as $agentid => $nbredemande) {
+    foreach ($mail_resp as $agentid => $listedemande) {
         $responsable = new agent($dbcon);
         $responsable->load($agentid);
-        echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") \n";
+        $nbredemande = substr_count($listedemande, ',');
+        echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
         
         $agentcron->sendmail($responsable, "En tant que responsable de service, des demandes de congés ou d'autorisations d'absence sont en attentes", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n", null);
         unset($responsable);
     }
-    foreach ($mail_gest as $agentid => $nbredemande) {
+    foreach ($mail_gest as $agentid => $listedemande) {
         $gestionnaire = new agent($dbcon);
         $gestionnaire->load($agentid);
-        echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") \n";
+        $nbredemande = substr_count($listedemande, ',');
+        echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
         
         $agentcron->sendmail($gestionnaire, "En tant que gestionnaire de service, des demandes de congés ou d'autorisations d'absence sont en attentes", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n", null);
         unset($gestionnaire);
