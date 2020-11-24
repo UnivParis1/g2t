@@ -73,19 +73,25 @@
     if (isset($_POST["CETaverifier"]))
         $cetaverifier = $_POST["CETaverifier"];
     
+    $selectall = 'no';
+    if (isset($_POST["selectall"]))
+        $selectall = $_POST["selectall"];
+        
     $msg_erreur = "";
     
     require ("includes/menu.php");
     echo '<html><body class="bodyhtml">';
     echo "<br>";
     
-    // print_r($_POST); echo "<br>";
+    //print_r($_POST); echo "<br>";
     
     if (is_null($cetaverifier) == false) {
         foreach ($cetaverifier as $demandeid => $valeur) {
             $demande = new demande($dbcon);
             $demande->load($demandeid);
-            // echo "Demande chargée = " . $demande->id() . " et le statut = " . $demande->statut() . "<br>";
+            
+            $agentid = $demande->agent()->harpegeid();
+            //echo "Demande chargée = " . $demande->id() . " pour l'agent $agentid et le statut = " . $demande->statut() . "<br>";
             $solde = new solde($dbcon);
             
             $complement = new complement($dbcon);
@@ -162,12 +168,21 @@
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='hidden' name='selectall' value='no'>";
         echo "</form>";
+        echo "<form name='selectall'  method='post' >";
+        echo "<br>";
+        echo "<br>";
+        echo "<input type='submit' value='Tout afficher' >";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='hidden' name='selectall' value='yes'>";
+        echo "</form>";      
         echo "<br>";
         echo "<br>";
     }
     
-    if (! is_null($agent)) {
+    if (!is_null($agent) or $selectall=='yes') {
         // echo "On a choisit un agent <br>";
         $msg_bloquant = "";
         
@@ -184,35 +199,101 @@
         
         $datedebut = "01/01/2017";
         
-        $cetliste = $agent->CETaverifier($datedebut);
+        if ($selectall == 'no')
+        {
+            $cetliste = $agent->CETaverifier($datedebut);
+        }
+        else
+        {
+            $cetliste = $fonctions->CETaverifier($datedebut);
+        }
         
         if (count($cetliste) == 0) // Si pas d'élément....
         {
-            echo "Aucune demande de CET n'est à contrôler pour l'agent " . $agent->identitecomplete() . " <br>";
+            if ($selectall == 'no')
+                echo "Aucune demande de CET n'est à contrôler pour l'agent " . $agent->identitecomplete() . " <br>";
+            else
+                echo "Aucune demande de CET n'est à contrôler sur l'établissement. <br>";
+                
         } else {
             echo "<form name='frm_utilisationcet'  method='post' >";
             echo "<br>";
             
             echo "Sélectionnez les demandes à mettre à jour : <br>";
             
-            $htmltext = "";
-            // $htmltext = $htmltext . "<center>";
-            $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . "</td></tr>";
-            $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Ident. demande</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Traiter</td></tr>";
-            foreach ($cetliste as $demande) {
-                $htmltext = $htmltext . "<tr align=center>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->id() . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut()) . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin()) . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->nbrejrsdemande() . "jour(s)</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->demandestatutlibelle($demande->statut()) . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=CETaverifier[" . $demande->id() . "] value='yes' /></td>";
-                $htmltext = $htmltext . "</tr>";
+            if ($selectall == 'no')
+            {
+                $htmltext = "";
+                // $htmltext = $htmltext . "<center>";
+                $htmltext = $htmltext . "<table class='tableausimple'>";
+                $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . " (id : $agentid) </td></tr>";
+                $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Ident. demande</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Traiter</td></tr>";
+                foreach ($cetliste as $demande) {
+                    $htmltext = $htmltext . "<tr align=center>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->id() . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut()) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin()) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->nbrejrsdemande() . "jour(s)</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->demandestatutlibelle($demande->statut()) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=CETaverifier[" . $demande->id() . "] value='yes' /></td>";
+                    $htmltext = $htmltext . "</tr>";
+                }
+                $htmltext = $htmltext . "</table>";
+                // $htmltext = $htmltext . "</center>";
+                $htmltext = $htmltext . "<br>";
             }
-            $htmltext = $htmltext . "</table>";
-            // $htmltext = $htmltext . "</center>";
-            $htmltext = $htmltext . "<br>";
+            else
+            {
+                $htmltext = "";
+                foreach ($cetliste as $demande)
+                {
+                    $newagent = false;
+                    if (is_null($agent))
+                    {
+                        $agent = $demande->agent();
+                        $newagent = true;
+                    }
+                    elseif ($agent->harpegeid() <> $demande->agent()->harpegeid())
+                    {
+                        $agent = $demande->agent();
+                        $newagent = true;
+                    }
+                    if ($newagent == true)
+                    {
+                        if ($htmltext <> "")
+                        {
+                            $htmltext = $htmltext . "</table>";
+                            // Affichage du solde de l'année précédente
+                            // echo $agent->soldecongeshtml($fonctions->anneeref()-1);
+                            // Affichage du solde de l'année en cours
+                            //echo $agent->soldecongeshtml($fonctions->anneeref());
+                            // On affiche les commentaires pour avoir l'historique
+                            // echo $agent->affichecommentairecongehtml();
+                            $htmltext = $htmltext . "<br><br>";
+                        }    
+                        $htmltext = $htmltext . "<table class='tableausimple'>";
+                        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . " (id : " . $agent->harpegeid() . ")</td></tr>";
+                        $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Ident. demande</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Traiter</td></tr>";
+                    }
+                    $htmltext = $htmltext . "<tr align=center>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->id() . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut()) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin()) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $demande->nbrejrsdemande() . "jour(s)</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->demandestatutlibelle($demande->statut()) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=CETaverifier[" . $demande->id() . "] value='yes' /></td>";
+                    $htmltext = $htmltext . "</tr>";                   
+                }
+                $htmltext = $htmltext . "</table>";
+                // $htmltext = $htmltext . "</center>";
+                $htmltext = $htmltext . "<br>";
+                // Affichage du solde de l'année précédente
+                // echo $agent->soldecongeshtml($fonctions->anneeref()-1);
+                // Affichage du solde de l'année en cours
+                //echo $agent->soldecongeshtml($fonctions->anneeref());
+                // On affiche les commentaires pour avoir l'historique
+                // echo $agent->affichecommentairecongehtml();
+            }
             echo "$htmltext";
             /*
              * echo "<select name='CETaverifier'>";
@@ -230,17 +311,12 @@
             echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+            echo "<input type='hidden' name='selectall' value='". $selectall ."'>";
             echo "<br>";
             echo "<input type='submit' value='Soumettre' >";
             echo "</form>";
         }
         
-        // Affichage du solde de l'année précédente
-        // echo $agent->soldecongeshtml($fonctions->anneeref()-1);
-        // Affichage du solde de l'année en cours
-        echo $agent->soldecongeshtml($fonctions->anneeref());
-        // On affiche les commentaires pour avoir l'historique
-        // echo $agent->affichecommentairecongehtml();
     }
     
 ?>

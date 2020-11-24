@@ -763,8 +763,7 @@
 								name="mode" value="gestrh">
 						
 						</form> <a
-						href="javascript:document.gestrh_utilisationcet.submit();">Utilisation
-							d'un CET existant</a>
+						href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
 					</li>
 					<li onclick='document.gestrh_gestcet.submit();'>
 						<form name='gestrh_gestcet' method='post' action="gerer_cet.php">
@@ -784,6 +783,20 @@
 						</form> <a href="javascript:document.gestrh_creercet.submit();">Reprise
 							d'un CET existant</a>
 					</li>
+					<li onclick='document.rh_conge.submit();'>
+						<form name='rh_conge' method='post'
+							action="etablir_demande.php">
+							<input type="hidden" name="responsable"
+								value="<?php echo $user->harpegeid(); ?>"> <input
+								type="hidden" name="userid"
+								value="<?php echo $user->harpegeid(); ?>"> <input
+									type="hidden" name="typedemande" value="conges"> <input
+										type="hidden" name="previous" value="no"><input
+										type="hidden" name="rh_mode" value="yes">
+						
+						</form> <a href="javascript:document.rh_conge.submit();">Demande de congés imputés sur le CET</a>
+					</li>
+					
 <?php
         }
 ?>

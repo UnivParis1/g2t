@@ -869,6 +869,48 @@ class fonctions
         $querryresult = $result[1];
         return $querryresult;
     }
-}
 
+
+    public function CETaverifier($datedebut)
+    {
+        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID,AGENT.HARPEGEID
+    				FROM DEMANDE,DEMANDEDECLARATIONTP,DECLARATIONTP,AFFECTATION,AGENT
+    				WHERE AFFECTATION.AFFECTATIONID = DECLARATIONTP.AFFECTATIONID
+    				  AND DECLARATIONTP.DECLARATIONID = DEMANDEDECLARATIONTP.DECLARATIONID
+    				  AND DEMANDEDECLARATIONTP.DEMANDEID = DEMANDE.DEMANDEID
+    				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
+    				  AND DEMANDE.TYPEABSENCEID = 'cet'
+    				  AND (DEMANDE.DATEDEBUT >= '" . $this->formatdatedb($datedebut) . "'
+    				    OR DEMANDE.DATESTATUT >= '" . $this->formatdatedb($datedebut) . "' )
+    			    ORDER BY AGENT.HARPEGEID, DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
+        $query = mysql_query($sql, $this->dbconnect);
+        $erreur_requete = mysql_error();
+        if ($erreur_requete != "")
+            error_log(basename(__FILE__) . " " . $erreur_requete);
+        $demandeliste = array();
+        // Si pas de demande de CET, on retourne le tableau vide
+        if (mysql_num_rows($query) == 0) {
+            return $demandeliste;
+        }
+        while ($result = mysql_fetch_row($query)) {
+            $demandeid = $result[0];
+            $demande = new demande($this->dbconnect);
+            $demande->load($demandeid);
+            
+            $complement = new complement($this->dbconnect);
+            $complement->load($result[1], 'DEM_CET_' . $demandeid);
+            
+            if ($demande->statut() == 'v' and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
+            {
+                $demandeliste[] = $demande;
+            }
+            if ($demande->statut() == 'R' and $complement->valeur() == 'v') // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
+            {
+                $demandeliste[] = $demande;
+            }
+        }
+        return $demandeliste;
+    }
+
+}
 ?>

@@ -51,6 +51,11 @@
         // echo "Le type de page n'est pas renseigné... On le fixe à " . $typedemande . "<br>";
     }
     
+    if (isset($_POST["rh_mode"]))
+        $rh_mode = $_POST["rh_mode"];
+    else
+        $rh_mode = 'no';
+    
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
@@ -59,11 +64,41 @@
         $previous = 1;
     else
         $previous = 0;
-    
+        
+        
     if (isset($_POST["agentid"]))
+    {
         $agentid = $_POST["agentid"];
+        if (! is_numeric($agentid)) {
+            $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
+            $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
+            $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
+            $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
+            $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
+            $con_ldap = ldap_connect($LDAP_SERVER);
+            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+            $filtre = "(uid=" . $agentid . ")";
+            $dn = $LDAP_SEARCH_BASE;
+            $restriction = array(
+                "$LDAP_CODE_AGENT_ATTR"
+            );
+            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+            $info = ldap_get_entries($con_ldap, $sr);
+            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+                $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+            }
+        }
+        
+        if (! is_numeric($agentid)) {
+            $agentid = null;
+            $agent = null;
+        }
+    }
     else
         $agentid = null;
+    
     $agent = new agent($dbcon);
     // echo "agentid = " . $agentid . "<br>";
     if ((is_null($agentid) or $agentid == "") and is_null($responsable)) {
@@ -89,7 +124,8 @@
         $agent->load($agentid);
     else
         $agent = null;
-    // print_r($_POST); echo "<br>";
+    
+    // echo "<br>"; print_r($_POST); echo "<br>";
     
     $datefausse = FALSE;
     $masquerboutonvalider = FALSE;
@@ -274,31 +310,51 @@
     
     if (is_null($agent)) {
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
-        $structureliste = $responsable->structrespliste();
-        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-        $agentlistefull = array();
-        foreach ($structureliste as $structure) {
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-            // echo "fin du select <br>";
-            $structurefille = $structure->structurefille();
-            foreach ((array) $structurefille as $structure) {
-                $responsable = $structure->responsable();
-                if ($responsable->harpegeid() != '-1') {
-                    $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+        if ($rh_mode=='yes')
+        {
+            echo "Personne à rechercher : <br>";
+            echo "<form name='selectagentcet'  method='post' >";
+            
+            echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
+            echo "' size=40 />";
+            echo "<input type='hidden' id='agentid' name='agentid' value='";
+            echo "' class='agent' /> ";
+            ?>
+        <script>
+                $("#agent").autocompleteUser(
+                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
+  	    </script>
+    	<?php
+        }
+        else
+        {
+            $structureliste = $responsable->structrespliste();
+            // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+            $agentlistefull = array();
+            foreach ($structureliste as $structure) {
+                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+                // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                // echo "fin du select <br>";
+                $structurefille = $structure->structurefille();
+                foreach ((array) $structurefille as $structure) {
+                    $responsable = $structure->responsable();
+                    if ($responsable->harpegeid() != '-1') {
+                        $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+                    }
                 }
             }
+            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
+                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+            }
+            ksort($agentlistefull);
+            echo "<SELECT name='agentid'>";
+            foreach ($agentlistefull as $keyagent => $membre) {
+                echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            }
+            echo "</SELECT>";
         }
-        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
-            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
-        }
-        ksort($agentlistefull);
-        echo "<SELECT name='agentid'>";
-        foreach ($agentlistefull as $keyagent => $membre) {
-            echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
-        }
-        echo "</SELECT>";
         echo "<br>";
         
         echo "<input type='hidden' name='typedemande' value='" . $typedemande . "'>";
@@ -306,6 +362,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
+        echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     } else {
@@ -577,8 +634,15 @@
                     $nbretype = 0;
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
-                            echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
-                            $nbretype = $nbretype + 1;
+                            if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet')
+                            {
+                                // On n'affiche pas le solde de congés car on est en mode RH et seul le CET est affiché
+                            }
+                            else
+                            {
+                                echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                                $nbretype = $nbretype + 1;
+                            }
                         }
                     }
                     echo "</select>";
@@ -626,6 +690,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
+        echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
         if (! $masquerboutonvalider)
             echo "<input type='submit' name='valider' id='valider' value='Soumettre' />";
         echo "<br><br>";
