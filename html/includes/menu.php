@@ -796,6 +796,13 @@
 						
 						</form> <a href="javascript:document.rh_conge.submit();">Demande de congés imputés sur le CET</a>
 					</li>
+					<li onclick='document.affiche_info_agent.submit();'>
+						<form name='affiche_info_agent' method='post'
+							action="affiche_info_agent.php">
+							<input type="hidden" name="userid"
+								value="<?php echo $user->harpegeid(); ?>">					
+						</form> <a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
+					</li>
 					
 <?php
         }
