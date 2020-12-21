@@ -1287,6 +1287,7 @@ AND DEMANDE.STATUT='v'";
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>" . $demande->motifrefus() . "</td>";
                     $htmltext = $htmltext . "</tr>";
+/*
                     if (strcasecmp($demande->statut(), "r") != 0) // Si la demande n'est pas annulée ou refusée
                     {
                         if (isset($synthesetab[$demande->typelibelle()]))
@@ -1294,12 +1295,30 @@ AND DEMANDE.STATUT='v'";
                         else
                             $synthesetab[$demande->typelibelle()] = $demande->nbrejrsdemande();
                     }
+*/
                 }
             }
         }
         $htmltext = $htmltext . "</table></center>";
         $htmltext = $htmltext . "</div>";
-        if (count($demandeliste) > 0) {
+        
+        $planning = $this->planning($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
+        
+        //echo "<br><br>" . print_r($planning,true) . "<br><br>";
+        
+        foreach ($planning->planning() as $key => $element)
+        {
+            if (!in_array($element->type(), array("","nondec","WE","ferie","tppar", "harp")))
+            {
+                //echo "<br>Element Type = " . $element->type() . "<br>";
+                if (isset($synthesetab[$element->info()]))
+                    $synthesetab[$element->info()] = $synthesetab[$element->info()] + 0.5;
+                 else
+                    $synthesetab[$element->info()] = 0.5;
+            }
+        }
+        
+        if (count($synthesetab) > 0) {
             $htmltext = $htmltext . "<br>";
             // $htmltext = $htmltext . print_r($synthesetab,true);
             $htmltext = $htmltext . "<div id='demandeliste'>";
@@ -1492,7 +1511,7 @@ AND DEMANDE.STATUT='v'";
                     $pdf->Cell(30, 5, $this->fonctions->demandestatutlibelle($demande->statut()), 1, 0, 'C');
                     $pdf->Cell(80, 5, $demande->motifrefus(), 1, 0, 'C');
                     $pdf->ln(5);
-                    
+/*                    
                     if (strcasecmp($demande->statut(), "r") != 0) // Si la demande n'est pas annulée ou refusée
                     {
                         if (isset($synthesetab[$demande->typelibelle()]))
@@ -1500,11 +1519,29 @@ AND DEMANDE.STATUT='v'";
                         else
                             $synthesetab[$demande->typelibelle()] = $demande->nbrejrsdemande();
                     }
+*/
                 }
             }
         }
         
-        if (count($demandeliste) > 0) {
+        $planning = $this->planning($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
+        
+        //echo "<br><br>" . print_r($planning,true) . "<br><br>";
+        
+        foreach ($planning->planning() as $key => $element)
+        {
+            if (!in_array($element->type(), array("","nondec","WE","ferie","tppar", "harp")))
+            {
+                //echo "<br>Element Type = " . $element->type() . "<br>";
+                if (isset($synthesetab[$element->info()]))
+                   $synthesetab[$element->info()] = $synthesetab[$element->info()] + 0.5;
+                else
+                   $synthesetab[$element->info()] = 0.5;
+            }
+        }
+        
+        if (count($synthesetab) > 0) {
+//        if (count($demandeliste) > 0) {
             $pdf->Ln(8);
             $headertext = "Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " et ";
             if (date("Ymd") > $datefin)
