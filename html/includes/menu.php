@@ -803,6 +803,13 @@
 								value="<?php echo $user->harpegeid(); ?>">					
 						</form> <a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
 					</li>
+					<li onclick='document.modif_solde.submit();'>
+						<form name='modif_solde' method='post'
+							action="modif_solde.php">
+							<input type="hidden" name="userid"
+								value="<?php echo $user->harpegeid(); ?>">					
+						</form> <a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
+					</li>
 					
 <?php
         }
