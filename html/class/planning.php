@@ -668,7 +668,7 @@ WHERE HARPEGEID = '" . $agentid . "'
         
         // echo "Avant affichage legende <br>";
         if ($noiretblanc == false) {
-            $htmltext = $htmltext . $this->fonctions->legendehtml();
+            $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee);
         }
         // echo "Apres affichage legende <br>";
         if ($showpdflink == TRUE) {
@@ -881,7 +881,8 @@ WHERE HARPEGEID = '" . $agentid . "'
         // ////Mise en place de la légende couleurs pour les congés
         
         // echo "Avant legende <br>";
-        $this->fonctions->legendepdf($pdf);
+        $anneeref = date("Y", strtotime($this->fonctions->formatdatedb($datedebut)));
+        $this->fonctions->legendepdf($pdf,$anneeref);
         // echo "Apres legende <br>";
         
         $pdf->Ln(8);

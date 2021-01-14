@@ -569,7 +569,14 @@ class structure
         $htmltext = $htmltext . "</div>";
         
         if ($noiretblanc == false) {
-            $htmltext = $htmltext . $this->fonctions->legendehtml();
+            $mois_finperiode = substr($this->fonctions->finperiode(),0,2);
+            $mois_debutperiode = substr($this->fonctions->debutperiode(),0,2);
+            if ($indexmois<=$mois_finperiode and $indexmois<$mois_debutperiode)
+            {
+                // Si on est entre janvier et la fin de période 
+                $annee = $annee - 1;
+            }
+            $htmltext = $htmltext . $this->fonctions->legendehtml($annee);
         }
         
         $htmltext = $htmltext . "<br>";
@@ -611,6 +618,8 @@ class structure
         // echo "timestampfin = $timestampfin <br>";
         $fulldatefin = date("d/m/Y", strtotime("-1day", $timestampfin));
         // echo "fulldatefin (en lisible)= $fulldatefin <br>";
+        list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        
         
         $structure = new structure($this->dbconnect);
         $structfilleliste = $this->structurefille();
@@ -670,8 +679,15 @@ class structure
             }
             $htmltext = $htmltext . "</table>";
             $htmltext = $htmltext . "</div>";
-            
-            $htmltext = $htmltext . $this->fonctions->legendehtml();
+
+            $mois_finperiode = substr($this->fonctions->finperiode(),0,2);
+            $mois_debutperiode = substr($this->fonctions->debutperiode(),0,2);
+            if ($indexmois<=$mois_finperiode and $indexmois<$mois_debutperiode)
+            {
+                // Si on est entre janvier et la fin de période
+                $annee = $annee - 1;
+            }
+            $htmltext = $htmltext . $this->fonctions->legendehtml($annee);
             $htmltext = $htmltext . "<br>";
         }
         return $htmltext;
@@ -910,7 +926,14 @@ class structure
         
         // echo "Avant legende <br>";
         if ($noiretblanc == false)
-            $this->fonctions->legendepdf($pdf);
+            $mois_finperiode = substr($this->fonctions->finperiode(),0,2);
+            $mois_debutperiode = substr($this->fonctions->debutperiode(),0,2);
+            if ($indexmois<=$mois_finperiode and $indexmois<$mois_debutperiode)
+            {
+                // Si on est entre janvier et la fin de période
+                $annee = $annee - 1;
+            }
+            $this->fonctions->legendepdf($pdf,$annee);
         // echo "Apres legende <br>";
         
         $pdf->Ln(8);

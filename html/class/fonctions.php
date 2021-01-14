@@ -540,12 +540,19 @@ class fonctions
     /**
      *
      * @param
+     *  anneeref : Année de référence de la légende
      * @return list of caption
      */
-    public function legende()
+    public function legende($anneeref)
     {
+/*
         $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
  				WHERE (ANNEEREF=" . $this->anneeref() . " OR ANNEEREF=" . ($this->anneeref() - 1) . ")
+ 				   OR ANNEEREF IS NULL
+ 				ORDER BY LIBELLE";
+*/
+        $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
+ 				WHERE (ANNEEREF=" . $anneeref . " OR ANNEEREF=" . ($anneeref - 1) . ")
  				   OR ANNEEREF IS NULL
  				ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
@@ -574,11 +581,12 @@ class fonctions
     /**
      *
      * @param
+     *  anneeref : Année de référence de la légende
      * @return html text representing the list of caption
      */
-    public function legendehtml()
+    public function legendehtml($anneeref)
     {
-        $tablegende = $this->legende();
+        $tablegende = $this->legende($anneeref);
         $htmltext = "";
         $htmltext = $htmltext . "<table>";
         $htmltext = $htmltext . "<tr>";
@@ -595,13 +603,13 @@ class fonctions
 
     /**
      *
-     * @param object $pdf
-     *            the pdf file
+     * @param object $pd :  the pdf file
+     *  anneeref : Année de référence de la légende
      * @return
      */
-    public function legendepdf($pdf)
+    public function legendepdf($pdf, $anneeref)
     {
-        $tablegende = $this->legende();
+        $tablegende = $this->legende($anneeref);
         $long_chps = 0;
         foreach ($tablegende as $key => $legende) {
             if ($pdf->GetStringWidth($legende["libelle"]) > $long_chps)

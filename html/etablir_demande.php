@@ -52,9 +52,15 @@
     }
     
     if (isset($_POST["rh_mode"]))
+    {
         $rh_mode = $_POST["rh_mode"];
+        $rh_annee_previous = 2;
+    }
     else
+    {
         $rh_mode = 'no';
+        $rh_annee_previous = 0;
+    }
     
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
@@ -598,7 +604,7 @@
     			<br>
     			<td width=1px><input class="calendrier" type=text name=date_debut
     				id=<?php echo $calendrierid_deb ?> size=10
-    				minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode()); ?>'
+    				minperiode='<?php if ($rh_mode == 'yes') echo $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); else echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode());?>'
     				maxperiode='<?php if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) { $indexmois = substr($fonctions->debutperiode(),0,2); $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous)); echo $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois); } else { echo $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode()); } ?>'></td>
     			<td align="left"><input type='radio' name='deb_mataprem' value='m'
     				checked>Matin <input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
@@ -607,7 +613,7 @@
     			<td>Date de fin de la demande :</td>
     			<td width=1px><input class="calendrier" type=text name=date_fin
     				id=<?php echo $calendrierid_fin ?> size=10
-    				minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode()); ?>'
+    				minperiode='<?php if ($rh_mode == 'yes') echo $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); else echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode()); ?>'
     				maxperiode='<?php if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) { $indexmois = substr($fonctions->debutperiode(),0,2); $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous)); echo $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois); } else { echo $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode()); } ?>'></td>
     			<td align="left"><input type='radio' name='fin_mataprem' value='m'>Matin
     				<input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
@@ -709,7 +715,16 @@
         // echo "Fin periode = " . $fonctions->finperiode() . "<br>";
         // echo "Annee ref = " . $fonctions->anneeref() . "<br>";
         // echo "debut = " . $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()) . " fin =" . $fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()) . "<br>";
-        if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
+        if ($rh_mode == 'yes')
+        {
+            for ($index=$rh_annee_previous; $index>=0; $index--)
+            {
+                echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE);
+                echo "<br>";
+            }
+           
+        }
+        elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
             $datetemp = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("+1month", $timestamp)); // On passe au mois suivant
