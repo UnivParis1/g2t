@@ -810,6 +810,17 @@
 								value="<?php echo $user->harpegeid(); ?>">					
 						</form> <a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
 					</li>
+					<li onclick='document.rh_aff_solde.submit();'>
+						<form name='rh_aff_solde' method='post'
+							action="affiche_solde.php">
+							<input type="hidden" name="userid"
+								value="<?php echo $user->harpegeid(); ?>"> <input
+								type="hidden" name="mode" value="rh"> <input type="hidden"
+									name="previous" value="no">
+						
+						</form> <a href="javascript:document.rh_aff_solde.submit();">Affichage
+							du solde des agents d'une structure</a>
+					</li>
 					
 <?php
         }

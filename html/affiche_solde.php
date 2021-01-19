@@ -32,12 +32,49 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
+
+    function affichestructureliste($structure, $niveau = 0)
+    {
+        global $dbcon;
+        global $structureid;
+        global $fonctions;
+        global $showall;
+        // $fonctions = new fonctions($dbcon);
+        if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
+            echo "<option value='" . $structure->id() . "'";
+            if ($structure->id() == $structureid) {
+                echo " selected ";
+            }
+            if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
+                echo " style='color:red;' ";
+            }
+            echo ">";
+            for ($cpt = 0; $cpt < $niveau; $cpt ++) {
+                echo "&nbsp;&nbsp;&nbsp;&nbsp;";
+            }
+            echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
+            echo "</option>";
+            
+            $sousstruclist = $structure->structurefille();
+            foreach ((array) $sousstruclist as $keystruct => $soustruct) {
+                affichestructureliste($soustruct, $niveau + 1);
+            }
+        }
+    }
+    
+    
+    //print_r ($_POST); echo "<br>";
     
     ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
     $mode = $_POST["mode"];
     if ($mode == "")
         $mode = "resp";
-    
+
+    if (isset($_POST["structureid"]))
+        $structureid = $_POST["structureid"];
+    else
+        $structureid = null;
+                
     $previous = "";
     if (isset($_POST["previous"]))
         $previous = $_POST["previous"];
@@ -46,7 +83,54 @@
     else
         $previous = 0;
     
-    if (strcasecmp($mode, "resp") == 0) {
+    if ($mode == 'rh')
+    {        
+        $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
+        $query = mysql_query($sql, $dbcon);
+        $erreur = mysql_error();
+        if ($erreur != "") {
+            $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+        }
+        echo "<form name='selectstructure'  method='post' >";
+        echo "<select size='1' id='structureid' name='structureid'>";
+        while ($result = mysql_fetch_row($query)) {
+            $struct = new structure($dbcon);
+            $struct->load($result[0]);
+            affichestructureliste($struct, 0);
+        }
+        echo "</select>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='previous' value='no'>";
+        echo "<br>";
+        
+        if (!is_null($structureid))
+        {
+            $struct = new structure($dbcon);
+            $struct->load($structureid);
+            echo "<br>";
+            echo "Solde des agents de la structure : " . $struct->nomlong() . " (" . $struct->nomcourt() . ") <br>";
+            $annerecherche = ($fonctions->anneeref() - $previous);
+            $agentliste = $struct->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+            if (is_array($agentliste)) {
+                foreach ($agentliste as $agentkey => $agent) {
+                    // echo "Annee ref = " . $fonctions->anneeref();
+                    // echo " debut = " . $fonctions->debutperiode();
+                    // echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
+                    // echo " Fin = " . $fonctions->finperiode();
+                    // echo "Previous = " . $previous ;
+                    echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
+                    
+                }
+            }
+        }
+        echo "<br>";
+        
+    }
+    elseif (strcasecmp($mode, "resp") == 0) {
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
             echo "<br>";
