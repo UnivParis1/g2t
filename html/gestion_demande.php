@@ -54,10 +54,45 @@
     // else
     // $agent->load($agentid);
     
+    $mode = null;
+    if (isset($_POST["mode"]))
+       $mode = $_POST["mode"];
+           
+
+       
     if (isset($_POST["agentid"]))
-        $agentid = $_POST["agentid"];
+    {
+       $agentid = $_POST["agentid"];
+       if (! is_numeric($agentid)) {
+           $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
+           $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
+           $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
+           $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
+           $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
+           $con_ldap = ldap_connect($LDAP_SERVER);
+           ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+           $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+           $filtre = "(uid=" . $agentid . ")";
+           $dn = $LDAP_SEARCH_BASE;
+           $restriction = array(
+               "$LDAP_CODE_AGENT_ATTR"
+           );
+           $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+           $info = ldap_get_entries($con_ldap, $sr);
+           // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+           if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+               $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+           }
+       }
+       
+       if (! is_numeric($agentid)) {
+           $agentid = null;
+           $agent = null;
+       }
+    }
     else
-        $agentid = null;
+       $agentid = null;
+
     if (is_null($agentid) or $agentid == "")
         $noagentset = TRUE;
     else {
@@ -77,6 +112,7 @@
             $responsable = new agent($dbcon);
             $responsable->load($responsableid);
             $noresponsableset = FALSE;
+            $mode='resp';
         }
     }
     
@@ -175,7 +211,7 @@
     // echo "structure->id() = " . $structure->id() . "<br>";
     
     echo "<form name='frm_gest_demande'  method='post' >";
-    if ($noresponsableset) {
+    if ($noresponsableset and is_null($mode)) {
         // => C'est un agent qui veut gérer ses demandes
         // echo "Pas de responsable.... <br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "agent", null);
@@ -185,42 +221,67 @@
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
     } elseif ($noagentset) {
-        // => On est en mode "responsable" mais aucun agent n'est sélectionné
-        // echo "Avant le chargement structure responsable <br>";
-        $structureliste = $responsable->structrespliste();
-        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-        $agentlistefull = array();
-        foreach ($structureliste as $structure) {
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-            // echo "fin du select <br>";
-            $structfille = $structure->structurefille();
-            if (! is_null($structfille)) {
-                foreach ($structfille as $fille) {
-                    if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                        $agentliste = null;
-                        $respfille = $fille->responsable();
-                        $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
-                        $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+        
+        if ($mode == 'resp')
+        {
+            // => On est en mode "responsable" mais aucun agent n'est sélectionné
+            // echo "Avant le chargement structure responsable <br>";
+            $structureliste = $responsable->structrespliste();
+            // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+            $agentlistefull = array();
+            foreach ($structureliste as $structure) {
+                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+                // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                // echo "fin du select <br>";
+                $structfille = $structure->structurefille();
+                if (! is_null($structfille)) {
+                    foreach ($structfille as $fille) {
+                        if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
+                            $agentliste = null;
+                            $respfille = $fille->responsable();
+                            $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
+                            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                        }
                     }
                 }
             }
+            ksort($agentlistefull);
+            //echo "<br>"; print_r($agentlistefull); echo "<br>";
+            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
+                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+            }
+            echo "<SELECT name='agentid'>";
+            foreach ($agentlistefull as $keyagent => $membre) {
+                echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            }
+            echo "</SELECT>";
+            echo "<br>";
         }
-        ksort($agentlistefull);
-        //echo "<br>"; print_r($agentlistefull); echo "<br>";
-        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
-            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+        else // $mode = 'rh'
+        {
+            echo "Personne à rechercher : <br>";
+            echo "<form name='selectagentcet'  method='post' >";
+            
+            echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
+            echo "' size=40 />";
+            echo "<input type='hidden' id='agentid' name='agentid' value='";
+            echo "' class='agent' /> ";
+            ?>
+        <script>
+                $("#agent").autocompleteUser(
+                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
+  	    </script>
+    	<?php
+            
+            
+            
+            
         }
-        echo "<SELECT name='agentid'>";
-        foreach ($agentlistefull as $keyagent => $membre) {
-            echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
-        }
-        echo "</SELECT>";
-        echo "<br>";
-    } else {
+    } elseif ($mode == 'resp') {
         // => On est en mode "reponsable" et un agent est sélectionné
-        // echo "Avant le mode responsable <br>";
+        //echo "Avant le mode responsable <br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "resp", null);
         if ($htmltext != "")
             echo $htmltext;
@@ -228,11 +289,26 @@
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
     }
+    else
+    {
+        // On est en mode rh et un agent est sélectionné
+        // On élargie de période de début de recherche des demades de CET pour l'agent à -2 ans.
+        //echo "Mode RH <br>";
+        $debut = $fonctions->formatdate(($fonctions->anneeref() - 2) . $fonctions->debutperiode());
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "resp", 'cet');
+        if ($htmltext != "")
+            echo $htmltext;
+        else
+            echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</center><br>";
+        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+                
+    }
     
     if ($responsableid != "")
         echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
+    echo "<input type='hidden' name='mode' value='" . $mode . "'>";
     echo "<input type='submit' value='Soumettre' />";
     
     echo "</form>"

@@ -796,6 +796,13 @@
 						
 						</form> <a href="javascript:document.rh_conge.submit();">Demande de congés imputés sur le CET</a>
 					</li>
+					<li onclick='document.rh_gest_conge.submit();'>
+						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="mode" value="rh"> 
+							<input type="hidden" name="previous" value="no">
+						</form> <a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
+					</li>
 					<li onclick='document.affiche_info_agent.submit();'>
 						<form name='affiche_info_agent' method='post'
 							action="affiche_info_agent.php">

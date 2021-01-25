@@ -1585,7 +1585,7 @@ AND DEMANDE.STATUT='v'";
      * @param string $mode
      *            optional responsable mode or agent mode. default is agent
      * @param string $cleelement
-     *            optional deprecated parameter => not used in code
+     *            optional type de demande à gérer (cet, ann20, ....)
      * @return string the html text of the array
      */
     function demandeslistehtmlpourgestion($debut_interval, $fin_interval, $agentid = null, $mode = "agent", $cleelement = null)
@@ -1659,19 +1659,22 @@ AND DEMANDE.STATUT='v'";
                         $premieredemande = FALSE;
                     }
                     
-                    $htmltext = $htmltext . "<tr align=center >";
-                    // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
-                    if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] value='yes' /></td>";
-                    if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
-                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "'  size=40></td>";
-                    $htmltext = $htmltext . "</tr>";
+                    if (is_null($cleelement) or (strtoupper($demande->type())==strtoupper($cleelement)))
+                    {
+                        $htmltext = $htmltext . "<tr align=center >";
+                        // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
+                        if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
+                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] value='yes' /></td>";
+                        if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
+                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "'  size=40></td>";
+                        $htmltext = $htmltext . "</tr>";
+                    }
                 }
                 // echo "demandeslistehtmlpourgestion => On passe au suivant <br>";
             }
