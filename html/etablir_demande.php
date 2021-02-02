@@ -57,21 +57,27 @@
     {
         $rh_mode = $_POST["rh_mode"];
         $rh_annee_previous = 2;
-        $previous = 2;
     }
     else
     {
         $rh_mode = 'no';
         $rh_annee_previous = 0;
     }
-    
+    // Si on est en mode RH on fixe $previous à $rh_annee_previous
+    if (strcasecmp($rh_mode, "yes") == 0)
+    {
+        $previous = $rh_annee_previous;
+    }
+        
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
         $previoustxt = null;
     if (strcasecmp($previoustxt, "yes") == 0)
         $previous = 1;
-          
+    
+    //echo "<br>previous => $previous <br>";
+        
     if (isset($_POST["agentid"]))
     {
         $agentid = $_POST["agentid"];
@@ -131,7 +137,7 @@
     else
         $agent = null;
     
-    // echo "<br>"; print_r($_POST); echo "<br>";
+    //echo "<br>"; print_r($_POST); echo "<br>";
     
     $datefausse = FALSE;
     $masquerboutonvalider = FALSE;
