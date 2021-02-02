@@ -51,10 +51,13 @@
         // echo "Le type de page n'est pas renseigné... On le fixe à " . $typedemande . "<br>";
     }
     
+    
+    $previous = 0;
     if (isset($_POST["rh_mode"]))
     {
         $rh_mode = $_POST["rh_mode"];
         $rh_annee_previous = 2;
+        $previous = 2;
     }
     else
     {
@@ -68,10 +71,7 @@
         $previoustxt = null;
     if (strcasecmp($previoustxt, "yes") == 0)
         $previous = 1;
-    else
-        $previous = 0;
-        
-        
+          
     if (isset($_POST["agentid"]))
     {
         $agentid = $_POST["agentid"];
@@ -259,7 +259,9 @@
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
+    
     // echo "Le commentaire vaut : " . $commentaire . "<br>";
+    //echo "<br>datefausse : $datefausse => ";  if ($datefausse) echo "True"; else echo "False";  echo "<BR>";
     
     if (isset($_POST["congeanticipe"]))
         $congeanticipe = $_POST["congeanticipe"];
@@ -313,6 +315,8 @@
     // ###############################################################
     // # Affichage
     // ###############################################################
+
+    //echo "msg_erreur 1 = " .$msg_erreur ." <br>";
     
     if (is_null($agent)) {
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
@@ -372,6 +376,7 @@
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     } else {
+        
         if (strcasecmp($typedemande, "conges") == 0) {
             echo "<font color=#FF0000><center>";
             echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
@@ -415,6 +420,9 @@
             echo "Demande d'autorisation d'absence pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         }
         // echo "Date fausse (1) = " . $datefausse . "<br>";
+        
+        //echo "msg_erreur 2 = " .$msg_erreur ." <br>";
+        
         if (! $datefausse) {
             $planning = new planning($dbcon);
             // echo "Date fin = " . $date_fin . "<br>";
@@ -423,9 +431,16 @@
             // echo "Fin de période = ". $fonctions->finperiode() . "<br>";
             // echo "LIMITE CONGE = " . $fonctions->liredbconstante("LIMITE_CONGE_PERIODE") . "<br>";
             
+            if (strcasecmp($rh_mode, "yes") == 0)
+            {
+                // On est en mode "RH" donc on ignore la présence/absence de l'agent
+                //echo 'On est en mode "RH" donc on ignore la présence/absence de l agent <br>';
+                $ignoreabsenceautodecla = TRUE;
+            }
+            
             // Si la date de fin est supérieur à la date de début et que l'on accepte que ca déborde
             // on fait un traitement spécial <=> pas de vérification des autodéclarations
-            if ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode() and strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
+            elseif ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode() and strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
                 // Si la date de fin est supérieure d'un mois à la date de fin de période ==> On refuse
                 // ==> On n'accepte que de déborder d'un mois
                 $datetemp = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
@@ -438,6 +453,7 @@
                     $ignoreabsenceautodecla = TRUE;
             } else
                 $ignoreabsenceautodecla = FALSE;
+            
             // Echo "Avant le est present .... <br>";
             $present = $planning->agentpresent($agent->harpegeid(), $date_debut, $deb_mataprem, $date_fin, $fin_mataprem, $ignoreabsenceautodecla);
             if (! $present)
@@ -445,6 +461,8 @@
         }
         
         // echo "Date fausse (2) = " . $datefausse . "<br>";
+        //echo "msg_erreur 3 = " .$msg_erreur. " <br>";
+        
         if ($msg_erreur != "" or $datefausse) {
             
             echo "<P style='color: red'><B><FONT SIZE='5pt'>";
