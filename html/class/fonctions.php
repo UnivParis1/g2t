@@ -627,8 +627,8 @@ class fonctions
             // $long_chps=strlen($legende["type_conge"])+10;
             // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
             $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
-            $pdf->Cell(4, 5, "", 1, 0, 'C', 1);
-            $pdf->Cell($long_chps, 4, $legende["libelle"], 0, 0, 'L');
+            $pdf->Cell(4, 5, utf8_decode(""), 1, 0, 'C', 1);
+            $pdf->Cell($long_chps, 4, utf8_decode($legende["libelle"]), 0, 0, 'L');
         }
     }
 

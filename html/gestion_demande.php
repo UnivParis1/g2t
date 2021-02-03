@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,14 +21,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     // // Initialisation de l'utilisateur
     // $agentid = $_POST["agentid"];
     // $agent = new agent($dbcon);
@@ -53,13 +53,13 @@
     // }
     // else
     // $agent->load($agentid);
-    
+
     $mode = null;
     if (isset($_POST["mode"]))
        $mode = $_POST["mode"];
-           
 
-       
+
+
     if (isset($_POST["agentid"]))
     {
        $agentid = $_POST["agentid"];
@@ -84,7 +84,7 @@
                $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
            }
        }
-       
+
        if (! is_numeric($agentid)) {
            $agentid = null;
            $agent = null;
@@ -115,7 +115,7 @@
             $mode='resp';
         }
     }
-    
+
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
@@ -124,17 +124,17 @@
         $previous = 1;
     else
         $previous = 0;
-    
+
     // echo "Avant le include <br>";
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml"><br>';
-    
+
     // echo "POST = "; print_r($_POST); echo "<br>";
-    
+
     $cancelarray = array();
     if (isset($_POST["cancel"]))
         $cancelarray = $_POST["cancel"];
-    
+
     foreach ($cancelarray as $demandeid => $value) {
         // echo "demandeid = $demandeid value = $value <br>";
         if (strcasecmp($value, "yes") == 0) {
@@ -189,7 +189,7 @@
                             }
                         }
                     }
-                    
+
                     // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                     error_log($fonctions->stripAccents("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut())));
                     echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
@@ -197,7 +197,7 @@
             }
         }
     }
-    
+
     $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
     // Si on est dans le mode "previous" alors on dit que la date de fin est l'année courante
     if ($previous == 1)
@@ -206,10 +206,10 @@
         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
     else
         $fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-    
+
     // echo "Debut = $debut fin = $fin <br>";
     // echo "structure->id() = " . $structure->id() . "<br>";
-    
+
     echo "<form name='frm_gest_demande'  method='post' >";
     if ($noresponsableset and is_null($mode)) {
         // => C'est un agent qui veut gérer ses demandes
@@ -221,7 +221,7 @@
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
     } elseif ($noagentset) {
-        
+
         if ($mode == 'resp')
         {
             // => On est en mode "responsable" mais aucun agent n'est sélectionné
@@ -262,7 +262,7 @@
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
-            
+
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -274,10 +274,10 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
     	<?php
-            
-            
-            
-            
+
+
+
+
         }
     } elseif ($mode == 'resp') {
         // => On est en mode "reponsable" et un agent est sélectionné
@@ -301,23 +301,23 @@
         else
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</center><br>";
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-                
+
     }
-    
+
     if ($responsableid != "")
         echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
     echo "<input type='submit' value='Soumettre' />";
-    
+
     echo "</form>"
-    
+
 ?>
 
 <br>
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

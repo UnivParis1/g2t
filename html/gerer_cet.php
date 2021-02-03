@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,14 +21,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     if (isset($_POST["agentid"])) {
         $agentid = $_POST["agentid"];
         if (! is_numeric($agentid)) {
@@ -52,7 +52,7 @@
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
         }
-        
+
         if (! is_numeric($agentid)) {
             $agentid = null;
             $agent = null;
@@ -64,46 +64,46 @@
         $agentid = null;
         $agent = null;
     }
-    
+
     $mode = null;
     if (isset($_POST["mode"]))
         $mode = $_POST["mode"];
-    
+
     $nbr_jours_cet = null;
     if (isset($_POST["nbr_jours_cet"]))
         $nbr_jours_cet = str_ireplace(",", ".", $_POST["nbr_jours_cet"]);
-    
+
     if (isset($_POST["nbrejoursdispo"]))
         $nbrejoursdispo = $_POST["nbrejoursdispo"];
     else
         $nbrejoursdispo = null;
-    
+
     if (isset($_POST["typeretrait"]))
         $typeretrait = $_POST["typeretrait"];
     else
         $typeretrait = null;
-    
+
     $ajoutcet = null;
     if (isset($_POST["ajoutcet"]))
         $ajoutcet = $_POST["ajoutcet"];
-    
+
     $retraitcet = null;
     if (isset($_POST["retraitcet"]))
         $retraitcet = $_POST["retraitcet"];
-    
+
     $nocheck = 'no';
     if (isset($_POST["nocheck"]))
         $nocheck = $_POST["nocheck"];
-        
-    
+
+
     $msg_erreur = "";
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     //print_r($_POST); echo "<br><br>";
-    
+
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
@@ -133,7 +133,7 @@
         echo "<br>";
         echo "<br>";
     }
-    
+
     if (! is_null($nbr_jours_cet)) {
         if ($nbr_jours_cet <= 0 or $nbr_jours_cet == "") {
             $errlog = "Le nombre de jours saisi est vide, inférieur à 0 ou est nul";
@@ -255,13 +255,13 @@
             error_log(basename(__FILE__) . " " . $errlog);
         }
     }
-    
+
     if ($msg_erreur != "") {
         echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
         error_log(basename(__FILE__) . " " . $msg_erreur);
         $msg_erreur = "";
     }
-    
+
     if (! is_null($agent)) {
         // echo "On a choisit un agent <br>";
         $msg_bloquant = "";
@@ -281,7 +281,7 @@
         $cet = new cet($dbcon);
         $msg_erreur_load = $cet->load($agentid);
         $msg_erreur = $msg_bloquant . $msg_erreur . $msg_erreur_load;
-        
+
         if ($msg_erreur == "") {
             // Pas d'erreur lors du chargement du CET
             // echo "Le CET de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est actuellement : <br>";
@@ -298,7 +298,7 @@
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $errlog);
         }
-        
+
         echo "<br>";
         if ($nbrejoursdispo > 0) {
             echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
@@ -321,7 +321,7 @@
             echo "Le solde $soldelibelle est nul ==> impossible d'alimenter le CET....<br>";
         }
         // echo 'Avant le test null(CET) <br>';
-        
+
         if (! is_null($cet)) {
             // Seuls les jours au delà de 20 jours de CET peuvent être indemnisés ou ajoutés à la RAFP
             // echo 'Cumul total = ' . $cet->cumultotal() . ' JrsPris = ' . $cet->jrspris() . '<br>';
@@ -333,10 +333,10 @@
                 echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > <br>";
                 // Calcul du nombre de jours disponibles en retrait du CET
                 // echo "cet->cumultotal() = " . $cet->cumultotal() . "<br>";
-                
+
                 echo "Le nombre de jours maximum à retirer est : " . $nbrejoursdispo . " jour(s) <br>";
                 echo "<input type='checkbox' name='nocheck' value='yes'>Ne pas vérifier le nombre de jours saisi. <b><u>ATTENTION :</u></b> A utiliser avec précaution.<br><br>";
-                
+
                 echo "Indiquer le type de retrait : ";
                 echo "<select name='typeretrait'>";
                 echo "<OPTION value='Indemnisation'>Indemnisation</OPTION>";
@@ -348,7 +348,7 @@
                 echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
                 echo "<input type='hidden' name='retraitcet' value='yes'>";
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-                
+
                 if ($msg_bloquant == "")
                     echo "<input type='submit' value='Soumettre' >";
                 echo "</form>";
@@ -364,11 +364,11 @@
         // On affiche les commentaires pour avoir l'historique
         echo $agent->affichecommentairecongehtml();
     }
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

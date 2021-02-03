@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,27 +21,27 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     $mode = $_POST["mode"];
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     // echo "SESSION = "; print_r($_SESSION); echo "<br>";
     // echo "_POST = "; print_r($_POST); echo "<br>";
     $statutliste = null;
     if (isset($_POST['statut'])) {
         $statutliste = $_POST['statut'];
     }
-    
+
     if (is_array($statutliste)) {
         foreach ($statutliste as $declarationid => $statut) {
             if (strcasecmp($statut, "a") != 0 and $statut != "") {
@@ -70,7 +70,7 @@
             }
         }
     }
-    
+
     /*
      *
      * //print_r($_POST); echo "<br>";
@@ -114,16 +114,16 @@
      * }
      *
      */
-    
+
     $structlist = null;
     if (strcasecmp($mode, "resp") == 0) {
         $structlist = $user->structrespliste();
     }
-    
+
     if (strcasecmp($mode, "gestion") == 0) {
         $structlist = $user->structgestliste();
     }
-    
+
     if (is_array($structlist)) {
         echo "Remarque : Les personnes affectées à temps plein ne sont pas affichées dans cet écran.<br><br>";
         foreach ($structlist as $keystruct => $structure) {
@@ -141,7 +141,7 @@
                     foreach ($affectationliste as $key => $affectation) {
                         // echo "quotitevaleur=" . $affectation->quotitevaleur() . "   Quotite=" . $affectation->quotite() . "   <br> " ;
                         // echo "Calcul = " . round($affectation->quotite(),2) . "<br>";
-                        if ($affectation->quotitevaleur() < 1) {  // Les affectations à 100% ne sont pas affichées 
+                        if ($affectation->quotitevaleur() < 1) {  // Les affectations à 100% ne sont pas affichées
                             // BugFix : Ticket GLPI 76387
                             // On met +99 et non +1, afin de permettre aux demandes futures de s'afficher (année de référence + 99 ans)
                             $declaTPliste = $affectation->declarationTPliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 99) . $fonctions->finperiode());
@@ -162,13 +162,13 @@
             echo "</form>";
         }
     }
-    
+
     echo "<br>";
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

@@ -926,19 +926,19 @@ AND DEMANDE.STATUT='v'";
     {
         $closeafter = FALSE;
         if (is_null($pdf)) {
-            // $pdf=new FPDF();
-            $pdf = new TCPDF();
-            // define('FPDF_FONTPATH','fpdffont/');
-            $pdf->Open();
-            $pdf->SetHeaderData('', 0, '', '', array(
-                0,
-                0,
-                0
-            ), array(
-                255,
-                255,
-                255
-            ));
+            $pdf=new FPDF();
+            //$pdf = new TCPDF();
+            //define('FPDF_FONTPATH','font/');
+            //$pdf->Open();
+            //$pdf->SetHeaderData('', 0, '', '', array(
+            //    0,
+            //    0,
+            //    0
+            //), array(
+            //    255,
+            //    255,
+            //    255
+            //));
             $closeafter = TRUE;
         }
         // echo "Apres le addpage <br>";
@@ -973,15 +973,15 @@ AND DEMANDE.STATUT='v'";
                 $structure = new structure($this->dbconnect);
                 $structure->load($affectation->structureid());
                 $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-                $pdf->Cell(60, 10, 'Service : ' . $nomstructure);
+                $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
             }
             
             // $pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('.$this->structure()->nomcourt() . ')' );
             $pdf->Ln(5);
-            $pdf->Cell(60, 10, 'Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom());
+            $pdf->Cell(60, 10, utf8_decode('Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom()));
             $pdf->Ln(5);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
-            $pdf->Cell(60, 10, 'Edité le ' . date("d/m/Y"));
+            $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
         }
         $pdf->SetFont('helvetica', '', 6, '', true);
         $pdf->Ln(10);
@@ -992,15 +992,15 @@ AND DEMANDE.STATUT='v'";
                 $headertext = $headertext . $this->fonctions->formatdate(($anneeref + 1) . $this->fonctions->finperiode());
             else
                 $headertext = $headertext . date("d/m/Y");
-            $pdf->Cell(215, 5, $headertext, 1, 0, 'C');
+                $pdf->Cell(215, 5, utf8_decode($headertext), 1, 0, 'C');
         } else
-            $pdf->Cell(215, 5, "Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom(), 1, 0, 'C');
+            $pdf->Cell(215, 5, utf8_decode("Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom()), 1, 0, 'C');
         $pdf->Ln(5);
-        $pdf->Cell(75, 5, "Type congé", 1, 0, 'C');
-        $pdf->Cell(30, 5, "Droits acquis", 1, 0, 'C');
-        $pdf->Cell(30, 5, "Droit pris", 1, 0, 'C');
-        $pdf->Cell(30, 5, "Solde actuel", 1, 0, 'C');
-        $pdf->Cell(50, 5, "Demandes en attente", 1, 0, 'C');
+        $pdf->Cell(75, 5, utf8_decode("Type congé"), 1, 0, 'C');
+        $pdf->Cell(30, 5, utf8_decode("Droits acquis"), 1, 0, 'C');
+        $pdf->Cell(30, 5, utf8_decode("Droit pris"), 1, 0, 'C');
+        $pdf->Cell(30, 5, utf8_decode("Solde actuel"), 1, 0, 'C');
+        $pdf->Cell(50, 5, utf8_decode("Demandes en attente"), 1, 0, 'C');
         $pdf->Ln(5);
         
         $totaldroitaquis = 0;
@@ -1009,7 +1009,7 @@ AND DEMANDE.STATUT='v'";
         $totaldemandeattente = 0;
         $soldeliste = $this->soldecongesliste($anneeref);
         foreach ((array) $soldeliste as $key => $tempsolde) {
-            $pdf->Cell(75, 5, $tempsolde->typelibelle(), 1, 0, 'C');
+            $pdf->Cell(75, 5, utf8_decode($tempsolde->typelibelle()), 1, 0, 'C');
             
             $textdroitaquis = $tempsolde->droitaquis() . "";
             if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
@@ -1017,10 +1017,10 @@ AND DEMANDE.STATUT='v'";
                 if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
                     $textdroitaquis = $textdroitaquis . " (C. BONIF.)";
             }
-            $pdf->Cell(30, 5, $textdroitaquis, 1, 0, 'C');
-            $pdf->Cell(30, 5, $tempsolde->droitpris() . "", 1, 0, 'C');
-            $pdf->Cell(30, 5, $tempsolde->solde() . "", 1, 0, 'C');
-            $pdf->Cell(50, 5, $tempsolde->demandeenattente() . "", 1, 0, 'C');
+            $pdf->Cell(30, 5, utf8_decode($textdroitaquis), 1, 0, 'C');
+            $pdf->Cell(30, 5, utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
+            $pdf->Cell(30, 5, utf8_decode($tempsolde->solde() . ""), 1, 0, 'C');
+            $pdf->Cell(50, 5, utf8_decode($tempsolde->demandeenattente() . ""), 1, 0, 'C');
             $totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis();
             $totaldroitpris = $totaldroitpris + $tempsolde->droitpris();
             $totaldroitrestant = $totaldroitrestant + $tempsolde->solde();
@@ -1035,7 +1035,7 @@ AND DEMANDE.STATUT='v'";
          * $pdf->Cell(50,5,$totaldemandeattente . "",1,0,'C');
          */
         // $pdf->Ln(8);
-        $pdf->Cell(8, 5, "Soldes de congés donnés sous réserve du respect des règles de gestion");
+        $pdf->Cell(8, 5, utf8_decode("Soldes de congés donnés sous réserve du respect des règles de gestion"));
         $pdf->Ln(8);
         // ob_end_clean();
         if ($closeafter == TRUE)
@@ -1416,33 +1416,33 @@ AND DEMANDE.STATUT='v'";
         $demandeliste = $this->demandesliste($datedebut, $datefin);
         $closeafter = FALSE;
         if (is_null($pdf)) {
-            // $pdf=new FPDF();
-            $pdf = new TCPDF();
-            // define('FPDF_FONTPATH','fpdffont/');
-            $pdf->Open();
-            $pdf->SetHeaderData('', 0, '', '', array(
-                0,
-                0,
-                0
-            ), array(
-                255,
-                255,
-                255
-            ));
+            $pdf=new FPDF();
+            //$pdf = new TCPDF();
+            //define('FPDF_FONTPATH','font/');
+            //$pdf->Open();
+            //$pdf->SetHeaderData('', 0, '', '', array(
+            //    0,
+            //    0,
+            //    0
+            //), array(
+            //    255,
+            //    255,
+            //    255
+            //));
             $closeafter = TRUE;
         }
         if ($header == TRUE) {
             $pdf->AddPage('L');
             // echo "Apres le addpage <br>";
-            $pdf->SetHeaderData('', 0, '', '', array(
-                0,
-                0,
-                0
-            ), array(
-                255,
-                255,
-                255
-            ));
+            //$pdf->SetHeaderData('', 0, '', '', array(
+            //    0,
+            //    0,
+            //    0
+            //), array(
+            //    255,
+            //    255,
+            //    255
+            //));
             $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
             $pdf->Ln(15);
@@ -1463,16 +1463,16 @@ AND DEMANDE.STATUT='v'";
                 $structure = new structure($this->dbconnect);
                 $structure->load($affectation->structureid());
                 $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-                $pdf->Cell(60, 10, 'Service : ' . $nomstructure);
+                $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
                 $pdf->Ln();
             }
             
-            $pdf->Cell(60, 10, 'Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom());
+            $pdf->Cell(60, 10, utf8_decode('Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom()));
             $pdf->Ln(5);
-            $pdf->Cell(60, 10, "Période du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin));
+            $pdf->Cell(60, 10, utf8_decode("Période du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin)));
             $pdf->Ln(10);
             $pdf->SetFont('helvetica', 'B', 6, '', true);
-            $pdf->Cell(60, 10, 'Edité le ' . date("d/m/Y"));
+            $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
             $pdf->Ln(10);
         }
         $pdf->SetFont('helvetica', '', 6, '', true);
@@ -1483,19 +1483,19 @@ AND DEMANDE.STATUT='v'";
         else
             $headertext = $headertext . date("d/m/Y");
         
-        $pdf->Cell(275, 5, $headertext, 1, 0, 'C');
+            $pdf->Cell(275, 5, utf8_decode($headertext), 1, 0, 'C');
         $pdf->Ln(5);
         
         if (count($demandeliste) == 0)
-            $pdf->Cell(275, 5, "L'agent n'a aucun congé posé pour la période de référence en cours.", 1, 0, 'C');
+            $pdf->Cell(275, 5, utf8_decode("L'agent n'a aucun congé posé pour la période de référence en cours."), 1, 0, 'C');
         else {
-            $pdf->Cell(60, 5, "Type de congé", 1, 0, 'C');
-            $pdf->Cell(25, 5, "Date de dépot", 1, 0, 'C');
-            $pdf->Cell(30, 5, "Date de début", 1, 0, 'C');
-            $pdf->Cell(30, 5, "Date de fin", 1, 0, 'C');
-            $pdf->Cell(20, 5, "Nbr de jours", 1, 0, 'C');
-            $pdf->Cell(30, 5, "Etat de la demande", 1, 0, 'C');
-            $pdf->Cell(80, 5, "Motif (obligatoire si le congé est annulé)", 1, 0, 'C');
+            $pdf->Cell(60, 5, utf8_decode("Type de congé"), 1, 0, 'C');
+            $pdf->Cell(25, 5, utf8_decode("Date de dépot"), 1, 0, 'C');
+            $pdf->Cell(30, 5, utf8_decode("Date de début"), 1, 0, 'C');
+            $pdf->Cell(30, 5, utf8_decode("Date de fin"), 1, 0, 'C');
+            $pdf->Cell(20, 5, utf8_decode("Nbr de jours"), 1, 0, 'C');
+            $pdf->Cell(30, 5, utf8_decode("Etat de la demande"), 1, 0, 'C');
+            $pdf->Cell(80, 5, utf8_decode("Motif (obligatoire si le congé est annulé)"), 1, 0, 'C');
             $pdf->ln(5);
             foreach ($demandeliste as $key => $demande) {
                 if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), "r") != 0) {
@@ -1503,13 +1503,13 @@ AND DEMANDE.STATUT='v'";
                     if (strlen($libelledemande) > 40) {
                         $libelledemande = substr($demande->typelibelle(), 0, 40) . "...";
                     }
-                    $pdf->Cell(60, 5, $libelledemande, 1, 0, 'C');
-                    $pdf->Cell(25, 5, $demande->date_demande(), 1, 0, 'C');
-                    $pdf->Cell(30, 5, $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()), 1, 0, 'C');
-                    $pdf->Cell(30, 5, $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()), 1, 0, 'C');
-                    $pdf->Cell(20, 5, $demande->nbrejrsdemande(), 1, 0, 'C');
-                    $pdf->Cell(30, 5, $this->fonctions->demandestatutlibelle($demande->statut()), 1, 0, 'C');
-                    $pdf->Cell(80, 5, $demande->motifrefus(), 1, 0, 'C');
+                    $pdf->Cell(60, 5, utf8_decode($libelledemande), 1, 0, 'C');
+                    $pdf->Cell(25, 5, utf8_decode($demande->date_demande()), 1, 0, 'C');
+                    $pdf->Cell(30, 5, utf8_decode($demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
+                    $pdf->Cell(30, 5, utf8_decode($demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
+                    $pdf->Cell(20, 5, utf8_decode($demande->nbrejrsdemande()), 1, 0, 'C');
+                    $pdf->Cell(30, 5, utf8_decode($this->fonctions->demandestatutlibelle($demande->statut())), 1, 0, 'C');
+                    $pdf->Cell(80, 5, utf8_decode($demande->motifrefus()), 1, 0, 'C');
                     $pdf->ln(5);
 /*                    
                     if (strcasecmp($demande->statut(), "r") != 0) // Si la demande n'est pas annulée ou refusée
@@ -1548,10 +1548,10 @@ AND DEMANDE.STATUT='v'";
                 $headertext = $headertext . $this->fonctions->formatdate($datefin);
             else
                 $headertext = $headertext . date("d/m/Y");
-            $pdf->Cell(100, 5, $headertext, 1, 0, 'C');
+            $pdf->Cell(100, 5, utf8_decode($headertext), 1, 0, 'C');
             $pdf->Ln(5);
-            $pdf->Cell(80, 5, "Type de congé", 1, 0, 'C');
-            $pdf->Cell(20, 5, "Droit pris", 1, 0, 'C');
+            $pdf->Cell(80, 5, utf8_decode("Type de congé"), 1, 0, 'C');
+            $pdf->Cell(20, 5, utf8_decode("Droit pris"), 1, 0, 'C');
             $pdf->ln(5);
             ksort($synthesetab);
             foreach ($synthesetab as $key => $nbrejrs) {
@@ -1559,8 +1559,8 @@ AND DEMANDE.STATUT='v'";
                 if (strlen($key) > 40) {
                     $libelledemande = substr($key, 0, 40) . "...";
                 }
-                $pdf->Cell(80, 5, $libelledemande, 1, 0, 'C');
-                $pdf->Cell(20, 5, $nbrejrs, 1, 0, 'C');
+                $pdf->Cell(80, 5, utf8_decode($libelledemande), 1, 0, 'C');
+                $pdf->Cell(20, 5, utf8_decode($nbrejrs), 1, 0, 'C');
                 $pdf->ln(5);
             }
         }

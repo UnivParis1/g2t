@@ -1,7 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -11,38 +11,38 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     $date = date("Ymd");
-    
+
     echo "Début de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
-    
+
     // On selectionne les demandes en attente de validation
     $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = 'a'";
     $query = mysql_query($sql, $dbcon);
     $erreur_requete = mysql_error();
     if ($erreur_requete != "")
         echo "SELECT DEMANDEID => $erreur_requete \n";
-    
+
     $arraystruct = array();
     $mail_gest = array();
     $mail_resp = array();
     $codeinterne = "";
-    
+
     while ($result = mysql_fetch_row($query)) {
         $declaration = new declarationTP($dbcon);
         $declaration->load($result[0]);
         $affectation = new affectation($dbcon);
         $affectation->load($declaration->affectationid());
-        
+
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
-        
+
         // Si ce n'est pas le responsable de la structure qui a fait la demande
         // => C'est un agent
         // On regarde à qui on doit envoyer la demande de TP pour sa structure
@@ -91,7 +91,7 @@
         unset($declaration);
         unset($affectation);
     }
-    
+
     echo "mail_resp=";
     print_r($mail_resp);
     echo "\n";
@@ -102,12 +102,12 @@
     $agentcron = new agent($dbcon);
     // -1 est le code pour l'agent CRON dans G2T
     $agentcron->load('-1');
-    
+
     foreach ($mail_resp as $agentid => $nbredemande) {
         $responsable = new agent($dbcon);
         $responsable->load($agentid);
         echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") \n";
-        
+
         $agentcron->sendmail($responsable, "Des demandes de temps partiel sont en attentes", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que responsable de structure, merci de bien vouloir les valider dès que possible.\n", null);
         unset($responsable);
     }
@@ -115,11 +115,11 @@
         $gestionnaire = new agent($dbcon);
         $gestionnaire->load($agentid);
         echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") \n";
-        
+
         $agentcron->sendmail($gestionnaire, "Des demandes de temps partiel sont en attentes", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que gestionnaire de structure, merci de bien vouloir les valider dès que possible.\n", null);
         unset($gestionnaire);
     }
-    
+
     unset($agentcron);
     echo "Fin de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
 

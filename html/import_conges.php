@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     // Initialisation de l'utilisateur
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
@@ -12,7 +12,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -22,11 +22,11 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
     $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
     $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
@@ -50,16 +50,16 @@
         header('Location: index.php');
         exit();
     }
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     $liste_conges = "";
     if (isset($_POST["conge_liste"]))
         $liste_conges = $_POST["conge_liste"];
-    
+
     require ("includes/menu.php");
-    
+
     if ($liste_conges != "") {
         // echo "Liste conges = " . htmlentities($liste_conges) . "<br>";
         $tabligne = explode("\n", $liste_conges);
@@ -92,13 +92,13 @@
                     $statut = $element[6];
                     if ((strcasecmp($statut, 'v') != 0) and (strcmp($statut, 'r') != 0) and (strcmp($statut, 'R') != 0) and (strcasecmp($statut, 'a') != 0))
                         $msg_erreur = $msg_erreur . "$statut n'est pas un statut valide. ";
-                    
+
                     if ($msg_erreur == "") {
                         echo "Demande de congés pour " . $agent->identitecomplete() . " du " . $date_debut . " au " . $date_fin . " : ";
                         // On recherche les declarations de TP relatives à cette demande
                         $affectationliste = $agent->affectationliste($date_debut, $date_fin);
                         if (! is_null($affectationliste)) {
-                            
+
                             $declarationTPliste = array();
                             foreach ($affectationliste as $affectation) {
                                 // On recupère la première affectation
@@ -109,7 +109,7 @@
                             }
                             // echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
                         }
-                        
+
                         // echo "Je vais sauver la demande <br>";
                         unset($demande);
                         $demande = new demande($dbcon);
@@ -150,9 +150,9 @@
         }
         echo "<br>";
     }
-    
+
     ?>
-    
+
     <br>
     Listez dans la zone ci-dessous les demandes à ajouter :
     <br>
@@ -166,7 +166,7 @@
     <br>
     <br>
     <form name='postconge_liste' method='post'>
-    
+
     	<textarea name="conge_liste" cols="60" rows="20"><?php echo $liste_conges ?></textarea>
     <?php
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";

@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     // Initialisation de l'utilisateur
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
@@ -13,7 +13,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -23,14 +23,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     // Récupération de l'agent reponsable...
     if (isset($_POST["responsable"])) {
         $responsableid = $_POST["responsable"];
@@ -40,7 +40,7 @@
         $responsableid = null;
         $responsable = null;
     }
-    
+
     // Si passé en paramètre : Soit 'conges', soit 'absence'
     // permet d'afficher la page en mode 'demande d'absence' ou en mode 'demande de conges'
     if (isset($_POST["typedemande"])) {
@@ -50,28 +50,34 @@
         // $typedemande = "absence";
         // echo "Le type de page n'est pas renseigné... On le fixe à " . $typedemande . "<br>";
     }
-    
-    
+
+
     $previous = 0;
     if (isset($_POST["rh_mode"]))
     {
         $rh_mode = $_POST["rh_mode"];
         $rh_annee_previous = 2;
-        $previous = 2;
     }
     else
     {
         $rh_mode = 'no';
         $rh_annee_previous = 0;
     }
-    
+    // Si on est en mode RH on fixe $previous à $rh_annee_previous
+    if (strcasecmp($rh_mode, "yes") == 0)
+    {
+        $previous = $rh_annee_previous;
+    }
+
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
         $previoustxt = null;
     if (strcasecmp($previoustxt, "yes") == 0)
         $previous = 1;
-          
+
+    //echo "<br>previous => $previous <br>";
+
     if (isset($_POST["agentid"]))
     {
         $agentid = $_POST["agentid"];
@@ -96,7 +102,7 @@
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
         }
-        
+
         if (! is_numeric($agentid)) {
             $agentid = null;
             $agent = null;
@@ -104,7 +110,7 @@
     }
     else
         $agentid = null;
-    
+
     $agent = new agent($dbcon);
     // echo "agentid = " . $agentid . "<br>";
     if ((is_null($agentid) or $agentid == "") and is_null($responsable)) {
@@ -130,13 +136,13 @@
         $agent->load($agentid);
     else
         $agent = null;
-    
-    // echo "<br>"; print_r($_POST); echo "<br>";
-    
+
+    //echo "<br>"; print_r($_POST); echo "<br>";
+
     $datefausse = FALSE;
     $masquerboutonvalider = FALSE;
     $msg_erreur = "";
-    
+
     // Récupération de la date de début
     if (isset($_POST["date_debut"])) {
         $date_debut = $_POST["date_debut"];
@@ -171,7 +177,7 @@
         $date_debut = null;
         $datefausse = TRUE;
     }
-    
+
     // Récupération de la date de fin
     if (isset($_POST["date_fin"])) {
         // echo "date_fin = $date_fin <br>";
@@ -199,7 +205,7 @@
         $date_fin = null;
         $datefausse = TRUE;
     }
-    
+
     if ($msg_erreur == "" and ! $datefausse) {
         $datedebutdb = $fonctions->formatdatedb($date_debut);
         $datefindb = $fonctions->formatdatedb($date_fin);
@@ -210,7 +216,7 @@
             $datefausse = true;
         }
     }
-    
+
     // # Récupération du type de l'absence (annuel, CET, ...)
     if (isset($_POST["listetype"])) {
         $listetype = $_POST["listetype"];
@@ -219,18 +225,18 @@
             // On ajoute 2 car un congés 2014 est valable jusqu'en Mars 2016 => soit 2 ans de plus !!!
             $datelimite = ($anneeref + 2) . $fonctions->liredbconstante('FIN_REPORT');
             // echo "Date limite report = $datelimite <br>";
-            
+
             // ------------------------------------------------------------------------------------
             // A décommenter pour empécher le reliquat d'être pris après la date de fin du report
             $datefindb = $fonctions->formatdatedb($date_fin);
             if ($datefindb > $datelimite)
             // ------------------------------------------------------------------------------------
-            
+
             // ------------------------------------------------------------------------------------
             // A décommenter pour autoriser le reliquat à être pris après la fin du report
             // $datedebutdb = $fonctions->formatdatedb($date_debut);
             // ATTENTION : Pour l'année en cours on accepte que le debut soit postérieur au report
-            // if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4))) 
+            // if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4)))
             // ------------------------------------------------------------------------------------
             {
                 $errlog = "Le type de congés utilisé n'est pas valide pour la période demandée ! ";
@@ -245,7 +251,7 @@
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
-    
+
     // # Récupération du commentaire (s'il existe)
     $commentaire = "";
     if (isset($_POST["commentaire"]))
@@ -259,15 +265,15 @@
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
-    
+
     // echo "Le commentaire vaut : " . $commentaire . "<br>";
     //echo "<br>datefausse : $datefausse => ";  if ($datefausse) echo "True"; else echo "False";  echo "<BR>";
-    
+
     if (isset($_POST["congeanticipe"]))
         $congeanticipe = $_POST["congeanticipe"];
     else
         $congeanticipe = null;
-    
+
     // # On regarde si le dossier est complet pour la période demandée ==> Si pas !! Pas de saisie possible
     if (! is_null($agent) and ! $datefausse) {
         if (! $agent->dossiercomplet($date_debut, $date_fin)) {
@@ -277,7 +283,7 @@
             // $masquerboutonvalider = TRUE;
         }
     }
-    
+
     require ("includes/menu.php");
     ?>
     <script type="text/javascript">
@@ -286,7 +292,7 @@
     	{
     		//alert("planning_click => " + date + "  "  + moment);
     		document.getElementById("date_debut").value = date;
-    		
+
     		if (moment.toLowerCase() =="m")
     			document.frm_demande_conge["deb_mataprem"][0].checked = true;
     		else
@@ -297,34 +303,34 @@
     	{
     		//alert("planning_click => " + date + "  "  + moment);
     		document.getElementById("date_fin").value = date;
-    		
+
     		if (moment.toLowerCase() =="m")
     			document.frm_demande_conge["fin_mataprem"][0].checked = true;
     		else
     			document.frm_demande_conge["fin_mataprem"][1].checked = true;
     	}
     	</script>
-    <!-- 
+    <!--
     	<script src="javascripts/jquery-1.8.3.js"></script>
     	<script src="javascripts//jquery-ui.js"></script>
      -->
     <?php
-    
+
     // echo '<html><body class="bodyhtml">';
-    
+
     // ###############################################################
     // # Affichage
     // ###############################################################
 
     //echo "msg_erreur 1 = " .$msg_erreur ." <br>";
-    
+
     if (is_null($agent)) {
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
         if ($rh_mode=='yes')
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
-            
+
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -366,7 +372,7 @@
             echo "</SELECT>";
         }
         echo "<br>";
-        
+
         echo "<input type='hidden' name='typedemande' value='" . $typedemande . "'>";
         echo "<input type='hidden' name='responsable' value='" . $responsable->harpegeid() . "'>";
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
@@ -376,14 +382,14 @@
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     } else {
-        
+
         if (strcasecmp($typedemande, "conges") == 0) {
             echo "<font color=#FF0000><center>";
             echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
             echo "</center></font>";
             echo "<br>";
-            
-            
+
+
             echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
             $solde = new solde($dbcon);
             $codecongeanticipe = "ann" . substr($fonctions->anneeref() + 1 - $previous, 2);
@@ -420,9 +426,9 @@
             echo "Demande d'autorisation d'absence pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         }
         // echo "Date fausse (1) = " . $datefausse . "<br>";
-        
+
         //echo "msg_erreur 2 = " .$msg_erreur ." <br>";
-        
+
         if (! $datefausse) {
             $planning = new planning($dbcon);
             // echo "Date fin = " . $date_fin . "<br>";
@@ -430,14 +436,14 @@
             // echo "Annee ref + 1 = " . ($fonctions->anneeref()+1) . "<br>";
             // echo "Fin de période = ". $fonctions->finperiode() . "<br>";
             // echo "LIMITE CONGE = " . $fonctions->liredbconstante("LIMITE_CONGE_PERIODE") . "<br>";
-            
+
             if (strcasecmp($rh_mode, "yes") == 0)
             {
                 // On est en mode "RH" donc on ignore la présence/absence de l'agent
                 //echo 'On est en mode "RH" donc on ignore la présence/absence de l agent <br>';
                 $ignoreabsenceautodecla = TRUE;
             }
-            
+
             // Si la date de fin est supérieur à la date de début et que l'on accepte que ca déborde
             // on fait un traitement spécial <=> pas de vérification des autodéclarations
             elseif ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode() and strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
@@ -453,18 +459,18 @@
                     $ignoreabsenceautodecla = TRUE;
             } else
                 $ignoreabsenceautodecla = FALSE;
-            
+
             // Echo "Avant le est present .... <br>";
             $present = $planning->agentpresent($agent->harpegeid(), $date_debut, $deb_mataprem, $date_fin, $fin_mataprem, $ignoreabsenceautodecla);
             if (! $present)
                 $msg_erreur = $msg_erreur . $agent->prenom() . "  " . $agent->nom() . " n'est pas présent durant la période du $date_debut au $date_fin......!!! <br>";
         }
-        
+
         // echo "Date fausse (2) = " . $datefausse . "<br>";
         //echo "msg_erreur 3 = " .$msg_erreur. " <br>";
-        
+
         if ($msg_erreur != "" or $datefausse) {
-            
+
             echo "<P style='color: red'><B><FONT SIZE='5pt'>";
             if ($msg_erreur != "" and isset($_POST["valider"])) {
                 echo "Votre demande n'a pas été enregistrée... <BR>";
@@ -476,7 +482,7 @@
             // On recherche les declarations de TP relatives à cette demande
             $affectationliste = $agent->affectationliste($date_debut, $date_fin);
             if (! is_null($affectationliste)) {
-                
+
                 $declarationTPliste = array();
                 foreach ($affectationliste as $affectation) {
                     // On recupère la première affectation
@@ -487,7 +493,7 @@
                 }
                 // echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
             }
-            
+
             // echo "Je vais sauver la demande <br>";
             unset($demande);
             $demande = new demande($dbcon);
@@ -540,7 +546,7 @@
                             }
                         }
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
-                        
+
                         if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         {
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
@@ -580,13 +586,13 @@
         echo "Les situations particulières (notamment liées à des problèmes de santé) ne font pas l'objet d'un suivi dans G2T. Vous devez pour ces cas précis vous rapprocher de votre chef de service.<br>";
         echo "</P>";
         echo "</span>";
-        
+
         ?>
     <form name="frm_demande_conge" method="post">
-    
+
     	<input type="hidden" name="agentid"
     		value="<?php echo $agent->harpegeid(); ?>">
-    
+
     	<table>
     		<tr>
     			<td>Date de début de la demande :</td>
@@ -596,7 +602,7 @@
         $calendrierid_fin = "date_fin";
         echo '
     <script>
-    $(function() 
+    $(function()
     {
     	$( "#' . $calendrierid_deb . '" ).datepicker({minDate: $( "#' . $calendrierid_deb . '" ).attr("minperiode"), maxDate: $( "#' . $calendrierid_deb . '" ).attr("maxperiode")});
     	$( "#' . $calendrierid_deb . '").change(function () {
@@ -604,7 +610,7 @@
     			$("#' . $calendrierid_fin . '").datepicker({minDate: $("#' . $calendrierid_deb . '").datepicker("getDate"), maxDate: $( "#' . $calendrierid_fin . '" ).attr("maxperiode")});
     	});
     });
-    </script> 
+    </script>
     ';
         echo '
     <script>
@@ -695,7 +701,7 @@
             }
             echo "</SELECT>";
             echo "<br>";
-            
+
             echo "<input type='hidden' name='typedemande' value='absence' ?>";
         }
         ?>
@@ -716,7 +722,7 @@
             echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
             echo "<br>";
         }
-        
+
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
@@ -726,7 +732,7 @@
         echo "<br><br>";
         ?>
     	</form>
-    
+
     <?php
         // echo "Date_debut = $date_debut date_fin= $date_fin <br>";
         // echo "Debut periode = " . $fonctions->debutperiode() . "<br>";
@@ -740,7 +746,7 @@
                 echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE);
                 echo "<br>";
             }
-           
+
         }
         elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
             $datetemp = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
@@ -751,14 +757,14 @@
             echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE);
         } else
             echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode()), TRUE);
-        
+
         echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
         echo $agent->affichecommentairecongehtml();
         echo "<br>";
     }
 ?>
 
-<!-- 
+<!--
 <a href=".">Retour à la page d'accueil</a>
 -->
 </body>

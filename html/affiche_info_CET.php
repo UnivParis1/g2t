@@ -10,32 +10,32 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
-    
+
+
     echo "<html>";
     echo "<head>";
 ?>
 <link rel="stylesheet" type="text/css"
 	href="style/style.css?<?php echo filemtime('style/style.css')  ?>"
 	media="screen"></link>
-<?php 
+<?php
     echo "</head>";
     echo "<body style='margin: 0 ; overflow: hidden'>";
     //echo "<p style='font-family: Verdana; font-size: 8pt; text-align: left; color: #616162; background: inherit; border-width: 0;'>";
     echo "<p class='siham_css'>";
-    
-    
-    
+
+
+
     //echo "L'agent connecté est : " . $uid . "<br>";
-    
-    
+
+
     $user = new agent($dbcon);
     $userid = null;
-    
+
     // echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
     $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
     $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
@@ -69,12 +69,12 @@
     // echo "Avant le recup user-> id";
     $userid = $user->harpegeid();
     // echo "Apres le recup user-> id";
-    
+
 //    $userid = "7546";
-    
-    
+
+
     //echo "Le numéro SIHAM de l'agent connecté est : " . $userid . "<br>";
-    
+
     $solde = new solde($dbcon);
     if ($solde->load($userid, 'cet') <> "")
     {
@@ -90,7 +90,7 @@
         echo ($solde->droitaquis() - $solde->droitpris())  . " jour";
         //echo "Nombre de jours restant dans votre CET : " . ($solde->droitaquis() - $solde->droitpris())  . " jour.";
     }
-    
+
     echo "</p>";
 ?>
 </body>

@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -11,17 +11,17 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     $user = new agent($dbcon);
-    
+
     if (is_null($userid) or $userid == "") {
         // echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
@@ -68,13 +68,13 @@
             exit();
         }
     }
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
-    
+
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
     $affectationliste = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));
-    
+
     echo "<br>Bonjour " . $user->identitecomplete() . " : <br>";
     if (! is_null($affectationliste)) {
         $affectation = reset($affectationliste);
@@ -84,17 +84,17 @@
         echo $structure->nomlong();
     } else
         echo "Pas d'affectation actuellement => Pas de structure";
-    
+
     // $tempstructid = $user->structure()->id();
     echo "<br><br>";
-    
-    
+
+
     $affectationliste = $user->affectationliste($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()),$fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()));
-    
+
     // L'agent a-t-il des affectation ?
     if (count((array)$affectationliste) >0)
     {
-        // Pour chaque affectation  
+        // Pour chaque affectation
         foreach ((array) $affectationliste as $affectation)
         {
             // Si c'est un temps partiel, on verifie que le temps partiel est bien saisi et validé
@@ -110,7 +110,7 @@
                     $datedebut = $fonctions->anneeref() . $fonctions->debutperiode();
                 if ($datefin > ($fonctions->anneeref()+1) . $fonctions->finperiode())
                     $datefin = ($fonctions->anneeref()+1) . $fonctions->finperiode();
-            
+
                 //echo "datedebut = $datedebut    datefin = $datefin <br>";
                 // On verifie que sur l'affectation en cours, il n'y a pas de période non déclaré.
                 if (!$user->dossiercomplet($datedebut,$datefin))
@@ -152,17 +152,17 @@
      * echo "<br>Planning de la structure " . $structure->nomlong() . " :<br>";
      * echo $structure->planninghtml("03/2013");
      */
-     
+
      echo "<font color=#FF0000><center>";
      echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
      echo "</center></font>";
      echo "<br>";
-    
+
     echo $user->soldecongeshtml($fonctions->anneeref());
-    
+
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
-    
+
 ?>
 </body>
 </html>

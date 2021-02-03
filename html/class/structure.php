@@ -509,7 +509,8 @@ class structure
     function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false) // Le format doit être MM/YYYY
     {
         // echo "Je debute planninghtml <br>";
-        list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
             echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Les informations antérieures à la date du jour ont été masquées.</font></B><br>";
             // echo "<font color=#FF0000></font><br>";
@@ -843,30 +844,30 @@ class structure
     function pdf($mois_annee_debut, $noiretblanc = false) // Le format doit être MM/YYYY
     {
         // echo "Avant le new PDF <br>";
-        // $pdf=new FPDF();
-        $pdf = new TCPDF();
-        // define('FPDF_FONTPATH','fpdffont/');
-        $pdf->Open();
-        $pdf->SetHeaderData('', 0, '', '', array(
-            0,
-            0,
-            0
-        ), array(
-            255,
-            255,
-            255
-        ));
+        $pdf=new FPDF();
+        //$pdf = new TCPDF();
+        //define('FPDF_FONTPATH','font/');
+        //$pdf->Open();
+        //$pdf->SetHeaderData('', 0, '', '', array(
+        //    0,
+        //    0,
+        //    0
+        //), array(
+        //    255,
+        //    255,
+        //    255
+        //));
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
         $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
-        $pdf->Cell(60, 10, 'Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')');
+        $pdf->Cell(60, 10, utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
         $pdf->Ln(10);
-        $pdf->Cell(60, 10, 'Planning du mois de : ' . $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . substr($mois_annee_debut, 3));
+        $pdf->Cell(60, 10, utf8_decode('Planning du mois de : ' . $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . substr($mois_annee_debut, 3)));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 11, '', true);
-        $pdf->Cell(60, 10, 'Edité le ' . date("d/m/Y"));
+        $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
         $pdf->Ln(10);
         
         // echo "Avant le planning <br>";
@@ -875,7 +876,7 @@ class structure
         list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
             $pdf->SetTextColor(204, 0, 0);
-            $pdf->Cell(60, 10, "Attention : Les informations antérieures à la date du jour ont été masquées.");
+            $pdf->Cell(60, 10, utf8_decode("Attention : Les informations antérieures à la date du jour ont été masquées."));
             $pdf->SetTextColor(0, 0, 0);
             $pdf->Ln(10);
         }
@@ -886,14 +887,14 @@ class structure
         foreach ($planningservice as $agentid => $planning) {
             if ($titre_a_ajouter) {
                 $pdf->SetFont('helvetica', 'B', 8, '', true);
-                $pdf->Cell(60, 5, "", 1, 0, 'C');
+                $pdf->Cell(60, 5, utf8_decode(""), 1, 0, 'C');
                 for ($index = 1; $index <= count($planningservice[$agentid]->planning()) / 2; $index ++) {
-                    $pdf->Cell(6, 5, $index, 1, 0, 'C');
+                    $pdf->Cell(6, 5, utf8_decode($index), 1, 0, 'C');
                 }
                 $pdf->Ln(5);
-                $pdf->Cell(60, 5, "", 1, 0, 'C');
+                $pdf->Cell(60, 5, utf8_decode(""), 1, 0, 'C');
                 for ($index = 1; $index <= count($planningservice[$agentid]->planning()) / 2; $index ++) {
-                    $pdf->Cell(6, 5, substr($this->fonctions->nomjour(str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut), 0, 2), 1, 0, 'C');
+                    $pdf->Cell(6, 5, utf8_decode(substr($this->fonctions->nomjour(str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut), 0, 2)), 1, 0, 'C');
                 }
                 $titre_a_ajouter = FALSE;
             }
@@ -904,7 +905,7 @@ class structure
             // echo "l'agent $agentid est chargé ... <br>";
             $pdf->Ln(5);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
-            $pdf->Cell(60, 5, $agent->nom() . " " . $agent->prenom(), 1, 0, 'C');
+            $pdf->Cell(60, 5, utf8_decode($agent->nom() . " " . $agent->prenom()), 1, 0, 'C');
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";
@@ -912,9 +913,9 @@ class structure
                 list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($element->couleur($noiretblanc));
                 $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
                 if (strcasecmp($element->moment(), "m") != 0)
-                    $pdf->Cell(3, 5, "", 'TBR', 0, 'C', 1);
+                    $pdf->Cell(3, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
                 else
-                    $pdf->Cell(3, 5, "", 'TBL', 0, 'C', 1);
+                    $pdf->Cell(3, 5, utf8_decode(""), 'TBL', 0, 'C', 1);
             }
         }
         

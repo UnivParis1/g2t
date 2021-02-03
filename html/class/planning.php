@@ -784,17 +784,17 @@ WHERE HARPEGEID = '" . $agentid . "'
         $agent->load($agentid);
         
         // echo "Apres le load <br>";
-        // $pdf=new FPDF();
-        $pdf = new TCPDF();
-        $pdf->SetHeaderData('', 0, '', '', array(
-            0,
-            0,
-            0
-        ), array(
-            255,
-            255,
-            255
-        ));
+        $pdf=new FPDF();
+        //$pdf = new TCPDF();
+        //$pdf->SetHeaderData('', 0, '', '', array(
+        //    0,
+        //    0,
+        //    0
+        //), array(
+        //    255,
+        //    255,
+        //    255
+        //));
         // $pdf->Open();
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
@@ -821,14 +821,14 @@ WHERE HARPEGEID = '" . $agentid . "'
             $structure = new structure($this->dbconnect);
             $structure->load($affectation->structureid());
             $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-            $pdf->Cell(60, 10, 'Service : ' . $nomstructure);
+            $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
             $pdf->Ln();
         }
         $pdf->Ln(10);
-        $pdf->Cell(60, 10, 'Planning de  : ' . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom());
+        $pdf->Cell(60, 10, utf8_decode('Planning de  : ' . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom()));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 10, '', true);
-        $pdf->Cell(60, 10, 'Edité le ' . date("d/m/Y"));
+        $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
         $pdf->Ln(10);
         
         // echo "Avant le planning <br>";
@@ -836,9 +836,9 @@ WHERE HARPEGEID = '" . $agentid . "'
         // ///création du planning suivant le tableau généré
         // /Création des entetes de colones contenant les 31 jours/////
         
-        $pdf->Cell(30, 5, "", 1, 0, 'C');
+        $pdf->Cell(30, 5, utf8_decode(""), 1, 0, 'C');
         for ($index = 1; $index <= 31; $index ++) {
-            $pdf->Cell(8, 5, $index, 1, 0, 'C');
+            $pdf->Cell(8, 5, utf8_decode($index), 1, 0, 'C');
         }
         $pdf->Ln(5);
         
@@ -856,7 +856,7 @@ WHERE HARPEGEID = '" . $agentid . "'
                 $monthname = $this->fonctions->nommois($planningelement->date()) . " " . date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
                 if ($currentmonth != "")
                     $pdf->Ln(5);
-                $pdf->Cell(30, 5, $monthname, 1, 0, 'C');
+                    $pdf->Cell(30, 5, utf8_decode($monthname), 1, 0, 'C');
                 
                 $currentmonth = $month;
             }
@@ -867,9 +867,9 @@ WHERE HARPEGEID = '" . $agentid . "'
             list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($planningelement->couleur($noiretblanc));
             $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
             if (strcasecmp($planningelement->moment(), "m") != 0)
-                $pdf->Cell(4, 5, "", 'TBR', 0, 'C', 1);
+                $pdf->Cell(4, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
             else
-                $pdf->Cell(4, 5, "", 'TBL', 0, 'C', 1);
+                $pdf->Cell(4, 5, utf8_decode(""), 'TBL', 0, 'C', 1);
             // echo "Apres les demies-cellules <br>";
         }
         

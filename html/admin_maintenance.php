@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     // Initialisation de l'utilisateur
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
@@ -12,7 +12,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -22,11 +22,11 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
     $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
     $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
@@ -50,10 +50,10 @@
         header('Location: index.php');
         exit();
     }
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     if (isset($_POST["maintenance"])) {
         if ($_POST["maintenance"] == "on") {
             // Update Mode maintenance à 'o'
@@ -70,10 +70,10 @@
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
     }
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
-    
+
     // echo "POST = "; print_r($_POST); echo "<br>";
 
 ?>

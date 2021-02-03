@@ -1,7 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -11,13 +11,13 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("../html/class/autodeclaration.php");
     // require_once("../html/class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     // ///// VERIFICATION POUR NE PAS POUVOIR LANCER 2 FOIS LA REPRISE SUR LA BASE
     $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE AFFECTATIONID LIKE '%\_%\_%'";
     $queryverif = mysql_query($sql);
@@ -29,19 +29,19 @@
         echo "La reprise est déjà faite !!!!! \n";
         exit();
     }
-    
+
     $date = date("Ymd");
-    
+
     $modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
     $statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_status_$date.dat";
     $structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_structures_$date.dat";
-    
+
     $skipreadfile = false;
     if (isset($argv[1])) {
         if ($argv[1] == 'noimport')
             $skipreadfile = true;
     }
-    
+
     if (! $skipreadfile) {
         $exit = false;
         echo "Vérification existance des fichiers....\n";
@@ -61,7 +61,7 @@
             echo "Il manque au moins un fichier => Aucune mise à jour réalisée !!! \n";
             exit();
         }
-        
+
         echo "Import des MODALITES D'AFFECTATION \n";
         // Import des affectations-modalite.txt
         $sql = "DELETE FROM W_MODALITE";
@@ -69,7 +69,7 @@
         $erreur_requete = mysql_error();
         if ($erreur_requete != "")
             echo "DELETE W_MODALITE => $erreur_requete \n";
-        
+
         if (! file_exists($modalitefile)) {
             echo "Le fichier $modalitefile n'existe pas !!! \n";
         } else {
@@ -85,7 +85,7 @@
                     $datefin = trim($ligne_element[4]);
                     echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($quotite), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-                    
+
                     mysql_query($sql);
                     $erreur_requete = mysql_error();
                     if ($erreur_requete != "") {
@@ -96,7 +96,7 @@
             }
             fclose($fp);
         }
-        
+
         echo "Import des STATUTS D'AFFECTATION \n";
         // Import des affectations-statut.txt
         $sql = "DELETE FROM W_STATUT";
@@ -104,7 +104,7 @@
         $erreur_requete = mysql_error();
         if ($erreur_requete != "")
             echo "DELETE W_STATUT => $erreur_requete \n";
-        
+
         // On charge la table des absences HARPEGE avec le fichier
         if (! file_exists($statutfile)) {
             echo "Le fichier $statutfile n'existe pas !!! \n";
@@ -121,7 +121,7 @@
                     $datefin = trim($ligne_element[4]);
                     echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($statut), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-                    
+
                     mysql_query($sql);
                     $erreur_requete = mysql_error();
                     if ($erreur_requete != "") {
@@ -132,7 +132,7 @@
             }
             fclose($fp);
         }
-        
+
         echo "Import des STRUCTURES D'AFFECTATION \n";
         // Import des affectations-structure.txt
         $sql = "DELETE FROM W_STRUCTURE";
@@ -140,7 +140,7 @@
         $erreur_requete = mysql_error();
         if ($erreur_requete != "")
             echo "DELETE W_STRUCTURE => $erreur_requete \n";
-        
+
         // On charge la table des absences HARPEGE avec le fichier
         if (! file_exists($structurefile)) {
             echo "Le fichier $structurefile n'existe pas !!! \n";
@@ -157,7 +157,7 @@
                     $datefin = trim($ligne_element[4]);
                     echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-                    
+
                     mysql_query($sql);
                     $erreur_requete = mysql_error();
                     if ($erreur_requete != "") {
@@ -169,13 +169,13 @@
             fclose($fp);
         }
     }
-    
+
     $agentprecedent = new agent($dbcon);
     $indicetabaffectation = 0;
-    
-    $sql = "SELECT AFFECTATION.AFFECTATIONID, AFFECTATION.HARPEGEID, AFFECTATION.DATEDEBUT, AFFECTATION.DATEFIN 
-    			FROM AFFECTATION, AGENT 
-    			WHERE DATEFIN > '2015-12-31' 
+
+    $sql = "SELECT AFFECTATION.AFFECTATIONID, AFFECTATION.HARPEGEID, AFFECTATION.DATEDEBUT, AFFECTATION.DATEFIN
+    			FROM AFFECTATION, AGENT
+    			WHERE DATEFIN > '2015-12-31'
     			  AND OBSOLETE ='N'
     			  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
     			  ORDER BY AFFECTATION.HARPEGEID";
@@ -184,13 +184,13 @@
     while ($affectation = mysql_fetch_row($query)) {
         $agent = new agent($dbcon);
         $agent->load($affectation[1]);
-        
+
         echo "Je travaille sur l'agent : " . $agent->harpegeid() . " => " . $agent->identitecomplete() . "\n";
         // Pour chaque affectation que l'on a récupéré => On met la date de fin à 31/12/2015
         $sql = "UPDATE AFFECTATION SET DATEFIN = '2015-12-31' WHERE AFFECTATIONID = '" . $affectation[0] . "'";
         // echo "SQL (UPDATE 1) = " . $sql . "\n";
         mysql_query($sql, $dbcon);
-        
+
         if ($agent->harpegeid() != $agentprecedent->harpegeid()) {
             /*
              * if (!is_null($agentprecedent->harpegeid()))
@@ -206,13 +206,13 @@
         } else {
             echo "On est dans le même agent " . $agentprecedent->harpegeid() . " et indicetabaffectation = $indicetabaffectation \n";
         }
-        
+
         if ($agent->harpegeid() == '52257') {
             echo "Agent a surveiller => " . $agent->harpegeid() . "\n";
             print_r($tabaffectation);
             echo "\n";
         }
-        
+
         if (! is_array($tabaffectation) or (! isset($tabaffectation[$indicetabaffectation]))) {
             echo "Oups !! Pas de nouvelle affectation pour cet agent (" . $agent->harpegeid() . " => " . $agent->identitecomplete() . ") \n";
         } else {
@@ -246,7 +246,7 @@
             if ($erreur_requete != "") {
                 echo "INSERT AFFECTATION SIHAM (Id de l'agent precedent=" . $agentprecedent->harpegeid() . " et harpegeid=" . $agent->harpegeid() . ") => $erreur_requete \n";
             }
-            
+
             // $affectation[0] = Identifiant de l'ancienne affectation HARPEGE
             $sql = "SELECT DECLARATIONID, AFFECTATIONID, TABTPSPARTIEL, DATEDEMANDE, DATEDEBUT, DATEFIN, DATESTATUT, STATUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $affectation[0] . "' AND DATEFIN > '2015-12-31' AND (STATUT<>'R' OR STATUT<>'r') ";
             echo "SQL SELECT FROM DECLARATIONTP => " . $sql . "\n";
@@ -256,7 +256,7 @@
                 // Pour chaque declarationTP que l'on a récupéré => On met la date de fin à 31/12/2015
                 $sql = "UPDATE DECLARATIONTP SET DATEFIN = '2015-12-31' WHERE DECLARATIONID = '" . $declarationtp[0] . "'";
                 mysql_query($sql, $dbcon);
-                
+
                 // Si la déclarationTP commence avant le 01/01/2016 => On fixe à 01/01/2016 sinon on remet la même date de début
                 if ($declarationtp[3] < '2016-01-01') {
                     $datedebutTP = "2016-01-01";
@@ -267,12 +267,12 @@
                 $nombrededemiejrs = substr_count($declarationtp[2], '1');
                 $nombretheoriquededemiejrs = (100 - $numquotite) / 5;
                 echo "nombretheoriquededemiejrs = $nombretheoriquededemiejrs    nombrededemiejrs = $nombrededemiejrs  \n";
-                
+
                 if ($nombretheoriquededemiejrs != $nombrededemiejrs) {
                     echo "Detection incoherence : numquotite = $numquotite  declarationtp[2] = $declarationtp[2] => Pas de création de la déclaration de TP\n";
                 } else {
                     // Création de la nouvelle délcaration de TP sur la nouvelle affectation SIHAM
-                    $sql = sprintf("INSERT INTO DECLARATIONTP(AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT) 
+                    $sql = sprintf("INSERT INTO DECLARATIONTP(AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT)
     								VALUES('%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($declarationtp[2]), $fonctions->my_real_escape_utf8($declarationtp[3]), $fonctions->my_real_escape_utf8($datedebutTP), $fonctions->my_real_escape_utf8($declarationtp[5]), $fonctions->my_real_escape_utf8($declarationtp[6]), $fonctions->my_real_escape_utf8($declarationtp[7]));
                     echo "execution de l'insert DECLARATIONTP... => SQL=$sql" . "\n";
                     mysql_query($sql);

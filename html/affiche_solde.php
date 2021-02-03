@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,14 +21,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
@@ -54,17 +54,17 @@
             }
             echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
             echo "</option>";
-            
+
             $sousstruclist = $structure->structurefille();
             foreach ((array) $sousstruclist as $keystruct => $soustruct) {
                 affichestructureliste($soustruct, $niveau + 1);
             }
         }
     }
-    
-    
+
+
     //print_r ($_POST); echo "<br>";
-    
+
     ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
     $mode = $_POST["mode"];
     if ($mode == "")
@@ -74,7 +74,7 @@
         $structureid = $_POST["structureid"];
     else
         $structureid = null;
-                
+
     $previous = "";
     if (isset($_POST["previous"]))
         $previous = $_POST["previous"];
@@ -82,9 +82,9 @@
         $previous = 1;
     else
         $previous = 0;
-    
+
     if ($mode == 'rh')
-    {        
+    {
         $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
         $query = mysql_query($sql, $dbcon);
         $erreur = mysql_error();
@@ -106,7 +106,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='previous' value='no'>";
         echo "<br>";
-        
+
         if (!is_null($structureid))
         {
             $struct = new structure($dbcon);
@@ -123,12 +123,12 @@
                     // echo " Fin = " . $fonctions->finperiode();
                     // echo "Previous = " . $previous ;
                     echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
-                    
+
                 }
             }
         }
         echo "<br>";
-        
+
     }
     elseif (strcasecmp($mode, "resp") == 0) {
         $structureliste = $user->structrespliste();
@@ -138,7 +138,7 @@
             $annerecherche = ($fonctions->anneeref() - $previous);
             $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
             // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
-            
+
             echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
             echo "<input type='hidden' name='userpdf' value='no'>";
             // $htmltext = $htmltext . "<input type='hidden' name='previous' value='" . $_POST["previous"] . "'>";
@@ -156,7 +156,7 @@
             echo "</form>";
             echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
             echo "<br>";
-            
+
             if (is_array($agentliste)) {
                 foreach ($agentliste as $agentkey => $agent) {
                     // echo "Annee ref = " . $fonctions->anneeref();
@@ -169,7 +169,7 @@
                         echo $agent->affichecommentairecongehtml(true);
                     echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
                     echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE);
-                    
+
                     // Ligne de sÃ©paration entre les agents
                     echo "<hr>";
                 }
@@ -185,7 +185,7 @@
             $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
             // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
             // $agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
-            
+
             // echo "agentliste="; print_r($agentliste); echo "<br>";
             echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
             echo "<input type='hidden' name='userpdf' value='no'>";
@@ -200,13 +200,13 @@
             }
             // echo "listeagent = $listeagent <br>";
             // echo "agentliste Apres ="; print_r($agentliste); echo "<br>";
-            
+
             echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
             echo "<input type='hidden' name='typepdf' value='listedemande'>";
             echo "</form>";
             echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
             echo "<br>";
-            
+
             if (is_array($agentliste)) {
                 foreach ($agentliste as $agentkey => $agent) {
                     // echo "NOM de l'agent = " . $agent->nom() . "<br>";
@@ -222,7 +222,7 @@
             echo "<br>";
         }
     }
-    
+
 ?>
 
 <!--

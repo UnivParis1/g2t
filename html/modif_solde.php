@@ -11,7 +11,7 @@ if (isset($_POST["userid"]))
             header('Location: index.php');
             exit();
         }
-        
+
         require_once ("./class/agent.php");
         require_once ("./class/structure.php");
         require_once ("./class/solde.php");
@@ -21,14 +21,14 @@ if (isset($_POST["userid"]))
         require_once ("./class/declarationTP.php");
         // require_once("./class/autodeclaration.php");
         // require_once("./class/dossier.php");
-        require_once ("./class/tcpdf/tcpdf.php");
+        require_once ("./class/fpdf/fpdf.php");
         require_once ("./class/cet.php");
         require_once ("./class/affectation.php");
         require_once ("./class/complement.php");
-        
+
         $user = new agent($dbcon);
         $user->load($userid);
-        
+
         if (isset($_POST["agentid"])) {
             $agentid = $_POST["agentid"];
             if (! is_numeric($agentid)) {
@@ -52,7 +52,7 @@ if (isset($_POST["userid"]))
                     $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
                 }
             }
-            
+
             if (! is_numeric($agentid)) {
                 $agentid = null;
                 $agent = null;
@@ -64,14 +64,14 @@ if (isset($_POST["userid"]))
             $agentid = null;
             $agent = null;
         }
-        
+
         $anneeref = $fonctions->anneeref()-1;
         if (isset($_POST["annee_ref"]))
         {
             $anneeref = $_POST["annee_ref"];
         }
-        
-        
+
+
         $msg_erreur = "";
         if (isset($_POST["solde"]))
         {
@@ -104,20 +104,20 @@ if (isset($_POST["userid"]))
                         $pris=$solde->droitpris();
                         $solde->droitaquis($pris + $newsolde);
                         $solde->store();
-                        
+
                         $agent->ajoutecommentaireconge($typeconges, $solde->solde()-$anciensolde, "Modification du solde par " . $user->identitecomplete() . " (Ancien solde = $anciensolde / Nouveau solde = " . $solde->solde() .")");
                     }
                 }
             }
         }
-                
+
         require ("includes/menu.php");
         // echo '<html><body class="bodyhtml">';
         echo "<br>";
         echo "<P style='color: red'>" . $msg_erreur . "</P>";
-            
+
         //print_r($_POST); echo "<br>";
-        
+
         $msg_erreur = "";
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagent'  method='post' >";
@@ -131,7 +131,7 @@ if (isset($_POST["userid"]))
         echo "' class='agent' /> ";
         ?>
     <script>
-/*    
+/*
     	$("#agent").autocompleteUser(
   	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
   	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
@@ -156,7 +156,7 @@ if (isset($_POST["userid"]))
     echo "<br><br>";
     echo "<input type='submit' value='Soumettre' >";
     echo "</form>";
-    
+
     if (!is_null($agent)) {
         echo "<br><br>";
         echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
@@ -186,8 +186,8 @@ if (isset($_POST["userid"]))
     }
     ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

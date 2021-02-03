@@ -1,7 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -11,21 +11,21 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("../html/class/autodeclaration.php");
     // require_once("../html/class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     echo "Début des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n";
-    
+
     // récupération des gestionnaires RH des anomalies
     $gestrhanolist = $fonctions->listeprofilrh(3); // 3 = Profil RHANOMALIE
-    
+
     $cron = new agent($dbcon);
     $cron->load('-1'); // L'utilisateur -1 est l'utilisateur CRON
-    
+
     $tabadministrateur = array();
     $sql = "SELECT HARPEGEID FROM COMPLEMENT WHERE COMPLEMENTID = 'ESTADMIN' AND VALEUR = 'O'";
     $query = mysql_query($sql);
@@ -40,13 +40,13 @@
         $tabadministrateur[$admin->harpegeid()] = $admin;
         unset($admin);
     }
-    
+
     // echo "Liste des admins : " . print_r($tabadministrateur,true) . "\n";
-    
+
     echo "Recherche des soldes négatifs...\n";
     $sql = "SELECT HARPEGEID,SOLDE.TYPEABSENCEID,DROITAQUIS,DROITPRIS ,LIBELLE
     			FROM SOLDE , TYPEABSENCE
-    			WHERE DROITPRIS > DROITAQUIS 
+    			WHERE DROITPRIS > DROITAQUIS
     				  AND SOLDE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
     	  			  AND SOLDE.TYPEABSENCEID IN (SELECT TYPEABSENCEID FROM TYPEABSENCE WHERE ANNEEREF IN ('" . $fonctions->anneeref() . "','" . ($fonctions->anneeref() - 1) . "'));";
     $query = mysql_query($sql);
@@ -76,26 +76,26 @@
         }
         unset($agent);
     }
-    
+
     echo "Recherche des demandes de congés ou d'absences incohérentes...\n";
-    
+
     // $datedebut = $fonctions->formatdate ( ($fonctions->anneeref () - 1) . $fonctions->debutperiode () );
     $datedebut = $fonctions->formatdate(($fonctions->anneeref()) . $fonctions->debutperiode());
     $datefin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-    
+
     echo "Période => début  : $datedebut    fin : $datefin \n";
-    
-    $sql = "SELECT DISTINCT AFFECTATION.HARPEGEID 
-    				FROM AFFECTATION,AGENT 
-    				WHERE OBSOLETE = 'N' 
-    				  AND DATEFIN >= '" . date("Ymd") . "' 
-    				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID 
+
+    $sql = "SELECT DISTINCT AFFECTATION.HARPEGEID
+    				FROM AFFECTATION,AGENT
+    				WHERE OBSOLETE = 'N'
+    				  AND DATEFIN >= '" . date("Ymd") . "'
+    				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
     				ORDER BY AFFECTATION.HARPEGEID"; // DATEMODIFICATION = " . date('Ymd');
     $query = mysql_query($sql);
     $erreur_requete = mysql_error();
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
-    
+
     while ($harpid = mysql_fetch_row($query)) // Des agents ont des affectations modifiées !!!
     {
         $agent = new agent($dbcon);
@@ -126,7 +126,7 @@
             $cron->sendmail($agent, "Incohérence dans une ou plusieurs demandes", $corpmail);
         }
     }
-    
+
     echo "Fin des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n";
 
 ?>

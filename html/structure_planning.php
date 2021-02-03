@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,21 +21,21 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     // echo "<br><br><br>"; print_r($_POST); echo "<br>";
-    
+
     require ("includes/menu.php");
-    
+
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
@@ -44,7 +44,7 @@
         $previous = 1;
     else
         $previous = 0;
-    
+
     if (isset($_POST["indexmois"]))
         $indexmois = $_POST["indexmois"];
     else
@@ -63,15 +63,15 @@
     if ($indexmois < $moisdebutperiode)
         $annee ++;
     // echo "annee (apres) = $annee <br>";
-    
+
     if (isset($_POST["mode"]))
         $mode = $_POST["mode"]; // Mode = resp ou agent
     else
         $mode = "resp";
-    
+
     echo "<form name='select_mois' method='post'>";
     echo "<center><select name='indexmois'>";
-    
+
     // On reprend le mois de début de période
     $index = $moisdebutperiode;
     // L'année c'est l'année de référence
@@ -88,14 +88,14 @@
         if ($index > 12 or $index == 1)
             $anneemois = $anneemois + 1;
     }
-    
+
     echo "</select>";
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
     echo "<input type='hidden' name='mode' value='" . $mode . "' />";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
-    
+
     if (strcasecmp($mode, "resp") == 0) {
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
@@ -127,7 +127,7 @@
             echo "<br>";
             echo $structure->planninghtml($indexmois . "/" . $annee);
         }
-        
+
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
             if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
@@ -165,7 +165,7 @@
             echo "<br>";
             echo $structure->planninghtml($indexmois . "/" . $annee);
         }
-        
+
         $structureliste = $user->structgestliste();
         foreach ($structureliste as $structkey => $structure) {
             if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
