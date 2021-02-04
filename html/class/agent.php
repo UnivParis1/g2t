@@ -511,7 +511,10 @@ AND DEMANDE.STATUT='v'";
         // --------------------------------------------------
         // Construction du message proprement dit
         // --------------------------------------------------
-        $msg = "$objet\r\n";
+        
+        //$msg = "Subject: " . mb_convert_encoding($objet,'HTML') . "\r\n";
+        //$msg = "Subject: " . nl2br(htmlentities("$objet", ENT_QUOTES, "UTF-8", false)) . "\r\n";
+        $msg = "Subject: " . $objet . "\r\n";
         
         // ---------------------------------
         // 1ère partie du message
