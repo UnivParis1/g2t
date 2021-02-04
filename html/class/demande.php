@@ -640,7 +640,6 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         // echo "Apres le new <br>";
         //if (!defined('FPDF_FONTPATH'))
         //  define('FPDF_FONTPATH','font/');
-        undefine('FPDF_FONTPATH');
         //$pdf->Open();
         $pdf->AddPage();
         $pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
@@ -688,7 +687,14 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             ->prenom()));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 6, '', true);
-        $decision = strtolower($this->fonctions->demandestatutlibelle($this->statut()));
+        
+        $decision = $this->fonctions->demandestatutlibelle($this->statut());
+        //$pdf->Ln(10);
+        //$pdf->Cell(40, 10, utf8_decode(' décision 1 => ' . $decision . ' par :'));
+        $decision = mb_strtolower($decision,'UTF-8');   // Ne pas utiliser strtolower car la convertion des caractères accentués n'est pas prise en compte (dépendant de la localisation)
+        //$pdf->Ln(10);
+        //$pdf->Cell(40, 10, utf8_decode(' décision 2 => ' . $decision . ' par :'));
+        //$pdf->Ln(10);
         
         // if($this->statut()=='v')
         // $decision='validée';

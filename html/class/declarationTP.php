@@ -661,7 +661,7 @@ WHERE DECLARATIONID=" . $id;
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', '', 10, '', true);
         // echo "Avant le test statut <br>";
-        $decision = strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()));
+        $decision = mb_strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()),'UTF-8');
         // if($this->statut()=='v')
         // $decision='validée';
         // else

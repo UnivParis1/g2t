@@ -523,8 +523,8 @@ AND DEMANDE.STATUT='v'";
         // $msg .= "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n";
         $msg .= "Content-Transfer-Encoding:8bit\r\n";
         $msg .= "\r\n";
-        $msg .= "Bonjour " . utf8_encode(ucwords(strtolower($destinataire->identitecomplete()))) . ",<br><br>";
-        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(strtolower($this->prenom . "  " . $this->nom)) . "\r\n";
+        $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . "  " . $this->nom),'UTF-8') . "\r\n";
         
         // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
         $msg .= "\r\n";

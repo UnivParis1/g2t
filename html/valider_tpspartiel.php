@@ -63,7 +63,7 @@
                     // $agentid = $declaration->agent();
                     // $agent = new agent($dbcon);
                     // $agent->load($agentid);
-                    $user->sendmail($declaration->agent(), "Validation d'un temps-partiel", "La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . strtolower($fonctions->declarationTPstatutlibelle($declaration->statut())) . ".", $pdffilename);
+                    $user->sendmail($declaration->agent(), "Validation d'un temps-partiel", "La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . mb_strtolower($fonctions->declarationTPstatutlibelle($declaration->statut()),'UTF-8') . ".", $pdffilename);
                     // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                     error_log("Sauvegarde du temps-partiel " . $declaration->declarationTPid() . " avec le statut " . $declaration->statut());
                 }
