@@ -626,21 +626,21 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
     function pdf($valideurid)
     {
         // echo "Debut du PDF <br>";
-        // $pdf=new FPDF();
-        $pdf = new TCPDF();
-        $pdf->SetHeaderData('', 0, '', '', array(
-            0,
-            0,
-            0
-        ), array(
-            255,
-            255,
-            255
-        ));
+        $pdf=new FPDF();
+        //$pdf = new TCPDF();
+        //$pdf->SetHeaderData('', 0, '', '', array(
+        //    0,
+        //    0,
+        //    0
+        //), array(
+        //    255,
+        //    255,
+        //    255
+        //));
         // echo "Apres le new <br>";
-        // if (!defined('FPDF_FONTPATH'))
-        // define('FPDF_FONTPATH','fpdffont/');
-        // $pdf->Open();
+        //if (!defined('FPDF_FONTPATH'))
+        //  define('FPDF_FONTPATH','font/');
+        //$pdf->Open();
         $pdf->AddPage();
         $pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
         
@@ -666,11 +666,11 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 $structure = new structure($this->dbconnect);
                 $structure->load($affectation->structureid());
                 $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-                $pdf->Cell(60, 10, 'Service : ' . $nomstructure);
+                $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
                 $pdf->Ln();
             }
         else {
-            $pdf->Cell(60, 10, 'Aucune affectation trouvée pour cette demande.');
+            $pdf->Cell(60, 10, utf8_decode('Aucune affectation trouvée pour cette demande.'));
             $pdf->Ln();
         }
         
@@ -681,74 +681,81 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             $typelib = " de congé ";
         else
             $typelib = " d'autorisation d'absence ";
-        $pdf->Cell(60, 10, 'Demande' . $typelib . 'N°' . $this->id() . ' de ' . $this->agent()
+            $pdf->Cell(60, 10, utf8_decode('Demande' . $typelib . 'N°' . $this->id() . ' de ' . $this->agent()
             ->civilite() . " " . $this->agent()
             ->nom() . " " . $this->agent()
-            ->prenom());
+            ->prenom()));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 6, '', true);
-        $decision = strtolower($this->fonctions->demandestatutlibelle($this->statut()));
+        
+        $decision = $this->fonctions->demandestatutlibelle($this->statut());
+        //$pdf->Ln(10);
+        //$pdf->Cell(40, 10, utf8_decode(' décision 1 => ' . $decision . ' par :'));
+        $decision = mb_strtolower($decision,'UTF-8');   // Ne pas utiliser strtolower car la convertion des caractères accentués n'est pas prise en compte (dépendant de la localisation)
+        //$pdf->Ln(10);
+        //$pdf->Cell(40, 10, utf8_decode(' décision 2 => ' . $decision . ' par :'));
+        //$pdf->Ln(10);
         
         // if($this->statut()=='v')
         // $decision='validée';
         // else
         // $decision='refusée';
         
-        $pdf->Cell(40, 10, 'Votre demande ' . $typelib . 'du ' . $this->datedebut() . ' ' . $this->fonctions->nommoment($this->momentdebut) . ' au ' . $this->datefin() . ' ' . $this->fonctions->nommoment($this->momentfin) . ' ');
+        $pdf->Cell(40, 10, utf8_decode('Votre demande ' . $typelib . 'du ' . $this->datedebut() . ' ' . $this->fonctions->nommoment($this->momentdebut) . ' au ' . $this->datefin() . ' ' . $this->fonctions->nommoment($this->momentfin) . ' '));
         $pdf->Ln(10);
-        $pdf->Cell(40, 10, ' a été ' . $decision . ' par :');
+        $pdf->Cell(40, 10, utf8_decode(' a été ' . $decision . ' par :'));
         
         $pdf->Ln(10);
         
         $valideur = new agent($this->dbconnect);
         $valideur->load($valideurid);
         
-        $pdf->Cell(40, 10, ' - ' . $valideur->civilite() . " " . $valideur->nom() . " " . $valideur->prenom());
+        $pdf->Cell(40, 10, utf8_decode(' - ' . $valideur->civilite() . " " . $valideur->nom() . " " . $valideur->prenom()));
         $pdf->Ln(10);
         
         $pdf->SetFont('helvetica', 'B', 6, '', true);
-        $pdf->Cell(40, 10, 'Date de dépot : ' . $this->date_demande());
+        $pdf->Cell(40, 10, utf8_decode('Date de dépot : ' . $this->date_demande()));
         $pdf->Ln(10);
         if (strcasecmp($this->statut(), 'r') == 0)
-            $pdf->Cell(40, 10, 'Date du refus/de l\'annulation : ' . $this->datestatut());
+            $pdf->Cell(40, 10, utf8_decode('Date du refus/de l\'annulation : ' . $this->datestatut()));
         else
-            $pdf->Cell(40, 10, 'Date de validation : ' . $this->datestatut());
+            $pdf->Cell(40, 10, utf8_decode('Date de validation : ' . $this->datestatut()));
         $pdf->Ln(10);
         if ($this->statut() == 'v') {
             if ($this->fonctions->estunconge($this->type()))
-                $pdf->Cell(40, 10, 'Nombre de jour(s) comptabilisé(s) : ' . ($this->nbrejrsdemande()));
+                $pdf->Cell(40, 10, utf8_decode('Nombre de jour(s) comptabilisé(s) : ' . ($this->nbrejrsdemande())));
         } else {
             // echo "Motif refus = " .$this->motifrefus() . "<br>";
             // echo "Motif refus (avec strreplace) = ". str_replace("''", "'", $this->motifrefus()) . "<br>";
             
-            $pdf->Cell(40, 10, 'Motif du refus : ' . str_replace("''", "'", $this->motifrefus()));
+            $pdf->Cell(40, 10, utf8_decode('Motif du refus : ' . str_replace("''", "'", $this->motifrefus())));
         }
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 6, '', true);
         $pdf->Ln(10);
-        $pdf->Cell(25, 10, '');
-        $pdf->Cell(60, 10, 'Solde en cours');
+        $pdf->Cell(25, 10, utf8_decode(''));
+        $pdf->Cell(60, 10, utf8_decode('Solde en cours'));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'I', 6, '', true);
-        $pdf->Cell(25, 10, '');
-        $pdf->Cell(70, 7, 'Type de congé', 1);
-        $pdf->Cell(25, 7, 'Droit acquis', 1);
-        $pdf->Cell(25, 7, 'Droit pris', 1);
-        $pdf->Cell(25, 7, 'Solde actuel', 1);
+        $pdf->Cell(25, 10, utf8_decode(''));
+        $pdf->Cell(70, 7, utf8_decode('Type de congé'), 1);
+        $pdf->Cell(25, 7, utf8_decode('Droit acquis'), 1);
+        $pdf->Cell(25, 7, utf8_decode('Droit pris'), 1);
+        $pdf->Cell(25, 7, utf8_decode('Solde actuel'), 1);
         $pdf->Ln();
         $pdf->SetFont('helvetica', 'B', 6, '', true);
-        $pdf->Cell(25, 10, '');
+        $pdf->Cell(25, 10, utf8_decode(''));
         
         $tabsolde = $agent->soldecongesliste($this->fonctions->anneeref());
         if (is_array($tabsolde)) {
             foreach ($tabsolde as $key => $solde) {
-                $pdf->Cell(70, 7, $solde->typelibelle(), 1);
-                $pdf->Cell(25, 7, (string) ($solde->droitaquis()), 1);
-                $pdf->Cell(25, 7, (string) ($solde->droitpris()), 1);
-                $pdf->Cell(25, 7, (string) ($solde->solde()), 1);
+                $pdf->Cell(70, 7, utf8_decode($solde->typelibelle()), 1);
+                $pdf->Cell(25, 7, utf8_decode((string) ($solde->droitaquis())), 1);
+                $pdf->Cell(25, 7, utf8_decode((string) ($solde->droitpris())), 1);
+                $pdf->Cell(25, 7, utf8_decode((string) ($solde->solde())), 1);
                 $pdf->Ln();
                 $pdf->SetFont('helvetica', 'B', 6, '', true);
-                $pdf->Cell(25, 10, '');
+                $pdf->Cell(25, 10, utf8_decode(''));
             }
         }
         

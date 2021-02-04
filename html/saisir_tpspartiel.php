@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,37 +21,37 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     if (isset($_POST["agentid"])) {
         $agentid = $_POST["agentid"];
         $agent = new agent($dbcon);
         $agent->load($agentid);
     } else
         $agentid = null;
-    
+
     if (isset($_POST["mode"]))
         $mode = $_POST["mode"];
     else
         $mode = null;
-    
+
     $msg_erreur = "";
-    
+
     require ("includes/menu.php");
     ?>
-    <!-- 
+    <!--
     	<script src="javascripts/jquery-1.8.3.js"></script>
     	<script src="javascripts//jquery-ui.js"></script>
     -->
     <?php
     // echo '<html><body class="bodyhtml">';
-    
+
     // Récupération de l'affectation correspondant à la déclaration TP en cours
     $affectation = null;
     if (isset($_POST["affectationid"])) {
@@ -60,17 +60,17 @@
         $affectation->load($affectationid);
     } else
         $affectationid = null;
-    
+
     if (isset($_POST["nbredemiTP"]))
         $nbredemiTP = $_POST["nbredemiTP"];
     else
         $nbredemiTP = null;
-    
+
     if (isset($_POST["nocheckquotite"]))
         $nocheckquotite = $_POST["nocheckquotite"];
     else
         $nocheckquotite = null;
-    
+
     $datefausse = false;
     // Récupération de la date de début
     if (isset($_POST["date_debut"])) {
@@ -85,7 +85,7 @@
         $date_debut = null;
         $datefausse = TRUE;
     }
-    
+
     // Récupération de la date de fin
     if (isset($_POST["date_fin"])) {
         $date_fin = $_POST["date_fin"];
@@ -99,7 +99,7 @@
         $date_fin = null;
         $datefausse = TRUE;
     }
-    
+
     if ($msg_erreur == "" and ! $datefausse) {
         $datedebutdb = $fonctions->formatdatedb($date_debut);
         $datefindb = $fonctions->formatdatedb($date_fin);
@@ -118,9 +118,9 @@
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
         }
     }
-    
+
     // echo "_POST => "; print_r ($_POST); echo "<br>";
-    
+
     // On regarde si on a annulé une déclaration de TP
     if (isset($_POST["declaannule"])) {
         $tabdeclaannule = $_POST["declaannule"];
@@ -131,7 +131,7 @@
             $declaration->store();
         }
     }
-    
+
     // On verifie qu'il y a autant de case à cocher marquées que de jour de TP a saisir
     if ($nbredemiTP != "" and ! $datefausse) {
         $nbsemaineimpaire = 0;
@@ -167,7 +167,7 @@
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
         }
     }
-    
+
     // echo "Apres le check nbredemiTP <br>";
     if ($msg_erreur == "" and ! $datefausse) {
         // On est sur que les données sont ok
@@ -261,7 +261,7 @@
             }
         }
         unset($declarationliste);
-        
+
         /*
          * $declarationliste = $affectation->declarationTPliste($date_fin,$date_fin) ;
          * // On regarde s'il y a une declaration de TP qui inclue la date de fin !!!
@@ -289,9 +289,9 @@
          * unset($declaration);
          * unset($declarationliste);
          */
-        
+
         // On va enregistrer la nouvelle déclaration de TP
-        
+
         // echo "Avant le new... <br>";
         $declaration = new declarationTP($dbcon);
         $declaration->datedebut($date_debut);
@@ -309,7 +309,7 @@
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             echo "<font color='green'>" . $errlog . "</font><br/><br/>";
         }
-        
+
         // $timestamp = strtotime($fonctions->formatdatedb($date_debut));
         // $nvlledatefin = date("d/m/Y", strtotime("+1year", $timestamp )); // On ajoute un an pour chercher les éventuelles demandes faites après la fin de période
         // $demandeliste = $agent->demandesliste($date_debut , $nvlledatefin );
@@ -364,10 +364,10 @@
         // }
         // }
     }
-    
+
     if ($agentid == "") {
         echo "<form name='autodeclarationforagent'  method='post' >";
-        
+
         $structureliste = $user->structrespliste();
         // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
         $agentlistefull = array();
@@ -384,7 +384,7 @@
         }
         echo "</SELECT>";
         echo "<br>";
-        
+
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
@@ -418,30 +418,30 @@
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
         } else {
             // echo "<b><br>C'est moche => Présentation à revoir !!! </b><br><br>";
-            
+
             echo "<br/>";
             if ($msg_erreur != "") {
                 echo "<P style='color: red'>" . $msg_erreur . " </P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $msg_erreur);
             }
             echo "<br/>";
-            
+
             // $affectationliste = liste des affectations de l'agent pour la période
             foreach ($affectationliste as $key => $affectation) {
                 if ($affectation->quotite() != "100%") {
                     echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
                     echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() . "'>";
                     echo $affectation->html(true, false, $mode);
-                    
+
                     echo "<br>Réaliser une nouvelle déclaration de temps partiel<br>";
                     echo "<table>";
                     echo "<tr>";
                     echo "<td>Date de début de la période :</td>";
-                    
+
                     // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
                     $calendrierid_deb = "date_debut_" . $affectation->affectationid();
                     $calendrierid_fin = "date_fin_" . $affectation->affectationid();
-                    
+
                     echo '
     <script>
     $(function()
@@ -478,7 +478,7 @@
                     echo "<br>Veuillez cocher les demi-journées où vous êtes absent au titre du temps partiel.";
                     echo "<br> Validez votre saisie en cliquant sur le bouton 'Soumettre'.";
                     echo "<br>Au regard de votre quotité de travail, vous devez cocher $nbredemiTP demi-journée(s) par semaine<br><br>";
-                    
+
                     echo "<div id='planning'>";
                     echo "<table class='tableau'>";
                     $declaration = new declarationTP($dbcon);
@@ -486,7 +486,7 @@
                     echo $declaration->tabtpspartielhtml(true);
                     echo "</table>";
                     echo "</div>";
-                    
+
                     echo "<br>";
                     if (strcasecmp($mode, "resp") == 0) {
                         echo "<br>";
@@ -499,18 +499,18 @@
                     echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
                     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
                     echo "<input type='submit' value='Soumettre' />";
-                    
+
                     echo "</form>";
                     echo "<br>";
                 }
             }
         }
     }
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

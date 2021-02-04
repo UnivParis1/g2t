@@ -540,12 +540,19 @@ class fonctions
     /**
      *
      * @param
+     *  anneeref : Année de référence de la légende
      * @return list of caption
      */
-    public function legende()
+    public function legende($anneeref)
     {
+/*
         $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
  				WHERE (ANNEEREF=" . $this->anneeref() . " OR ANNEEREF=" . ($this->anneeref() - 1) . ")
+ 				   OR ANNEEREF IS NULL
+ 				ORDER BY LIBELLE";
+*/
+        $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
+ 				WHERE (ANNEEREF=" . $anneeref . " OR ANNEEREF=" . ($anneeref - 1) . ")
  				   OR ANNEEREF IS NULL
  				ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
@@ -574,11 +581,12 @@ class fonctions
     /**
      *
      * @param
+     *  anneeref : Année de référence de la légende
      * @return html text representing the list of caption
      */
-    public function legendehtml()
+    public function legendehtml($anneeref)
     {
-        $tablegende = $this->legende();
+        $tablegende = $this->legende($anneeref);
         $htmltext = "";
         $htmltext = $htmltext . "<table>";
         $htmltext = $htmltext . "<tr>";
@@ -595,13 +603,13 @@ class fonctions
 
     /**
      *
-     * @param object $pdf
-     *            the pdf file
+     * @param object $pd :  the pdf file
+     *  anneeref : Année de référence de la légende
      * @return
      */
-    public function legendepdf($pdf)
+    public function legendepdf($pdf, $anneeref)
     {
-        $tablegende = $this->legende();
+        $tablegende = $this->legende($anneeref);
         $long_chps = 0;
         foreach ($tablegende as $key => $legende) {
             if ($pdf->GetStringWidth($legende["libelle"]) > $long_chps)
@@ -619,8 +627,8 @@ class fonctions
             // $long_chps=strlen($legende["type_conge"])+10;
             // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
             $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
-            $pdf->Cell(4, 5, "", 1, 0, 'C', 1);
-            $pdf->Cell($long_chps, 4, $legende["libelle"], 0, 0, 'L');
+            $pdf->Cell(4, 5, utf8_decode(""), 1, 0, 'C', 1);
+            $pdf->Cell($long_chps, 4, utf8_decode($legende["libelle"]), 0, 0, 'L');
         }
     }
 
@@ -869,6 +877,48 @@ class fonctions
         $querryresult = $result[1];
         return $querryresult;
     }
-}
 
+
+    public function CETaverifier($datedebut)
+    {
+        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID,AGENT.HARPEGEID
+    				FROM DEMANDE,DEMANDEDECLARATIONTP,DECLARATIONTP,AFFECTATION,AGENT
+    				WHERE AFFECTATION.AFFECTATIONID = DECLARATIONTP.AFFECTATIONID
+    				  AND DECLARATIONTP.DECLARATIONID = DEMANDEDECLARATIONTP.DECLARATIONID
+    				  AND DEMANDEDECLARATIONTP.DEMANDEID = DEMANDE.DEMANDEID
+    				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
+    				  AND DEMANDE.TYPEABSENCEID = 'cet'
+    				  AND (DEMANDE.DATEDEBUT >= '" . $this->formatdatedb($datedebut) . "'
+    				    OR DEMANDE.DATESTATUT >= '" . $this->formatdatedb($datedebut) . "' )
+    			    ORDER BY AGENT.HARPEGEID, DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
+        $query = mysql_query($sql, $this->dbconnect);
+        $erreur_requete = mysql_error();
+        if ($erreur_requete != "")
+            error_log(basename(__FILE__) . " " . $erreur_requete);
+        $demandeliste = array();
+        // Si pas de demande de CET, on retourne le tableau vide
+        if (mysql_num_rows($query) == 0) {
+            return $demandeliste;
+        }
+        while ($result = mysql_fetch_row($query)) {
+            $demandeid = $result[0];
+            $demande = new demande($this->dbconnect);
+            $demande->load($demandeid);
+            
+            $complement = new complement($this->dbconnect);
+            $complement->load($result[1], 'DEM_CET_' . $demandeid);
+            
+            if ($demande->statut() == 'v' and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
+            {
+                $demandeliste[] = $demande;
+            }
+            if ($demande->statut() == 'R' and $complement->valeur() == 'v') // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
+            {
+                $demandeliste[] = $demande;
+            }
+        }
+        return $demandeliste;
+    }
+
+}
 ?>

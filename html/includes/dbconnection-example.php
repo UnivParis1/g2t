@@ -1,5 +1,7 @@
 <?php
     
+    include_once 'mysql_compat.php';
+
     // Connexion à la base de données
     $db_host = 'localhost';
     $db_user = 'g2t';

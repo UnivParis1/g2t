@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     // Initialisation de l'utilisateur
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
@@ -12,7 +12,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -22,14 +22,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     if (isset($_POST["agentid"])) {
         $agentid = $_POST["agentid"];
         $agent = new agent($dbcon);
@@ -38,23 +38,23 @@
         $agentid = null;
         $agent = null;
     }
-    
+
     $nbr_jours_conges = null;
     $commentaire_supp = null;
     if (isset($_POST["nbr_jours_conges"]))
         $nbr_jours_conges = $_POST["nbr_jours_conges"];
     if (isset($_POST["commentaire_supp"]))
         $commentaire_supp = $_POST["commentaire_supp"];
-    
+
     $msg_erreur = "";
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     if ($agentid == "") {
         echo "<form name='selectagentcongessupp'  method='post' >";
-        
+
         $structureliste = $user->structrespliste();
         // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
         $agentlistefull = array();
@@ -81,7 +81,7 @@
         }
         echo "</SELECT>";
         echo "<br>";
-        
+
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
@@ -142,7 +142,7 @@
             echo "<P style='color: red'>" . $errlog . "</P><br/>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
-        
+
         echo "Ajout de jours de congés supplémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         echo "<form name='frm_ajoutconge'  method='post' >";
         // echo "Sélectionnez l'agent auquel vous voullez ajouter des jours supplémentaires : ";
@@ -153,24 +153,24 @@
         // echo "<OPTION value='" . $membre->id() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
         // }
         // echo "</SELECT>";
-        
+
         // echo "<br>";
-        
+
         echo "Nombre de jours supplémentaires à ajouter : <input type=text name=nbr_jours_conges id=nbr_jours_conges size=3 >";
         echo "<br>";
         echo "Motif (Obligatoire) : <input type=text name=commentaire_supp id=commentaire_supp size=25 >";
         echo "<br>";
-        
+
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     }
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
  -->
 </body>
 </html>

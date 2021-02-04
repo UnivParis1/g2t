@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     // Initialisation de l'utilisateur
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
@@ -12,7 +12,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -22,52 +22,52 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     $action = $_POST["action"]; // Action = lecture ou modif
     if (is_null($action) or $action == "")
         $action = 'lecture';
     $mode = $_POST["mode"]; // Action = gestion ou resp
     if (is_null($action) or $action == "")
         $action = 'resp';
-    
+
     // echo "Apres le chargement du user !!! <br>";
     require ("includes/menu.php");
-    
+
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     // print_r ( $_POST); echo "<br>";
-    
+
     $reportlist = null;
     if (isset($_POST['report']))
         $reportlist = $_POST['report'];
-    
+
     $enfantmaladelist = null;
     if (isset($_POST['enfantmalade']))
         $enfantmaladelist = $_POST['enfantmalade'];
-    
+
     $cumultotallist = null;
     if (isset($_POST['cumultotal']))
         $cumultotallist = $_POST['cumultotal'];
-    
+
     $array_agent_mail = null;
     if (isset($_POST['agent_mail']))
         $array_agent_mail = $_POST['agent_mail'];
     $array_resp_mail = null;
     if (isset($_POST['resp_mail']))
         $array_resp_mail = $_POST['resp_mail'];
-    
+
     $datedebutcetlist = null;
     if (isset($_POST['datedebutcet']))
         $datedebutcetlist = $_POST['datedebutcet'];
-    
+
     if (is_array($reportlist)) {
         foreach ($reportlist as $harpegeid => $reportvalue) {
             $complement = new complement($dbcon);
@@ -78,7 +78,7 @@
             unset($complement);
         }
     }
-    
+
     $msgerreur = "";
     if (is_array($enfantmaladelist)) {
         foreach ($enfantmaladelist as $harpegeid => $enfantmaladevalue) {
@@ -100,7 +100,7 @@
             }
         }
     }
-    
+
     if (is_array($cumultotallist)) {
         foreach ($cumultotallist as $harpegeid => $cumultotal) {
             if (isset($datedebutcetlist[$harpegeid])) {
@@ -114,7 +114,7 @@
             }
         }
     }
-    
+
     $displaysousstructlist = null;
     if (isset($_POST["displaysousstruct"]))
         $displaysousstructlist = $_POST["displaysousstruct"];
@@ -127,7 +127,7 @@
             $structure->store();
         }
     }
-    
+
     $displayallagentlist = null;
     if (isset($_POST["displaysousstruct"]))
         $displayallagentlist = $_POST["displayallagent"];
@@ -140,7 +140,7 @@
             $structure->store();
         }
     }
-    
+
     $displayrespsousstructlist = null;
     if (isset($_POST["displayrespsousstruct"]))
         $displayrespsousstructlist = $_POST["displayrespsousstruct"];
@@ -153,7 +153,7 @@
             $structure->store();
         }
     }
-    
+
     $respvalidsousstructlist = null;
     if (isset($_POST["respvalidsousstruct"]))
         $respvalidsousstructlist = $_POST["respvalidsousstruct"];
@@ -166,7 +166,7 @@
             $structure->store();
         }
     }
-    
+
     $gestvalidagent = null;
     if (isset($_POST["gestvalidagent"]))
         $gestvalidagent = $_POST["gestvalidagent"];
@@ -179,17 +179,17 @@
             $structure->store();
         }
     }
-    
+
     $arraygestionnaire = null;
     if (isset($_POST["gestion"]))
         $arraygestionnaire = $_POST["gestion"];
-    
+
     $arrayinfouser = null;
     if (isset($_POST["infouser"]))
         $arrayinfouser = $_POST["infouser"];
-    
+
     if (is_array($arraygestionnaire)) {
-        
+
         // Initialisation des infos LDAP
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
@@ -199,7 +199,7 @@
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        
+
         // ATTENTION : La $valeur est soit le HARPEGEID soit le UID si on vient de le modifier !!
         foreach ($arraygestionnaire as $structureid => $valeur) {
             // Si on n'a pas de nom dans la zone de saisie du gestionnaire => On doit effacer le gestionnaire
@@ -233,28 +233,28 @@
             }
         }
     }
-    
+
     // ///////////////////////////////////////////////////
     // ---- PARTIE GESTION DE LA DELEGATION -------- //
     // ///////////////////////////////////////////////////
     $arraydelegation = null;
     if (isset($_POST["delegation"]))
         $arraydelegation = $_POST["delegation"];
-    
+
     $arrayinfodelegation = null;
     if (isset($_POST["infodelegation"]))
         $arrayinfodelegation = $_POST["infodelegation"];
-    
+
     $arraydatedebut = null;
     if (isset($_POST["date_debut"]))
         $arraydatedebut = $_POST["date_debut"];
-    
+
     $arraydatefin = null;
     if (isset($_POST["date_fin"]))
         $arraydatefin = $_POST["date_fin"];
-    
+
     if (is_array($arraydelegation)) {
-        
+
         // Initialisation des infos LDAP
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
@@ -264,7 +264,7 @@
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        
+
         // ATTENTION : La $valeur est soit le HARPEGEID soit le UID si on vient de le modifier !!
         foreach ($arraydelegation as $structureid => $valeur) {
             $resp_est_delegue = false;
@@ -307,7 +307,7 @@
                             $resp_est_delegue = true;
                         }
                     }
-                    
+
                     if ($resp_est_delegue) {
                         echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Vous ne pouvez pas saisir le responsable (" . $user->identitecomplete() . ") de la structure '" . $structure->nomlong() . "' comme délégué.</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                     } else {
@@ -317,7 +317,7 @@
                         $datefindeleg = "";
                         if (isset($arraydatefin[$structure->id()]))
                             $datefindeleg = $arraydatefin[$structure->id()];
-                        
+
                         // echo "datedebutdeleg = $datedebutdeleg datefindeleg = $datefindeleg <br>";
                         if ($datedebutdeleg == "" or $datefindeleg == "") {
                             echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
@@ -333,7 +333,7 @@
             }
         }
     }
-    
+
     if (isset($array_agent_mail)) {
         // On modifie les codes des envois de mail pour les agents et les responsables
         foreach ($array_agent_mail as $structkey => $codeinterne) {
@@ -350,7 +350,7 @@
             $structure->resp_envoyer_a($codeinterne, true);
         }
     }
-    
+
     echo "<br>";
     if ($msgerreur != "") {
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msgerreur));
@@ -372,7 +372,7 @@
                 echo $structure->dossierhtml(($action == 'modif'), $userid);
             else
                 echo $structure->dossierhtml(($action == 'modif'));
-            
+
             echo "Autoriser l'affichage du planning tous les agents des sous-structures (responsable/gestionnaire) : ";
             if ($action == 'modif') {
                 echo "<select name=displaysousstruct['" . $structure->id() . "']>";
@@ -387,7 +387,7 @@
                 echo "</select>";
             } else
                 echo $fonctions->ouinonlibelle($structure->sousstructure());
-            
+
             echo "<br>";
             echo "Autoriser l'affichage uniquement du planning des responsables des sous-structures (responsable/gestionnaire) : ";
             if ($action == 'modif') {
@@ -403,7 +403,7 @@
                 echo "</select>";
             } else
                 echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
-            
+
             echo "<br>";
             echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
             if ($action == 'modif') {
@@ -419,7 +419,7 @@
                 echo "</select>";
             } else
                 echo $fonctions->ouinonlibelle($structure->affichetoutagent());
-            
+
             echo "<br>";
             echo "Autoriser la validation des demandes d'une sous-structure par le responsable de la structure parente : ";
             if ($action == 'modif') {
@@ -435,7 +435,7 @@
                 echo "</select>";
             } else
                 echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
-            
+
             if ($mode == 'resp') {
                 echo "<br>";
                 echo "Autoriser la validation des demandes des agents par le gestionnaire : ";
@@ -471,7 +471,7 @@
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
-                
+
                 $parentstruct = null;
                 $parentstruct = $structure->parentstructure();
                 $structure->resp_envoyer_a($codeinterne);
@@ -516,16 +516,16 @@
     	   </script>
     <?php
                 echo "</tr>";
-                
+
                 // si la structure est dans la liste des structures ou l'agent est responsable (au sens strict)
                 if (isset($structrespliste[$structure->id()])) {
                     echo "<tr><td>";
-                    
+
                     // $delegationuserid = "";
                     // $datedebutdeleg = "";
                     // $datefindeleg = "";
                     $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg);
-                    
+
                     // echo "delegationuserid = $delegationuserid, datedebutdeleg = $datedebutdeleg, datefindeleg = $datefindeleg <br>";
                     $delegationuser = null;
                     if ($delegationuserid != "") {
@@ -537,7 +537,7 @@
                     if (! is_null($delegationuser))
                         echo $delegationuser->identitecomplete();
                     echo "' size=40 />";
-                    
+
                     echo "<input type='hidden' id='delegation[" . $structure->id() . "]' name='delegation[" . $structure->id() . "]' value='";
                     if (! is_null($delegationuser))
                         echo $delegationuser->harpegeid();
@@ -549,7 +549,7 @@
         		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
         	   </script>
     <?php
-                    
+
                     echo "</td>";
                     echo "<td>";
                     // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
@@ -577,7 +577,7 @@
         });
         </script>
     <?php
-                    
+
                     echo "Début de la période :";
                     if ($fonctions->verifiedate($datedebutdeleg)) {
                         $datedebutdeleg = $fonctions->formatdate($datedebutdeleg);
@@ -596,7 +596,7 @@
                     if ($fonctions->verifiedate($datefindeleg)) {
                         $datefindeleg = $fonctions->formatdate($datefindeleg);
                     }
-                    
+
                     ?>
     <td width=1px><input class="calendrier" type=text
     	name=<?php echo $calendrierid_fin . '[' . $structure->id() . ']' ?>
@@ -615,19 +615,19 @@
             echo "<br><br><br>";
         }
     }
-    
+
     echo "<input type='hidden' name='userid' value=" . $user->harpegeid() . ">";
     echo "<input type='hidden' name='action' value=" . $action . ">";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-    
+
     if ($action == 'modif')
         echo "<input type='submit' value='Soumettre' />";
     echo "</form>";
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

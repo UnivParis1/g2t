@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     // Initialisation de l'utilisateur
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
@@ -12,7 +12,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -22,42 +22,42 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
-    
+
     if (isset($_POST["structureid"]))
         $structureid = $_POST["structureid"];
     else
         $structureid = null;
-    
+
     $arrayinfouser = null;
     if (isset($_POST["infouser"]))
         $arrayinfouser = $_POST["infouser"];
-    
+
     if (isset($_POST["gestion"]))
         $gestionnaireliste = $_POST["gestion"];
     else
         $gestionnaireliste = array();
-    
+
     if (isset($_POST["resp"]))
         $responsableliste = $_POST["resp"];
     else
         $responsableliste = array();
-    
+
     $showall = false;
     if (isset($_POST['showall'])) {
         if ($_POST['showall'] == 'true')
             $showall = true;
     }
-    
+
     // print_r ($_POST); echo "<br>";
     function affichestructureliste($structure, $niveau = 0)
     {
@@ -80,19 +80,19 @@
             }
             echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
             echo "</option>";
-            
+
             $sousstruclist = $structure->structurefille();
             foreach ((array) $sousstruclist as $keystruct => $soustruct) {
                 affichestructureliste($soustruct, $niveau + 1);
             }
         }
     }
-    
+
     // echo "Responsable Liste = " . print_r($responsableliste,true) . "<br>";
     // echo "Gestionnaire Liste = " . print_r($gestionnaireliste,true) . "<br>";
-    
+
     if (! is_null($structureid)) {
-        
+
         // echo "Super on check !!!!<br>";
         // Initialisation des infos LDAP
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
@@ -111,11 +111,11 @@
             $structure = new structure($dbcon);
             // echo "Avant le load <br>";
             $structure->load($structid);
-            
+
             // On modifie les codes des envois de mail pour les agents et les responsables
             $structure->resp_envoyer_a($_POST["resp_mail"][$structid], true);
             $structure->agent_envoyer_a($_POST["agent_mail"][$structid], true);
-            
+
             // On va chercher dans le LDAP la correspondance UID => HARPEGEID
             $filtre = "(uid=" . $responsableliste[$structid] . ")";
             $dn = $LDAP_SEARCH_BASE;
@@ -134,7 +134,7 @@
                 // echo "On fixe le responsable !!!!<br>";
                 $structure->responsable($harpegeid);
             }
-            
+
             // Si on n'a pas de nom dans la zone de saisie du gestionnaire => On doit effacer le gestionnaire
             if (trim($arrayinfouser[$structid]) == "") {
                 $structure->gestionnaire("");
@@ -158,10 +158,10 @@
                     $structure->gestionnaire($harpegeid);
                 }
             }
-            
+
             $msgerreur = $structure->store();
             // echo "Apres le store <br>";
-            
+
             if ($msgerreur != "") {
                 $errlog = "Pas de sauvegarde car " . $msgerreur;
                 echo "<p style='color: red'>" . $errlog . "</p><br>";
@@ -171,7 +171,7 @@
             }
         }
     }
-    
+
     $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
     $query = mysqli_query($dbcon, $sql);
     $erreur = mysqli_error($dbcon);
@@ -188,7 +188,7 @@
         affichestructureliste($struct, 0);
     }
     echo "</select>";
-    
+
     /*
      * $sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE WHERE length(STRUCTUREID)<='3' ORDER BY NOMCOURT"; //NOMLONG
      * //$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE ORDER BY NOMCOURT"; //NOMLONG
@@ -210,7 +210,7 @@
      * }
      * echo "</select>";
      */
-    
+
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
     echo "<br><input type='checkbox' name='showall' value='true'";
     if ($showall == true)
@@ -219,13 +219,13 @@
     echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
     echo "</form>";
     echo "<br>";
-    
+
     if (! is_null($structureid)) {
-        
+
         // echo "Le structureid = $structureid <br>";
         $structure = new structure($dbcon);
         $structure->load($structureid);
-        
+
         // On utilise la liste des structures filles pour afficher la structure courante et les structures filles
         $structureliste = $structure->structurefille();
         // On ajoute la structure courante au tableau
@@ -234,15 +234,15 @@
         // On trie par la clé => La clé de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
         ksort($structureliste);
         // echo "Le tableau des structures files : " . print_r($structureliste, true) . "<br>";
-        
+
         echo "<form name='paramstructure'  method='post' >";
         echo "<table>";
         foreach ($structureliste as $keystruc => $struct) {
-            
+
             // echo "REsponsable = " . $struct->responsable()->identitecomplete() . "<br>";
             // $agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),'o');
             // echo "<br> agentliste="; print_r((array)$agentliste); echo "<br>";
-            
+
             // echo "Date cloture (Structure : " . $struct->id() . ") = " . $struct->datecloture() . "<br>";
             // echo "On est dans la boucle => " . $struct->nomlong() ."<br>";
             if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true)) {
@@ -273,7 +273,7 @@
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
     		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
     	   </script>
-    
+
     <?php
                 // echo "Avant recup du responsable <br>";
                 $responsable = $struct->responsablesiham();
@@ -288,11 +288,11 @@
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
     		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
     	   </script>
-    
+
     <?php
                 echo "</td>";
                 echo "</tr>";
-                
+
                 // Si il y a une délégation ==> On l'affiche
                 // Delegation <=> Le responsable SIHAM n'est pas le responable retourné par la fonction "responsable"
                 if ($struct->responsable()->harpegeid() != $responsable->harpegeid()) {
@@ -304,7 +304,7 @@
                     $struct->getdelegation($delegueid, $datedebutdeleg, $datefindeleg);
                     $delegue = new agent($dbcon);
                     $delegue->load($delegueid);
-                    
+
                     echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg </B></FONT><br>";
                     echo "</td>";
                     echo "</tr>";
@@ -325,7 +325,7 @@
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
-                
+
                 $parentstruct = null;
                 $parentstruct = $struct->parentstructure();
                 echo "<tr>";
@@ -360,11 +360,11 @@
         echo "</form>";
         echo "<br>";
     }
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

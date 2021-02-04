@@ -1,7 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -11,17 +11,17 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     $date = date("Ymd");
-    
+
     echo "Début de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n";
-    
+
     // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente) mais qui ne sont pas postérieure à la période en cours (< Anneeref +1 + debut_période)
     // Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.
     $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "' AND DATEDEBUT < '" . ($fonctions->anneeref() + 1) . $fonctions->debutperiode() . "'";
@@ -30,47 +30,47 @@
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT DEMANDEID => $erreur_requete \n";
-    
+
     $arraystruct = array();
     $mail_gest = array();
     $mail_resp = array();
-    
+
     $codeinterne = null;
-    
+
     while ($result = mysqli_fetch_row($query)) {
         $demande = new demande($dbcon);
         $demande->load($result[0]);
-        
+
         /*
          * $declarationliste = $demande->declarationTPliste();
          * $declaration = reset($declarationliste);
          * $affectation = new affectation($dbcon);
          * $affectation->load($declaration->affectationid());
          */
-        
+
         // On récupère le demandeur
         $demandeur = $demande->agent();
         // On récupère la liste des affectation du demandeur à la date du jour
         $affliste = $demandeur->affectationliste($fonctions->formatdatedb($date), $fonctions->formatdatedb($date));
-        
+
         /*
          * echo "Liste des affectations : \n";
          * print_r($affliste);
          * echo "\n";
          */
-        
+
         if (is_null($affliste) or count($affliste) == 0) {
             // Si le demandeur n'est plus affecté ==> On ne traite pas sa demande
             continue;
         }
         // On conserve la première affectation (et sans doute la seule)
         $affectation = current($affliste);
-        
+
         // echo "l'affectation de l'agent " . $demandeur->identitecomplete() . " est : " . print_r($affectation,true) . "\n";
-        
+
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
-        
+
         // Si ce n'est pas le responsable de la structure qui a fait la demande
         // => C'est un agent
         // On regarde à qui on doit envoyer la demande de congés pour sa structure
@@ -123,7 +123,7 @@
         unset($affectation);
         unset($affliste);
     }
-    
+
     echo "mail_resp=";
     print_r($mail_resp);
     echo "\n";
@@ -139,7 +139,7 @@
         $responsable->load($agentid);
         $nbredemande = substr_count($listedemande, ',');
         echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
-        
+
         $agentcron->sendmail($responsable, "En tant que responsable de service, des demandes de congés ou d'autorisations d'absence sont en attentes", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n", null);
         unset($responsable);
     }
@@ -148,7 +148,7 @@
         $gestionnaire->load($agentid);
         $nbredemande = substr_count($listedemande, ',');
         echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
-        
+
         $agentcron->sendmail($gestionnaire, "En tant que gestionnaire de service, des demandes de congés ou d'autorisations d'absence sont en attentes", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n", null);
         unset($gestionnaire);
     }

@@ -1,13 +1,13 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     $date = date("Ymd");
-    
+
     echo "Début de l'import des agents " . date("d/m/Y H:i:s") . "\n";
-    
+
     // On charge la table des agents avec le fichier
     $filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_agents_$date.dat";
     if (! file_exists($filename)) {
@@ -34,14 +34,14 @@
             }
         }
         fclose($fp);
-        
+
         // On vide la table des agents pour la recharger complètement
         $sql = "DELETE FROM AGENT";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE AGENT => $erreur_requete \n";
-        
+
         $fp = fopen("$filename", "r");
         while (! feof($fp)) {
             $ligne = fgets($fp); // lecture du contenu de la ligne
@@ -55,7 +55,7 @@
                 $typepop = trim($ligne_element[5]);
                 echo "harpegeid = $harpegeid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
                 $sql = sprintf("INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($civilite), $fonctions->my_real_escape_utf8($nom), $fonctions->my_real_escape_utf8($prenom), $fonctions->my_real_escape_utf8($adressemail), $fonctions->my_real_escape_utf8($typepop));
-                
+
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") {
@@ -66,13 +66,18 @@
         }
         fclose($fp);
     }
-    
+
     // Ajout manuel de l'agent CRON-G2T avec un harpegeid = -1
     $sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-1','','CRON','G2T','noreply-g2t@univ-paris1.fr','')";
     mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
-        echo "INSERT INTO AGENT noreply-G2T => $erreur_requete \n";
-    
+        echo "INSERT INTO AGENT CRON-G2T => $erreur_requete \n";
+    $sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-2','','Gestion','Temps','gestion.temps@univ-paris1.fr','')";
+    mysql_query($sql, $dbcon);
+    $erreur_requete = mysql_error();
+    if ($erreur_requete != "")
+        echo "INSERT INTO AGENT Gestion Temps => $erreur_requete \n";
+
     echo "Fin de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 ?>

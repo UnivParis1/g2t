@@ -1,7 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -11,17 +11,17 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("../html/class/autodeclaration.php");
     // require_once("../html/class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     $date = date("Ymd");
-    
+
     echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
-    
+
     /*
      * ----------------------------------------------------------
      * // On vide la table des absences HARPEGE pour la recharger complètement
@@ -38,7 +38,7 @@
      * echo "LOAD AFFECTATION FROM FILE => $erreur_requete \n";
      * ---------------------------------------------------------
      */
-    
+
     // On parcours chaque ligne du fichier
     // Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifié
     // Si DateFin plus petite => Ca se fini plus tard, donc on reduit le TP
@@ -48,7 +48,7 @@
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
-    
+
     $filename = "../INPUT_FILES_V3/har_affectations_$date.dat";
     $fp = fopen("$filename", "r");
     while (! feof($fp)) {
@@ -66,7 +66,7 @@
             $numquotite = $ligne_element[7];
             $denomquotite = $ligne_element[8];
             // echo "affectationid = $affectationid harpegeid=$harpegeid numcontrat=$numcontrat datemodif=$datemodif \n";
-            
+
             $sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
             // if ($harpegeid == '9328')
             // echo "sql (SELECT) = $sql \n";
@@ -85,7 +85,7 @@
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
                     echo "INSERT AFFECTATION => $erreur_requete \n";
-                
+
                 // echo "Import_affectation => numquotite = $numquotite denomquotite = $denomquotite \n";
                 if ($numquotite == $denomquotite) {
                     $declarationTP = new declarationTP($dbcon);
@@ -165,7 +165,7 @@
                                 echo "Erreur dans la declarationTP->store (changement duree temp complet): " . $erreur . "\n";
                         }
                     }
-                    
+
                     // Si on a repoussé le début de l'affectation
                     if ($fonctions->formatdatedb($datedebut) > $fonctions->formatdatedb($affectation->datedebut())) {
                         echo "Cas ou on repousse le début de l'affectation \n";
@@ -198,7 +198,7 @@
                             }
                         }
                     }
-                    
+
                     // Si Quotite <> alors envoyer un mail
                     // Si date fin <> alors envoyer un mail
                     // Faire l'update de la ligne
@@ -222,9 +222,9 @@
             }
         }
     }
-    
+
     fclose($fp);
-    
+
     // Pour toutes les affectations obsolètes
     // qui ont des déclarations non supprimées
     // on doit supprimer les déclarations de temps partiels => suppression des demandes
@@ -254,7 +254,7 @@
             }
         }
     }
-    
+
     echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
 
 ?>

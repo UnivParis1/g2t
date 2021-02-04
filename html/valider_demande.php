@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,14 +21,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
@@ -37,11 +37,11 @@
         $previous = 1;
     else
         $previous = 0;
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     // Récupération du mode => resp ou gestion
     $mode = $_POST["mode"];
     if (is_null($mode) or $mode == "") {
@@ -57,7 +57,7 @@
     if (isset($_POST['motif'])) {
         $motifliste = $_POST['motif'];
     }
-    
+
     if (is_array($statutliste) and is_array($motifliste)) {
         foreach ($statutliste as $demandeid => $statut) {
             if (strcasecmp($statut, "a") != 0) {
@@ -85,7 +85,7 @@
                             $ics = $demande->ics($agent->mail());
                         }
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
-                        
+
                         if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                         {
                             // On remplace les '\' par des '/' et on cherche la position du dernier '/'
@@ -100,9 +100,9 @@
                                 $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "\n";
                             }
                         }
-                        
+
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
-                        
+
                         if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         {
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
@@ -117,7 +117,7 @@
                                 $user->sendmail($gestrh, "Changement de statut d'une demande de congés sur CET", $corpmail);
                             }
                         }
-                        
+
                         // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                         error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
                     }
@@ -125,9 +125,9 @@
             }
         }
     }
-    
+
     echo "Changez l'état de chacune des demandes en \"Validée\" ou \"Refusée\", puis enregistrez les modifications en cliquant sur le bouton \"Soumettre\" <br>Laissez l'état des demandes à \"En attente\" si vous ne souhaitez pas faire de modification.<br><U>Attention :</U> La saisie du motif est obligatoire dans le cas d'un refus.<br><br>";
-    
+
     if ($user->estresponsable() and (strcasecmp($mode, "resp") == 0)) {
         $listestruct = $user->structrespliste();
         // print_r($listestruct); echo "<br>";
@@ -146,16 +146,16 @@
                     // echo "boucle => " .$membre->nom() . "<br>";
                     $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
                     $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
-                    
+
                     // Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
                     // On doit afficher les congés qui sont dans la période suivante
                     if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) and ($previous == 0))
                         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-                    
+
                     // echo "Debut = $debut fin = $fin <br>";
                     // echo "structure->id() = " . $structure->id() . "<br>";
                     // echo "Membre = " . $membre->nom() . "<br>";
-                    
+
                     // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
                     $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->harpegeid(), $structure->id(), $cleelement);
                     if ($htmltodisplay != "") {
@@ -165,7 +165,7 @@
                     }
                 }
             }
-            
+
             $sousstructureliste = $structure->structurefille();
             // echo "On passe aux reponsables....<br>";
             if (is_array($sousstructureliste)) {
@@ -210,7 +210,7 @@
     } elseif (! $user->estresponsable() and (strcasecmp($mode, "resp") == 0)) {
         echo "Vous n'êtes pas responsable, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
     }
-    
+
     if ($user->estgestionnaire() and (strcasecmp($mode, "gestion") == 0)) {
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' value='Soumettre' />";
@@ -245,7 +245,7 @@
                         // echo "Debut = $debut fin = $fin <br>";
                         // echo "structure->id() = " . $structure->id() . "<br>";
                         // echo "Membre = " . $membre->nom() . "<br>";
-                        
+
                         // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
                         // -------------------------------------------------------------
                         // Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
@@ -261,7 +261,7 @@
                     }
                 }
             }
-            
+
             // A Voir si on affiche les structures filles lorsque l'on est Gestionnaire
             /*
              * $sousstructureliste=$structure->structurefille();
@@ -302,7 +302,7 @@
                 echo "Aucune demande en attente pour cette structure...<br>";
             }
         }
-        
+
         $listestruct = $user->structgestcongeliste();
         // echo "<br>listestruct = "; print_r((array) $listestruct) ; echo "<br>";
         if (! is_null($listestruct)) {
@@ -311,7 +311,7 @@
                 $aumoinsunedemande = FALSE;
                 $cleelement = $structure->id();
                 echo "<center><p>Tableau pour le responsable de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
-                
+
                 $responsable = $structure->responsable();
                 $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
                 $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
@@ -329,7 +329,7 @@
                 echo "Aucune demande en attente pour cette structure...<br>";
             }
         }
-        
+
         echo "<input type='hidden' name='mode' value='" . $mode . "' />";
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
@@ -342,8 +342,8 @@
 
 ?>
 <br>
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

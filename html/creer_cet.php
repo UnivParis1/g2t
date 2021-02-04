@@ -1,7 +1,7 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
-    
+
     if (isset($_POST["userid"]))
         $userid = $_POST["userid"];
     else
@@ -11,7 +11,7 @@
         header('Location: index.php');
         exit();
     }
-    
+
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -21,14 +21,14 @@
     require_once ("./class/declarationTP.php");
     // require_once("./class/autodeclaration.php");
     // require_once("./class/dossier.php");
-    require_once ("./class/tcpdf/tcpdf.php");
+    require_once ("./class/fpdf/fpdf.php");
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-    
+
     $user = new agent($dbcon);
     $user->load($userid);
-    
+
     if (isset($_POST["agentid"])) {
         $agentid = $_POST["agentid"];
         if (! is_numeric($agentid)) {
@@ -52,7 +52,7 @@
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
         }
-        
+
         if (! is_numeric($agentid)) {
             $agentid = null;
             $agent = null;
@@ -64,14 +64,14 @@
         $agentid = null;
         $agent = null;
     }
-    
+
     $msg_erreur = "";
     $msg_bloquant = "";
-    
+
     $mode = null;
     if (isset($_POST["mode"]))
         $mode = $_POST["mode"];
-    
+
     $nbr_jours_cet = null;
     if (isset($_POST["nbr_jours_cet"])) {
         $nbr_jours_cet = $_POST["nbr_jours_cet"];
@@ -83,7 +83,7 @@
             $nbr_jours_cet = null;
         }
     }
-    
+
     $date_ouv_cet = null;
     if (isset($_POST["date_ouv_cet"])) {
         $date_ouv_cet = $_POST["date_ouv_cet"];
@@ -92,7 +92,7 @@
             $date_ouv_cet = null;
         }
     }
-    
+
     if (! is_null($date_ouv_cet) and ! is_null($nbr_jours_cet)) {
         // Les informations d'entrée sont bonnes.... On va créer le CET pour l'agent
         $cet = new cet($dbcon);
@@ -120,19 +120,19 @@
             $msg_bloquant = "CET déja existant !!!! <br>";
         }
     }
-    
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     // echo "Les paramètres : " . print_r($_POST,true) . "<br>";
-    
+
     echo "Cette page permet de créer un Compte Epargne Temps (CET) et de le créditer avec un solde non déduit des congés. <br>";
     echo "Elle doit être utilisée uniquement dans le cas où un agent arrive dans l'établissement et dispose déjà d'un CET. <br>";
     echo "<br>";
     echo "Si vous souhaitez transférer des reliquats de congés, vous devez utiliser la fonction 'Alimentation / Indemnisation des CET'.<br>";
     echo "<br>";
-    
+
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
@@ -162,17 +162,17 @@
         echo "<br>";
         echo "<br>";
     }
-    
+
     if ($msg_erreur != "" or $msg_bloquant != "") {
         $display = $msg_bloquant . "  " . $msg_erreur;
         echo "<p style='color: red'>$display</p>";
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($display));
     }
-    
+
     // echo "Agent = " . print_r($agent,true) . "<br>";
-    
+
     if (! is_null($agent)) {
-        
+
         echo "<form name='frm_creercet'  method='post' >";
         $cet = new cet($dbcon);
         $msg_erreur = $cet->load($agent->harpegeid());
@@ -201,11 +201,11 @@
         }
         echo "</form>";
     }
-    
+
 ?>
 
-<!-- 
-<a href=".">Retour à la page d'accueil</a> 
+<!--
+<a href=".">Retour à la page d'accueil</a>
 -->
 </body>
 </html>

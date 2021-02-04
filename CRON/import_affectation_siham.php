@@ -1,5 +1,5 @@
 <?php
-    
+
     // //////////////////////////////////////////////////////////////
     // / ATTENTION : Debug = True ne traite pas tous les agents ////
     // / ni toutes les parties du scripts ////
@@ -9,7 +9,7 @@
     // //////////////////////////////////////////////////////////////
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -19,27 +19,27 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("../html/class/autodeclaration.php");
     // require_once("../html/class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     $date = date("Ymd");
-    
+
     echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
-    
+
     $modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
     $statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_status_$date.dat";
     $structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_structures_$date.dat";
-    
+
     $skipreadfile = false;
     if (isset($argv[1])) {
         if ($argv[1] == 'noimport')
             $skipreadfile = true;
     }
-    
+
     if (! $skipreadfile) {
         $exit = false;
         echo "Vérification existance des fichiers....\n";
@@ -59,7 +59,7 @@
             echo "Il manque au moins un fichier => Aucune mise à jour réalisée !!! \n";
             exit();
         }
-        
+
         // On verifie que tous les fichiers ont un bon format !!!!
         $separateur = ';';
         // Vérification que le fichier d'entree est bien conforme
@@ -81,7 +81,7 @@
             }
         }
         fclose($fp);
-        
+
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$statutfile", "r");
@@ -101,7 +101,7 @@
             }
         }
         fclose($fp);
-        
+
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$structurefile", "r");
@@ -121,7 +121,7 @@
             }
         }
         fclose($fp);
-        
+
         echo "Import des MODALITES D'AFFECTATION \n";
         // Import des affectations-modalite.txt
         $sql = "DELETE FROM W_MODALITE";
@@ -129,7 +129,7 @@
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_MODALITE => $erreur_requete \n";
-        
+
         if (! file_exists($modalitefile)) {
             echo "Le fichier $modalitefile n'existe pas !!! \n";
         } else {
@@ -146,7 +146,7 @@
                     if (! isset($debug) or $debug == false)
                         echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($quotite), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-                    
+
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
@@ -157,7 +157,7 @@
             }
             fclose($fp);
         }
-        
+
         echo "Import des STATUTS D'AFFECTATION \n";
         // Import des affectations-statut.txt
         $sql = "DELETE FROM W_STATUT";
@@ -165,7 +165,7 @@
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_STATUT => $erreur_requete \n";
-        
+
         // On charge la table des absences HARPEGE avec le fichier
         if (! file_exists($statutfile)) {
             echo "Le fichier $statutfile n'existe pas !!! \n";
@@ -183,7 +183,7 @@
                     if (! isset($debug) or $debug == false)
                         echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($statut), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-                    
+
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
@@ -194,7 +194,7 @@
             }
             fclose($fp);
         }
-        
+
         echo "Import des STRUCTURES D'AFFECTATION \n";
         // Import des affectations-structure.txt
         $sql = "DELETE FROM W_STRUCTURE";
@@ -202,7 +202,7 @@
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_STRUCTURE => $erreur_requete \n";
-        
+
         // On charge la table des absences HARPEGE avec le fichier
         if (! file_exists($structurefile)) {
             echo "Le fichier $structurefile n'existe pas !!! \n";
@@ -220,7 +220,7 @@
                     if (! isset($debug) or $debug == false)
                         echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-                    
+
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
@@ -232,20 +232,20 @@
             fclose($fp);
         }
     }
-    
+
     $sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='O' WHERE DATEDEBUT>='20160101'");
     $query_aff = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
-    
+
     // $sql = sprintf("SELECT DISTINCT HARPEGEID FROM W_MODALITE WHERE HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STATUT) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STRUCTURE)");
     $sql = sprintf("SELECT DISTINCT HARPEGEID FROM W_MODALITE WHERE HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STATUT) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STRUCTURE) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM AGENT)");
     $query_harpegeid = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT HARPEGEID FROM W.... => $erreur_requete \n";
-    
+
     while ($harpid = mysqli_fetch_row($query_harpegeid)) {
         // ///////////////////////////////////////////////////
         // ///////////////////////////////////////////////////
@@ -259,7 +259,7 @@
         }
         // ///////////////////////////////////////////////////
         // ///////////////////////////////////////////////////
-        
+
         echo "-----------------------------------------\n";
         echo "On travaille sur l'agent : " . $harpid[0] . "\n";
         $agent = new agent($dbcon);
@@ -269,7 +269,7 @@
             $tabaffectation = $agent->creertimeline();
             echo "Timeline de l'agent " . $agent->harpegeid() . " => " . print_r($tabaffectation, true) . "\n";
         }
-        
+
         foreach ((array) $tabaffectation as $ligneaffectation) {
             $affectation = null;
             $ligne_element = explode(";", $ligneaffectation);
@@ -291,11 +291,11 @@
             $structureid = $ligne_element[6];
             $numquotite = $ligne_element[7];
             $denomquotite = $ligne_element[8];
-            
+
             echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif datedebut=$datedebut  datefin=$datefin\n";
             if ($fonctions->formatdatedb($datedebut) < '20160101')
                 continue;
-            
+
             $sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
             // if ($harpegeid == '9328')
             // echo "sql (SELECT) = $sql \n";
@@ -303,7 +303,7 @@
             $erreur_requete = mysqli_error($dbcon);
             if ($erreur_requete != "")
                 echo "SELECT AFFECTATION => $erreur_requete \n";
-            
+
             // -------------------------------
             // Affectation manquante
             // -------------------------------
@@ -318,7 +318,7 @@
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
                     echo "INSERT AFFECTATION => $erreur_requete \n";
-                
+
                 // echo "Import_affectation => numquotite = $numquotite denomquotite = $denomquotite \n";
                 if ($numquotite == $denomquotite) {
                     $declarationTP = new declarationTP($dbcon);
@@ -343,7 +343,7 @@
                 echo "On est dans le cas ou l'affectation existe : $affectationid \n";
                 $affectation = new affectation($dbcon);
                 $affectation->load($fonctions->my_real_escape_utf8($affectationid));
-                
+
                 // Si tout est pareil.... => On réactive la ligne d'affectation
                 if (($fonctions->formatdatedb($affectation->datedebut()) == $fonctions->formatdatedb($datedebut)) and ($fonctions->formatdatedb($affectation->datefin()) == $fonctions->formatdatedb($datefin)) and ($affectation->numquotite() == $numquotite) and ($affectation->structureid() == $structureid) and ($affectation->numcontrat() == $numcontrat)) {
                     echo "Reactivation de la ligne d'affectation car tout est pareil \n";
@@ -359,17 +359,17 @@
                     // On réactive la ligne d'affectation (puisqu'elle existe toujours) mais on update avec les bonnes valeurs du fichier
                     echo "On update l'affectation (identifiant = " . $affectationid . ")\n";
                     $sql = sprintf("UPDATE AFFECTATION SET HARPEGEID='%s',NUMCONTRAT='%s',DATEDEBUT='%s',DATEFIN='%s',DATEMODIFICATION='%s',STRUCTUREID='%s',NUMQUOTITE='%s',DENOMQUOTITE='%s',OBSOLETE='%s' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N', $fonctions->my_real_escape_utf8($affectationid));
-                    
+
                     // if ($harpegeid == '9328')
                     // {
                     // echo "sql = $sql \n";
                     // }
-                    
+
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "UPDATE AFFECTATION => $erreur_requete \n";
-                    
+
                     // ------------------------------------------------
                     // Cas ou la structure est modifiée
                     // On ne modifie rien car le changement de structure n'a aucun impact sur les autres informations
@@ -377,7 +377,7 @@
                     if ($affectation->structureid() != $structureid) {
                         echo "Changement de structure d'affectation : Ancienne structure = " . $affectation->structureid() . "  Nouvelle structure = " . $structureid . "\n";
                     }
-                    
+
                     // ------------------------------------------------
                     // Cas ou le num contrat est modifié
                     // On ne modifie rien car le changement de numcontrat n'a aucun impact sur les autres informations
@@ -386,7 +386,7 @@
                     if ($affectation->numcontrat() != $numcontrat) {
                         echo "Changement de numero de contrat : Ancien numcontrat = " . $affectation->numcontrat() . "  Nouveau numcontrat = " . $numcontrat . "\n";
                     }
-                    
+
                     // ------------------------------------------------
                     // Cas ou la quotité est modifiée
                     // On annule la déclaration de TP correspondante
@@ -399,7 +399,7 @@
                             // Pour chaque declaration => On les annule
                             foreach ($declarationliste as $declaration) {
                                 if (strcasecmp($declaration->statut(), "r") != 0) {
-                                    
+
                                     $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($declaration->declarationTPid()));
                                     mysqli_query($dbcon, $sql);
                                     $erreur_requete = mysqli_error($dbcon);
@@ -476,7 +476,7 @@
             }
         }
     }
-    
+
     // Pour toutes les affectations obsolètes
     // qui ont des déclarations non supprimées
     // On doit supprimer les déclarations de TP ===> ON NE TOUCHE PAS AUX CONGES !!!!!!
@@ -515,16 +515,16 @@
         echo "Pas d'affectation obsolete.... \n";
     }
     echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
-    
+
     exit();
-    
+
     // ///////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////////////
     // ///////////////// A VOIR CE QUE L'ON FAIT DE CA !!!! //////////////////////
     // ///////////////////////////////////////////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////////////
-    
+
     // on doit supprimer les déclarations de temps partiels => suppression des demandes
     $sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID FROM AFFECTATION,DECLARATIONTP ";
     $sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
@@ -605,7 +605,7 @@
                 if (! is_null($olddeclarationliste)) {
                     $indexnewTP = 0;
                     foreach ($olddeclarationliste as $oldTP) {
-                        
+
                         $newTP = $newdeclarationliste[$indexnewTP];
                         // echo "newTP->declarationTPid() = " . $newTP->declarationTPid() . " oldTP->declarationTPid() = " . $oldTP->declarationTPid() . "\n";
                         // On va maintenant raccrocher les anciennes demandes de congés à la nouvelle declarationTP
@@ -625,7 +625,7 @@
             } else {
                 echo "NON \n";
             }
-            
+
             unset($affectation);
             $affectation = new affectation($dbcon);
             $affectation->load($result[0]);
@@ -642,7 +642,7 @@
     } else {
         echo "Pas d'affectation obsolete.... \n";
     }
-    
+
     echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
 
 ?>

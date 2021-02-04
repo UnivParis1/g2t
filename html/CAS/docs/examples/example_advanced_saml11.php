@@ -5,7 +5,7 @@
  *
  * PHP Version 5
  *
- * @file     example_advanced_saml.php
+ * @file     example_advanced_saml11.php
  * @category Authentication
  * @package  PhpCAS
  * @author   Joachim Fritschi <jfritschi@freenet.de>
@@ -19,8 +19,10 @@ require_once 'config.php';
 // Load the CAS lib
 require_once $phpcas_path . '/CAS.php';
 
-// Uncomment to enable debugging
+// Enable debugging
 phpCAS::setDebug();
+// Enable verbose error messages. Disable in production!
+phpCAS::setVerbose(true);
 
 // Initialize phpCAS
 phpCAS::client(SAML_VERSION_1_1, $cas_host, $cas_port, $cas_context);

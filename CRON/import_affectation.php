@@ -1,7 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    
+
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -11,17 +11,17 @@
     require_once ("../html/class/declarationTP.php");
     // require_once("../html/class/autodeclaration.php");
     // require_once("../html/class/dossier.php");
-    require_once ("../html/class/tcpdf/tcpdf.php");
+    require_once ("../html/class/fpdf/fpdf.php");
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-    
+
     $fonctions = new fonctions($dbcon);
-    
+
     $date = date("Ymd");
-    
+
     echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
-    
+
     /*
      * ----------------------------------------------------------
      * // On vide la table des absences HARPEGE pour la recharger complètement
@@ -38,7 +38,7 @@
      * echo "LOAD AFFECTATION FROM FILE => $erreur_requete \n";
      * ---------------------------------------------------------
      */
-    
+
     $filename = dirname(__FILE__) . "/../INPUT_FILES_V3/har_affectations_$date.dat";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
@@ -64,7 +64,7 @@
             }
         }
         fclose($fp);
-        
+
         // On parcours chaque ligne du fichier
         // Si la date de modif est <> de la date de modif en base alors on regarde ce qui est modifié
         // Si DateFin plus petite => Ca se fini plus tard, donc on reduit le TP
@@ -74,7 +74,7 @@
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
-        
+
         $fp = fopen("$filename", "r");
         while (! feof($fp)) {
             $affectation = null;
@@ -94,7 +94,7 @@
                 $numquotite = trim($ligne_element[7]);
                 $denomquotite = trim($ligne_element[8]);
                 echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif \n";
-                
+
                 $sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE FROM AFFECTATION WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
                 // if ($harpegeid == '9328')
                 // echo "sql (SELECT) = $sql \n";
@@ -116,7 +116,7 @@
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "INSERT AFFECTATION => $erreur_requete \n";
-                    
+
                     // echo "Import_affectation => numquotite = $numquotite denomquotite = $denomquotite \n";
                     if ($numquotite == $denomquotite) {
                         $declarationTP = new declarationTP($dbcon);
@@ -157,7 +157,7 @@
                     $res_aff = mysqli_fetch_row($query_aff);
                     // echo "res_aff[0]=$res_aff[0] datemodif =$datemodif \n";
                     // Si on a modifié quelque chose dans l'affectation
-                    
+
                     if ($fonctions->formatdatedb($datemodif) != $fonctions->formatdatedb($res_aff[0])) {
                         $affectation = new affectation($dbcon);
                         $affectation->load($affectationid);
@@ -208,12 +208,12 @@
                             // Si on a modifié la durée de l'affectation
                             // Alors on doit modifier la durée de la declaration de TP à 100%
                             // echo "datedebut = $datedebut affectation->datedebut() = " . $affectation->datedebut() . " datefin = $datefin affectation->datefin() = " . $affectation->datefin() . "\n";
-                            
+
                             // echo "datefin = $datefin length(datefin) = " . strlen($datefin) ." et Affectation->Datefin=" . $affectation->datefin() . "\n";
                             // if (is_null($datefin)) echo "datefin est null "; else echo "datefin NOT null ";
                             // if (is_null($affectation->datefin())) echo "affectation->datefin() est null "; else echo "affectation->datefin() NOT null ";
                             // echo "\n";
-                            
+
                             if (($fonctions->formatdatedb($datedebut) != $fonctions->formatdatedb($affectation->datedebut())) or ($fonctions->formatdatedb($datefin) != $fonctions->formatdatedb($affectation->datefin()))) {
                                 echo "Cas où on modifie la durée de l'affectation\n";
                                 $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
@@ -252,7 +252,7 @@
                                                 $declaration->statut("r");
                                             else
                                                 $declaration->datedebut($datedebut);
-                                            
+
                                             $msg = $declaration->store();
                                         }
                                         if ($msg != "")
@@ -278,7 +278,7 @@
                                                 $declaration->statut("r");
                                             else
                                                 $declaration->datefin($datefin);
-                                            
+
                                             $msg = $declaration->store();
                                         }
                                         if ($msg != "")
@@ -310,9 +310,9 @@
                 }
             }
         }
-        
+
         fclose($fp);
-        
+
         // Pour toutes les affectations obsolètes
         // qui ont des déclarations non supprimées
         // on doit supprimer les déclarations de temps partiels => suppression des demandes
@@ -395,7 +395,7 @@
                     if (! is_null($olddeclarationliste)) {
                         $indexnewTP = 0;
                         foreach ($olddeclarationliste as $oldTP) {
-                            
+
                             $newTP = $newdeclarationliste[$indexnewTP];
                             // echo "newTP->declarationTPid() = " . $newTP->declarationTPid() . " oldTP->declarationTPid() = " . $oldTP->declarationTPid() . "\n";
                             // On va maintenant raccrocher les anciennes demandes de congés à la nouvelle declarationTP
@@ -437,7 +437,7 @@
                      * }
                      */
                 }
-                
+
                 unset($affectation);
                 $affectation = new affectation($dbcon);
                 $affectation->load($result[0]);
@@ -455,7 +455,7 @@
             echo "Pas d'affectation obsolete.... \n";
         }
     }
-    
+
     echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
 
 ?>
