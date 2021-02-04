@@ -146,19 +146,19 @@ class planningelement
                 return self::COULEUR_NOIRE;
         }
         $sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "PlanningElement->couleur : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "PlanningElement->couleur : La couleur pour le type de congé " . $this->typeelement . " non trouvée";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         return $result[1];
     }
 
@@ -176,19 +176,19 @@ class planningelement
             if (strcasecmp($this->statut, "a") == 0) {
                 $this->type("atten");
                 $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
-                $query = mysql_query($sql, $this->dbconnect);
-                $erreur = mysql_error();
+                $query = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "PlanningElement->statut : " . $erreur;
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
-                if (mysql_num_rows($query) == 0) {
+                if (mysqli_num_rows($query) == 0) {
                     $errlog = "PlanningElement->statut : Le libellé pour le type de congé " . $this->typeelement . " non trouvé";
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
-                $result = mysql_fetch_row($query);
+                $result = mysqli_fetch_row($query);
                 $this->info = $result[1] . " : " . $this->info;
             }
         }

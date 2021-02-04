@@ -37,8 +37,8 @@
         
         // On vide la table des absences HARPEGE pour la recharger complètement
         $sql = "DELETE FROM HARPABSENCE";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE HARPABSENCE => $erreur_requete \n";
         
@@ -54,8 +54,8 @@
                 echo "harpegeid = $harpegeid   datedebut=$datedebut   datefin=$datefin   harptype=$harptype   \n";
                 $sql = sprintf("INSERT INTO HARPABSENCE (HARPEGEID,DATEDEBUT,DATEFIN,HARPTYPE) VALUES('%s','%s	','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($harptype));
                 
-                mysql_query($sql);
-                $erreur_requete = mysql_error();
+                mysqli_query($dbcon, $sql);
+                $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") {
                     echo "INSERT HARPABSENCE => $erreur_requete \n";
                     echo "sql = $sql \n";

@@ -57,12 +57,12 @@
     
     // echo "SQL = $sql \n";
     
-    $query = mysql_query($sql, $dbcon);
-    $erreur = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur = mysqli_error($dbcon);
     if ($erreur != "")
         echo "demande_cet (SELECT) : " . $erreur . "<br>";
     
-    if (mysql_num_rows($query) == 0) {
+    if (mysqli_num_rows($query) == 0) {
         echo "demande_cet : Aucune demande de CET sur la période demandée<br>";
     } else {
         echo "Génération du PDF pour les demandes de CET \n";
@@ -95,7 +95,7 @@
         $pdf->Cell(30, 5, "Statut", 1, 0, 'C');
         $pdf->Ln();
         
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $agent = new agent($dbcon);
             $agent->load("$result[0]");
             

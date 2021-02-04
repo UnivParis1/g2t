@@ -20,11 +20,11 @@
     
     // ///// VERIFICATION POUR NE PAS POUVOIR LANCER 2 FOIS LA REPRISE SUR LA BASE
     $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE AFFECTATIONID LIKE '%\_%\_%'";
-    $queryverif = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $queryverif = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
-    if (mysql_num_rows($queryverif) > 0) // Si des affectationID au format %_%_% sont déja présents => On ne fait pas la reprise !! Elle est déja faite
+    if (mysqli_num_rows($queryverif) > 0) // Si des affectationID au format %_%_% sont déja présents => On ne fait pas la reprise !! Elle est déja faite
     {
         echo "La reprise est déjà faite !!!!! \n";
         exit();
@@ -65,8 +65,8 @@
         echo "Import des MODALITES D'AFFECTATION \n";
         // Import des affectations-modalite.txt
         $sql = "DELETE FROM W_MODALITE";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_MODALITE => $erreur_requete \n";
         
@@ -86,8 +86,8 @@
                     echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($quotite), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT W_MODALITE => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -100,8 +100,8 @@
         echo "Import des STATUTS D'AFFECTATION \n";
         // Import des affectations-statut.txt
         $sql = "DELETE FROM W_STATUT";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_STATUT => $erreur_requete \n";
         
@@ -122,8 +122,8 @@
                     echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($statut), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT W_STATUT => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -136,8 +136,8 @@
         echo "Import des STRUCTURES D'AFFECTATION \n";
         // Import des affectations-structure.txt
         $sql = "DELETE FROM W_STRUCTURE";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_STRUCTURE => $erreur_requete \n";
         
@@ -158,8 +158,8 @@
                     echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT W_STRUCTURE => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -180,8 +180,8 @@
     			  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
     			  ORDER BY AFFECTATION.HARPEGEID";
     // echo "SQL (SELECT 1) = " . $sql . "\n";
-    $query = mysql_query($sql, $dbcon);
-    while ($affectation = mysql_fetch_row($query)) {
+    $query = mysqli_query($dbcon, $sql);
+    while ($affectation = mysqli_fetch_row($query)) {
         $agent = new agent($dbcon);
         $agent->load($affectation[1]);
         
@@ -189,7 +189,7 @@
         // Pour chaque affectation que l'on a récupéré => On met la date de fin à 31/12/2015
         $sql = "UPDATE AFFECTATION SET DATEFIN = '2015-12-31' WHERE AFFECTATIONID = '" . $affectation[0] . "'";
         // echo "SQL (UPDATE 1) = " . $sql . "\n";
-        mysql_query($sql, $dbcon);
+        mysqli_query($dbcon, $sql);
         
         if ($agent->harpegeid() != $agentprecedent->harpegeid()) {
             /*
@@ -241,8 +241,8 @@
             $sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
     							VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N');
             echo "execution de l'insert AFFECTATION... => SQL=$sql" . "\n";
-            mysql_query($sql);
-            $erreur_requete = mysql_error();
+            mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
             if ($erreur_requete != "") {
                 echo "INSERT AFFECTATION SIHAM (Id de l'agent precedent=" . $agentprecedent->harpegeid() . " et harpegeid=" . $agent->harpegeid() . ") => $erreur_requete \n";
             }
@@ -250,12 +250,12 @@
             // $affectation[0] = Identifiant de l'ancienne affectation HARPEGE
             $sql = "SELECT DECLARATIONID, AFFECTATIONID, TABTPSPARTIEL, DATEDEMANDE, DATEDEBUT, DATEFIN, DATESTATUT, STATUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $affectation[0] . "' AND DATEFIN > '2015-12-31' AND (STATUT<>'R' OR STATUT<>'r') ";
             echo "SQL SELECT FROM DECLARATIONTP => " . $sql . "\n";
-            $querydeclaration = mysql_query($sql, $dbcon);
-            while ($declarationtp = mysql_fetch_row($querydeclaration)) {
+            $querydeclaration = mysqli_query($dbcon, $sql);
+            while ($declarationtp = mysqli_fetch_row($querydeclaration)) {
                 echo "Je suis dans la boucle pour la declarationTP pour mettre la date de fin a 31/12/2015 : " . $declarationtp[0] . "\n";
                 // Pour chaque declarationTP que l'on a récupéré => On met la date de fin à 31/12/2015
                 $sql = "UPDATE DECLARATIONTP SET DATEFIN = '2015-12-31' WHERE DECLARATIONID = '" . $declarationtp[0] . "'";
-                mysql_query($sql, $dbcon);
+                mysqli_query($dbcon, $sql);
                 
                 // Si la déclarationTP commence avant le 01/01/2016 => On fixe à 01/01/2016 sinon on remet la même date de début
                 if ($declarationtp[3] < '2016-01-01') {
@@ -275,8 +275,8 @@
                     $sql = sprintf("INSERT INTO DECLARATIONTP(AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT) 
     								VALUES('%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($declarationtp[2]), $fonctions->my_real_escape_utf8($declarationtp[3]), $fonctions->my_real_escape_utf8($datedebutTP), $fonctions->my_real_escape_utf8($declarationtp[5]), $fonctions->my_real_escape_utf8($declarationtp[6]), $fonctions->my_real_escape_utf8($declarationtp[7]));
                     echo "execution de l'insert DECLARATIONTP... => SQL=$sql" . "\n";
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT DECLARATIONTP SIHAM (harpegeid=" . $agent->harpegeid() . ") => $erreur_requete \n";
                     }

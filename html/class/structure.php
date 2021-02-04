@@ -48,20 +48,20 @@ class structure
     {
         if (is_null($this->structureid)) {
             $sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Structure->Load (STRUCTURE) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 // echo "Structure->Load (STRUCTURE) : Structure $structureid non trouvé <br>";
                 $this->nomcourt = "$structureid";
                 $this->nomlong = "Structure inconnue";
                 return false;
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->structureid = "$result[0]";
             $this->nomlong = "$result[1]";
             $this->nomcourt = "$result[2]";
@@ -80,15 +80,15 @@ class structure
             
             // Prise en compte du cas de la délégation
             $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Structure->Load (STRUCTURE DELEGUE) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) != 0) {
-                $result = mysql_fetch_row($query);
+            if (mysqli_num_rows($query) != 0) {
+                $result = mysqli_fetch_row($query);
                 if ("$result[0]" != "") {
                     $this->delegueid = "$result[0]";
                 }
@@ -198,17 +198,17 @@ class structure
         $structureliste = null;
         if (! is_null($this->structureid)) {
             $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT='" . $this->structureid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Structure->structurefille : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 // echo "Structure->structurefille : La structure $this->structureid n'a pas de structure fille<br>";
             }
-            while ($result = mysql_fetch_row($query)) {
+            while ($result = mysqli_fetch_row($query)) {
                 $structure = new structure($this->dbconnect);
                 $structure->load("$result[0]");
                 $structureliste[$structure->id()] = $structure;
@@ -252,15 +252,15 @@ class structure
         $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
         
         // echo "Structure->agentlist : SQL (agentlist) = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Structure->agentlist : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         // echo "Avant le while...<br>";
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $agent = new agent($this->dbconnect);
             // echo "Apres le new et avant le load =" . $result[0] . "<br>";
             if ($agent->load("$result[0]")) {
@@ -300,8 +300,8 @@ class structure
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
                 $sql = "UPDATE STRUCTURE SET DEST_MAIL_RESPONSABLE='" . $codeinterne . "' WHERE STRUCTUREID = '" . $this->structureid . "'";
-                mysql_query($sql, $this->dbconnect);
-                $erreur = mysql_error();
+                $query = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Structure->resp_envoyer_a (UPDATE) : " . $erreur;
                     echo $errlog . "<br/>";
@@ -311,14 +311,14 @@ class structure
         } else {
             // echo "Structure->resp_envoyer_a (SELECT) : Avant le select DEST_MAIL_RESPONSABLE <br>";
             $sql = "SELECT DEST_MAIL_RESPONSABLE FROM STRUCTURE WHERE STRUCTUREID = '" . $this->structureid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Structure->resp_envoyer_a (SELECT) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $codeinterne = $result[0];
             // echo "codeinterne = $codeinterne <br>";
             switch ($codeinterne) {
@@ -352,8 +352,8 @@ class structure
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
                 $sql = "UPDATE STRUCTURE SET DEST_MAIL_AGENT='" . $codeinterne . "' WHERE STRUCTUREID = '" . $this->structureid . "'";
-                mysql_query($sql, $this->dbconnect);
-                $erreur = mysql_error();
+                $query = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Structure->agent_envoyer_a (UPDATE) : " . $erreur;
                     echo $errlog . "<br/>";
@@ -362,14 +362,14 @@ class structure
             }
         } else {
             $sql = "SELECT DEST_MAIL_AGENT FROM STRUCTURE WHERE STRUCTUREID = '" . $this->structureid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Structure->agent_envoyer_a (SELECT) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $codeinterne = $result[0];
             switch ($codeinterne) {
                 case 2: // Envoi au gestionnaire du service courant
@@ -509,7 +509,7 @@ class structure
     function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false) // Le format doit être MM/YYYY
     {
         // echo "Je debute planninghtml <br>";
-        list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut); 
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
             echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Les informations antérieures à la date du jour ont été masquées.</font></B><br>";
             // echo "<font color=#FF0000></font><br>";
@@ -791,8 +791,8 @@ class structure
         $msgerreur = null;
         $sql = "UPDATE STRUCTURE SET AFFICHESOUSSTRUCT='" . $this->sousstructure() . "', AFFICHEPLANNINGTOUTAGENT='" . $this->affichetoutagent() . "' , AFFICHERESPSOUSSTRUCT='" . $this->afficherespsousstruct() . "' , RESPVALIDSOUSSTRUCT='" . $this->respvalidsousstruct() . "', GESTVALIDAGENT='" . $this->gestvalidagent() . "' WHERE STRUCTUREID='" . $this->id() . "'";
         // echo "SQL = " . $sql . "<br>";
-        mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Structure->store (STRUCTURE - Sous struct + Affiche) : " . $erreur;
             echo $errlog . "<br/>";
@@ -802,8 +802,8 @@ class structure
         
         $sql = "UPDATE STRUCTURE SET GESTIONNAIREID='" . $this->gestionnaireid . "' WHERE STRUCTUREID='" . $this->id() . "'";
         // echo "SQL = " . $sql . "<br>";
-        mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Structure->store (HARP_STRUCTURE) : " . $erreur;
             echo $errlog . "<br/>";
@@ -813,8 +813,8 @@ class structure
         
         $sql = "UPDATE STRUCTURE SET RESPONSABLEID='" . $this->responsableid . "' WHERE STRUCTUREID='" . $this->id() . "'";
         // echo "SQL = " . $sql . "<br>";
-        mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Structure->store (HARP_STRUCTURE) : " . $erreur;
             echo $errlog . "<br/>";
@@ -856,7 +856,7 @@ class structure
         // echo "Avant le planning <br>";
         $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
         
-        list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
             $pdf->SetTextColor(204, 0, 0);
             $pdf->Cell(60, 10, "Attention : Les informations antérieures à la date du jour ont été masquées.");
@@ -927,15 +927,15 @@ class structure
         $datefindeleg = "";
         
         $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID = '" . $this->id() . "' AND IDDELEG <> ''";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Structure->getdelegation : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) > 0) {
-            $result = mysql_fetch_row($query);
+        if (mysqli_num_rows($query) > 0) {
+            $result = mysqli_fetch_row($query);
             $delegationuserid = "$result[0]";
             if ("$result[1]" != "") {
                 $datedebutdeleg = $this->fonctions->formatdate("$result[1]");
@@ -957,8 +957,8 @@ class structure
         }
         $sql = "UPDATE STRUCTURE SET IDDELEG='" . $delegationuserid . "', DATEDEBUTDELEG='" . $datedebutdeleg . "',DATEFINDELEG='" . $datefindeleg . "'  WHERE STRUCTUREID='" . $this->id() . "'";
         // echo "SQL = " . $sql . "<br>";
-        mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         $msgerreur = '';
         if ($erreur != "") {
             $errlog = "Structure->setdelegation : " . $erreur;

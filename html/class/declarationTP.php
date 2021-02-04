@@ -50,19 +50,19 @@ class declarationTP
             $sql = "SELECT DECLARATIONID,AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT
 FROM DECLARATIONTP
 WHERE DECLARATIONID=" . $id;
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "DeclarationTP->Load : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "DeclarationTP->Load : DeclarationTP $id non trouve";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->declarationid = "$result[0]";
             $this->affectationid = "$result[1]";
             $this->tabtpspartiel = "$result[2]";
@@ -304,19 +304,19 @@ WHERE DECLARATIONID=" . $id;
         if (is_null($this->agent)) {
             $sql = "SELECT HARPEGEID FROM AFFECTATION,DECLARATIONTP WHERE DECLARATIONTP.DECLARATIONID='" . $this->declarationTPid() . "'";
             $sql = $sql . " AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->agent : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Demande->agent : Pas d'agent trouvé pour la déclaration de TP " . $this->declarationTPid();
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $agent = new agent($this->dbconnect);
             $agent->load("$result[0]");
             $this->agent = $agent;
@@ -342,26 +342,26 @@ WHERE DECLARATIONID=" . $id;
             $this->datedemande = $this->fonctions->formatdatedb(date("d/m/Y"));
             
             $sql = "LOCK TABLES DECLARATIONTP WRITE";
-            mysql_query($sql, $this->dbconnect);
+            mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
-            mysql_query($sql, $this->dbconnect);
+            mysqli_query($this->dbconnect, $sql);
             $sql = "INSERT INTO DECLARATIONTP (AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT) ";
             $sql = $sql . " VALUES ('" . $this->affectationid . "','" . $this->tabtpspartiel . "',";
             $sql = $sql . "'" . $this->datedemande . "','" . $this->fonctions->formatdatedb($this->datedebut) . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande . "','" . $this->statut . "')";
             // echo "SQL = $sql <br>";
-            mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "")
                 echo "DeclarationTP->store : " . $erreur . "<br>";
             // $sql = "SELECT LAST_INSERT_ID()";
-            // $this->id = mysql_query($sql,$this->dbconnect);
-            $this->declarationid = mysql_insert_id($this->dbconnect);
+            // $this->id = mysqli_query($this->dbconnect, $sql);
+            $this->declarationid = mysqli_insert_id($this->dbconnect);
             $sql = "COMMIT";
-            mysql_query($sql, $this->dbconnect);
+            mysqli_query($this->dbconnect, $sql);
             $sql = "UNLOCK TABLES";
-            mysql_query($sql, $this->dbconnect);
+            mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 1";
-            mysql_query($sql, $this->dbconnect);
+            mysqli_query($this->dbconnect, $sql);
         } else {
             $user = new agent($this->dbconnect);
             if (isset($_SESSION['phpCAS']['harpegeid']))
@@ -374,8 +374,8 @@ WHERE DECLARATIONID=" . $id;
             $sql = $sql . " STATUT='" . $this->statut . "', DATEDEBUT='" . $this->datedebut . "', DATEFIN='" . $this->datefin . "', DATESTATUT='" . $this->datestatut . "' ";
             $sql = $sql . "WHERE DECLARATIONID='" . $this->declarationid . "'";
             // echo "SQL = $sql <br>";
-            mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "DeclarationTP->store : " . $erreur;
                 echo $errlog . "<br/>";
@@ -739,17 +739,17 @@ WHERE DECLARATIONID=" . $id;
 					OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($debut_interval) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($fin_interval) . "'))
 		ORDER BY DATEDEBUT";
         // echo "declarationTP->demandeliste SQL = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "DeclarationTP->demandesliste : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "declarationTP->demandesliste : Il n'y a pas de demande de congé/absence pour ce TP " . $this->declarationid . "<br>";
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $demande = new demande($this->dbconnect);
             // echo "Agent->demandesliste : Avant le load " . $result[0] . "<br>";
             $demande->load("$result[0]");

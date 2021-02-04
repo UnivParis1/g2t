@@ -171,13 +171,13 @@
                         // à partir de l'insterface de gestion des structures
                         echo "Recherche du responsable dans la table des structures\n";
                         $sql = "SELECT RESPONSABLEID FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
-                        $query = mysql_query($sql);
-                        $erreur_requete = mysql_error();
+                        $query = mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
                         if ($erreur_requete != "")
                             echo "SELECT STRUCTURE pour responsable => $erreur_requete \n";
-                        if (mysql_num_rows($query) > 0) // La structure existe bien déjà dans la base....
+                        if (mysqli_num_rows($query) > 0) // La structure existe bien déjà dans la base....
                         {
-                            $result = mysql_fetch_row($query);
+                            $result = mysqli_fetch_row($query);
                             $resp_struct = trim($result[0]);
                         }
                         // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
@@ -198,11 +198,11 @@
                     // echo "code_struct = $code_struct nom_long_struct=$nom_long_struct nom_court_struct=$nom_court_struct parent_struct=$parent_struct resp_struct=$resp_struct date_cloture=$date_cloture\n";
                     
                     $sql = "SELECT * FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
-                    $query = mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    $query = mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "SELECT STRUCTURE => $erreur_requete \n";
-                    if (mysql_num_rows($query) == 0) // Structure manquante
+                    if (mysqli_num_rows($query) == 0) // Structure manquante
                     {
                         echo "Création d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
                         $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE) VALUES('%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture));
@@ -211,8 +211,8 @@
                         $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($code_struct));
                         // echo $sql."\n";
                     }
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT/UPDATE STRUCTURE => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -252,15 +252,15 @@
     								           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 
     								    FROM STRUCTURE
     								    WHERE STRUCTUREID = '$oldstructid' ";
-                        $oldquery = mysql_query($oldsql);
-                        $erreur_requete = mysql_error();
+                        $oldquery = mysqli_query($dbcon, $oldsql);
+                        $erreur_requete = mysqli_error($dbcon);
                         if ($erreur_requete != "")
                             echo "SELECT OLD STRUCTURE => $erreur_requete \n";
-                        if (mysql_num_rows($oldquery) == 0) // Structure manquante
+                        if (mysqli_num_rows($oldquery) == 0) // Structure manquante
                         {
                             echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
                         } else {
-                            $result = mysql_fetch_row($oldquery);
+                            $result = mysqli_fetch_row($oldquery);
                             if ($fonctions->formatdatedb($result[10]) > "20151231") // Si l'ancienne structuture n'est pas fermée
                             {
                                 $sql = "UPDATE STRUCTURE 
@@ -274,15 +274,15 @@
                                 if (substr($code_struct, 0, 3) == 'DGH') {
                                     // echo "SQL complement new struct = $sql \n";
                                 }
-                                mysql_query($sql);
-                                $erreur_requete = mysql_error();
+                                mysqli_query($dbcon, $sql);
+                                $erreur_requete = mysqli_error($dbcon);
                                 if ($erreur_requete != "") {
                                     echo "UPDATE STRUCTURE (migration) => $erreur_requete \n";
                                     echo "sql = $sql \n";
                                 } else {
                                     $sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$oldstructid'";
-                                    mysql_query($sql);
-                                    $erreur_requete = mysql_error();
+                                    mysqli_query($dbcon, $sql);
+                                    $erreur_requete = mysqli_error($dbcon);
                                     if ($erreur_requete != "") {
                                         echo "UPDATE STRUCTURE (cloture) => $erreur_requete \n";
                                         echo "sql = $sql \n";
@@ -299,15 +299,15 @@
                 // La structure est inactive ==> On doit la fermer si ce n'est pas déjà fait
                 {
                     $sql = "SELECT DATECLOTURE FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
-                    $query = mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    $query = mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "SELECT STRUCTURE (inactif) => $erreur_requete \n";
-                    if (mysql_num_rows($query) == 0) // Structure manquante
+                    if (mysqli_num_rows($query) == 0) // Structure manquante
                     {
                         echo "La structure : $nom_long_struct (Id = $code_struct) est inactive dans SIHAM mais n'existe pas dans G2T ! On l'ignore...\n";
                     } else {
-                        $result = mysql_fetch_row($query);
+                        $result = mysqli_fetch_row($query);
                         $date_cloture_g2t = $result[0];
                         // Si la date de cloture dans G2T est postérieure à la date du jour, alors on met la date de la veille en cloture
                         if ($fonctions->formatdatedb($date_cloture_g2t) >= date("Ymd")) {
@@ -315,8 +315,8 @@
                             $date_veille = strftime("%Y-%m-%d", mktime(0, 0, 0, date('m'), date('d') - 1, date('y')));
                             echo "Date de la veille = " . $fonctions->formatdatedb($date_veille) . " \n";
                             $sql = "UPDATE STRUCTURE SET DATECLOTURE='" . $fonctions->formatdatedb($date_veille) . "'  WHERE STRUCTUREID = '$code_struct'";
-                            mysql_query($sql);
-                            $erreur_requete = mysql_error();
+                            mysqli_query($dbcon, $sql);
+                            $erreur_requete = mysqli_error($dbcon);
                             if ($erreur_requete != "") {
                                 echo "INSERT/UPDATE STRUCTURE (inactif) => $erreur_requete \n";
                                 echo "sql = $sql \n";

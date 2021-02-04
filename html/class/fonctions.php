@@ -105,20 +105,20 @@ class fonctions
     {
         // Chargement des jours fériés
         $sql = "SELECT NOM,VALEUR FROM CONSTANTES WHERE NOM LIKE 'FERIE%'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->jourferier : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->jourferier : Pas de jour férié défini dans la base";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
         $jrs_feries = ";";
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $jrs_feries = $jrs_feries . $result[1] . ";";
         }
         
@@ -206,19 +206,19 @@ class fonctions
         else
             $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ABSENCEIDPARENT='" . $categorie . "' ORDER BY LIBELLE";
         
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->listeabsence : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->listeabsence : Pas de type d'absences défini dans la base";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             if ($result[1] . "" != "")
                 $listeabs[$result[0]] = $result[1];
         }
@@ -235,19 +235,19 @@ class fonctions
     public function listecategorieabsence()
     {
         $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT='abs'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->listecategorieabsence : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->listecategorieabsence : Pas de catégorie définie dans la base";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             if ($result[0] . "" != "")
                 $listecategabs[$result[0]] = $result[1];
         }
@@ -286,20 +286,20 @@ class fonctions
     public function debutperiode()
     {
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->debutperiode : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->debutperiode : Pas de début de période défini dans la base ==> On force à '0901' (1sept).";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             return "0901";
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         // echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
     }
@@ -312,20 +312,20 @@ class fonctions
     public function finperiode()
     {
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->finperiode : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->finperiode : Pas de fin de période définie dans la base ==> On force à '0831' (31aout).";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             return "0831";
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
     }
@@ -381,19 +381,19 @@ class fonctions
             return false;
         // echo "Fonction->estunconge : typeconge = $typeconge <br>";
         $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $typeconge . "'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->estunconge : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->estunconge : Pas de congé '" . $typeconge . "' défini dans la base.";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         // Si il n'y a pas de référence à une année ==> Ce n'est pas un congé ==> C'est une absence car pas de gestion annuelle
         // echo "Fonctions->estunconge : Result = " . $result[0] . " <br>";
         if (($result[0] == "") or ($result[0] == 0) or (is_null($result))) {
@@ -414,19 +414,19 @@ class fonctions
     public function congesanneeref($typeconge)
     {
         $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $typeconge . "'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->anneeref : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->anneeref : Le type '" . $typeconge . "' n'est pas défini dans la base.";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         if (($result[0] == "") or ($result[0] == 0) or (is_null($result))) {
             return "";
         } else {
@@ -443,19 +443,19 @@ class fonctions
     public function liredbconstante($constante)
     {
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = '" . $constante . "'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->liredbconstante : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas defini dans la base.";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         } else {
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             return $result[0];
         }
     }
@@ -550,14 +550,14 @@ class fonctions
  				ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
         
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonction->legende : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $libelle = "$result[0]";
             $couleur = "$result[1]";
             // $code_legende = "$result[2]";
@@ -797,7 +797,7 @@ class fonctions
      */
     public function my_real_escape_utf8($texte)
     {
-        return mysql_real_escape_string(utf8_encode($texte));
+        return mysqli_real_escape_string($this->dbconnect, utf8_encode($texte));
     }
 
     /**
@@ -827,15 +827,15 @@ class fonctions
         }
         $sql = $sql . ")";
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->listeprofilrh (AGENT) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             return $agentarray;
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $agentrh = new agent($this->dbconnect);
             if ($agentrh->load("$result[0]")) {
                 $agentarray[$agentrh->harpegeid()] = $agentrh;
@@ -854,18 +854,18 @@ class fonctions
     public function labo2ufr($structid)
     {
         $sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = '" . $structid . "'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "labo2ufr : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             return $structid;
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             return $structid;
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         $querryresult = $result[1];
         return $querryresult;
     }

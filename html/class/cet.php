@@ -216,14 +216,14 @@ class cet
         $agent->load($agentid);
         // On charge le cumul annuel => tous les 'cet%' mais pas 'cet'
         $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid . "' AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Cet->Load (cet%): " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Cet->Load (cet%) : Aucun cumul annuel pour l'agent $agentid trouvé <br>";
             $errlog = "Aucun cumul annuel pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pu être trouvé";
             // Suppression de la trace car pas une erreur
@@ -231,7 +231,7 @@ class cet
             $msgerreur = $msgerreur . $errlog . "<br/>";
         }
         
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $this->agentid = $result[0];
             $this->idannuel = $result[1];
             $this->cumulannuel[$this->idannuel] = $result[2];
@@ -239,21 +239,21 @@ class cet
         
         // On charge le solde du CET
         $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid . "' AND TYPEABSENCEID ='cet'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "(cet): " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Cet->Load (cet) : Le CET pour l'agent $agentid non trouvé <br>";
             $errlog = "Le CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvé";
             $msgerreur = $msgerreur . $errlog . "<br/>";
             // Suppression de la trace car pas une erreur
             // error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
         }
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         $this->cumultotal = $result[2];
         $this->idtotal = $result[1];
         $this->jrspris = $result[3];

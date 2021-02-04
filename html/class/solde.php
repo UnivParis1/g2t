@@ -38,16 +38,16 @@ class solde
      * if (!isset($this->$soldeid))
      * {
      * $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $soldeid . "'";
-     * $query=mysql_query ($sql, $this->dbconnect);
-     * $erreur=mysql_error();
+     * $query=mysqli_query ($this->dbconnect, $sql);
+     * $erreur=mysqli_error($this->dbconnect);
      * if ($erreur != "")
      * echo "Solde->Load : " . $erreur . "<br>";
-     * if (mysql_num_rows($query) == 0)
+     * if (mysqli_num_rows($query) == 0)
      * {
      * //echo "Solde->Load : Solde $soldeidid non trouvé <br>";
      * return "Le solde $soldeidid n'est pas trouvé <br>";
      * }
-     * $result = mysql_fetch_row($query);
+     * $result = mysqli_fetch_row($query);
      * $this->soldeid = "$result[0]";
      * $this->droitaquis_demijrs = "$result[1]";
      * $this->droitpris_demijrs = "$result[2]";
@@ -64,14 +64,14 @@ class solde
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
             $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $typecongeid . "' AND HARPEGEID='" . $agentid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Solde->load : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $agent = new agent($this->dbconnect);
                 $agent->load($agentid);
                 // echo "Solde->loadbytypeagent : Solde type = $typecongeid agent = $agentid non trouvé <br>";
@@ -79,7 +79,7 @@ class solde
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return $errlog . "<br/>";
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->agentid = "$result[0]";
             $this->typeabsenceid = "$result[1]";
             $this->droitaquis = "$result[2]";
@@ -139,19 +139,19 @@ class solde
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
             $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID='" . $this->typeabsenceid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Solde->typelibelle : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Solde->typelibelle : Libellé du solde $this->typeabsenceid non trouvé";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->typelibelle = "$result[0]";
         }
         return $this->typelibelle;
@@ -181,14 +181,14 @@ AND AFFECTATION.HARPEGEID='" . $this->agentid . "'
 AND DEMANDE.STATUT='a';";
         
         // echo "Solde->demandeenattente SQL : $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Solde->demandeenattente : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             // echo "Nbre de demande en attente = " . $result[0] . "<br>";
             return "$result[0]";
         }
@@ -212,8 +212,8 @@ AND DEMANDE.STATUT='a';";
             return $errlog . "<br/>" . $msgerreur;
         } else {
             $sql = "INSERT INTO SOLDE(HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $codeagent . "','" . $codeconge . "','0','0')";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Solde->creersolde : " . $erreur;
                 echo $errlog . "<br/>";
@@ -227,8 +227,8 @@ AND DEMANDE.STATUT='a';";
     {
         if (! is_null($this->agentid) and (! is_null($this->typeabsenceid))) {
             $sql = "UPDATE SOLDE SET DROITAQUIS='" . $this->droitaquis() . "',DROITPRIS='" . $this->droitpris() . "' WHERE HARPEGEID='" . $this->agentid . "' AND TYPEABSENCEID='" . $this->typeabsenceid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Solde->store : " . $erreur;
                 echo $errlog . "<br/>";

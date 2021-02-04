@@ -57,8 +57,8 @@
         $sql = "SELECT HARPEGEID FROM SOLDE WHERE DROITAQUIS - DROITPRIS > 0 AND DROITPRIS > 0  AND TYPEABSENCEID = 'ann" . $anneeref . "'";
         //$sql = "SELECT HARPEGEID FROM SOLDE WHERE DROITAQUIS - DROITPRIS > 0 AND DROITPRIS > 0  AND TYPEABSENCEID = 'ann" . $anneeref . "' AND HARPEGEID=9328";
         //echo "SQL des soldes = $sql \n";
-        $query = mysql_query($sql, $dbcon);
-        $erreur_requete = mysql_error();
+        $query = mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "SELECT HARPEGEID => $erreur_requete \n";
         
@@ -67,7 +67,7 @@
         // -1 est le code pour l'agent CRON dans G2T
         $agentcron->load('-1');
             
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $agent = new agent($dbcon);
             $agent->load($result[0]);
             echo "On travaille sur l'agent " . $agent->identitecomplete() . " (ID=" . $agent->harpegeid() . ") \n";

@@ -26,8 +26,8 @@
     // Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.
     $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "' AND DATEDEBUT < '" . ($fonctions->anneeref() + 1) . $fonctions->debutperiode() . "'";
     // echo "SQL des demandes = $sql \n";
-    $query = mysql_query($sql, $dbcon);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT DEMANDEID => $erreur_requete \n";
     
@@ -37,7 +37,7 @@
     
     $codeinterne = null;
     
-    while ($result = mysql_fetch_row($query)) {
+    while ($result = mysqli_fetch_row($query)) {
         $demande = new demande($dbcon);
         $demande->load($result[0]);
         

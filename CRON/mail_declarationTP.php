@@ -24,8 +24,8 @@
     
     // On selectionne les demandes en attente de validation
     $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = 'a'";
-    $query = mysql_query($sql, $dbcon);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT DEMANDEID => $erreur_requete \n";
     
@@ -34,7 +34,7 @@
     $mail_resp = array();
     $codeinterne = "";
     
-    while ($result = mysql_fetch_row($query)) {
+    while ($result = mysqli_fetch_row($query)) {
         $declaration = new declarationTP($dbcon);
         $declaration->load($result[0]);
         $affectation = new affectation($dbcon);

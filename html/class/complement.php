@@ -56,15 +56,15 @@ class complement
     function load($harpegeid, $complementid)
     {
         $sql = "SELECT HARPEGEID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE HARPEGEID='$harpegeid' AND COMPLEMENTID='$complementid'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Complement->Load : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) != 0) {
-            $result = mysql_fetch_row($query);
+        if (mysqli_num_rows($query) != 0) {
+            $result = mysqli_fetch_row($query);
             $this->harpegeid = "$result[0]";
             $this->complementid = "$result[1]";
             $this->valeur = "$result[2]";
@@ -91,8 +91,8 @@ class complement
         }
         $sql = "DELETE FROM COMPLEMENT WHERE HARPEGEID='" . $this->harpegeid . "' AND COMPLEMENTID='" . $this->complementid . "'";
         // echo "SQL Complement->Store : $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Complement->Store (DELETE) : " . $erreur;
             echo $errlog . "<br/>";
@@ -100,8 +100,8 @@ class complement
         }
         $sql = "INSERT INTO COMPLEMENT(HARPEGEID,COMPLEMENTID,VALEUR) VALUES('" . $this->harpegeid . "','" . $this->complementid . "','" . str_replace("'", "''", $this->valeur) . "')";
         // echo "SQL Complement->Store : $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Complement->Store (INSERT) : " . $erreur;
             echo $errlog . "<br/>";

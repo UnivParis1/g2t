@@ -7,8 +7,8 @@
     echo "Début du calcul des soldes " . date("d/m/Y H:i:s") . "\n";
     
     $sql = "SELECT HARPEGEID,NOM,PRENOM FROM AGENT ORDER BY HARPEGEID";
-    $query_agent = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query_agent = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT FROM AGENT => $erreur_requete \n";
     
@@ -22,7 +22,7 @@
     $nbr_jrs_offert = $fonctions->liredbconstante("NBJOURS" . substr($date_deb_period, 0, 4));
     
     // echo "Avant le 1er while \n";
-    while ($result = mysql_fetch_row($query_agent)) {
+    while ($result = mysqli_fetch_row($query_agent)) {
         // !!!!!!! ATTENTION : Les 2 lignes suivantes permettent de ne tester qu'un seul dossier !!!!
         // if ($result[0]!='82992')
         // continue;
@@ -37,19 +37,19 @@
          *
          * $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid' AND OBSOLETE='N' ORDER BY DATEDEBUT";
          *
-         * $query_aff = mysql_query ( $sql );
-         * $erreur_requete = mysql_error ();
+         * $query_aff = mysqli_query ( $dbcon, $sql );
+         * $erreur_requete = mysqli_error ($dbcon);
          * if ($erreur_requete != "")
          * echo "SELECT FROM AFFECTATION (Full) => $erreur_requete \n";
          *
          * $cas_general = true;
          * $nbre_total_jours = 0;
-         * if (mysql_num_rows ( $query_aff ) != 0) // On a des d'affectations
+         * if (mysqli_num_rows ( $query_aff ) != 0) // On a des d'affectations
          * {
          * $datedebaffprec = date ( 'Y-m-d', 0 );
          * $datefinaffprec = date ( 'Y-m-d', 0 );
          * $duree_aff_ante_periode = 0;
-         * while ( $result_aff = mysql_fetch_row ( $query_aff ) )
+         * while ( $result_aff = mysqli_fetch_row ( $query_aff ) )
          * {
          * if ($result_aff [5] != "0") // Si c'est un contrat
          * {
@@ -126,12 +126,12 @@
          * AND DATEFIN > '$date_deb_period'
          * ORDER BY DATEDEBUT";
          *
-         * $query_aff = mysql_query ( $sql );
-         * $erreur_requete = mysql_error ();
+         * $query_aff = mysqli_query ( $dbcon, $sql );
+         * $erreur_requete = mysqli_error ($dbcon);
          * if ($erreur_requete != "")
          * echo "SELECT FROM AFFECTATION => $erreur_requete \n";
          *
-         * while ( $result = mysql_fetch_row ( $query_aff ) )
+         * while ( $result = mysqli_fetch_row ( $query_aff ) )
          * {
          * if (is_null ( $result [1] ))
          * $datedebutaff = $date_deb_period;
@@ -208,14 +208,14 @@
         // On prend toutes les affectations actives d'un agent, dont la date de début est inférieur à la fin de la période
         // Les affectations futures ne sont pas prises en compte dans le calcul du solde
         $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid' AND OBSOLETE='N' AND DATEDEBUT < " . ($fonctions->anneeref() + 1) . $fonctions->finperiode() . " ORDER BY DATEDEBUT";
-        $query_aff = mysql_query($sql);
-        $erreur_requete = mysql_error();
+        $query_aff = mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "SELECT FROM AFFECTATION (Full) => $erreur_requete \n";
         
-        if (mysql_num_rows($query_aff) != 0) // On a des d'affectations
+        if (mysqli_num_rows($query_aff) != 0) // On a des d'affectations
         {
-            while ($result_aff = mysql_fetch_row($query_aff)) {
+            while ($result_aff = mysqli_fetch_row($query_aff)) {
                 echo "-----------------------------------------\n";
                 
                 // Début de l'affectation courante
@@ -370,29 +370,29 @@
         $debutperiode = $fonctions->anneeref() . $fonctions->debutperiode();
         $finperiode = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
         $sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='$agentid' AND (HARPTYPE='CONGE_BONIFIE' OR HARPTYPE LIKE 'Cg% Bonifi% (FPS)') AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
-        $query = mysql_query($sql);
-        $erreur_requete = mysql_error();
+        $query = mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE => $erreur_requete \n";
-        if (mysql_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
+        if (mysqli_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
         {
-            $resultcongbonif = mysql_fetch_row($query);
+            $resultcongbonif = mysqli_fetch_row($query);
             $solde_agent = 0;
             echo "L'agent $agentid ($agentinfo) a une demande de congés bonifiés (du " . $resultcongbonif[1] . " au " . $resultcongbonif[2] . ") => Solde à 0 \n";
         }
         
         $typeabsenceid = "ann" . substr($fonctions->anneeref(), 2, 2);
         $sql = "SELECT HARPEGEID,TYPEABSENCEID FROM SOLDE WHERE HARPEGEID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
-        $query = mysql_query($sql);
-        $erreur_requete = mysql_error();
+        $query = mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "SELECT HARPEGEID,TYPEABSENCEID FROM CONGE => $erreur_requete \n";
-        if (mysql_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
+        if (mysqli_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
             $sql = "UPDATE SOLDE SET DROITAQUIS='$solde_agent' WHERE HARPEGEID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
         else
             $sql = "INSERT INTO SOLDE(HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $agentid . "','" . $typeabsenceid . "','$solde_agent','0')";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "INSERT ou UPDATE CONGE => $erreur_requete \n";
     }

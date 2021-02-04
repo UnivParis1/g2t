@@ -45,11 +45,11 @@
     // if ($jour == 1) // Premier jour du mois
     // {
     $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID!='' AND NOT ISNULL(GESTIONNAIREID) AND DATECLOTURE >='" . $fonctions->formatdatedb(date("Ymd")) . "'";
-    $query = mysql_query($sql, $dbcon);
-    $erreur = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur = mysqli_error($dbcon);
     if ($erreur != "")
         echo "generer_solde (SELECT) : " . $erreur . "<br>";
-    while ($result = mysql_fetch_row($query)) {
+    while ($result = mysqli_fetch_row($query)) {
         $cronmail = new agent($dbcon);
         $cronmail->load("-1");
         

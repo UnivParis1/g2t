@@ -125,8 +125,8 @@
         echo "Import des MODALITES D'AFFECTATION \n";
         // Import des affectations-modalite.txt
         $sql = "DELETE FROM W_MODALITE";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_MODALITE => $erreur_requete \n";
         
@@ -147,8 +147,8 @@
                         echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($quotite), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT W_MODALITE => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -161,8 +161,8 @@
         echo "Import des STATUTS D'AFFECTATION \n";
         // Import des affectations-statut.txt
         $sql = "DELETE FROM W_STATUT";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_STATUT => $erreur_requete \n";
         
@@ -184,8 +184,8 @@
                         echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($statut), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT W_STATUT => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -198,8 +198,8 @@
         echo "Import des STRUCTURES D'AFFECTATION \n";
         // Import des affectations-structure.txt
         $sql = "DELETE FROM W_STRUCTURE";
-        mysql_query($sql);
-        $erreur_requete = mysql_error();
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "DELETE W_STRUCTURE => $erreur_requete \n";
         
@@ -221,8 +221,8 @@
                         echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
                     $sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
                         echo "INSERT W_STRUCTURE => $erreur_requete \n";
                         echo "sql = $sql \n";
@@ -234,19 +234,19 @@
     }
     
     $sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='O' WHERE DATEDEBUT>='20160101'");
-    $query_aff = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query_aff = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
     
     // $sql = sprintf("SELECT DISTINCT HARPEGEID FROM W_MODALITE WHERE HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STATUT) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STRUCTURE)");
     $sql = sprintf("SELECT DISTINCT HARPEGEID FROM W_MODALITE WHERE HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STATUT) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STRUCTURE) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM AGENT)");
-    $query_harpegeid = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query_harpegeid = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT HARPEGEID FROM W.... => $erreur_requete \n";
     
-    while ($harpid = mysql_fetch_row($query_harpegeid)) {
+    while ($harpid = mysqli_fetch_row($query_harpegeid)) {
         // ///////////////////////////////////////////////////
         // ///////////////////////////////////////////////////
         // -- PERMET DE NE TESTER QU'UN SEUL DOSSIER !! -- //
@@ -299,23 +299,23 @@
             $sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
             // if ($harpegeid == '9328')
             // echo "sql (SELECT) = $sql \n";
-            $query_aff = mysql_query($sql);
-            $erreur_requete = mysql_error();
+            $query_aff = mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
             if ($erreur_requete != "")
                 echo "SELECT AFFECTATION => $erreur_requete \n";
             
             // -------------------------------
             // Affectation manquante
             // -------------------------------
-            if (mysql_num_rows($query_aff) == 0) {
+            if (mysqli_num_rows($query_aff) == 0) {
                 echo "On est dans le cas ou l'affectation est manquante : $affectationid \n";
                 // echo "Date de fin de l'affectation => $datefin \n";
                 if (("$datefin" == "") or ("$datefin" == "0000-00-00") or ("$datefin" == "00000000") or ("$datefin" == "00/00/0000"))
                     $datefin = "9999-12-31";
                 $sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
     										VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N');
-                mysql_query($sql);
-                $erreur_requete = mysql_error();
+                mysqli_query($dbcon, $sql);
+                $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
                     echo "INSERT AFFECTATION => $erreur_requete \n";
                 
@@ -350,8 +350,8 @@
                     $sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='N' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
                     // if ($harpegeid == '9328')
                     // echo "sql (Statut seul) = $sql \n";
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "UPDATE AFFECTATION (Statut seul)=> $erreur_requete \n";
                 }            // Il y a au moins une différence
@@ -365,8 +365,8 @@
                     // echo "sql = $sql \n";
                     // }
                     
-                    mysql_query($sql);
-                    $erreur_requete = mysql_error();
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "UPDATE AFFECTATION => $erreur_requete \n";
                     
@@ -401,8 +401,8 @@
                                 if (strcasecmp($declaration->statut(), "r") != 0) {
                                     
                                     $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($declaration->declarationTPid()));
-                                    mysql_query($sql);
-                                    $erreur_requete = mysql_error();
+                                    mysqli_query($dbcon, $sql);
+                                    $erreur_requete = mysqli_error($dbcon);
                                     if ($erreur_requete != "")
                                         echo "UPDATE DECLARATIONTP (Statut seul)=> $erreur_requete \n";
                                 }
@@ -441,8 +441,8 @@
                                 foreach ($declarationliste as $declarationTP) {
                                     if (strcasecmp($declarationTP->statut(), "r") != 0) {
                                         $sql = sprintf("UPDATE DECLARATIONTP SET DATEDEBUT='%s', DATEFIN='%s' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datedebut)), $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datefin)), $fonctions->my_real_escape_utf8($declarationTP->declarationTPid()));
-                                        mysql_query($sql);
-                                        $erreur_requete = mysql_error();
+                                        mysqli_query($dbcon, $sql);
+                                        $erreur_requete = mysqli_error($dbcon);
                                         if ($erreur_requete != "") {
                                             echo "UPDATE DECLARATIONTP (Date debut avancee ou date fin reculee)=> $erreur_requete \n";
                                         }
@@ -463,8 +463,8 @@
                                     echo "datedebut = $datedebut    datefin = $datefin   DECLARATIONID = " . $declarationTP->declarationTPid() . "\n";
                                     $sql = sprintf("UPDATE DECLARATIONTP SET DATEDEBUT='%s', DATEFIN='%s' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datedebut)), $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datefin)), $fonctions->my_real_escape_utf8($declarationTP->declarationTPid()));
                                     echo "SQL UPDATE DECLARATIONTP => $sql \n";
-                                    mysql_query($sql);
-                                    $erreur_requete = mysql_error();
+                                    mysqli_query($dbcon, $sql);
+                                    $erreur_requete = mysqli_error($dbcon);
                                     if ($erreur_requete != "") {
                                         echo "UPDATE DECLARATIONTP (Date debut reculee ou date fin avancee)=> $erreur_requete \n";
                                     }
@@ -485,26 +485,26 @@
     $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
     $sql = $sql . "   AND DECLARATIONTP.STATUT != 'r'";
     // echo "$sql (obsolete) = $sql \n";
-    $query = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
-    if (mysql_num_rows($query) > 0) // Il y a des affectations obsoletes
+    if (mysqli_num_rows($query) > 0) // Il y a des affectations obsoletes
     {
         if (! isset($debug) or ($debug == false)) {
             echo "ATTENTION : Il y a des affectations obsoletes \n";
-            while ($result = mysql_fetch_row($query)) {
+            while ($result = mysqli_fetch_row($query)) {
                 $sql = sprintf("UPDATE AFFECTATION SET DATEMODIFICATION='%s' WHERE AFFECTATIONID = '%s'", $fonctions->my_real_escape_utf8(date("Ymd")), $fonctions->my_real_escape_utf8($result[0]));
                 echo "SQL (UPDATE DATEMODIF) => $sql \n";
-                mysql_query($sql);
-                $erreur_requete = mysql_error();
+                mysqli_query($dbcon, $sql);
+                $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") {
                     echo "UPDATE AFFECTATION (Mise du date de modification)=> $erreur_requete \n";
                 }
                 $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($result[2]));
                 echo "SQL (UPDATE STATUT) => $sql \n";
-                mysql_query($sql);
-                $erreur_requete = mysql_error();
+                mysqli_query($dbcon, $sql);
+                $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") {
                     echo "UPDATE DECLARATIONTP (Mise du Statut à 'r')=> $erreur_requete \n";
                 }
@@ -531,14 +531,14 @@
     $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
     $sql = $sql . "   AND DECLARATIONTP.STATUT != 'r'";
     // echo "$sql (obsolete) = $sql \n";
-    $query = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
-    if (mysql_num_rows($query) > 0) // Il y a des affectation obsoletes
+    if (mysqli_num_rows($query) > 0) // Il y a des affectation obsoletes
     {
         echo "ATTENTION : Il y a des affectations obsoletes \n";
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             // On recherche si une affectation avec les mêmes critères existe
             echo "On regarde s'il y a une affectation identique pour l'ancienne affectation " . $result[0] . " (HarpegeId = " . $result[1] . ") : ";
             $sql = "SELECT AFFNEW.AFFECTATIONID ";
@@ -552,14 +552,14 @@
             $sql = $sql . "   AND AFFNEW.AFFECTATIONID != AFFOLD.AFFECTATIONID ";
             $sql = $sql . "   AND AFFNEW.HARPEGEID = AFFOLD.HARPEGEID ";
             $sql = $sql . "   AND AFFOLD.AFFECTATIONID = " . $result[0];
-            $query2 = mysql_query($sql, $dbcon);
+            $query2 = mysqli_query($dbcon, $sql);
             // echo "SQL = " . $sql . "\n";
-            $erreur_requete = mysql_error();
+            $erreur_requete = mysqli_error($dbcon);
             if ($erreur_requete != "")
                 echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
-            if (mysql_num_rows($query2) > 0) // Il y a une affectations nouvelles avec les mêmes critères qu'une ancienne
+            if (mysqli_num_rows($query2) > 0) // Il y a une affectations nouvelles avec les mêmes critères qu'une ancienne
             {
-                $result2 = mysql_fetch_row($query2);
+                $result2 = mysqli_fetch_row($query2);
                 echo "OUI => nouvelle affectation = " . $result2[0] . "\n";
                 $affnew = new affectation($dbcon);
                 $affold = new affectation($dbcon);
@@ -612,9 +612,9 @@
                         $sql = "UPDATE DEMANDEDECLARATIONTP SET DECLARATIONID = " . $newTP->declarationTPid() . " WHERE DECLARATIONID = " . $oldTP->declarationTPid() . "  ";
                         $sql = $sql . " AND DEMANDEID IN (SELECT DEMANDEID FROM DEMANDE WHERE DATEFIN <= '" . $fonctions->formatdatedb($newTP->datefin()) . "')";
                         // echo "SQL (UPDATE DEMANDEDECLARATIONTP....) = " . $sql . "\n";
-                        $result_update = mysql_query($sql, $dbcon);
-                        $erreur_requete = mysql_error();
-                        $nbreligne = mysql_affected_rows(); // => Savoir combien de lignes ont été modifiées
+                        $result_update = mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
+                        $nbreligne = mysqli_affected_rows($dbcon); // => Savoir combien de lignes ont été modifiées
                         echo "\tIl y a $nbreligne demandes de congés qui ont été déplacées. \n";
                         if ($erreur_requete != "") {
                             echo "ERREUR DANS LE DEPLACEMENT DES DEMANDE => Ancien TP.ID=" . $oldTP->declarationTPid() . "  Nouveau TP.ID=" . $newTP->declarationTPid() . "\n";

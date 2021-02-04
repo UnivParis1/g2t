@@ -56,19 +56,19 @@ class demande
             $sql = "SELECT DEMANDEID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE)
 FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             // echo "Demande load sql = $sql <br>";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->Load : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Demande->Load : Demande $demandeid non trouvée";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->demandeid = "$result[0]";
             $this->typeabsenceid = "$result[1]";
             $this->datedebut = "$result[2]";
@@ -113,19 +113,19 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
             $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID='" . $this->typeabsenceid . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->typdemande : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Demande->typdemande : Libellé du type de demande $this->typeabsenceid non trouvé";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             return "$result[0]";
         }
     }
@@ -358,20 +358,20 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
     {
         $sql = "SELECT DECLARATIONID FROM DEMANDEDECLARATIONTP WHERE DEMANDEID= '" . $this->demandeid . "'";
         // echo "Demande declarationTPListe sql = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Demande->declarationTPliste : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             $errlog = "Demande->declarationTPliste : Pas de déclaration de TP pour la demande " . $this->demandeid;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         $declaliste = null;
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $declaration = new declarationTP($this->dbconnect);
             $declaration->load($result[0]);
             $declaliste[] = $declaration;
@@ -386,19 +386,19 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             $sql = "SELECT HARPEGEID FROM AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP WHERE DEMANDEDECLARATIONTP.DEMANDEID='" . $this->demandeid . "'";
             $sql = $sql . " AND DEMANDEDECLARATIONTP.DECLARATIONID = DECLARATIONTP.DECLARATIONID ";
             $sql = $sql . " AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->agent : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Demande->agent : Pas d'agent trouvé pour la demande " . $this->demandeid;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $agent = new agent($this->dbconnect);
             $agent->load("$result[0]");
             $this->agent = $agent;
@@ -515,9 +515,9 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 $this->heuredemande = date("H:i:s");
                 
                 $sql = "LOCK TABLES DEMANDE WRITE";
-                mysql_query($sql, $this->dbconnect);
+                mysqli_query($this->dbconnect, $sql);
                 $sql = "SET AUTOCOMMIT = 0";
-                mysql_query($sql, $this->dbconnect);
+                mysqli_query($this->dbconnect, $sql);
                 $sql = "INSERT INTO DEMANDE(TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,
 				        COMMENTAIRE,NBREJRSDEMANDE,DATEDEMANDE,DATESTATUT,STATUT,MOTIFREFUS) ";
                 $sql = $sql . "VALUES('" . $this->typeabsenceid . "','" . $this->fonctions->formatdatedb($this->datedebut) . "',";
@@ -525,33 +525,33 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 $sql = $sql . "'" . $this->commentaire . "',";
                 $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '','a','')";
                 // echo "SQL = " . $sql . "<br>";
-                mysql_query($sql, $this->dbconnect);
-                $erreur = mysql_error();
+                $query = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Demande->store : " . $erreur;
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
                 // $sql = "SELECT LAST_INSERT_ID()";
-                // $toto = mysql_query($sql,$this->dbconnect);
+                // $toto = mysqli_query($this->dbconnect, $sql);
                 // echo "toto = "; print_r($toto); echo " toto[1] = " . $toto[1] . "<br>";
                 // echo "toto(2) = $toto <br>";
-                // echo "Dernier indice = " . mysql_insert_id($this->dbconnect) . "<br>";
-                $this->demandeid = mysql_insert_id($this->dbconnect);
+                // echo "Dernier indice = " . mysqli_insert_id($this->dbconnect) . "<br>";
+                $this->demandeid = mysqli_insert_id($this->dbconnect);
                 // $this->demandeid
                 $sql = "COMMIT";
-                mysql_query($sql, $this->dbconnect);
+                mysqli_query($this->dbconnect, $sql);
                 $sql = "UNLOCK TABLES";
-                mysql_query($sql, $this->dbconnect);
+                mysqli_query($this->dbconnect, $sql);
                 $sql = "SET AUTOCOMMIT = 1";
-                mysql_query($sql, $this->dbconnect);
+                mysqli_query($this->dbconnect, $sql);
                 
                 // On sauvegarde le lien entre la/les declaration(s) de TP et la demande
                 foreach ($declarationTPListe as $key => $declaration) {
                     $sql = "INSERT INTO DEMANDEDECLARATIONTP(DEMANDEID,DECLARATIONID) VALUES('" . $this->demandeid . "','" . $declaration->declarationTPid() . "')";
                     // echo "sql = $sql <br>";
-                    mysql_query($sql, $this->dbconnect);
-                    $erreur = mysql_error();
+                    $query = mysqli_query($this->dbconnect, $sql);
+                    $erreur = mysqli_error($this->dbconnect);
                     if ($erreur != "") {
                         $errlog = "Demande->store (DEMANDEDECLARATIONTP) : " . $erreur;
                         echo $errlog . "<br/>";
@@ -565,8 +565,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 					  		 SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
 							 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $affectation->agentid() . "'";
                     // echo "SQL = $sql <br>";
-                    mysql_query($sql, $this->dbconnect);
-                    $erreur = mysql_error();
+                    $query = mysqli_query($this->dbconnect, $sql);
+                    $erreur = mysqli_error($this->dbconnect);
                     if ($erreur != "") {
                         $errlog = "Demande->store (SOLDE) : " . $erreur;
                         echo $errlog . "<br/>";
@@ -593,8 +593,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 						  , STATUT='" . $this->statut . "', MOTIFREFUS='" . $this->motifrefus . "'
 						 WHERE DEMANDEID=" . $this->demandeid;
                 // echo "SQL = $sql <br>";
-                $query = mysql_query($sql, $this->dbconnect);
-                $erreur = mysql_error();
+                $query = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Demande->store : " . $erreur;
                     echo $errlog . "<br/>";
@@ -609,8 +609,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 							  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
 									 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $this->agent()->harpegeid() . "'";
                         // echo "SQL = $sql <br>";
-                        $query = mysql_query($sql, $this->dbconnect);
-                        $erreur = mysql_error();
+                        $query = mysqli_query($this->dbconnect, $sql);
+                        $erreur = mysqli_error($this->dbconnect);
                         if ($erreur != "") {
                             $errlog = "Demande->store (Modif SOLDE_CMPTE) : " . $erreur;
                             echo $errlog . "<br/>";

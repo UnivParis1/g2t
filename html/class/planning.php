@@ -423,18 +423,18 @@ class planning
          * OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))
          * AND STATUT <> 'r'";
          * //echo "Planning Load sql = $sql <br>";
-         * $query=mysql_query ($sql, $this->dbconnect);
-         * $erreur=mysql_error();
+         * $query=mysqli_query ($this->dbconnect, $sql);
+         * $erreur=mysqli_error($this->dbconnect);
          * if ($erreur != "") {
          * $errlog = "Planning->load : " . $erreur;
          * echo $errlog."<br/>";
          * error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
          * }
-         * if (mysql_num_rows($query) == 0)
+         * if (mysqli_num_rows($query) == 0)
          * {
          * //echo "Planning->load : Pas de congé pour cette agent dans la période demandée <br>";
          * }
-         * while ($result = mysql_fetch_row($query))
+         * while ($result = mysqli_fetch_row($query))
          * {
          * $demande = new demande($this->dbconnect);
          * $demande->load($result[0]);
@@ -531,18 +531,18 @@ WHERE HARPEGEID = '" . $agentid . "'
     OR (DATEFIN >= '" . $this->fonctions->formatdatedb($datefin) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($datefin) . "')
     OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))";
         // echo "SQL = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Planning->load (HARPABSENCE) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Planning->load (HARPABSENCE) : Pas de congé pour cette agent dans la période demandée <br>";
         }
         // echo "Avant le while 2 <br>";
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $demandedatedeb = $this->fonctions->formatdate($result[1]);
             $demandedatefin = $this->fonctions->formatdate($result[2]);
             $demandemomentdebut = 'm';

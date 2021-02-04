@@ -62,8 +62,8 @@
             // Update Mode maintenance à 'n'
             $sql = "UPDATE CONSTANTES SET VALEUR = 'n' WHERE NOM = 'MAINTENANCE'";
         }
-        $query = mysql_query($sql);
-        $erreur = mysql_error();
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
         if ($erreur != "") {
             $errlog = "Erreur activation/desactivation mode maintenance : " . $erreur;
             echo $errlog . "<br/>";

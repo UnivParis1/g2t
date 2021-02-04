@@ -70,21 +70,21 @@ class affectation
             $sql = "SELECT AFFECTATIONID,HARPEGEID,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE, NUMCONTRAT
 FROM AFFECTATION
 WHERE AFFECTATIONID='" . $idaffectation . "'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Affectation->Load : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $errlog);
                 return false;
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Affectation->Load : Affectation $idaffectation non trouvé";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return false;
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->affectationid = "$result[0]";
             $this->agentid = "$result[1]";
             $this->datedebut = "$result[2]";
@@ -121,19 +121,19 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
             $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= '" . $date . "' AND ('" . $date . "' <= DATEFIN OR DATEFIN = '0000-00-00')) AND HARPEGEID ='" . $agentid . "' AND OBSOLETE='N'";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Affectation->Loadbydate : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Affectation->Loadbydate : Agent " . $agentid . "n'a pas d'affectation pour la date " . $this->fonctions->formatdate($date);
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->load("$result[0]");
         }
     }
@@ -333,17 +333,17 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
         $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
         
         // echo "affectation->declarationTPliste SQL = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->declarationTPliste : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Affectation->declarationTPliste : L'affectation $this->affectationid n'a pas de déclaration de TP entre $datedebut et $datefin <br>";
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             // echo "declarationTPliste => Dans le while <br>";
             $declarationTP = new declarationTP($this->dbconnect);
             // echo "avant le load... <br>";

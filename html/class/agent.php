@@ -58,21 +58,21 @@ class agent
             
             $sql = sprintf("SELECT HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION FROM AGENT WHERE HARPEGEID='%s'", $this->fonctions->my_real_escape_utf8($harpegeid));
             // echo "sql = " . $sql . "<br>";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Agent->Load (AGENT) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return false;
             }
-            if (mysql_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) {
                 $errlog = "Agent->Load (AGENT) : Agent $harpegeid non trouvé";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return false;
             }
-            $result = mysql_fetch_row($query);
+            $result = mysqli_fetch_row($query);
             $this->harpegeid = "$result[0]";
             $this->civilite = "$result[1]";
             $this->nom = "$result[2]";
@@ -211,15 +211,15 @@ class agent
         // On regarde si l'agent est un vrai responsable
         $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->harpegeid));
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estresponsable (AGENT) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return FALSE;
         }
-        $resp_return = mysql_num_rows($query);
+        $resp_return = mysqli_num_rows($query);
         // echo "resp_return = $resp_return <br>" ;
         
         $deleg_return = 0;
@@ -240,15 +240,15 @@ class agent
     {
         $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG='%s' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG", $this->fonctions->my_real_escape_utf8($this->harpegeid));
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estdelegue : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return FALSE;
         }
-        return (mysql_num_rows($query) > 0);
+        return (mysqli_num_rows($query) > 0);
     }
 
     /**
@@ -260,15 +260,15 @@ class agent
     {
         $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->harpegeid));
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estgestionnaire (AGENT) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return FALSE;
         }
-        return (mysql_num_rows($query) != 0);
+        return (mysqli_num_rows($query) != 0);
     }
 
     /**
@@ -280,17 +280,17 @@ class agent
     {
         $sql = sprintf("SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID='ESTADMIN'", $this->fonctions->my_real_escape_utf8($this->harpegeid));
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estadministrateur (AGENT) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return FALSE;
         }
-        if (mysql_num_rows($query) == 0)
+        if (mysqli_num_rows($query) == 0)
             return FALSE;
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         return (strcasecmp($result[0], "O") == 0);
     }
 
@@ -318,17 +318,17 @@ class agent
         $sql = $sql . ")";
         $sql = sprintf($sql, $this->fonctions->my_real_escape_utf8($this->harpegeid));
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estprofilrh (AGENT) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return FALSE;
         }
-        if (mysql_num_rows($query) == 0)
+        if (mysqli_num_rows($query) == 0)
             return FALSE;
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         return (strcasecmp($result[0], "O") == 0);
     }
 
@@ -377,25 +377,25 @@ AND DEMANDE.STATUT='v'";
         // $this->fonctions->anneeref() . $this->fonctions->debutperiode()
         // ($this->fonctions->anneeref() +1) . $this->fonctions->finperiode()
         // echo "SQL = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->nbjrsenfantmaladeutilise (AGENT) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return NULL;
         }
-        if (mysql_num_rows($query) == 0)
+        if (mysqli_num_rows($query) == 0)
             return 0;
-        $result = mysql_fetch_row($query);
+        $result = mysqli_fetch_row($query);
         return (floatval($result[0]));
     }
 
     /**
      *
-     * @param string $debut_interval
+     * @param date $debut_interval
      *            beginning date of the planning
-     * @param string $fin_interval
+     * @param date $fin_interval
      *            ending date of the planning
      * @return object the planning object.
      */
@@ -408,9 +408,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $debut_interval
+     * @param date $debut_interval
      *            beginning date of the planning
-     * @param string $fin_interval
+     * @param date $fin_interval
      *            ending date of the planning
      * @param boolean $clickable
      *            optional true means that the planning allow click on elements. false otherwise
@@ -608,9 +608,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $datedebut
+     * @param date $datedebut
      *            the beginning date of the interval to search affectations
-     * @param string $datefin
+     * @param date $datefin
      *            the ending date of the interval to search affectations
      * @return array list of objects affectation
      */
@@ -625,17 +625,17 @@ AND DEMANDE.STATUT='v'";
         $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
         $sql = $sql . " ORDER BY SUBREQ.DATEDEBUT";
         // echo "sql = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->affectationliste : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Agent->affectationliste : L'agent $this->harpegeid n'a pas d'affectation entre $datedebut et $datefin <br>";
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $affectation = new affectation($this->dbconnect);
             // echo "result[0] = $result[0] <br>";
             $affectation->load("$result[0]");
@@ -648,9 +648,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $datedebut
+     * @param date $datedebut
      *            the beginning date to check
-     * @param string $datefin
+     * @param date $datefin
      *            the ending date to check
      * @return boolean true if the declaration of agent is correct. false otherwise
      */
@@ -690,14 +690,14 @@ AND DEMANDE.STATUT='v'";
             // echo "Je suis responsable...<br>";
             $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = '%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->harpegeid));
             // echo "sql = " . $sql . "<br>";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Agent->structrespliste (RESPONSABLE) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            while ($result = mysql_fetch_row($query)) {
+            while ($result = mysqli_fetch_row($query)) {
                 // On charge la structure
                 $struct = new structure($this->dbconnect);
                 $struct->load("$result[0]");
@@ -708,14 +708,14 @@ AND DEMANDE.STATUT='v'";
             if ($includedeleg) {
                 $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG='%s' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG", $this->fonctions->my_real_escape_utf8($this->harpegeid));
                 // echo "sql = " . $sql . "<br>";
-                $query = mysql_query($sql, $this->dbconnect);
-                $erreur = mysql_error();
+                $query = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Agent->structrespliste (DELEGUE) : " . $erreur;
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
-                while ($result = mysql_fetch_row($query)) {
+                while ($result = mysqli_fetch_row($query)) {
                     // On charge la structure
                     $struct = new structure($this->dbconnect);
                     $struct->load("$result[0]");
@@ -740,14 +740,14 @@ AND DEMANDE.STATUT='v'";
             // echo "Je suis gestionnaire...<br>";
             $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->harpegeid));
             // echo "sql = " . $sql . "<br>";
-            $query = mysql_query($sql, $this->dbconnect);
-            $erreur = mysql_error();
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Agent->structgestliste : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            while ($result = mysql_fetch_row($query)) {
+            while ($result = mysqli_fetch_row($query)) {
                 // echo "Je charge la structure " . $result[0] . " <br>";
                 $struct = new structure($this->dbconnect);
                 $struct->load("$result[0]");
@@ -851,14 +851,14 @@ AND DEMANDE.STATUT='v'";
         
         $sql = "SELECT SOLDE.TYPEABSENCEID FROM SOLDE,TYPEABSENCE WHERE HARPEGEID='" . $this->harpegeid . "' AND SOLDE.TYPEABSENCEID=TYPEABSENCE.TYPEABSENCEID  AND " . $requ_sel_typ_conge;
         // echo "sql = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->soldecongesliste : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Agent->soldecongesliste : L'agent $this->harpegeid n'a pas de solde de congés pour l'année de référence $anneeref. <br>";
             $errlog = " L'agent " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . " n'a pas de solde de congés pour l'année de référence $anneeref";
             $erreurmsg = $erreurmsg . $errlog;
@@ -877,14 +877,13 @@ AND DEMANDE.STATUT='v'";
         
         if ($soldetodisplay == true)
         {
-            while ($result = mysql_fetch_row($query)) {
+            while ($result = mysqli_fetch_row($query)) {
                 $solde = new solde($this->dbconnect);
                 $solde->load($this->harpegeid, "$result[0]");
                 $soldeliste[$solde->typeabsenceid()] = $solde;
                 unset($solde);
             }
         }
-        
         
         // echo "Avant le new.. <br>";
         $cet = new cet($this->dbconnect);
@@ -1112,9 +1111,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $datedebut
+     * @param date $datedebut
      *            date of the beginning of the interval
-     * @param string $datefin
+     * @param date $datefin
      *            date of the ending of the interval
      * @return array list of query objects
      */
@@ -1124,7 +1123,7 @@ AND DEMANDE.STATUT='v'";
         $fin_interval = $this->fonctions->formatdatedb($datefin);
         $demande_liste = array();
         
-        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID
+        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID, DEMANDE.DATEDEBUT
 				FROM DEMANDE,AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP 
 				WHERE DEMANDEDECLARATIONTP.DEMANDEID= DEMANDE.DEMANDEID
 				   AND DEMANDEDECLARATIONTP.DECLARATIONID = DECLARATIONTP.DECLARATIONID
@@ -1136,17 +1135,17 @@ AND DEMANDE.STATUT='v'";
 				ORDER BY DEMANDE.DATEDEBUT";
         
         // echo "Agent->demandesliste SQL = $sql <br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->demandesliste : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             // echo "Agent->demandesliste : Il n'y a pas de demande de congé/absence pour cet agent " . $this->harpegeid() . " dans l'interval de temps " . $this->fonctions->formatdate($debut_interval) . " -> " . $this->fonctions->formatdate($debut_interval) . "<br>";
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $demande = new demande($this->dbconnect);
             // echo "Agent->demandesliste : Avant le load " . $result[0] . "<br>";
             $demande->load("$result[0]");
@@ -1160,9 +1159,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $datedebut
+     * @param date $datedebut
      *            date of the beginning of the interval
-     * @param string $datefin
+     * @param date $datefin
      *            date of the ending of the interval
      * @param string $structureid
      *            optional the structure identifier
@@ -1346,9 +1345,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $datedebut
+     * @param date $datedebut
      *            date of the beginning of the interval
-     * @param string $datefin
+     * @param date $datefin
      *            date of the ending of the interval
      * @param object $pdf
      *            optional the pdf object. if $pdf is set, the array is append to the existing pdf. Otherwise, a new pdf file is created
@@ -1539,9 +1538,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $debut_interval
+     * @param date $debut_interval
      *            date of the beginning of the interval
-     * @param string $fin_interval
+     * @param date $fin_interval
      *            date of the ending of the interval
      * @param string $agentid
      *            optional deprecated parameter => not used in code
@@ -1647,9 +1646,9 @@ AND DEMANDE.STATUT='v'";
 
     /**
      *
-     * @param string $debut_interval
+     * @param date $debut_interval
      *            date of the beginning of the interval
-     * @param string $fin_interval
+     * @param date $fin_interval
      *            date of the ending of the interval
      * @param string $agentid
      *            optional the structure's responsable identifier (harpege ident)
@@ -1804,8 +1803,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
                                              OR COMMENTAIRECONGE.TYPEABSENCEID='cet') 
                                            AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
         // echo "SQL = " . $sql . "<br>";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             echo "Agent->affichecommentairecongehtml : " . $erreur . "<br>";
             error_log(basename(__FILE__) . " Agent->affichecommentairecongehtml : " . $erreur);
@@ -1813,7 +1812,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
         $htmltext = "";
         $premiercomment = TRUE;
         $htmltext = $htmltext . "<center><table class='tableausimple'>";
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             if (($showonlycomplement and (strcasecmp(substr($result[5], 0, 3), "sup")) == 0) or ($showonlycomplement == false)) {
                 if ($premiercomment) {
                     $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
@@ -1852,8 +1851,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
         $date = date("d/m/Y");
         $sql = "INSERT INTO COMMENTAIRECONGE(HARPEGEID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
 		        VALUES ('" . $this->harpegeid . "','" . $typeconge . "','" . $this->fonctions->formatdatedb($date) . "','" . str_replace("'", "''", $commentaire) . "','" . $nbrejours . "')";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $message = "$erreur";
             error_log(basename(__FILE__) . " " . $erreur);
@@ -1867,13 +1866,13 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
         $finperiode = $this->fonctions->formatdatedb(($anneeref + 1) . $this->fonctions->finperiode());
         // $sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='" . $this->harpegeid ."' AND HARPTYPE='CONGE_BONIFIE' AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
         $sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='" . $this->harpegeid . "' AND (HARPTYPE='CONGE_BONIFIE' OR HARPTYPE LIKE 'Cg% Bonifi% (FPS)') AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur_requete = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
-        if (mysql_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
+        if (mysqli_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
         {
-            $resultcongbonif = mysql_fetch_row($query);
+            $resultcongbonif = mysqli_fetch_row($query);
             $demande = new demande($this->dbconnect);
             $demande->datedebut($resultcongbonif[1]);
             $demande->datefin($resultcongbonif[2]);
@@ -1885,39 +1884,39 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     function creertimeline()
     {
         $sql = "SELECT HARPEGEID, NUMLIGNE, TYPESTATUT,DATEDEBUT,DATEFIN FROM W_STATUT WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
-        $querystatut = mysql_query($sql, $this->dbconnect);
-        $erreur_requete = mysql_error();
+        $querystatut = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
-        if (mysql_num_rows($querystatut) == 0) // Il n'y a pas de STATUT pour cet agent => On sort
+        if (mysqli_num_rows($querystatut) == 0) // Il n'y a pas de STATUT pour cet agent => On sort
         {
             echo "<br>Pas de statut pour cet agent " . $this->harpegeid . "!!!<br>";
             return "<br>Pas de statut pour cet agent " . $this->harpegeid . "!!!<br>";
         }
         $sql = "SELECT HARPEGEID, NUMLIGNE, IDSTRUCT, DATEDEBUT, DATEFIN FROM W_STRUCTURE WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
-        $querystruct = mysql_query($sql, $this->dbconnect);
-        $erreur_requete = mysql_error();
+        $querystruct = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
-        if (mysql_num_rows($querystruct) == 0) // Il n'y a pas de STRUCTURE pour cet agent => On sort
+        if (mysqli_num_rows($querystruct) == 0) // Il n'y a pas de STRUCTURE pour cet agent => On sort
         {
             echo "<br>Pas de structure pour cet agent " . $this->harpegeid . "!!!<br>";
             return "<br>Pas de structure pour cet agent " . $this->harpegeid . "!!!<br>";
         }
         $sql = "SELECT HARPEGEID, NUMLIGNE, QUOTITE, DATEDEBUT, DATEFIN FROM W_MODALITE WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
-        $queryquotite = mysql_query($sql, $this->dbconnect);
-        $erreur_requete = mysql_error();
+        $queryquotite = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
-        if (mysql_num_rows($queryquotite) == 0) // Il n'y a pas de QUOTITE pour cet agent => On sort
+        if (mysqli_num_rows($queryquotite) == 0) // Il n'y a pas de QUOTITE pour cet agent => On sort
         {
             echo "<br>Pas de quotité pour cet agent " . $this->harpegeid . "!!!<br>";
             return "<br>Pas de quotité pour cet agent " . $this->harpegeid . "!!!<br>";
         }
         
-        $curentstruct = mysql_fetch_row($querystruct);
-        $curentstatut = mysql_fetch_row($querystatut);
-        $curentquotite = mysql_fetch_row($queryquotite);
+        $curentstruct = mysqli_fetch_row($querystruct);
+        $curentstatut = mysqli_fetch_row($querystatut);
+        $curentquotite = mysqli_fetch_row($queryquotite);
         
         $strresultat = '';
         $tabresult = array();
@@ -1978,11 +1977,11 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
                 $tabresult[] = $strresultat;
             }
             if ($datefin == $structdatefin)
-                $curentstruct = mysql_fetch_row($querystruct);
+                $curentstruct = mysqli_fetch_row($querystruct);
             if ($datefin == $statutdatefin)
-                $curentstatut = mysql_fetch_row($querystatut);
+                $curentstatut = mysqli_fetch_row($querystatut);
             if ($datefin == $quotitedatefin)
-                $curentquotite = mysql_fetch_row($queryquotite);
+                $curentquotite = mysqli_fetch_row($queryquotite);
         }
         return $tabresult;
     }
@@ -2017,16 +2016,16 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 				  AND (DEMANDE.DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "'
 				    OR DEMANDE.DATESTATUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' )
 			    ORDER BY DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur_requete = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
         $demandeliste = array();
         // Si pas de demande de CET, on retourne le tableau vide
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             return $demandeliste;
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $demandeid = $result[0];
             $demande = new demande($this->dbconnect);
             $demande->load($demandeid);

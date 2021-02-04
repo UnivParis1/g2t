@@ -28,11 +28,11 @@
     
     $tabadministrateur = array();
     $sql = "SELECT HARPEGEID FROM COMPLEMENT WHERE COMPLEMENTID = 'ESTADMIN' AND VALEUR = 'O'";
-    $query = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
-    while ($harpid = mysql_fetch_row($query)) {
+    while ($harpid = mysqli_fetch_row($query)) {
         $admin = new agent($dbcon);
         // echo "Avant le load \n";
         $admin->load($harpid[0]);
@@ -49,11 +49,11 @@
     			WHERE DROITPRIS > DROITAQUIS 
     				  AND SOLDE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
     	  			  AND SOLDE.TYPEABSENCEID IN (SELECT TYPEABSENCEID FROM TYPEABSENCE WHERE ANNEEREF IN ('" . $fonctions->anneeref() . "','" . ($fonctions->anneeref() - 1) . "'));";
-    $query = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
-    while ($harpid = mysql_fetch_row($query)) // Des agents ont des soldes négatifs !!!
+    while ($harpid = mysqli_fetch_row($query)) // Des agents ont des soldes négatifs !!!
     {
         $agent = new agent($dbcon);
         $agent->load($harpid[0]);
@@ -91,12 +91,12 @@
     				  AND DATEFIN >= '" . date("Ymd") . "' 
     				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID 
     				ORDER BY AFFECTATION.HARPEGEID"; // DATEMODIFICATION = " . date('Ymd');
-    $query = mysql_query($sql);
-    $erreur_requete = mysql_error();
+    $query = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
     
-    while ($harpid = mysql_fetch_row($query)) // Des agents ont des affectations modifiées !!!
+    while ($harpid = mysqli_fetch_row($query)) // Des agents ont des affectations modifiées !!!
     {
         $agent = new agent($dbcon);
         $agent->load($harpid[0]);
