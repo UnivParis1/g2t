@@ -6,3 +6,7 @@ CRON/log/
 INPUT_FILES_V3/
 html/CAS/
 html/class/tcpdf/
+CRON/p1_post_affectation.php
+CRON/p1_post_solde.php
+CRON/p1_specific_update.php
+html/includes/dbconnection.php
