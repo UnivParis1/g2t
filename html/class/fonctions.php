@@ -891,16 +891,16 @@ class fonctions
     				  AND (DEMANDE.DATEDEBUT >= '" . $this->formatdatedb($datedebut) . "'
     				    OR DEMANDE.DATESTATUT >= '" . $this->formatdatedb($datedebut) . "' )
     			    ORDER BY AGENT.HARPEGEID, DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
-        $query = mysql_query($sql, $this->dbconnect);
-        $erreur_requete = mysql_error();
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
         $demandeliste = array();
         // Si pas de demande de CET, on retourne le tableau vide
-        if (mysql_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) {
             return $demandeliste;
         }
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $demandeid = $result[0];
             $demande = new demande($this->dbconnect);
             $demande->load($demandeid);

@@ -86,8 +86,8 @@
     if ($mode == 'rh')
     {
         $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
-        $query = mysql_query($sql, $dbcon);
-        $erreur = mysql_error();
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
         if ($erreur != "") {
             $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
             echo $errlog . "<br/>";
@@ -95,7 +95,7 @@
         }
         echo "<form name='selectstructure'  method='post' >";
         echo "<select size='1' id='structureid' name='structureid'>";
-        while ($result = mysql_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) {
             $struct = new structure($dbcon);
             $struct->load($result[0]);
             affichestructureliste($struct, 0);

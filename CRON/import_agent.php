@@ -74,8 +74,8 @@
     if ($erreur_requete != "")
         echo "INSERT INTO AGENT CRON-G2T => $erreur_requete \n";
     $sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-2','','Gestion','Temps','gestion.temps@univ-paris1.fr','')";
-    mysql_query($sql, $dbcon);
-    $erreur_requete = mysql_error();
+    mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "INSERT INTO AGENT Gestion Temps => $erreur_requete \n";
 

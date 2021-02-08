@@ -96,5 +96,17 @@ if (!function_exists('mysql_insert_id')) {
 	}
 }
 
+if (!function_exists('mysql_result')) {
+	function mysql_result($result, $number, $field=0) {
+		$retour = FALSE;
+		if (mysqli_data_seek($result, $number))
+		{
+			$row = mysqli_fetch_array($result);
+			if (!is_null($row) && key_exists($field, $row))
+				$retour = $row[$field];
+		}
+		return $retour;
+	}
+}
 
 ?>
