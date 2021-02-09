@@ -11,7 +11,7 @@ class periodeobligatoire
     
     private $listedate = array();
     
-    private $pastrouve = true;
+    private $pastrouve = false;
     
     function __construct($db)
     {
@@ -90,8 +90,14 @@ class periodeobligatoire
         {
             $valeur = $valeur . $periode["datedebut"] . '-' . $periode["datefin"] . '|';
         }
-        // Si on est en train de créer cette période <=> soit on ne l'a pas trouvé lors du chargement précédent, soit l'anneeref est null
-        if (is_null($this->anneeref) or $this->pastrouve)
+        // Si on est en train de créer cette période <=> soit on ne l'a pas trouvé lors du chargement précédent
+        if ($this->pastrouve)
+        {
+            //echo "PeriodeObligatoire->Store : Pas trouve <br>";
+            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('PERIODE_" . $this->anneeref . "','" . $valeur . "')";
+        }
+        // Sinon si l'anneeref interne est null
+        elseif (is_null($this->anneeref))
         {
             //echo "PeriodeObligatoire->Store : Dans le insert sql <br>";
             $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('PERIODE_" . $anneeref . "','" . $valeur . "')";
@@ -102,7 +108,7 @@ class periodeobligatoire
             //echo "PeriodeObligatoire->Store : Dans le update sql <br>";
             $sql = "UPDATE CONSTANTES SET VALEUR = '$valeur' WHERE NOM = 'PERIODE_" . $this->anneeref . "'";
         }
-        // echo "SQL Complement->Store : $sql <br>";
+        //echo "SQL Complement->Store : $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {

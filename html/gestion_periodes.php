@@ -215,13 +215,15 @@
     if ($msg_erreur!="")
         echo "Erreur => " . $msg_erreur . "<br><br>";
     
-        // S'il n'y a pas de problème de date et qu'on n'a pas demandé l'extraction du fichier (<=> $extractfile = null)
-    if (!$datefausse and is_null($extractfile))
+    // S'il n'y a pas de problème de date et qu'on n'a pas demandé l'extraction du fichier (<=> $extractfile = null)
+    if ($datefausse==false and is_null($extractfile))
     {
         // On sauvegarde la nouvelle période
+        //echo "On va sauvegarder la valeur.....<br>";
         $datedebutdb = $fonctions->formatdatedb($date_debut);
         $datefindb = $fonctions->formatdatedb($date_fin);
         $periode = new periodeobligatoire($dbcon);
+        //echo "Periodeid = $periodeid <br>";
         $periode->load($periodeid);
         $periode->ajouterperiode($datedebutdb, $datefindb);
         $periode->store();
