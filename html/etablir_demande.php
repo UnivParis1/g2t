@@ -27,7 +27,8 @@
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-
+    require_once ("./class/periodeobligatoire.php");
+    
     $user = new agent($dbcon);
     $user->load($userid);
 
@@ -323,7 +324,8 @@
     // ###############################################################
 
     //echo "msg_erreur 1 = " .$msg_erreur ." <br>";
-
+    
+    
     if (is_null($agent)) {
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
         if ($rh_mode=='yes')
@@ -384,6 +386,24 @@
     } else {
 
         if (strcasecmp($typedemande, "conges") == 0) {
+            $periode = new periodeobligatoire($dbcon);
+            $liste = $periode->load($fonctions->anneeref());
+            if (count($liste) > 0)
+            {
+                echo "<font color=#FF0000><center>";
+                echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+                foreach ($liste as $element)
+                {
+                    echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
+                }
+                echo "</ul>";
+                echo "Veuillez penser à poser vos congés en conséquence.";
+                echo "</div></center>";
+                echo "</font>";
+                echo "<br><br>";
+            }
+            
+            
             echo "<font color=#FF0000><center>";
             echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
             echo "</center></font>";
