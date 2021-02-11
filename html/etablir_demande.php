@@ -624,12 +624,65 @@
     });
     </script>
     ';
+        
+        // Calcul de la date de debut minimale pour le calendrier de début
+        if ($rh_mode == 'yes')
+        {
+            $minperiode_debut =  $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode());
+        }
+        else
+        {
+            $minperiode_debut = $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode());
+        }
+        
+        // Calcul de la date de fin maximale pour le calendrier de début
+        if ($rh_mode == 'yes')
+        {
+            $maxperiode_debut = $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode());
+        }
+        elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
+        {
+            $indexmois = substr($fonctions->debutperiode(),0,2);
+            $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous));
+            $maxperiode_debut = $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois);
+        }
+        else
+        {
+            $maxperiode_debut = $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode());
+        }
+        
+        // Calcul de la date de debut minimale pour le calendrier de fin
+        if ($rh_mode == 'yes')
+        {
+            $minperiode_fin = $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode());
+        }
+        else
+        {
+            $minperiode_fin = $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode());
+        }
+        
+        // Calcul de la date de fin maximale pour le calendrier de fin
+        if ($rh_mode == 'yes')
+        {
+            $maxperiode_fin = $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode());
+        }
+        elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0)
+        {
+            $indexmois = substr($fonctions->debutperiode(),0,2);
+            $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous));
+            $maxperiode_fin = $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois);
+        }
+        else
+        {
+            $maxperiode_fin = $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode());
+        }
+        
         ?>
     			<br>
     			<td width=1px><input class="calendrier" type=text name=date_debut
     				id=<?php echo $calendrierid_deb ?> size=10
-    				minperiode='<?php if ($rh_mode == 'yes') echo $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); else echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode());?>'
-    				maxperiode='<?php if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) { $indexmois = substr($fonctions->debutperiode(),0,2); $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous)); echo $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois); } else { echo $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode()); } ?>'></td>
+    				minperiode='<?php echo "$minperiode_debut"; ?>'
+    				maxperiode='<?php echo "$maxperiode_debut"; ?>'></td>
     			<td align="left"><input type='radio' name='deb_mataprem' value='m'
     				checked>Matin <input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
     		</tr>
@@ -637,8 +690,8 @@
     			<td>Date de fin de la demande :</td>
     			<td width=1px><input class="calendrier" type=text name=date_fin
     				id=<?php echo $calendrierid_fin ?> size=10
-    				minperiode='<?php if ($rh_mode == 'yes') echo $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); else echo $fonctions->formatdate($fonctions->anneeref()-$previous . $fonctions->debutperiode()); ?>'
-    				maxperiode='<?php if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"),"n")==0) { $indexmois = substr($fonctions->debutperiode(),0,2); $nbrejrsmois = $fonctions->nbr_jours_dans_mois($indexmois,($fonctions->anneeref()+1-$previous)); echo $fonctions->formatdate(($fonctions->anneeref()+1-$previous).$indexmois.$nbrejrsmois); } else { echo $fonctions->formatdate($fonctions->anneeref()+1-$previous . $fonctions->finperiode()); } ?>'></td>
+    				minperiode='<?php echo "$minperiode_fin"; ?>'
+    				maxperiode='<?php echo "$maxperiode_fin"; ?>'></td>
     			<td align="left"><input type='radio' name='fin_mataprem' value='m'>Matin
     				<input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
     		</tr>
