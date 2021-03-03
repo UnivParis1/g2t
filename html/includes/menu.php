@@ -695,6 +695,12 @@
 						</form>
 						<a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>
 					</li>
+					<li onclick='document.rh_gest_periode.submit();'>
+						<form name='rh_gest_periode' method='post' action="gestion_periodes.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.rh_gest_periode.submit();">Gestion des périodes de fermeture</a>
+					</li>
 					
 <?php
         }

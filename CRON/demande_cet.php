@@ -155,7 +155,7 @@
              */
         }
         $filename = dirname(dirname(__FILE__)) . '/html/pdf/historique_demande_cet_' . date("YmdHis") . ".pdf";
-        ob_end_clean();
+        //ob_end_clean();
         $pdf->Output($filename, 'F'); // F = file
 
         $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET

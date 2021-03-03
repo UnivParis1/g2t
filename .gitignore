@@ -10,3 +10,4 @@ CRON/p1_post_affectation.php
 CRON/p1_post_solde.php
 CRON/p1_specific_update.php
 html/includes/dbconnection.php
+html/documents/

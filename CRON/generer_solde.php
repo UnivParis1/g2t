@@ -61,18 +61,20 @@
             echo "Génération du PDF pour la structure " . $struct->nomcourt() . "\n";
             $tablisteagent = $struct->agentlist($datedebut, $datefin, 'n');
             if (! is_null($tablisteagent)) {
-                $pdf = new TCPDF();
-                $pdf->Open();
-                $pdf->SetHeaderData('', 0, '', '', array(
-                    0,
-                    0,
-                    0
-                ), array(
-                    255,
-                    255,
-                    255
-                ));
-                $pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
+                $pdf = new FPDF();
+                //$pdf = new TCPDF();
+                //$pdf->Open();
+                //$pdf->SetHeaderData('', 0, '', '', array(
+                //    0,
+                //    0,
+                //    0
+                //), array(
+                //    255,
+                //    255,
+                //    255
+                //));
+                //$pdf->AddPage('L');
+                //$pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
                 foreach ($tablisteagent as $key => $agent) {
                     echo "Agent = " . $agent->identitecomplete() . "\n";
                     $agent->soldecongespdf($anneeref, FALSE, $pdf, TRUE);
