@@ -253,11 +253,13 @@ class cet
             // Suppression de la trace car pas une erreur
             // error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
         }
-        $result = mysqli_fetch_row($query);
-        $this->cumultotal = $result[2];
-        $this->idtotal = $result[1];
-        $this->jrspris = $result[3];
-        
+        else
+        {
+            $result = mysqli_fetch_row($query);
+            $this->cumultotal = $result[2];
+            $this->idtotal = $result[1];
+            $this->jrspris = $result[3];
+        }
         // On charge la date de début du CET
         $complement = new complement($this->dbconnect);
         $complement->load($agentid, "DEBUTCET");
