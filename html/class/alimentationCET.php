@@ -10,6 +10,7 @@ class alimentationCET
     private $datecreation = null;
     private $esignatureid = null;
     private $esignatureurl = null;
+    private $typeconges = null;
     private $valeur_a = null;
     private $valeur_b = null;
     private $valeur_c = null;
@@ -119,6 +120,29 @@ class alimentationCET
         }
     }
      
+    function typeconges($typeconges = null)
+    {
+        if (is_null($typeconges)) {
+            if (is_null($this->typeconges)) {
+                $errlog = "alimentationCET->typeconges : La valeur du type de conges n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } else
+                return $this->typeconges;
+        }
+        else
+        {
+            if (!is_null($this->typeconges))
+            {
+                $errlog = "alimentationCET->typeconges : Impossible de modifier la valeur du type de congés !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+                $this->typeconges = $typeconges;
+        }
+    }
+    
     function valeur_a($valeur_a = null)
     {
         if (is_null($valeur_a)) {
@@ -133,7 +157,7 @@ class alimentationCET
         {
             if (!is_null($this->valeur_a))
             {
-                $errlog = "alimentationCET->esignatureurl : Impossible de modifier la valeur de la case A !!!";
+                $errlog = "alimentationCET->valeur_a : Impossible de modifier la valeur de la case A !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
@@ -309,7 +333,7 @@ class alimentationCET
     function load($esignatureid = null, $alimentationid = null, $agentid = null )
     {
         $errlog = '';
-        $sql = "SELECT ALIMENTATIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT FROM ALIMENTATIONCET WHERE ";
+        $sql = "SELECT ALIMENTATIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT FROM ALIMENTATIONCET WHERE ";
         if (!is_null($esignatureid))
         {
             $sql = $sql . "ESIGNATUREID = '$esignatureid'";
@@ -354,15 +378,16 @@ class alimentationCET
         $this->datecreation     = "$result[2]";
         $this->esignatureid     = "$result[3]";
         $this->esignatureurl    = "$result[4]";
-        $this->valeur_a         = "$result[5]";
-        $this->valeur_b         = "$result[6]";
-        $this->valeur_c         = "$result[7]";
-        $this->valeur_d         = "$result[8]";
-        $this->valeur_e         = "$result[9]";
-        $this->valeur_f         = "$result[10]";
-        $this->valeur_g         = "$result[11]";
-        $this->statut           = "$result[12]";
-        $this->datestatut       = "$result[13]";
+        $this->typeconges       = "$result[5]";
+        $this->valeur_a         = "$result[6]";
+        $this->valeur_b         = "$result[7]";
+        $this->valeur_c         = "$result[8]";
+        $this->valeur_d         = "$result[9]";
+        $this->valeur_e         = "$result[10]";
+        $this->valeur_f         = "$result[11]";
+        $this->valeur_g         = "$result[12]";
+        $this->statut           = "$result[13]";
+        $this->datestatut       = "$result[14]";
         
         return $errlog;
     }
@@ -374,8 +399,9 @@ class alimentationCET
         if (is_null($this->alimentationid))
         {
             //echo "alimentationCET->Store : Création d'une nouvelle alimentation <br>";
-            // On doit vérifier que les éléments olbigatoires sont bien renseignés : HarpegeId, valeur_a, valeur_b, valeur_c, valeur_d, valeur_e,, valeur_f, valeur_g
+            // On doit vérifier que les éléments olbigatoires sont bien renseignés : HarpegeId, typeconges, valeur_a, valeur_b, valeur_c, valeur_d, valeur_e,, valeur_f, valeur_g
             if (is_null($this->harpegeid) 
+             or is_null($this->typeconges) 
              or is_null($this->valeur_a) 
              or is_null($this->valeur_b) 
              or is_null($this->valeur_c) 
@@ -400,11 +426,12 @@ class alimentationCET
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO ALIMENTATIONCET(HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT) 
+            $sql = "INSERT INTO ALIMENTATIONCET(HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT) 
                     VALUES('". $this->harpegeid . "',
                            now(),
                            '" . $this->esignatureid . "',
                            '" . $this->esignatureurl . "',
+                           '" . $this->typeconges . "',
                            '" . $this->valeur_a . "',
                            '" . $this->valeur_b . "',
                            '" . $this->valeur_c . "',
@@ -414,7 +441,7 @@ class alimentationCET
                            '" . $this->valeur_g . "',
                            '" . $this->statut . "',
                            '" . $this->datestatut . "')";
-             echo "SQL = " . $sql . "<br>";
+            //echo "SQL = " . $sql . "<br>";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
