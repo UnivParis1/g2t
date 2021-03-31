@@ -717,11 +717,12 @@ WHERE DECLARATIONID=" . $id;
         // $pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel WE:Week end');
         $pdf->Ln(10);
         
-        $pdfname = dirname(dirname(__FILE__)) . '/pdf/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
+        $pdfname = dirname(dirname(__FILE__)) . '/pdf/' . date('Y-m') . '/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
         // $pdfname = './pdf/declarationTP_num'.$this->declarationTPid().'.pdf';
         // $pdfname = sys_get_temp_dir() . '/autodeclaration_num'.$this->id().'.pdf';
         // echo "Nom du PDF = " . $pdfname . "<br>";
-        $pdf->Output($pdfname, 'F');
+        //$pdf->Output($pdfname, 'F');
+        $this->fonctions->savepdf($pdf, $pdfname);
         return $pdfname;
     }
 

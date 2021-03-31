@@ -919,6 +919,16 @@ class fonctions
         }
         return $demandeliste;
     }
+    
+    public function savepdf($pdf, $filename)
+    {
+        $path = dirname("$filename");
+        if (!file_exists($path))
+        {
+            mkdir("$path", "0777");
+        }
+        $pdf->Output($filename, 'F');
+    }
 
 }
 ?>

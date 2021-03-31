@@ -154,9 +154,10 @@
              * $pdf->Ln();
              */
         }
-        $filename = dirname(dirname(__FILE__)) . '/html/pdf/historique_demande_cet_' . date("YmdHis") . ".pdf";
+        $filename = dirname(dirname(__FILE__)) . '/html/pdf/' . date('Y-m') . '/historique_demande_cet_' . date("YmdHis") . ".pdf";
         //ob_end_clean();
-        $pdf->Output($filename, 'F'); // F = file
+        //$pdf->Output($filename, 'F'); // F = file
+        $fonctions->savepdf($pdf, $filename);
 
         $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
         foreach ($arrayagentrh as $gestrh) {
