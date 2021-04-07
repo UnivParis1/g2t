@@ -619,7 +619,8 @@ class structure
         // echo "timestampfin = $timestampfin <br>";
         $fulldatefin = date("d/m/Y", strtotime("-1day", $timestampfin));
         // echo "fulldatefin (en lisible)= $fulldatefin <br>";
-        list ($jour, $indexmois, $annee) = preg_split('[/.-]', '01/' . $mois_annee_debut);
+        //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
         
         
         $structure = new structure($this->dbconnect);
