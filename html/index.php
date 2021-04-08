@@ -71,6 +71,12 @@
     }
 
     require ("includes/menu.php");
+    $casversion = phpCAS::getVersion();
+    $errlog = "Index.php => Version de CAS.php utilisée  : " . $casversion;
+    //echo "<br><br>" . $errlog . "<br><br>";
+    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+    
+
     // echo '<html><body class="bodyhtml">';
 
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
