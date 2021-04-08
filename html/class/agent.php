@@ -514,7 +514,11 @@ AND DEMANDE.STATUT='v'";
         
         //$msg = "Subject: " . mb_convert_encoding($objet,'HTML') . "\r\n";
         //$msg = "Subject: " . nl2br(htmlentities("$objet", ENT_QUOTES, "UTF-8", false)) . "\r\n";
-        $msg = "Subject: " . $objet . "\r\n";
+        //$msg = "Subject: " . $objet . "\r\n";
+        
+        $preferences = ["input-charset" => "UTF-8", "output-charset" => "UTF-8"];
+        $encoded_subject = iconv_mime_encode("Subject", $objet, $preferences);
+        $msg = $encoded_subject. "\r\n";
         
         // ---------------------------------
         // 1ère partie du message
