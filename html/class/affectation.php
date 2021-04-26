@@ -57,7 +57,7 @@ class affectation
      *
      * @param string $idaffectation
      *            the nomination identifier
-     * @return
+     * @return boolean true on success / false on fail
      */
     function load($idaffectation = null)
     {
@@ -85,19 +85,39 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
                 return false;
             }
             $result = mysqli_fetch_row($query);
+            
+            $agent = new agent($this->dbconnect);
+            $structureid = "";
+            if (method_exists($agent,'structureid'))
+            {
+                $agent->load("$result[1]");
+                $structureid = $agent->structureid() . "";
+            }
+            else
+            {
+                $structureid =  "$result[5]" . "";
+            }
+            if ($structureid == "")
+            {
+                $errlog = "Affectation->Load : L'identifiant de la structure liée à l'affectation $idaffectation ou à l'agent " . $result[1] . " est vide/null";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return false;
+            }
+           
             $this->affectationid = "$result[0]";
             $this->agentid = "$result[1]";
             $this->datedebut = "$result[2]";
             $this->datefin = "$result[3]";
             // echo "Avant affectation qutotite <br>";
             $this->datemodif = "$result[4]";
-            $this->structureid = "$result[5]";
+            $this->structureid = "$structureid";
             $this->numerateurquotite = "$result[6]";
             $this->denominateurquotite = "$result[7]";
             $this->obsolete = "$result[8]";
             $this->numcontrat = "$result[9]";
+            return true;
         }
-        return true;
     }
 
     /**
@@ -106,7 +126,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
      *            optional date to search the nomination. Current date if not set
      * @param string $agentid
      *            optional agent identifier (harpege)
-     * @return string the nomination identifier
+     * @return boolean true on success / false on fail
      */
     function loadbydate($date = null, $agentid = null)
     {
@@ -119,6 +139,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             $errlog = "Affectation->Loadbydate : l'agentId est NULL";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
         } else {
             $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= '" . $date . "' AND ('" . $date . "' <= DATEFIN OR DATEFIN = '0000-00-00')) AND HARPEGEID ='" . $agentid . "' AND OBSOLETE='N'";
             $query = mysqli_query($this->dbconnect, $sql);
@@ -127,14 +148,16 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
                 $errlog = "Affectation->Loadbydate : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return false;
             }
             if (mysqli_num_rows($query) == 0) {
                 $errlog = "Affectation->Loadbydate : Agent " . $agentid . "n'a pas d'affectation pour la date " . $this->fonctions->formatdate($date);
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return false;
             }
             $result = mysqli_fetch_row($query);
-            $this->load("$result[0]");
+            return $this->load("$result[0]");
         }
     }
 
