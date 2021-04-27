@@ -25,6 +25,8 @@ class agent
     private $adressemail = null;
 
     private $typepopulation = null;
+    
+    private $structureid = null;
 
     private $fonctions = null;
 
@@ -56,7 +58,7 @@ class agent
         // echo "Debut Load";
         if (is_null($this->harpegeid)) {
             
-            $sql = sprintf("SELECT HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION FROM AGENT WHERE HARPEGEID='%s'", $this->fonctions->my_real_escape_utf8($harpegeid));
+            $sql = sprintf("SELECT HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION, STRUCTUREID FROM AGENT WHERE HARPEGEID='%s'", $this->fonctions->my_real_escape_utf8($harpegeid));
             // echo "sql = " . $sql . "<br>";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
@@ -79,6 +81,7 @@ class agent
             $this->prenom = "$result[3]";
             $this->adressemail = "$result[4]";
             $this->typepopulation = "$result[5]";
+            $this->structureid = "$result[6]";
             return true;
         }
         // echo "Fin...";
@@ -197,6 +200,21 @@ class agent
                 return $this->typepopulation;
         } else
             $this->codestructure = $type;
+    }
+    
+    /**
+     *
+     * @param
+     * @return string the structure identifier for the current agent
+     */
+    function structureid()
+    {
+    	if (is_null($this->structureid)) {
+    		$errlog = "Agent->structureid : L'Id de la structure n'est pas défini !!!";
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	} else
+    		return $this->structureid;
     }
 
     /**
@@ -1940,16 +1958,6 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             echo "<br>Pas de statut pour cet agent " . $this->harpegeid . "!!!<br>";
             return "<br>Pas de statut pour cet agent " . $this->harpegeid . "!!!<br>";
         }
-        $sql = "SELECT HARPEGEID, NUMLIGNE, IDSTRUCT, DATEDEBUT, DATEFIN FROM W_STRUCTURE WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
-        $querystruct = mysqli_query($this->dbconnect, $sql);
-        $erreur_requete = mysqli_error($this->dbconnect);
-        if ($erreur_requete != "")
-            error_log(basename(__FILE__) . " " . $erreur_requete);
-        if (mysqli_num_rows($querystruct) == 0) // Il n'y a pas de STRUCTURE pour cet agent => On sort
-        {
-            echo "<br>Pas de structure pour cet agent " . $this->harpegeid . "!!!<br>";
-            return "<br>Pas de structure pour cet agent " . $this->harpegeid . "!!!<br>";
-        }
         $sql = "SELECT HARPEGEID, NUMLIGNE, QUOTITE, DATEDEBUT, DATEFIN FROM W_MODALITE WHERE HARPEGEID = '" . $this->harpegeid . "' ORDER BY DATEDEBUT";
         $queryquotite = mysqli_query($this->dbconnect, $sql);
         $erreur_requete = mysqli_error($this->dbconnect);
@@ -1961,20 +1969,13 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             return "<br>Pas de quotité pour cet agent " . $this->harpegeid . "!!!<br>";
         }
         
-        $curentstruct = mysqli_fetch_row($querystruct);
         $curentstatut = mysqli_fetch_row($querystatut);
         $curentquotite = mysqli_fetch_row($queryquotite);
         
         $strresultat = '';
         $tabresult = array();
         
-        while ($curentstruct and $curentstatut and $curentquotite) {
-            $structharpegeid = $curentstruct[0];
-            $structnumligne = $curentstruct[1];
-            $structid = $this->fonctions->labo2ufr(trim($curentstruct[2]));
-            $structdatedebut = $curentstruct[3];
-            $structdatefin = $curentstruct[4];
-            
+        while ($curentstatut and $curentquotite) {            
             $statutharpegeid = $curentstatut[0];
             $statutnumligne = $curentstatut[1];
             $statutid = trim($curentstatut[2]);
@@ -1990,15 +1991,11 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             $datedebut = '1899-12-31';
             $datefin = '9999-12-31';
             
-            if ($structdatedebut > $datedebut)
-                $datedebut = $structdatedebut;
             if ($statutdatedebut > $datedebut)
                 $datedebut = $statutdatedebut;
             if ($quotitedatedebut > $datedebut)
                 $datedebut = $quotitedatedebut;
             
-            if ($structdatefin < $datefin)
-                $datefin = $structdatefin;
             if ($statutdatefin < $datefin)
                 $datefin = $statutdatefin;
             if ($quotitedatefin < $datefin)
@@ -2007,7 +2004,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             if ($datefin < $datedebut) {
                 echo "Detection de datefin ($datefin) < datedebut ($datedebut) => On ignore pour agent " . $this->harpegeid . "!!!<br>\n";
             } else {
-                $strresultat = $structharpegeid . '_' . $structnumligne . '_' . $statutnumligne . '_' . $quotitenumligne;
+                $strresultat = $structharpegeid . '_' . $statutnumligne . '_' . $quotitenumligne;
                 $strresultat = $strresultat . ';' . $structharpegeid;
                 if (substr($statutid, 0, 5) != 'CONTR')
                     $statutid = '';
@@ -2015,7 +2012,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
                 $strresultat = $strresultat . ';' . $datedebut;
                 $strresultat = $strresultat . ';' . $datefin;
                 $strresultat = $strresultat . ';' . date("Ymd");
-                $strresultat = $strresultat . ';' . $structid;
+                $strresultat = $strresultat . ';'; // structureid
                 $strresultat = $strresultat . ';' . $quotitevalue;
                 $strresultat = $strresultat . ';' . '100';
                 $strresultat = $strresultat . ';';
@@ -2023,8 +2020,6 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
                 // echo $strresultat . '<br>';
                 $tabresult[] = $strresultat;
             }
-            if ($datefin == $structdatefin)
-                $curentstruct = mysqli_fetch_row($querystruct);
             if ($datefin == $statutdatefin)
                 $curentstatut = mysqli_fetch_row($querystatut);
             if ($datefin == $quotitedatefin)

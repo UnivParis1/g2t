@@ -312,8 +312,8 @@
                 // echo "Date de fin de l'affectation => $datefin \n";
                 if (("$datefin" == "") or ("$datefin" == "0000-00-00") or ("$datefin" == "00000000") or ("$datefin" == "00/00/0000"))
                     $datefin = "9999-12-31";
-                $sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
-    										VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N');
+                $sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
+    										VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N');
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
@@ -345,7 +345,7 @@
                 $affectation->load($fonctions->my_real_escape_utf8($affectationid));
 
                 // Si tout est pareil.... => On réactive la ligne d'affectation
-                if (($fonctions->formatdatedb($affectation->datedebut()) == $fonctions->formatdatedb($datedebut)) and ($fonctions->formatdatedb($affectation->datefin()) == $fonctions->formatdatedb($datefin)) and ($affectation->numquotite() == $numquotite) and ($affectation->structureid() == $structureid) and ($affectation->numcontrat() == $numcontrat)) {
+                if (($fonctions->formatdatedb($affectation->datedebut()) == $fonctions->formatdatedb($datedebut)) and ($fonctions->formatdatedb($affectation->datefin()) == $fonctions->formatdatedb($datefin)) and ($affectation->numquotite() == $numquotite) and ($affectation->numcontrat() == $numcontrat)) {
                     echo "Reactivation de la ligne d'affectation car tout est pareil \n";
                     $sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='N' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
                     // if ($harpegeid == '9328')
@@ -358,7 +358,7 @@
                 else {
                     // On réactive la ligne d'affectation (puisqu'elle existe toujours) mais on update avec les bonnes valeurs du fichier
                     echo "On update l'affectation (identifiant = " . $affectationid . ")\n";
-                    $sql = sprintf("UPDATE AFFECTATION SET HARPEGEID='%s',NUMCONTRAT='%s',DATEDEBUT='%s',DATEFIN='%s',DATEMODIFICATION='%s',STRUCTUREID='%s',NUMQUOTITE='%s',DENOMQUOTITE='%s',OBSOLETE='%s' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N', $fonctions->my_real_escape_utf8($affectationid));
+                    $sql = sprintf("UPDATE AFFECTATION SET HARPEGEID='%s',NUMCONTRAT='%s',DATEDEBUT='%s',DATEFIN='%s',DATEMODIFICATION='%s',NUMQUOTITE='%s',DENOMQUOTITE='%s',OBSOLETE='%s' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N', $fonctions->my_real_escape_utf8($affectationid));
 
                     // if ($harpegeid == '9328')
                     // {
@@ -369,14 +369,6 @@
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
                         echo "UPDATE AFFECTATION => $erreur_requete \n";
-
-                    // ------------------------------------------------
-                    // Cas ou la structure est modifiée
-                    // On ne modifie rien car le changement de structure n'a aucun impact sur les autres informations
-                    // ------------------------------------------------
-                    if ($affectation->structureid() != $structureid) {
-                        echo "Changement de structure d'affectation : Ancienne structure = " . $affectation->structureid() . "  Nouvelle structure = " . $structureid . "\n";
-                    }
 
                     // ------------------------------------------------
                     // Cas ou le num contrat est modifié
@@ -475,6 +467,16 @@
                 }
             }
         }
+        if (!is_null($ligneaffectation))
+        {
+        	$sql = sprintf("UPDATE AGENT SET STRUCTUREID='%s' WHERE HARPEGEID='%s'", $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($harpegeid));
+        	echo "SQL UPDATE AGENT => $sql \n";
+        	mysqli_query($dbcon, $sql);
+        	$erreur_requete = mysqli_error($dbcon);
+        	if ($erreur_requete != "") {
+        		echo "UPDATE AGENT (modification structureid) => $erreur_requete \n";
+        	}
+        } 
     }
 
     // Pour toutes les affectations obsolètes
