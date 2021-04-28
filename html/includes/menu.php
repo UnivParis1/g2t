@@ -352,6 +352,15 @@
 						</form>
 						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
 					</li>
+<!-- 
+					<li onclick='document.alim_cet.submit();'>
+						<form name='alim_cet' method='post' action="alimentation.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.alim_cet.submit();">Alimentation du CET</a>
+					</li>
+-->
 					<li onclick='document.agent_aide.submit();'>
 						<form name='agent_aide' method='get' TARGET=_BLANK action="https://ent.univ-paris1.fr/assets/aide/canal/g2t.html">
 						</form> 
@@ -753,5 +762,6 @@
 <?php
 	}
 ?> 
+
 </div>
-	<br> <br> <br>
+<br> <br> <br>
