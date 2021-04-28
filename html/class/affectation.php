@@ -95,8 +95,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             }
             else
             {
+                //echo "Warning : This usage of structureid is deprecated.<br>";
                 $structureid =  "$result[5]" . "";
             }
+            
             if ($structureid == "")
             {
                 $errlog = "Affectation->Load : L'identifiant de la structure liée à l'affectation $idaffectation ou à l'agent " . $result[1] . " est vide/null";
@@ -104,7 +106,6 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return false;
             }
-           
             $this->affectationid = "$result[0]";
             $this->agentid = "$result[1]";
             $this->datedebut = "$result[2]";

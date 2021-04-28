@@ -642,12 +642,15 @@ AND DEMANDE.STATUT='v'";
     function affectationliste($datedebut, $datefin)
     {
         $affectationliste = null;
-        $sql = "SELECT SUBREQ.AFFECTATIONID FROM ((SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE FROM AFFECTATION WHERE HARPEGEID = '" . $this->harpegeid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
+        $sql = "SELECT SUBREQ.AFFECTATIONID FROM ((SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,HARPEGEID FROM AFFECTATION WHERE HARPEGEID = '" . $this->harpegeid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE FROM AFFECTATION WHERE HARPEGEID='" . $this->harpegeid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
+        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,HARPEGEID FROM AFFECTATION WHERE HARPEGEID='" . $this->harpegeid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE FROM AFFECTATION WHERE HARPEGEID='" . $this->harpegeid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
-        $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
+        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,HARPEGEID FROM AFFECTATION WHERE HARPEGEID='" . $this->harpegeid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
+        $sql = $sql . ", AGENT ";
+        $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N' ";
+        $sql = $sql . "   AND AGENT.HARPEGEID = SUBREQ.HARPEGEID ";
+        $sql = $sql . "   AND AGENT.STRUCTUREID <> '' ";
         $sql = $sql . " ORDER BY SUBREQ.DATEDEBUT";
         // echo "sql = $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
@@ -2004,8 +2007,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             if ($datefin < $datedebut) {
                 echo "Detection de datefin ($datefin) < datedebut ($datedebut) => On ignore pour agent " . $this->harpegeid . "!!!<br>\n";
             } else {
-                $strresultat = $structharpegeid . '_' . $statutnumligne . '_' . $quotitenumligne;
-                $strresultat = $strresultat . ';' . $structharpegeid;
+                $strresultat = $this->harpegeid . '_' . $statutnumligne . '_' . $quotitenumligne;
+                $strresultat = $strresultat . ';' . $this->harpegeid;
                 if (substr($statutid, 0, 5) != 'CONTR')
                     $statutid = '';
                 $strresultat = $strresultat . ';' . $statutid;

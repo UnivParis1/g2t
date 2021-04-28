@@ -34,11 +34,18 @@ CREATE TABLE `DECLARATIONTP_NEW` (
     require_once ('../html/includes/dbconnection.php');
     
     $fonctions = new fonctions($dbcon);
+    
+    $declaration_table = 'DECLARATIONTP';   // DECLARATIONTP_NEW
+    $affectation_table = 'AFFECTATION';     // AFFECTATION_NEW
+
 
     echo "DEBUT DE LA MODIFICATION DES AFFECTATIONID \n";
-    $insert_declarationtp_new = "INSERT INTO DECLARATIONTP_NEW
+    echo "Début : " . date("d/m/Y H:i:s") . " \n";
+    echo "Début de l'injection des TP avec le nouvel affectationid dans la table $declaration_table \n";
+    
+    $insert_declarationtp_new = "INSERT INTO " . $declaration_table . " (AFFECTATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT)
                                     SELECT 
-                                        DTP.DECLARATIONID,
+                                        -- DTP.DECLARATIONID,
                                         CONCAT(SUBSTRING_INDEX(SUBSTRING_INDEX(DTP.AFFECTATIONID, '_', 1), '_', -1) , '_' , SUBSTRING_INDEX(SUBSTRING_INDEX(DTP.AFFECTATIONID, '_', 3), '_', -1) , '_' , SUBSTRING_INDEX(SUBSTRING_INDEX(DTP.AFFECTATIONID, '_', 4), '_', -1)) AS AFFECTATIONID,
                                         DTP.TABTPSPARTIEL,
                                         DTP.DATEDEMANDE,
@@ -58,7 +65,10 @@ CREATE TABLE `DECLARATIONTP_NEW` (
     $query_decltp = mysqli_query($dbcon, $insert_declarationtp_new);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
-        echo "ERREUR INSERT DECLARATIONTP_NEW => $erreur_requete \n";
+        echo "ERREUR INSERT $declaration_table => $erreur_requete \n";
+    echo "Fin de l'injection des TP avec le nouvel affectationid dans la table $declaration_table \n";
+    echo "---------------------------------------------------------------------------------- \n";
+    echo "Début de l'injection des affectations avec le nouvel affectationid dans la table $affectation_table \n";
     $req_affectation_new = "SELECT 
                                 CONCAT(SUBSTRING_INDEX(SUBSTRING_INDEX(AFF.AFFECTATIONID, '_', 1), '_', -1) , '_' , SUBSTRING_INDEX(SUBSTRING_INDEX(AFF.AFFECTATIONID, '_', 3), '_', -1) , '_' , SUBSTRING_INDEX(SUBSTRING_INDEX(AFF.AFFECTATIONID, '_', 4), '_', -1)) AS AFFECTATIONID,
                                 AFF.HARPEGEID,
@@ -96,7 +106,7 @@ CREATE TABLE `DECLARATIONTP_NEW` (
             {
                 if ($num_aff != 0) 
                 {
-                    $insert_affectation_new = "INSERT INTO AFFECTATION_NEW (AFFECTATIONID, HARPEGEID, NUMCONTRAT, DATEDEBUT, DATEFIN, DATEMODIFICATION, STRUCTUREID, NUMQUOTITE, DENOMQUOTITE, OBSOLETE) 
+                    $insert_affectation_new = "INSERT INTO " . $affectation_table . " (AFFECTATIONID, HARPEGEID, NUMCONTRAT, DATEDEBUT, DATEFIN, DATEMODIFICATION, STRUCTUREID, NUMQUOTITE, DENOMQUOTITE, OBSOLETE) 
                                                  VALUES ('$num_aff', '$harpege_id', '$num_contrat', '$datedeb', '$datefin', '$datemodification', '$structureid', '$numquotite', '$denomquotite', '$obsolete')";
                     mysqli_query($dbcon, $insert_affectation_new);
                     $erreur_requete = mysqli_error($dbcon);
@@ -120,7 +130,7 @@ CREATE TABLE `DECLARATIONTP_NEW` (
         // DERNIER INSERT 
         if ($num_aff != 0) 
         {
-            $insert_affectation_new = "INSERT INTO AFFECTATION_NEW (AFFECTATIONID, HARPEGEID, NUMCONTRAT, DATEDEBUT, DATEFIN, DATEMODIFICATION, STRUCTUREID, NUMQUOTITE, DENOMQUOTITE, OBSOLETE) 
+            $insert_affectation_new = "INSERT INTO " . $affectation_table . " (AFFECTATIONID, HARPEGEID, NUMCONTRAT, DATEDEBUT, DATEFIN, DATEMODIFICATION, STRUCTUREID, NUMQUOTITE, DENOMQUOTITE, OBSOLETE) 
                                             VALUES ('$num_aff', '$harpege_id', '$num_contrat', '$datedeb', '$datefin', '$datemodification', '$structureid', '$numquotite', '$denomquotite', '$obsolete')";
             mysqli_query($dbcon, $insert_affectation_new);
             $erreur_requete = mysqli_error($dbcon);
@@ -129,6 +139,8 @@ CREATE TABLE `DECLARATIONTP_NEW` (
                 echo "INSERT AFFECTATION => $erreur_requete \n";
         }
     }
+    echo "Fin de l'injection des affectations avec le nouvel affectationid dans la table $affectation_table \n";
+    echo "Fin : " . date("d/m/Y H:i:s") . " \n";
     echo "FIN DE LA MODIFICATION DES AFFECTATIONID \n";
 
 ?>
