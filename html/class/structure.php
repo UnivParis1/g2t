@@ -241,13 +241,13 @@ class structure
         // $sql = $sql . "(SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
         // $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
         
-        $sql = "SELECT SUBREQ.HARPEGEID FROM ((SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID = '" . $this->structureid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND (DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "' OR DATEFIN='0000-00-00'))";
+        $sql = "SELECT SUBREQ.HARPEGEID FROM ((SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID = '" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND (DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "' OR DATEFIN='0000-00-00'))";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN<='" . $this->fonctions->formatdatedb($datefin) . "')";
+        $sql = $sql . "(SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN<='" . $this->fonctions->formatdatedb($datefin) . "')";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "')";
+        $sql = $sql . "(SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "')";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datefin) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "')";
+        $sql = $sql . "(SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datefin) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "')";
         $sql = $sql . ") AS SUBREQ";
         $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
         
