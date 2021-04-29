@@ -498,6 +498,45 @@
                         }
                     }
                 }
+                // Si on est dans le cas d'une affectation à 100%
+                if ($numquotite == $denomquotite)
+                {
+                    // On récupère les éventuels déclarations de temps partiel (pour les temps complet)
+                    $sql = "SELECT DECLARATIONID, TABTPSPARTIEL,AFFECTATION.DATEDEBUT,AFFECTATION.DATEFIN 
+                            FROM DECLARATIONTP,AFFECTATION 
+                            WHERE AFFECTATION.AFFECTATIONID = '" . $fonctions->my_real_escape_utf8($affectationid) . "' 
+                              AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID
+                              AND AFFECTATION.OBSOLETE = 'N'";
+                    $query_decla = mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
+                    if ($erreur_requete != "")
+                        echo "SELECT DECLARATIONID, TABTPSPARTIEL => $erreur_requete \n";
+                    // -------------------------------
+                    // Si on a une déclaration de TP et une seule
+                    // -------------------------------
+                    if (mysqli_num_rows($query_decla) == 1) 
+                    {
+                        $result = mysqli_fetch_row($query_decla);
+                        $declarationTPid = "$result[0]";
+                        $tabtp = "$result[1]";
+                        // Si le tableau du TP ne contient que des 0 => C'est bien une déclaration de TP pour un temps complet
+                        if ($tabtp = str_repeat("0", 20))
+                        {
+                            // On peut donc réactiver la declaration de TP
+                            echo "On a une seule declaration de TP (sans temps partiel) pour une affectation à 100% active.\n";
+                            echo "On reactive/ajuste la ligne de declarationTP ($declarationTPid) de l'affectation " . $fonctions->my_real_escape_utf8($affectationid) ." \n";
+                            $declarationTP = new declarationTP($dbcon);
+                            $declarationTP->load($declarationTPid);
+                            $declarationTP->datedebut($fonctions->formatdate($result[2]));
+                            $declarationTP->datefin($fonctions->formatdate($result[3]));
+                            $declarationTP->statut('v');
+                            $erreur = $declarationTP->store();
+                            if ($erreur != "")
+                                echo "Erreur dans la déclarationTP->store (réactivation de la declarationTP) : " . $erreur . "\n";
+                                
+                        }
+                    }       
+                }   
             }
         }
     }
