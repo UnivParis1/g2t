@@ -502,7 +502,7 @@
                 if ($numquotite == $denomquotite)
                 {
                     // On récupère les éventuels déclarations de temps partiel (pour les temps complet)
-                    $sql = "SELECT DECLARATIONID, TABTPSPARTIEL,AFFECTATION.DATEDEBUT,AFFECTATION.DATEFIN 
+                    $sql = "SELECT DECLARATIONTP.DECLARATIONID, DECLARATIONTP.TABTPSPARTIEL, DECLARATIONTP.STATUT, AFFECTATION.DATEDEBUT, AFFECTATION.DATEFIN 
                             FROM DECLARATIONTP,AFFECTATION 
                             WHERE AFFECTATION.AFFECTATIONID = '" . $fonctions->my_real_escape_utf8($affectationid) . "' 
                               AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID
@@ -518,24 +518,54 @@
                     {
                         $result = mysqli_fetch_row($query_decla);
                         $declarationTPid = "$result[0]";
-                        $tabtp = "$result[1]";
+                        $tabTP = "$result[1]";
                         // Si le tableau du TP ne contient que des 0 => C'est bien une déclaration de TP pour un temps complet
-                        if ($tabtp = str_repeat("0", 20))
+                        if ($tabTP == str_repeat("0", 20))
                         {
                             // On peut donc réactiver la declaration de TP
                             echo "On a une seule declaration de TP (sans temps partiel) pour une affectation à 100% active.\n";
                             echo "On reactive/ajuste la ligne de declarationTP ($declarationTPid) de l'affectation " . $fonctions->my_real_escape_utf8($affectationid) ." \n";
                             $declarationTP = new declarationTP($dbcon);
                             $declarationTP->load($declarationTPid);
-                            $declarationTP->datedebut($fonctions->formatdate($result[2]));
-                            $declarationTP->datefin($fonctions->formatdate($result[3]));
+                            $declarationTP->datedebut($fonctions->formatdate($result[3]));
+                            $declarationTP->datefin($fonctions->formatdate($result[4]));
                             $declarationTP->statut('v');
                             $erreur = $declarationTP->store();
                             if ($erreur != "")
-                                echo "Erreur dans la déclarationTP->store (réactivation de la declarationTP) : " . $erreur . "\n";
-                                
+                                echo "Erreur dans la declarationTP->store (reactivation de la declarationTP) : " . $erreur . "\n";
                         }
-                    }       
+                    }
+                    elseif (mysqli_num_rows($query_decla) > 1) 
+                    {
+                        $declaTPactive = false;
+                        while ($result = mysqli_fetch_row($query_decla)) 
+                        {
+                            $declarationTPid = "$result[0]";
+                            $tabTP = "$result[1]";
+                            $statut = "$result[2]";
+                            $datedebut = "$result[3]";
+                            $datefin = "$result[4]";
+                            if ($statut <> 'r')
+                            {
+                                $declaTPactive = true;
+                            }
+                        }
+                        // Si toutes les declarations de TP sont désactivées => On en recrée une avec les bonnes valeurs
+                        if ($declaTPactive == false)
+                        {
+                            echo "On a plusieurs declarations de TP pour une affectation a 100% active et elles sont toutes desactivees.\n";
+                            echo "On cree une nouvelle ligne de declarationTP pour l'affectation " . $fonctions->my_real_escape_utf8($affectationid) ." \n";
+                            $declarationTP = new declarationTP($dbcon);
+                            $declarationTP->affectationid($affectationid);
+                            $declarationTP->tabtpspartiel(str_repeat("0", 20));
+                            $declarationTP->datedebut($fonctions->formatdate($datedebut));
+                            $declarationTP->datefin($fonctions->formatdate($datefin));
+                            $declarationTP->statut('v');
+                            $erreur = $declarationTP->store();
+                            if ($erreur != "")
+                                echo "Erreur dans la declarationTP->store (declarationTP manquante 100%) : " . $erreur . "\n";
+                        }
+                    }
                 }   
             }
         }
