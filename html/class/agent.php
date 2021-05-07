@@ -522,21 +522,32 @@ AND DEMANDE.STATUT='v'";
         $boundary = "-----=" . md5(uniqid(rand()));
         $header = "Reply-to: " . $this->adressemail . "\r\n";
         // $header .= "From: " . $this->adressemail . "\r\n";
-        $header .= "From: " . $this->prenom() . " " . $this->nom() . "<" . $this->adressemail . ">\r\n";
+        $preferences = array("input-charset" => "UTF-8", "output-charset" => "UTF-8");
+        
+        //$iconv = mb_strtoupper($this->fonctions->stripAccents("HÉLÈNE OU ÉLODIE"), 'ASCII');
+        $iconv = mb_strtoupper($this->fonctions->stripAccents($this->prenom() . " " . $this->nom()), 'ASCII');
+        $header .= "From: " . $iconv . " <" . $this->adressemail . ">\r\n";
+        
+        //$header .= "From: " . $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">\r\n";
+
+        $encoded_subject = iconv_mime_encode("G2T", $objet, $preferences);
+        $encoded_subject = str_replace("G2T: ", "", "$encoded_subject");
+        //$header .= $encoded_subject . "\r\n";
+        
         $header .= "MIME-Version: 1.0\r\n";
         $header .= "Content-Type: multipart/mixed; charset=\"utf-8\"; boundary=\"$boundary\"\r\n";
         $header .= "\r\n";
         // --------------------------------------------------
         // Construction du message proprement dit
         // --------------------------------------------------
+        $msg= '';
         
         //$msg = "Subject: " . mb_convert_encoding($objet,'HTML') . "\r\n";
         //$msg = "Subject: " . nl2br(htmlentities("$objet", ENT_QUOTES, "UTF-8", false)) . "\r\n";
         //$msg = "Subject: " . $objet . "\r\n";
         
-        $preferences = array("input-charset" => "UTF-8", "output-charset" => "UTF-8");
-        $encoded_subject = iconv_mime_encode("Subject", $objet, $preferences);
-        $msg = $encoded_subject. "\r\n";
+        
+        //$msg = $encoded_subject. "\r\n";
         
         // ---------------------------------
         // 1ère partie du message
@@ -623,10 +634,11 @@ AND DEMANDE.STATUT='v'";
         $msg .= "--$boundary--\r\n\r\n";
         
         // ini_set(sendmail_from,$this->adressemail);
-        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . "<" . $this->adressemail . ">");
+        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
         ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
         // $objet .=" G2T";
-        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
+        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
+//        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
         // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
         ini_restore('sendmail_from');
     }
