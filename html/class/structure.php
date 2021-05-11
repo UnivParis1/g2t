@@ -707,7 +707,7 @@ class structure
         // $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
         // // --- Fin masquage des infos sur le CET
         $htmltext = $htmltext . "<tr><td class='titresimple' colspan=3 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
-        $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td></tr>";
+        $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td></tr>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
         // Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre

@@ -95,7 +95,7 @@
             } else {
                 $agent = new agent($dbcon);
                 $agent->load($harpegeid);
-                $msgerreur = $msgerreur . "Le nombre de jour 'enfant malade' saisi n'est pas correct pour l'agent " . $agent->identitecomplete() . " <br>";
+                $msgerreur = $msgerreur . "Le nombre de jour 'Garde d'enfant' saisi n'est pas correct pour l'agent " . $agent->identitecomplete() . " <br>";
                 unset($agent);
             }
         }
