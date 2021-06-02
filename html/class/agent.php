@@ -514,133 +514,145 @@ AND DEMANDE.STATUT='v'";
      *            the name of the document to join to the mail
      * @return
      */
-    function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null, $ics = null)
+    function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null, $ics = null, $checkgrouper = false)
     {
-        // ----------------------------------
-        // Construction de l'entête
-        // ----------------------------------
-        $boundary = "-----=" . md5(uniqid(rand()));
-        $header = "Reply-to: " . $this->adressemail . "\r\n";
-        // $header .= "From: " . $this->adressemail . "\r\n";
-        $preferences = array("input-charset" => "UTF-8", "output-charset" => "UTF-8");
-        
-        //$iconv = mb_strtoupper($this->fonctions->stripAccents("HÉLÈNE OU ÉLODIE"), 'ASCII');
-        $iconv = mb_strtoupper($this->fonctions->stripAccents($this->prenom() . " " . $this->nom()), 'ASCII');
-        $header .= "From: " . $iconv . " <" . $this->adressemail . ">\r\n";
-        
-        //$header .= "From: " . $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">\r\n";
+    	if ($checkgrouper && !$destinataire->isG2tUser())
+    	{
+    		// le destinataire ne fait pas partie des utilisateurs G2T
+    		$errorlog = "sendmail annulé car expéditeur absent des utilisateurs G2T (".$destinataire->identitecomplete().") \n";
+    		$errorlog .= "objet du mail : ".$objet."\n";
+    		$errorlog .= "contenu du mail : ".$message."\n";
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	}
+    	else
+    	{
+	        // ----------------------------------
+	        // Construction de l'entête
+	        // ----------------------------------
+	        $boundary = "-----=" . md5(uniqid(rand()));
+	        $header = "Reply-to: " . $this->adressemail . "\r\n";
+	        // $header .= "From: " . $this->adressemail . "\r\n";
+	        $preferences = array("input-charset" => "UTF-8", "output-charset" => "UTF-8");
+	        
+	        //$iconv = mb_strtoupper($this->fonctions->stripAccents("HÉLÈNE OU ÉLODIE"), 'ASCII');
+	        $iconv = mb_strtoupper($this->fonctions->stripAccents($this->prenom() . " " . $this->nom()), 'ASCII');
+	        $header .= "From: " . $iconv . " <" . $this->adressemail . ">\r\n";
+	        
+	        //$header .= "From: " . $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">\r\n";
+	
+	        $encoded_subject = iconv_mime_encode("G2T", $objet, $preferences);
+	        $encoded_subject = str_replace("G2T: ", "", "$encoded_subject");
+	        //$header .= $encoded_subject . "\r\n";
+	        
+	        $header .= "MIME-Version: 1.0\r\n";
+	        $header .= "Content-Type: multipart/mixed; charset=\"utf-8\"; boundary=\"$boundary\"\r\n";
+	        $header .= "\r\n";
+	        // --------------------------------------------------
+	        // Construction du message proprement dit
+	        // --------------------------------------------------
+	        $msg= '';
+	        
+	        //$msg = "Subject: " . mb_convert_encoding($objet,'HTML') . "\r\n";
+	        //$msg = "Subject: " . nl2br(htmlentities("$objet", ENT_QUOTES, "UTF-8", false)) . "\r\n";
+	        //$msg = "Subject: " . $objet . "\r\n";
+	        
+	        
+	        //$msg = $encoded_subject. "\r\n";
+	        
+	        // ---------------------------------
+	        // 1ère partie du message
+	        // Le texte
+	        // ---------------------------------
+	        
+	        $msg .= "--$boundary\r\n";
+	        $msg .= "Content-Type: text/html; charset=\"utf-8\"\r\n";
+	        // $msg .= "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n";
+	        $msg .= "Content-Transfer-Encoding:8bit\r\n";
+	        $msg .= "\r\n";
+	        $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+	        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . "  " . $this->nom),'UTF-8') . "\r\n";
+	        
+	        // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
+	        $msg .= "\r\n";
+	        
+	        if (! is_null($ics)) {
+	            // Si le fichier ics existe ==> On met à jour le calendrier de l'agent
+	            $errormsg = $destinataire->updatecalendar($ics);
+	            // Si tout c'est bien passé, pas la peine de joindre l'ICS....
+	            // echo "Error Msg = XXX" .$errormsg . "XXX<br>";
+	            
+	            // if ($errormsg <> "")
+	            // {
+	            $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>";
+	            $msg .= "\r\n";
+	            $msg .= "--$boundary\r\n";
+	            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
+	            $msg .= "Content-Transfer-Encoding: 8bit\n\n";
+	            $msg .= preg_replace("#UID:(.*)#", "UID:EXTERNAL-$1", $ics);
+	            $msg .= "\r\n\r\n";
+	            // }
+	        }
+	        $msg .= "\r\n";
+	        
+	        if (! is_null($piecejointe)) {
+	            if (is_string($piecejointe)) {
+	                // ---------------------------------
+	                // 2nde partie du message
+	                // Le fichier (inline)
+	                // ---------------------------------
+	                $file = "$piecejointe";
+	                $basename = basename($file);
+	                // echo "basename = " . $basename . "<br>";
+	                $fp = fopen($file, "rb");
+	                $attachment = fread($fp, filesize($file));
+	                fclose($fp);
+	                $attachment = chunk_split(base64_encode($attachment));
+	                
+	                $msg .= "--$boundary\r\n";
+	                // $msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
+	                $msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
+	                $msg .= "Content-Transfer-Encoding: base64\r\n";
+	                // $msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
+	                $msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
+	                $msg .= "\r\n";
+	                $msg .= $attachment . "\r\n";
+	                $msg .= "\r\n\r\n";
+	            } else // C'est un tableau
+	            {
+	                foreach ($piecejointe as $file) {
+	                    // $file = "$piecejointe";
+	                    $basename = basename($file);
+	                    // echo "basename = " . $basename . "<br>";
+	                    // echo "File = $file <br>";
+	                    $fp = fopen($file, "rb");
+	                    $attachment = fread($fp, filesize($file));
+	                    fclose($fp);
+	                    $attachment = chunk_split(base64_encode($attachment));
+	                    
+	                    $msg .= "--$boundary\r\n";
+	                    // $msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
+	                    $msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
+	                    $msg .= "Content-Transfer-Encoding: base64\r\n";
+	                    // $msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
+	                    $msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
+	                    $msg .= "\r\n";
+	                    $msg .= $attachment . "\r\n";
+	                    $msg .= "\r\n\r\n";
+	                }
+	            }
+	        }
+	        $msg .= "--$boundary--\r\n\r\n";
+	        
+	        // ini_set(sendmail_from,$this->adressemail);
+	        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
+	        ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
+	        // $objet .=" G2T";
+	        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
+	//        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
+	        // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
+	        ini_restore('sendmail_from');
+	    }
 
-        $encoded_subject = iconv_mime_encode("G2T", $objet, $preferences);
-        $encoded_subject = str_replace("G2T: ", "", "$encoded_subject");
-        //$header .= $encoded_subject . "\r\n";
-        
-        $header .= "MIME-Version: 1.0\r\n";
-        $header .= "Content-Type: multipart/mixed; charset=\"utf-8\"; boundary=\"$boundary\"\r\n";
-        $header .= "\r\n";
-        // --------------------------------------------------
-        // Construction du message proprement dit
-        // --------------------------------------------------
-        $msg= '';
-        
-        //$msg = "Subject: " . mb_convert_encoding($objet,'HTML') . "\r\n";
-        //$msg = "Subject: " . nl2br(htmlentities("$objet", ENT_QUOTES, "UTF-8", false)) . "\r\n";
-        //$msg = "Subject: " . $objet . "\r\n";
-        
-        
-        //$msg = $encoded_subject. "\r\n";
-        
-        // ---------------------------------
-        // 1ère partie du message
-        // Le texte
-        // ---------------------------------
-        
-        $msg .= "--$boundary\r\n";
-        $msg .= "Content-Type: text/html; charset=\"utf-8\"\r\n";
-        // $msg .= "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n";
-        $msg .= "Content-Transfer-Encoding:8bit\r\n";
-        $msg .= "\r\n";
-        $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
-        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . "  " . $this->nom),'UTF-8') . "\r\n";
-        
-        // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
-        $msg .= "\r\n";
-        
-        if (! is_null($ics)) {
-            // Si le fichier ics existe ==> On met à jour le calendrier de l'agent
-            $errormsg = $destinataire->updatecalendar($ics);
-            // Si tout c'est bien passé, pas la peine de joindre l'ICS....
-            // echo "Error Msg = XXX" .$errormsg . "XXX<br>";
-            
-            // if ($errormsg <> "")
-            // {
-            $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>";
-            $msg .= "\r\n";
-            $msg .= "--$boundary\r\n";
-            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
-            $msg .= "Content-Transfer-Encoding: 8bit\n\n";
-            $msg .= preg_replace("#UID:(.*)#", "UID:EXTERNAL-$1", $ics);
-            $msg .= "\r\n\r\n";
-            // }
-        }
-        $msg .= "\r\n";
-        
-        if (! is_null($piecejointe)) {
-            if (is_string($piecejointe)) {
-                // ---------------------------------
-                // 2nde partie du message
-                // Le fichier (inline)
-                // ---------------------------------
-                $file = "$piecejointe";
-                $basename = basename($file);
-                // echo "basename = " . $basename . "<br>";
-                $fp = fopen($file, "rb");
-                $attachment = fread($fp, filesize($file));
-                fclose($fp);
-                $attachment = chunk_split(base64_encode($attachment));
-                
-                $msg .= "--$boundary\r\n";
-                // $msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
-                $msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
-                $msg .= "Content-Transfer-Encoding: base64\r\n";
-                // $msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
-                $msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
-                $msg .= "\r\n";
-                $msg .= $attachment . "\r\n";
-                $msg .= "\r\n\r\n";
-            } else // C'est un tableau
-            {
-                foreach ($piecejointe as $file) {
-                    // $file = "$piecejointe";
-                    $basename = basename($file);
-                    // echo "basename = " . $basename . "<br>";
-                    // echo "File = $file <br>";
-                    $fp = fopen($file, "rb");
-                    $attachment = fread($fp, filesize($file));
-                    fclose($fp);
-                    $attachment = chunk_split(base64_encode($attachment));
-                    
-                    $msg .= "--$boundary\r\n";
-                    // $msg .= "Content-Type: application/pdf; name=\"$file\"\r\n";
-                    $msg .= "Content-Type: application/pdf; name=\"$basename\"\r\n";
-                    $msg .= "Content-Transfer-Encoding: base64\r\n";
-                    // $msg .= "Content-Disposition: attachment; filename=\"$file\"\r\n";
-                    $msg .= "Content-Disposition: attachment; filename=\"$basename\"\r\n";
-                    $msg .= "\r\n";
-                    $msg .= $attachment . "\r\n";
-                    $msg .= "\r\n\r\n";
-                }
-            }
-        }
-        $msg .= "--$boundary--\r\n\r\n";
-        
-        // ini_set(sendmail_from,$this->adressemail);
-        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
-        ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
-        // $objet .=" G2T";
-        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
-//        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
-        // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
-        ini_restore('sendmail_from');
     }
 
     /**
@@ -2100,6 +2112,51 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             }
         }
         return $demandeliste;
+    }
+    
+    function isG2tUser()
+    {
+    	// On verifie que la personne est dans le groupe G2T du LDAP
+    	$LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+    	$LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+    	$LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+    	$LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
+    	$LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
+    	$LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
+    	$LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
+    	$retour = FALSE;
+    	// Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
+    	if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
+    		$con_ldap = ldap_connect($LDAP_SERVER);
+    		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+    		$r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+    		$filtre = "(".$LDAP_CODE_AGENT_ATTR."=".$this->harpegeid().")";
+    		$dn = $LDAP_SEARCH_BASE;
+    		$restriction = array(
+    				"$LDAP_MEMBER_ATTR"
+    		);
+    		$sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+    		$info = ldap_get_entries($con_ldap, $sr);
+    		
+    		if (!$r || !$rs || !$info) // La connexion, l'interrogation ou la lecture des résultat LDAP a échoué
+    			$retour = TRUE;
+    		// Si l'utilisateur est au moins dans un groupe
+    		if (isset($info[0][$restriction[0]])) {
+    			if (in_array("$LDAP_GROUP_NAME", $info[0][$restriction[0]])) {
+    				// L'utilisateur est dans le groupe recherché, on peut continuer
+    				// echo "Yes !! Il est dedans !!! <br>";
+    				$retour = TRUE;
+    			} else {
+    				$errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") !!!";
+    				error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    			}
+    		}    // Pas de groupe pour cet utilisateur
+    		else {
+    			$errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") ne fait parti d'aucun groupe LDAP....";
+    			error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    		}
+    	}
+    	return $retour;
     }
 }
 
