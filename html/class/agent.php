@@ -2130,28 +2130,24 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		$con_ldap = ldap_connect($LDAP_SERVER);
     		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
     		$r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-    		$filtre = "(".$LDAP_CODE_AGENT_ATTR."=".$this->harpegeid().")";
+    		$filtre = "(&(".$LDAP_CODE_AGENT_ATTR."=".$this->harpegeid().")(".$LDAP_MEMBER_ATTR."=".$LDAP_GROUP_NAME."))";
     		$dn = $LDAP_SEARCH_BASE;
+    		// 1.1 => ldap ne demande aucun attribut
     		$restriction = array(
-    				"$LDAP_MEMBER_ATTR"
+    				"1.1"
     		);
     		$sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
     		$info = ldap_get_entries($con_ldap, $sr);
     		
-    		if (!$r || !$rs || !$info) // La connexion, l'interrogation ou la lecture des résultat LDAP a échoué
+    		if (!$r || !$sr || !$info) // La connexion, l'interrogation ou la lecture des résultat LDAP a échoué
     			$retour = TRUE;
-    		// Si l'utilisateur est au moins dans un groupe
-    		if (isset($info[0][$restriction[0]])) {
-    			if (in_array("$LDAP_GROUP_NAME", $info[0][$restriction[0]])) {
-    				// L'utilisateur est dans le groupe recherché, on peut continuer
-    				// echo "Yes !! Il est dedans !!! <br>";
-    				$retour = TRUE;
-    			} else {
-    				$errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") !!!";
-    				error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    			}
-    		}    // Pas de groupe pour cet utilisateur
-    		else {
+    		// Si l'utilisateur est dans le groupe 
+    		if (isset($info["count"]) && $info["count"] > 0) 
+    		{
+    			$retour = TRUE;
+    		}
+    		else
+    		{
     			$errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") ne fait parti d'aucun groupe LDAP....";
     			error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     		}
