@@ -105,7 +105,7 @@
                             $corpsdumail=$corpsdumail . "Dans la cas contraire, votre reliquat sera définitivement perdu.\n";
                             $corpsdumail=$corpsdumail . "\n";
 
-                            $agentcron->sendmail($agent, "Alerte : Rappel sur l'utilisation des reliquats", $corpsdumail, null);
+                            $agentcron->sendmail($agent, "Alerte : Rappel sur l'utilisation des reliquats", $corpsdumail, null, null, true);
                         }
                     }
 

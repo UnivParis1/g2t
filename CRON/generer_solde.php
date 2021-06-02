@@ -84,7 +84,7 @@
                 //$pdf->Output($filename, 'F'); // F = file
                 $fonctions->savepdf($pdf, $filename);
                 $gest = $struct->gestionnaire();
-                $cronmail->sendmail($gest, 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(), "Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du " . date("d/m/Y") . ".\n", $filename);
+                $cronmail->sendmail($gest, 'Récapitulatif des congés pour la structure ' . $struct->nomcourt(), "Veuillez trouver ci-joint le récapitulatif des congés pour la structure " . $struct->nomcourt() . " à la date du " . date("d/m/Y") . ".\n", $filename, null, true);
             }
         }
     }
