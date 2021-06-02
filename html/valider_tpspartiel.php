@@ -128,6 +128,18 @@
         echo "Remarque : Les personnes affectées à temps plein ne sont pas affichées dans cet écran.<br><br>";
         foreach ($structlist as $keystruct => $structure) {
             $agentlist = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+            if (strcasecmp($mode, "resp") == 0) // Si on est en mode responsable, on charge aussi les responsables des sous structures
+            {  
+                $sousstructliste = $structure->structurefille();
+                foreach((array) $sousstructliste as $sousstruct)
+                {
+                    $respsousstruct = $sousstruct->responsable();
+                    if ($respsousstruct->harpegeid() != "" and $respsousstruct->harpegeid() > "0")
+                    {
+                        $agentlist[$respsousstruct->nom() . " " . $respsousstruct->prenom() . " " . $respsousstruct->harpegeid()] = $respsousstruct;
+                    }
+                }
+            }
             if (! is_array($agentlist)) {
                 continue;
             }
@@ -160,6 +172,7 @@
             echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
             echo "<input type='hidden' name='mode' value='" . $mode . "' />";
             echo "</form>";
+            echo "<br>";
         }
     }
 
