@@ -20,7 +20,7 @@ class alimentationCET
     private $valeur_g = null;
     private $statut = null;
     private $datestatut = null;
-    
+    private $motif = null;
     
     
     function __construct($db)
@@ -93,7 +93,10 @@ class alimentationCET
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             else
+            {
                 $this->esignatureid = $esignatureid;
+                //echo "esignatureid = " . $this->esignatureid . "<br>";;
+            }
         }
     }
     
@@ -116,7 +119,10 @@ class alimentationCET
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             else
+            {
                 $this->esignatureurl = $esignatureurl;
+                //echo "esignatureurl = " . $this->esignatureurl . "<br>";;
+            }
         }
     }
      
@@ -324,6 +330,22 @@ class alimentationCET
         }
     }
     
+    function motif($motif = null)
+    {
+        if (is_null($motif)) {
+            if (is_null($this->motif)) {
+                $errlog = "alimentationCET->motif : La valeur du motif n'est pas défini !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } else
+                return $this->motif;
+        }
+        else
+        {
+            $this->motif = $motif;
+        }
+    }
+    
     function datestatut()
     {
         return $this->datestatut;
@@ -333,10 +355,10 @@ class alimentationCET
     function load($esignatureid = null, $alimentationid = null, $agentid = null )
     {
         $errlog = '';
-        $sql = "SELECT ALIMENTATIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT FROM ALIMENTATIONCET WHERE ";
+        $sql = "SELECT ALIMENTATIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF FROM ALIMENTATIONCET WHERE ";
         if (!is_null($esignatureid))
         {
-            $sql = $sql . "ESIGNATUREID = '$esignatureid'";
+            $sql = $sql . "ESIGNATUREID = '" . str_replace("'","''",$esignatureid) . "'";
         }
         elseif (!is_null($alimentationid))
         {
@@ -349,7 +371,6 @@ class alimentationCET
         else
         {
             $errlog = "alimentationCET->Load : Tous les paramètres sont vides !!!";
-            echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog;
         }
@@ -359,7 +380,6 @@ class alimentationCET
         if ($erreur != "")
         {
             $errlog = "alimentationCET->Load : " . $erreur;
-            echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog;
         }
@@ -388,6 +408,7 @@ class alimentationCET
         $this->valeur_g         = "$result[12]";
         $this->statut           = "$result[13]";
         $this->datestatut       = "$result[14]";
+        $this->motif            = "$result[15]";
         
         return $errlog;
     }
@@ -419,18 +440,15 @@ class alimentationCET
 
             $this->datecreation = $this->fonctions->formatdatedb(date("d/m/Y"));
             $this->datestatut  = $this->datecreation;
-            $this->statut = "ENC";
-            $this->esignatureid = '';
-            $this->esignatureurl = '';
             $sql = "LOCK TABLES ALIMENTATIONCET WRITE";
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO ALIMENTATIONCET(HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT) 
+            $sql = "INSERT INTO ALIMENTATIONCET(HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF) 
                     VALUES('". $this->harpegeid . "',
                            now(),
-                           '" . $this->esignatureid . "',
-                           '" . $this->esignatureurl . "',
+                           '" . str_replace("'","''",$this->esignatureid) . "',
+                           '" . str_replace("'","''",$this->esignatureurl) . "',
                            '" . $this->typeconges . "',
                            '" . $this->valeur_a . "',
                            '" . $this->valeur_b . "',
@@ -439,14 +457,14 @@ class alimentationCET
                            '" . $this->valeur_e . "',
                            '" . $this->valeur_f . "',
                            '" . $this->valeur_g . "',
-                           '" . $this->statut . "',
-                           '" . $this->datestatut . "')";
+                           '" . str_replace("'","''",$this->statut) . "',
+                           '" . $this->datestatut . "',
+                           '" . str_replace("'","''",$this->motif) . "')";
             //echo "SQL = " . $sql . "<br>";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "alimentationCET->Store (INSERT) : " . $erreur;
-                echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             $this->alimentationid = mysqli_insert_id($this->dbconnect);
@@ -462,17 +480,17 @@ class alimentationCET
         {
             //echo "alimentationCET->Store : Mise à jour d'une nouvelle alimentation <br>";
             $sql = "UPDATE ALIMENTATIONCET 
-                    SET ESIGNATUREID = '" . $this->esignatureid . "',
-                        ESIGNATUREURL = '" . $this->esignatureurl . "',
-                        STATUT = '" . $this->statut . "',
-                        DATESTATUT = '" . $this->datestatut . "'
+                    SET ESIGNATUREID = '" . str_replace("'","''",$this->esignatureid) . "',
+                        ESIGNATUREURL = '" . str_replace("'","''",$this->esignatureurl) . "',
+                        STATUT = '" . str_replace("'","''",$this->statut) . "',
+                        DATESTATUT = '" . $this->datestatut . "',
+                        MOTIF = '" . str_replace("'", "''", $this->motif) . "'
                     WHERE ALIMENTATIONID = '" . $this->alimentationid . "'";
             //echo "SQL alimentationCET->Store : $sql <br>";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "alimentationCET->Store (UPDATE) : " . $erreur;
-                echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
         }
