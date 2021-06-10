@@ -163,15 +163,20 @@
                         $affectation = new affectation($dbcon);
                         $affectation = current($affectationliste);
                         $affectation->quotite();
+                        $infosLdap = $agent->getInfoDocCet();
+                        $nameStructComplete = $structure->nomcompletcet();
                         $agent = array('uid' => $agent->harpegeid(),
                             'email' => $agent->mail(),
                             'name' => $agent->nom(),
                             'firstname' => $agent->prenom(),
-                            'service' => array('name' => $structure->nomlong(),
-                            'id' => $structure->id()),
+                            'service' => array('name' => $nameStructComplete,
+                                               'id' => $structure->id(),
+                                               'addr' => $infosLdap['postaladdress'],
+                                               'type' => $structure->typestruct()),
                             'ref_year' => $anneeref,
-                            'activity' => $affectation->quotite()
-                            );
+                            'activity' => $affectation->quotite() == '100%' ? 'Temps complet' : $affectation->quotite(),
+                            'corps' => $agent->typepopulation()
+                        );
                         $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_B, $information_C, $information_D, $information_E, $information_F, $information_G));
                     }
                     else

@@ -400,6 +400,7 @@
         $affectation = current($affectationliste);
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
+        echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
     }
 
     $solde = new solde($dbcon);
