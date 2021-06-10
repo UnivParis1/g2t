@@ -64,7 +64,7 @@
 
 <br>
 <form name='subst_agent' method='post' action='index.php'>
-	<input id="user" name="user" placeholder="Nom et/ou prenom" /> <input
+	<input id="user" name="user" placeholder="Nom et/ou prenom" autofocus/> <input
 		type='hidden' id="userid" name="userid" class='user' />
 
 	<script>
