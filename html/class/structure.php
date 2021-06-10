@@ -32,6 +32,8 @@ class structure
     private $delegueid = null;
 
     private $fonctions = null;
+    
+    private $typestruct = null;
 
     function __construct($db)
     {
@@ -47,7 +49,7 @@ class structure
     function load($structureid)
     {
         if (is_null($this->structureid)) {
-            $sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
+            $sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT, TYPESTRUCT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -77,6 +79,7 @@ class structure
             $this->afficherespsousstruct = "$result[9]";
             $this->respvalidsousstruct = "$result[10]";
             $this->gestvalidagent = "$result[11]";
+            $this->typestruct = "$result[12]";
             
             // Prise en compte du cas de la délégation
             $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
@@ -126,6 +129,11 @@ class structure
                 return $this->nomcourt;
         } else
             $this->nomcourt = $name;
+    }
+    
+    function typestruct()
+    {
+    	return $this->typestruct;
     }
 
     function affichetoutagent($affiche = null)

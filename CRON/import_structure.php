@@ -209,10 +209,10 @@
                     if (mysqli_num_rows($query) == 0) // Structure manquante
                     {
                         echo "Création d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
-                        $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE) VALUES('%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture));
+                        $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE,TYPESTRUCT) VALUES('%s','%s','%s','%s','%s','%s', '%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct));
                     } else {
                         echo "Mise à jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
-                        $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($code_struct));
+                        $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s', TYPESTRUCT='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $fonctions->my_real_escape_utf8($code_struct));
                         // echo $sql."\n";
                     }
                     mysqli_query($dbcon, $sql);
@@ -273,7 +273,8 @@
     								            AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
     								            DEST_MAIL_RESPONSABLE = '$result[8]', 
     								            DEST_MAIL_AGENT = '$result[9]', 
-    								            AFFICHERESPSOUSSTRUCT = '$result[11]' 
+    								            AFFICHERESPSOUSSTRUCT = '$result[11]' ,
+												TYPESTRUCT = '$type_struct'
     								        WHERE STRUCTUREID = '$code_struct'";
                                 if (substr($code_struct, 0, 3) == 'DGH') {
                                     // echo "SQL complement new struct = $sql \n";
