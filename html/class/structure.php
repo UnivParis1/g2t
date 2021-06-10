@@ -133,14 +133,14 @@ class structure
     
     function nomcompletcet()
     {
-    	$type_struct = $this->typestruct();
     	$type_struct_final = array('UO', 'DIR');
     	$nameStructComplete = $this->nomcourt();
     	$struct_tmp = $this;
-    	while (! in_array($struct_tmp->typestruct(), $type_struct_final))
+    	while (! is_null($struct_tmp) && ! in_array($struct_tmp->typestruct(), $type_struct_final))
     	{
     		$struct_tmp = $struct_tmp->parentstructure();
-    		$nameStructComplete =  $struct_tmp->nomcourt().' / '.$nameStructComplete;
+    		if (! is_null($struct_tmp))
+    			$nameStructComplete =  $struct_tmp->nomcourt().' / '.$nameStructComplete;
     	}
     	return $nameStructComplete;
     }
