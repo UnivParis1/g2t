@@ -1,5 +1,10 @@
 #!/bin/bash
-cd /var/www/g2t/CRON
+chemin=`dirname $0`
+cd $chemin
+chemin=`pwd`
+
+#cd /var/www/g2t/CRON
+
 mydate=`date +%Y-%m-%d`
 echo `date` debut traitement >>./log/trace_cron_$mydate.log
 
