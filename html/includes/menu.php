@@ -352,7 +352,7 @@
 						</form>
 						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
 					</li>
-<!-- 
+<!--  
 					<li onclick='document.alim_cet.submit();'>
 						<form name='alim_cet' method='post' action="alimentation.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
@@ -568,6 +568,14 @@
 							<input type="hidden" name="previous" value="yes">
 						</form> 
 						<a href="javascript:document.gest_valid_conge_prev.submit();">Demandes en attente (Année N-1)</a>
+					</li>
+					<li onclick='document.gest_gest_conge.submit();'>
+						<form name='gest_gest_conge' method='post' action="gestion_demande.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="gestionnaireid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="previous" value="no">
+						</form> 
+						<a href="javascript:document.gest_gest_conge.submit();">Annulation de congé ou d'absence</a>
 					</li>
 					<li onclick='document.gest_aff_solde.submit();'>
 						<form name='gest_aff_solde' method='post' action="affiche_solde.php">

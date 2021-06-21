@@ -115,7 +115,18 @@
             $mode='resp';
         }
     }
-
+    if (isset($_POST["gestionnaireid"])) {
+        // echo "gestionnaireid = " . $gestionnaireid . "<br>";
+        $responsableid = $_POST["gestionnaireid"];
+        if (! is_null($responsableid) and $responsableid != "") {
+            // echo "Je load le responsable...<br>";
+            $responsable = new agent($dbcon);
+            $responsable->load($responsableid);
+            $noresponsableset = FALSE;
+            $mode='gest';
+        }
+    }
+    
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
     else
@@ -129,7 +140,7 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml"><br>';
 
-    // echo "POST = "; print_r($_POST); echo "<br>";
+    //echo "POST = "; print_r($_POST); echo "<br>";
 
     $cancelarray = array();
     if (isset($_POST["cancel"]))
@@ -222,28 +233,42 @@
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
     } elseif ($noagentset) {
 
-        if ($mode == 'resp')
+        if ($mode == 'resp' or $mode == 'gest')
         {
             // => On est en mode "responsable" mais aucun agent n'est sélectionné
             // echo "Avant le chargement structure responsable <br>";
-            $structureliste = $responsable->structrespliste();
-            // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-            $agentlistefull = array();
-            foreach ($structureliste as $structure) {
-                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-                // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                // echo "fin du select <br>";
-                $structfille = $structure->structurefille();
-                if (! is_null($structfille)) {
-                    foreach ($structfille as $fille) {
-                        if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                            $agentliste = null;
-                            $respfille = $fille->responsable();
-                            $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
-                            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+            if ($mode == 'resp')
+            {
+                $structureliste = $responsable->structrespliste();
+                // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+                $agentlistefull = array();
+                foreach ($structureliste as $structure) {
+                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+                    // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                    // echo "fin du select <br>";
+                    $structfille = $structure->structurefille();
+                    if (! is_null($structfille)) {
+                        foreach ($structfille as $fille) {
+                            if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
+                                $agentliste = null;
+                                $respfille = $fille->responsable();
+                                $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
+                                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                            }
                         }
                     }
+                }
+            }
+            else // $mode == gest
+            {
+                $structureliste = $responsable->structgestliste();
+                $agentlistefull = array();
+                foreach ($structureliste as $structure) 
+                {
+                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"),'n');
+                    // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
                 }
             }
             ksort($agentlistefull);
@@ -279,7 +304,7 @@
 
 
         }
-    } elseif ($mode == 'resp') {
+    } elseif ($mode == 'resp' or $mode == 'gest') {
         // => On est en mode "reponsable" et un agent est sélectionné
         //echo "Avant le mode responsable <br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "resp", null);
@@ -305,7 +330,12 @@
     }
 
     if ($responsableid != "")
-        echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
+    {
+        if ($mode == 'resp')
+            echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
+        elseif ($mode == 'gest')
+            echo "<input type='hidden' name='gestionnaireid' value='" . $responsableid . "'>";
+    }
     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
