@@ -2,6 +2,14 @@
 class alimentationCET
 {
     
+    public const STATUT_VALIDE = "Validée";
+    public const STATUT_REFUSE = "Refusée";
+    public const STATUT_EN_COURS = "En cours";
+    public const STATUT_ABANDONNE = "Abandonnée";
+    public const STATUT_PREPARE = "Préparée";
+    public const STATUT_INCONNU = "Inconnu";
+    
+    
     private $dbconnect = null;
     private $fonctions = null;
     

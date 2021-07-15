@@ -160,9 +160,8 @@
     var_dump($_SERVER);
     echo "<br><br>";
 */
-    $id_model = "239797";
+    $id_model = "244978";
     $eSignature_url = "https://esignature-test.univ-paris1.fr";
-    echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
     
     $servername = $_SERVER['SERVER_NAME'];
     $serverport = $_SERVER['SERVER_PORT'];
@@ -175,9 +174,10 @@
     {
         $serverprotocol = "http";
     }
+    
     //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
     $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
-    echo "L'URL d'appel du WS G2T est : " . $g2t_ws_url . "/ws/alimentationWS.php";
+    $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
 ?>
     <script type="text/javascript">
           //window.addEventListener("load", function(event) {
@@ -186,10 +186,13 @@
    	</script>	
 
     
-<?php     
+<?php 
+/*
+    echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
+    echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
     echo "<br>" . print_r($_POST,true);
-    echo "<br><br><br>";
-    echo "<br><hr size=3 align=center><br>";
+    //echo "<br><br><br>";
+*/
     
     if (is_null($agentid))
     {
@@ -223,9 +226,9 @@
         }
         else
         {
-            // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
             if (!is_null($agentid))
             {
+                // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
                 $agent = new agent($dbcon);
                 $agent->load($agentid);
                 $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
@@ -250,12 +253,27 @@
                     $agent_eppn = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
                     //echo "Agent EPPN = $agent_eppn <br>";
                 }
+                
+                
+                // On récupère le mail de l'agent en cours
+                $LDAP_CODE_AGENT_ATTR = "mail";
+                $restriction = array(
+                    "$LDAP_CODE_AGENT_ATTR"
+                );
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                //echo "Info = " . print_r($info,true) . "<br>";
+                //echo "L'email de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+                    $agent_mail = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                    // echo "Agent eMail = $agent_mail <br>";
+                }
             }
             
             
             // On appelle le WS eSignature pour créer le document
             $curl = curl_init();
-            echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
+            //echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
             //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
     
             $params = array
@@ -263,9 +281,9 @@
                 'eppn' => "$agent_eppn",
                 'targetEmails' => array
                 (
-                    'pacomte@univ-paris1.fr',
-                    'pascal.comte@univ-paris1.fr'
-                )
+                    "$agent_mail"
+                ),
+                'targetUrl' => "$full_g2t_ws_url"
             );
             if ($responsable == 'resp_demo')
             {
@@ -296,7 +314,7 @@
             
             if (!is_null($drh_niveau))
             {
-                $params['recipientEmails'][] = '3*canica.sar@univ-paris1.fr';
+                $params['recipientEmails'][] = '3*' . $agent_mail;
             }
     /*        
             $params_string = http_build_query($params);
@@ -337,7 +355,7 @@
             };
             array_walk( $params, $walk );
             $params_string = implode( '&', $output );
-            echo "<br>Output = " . $params_string . '<br><br>';
+            //echo "<br>Output = " . $params_string . '<br><br>';
             
             $opts = [
                 CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
@@ -347,6 +365,7 @@
                 CURLOPT_SSL_VERIFYPEER => false
             ];
             curl_setopt_array($curl, $opts);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
             $json = curl_exec($curl);
             $error = curl_error ($curl);
             curl_close($curl);
@@ -366,10 +385,10 @@
                 }
                 else
                 {
-                    echo "Id de la nouvelle demande = " . $id . "<br>";
+                    //echo "Id de la nouvelle demande = " . $id . "<br>";
                     $alimentationCET->esignatureid($id);
                     $alimentationCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                    $alimentationCET->statut("En préparation");
+                    $alimentationCET->statut($alimentationCET::STATUT_PREPARE);
                     
                     $erreur = $alimentationCET->store();
                 }
@@ -380,7 +399,8 @@
                 else
                 {
                     //var_dump($alimentationCET);
-                    echo "La sauvegarde (création) s'est bien passée...<br><br>";
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
                 }
             }
             else
@@ -388,6 +408,89 @@
                 echo "Oups, la création de la demande dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
             }
         }
+    }
+    
+    if (!is_null($esignature_info))
+    {
+        // On appelle le WS G2T en GET pour demander à G2T de mettre à jour la demande
+        $alimentationCET = new alimentationCET($dbcon);
+        $erreur = $alimentationCET->load($esignatureid_get_info);
+        if ($erreur != "")
+        {
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid_get_info . " => Erreur = " . $erreur));
+            echo "Erreur lors du chargement de la demande $esignatureid_get_info avant la synchronisation.<br>";
+        }
+        echo "<br><br>Le statut de la demande avant la synchronisation est : " . $alimentationCET->statut() . "<br>";
+        
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => $full_g2t_ws_url . "?signRequestId=" . $esignatureid_get_info,
+            CURLOPT_HEADER => 0,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 4,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($curl, CURLOPT_PROXY, '');
+        //echo "<br>CURLOPT_PROXY => " . curl_getinfo($curl,CURLOPT_PROXY) . "<br><br>";
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            echo "Erreur Curl = " . $error . "<br><br>";
+        }
+        //echo "<br>" . print_r($json,true) . "<br>";
+        $response = json_decode($json, true);
+        echo "<br>";
+        echo '<pre>';
+        var_dump($response);
+        echo '</pre>';
+        
+        $alimentationCET = new alimentationCET($dbcon);
+        $erreur = $alimentationCET->load($esignatureid_get_info);
+        if ($erreur != "")
+        {
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid_get_info . " => Erreur = " . $erreur));
+            echo "Erreur lors du chargement de la demande $esignatureid_get_info après la synchronisation.<br>";
+        }
+        echo "<br>Le statut de la demande après la synchronisation est : " . $alimentationCET->statut() . "<br>";
+        
+    }
+    
+    echo "<br><hr size=3 align=center><br>";
+    // Affichage des demandes d'alimentation dans la base G2T
+    $agent = new agent($dbcon);
+    $agent->load($agentid);
+    $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '" .  $agentid . "'";
+    $query = mysqli_query($dbcon, $sql);
+    $erreur = mysqli_error($dbcon);
+    if ($erreur != "")
+    {
+        $errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
+        echo $errlog;
+    }
+    else
+    {
+        echo "Informations sur les demandes d'alimentation de CET pour " . $agent->identitecomplete() . "<br>";
+        echo "<div id='demandes_alim_cet'>";
+        echo "<table class='tableausimple'>";
+        echo "<tr><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+        echo "</tr>";
+        while ($result = mysqli_fetch_row($query))
+        {
+            $alimcet = new alimentationCET($dbcon);
+            $id = $result[0];
+            $alimcet->load($id);
+            echo "<tr><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
+            unset ($alimcet);
+        }
+        echo "</table><br>";
+        
+        echo "</div>";
     }
     
     
@@ -400,16 +503,18 @@
         $affectation = current($affectationliste);
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
-        echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
     }
-
+    
+    //echo "Anneref = $anneeref <br>";
+    echo $agent->soldecongeshtml($anneeref);
+    
     $solde = new solde($dbcon);
     $solde->load($agentid, 'ann' . substr($anneeref,2,2));
     //echo "<br>Solde = " . print_r($solde,true) . "<br>";
     
     $cet = new cet($dbcon);
     $erreur = $cet->load($agentid);
-    if ($erreur = "")    
+    if ($erreur == "")    
         $valeur_a = $cet->cumultotal()-$cet->jrspris();
     else
         $valeur_a = 0;
@@ -419,7 +524,7 @@
     
     //////////////////////////////////////
     // Pour test !!!!
-    $valeur_d = 3;
+    //$valeur_d = 3;
     /////////////////////////////////////
     
 ?>
@@ -483,8 +588,10 @@
     }
 	</script>
 <?php
+    echo "<br><hr size=3 align=center><br>";
 
     echo "Création d'une demande d'alimentation de CET + création du document correspondant dans eSignature.<br>";
+    //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
     echo "<form name='creation_alimentation'  method='post' >";
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
     echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
@@ -510,11 +617,12 @@
     $resp = $struct->responsable();
     echo "<input type='radio' id='resp_vrai' name='responsable' value='resp_vrai'><label for='resp_vrai'>Vrai responsable de l'agent (" . $resp->identitecomplete() .  " - " .  $resp->mail() . ")</label>";
     echo "<br><br>";
-    echo "<input type='checkbox' id='drh_niveau' name='drh_niveau'><label for='drh_niveau'>Ajouter un 3e niveau dans le circuit de validation (ATTENTION : en cours de test => Destinataire : Canica)</label><br>";
+    echo "<input type='checkbox' id='drh_niveau' name='drh_niveau' checked><label for='drh_niveau'>Ajouter un 3e niveau dans le circuit de validation (Destinataire : " . $agent->identitecomplete()  .")</label><br>";
     echo "<br><br>";
     echo "<input type='submit' name='cree_demande' id='cree_demande' value='Soumettre' disabled>";
     echo "</form>";
-    
+
+/*
     echo "<br><hr size=3 align=center><br>";
     echo "<br>Affichage d'une demande dans un nouvel onglet.<br>";
     
@@ -548,7 +656,8 @@
         echo "<input type='submit' name='aff_demande' id='aff_demande' value='Afficher la demande' onclick='opendemande(); return false;'>";
         echo "</form>";
     }
-    
+*/    
+/*
     echo "<br><hr size=3 align=center><br>";
     echo "<br>Simulation d'appel des WS G2T par eSignature => mode GET : Récupération des informations d'une demande d'alimentation.<br>";
     
@@ -558,7 +667,7 @@
         echo "Appel de CURL (Méthode GET) -- Recupération des infos d'une demande....<br>";
         $curl = curl_init();
         $opts = [
-            CURLOPT_URL => $g2t_ws_url . "/ws/alimentationWS.php?esignatureid=" . $esignatureid,
+            CURLOPT_URL => $full_g2t_ws_url . "?esignatureid=" . $esignatureid,
             CURLOPT_HEADER => 0,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 4,
@@ -566,6 +675,7 @@
             CURLOPT_PROXY => ''
         ];
         curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
         curl_setopt($curl, CURLOPT_PROXY, '');
         //echo "<br>CURLOPT_PROXY => " . curl_getinfo($curl,CURLOPT_PROXY) . "<br><br>";
         $json = curl_exec($curl);
@@ -613,81 +723,12 @@
         echo "<input type='submit' name='get_g2t_info' id='get_g2t_info'  value='Soumettre'>";
         echo "</form>";
     }
-    
+*/   
     echo "<br><hr size=3 align=center><br>";
-    echo "<br>Récupération de toutes les informations d'une demande d'alimentation dans eSignature + MAJ statut de la demande dans G2T.<br>";
+    echo "<br>Synchronisation du statut de la demande G2T avec le statut de la demande eSignature.<br>";
+     
     
-    if (!is_null($esignature_info))
-    {
-        // On appelle le WS eSignature pour voir les infos du document
-        $curl = curl_init();
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid_get_info,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        $json = curl_exec($curl);
-        $error = curl_error ($curl);
-        curl_close($curl);
-        if ($error != "")
-        {
-            echo "Erreur Curl = " . $error . "<br><br>";
-        }
-        //echo "<br>" . print_r($json,true) . "<br>";
-        $response = json_decode($json, true);
-        echo "<br>";
-        echo '<pre>';
-        var_dump($response);
-        echo '</pre>';
-        echo "<br>";
-        $statut = $response['status'];
-        echo "Le statut eSignature de la demande est : $statut. <br>";
-        echo "On va mettre à jour le statut G2T de la demande en fonction du statut eSignature : ";
-        $alimentationCET = new alimentationCET($dbcon);
-        $erreur = $alimentationCET->load($esignatureid_get_info);
-        if ($error <> "")
-        {
-            echo "Erreur lors du chargement de la demande d'alimentation (esignatureid_get_info = $esignatureid_get_info) à partir de G2T : $erreur.<br>";
-        }
-        else
-        {
-            switch (strtolower($statut))
-            {
-                //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
-                case 'draft' :
-                case 'pending' :
-                case 'signed' :
-                case 'checked' :
-                    $statut = "En cours";
-                    break;
-                case 'refused':
-                    $statut = "Refusée";
-                    break;
-                case 'completed' :
-                case 'exported' :
-                case 'archived' :
-                case 'cleaned' :
-                    $statut = "Signée";
-                    break;
-                case 'deleted' :
-                case 'canceled' :
-                    $statut = "Abandonnée";
-                    break;
-                default :
-                    $statut = "Statut inconnu";
-            }
-            echo "<b>L'ancien statut de la demande $esignatureid_get_info est : " . $alimentationCET->statut() . "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Le nouveau statut sera : $statut. </b><br>";
-            $alimentationCET->statut($statut);
-            $alimentationCET->store();
-        }
-        echo "<br><br>";
-        
-    }
-    
-    
-    $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '" .  $agentid . "'";
+    $sql = "SELECT ESIGNATUREID,STATUT FROM ALIMENTATIONCET WHERE HARPEGEID = '" .  $agentid . "'";
     $query = mysqli_query($dbcon, $sql);
     $erreur = mysqli_error($dbcon);
     if ($erreur != "")
@@ -709,15 +750,17 @@
         echo "<select name='esignatureid_get_info' id='esignatureid_get_info'>";
         while ($result = mysqli_fetch_row($query))
         {
-            echo "<option value='" . $result["0"]  . "'>" . $result["0"] . "</option>";
-            
+            echo "<option value='" . $result["0"]  . "'>" . $result["0"] . " => " . $result["1"] . "</option>";
         }
         echo "</select>";
         echo "<br><br>";
-        echo "<input type='submit' name='esignature_info' id='esignature_info' value='Info de la demande'>";
+        echo "<input type='submit' name='esignature_info' id='esignature_info' value='Synchronisation de la demande'>";
         echo "</form>";
     }
+
     
+    
+/*
     echo "<br><hr size=3 align=center><br>";
     echo "<br>Simulation d'appel des WS G2T par eSignature => mode POST : Changement de statut d'une demande d'alimentation.<br>";
     
@@ -735,7 +778,7 @@
             $params_string = http_build_query($params);
             //echo "<br>Param = " . $params_string . "<br><br>";
             $opts = [
-                CURLOPT_URL => $g2t_ws_url . "/ws/alimentationWS.php",
+            CURLOPT_URL => $full_g2t_ws_url,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $params_string,
                 CURLOPT_RETURNTRANSFER => true,
@@ -743,6 +786,7 @@
                 CURLOPT_PROXY => ''
                 ];
             curl_setopt_array($curl, $opts);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             curl_setopt($curl, CURLOPT_PROXY, '');
             $json = curl_exec($curl);
             $error = curl_error ($curl);
@@ -802,6 +846,7 @@
         echo "<input type='submit' name='modif_statut' value='Modifier statut'>";
         echo "</form>";
     }
+*/
         
 /*
     echo "<br><hr size=3 align=center><br>";
