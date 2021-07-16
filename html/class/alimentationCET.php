@@ -360,7 +360,7 @@ class alimentationCET
     }
     
     
-    function load($esignatureid = null, $alimentationid = null, $agentid = null )
+    function load($esignatureid = null, $alimentationid = null )
     {
         $errlog = '';
         $sql = "SELECT ALIMENTATIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF FROM ALIMENTATIONCET WHERE ";
@@ -371,10 +371,6 @@ class alimentationCET
         elseif (!is_null($alimentationid))
         {
             $sql = $sql . "ALIMENTATIONID = '$alimentationid'";
-        }
-        elseif (!is_null($agentid))
-        {
-            $sql = $sql . "HARPEGEID = '$agentid' ORDER BY DATECREATION DESC, ALIMENTATIONID ASC LIMIT 1";
         }
         else
         {
