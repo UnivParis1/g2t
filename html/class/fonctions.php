@@ -930,6 +930,82 @@ class fonctions
         }
         $pdf->Output($filename, 'F');
     }
+    
+    /**
+     *
+     * @param
+     * @return string the beginning of the cet alimentation period in format YYYYMMDD 
+     */
+    public function debutalimcet()
+    {
+    	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTALIMCET' AND VALEUR <> ''";
+    	$query = mysqli_query($this->dbconnect, $sql);
+    	$erreur = mysqli_error($this->dbconnect);
+    	if ($erreur != "") {
+    		$errlog = "Fonctions->debutalimcet : " . $erreur;
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+    	}
+    	if (mysqli_num_rows($query) == 0) {
+    		$errlog = "Fonctions->debutalimcet : Pas de début de période défini dans la base. On force au 0831 de l'année univ de référence. ";
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+    		return ($this->anneeref()+1).$this->finperiode();
+    	}
+    	$result = mysqli_fetch_row($query);
+    	// echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
+    	return "$result[0]";
+    }
+    
+    /**
+     *
+     * @param
+     * @return string the end of the cet alimentation period in format YYYYMMDD 
+     */
+    public function finalimcet()
+    {
+    	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINALIMCET'";
+    	$query = mysqli_query($this->dbconnect, $sql);
+    	$erreur = mysqli_error($this->dbconnect);
+    	if ($erreur != "") {
+    		$errlog = "Fonctions->finalimcet : " . $erreur;
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+    	}
+    	if (mysqli_num_rows($query) == 0) {
+    		$errlog = "Fonctions->finalimcet : Pas de fin de période définie dans la base. On force au 0831 de l'année univ de référence. ";
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+    		return ($this->anneeref()+1).$this->finperiode();;
+    	}
+    	$result = mysqli_fetch_row($query);
+    	// echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
+    	return "$result[0]";
+    }
 
+    /**
+     * 
+     * @param array $tab
+     * @return string the tab in string for IN clause db ('$tab[0]', '$tab[1], ...)
+     */
+    public function formatlistedb($tab)
+    {
+    	$chaine = '';
+    	if (sizeof($tab) != 0)
+    	{
+    		foreach ($tab as $value)
+    		{
+    			if ($chaine == '')
+    			{
+    				$chaine .= "('".$value."'";
+    			}
+    			else {
+    				$chaine .= ", '".$value."'";
+    			}
+    		}
+    		$chaine .= ")";
+    	}
+    	return $chaine;
+    }
 }
 ?>

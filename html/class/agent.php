@@ -2193,6 +2193,71 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     	}
     	return $retour;
     }
+    
+    function afficheAlimCetHtml($anneeref = '', $statuts = array())
+    {
+    	$alimcet = new alimentationCET($this->dbconnect);
+    	$listid = $this->getDemandesAlim($anneeref, $statuts);
+    	$htmltext = '';
+    	if (sizeof($listid) != 0)
+    	{
+	    	$htmltext = "Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "<br>";
+	    	$htmltext = $htmltext . "<div id='demandes_alim_cet'>";
+	    	$htmltext = $htmltext . "<table class='tableausimple'>";
+	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+	    	$htmltext = $htmltext . "</tr>";
+	    	foreach ($listid as $id)
+	    	{
+	    		$alimcet->load($id);
+	    		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
+	    	}
+	    	$htmltext = $htmltext . "</table><br>";
+	    	
+	    	$htmltext = $htmltext . "</div>";
+    	}
+    	return $htmltext;
+    }
+    
+    /**
+     * 
+     * @param string $anneeref
+     * @param array $listStatuts
+     * @return array of esignatureid 
+     */
+    function getDemandesAlim($anneeref = '', $listStatuts = array())
+    {
+    	$listdemandes = array();
+    	$alimentationCET = new alimentationCET($this->dbconnect);
+    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '".$this->harpegeid()."' ";
+    	if ($anneeref != '') 
+    		$sql .= " AND TYPECONGES = '$anneeref' " ;
+    	if (sizeof($listStatuts) != 0)
+    	{
+    		$statuts = $this->fonctions->formatlistedb($listStatuts);
+    		$sql .=  "AND STATUT IN $statuts";
+    	}
+    	$query = mysqli_query($this->dbconnect, $sql);
+    	$erreur = mysqli_error($this->dbconnect);
+    	if ($erreur != "")
+    	{
+    		$errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
+    		echo $errlog;
+    	}
+    	elseif (mysqli_num_rows($query) == 0)
+    	{
+    		//echo "<br>load => pas de ligne dans la base de données<br>";
+    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";;
+    		echo $errlog;
+    	}
+    	else 
+    	{
+    		while ($result = mysqli_fetch_row($query)) 
+    		{
+				$listdemandes[] = $result[0];
+    		}
+    	}
+    	return $listdemandes;
+    }
 }
 
 ?> 

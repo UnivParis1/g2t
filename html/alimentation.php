@@ -463,9 +463,12 @@
     
     echo "<br><hr size=3 align=center><br>";
     // Affichage des demandes d'alimentation dans la base G2T
+    $alimentationCET = new alimentationCET($dbcon);
     $agent = new agent($dbcon);
     $agent->load($agentid);
-    $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '" .  $agentid . "'";
+    echo $agent->afficheAlimCetHtml();
+    // EXEMPLE D'USAGE echo $agent->afficheAlimCetHtml('ann19', array($alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_EN_COURS));
+    /*$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '" .  $agentid . "'";
     $query = mysqli_query($dbcon, $sql);
     $erreur = mysqli_error($dbcon);
     if ($erreur != "")
@@ -492,7 +495,7 @@
         
         echo "</div>";
     }
-    
+    */
     
     // On récupère les soldes de l'agent
     $agent = new agent($dbcon);
