@@ -24,7 +24,7 @@
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));
     error_log(basename(__FILE__) . " GET = " . str_replace("\n","",var_export($_GET,true)));
     
-    $statutvalide = array('PREPA' => 'en préparation', 'COURS' => 'en cours', 'REFUS' => 'refusée', 'SIGNE' => 'signée', 'ABAND' => 'abandonnée');
+    $statutvalide = array('PREPA' => alimentationCET::STATUT_PREPARE, 'COURS' => alimentationCET::STATUT_EN_COURS, 'REFUS' => alimentationCET::STATUT_REFUSE, 'SIGNE' => alimentationCET::STATUT_VALIDE, 'ABAND' => alimentationCET::STATUT_ABANDONNE);
     
     switch ($_SERVER['REQUEST_METHOD'])
     {
@@ -361,6 +361,9 @@
                             }
                             $cet->cumultotal( $alimentationCET->valeur_f() + $cet->cumultotal()) ;
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . $cet->cumultotal()));
+                            $cumulannuel = $cet->cumulannuel($fonctions->anneeref());
+                            $cumulannuel = $cumulannuel + $alimentationCET->valeur_f();
+                            $cet->cumulannuel($fonctions->anneeref(),$cumulannuel);
                             $cet->store();
                             
                             $solde = new solde($dbcon);
