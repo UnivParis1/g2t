@@ -641,15 +641,7 @@ else
     echo "<form name='creation_option'  method='post' >";
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
     echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-    
-    $cet = new cet($dbcon);
-    $erreur = $cet->load($agentid);
-    if ($erreur <> "")
-    {
-        echo "Pas de CET pour l'agent " . $agent->identitecomplete() . " ==> Fin du chargement de la page <br>";
-        die();
-    }
- 
+     
     $valeur_a = "";
     $valeur_g = "";
 
@@ -694,6 +686,14 @@ else
     }
     else
     {
+        $cet = new cet($dbcon);
+        $erreur = $cet->load($agentid);
+        if ($erreur <> "")
+        {
+            echo "Pas de CET pour l'agent " . $agent->identitecomplete() . " ==> Fin du chargement de la page <br>";
+            die();
+        }
+        
         $alimentation = $cet->cumulannuel($anneeref); // ATTENTION : Il faudra mettre $anneref - 1 car le droit d'option se fait l'année suivante !!!! A VERIFIER !!!!!
         //echo "Alimentation = XXXX" . $alimentation . "XXXX<br><br>";
         $valeur_a = $cet->cumultotal()-$cet->jrspris()-$alimentation;
