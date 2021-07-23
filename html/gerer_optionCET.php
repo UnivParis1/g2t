@@ -570,12 +570,12 @@ else
         	{
     			if (label_i !== null)
     			{
-    				label_i.innerHTML = "La somme des valeurs I, J doit être inférieure à " + valeur_h + ".";
-	     			document.getElementById("label_j").innerHTML = "La somme des valeurs I, J doit être inférieure à " + valeur_h + ".";
+    				label_i.innerHTML = "La somme des valeurs I, J doit être inférieure ou égale à " + valeur_h + ".";
+	     			document.getElementById("label_j").innerHTML = "La somme des valeurs I, J doit être inférieure ou égale à " + valeur_h + ".";
 	     		}
 	     		else
 	     		{
-	     			document.getElementById("label_j").innerHTML = "La valeur J doit être inférieure à " + valeur_h + ".";
+	     			document.getElementById("label_j").innerHTML = "La valeur J doit être inférieure ou égale à " + valeur_h + ".";
 	     		}
         		deactive_button = true;
         	}
@@ -587,7 +587,7 @@ else
          		document.getElementById("label_l").innerHTML = "La valeur de la case L doit être inférieure à 60.";
         		deactive_button = true;
 	    	}
-        	else if (valeur_l > (valeur_a + 10))
+        	else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
         	{
 	     		document.getElementById("label_l").innerHTML = "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
         		deactive_button = true;
