@@ -176,12 +176,13 @@
          echo "</font>";
          echo "<br><br>";
      }
-          
+
+/*
      echo "<font color=#FF0000><center>";
      echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
      echo "</center></font>";
      echo "<br>";
-
+*/
     echo $user->soldecongeshtml($fonctions->anneeref());
 
     echo $user->affichecommentairecongehtml();
