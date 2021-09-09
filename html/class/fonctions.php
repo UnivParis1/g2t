@@ -1007,5 +1007,42 @@ class fonctions
     	}
     	return $chaine;
     }
+    
+    public function synchro_g2t_eSignature($full_g2t_ws_url, $id)
+    {
+        // On appelle le WS G2T en GET pour demander à G2T de mettre à jour la demande
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => $full_g2t_ws_url . "?signRequestId=" . $id,
+            CURLOPT_HEADER => 0,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 4,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($curl, CURLOPT_PROXY, '');
+        //echo "<br>CURLOPT_PROXY => " . curl_getinfo($curl,CURLOPT_PROXY) . "<br><br>";
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            echo "Erreur Curl = " . $error . "<br><br>";
+            error_log(basename(__FILE__) . $this->stripAccents(" Impossible de synchroniser G2T avec eSingature (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . $error ));
+        }
+        //echo "<br>" . print_r($json,true) . "<br>";
+        $response = json_decode($json, true);
+        /*
+         echo "<br>";
+         echo '<pre>';
+         var_dump($response);
+         echo '</pre>';
+         */
+    }
+    
+    
 }
 ?>

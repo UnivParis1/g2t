@@ -95,7 +95,6 @@ switch ($_SERVER['REQUEST_METHOD'])
                     {
                         $affectation = new affectation($dbcon);
                         $affectation = current($affectationliste);
-                        $affectation->quotite();
                         $infosLdap = $agent->getInfoDocCet();
                         $nameStructComplete = $structure->nomcompletcet();
                         $agent = array('uid' => $agent->harpegeid(),
@@ -164,8 +163,11 @@ switch ($_SERVER['REQUEST_METHOD'])
                  }
                  //echo "<br>" . print_r($json,true) . "<br>";
                  $response = json_decode($json, true);
-                 $current_status = $response['form_current_status'];
-                 
+                 if (isset($response['form_current_status']))
+                    $current_status = $response['form_current_status'];
+                 else
+                    $current_status = '';
+                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status'"));
                  $optionCET = new optionCET($dbcon);
                  $validation = $optionCET::STATUT_INCONNU;
                  if (isset($response['form_data_accepte']))
@@ -204,6 +206,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                          break;
                      case 'deleted' :
                      case 'canceled' :
+                     case '' :
                          $status = $optionCET::STATUT_ABANDONNE;
                          break;
                      default :

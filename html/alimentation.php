@@ -187,12 +187,12 @@
 
     
 <?php 
-/*
+
     echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
     echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
     echo "<br>" . print_r($_POST,true);
     //echo "<br><br><br>";
-*/
+
     
     if (is_null($agentid))
     {
@@ -422,6 +422,11 @@
         }
         echo "<br><br>Le statut de la demande avant la synchronisation est : " . $alimentationCET->statut() . "<br>";
         
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_get_info avec eSignature (synchro manuelle)."));
+        $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_get_info);
+        //error_log(basename(__FILE__) . $fonctions->stripAccents(" Après synchronisation de la demande $esignatureid_get_info avec eSignature (synchro manuelle)."));
+        
+/*
         $curl = curl_init();
         $params_string = "";
         $opts = [
@@ -449,7 +454,9 @@
         echo '<pre>';
         var_dump($response);
         echo '</pre>';
+*/     
         
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" Avant chargement de la demande $esignatureid_get_info."));
         $alimentationCET = new alimentationCET($dbcon);
         $erreur = $alimentationCET->load($esignatureid_get_info);
         if ($erreur != "")
@@ -457,6 +464,9 @@
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid_get_info . " => Erreur = " . $erreur));
             echo "Erreur lors du chargement de la demande $esignatureid_get_info après la synchronisation.<br>";
         }
+        else
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Après chargement de la demande $esignatureid_get_info => Erreur est vide."));
+        
         echo "<br>Le statut de la demande après la synchronisation est : " . $alimentationCET->statut() . "<br>";
         
     }
@@ -753,6 +763,8 @@
         echo "<select name='esignatureid_get_info' id='esignatureid_get_info'>";
         while ($result = mysqli_fetch_row($query))
         {
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_get_info avec eSignature avant affichage."));
+            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result["0"]);
             echo "<option value='" . $result["0"]  . "'>" . $result["0"] . " => " . $result["1"] . "</option>";
         }
         echo "</select>";
