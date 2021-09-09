@@ -541,7 +541,7 @@ class fonctions
      *
      * @param
      *  anneeref : Année de référence de la légende
-     * @return list of caption
+     * @return array list of caption
      */
     public function legende($anneeref)
     {
@@ -582,7 +582,7 @@ class fonctions
      *
      * @param
      *  anneeref : Année de référence de la légende
-     * @return html text representing the list of caption
+     * @return string html text representing the list of caption
      */
     public function legendehtml($anneeref)
     {
@@ -658,7 +658,7 @@ class fonctions
      *
      * @param string $codemoment
      *            the moment identifier (m or a)
-     * @return the moment name if correct / error message otherwise
+     * @return string the moment name if correct / error message otherwise
      */
     public function nommoment($codemoment = null)
     {
@@ -678,7 +678,7 @@ class fonctions
      *
      * @param string $codeouinon
      *            code (o/n)
-     * @return the oui/non label if correct / error message otherwise
+     * @return string the oui/non label if correct / error message otherwise
      */
     public function ouinonlibelle($codeouinon = null)
     {
@@ -716,7 +716,7 @@ class fonctions
      *
      * @param string $statut
      *            status code (v,r,a) for part time
-     * @return the status label of the part time if correct / display error message otherwise
+     * @return string the status label of the part time if correct / display error message otherwise
      */
     public function declarationTPstatutlibelle($statut = null)
     {
@@ -733,7 +733,7 @@ class fonctions
     /**
      *
      * @param string $texte
-     * @return the string without accents
+     * @return string the string without accents
      */
     public function stripAccents($texte)
     {
@@ -801,7 +801,7 @@ class fonctions
     /**
      *
      * @param string $texte
-     * @return the string escaped and utf8-encoded
+     * @return string the string escaped and utf8-encoded
      */
     public function my_real_escape_utf8($texte)
     {
@@ -857,7 +857,7 @@ class fonctions
      *
      * @param string $structid
      *            Code de la structure à convertir
-     * @return Code de la structure correspondante.
+     * @return string Code de la structure correspondante.
      */
     public function labo2ufr($structid)
     {
@@ -933,11 +933,16 @@ class fonctions
     
     /**
      *
-     * @param
+     * @param string YYYYMMDD the beginning date to set
      * @return string the beginning of the cet alimentation period in format YYYYMMDD 
      */
-    public function debutalimcet()
+    public function debutalimcet($date=NULL)
     {
+    	if (!is_null($date))
+    	{
+    		$update = "UPDATE CONSTANTES SET VALEUR = '$date' WHERE NOM = 'DEBUTALIMCET'";
+    		$query = mysqli_query($this->dbconnect, $update);
+    	}
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTALIMCET' AND VALEUR <> ''";
     	$query = mysqli_query($this->dbconnect, $sql);
     	$erreur = mysqli_error($this->dbconnect);
@@ -959,11 +964,16 @@ class fonctions
     
     /**
      *
-     * @param
+     * @param string YYYYMMDD the beginning date to set
      * @return string the end of the cet alimentation period in format YYYYMMDD 
      */
-    public function finalimcet()
+    public function finalimcet($date=NULL)
     {
+    	if (!is_null($date))
+    	{
+    		$update = "UPDATE CONSTANTES SET VALEUR = '$date' WHERE NOM = 'FINALIMCET'";
+    		$query = mysqli_query($this->dbconnect, $update);
+    	}
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINALIMCET'";
     	$query = mysqli_query($this->dbconnect, $sql);
     	$erreur = mysqli_error($this->dbconnect);
@@ -976,10 +986,30 @@ class fonctions
     		$errlog = "Fonctions->finalimcet : Pas de fin de période définie dans la base. On force au 0831 de l'année univ de référence. ";
     		echo $errlog . "<br/>";
     		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-    		return ($this->anneeref()+1).$this->finperiode();;
+    		return ($this->anneeref()+1).$this->finperiode();
     	}
     	$result = mysqli_fetch_row($query);
     	// echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
+    	return "$result[0]";
+    }
+    
+    public function getidmodelalimcet()
+    {
+    	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'IDMODELALIMCET'";
+    	$query = mysqli_query($this->dbconnect, $sql);
+    	$erreur = mysqli_error($this->dbconnect);
+    	if ($erreur != "") {
+    		$errlog = "Fonctions->getidmodelalimcet : " . $erreur;
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+    	}
+    	if (mysqli_num_rows($query) == 0) {
+    		$errlog = "Fonctions->getidmodelalimcet : Pas d'identifiant de modele défini dans la base. ";
+    		echo $errlog . "<br/>";
+    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+    		return "";
+    	}
+    	$result = mysqli_fetch_row($query);
     	return "$result[0]";
     }
 
@@ -1006,6 +1036,22 @@ class fonctions
     		$chaine .= ")";
     	}
     	return $chaine;
+    }
+    
+    public function datesconsecutives($date1, $date2)
+    {
+    	$retour = FALSE;
+    	$dbdate1 = $this->formatdatedb($date1);
+    	$dbdate2 = $this->formatdatedb($date2);
+    	if (date("Y-m-d", strtotime("+1 day", strtotime($dbdate1))) == $dbdate2)
+    	{
+    		return TRUE;
+    	}
+    	elseif (date("Y-m-d", strtotime("+1 day", strtotime($dbdate2))) == $dbdate1)
+    	{
+    		return TRUE;
+    	}
+    	return $retour;
     }
 }
 ?>

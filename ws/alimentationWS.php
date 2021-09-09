@@ -210,9 +210,12 @@
                         {
                             $affectation = new affectation($dbcon);
                             $affectation = current($affectationliste);
-                            $affectation->quotite();
                             $infosLdap = $agent->getInfoDocCet();
                             $nameStructComplete = $structure->nomcompletcet();
+                            // quotité sur la période 01/09/N-1 - 31/08/N
+                            $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
+                            $datefin = $fonctions->anneeref().$fonctions->finperiode();
+                            $quotite = $agent->getQuotiteMoyPeriode($datedebut, $datefin).'%';
                             $agent = array('uid' => $agent->harpegeid(),
                                 'email' => $agent->mail(),
                                 'name' => $agent->nom(),
@@ -222,7 +225,7 @@
                                                    'addr' => $infosLdap['postaladdress'],
                                                    'type' => $structure->typestruct()),
                                 'ref_year' => $anneeref,
-                                'activity' => $affectation->quotite() == '100%' ? 'Temps complet' : $affectation->quotite(),
+                                'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
                                 'corps' => $agent->typepopulation()
                             );
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos de la demande " . $esignatureid . " => Erreur = "));

@@ -2204,16 +2204,109 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 	    	$htmltext = "Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "<br>";
 	    	$htmltext = $htmltext . "<div id='demandes_alim_cet'>";
 	    	$htmltext = $htmltext . "<table class='tableausimple'>";
-	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
 	    	$htmltext = $htmltext . "</tr>";
 	    	foreach ($listid as $id)
 	    	{
 	    		$alimcet->load($id);
-	    		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
+	    		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
 	    	}
 	    	$htmltext = $htmltext . "</table><br>";
 	    	
 	    	$htmltext = $htmltext . "</div>";
+    	}
+    	return $htmltext;
+    }
+    
+    
+    function afficheAlimCetHtmlPourSuppr($anneeref = '', $statuts = array())
+    {
+    	if (isset($_POST['annuler_demande']))
+    	{
+    		$esignatureid_annule = $_POST['esignatureid_annule'];
+    		$alimentationCET = new alimentationCET($this->dbconnect);
+    		$alimentationCET->load($esignatureid_annule);
+    		// TODO récupérer statut si validée réalimenter le reliquat
+    		$statut_actuel = $alimentationCET->statut();
+    		if ($statut_actuel == alimentationCET::STATUT_VALIDE)
+    		{
+    			$solde = new solde($this->dbconnect);
+    			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
+    			$solde->load($this->harpegeid(), $alimentationCET->typeconges());
+    			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
+    			$new_solde = $solde->droitpris()-$alimentationCET->valeur_f();
+    			$solde->droitpris($new_solde);
+    			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
+    			error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
+    			$solde->store();
+    			
+    			// Ajouter dans la table des commentaires la trace de l'opération
+    			$this->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()),"Annulation de demande d'alimentation CET");
+    			
+    			// alerter la DRH
+    			
+    			$arrayagentrh = $this->fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+    			foreach ($arrayagentrh as $gestrh) {
+    				$this->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$this->nom()." ".$this->prenom()." a demandé l'annulation de sa demande d'alimentation n°". $esignatureid_annule . ".\n");
+    			}
+    		}
+    		
+    		// purger esignature
+    		
+    		$eSignature_url = "https://esignature-test.univ-paris1.fr";
+    		$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
+    		$params = array('id' => $esignatureid_annule);
+    		$walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+    			is_array( $item )
+    			? array_walk( $item, $walk, $key )
+    			: $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+    			
+    		};
+    		array_walk( $params, $walk );
+    		$json = implode( '&', $output );
+    		$ch = curl_init();
+    		curl_setopt($ch, CURLOPT_URL, $url);
+    		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    		curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+    		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    		curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
+    		$result = curl_exec($ch);
+    		$result = json_decode($result);
+    		$error = curl_error ($ch);
+    		curl_close($ch);
+    		if ($error != "")
+    		{
+    			$errlog = "Erreur Curl = " . $error . "<br><br>";
+    		}
+    			
+    		// Abandon dans G2T
+    		$alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
+    		$alimentationCET->motif("Annulation à la demande de l'agent");
+    		$alimentationCET->store();
+    		$errlog .= "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") a supprimé la demande d'alimentation du CET (esignatureid = ".$esignatureid_annule.")";
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	}
+    	$alimcet = new alimentationCET($this->dbconnect);
+    	$listid = $this->getDemandesAlim($anneeref, $statuts);
+    	$htmltext = '';
+    	if (sizeof($listid) != 0)
+    	{    		
+    		echo "<br>Annulation d'une demande d'alimentation.<br>";
+    		echo "<form name='form_esignature_annule'  method='post' >";
+    		echo "<input type='hidden' name='userid' value='" . $this->harpegeid() . "'>";
+    		echo "<input type='hidden' name='agentid' value='" . $this->harpegeid() . "'>";
+    		echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
+    		foreach ($listid as $id)
+    		{
+    			$alimcet->load($id);
+    			echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+    		}
+    		
+    		echo "</select>";
+    		echo "<br><br>";
+    		echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
+    		echo "</form>";
+    		echo "<br>";
     	}
     	return $htmltext;
     }
@@ -2227,7 +2320,6 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     function getDemandesAlim($anneeref = '', $listStatuts = array())
     {
     	$listdemandes = array();
-    	$alimentationCET = new alimentationCET($this->dbconnect);
     	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '".$this->harpegeid()."' ";
     	if ($anneeref != '') 
     		$sql .= " AND TYPECONGES = '$anneeref' " ;
@@ -2241,13 +2333,13 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     	if ($erreur != "")
     	{
     		$errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
-    		echo $errlog;
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
     	elseif (mysqli_num_rows($query) == 0)
     	{
     		//echo "<br>load => pas de ligne dans la base de données<br>";
-    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";;
-    		echo $errlog;
+    		$errlog = "Aucune demande d'alimentation au statut ".$statuts." pour l'agent " . $this->identitecomplete() . "<br>";;
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
     	else 
     	{
@@ -2257,6 +2349,181 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		}
     	}
     	return $listdemandes;
+    }
+    
+    function getPlafondRefCet()
+    {
+    	// calcul du plafond de référence pour l'agent
+    	$pr = $this->fonctions->liredbconstante('PLAFONDREFERENCECET');
+    	// récupérer les affectations/quotités sur la période 01/09/N-1 - 31/08/N
+    	$datedeb = ($this->fonctions->anneeref() - 1).$this->fonctions->debutperiode();
+    	$datefin = $this->fonctions->anneeref().$this->fonctions->finperiode();
+    	//echo "Date début affectations ($datedeb) <br> Date fin affectations ($datefin) <br>";
+    	$quotitemoy = $this->getQuotiteMoyPeriode($datedeb, $datefin);
+    	$errlog ="Plafond de référence paramétré : $pr. Quotité moyenne de l'agent pour la période (".$this->fonctions->formatdate($datedeb)." - ".$this->fonctions->formatdate($datefin).") : $quotitemoy % ";
+    	error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	return (($pr * $quotitemoy) / 100);
+    }
+    
+    function getQuotiteMoyPeriode($datedebut, $datefin)
+    {
+    	$retour = 0;    	
+    	$liste_affectations = $this->affectationliste($datedebut, $datefin);
+    	$nbaff = 0;
+    	$nbjourstot = 0;
+    	$errlog = '';
+    	if (sizeof($liste_affectations) >= 1)
+    	{
+    		$debutaffprec = null;
+    		$finaffprec = null;
+    		$tab = array();
+	    	foreach($liste_affectations as $affectation)
+	    	{	
+	    		$nbaff ++;
+	    		$debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
+	    		
+	    		if (is_null($debutaffprec) && $debutaffectation > $datedebut)
+	    		{
+	    			// quotite 0 entre $datedebut et débutaffectation
+	    			$nbjoursnoaff = $this->fonctions->nbjours_deux_dates($datedebut, $debutaffectation) - 1; // le jour de début de l'affectation sera compté lors du calcul de la durée d'affectation
+	    			$tab[$nbaff] = array('duree' => $nbjoursnoaff, 'quotite' => 0);
+	    			$nbaff++;
+	    			$errlog .= "1ere affectation ($debutaffectation) commence après le début de période $datedebut";
+	    			$nbjourstot += $nbjoursnoaff;
+	    		}
+	    		$debutaffprec = $debutaffectation;
+	    		if ($debutaffectation <= $datedebut)
+	    		{
+	    			$debutaffectation = $datedebut;
+	    		}
+	    		$finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
+	    		if ($finaffectation >= $datefin)
+	    		{
+	    			$finaffectation = $datefin;
+	    		}
+	    		if (!is_null($finaffprec))
+	    		{
+	    			// nombre de jours entre la fin de la dernière affectation et le début de la courante
+	    			if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
+	    			{
+	    				$daysbetaff = $this->fonctions->nbjours_deux_dates($finaffprec, $debutaffectation) - 2; // le jour de la fin de l'affectation a déjà été compté et début de la suivante sera comptée ensuite
+	    				$tab[$nbaff] = array('duree' => $daysbetaff, 'quotite' => 0);
+	    				$nbaff++;
+	    				$errlog .= "affectation suivante $debutaffectation commence après fin affectation précédente $finaffprec. $daysbetaff jours entre les 2.";
+	    				$nbjourstot += $daysbetaff;
+	    			}
+	    		}
+	    		$finaffprec = $finaffectation;
+	    		$nbjoursaff = $this->fonctions->nbjours_deux_dates($debutaffectation, $finaffectation);
+	    		$nbjourstot += $nbjoursaff;
+	    		$errlog .= "date deb $debutaffectation date fin $finaffectation nb jours $nbjoursaff ";
+	    		$quotiteaff = $affectation->numquotite();
+	    		$tab[$nbaff] = array('duree' => $nbjoursaff, 'quotite' => $quotiteaff);
+	    		$retour += ($quotiteaff * $nbjoursaff);
+	    	}
+	    	$retour = $retour / $nbjourstot;
+	    	$errlog .= "quotite $retour";
+	    	
+    	}
+	    else 
+	    {
+	    	$errlog .= "Pas d'affectation : quotité 0 ";
+	    }
+	    if ($errlog != '')
+	    	error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	return $retour;
+    }
+    
+    function hasInterruptionAffectation($datedebut, $datefin)
+    {
+    	$retour = FALSE;
+    	$errlog = '';
+    	$liste_affectations = $this->affectationliste($datedebut, $datefin);
+    	if (sizeof($liste_affectations) >= 1)
+    	{
+    		$debutaffprec = null;
+    		$finaffprec = null;
+    		foreach($liste_affectations as $affectation)
+    		{
+    			$debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
+    			
+    			if (is_null($debutaffprec) && $debutaffectation > $datedebut)
+    			{
+    				$errlog .= "Pas d'affectation entre  le ".$this->fonctions->formatdate($datedebut)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
+    				return TRUE;
+    			}
+    			$debutaffprec = $debutaffectation;
+    			$finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
+    			if (!is_null($finaffprec))
+    			{
+    				// nombre de jours entre la fin de la dernière affectation et le début de la courante
+    				if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
+    				{
+    					$errlog .= "Pas d'affectation entre le ".$this->fonctions->formatdate($finaffprec)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
+    					return TRUE;
+    				}
+    			}
+    			$finaffprec = $finaffectation;
+    		}    		
+    	}
+    	else
+    	{
+    		$errlog .= "Aucune affectation entre le ".$this->fonctions->formatdate($datedebut)." et le ".$this->fonctions->formatdate($datefin).". En cas d'erreur, contactez la DRH. ";
+    		return TRUE;
+    	}    	
+    	if ($errlog != '')
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	return $retour;
+    }
+    
+    function getNbJoursConsommés($anneeref, $datedeb, $datefin)
+    {
+    	$type_conge = 'ann'.substr($anneeref,2, 2);
+    	$planning = $this->planning($this->fonctions->formatdate($datedeb), $this->fonctions->formatdate($datefin));
+    	$errlog = "type congé $type_conge. date planning debut : ".$this->fonctions->formatdate($datedeb)." fin : ".$this->fonctions->formatdate($datefin);
+    	//echo "<br><br>" . print_r($planning,true) . "<br><br>";
+    	
+    	$nbjours = 0;
+    	foreach ($planning->planning() as $key => $element)
+    	{
+    		if ($element->type() == $type_conge)
+    		{
+    			$nbjours += 0.5;
+    		}
+    	}
+    	$errlog .= "$nbjours jours utilisés";
+    	error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	return $nbjours;
+    }
+    
+    function getResponsableForCET()
+    {
+    	$pasresptrouve = false;
+    	$structid = $this->structureid();
+    	$struct = new structure($this->dbconnect);
+    	$struct->load($structid);
+    	$resp = $struct->responsable();
+    	if (($resp->mail() . "") <> "")
+    	{
+    		if ($resp->harpegeid() == $this->harpegeid())
+    		{
+    			$structparent = $struct->parentstructure();
+    			$resp = $structparent->responsable();
+    			if (($resp->mail() . "") == "")
+    			{
+    				$pasresptrouve = true;
+    			}
+    		}
+    	}
+    	else
+    	{
+    		$pasresptrouve = true;
+    	}
+    	if ($pasresptrouve)
+    	{
+    		error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Il n'y a pas de responsable pour la structure " . $struct->nomlong()));
+    	}
+    	return $resp;
     }
 }
 
