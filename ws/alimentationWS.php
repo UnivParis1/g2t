@@ -281,7 +281,14 @@
                     }
                     //echo "<br>" . print_r($json,true) . "<br>";
                     $response = json_decode($json, true);
-                    $current_status = $response['form_current_status'];
+                    if (isset($response['form_current_status']))
+                    {
+                        $current_status = $response['form_current_status'];
+                    }
+                    else
+                    {
+                        $current_status = '';
+                    }
     
                     $alimentationCET = new alimentationCET($dbcon);
                     $validation = $alimentationCET::STATUT_INCONNU;
@@ -321,6 +328,7 @@
                             break;
                         case 'deleted' :
                         case 'canceled' :
+                        case '' :
                             $status = $alimentationCET::STATUT_ABANDONNE;
                             break;
                         default :

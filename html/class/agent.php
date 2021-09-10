@@ -2074,7 +2074,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 
     function CETaverifier($datedebut)
     {
-        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID 
+        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID ,DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT
 				FROM DEMANDE,DEMANDEDECLARATIONTP,DECLARATIONTP,AFFECTATION,AGENT 
 				WHERE AFFECTATION.AFFECTATIONID = DECLARATIONTP.AFFECTATIONID 
 				  AND DECLARATIONTP.DECLARATIONID = DEMANDEDECLARATIONTP.DECLARATIONID 
@@ -2196,7 +2196,21 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     
     function afficheAlimCetHtml($anneeref = '', $statuts = array())
     {
-    	$alimcet = new alimentationCET($this->dbconnect);
+        $servername = $_SERVER['SERVER_NAME'];
+        $serverport = $_SERVER['SERVER_PORT'];
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
+        {
+            $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+            $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
+        }
+        else
+        {
+            $serverprotocol = "http";
+        }
+        $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
+        $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
+        
+        $alimcet = new alimentationCET($this->dbconnect);
     	$listid = $this->getDemandesAlim($anneeref, $statuts);
     	$htmltext = '';
     	if (sizeof($listid) != 0)
@@ -2208,6 +2222,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 	    	$htmltext = $htmltext . "</tr>";
 	    	foreach ($listid as $id)
 	    	{
+	    	    $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
 	    		$alimcet->load($id);
 	    		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
 	    	}
@@ -2215,9 +2230,12 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 	    	
 	    	$htmltext = $htmltext . "</div>";
     	}
+    	else
+    	{
+    	    $htmltext = $htmltext . "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";
+    	}
     	return $htmltext;
     }
-    
     
     function afficheAlimCetHtmlPourSuppr($anneeref = '', $statuts = array())
     {
@@ -2310,6 +2328,50 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     	}
     	return $htmltext;
     }
+
+    function afficheOptionCetHtml($anneeref = '', $statuts = array())
+    {
+        $servername = $_SERVER['SERVER_NAME'];
+        $serverport = $_SERVER['SERVER_PORT'];
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
+        {
+            $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+            $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
+        }
+        else
+        {
+            $serverprotocol = "http";
+        }
+        $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
+        $full_g2t_ws_url = $g2t_ws_url . "/ws/optionWS.php";
+        
+        $optioncet = new optionCET($this->dbconnect);
+        $listid = $this->getDemandesOption($anneeref, $statuts);
+        $htmltext = '';
+        if (sizeof($listid) != 0)
+        {
+            $htmltext = "Informations sur les droits d'options sur CET pour " . $this->identitecomplete() . "<br>";
+            $htmltext = $htmltext . "<div id='option_alim_cet'>";
+            $htmltext = $htmltext . "<table class='tableausimple'>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "</tr>";
+            foreach ($listid as $id)
+            {
+                $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
+                $optioncet->load($id);
+                //$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
+                $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".$optioncet->esignatureurl()."</a></td></tr>";
+            }
+            $htmltext = $htmltext . "</table><br>";
+            
+            $htmltext = $htmltext . "</div>";
+        }
+        else
+        {
+            $htmltext = $htmltext . "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . "<br>";
+        }
+        return $htmltext;
+    }
     
     /**
      * 
@@ -2340,6 +2402,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		//echo "<br>load => pas de ligne dans la base de données<br>";
     		$errlog = "Aucune demande d'alimentation au statut ".$statuts." pour l'agent " . $this->identitecomplete() . "<br>";;
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+
+
     	}
     	else 
     	{
@@ -2524,6 +2588,50 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Il n'y a pas de responsable pour la structure " . $struct->nomlong()));
     	}
     	return $resp;
+	}
+
+    /**
+     *
+     * @param string $anneeref
+     * @param array $listStatuts
+     * @return array of esignatureid
+     */
+    function getDemandesOption($anneeref = '', $listStatuts = array())
+    {
+        $listdemandes = array();
+        $optionCET = new optionCET($this->dbconnect);
+        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE HARPEGEID = '" .  $this->harpegeid() . "'";
+
+        if ($anneeref != '')
+            $sql .= " AND ANNEEREF = '$anneeref' " ;
+        if (sizeof($listStatuts) != 0)
+        {
+            $statuts = $this->fonctions->formatlistedb($listStatuts);
+            $sql .=  "AND STATUT IN $statuts";
+        }
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement des id eSignature (droit d'option) : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            $errlog = "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . "<br>";
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $listdemandes[] = $result[0];
+            }
+        }
+        return $listdemandes;
+
     }
 }
 
