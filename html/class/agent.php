@@ -2293,6 +2293,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		$result = json_decode($result);
     		$error = curl_error ($ch);
     		curl_close($ch);
+    		$errlog = '';
     		if ($error != "")
     		{
     			$errlog = "Erreur Curl = " . $error . "<br><br>";
