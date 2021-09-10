@@ -301,11 +301,19 @@
             else // On met le vrai responsable de l'agent
             {
             	// On récupère le responsable de la structure de l'agent - Niveau 2
-            	$resp = $agent->getResponsableForCET();
+            	$code = null;
+            	if ($agent->estresponsable())
+            	{
+            		$resp = $structure->resp_envoyer_a($code);
+            	}
+            	else
+            	{
+            		$resp = $structure->agent_envoyer_a($code);
+            	}
             	$params['recipientEmails'] = array
-            		(
-            				"2*" . $resp->mail()
-            		);
+            	(
+            			"2*" . $resp->mail()
+            	);
             }
             
             if (!is_null($drh_niveau))
@@ -758,8 +766,16 @@ else {
 	    echo "Solde du CET après versement (Case G) : <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
 	    echo "<br><br>Choix du responsable :<br>";
 	    echo "<input type='radio' id='resp_demo' name='responsable' value='resp_demo' checked><label for='resp_demo'>Responsable de démo (Pascal+Elodie)</label>";
-	    echo "&nbsp;&nbsp;&nbsp;";
-	    $resp = $agent->getResponsableForCET();
+	    echo "&nbsp;&nbsp;&nbsp;";       
+	    $code = null;
+	    if ($agent->estresponsable())
+	    {
+	    	$resp = $structure->resp_envoyer_a($code);
+	    }
+	    else
+	    {
+	    	$resp = $structure->agent_envoyer_a($code);
+	    }
 	    echo "<input type='radio' id='resp_vrai' name='responsable' value='resp_vrai'><label for='resp_vrai'>Vrai responsable de l'agent (" . $resp->identitecomplete() .  " - " .  $resp->mail() . ")</label>";
 	    echo "<br><br>";
 	    echo "<input type='checkbox' id='drh_niveau' name='drh_niveau' checked><label for='drh_niveau'>Ajouter un 3e niveau dans le circuit de validation (Destinataire : " . $agent->identitecomplete()  .")</label><br>";

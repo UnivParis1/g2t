@@ -2287,7 +2287,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
     		curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
     		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    		curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
+    		curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     		$result = curl_exec($ch);
     		$result = json_decode($result);
     		$error = curl_error ($ch);
@@ -2382,6 +2383,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     function getDemandesAlim($anneeref = '', $listStatuts = array())
     {
     	$listdemandes = array();
+    	$statuts = '';
     	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '".$this->harpegeid()."' ";
     	if ($anneeref != '') 
     		$sql .= " AND TYPECONGES = '$anneeref' " ;
@@ -2400,10 +2402,8 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     	elseif (mysqli_num_rows($query) == 0)
     	{
     		//echo "<br>load => pas de ligne dans la base de données<br>";
-    		$errlog = "Aucune demande d'alimentation au statut ".$statuts." pour l'agent " . $this->identitecomplete() . "<br>";;
+    		$errlog = "Aucune demande d'alimentation ".$statuts." pour l'agent " . $this->identitecomplete() . "<br>";;
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-
-
     	}
     	else 
     	{
