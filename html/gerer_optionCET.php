@@ -245,10 +245,26 @@ else
         );
 
         // On récupère le responsable de la structure de l'agent - Niveau 2
+        
         $pasresptrouve = false;
         $structid = $agent->structureid();
         $struct = new structure($dbcon);
         $struct->load($structid);
+        $code = null;
+        if ($agent->estresponsable())
+        {
+            $resp = $struct->resp_envoyer_a($code);
+        }
+        else
+        {
+            $resp = $struct->agent_envoyer_a($code);
+        }
+        $params['recipientEmails'] = array
+        (
+            "2*" . $resp->mail()
+        );
+        
+/*        
         $resp = $struct->responsable();
         if (($resp->mail() . "") <> "")
         {
@@ -277,7 +293,8 @@ else
                 "2*" . $resp->mail()
             );
         }
-
+*/
+        
         $resp_agent = null;
         // On récupère tous les agents avec le profil RHCET - Niveau 3
         foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
@@ -882,7 +899,15 @@ else
     $structid = $agent->structureid();
     $struct = new structure($dbcon);
     $struct->load($structid);
-    $resp = $struct->responsable();
+    $code = null;
+    if ($agent->estresponsable())
+    {
+        $resp = $struct->resp_envoyer_a($code);
+    }
+    else
+    {
+        $resp = $struct->agent_envoyer_a($code);
+    }
     echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
 
     echo "<br>------------------------------------------------------------- <br>";
