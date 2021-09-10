@@ -2239,6 +2239,33 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     
     function afficheAlimCetHtmlPourSuppr($anneeref = '', $statuts = array())
     {
+    	$alimcet = new alimentationCET($this->dbconnect);
+    	$listid = $this->getDemandesAlim($anneeref, $statuts);
+    	$htmltext = '';
+    	if (sizeof($listid) != 0)
+    	{    		
+    		echo "<br>Annulation d'une demande d'alimentation.<br>";
+    		echo "<form name='form_esignature_annule'  method='post' >";
+    		echo "<input type='hidden' name='userid' value='" . $this->harpegeid() . "'>";
+    		echo "<input type='hidden' name='agentid' value='" . $this->harpegeid() . "'>";
+    		echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
+    		foreach ($listid as $id)
+    		{
+    			$alimcet->load($id);
+    			echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+    		}
+    		
+    		echo "</select>";
+    		echo "<br><br>";
+    		echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
+    		echo "</form>";
+    		echo "<br>";
+    	}
+    	return $htmltext;
+    }
+    
+    function supprimeDemandeAlimentation()
+    {
     	if (isset($_POST['annuler_demande']))
     	{
     		$esignatureid_annule = $_POST['esignatureid_annule'];
@@ -2298,7 +2325,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		{
     			$errlog = "Erreur Curl = " . $error . "<br><br>";
     		}
-    			
+    		
     		// Abandon dans G2T
     		$alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
     		$alimentationCET->motif("Annulation à la demande de l'agent");
@@ -2306,29 +2333,6 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		$errlog .= "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") a supprimé la demande d'alimentation du CET (esignatureid = ".$esignatureid_annule.")";
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
-    	$alimcet = new alimentationCET($this->dbconnect);
-    	$listid = $this->getDemandesAlim($anneeref, $statuts);
-    	$htmltext = '';
-    	if (sizeof($listid) != 0)
-    	{    		
-    		echo "<br>Annulation d'une demande d'alimentation.<br>";
-    		echo "<form name='form_esignature_annule'  method='post' >";
-    		echo "<input type='hidden' name='userid' value='" . $this->harpegeid() . "'>";
-    		echo "<input type='hidden' name='agentid' value='" . $this->harpegeid() . "'>";
-    		echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
-    		foreach ($listid as $id)
-    		{
-    			$alimcet->load($id);
-    			echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
-    		}
-    		
-    		echo "</select>";
-    		echo "<br><br>";
-    		echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
-    		echo "</form>";
-    		echo "<br>";
-    	}
-    	return $htmltext;
     }
 
     function afficheOptionCetHtml($anneeref = '', $statuts = array())

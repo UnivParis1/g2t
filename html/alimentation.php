@@ -192,6 +192,7 @@
     
 <?php 
 
+	$user->supprimeDemandeAlimentation();
 	echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . " id du modele " .$id_model. "<br>";
 
     echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
