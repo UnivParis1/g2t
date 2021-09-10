@@ -1014,6 +1014,13 @@ else {
     	$nbjmax = 0;
     	$valeur_e_test = 0;
     	$valeur_g_test = 0;
+    	$plafond_ref = NULL;
+    	$quotite = NULL;
+    	$valeur_a_test = NULL;
+    	$valeur_b_test = NULL;
+    	$valeur_c_test = NULL;
+    	$valeur_f_test = NULL;
+    	$conge_supp = NULL;
     }
     
     echo "Test du calcul DRH.<br>";
