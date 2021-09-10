@@ -165,9 +165,10 @@ else
     
     //echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
     //echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
-    //echo "<br>" . print_r($_POST,true);
-    //echo "<br><br><br>";
-    
+/*
+    echo "<br>" . print_r($_POST,true);
+    echo "<br><br><br>";
+*/    
     $anneeref = $fonctions->anneeref();
 
     // Création d'un droit d'option
@@ -518,6 +519,36 @@ else
     echo "<br>";
     echo $agent->soldecongeshtml("$anneeref");
     echo "<br>";
+
+    
+    echo "<br><hr size=3 align=center><br>";
+    echo "<br>Suppression d'une demande de droit d'option.<br>";
+    
+    
+    $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_VALIDE, OPTIONCET::STATUT_INCONNU, OPTIONCET::STATUT_REFUSE));
+    if (count($listid)>0)
+    {
+        echo "<form name='form_esignature_delete'  method='post' >";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+        echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
+        foreach ($listid as $id)
+        {
+            $optionCET = new optionCET($dbcon);
+            $optionCET->load($id);
+            if ($optionCET->statut() <> OPTIONCET::STATUT_ABANDONNE)
+            {
+                echo "<option value='" . $id  . "'>" . $id  . "</option>";
+            }
+            unset($optionCET);
+        }
+        echo "</select>";
+        echo "<br><br>";
+        echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande'>";
+        echo "</form>";
+    }
+    
+    echo "<br><br>";
     
 
 ?>
@@ -728,8 +759,7 @@ else
     echo "<input type='submit' name='simul_option' id='simul_option' value='Soumettre' >";
     echo "</form>";
     
-    
-    
+    echo "<br><br>";
     
     echo "<br><hr size=3 align=center><br>";
     echo "Création d'une option sur CET + création du document correspondant dans eSignature.<br>";
@@ -950,36 +980,6 @@ else
     echo "<br><br>";
     echo "<input type='submit' name='cree_option' id='cree_option' value='Soumettre' disabled>";
     echo "</form>";
-    
-    echo "<br><br>";
-    
-    echo "<br><hr size=3 align=center><br>";
-    echo "<br>Suppression d'une demande de droit d'option.<br>";
-    
-    
-    $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_VALIDE, OPTIONCET::STATUT_INCONNU, OPTIONCET::STATUT_REFUSE));
-    if (count($listid)>0)
-    {
-        echo "<form name='form_esignature_delete'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-        echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
-        foreach ($listid as $id)
-        {
-            $optionCET = new optionCET($dbcon);
-            $optionCET->load($id);
-            if ($optionCET->statut() <> OPTIONCET::STATUT_ABANDONNE)
-            {
-                echo "<option value='" . $id  . "'>" . $id  . "</option>";
-            }
-            unset($optionCET);
-        }
-        echo "</select>";
-        echo "<br><br>";
-        echo "<input type='submit' name='esignature_info' id='esignature_info' value='Synchronisation de la demande'>";
-        echo "</form>";
-    }
-    
     
     echo "<br><br>";
 /*
