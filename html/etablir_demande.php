@@ -28,6 +28,8 @@
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
     require_once ("./class/periodeobligatoire.php");
+    require_once ("./class/optionCET.php");
+    require_once ("./class/alimentationCET.php");
     
     $user = new agent($dbcon);
     $user->load($userid);
@@ -720,6 +722,7 @@
     			<td colspan="2">
     <?php
         if (strcasecmp($typedemande, "conges") == 0) {
+        	$erreurCET = '';
             // echo "congesanticipe = " . $congeanticipe . "<br>";
             // C'est une demande par anticipation
             if ($congeanticipe != "") {
@@ -749,8 +752,42 @@
                             }
                             else
                             {
-                                echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
-                                $nbretype = $nbretype + 1;
+                            	// si l'agent a une demande d'alimentation ou un droit d'option en cours sur son CET il ne peut utiliser ni ses reliquats ni son CET
+                            	$optionCET = new optionCET($dbcon);
+                            	$alimentationCET = new alimentationCET($dbcon);
+                            	if (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
+                            	{
+                            		if ($solde->typeabsenceid() == 'cet')
+                            		{
+                            			$erreurCET .= "Vous ne pouvez pas utiliser votre solde CET car vous avez une demande de droit d'option sur CET en cours. <br>";
+                            		}
+                            		else 
+                            		{
+                            			echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                            			$nbretype = $nbretype + 1;
+                            		}
+                            	}
+                            	elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
+                            	{
+                            		if ($solde->typeabsenceid() == 'cet')
+                            		{
+                            			$erreurCET .= "Vous ne pouvez pas utiliser votre solde CET car vous avez une demande d'alimentation du CET en cours. <br>";
+                            		}
+                            		elseif ($fonctions->congesanneeref($solde->typeabsenceid())+0 == $fonctions->anneeref()-1)
+                            		{
+                            			$erreurCET .= "Vous ne pouvez pas utiliser vos reliquats ".($fonctions->anneeref()-1)."/".$fonctions->anneeref()." car vous avez une demande d'alimentation du CET en cours. <br>";
+                            		}
+                            		else
+                            		{
+                            			echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                            			$nbretype = $nbretype + 1;
+                            		}
+                            	}
+                            	else 
+                            	{
+                            		echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                                	$nbretype = $nbretype + 1;
+                            	}
                             }
                         }
                     }
@@ -800,6 +837,10 @@
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
+        if ($erreurCET != '')
+        {
+        	echo $erreurCET."<br>";
+        }
         if (! $masquerboutonvalider)
             echo "<input type='submit' name='valider' id='valider' value='Soumettre' />";
         echo "<br><br>";

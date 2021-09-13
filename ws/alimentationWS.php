@@ -404,7 +404,10 @@
                             }
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour de la demande d'alimentation du CET $esignatureid de l'agent " . $alimentationCET->agentid()));
                             $alimentationCET->statut($status);
-                            $alimentationCET->motif($reason);
+                            if ($status <> alimentationCET::STATUT_ABANDONNE)
+                            {
+                            	$alimentationCET->motif($reason);
+                            }
                             $erreur = $alimentationCET->store();
         
                             if ($erreur != "")

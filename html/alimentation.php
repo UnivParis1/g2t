@@ -27,9 +27,11 @@
     require_once ("./class/complement.php");
     require_once ("./class/periodeobligatoire.php");
     require_once ("./class/alimentationCET.php");
+    require_once ("./class/optionCET.php");
     
     $user = new agent($dbcon);
     $user->load($userid);
+    $optionCET = new optionCET($dbcon);
 
     if (isset($_POST["agentid"]))
     {
@@ -702,10 +704,10 @@ else {
 		echo "</form>";*/
 		
 	}
-	/*elseif
+	elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
 	{
-		// TODO : TESTER l'existence d'une demande de droit d'option dont le statut est différent de abandonné/refusé
-	}*/
+		echo "Vous avez une demande de droit d'option en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée. <br>";
+	}
 	else 
 	{
 		$pr = $agent->getPlafondRefCet();
@@ -741,7 +743,7 @@ else {
 		echo "</form>";*/
 		
 		//echo "Anneref = $anneeref <br>";
-		echo $agent->soldecongeshtml($anneeref);
+		echo $agent->soldecongeshtml($anneeref + 1);
 	    
 	    echo "<br><hr size=3 align=center><br>";
 	    
