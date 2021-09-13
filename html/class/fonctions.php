@@ -992,6 +992,69 @@ class fonctions
     	// echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
     	return "$result[0]";
     }
+
+    /**
+     *
+     * @param string YYYYMMDD the beginning date to set
+     * @return string the beginning of the cet option period in format YYYYMMDD
+     */
+    public function debutoptioncet($date=NULL)
+    {
+        if (!is_null($date))
+        {
+            $update = "UPDATE CONSTANTES SET VALEUR = '" . $this->formatdatedb($date) . "' WHERE NOM = 'DEBUTOPTIONCET'";
+            $query = mysqli_query($this->dbconnect, $update);
+        }
+        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTOPTIONCET' AND VALEUR <> ''";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->debutoptioncet : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        if (mysqli_num_rows($query) == 0) {
+            $errlog = "Fonctions->debutoptioncet : Pas de début de période défini dans la base. On force au 0101 de l'année suivante. ";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            return ($this->anneeref()+1).'0101';
+        }
+        $result = mysqli_fetch_row($query);
+        // echo "Fonctions->debutoptioncet : Debut de période ==> " . $result[0] . ".<br>";
+        return "$result[0]";
+    }
+    
+    /**
+     *
+     * @param string YYYYMMDD the end date to set
+     * @return string the end of the cet option period in format YYYYMMDD
+     */
+    public function finoptioncet($date=NULL)
+    {
+        if (!is_null($date))
+        {
+            $update = "UPDATE CONSTANTES SET VALEUR = '" . $this->formatdatedb($date) . "' WHERE NOM = 'FINOPTIONCET'";
+            $query = mysqli_query($this->dbconnect, $update);
+        }
+        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINOPTIONCET'";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->finoptioncet : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        if (mysqli_num_rows($query) == 0) {
+            $errlog = "Fonctions->finoptioncet : Pas de fin de période définie dans la base. On force au 0131 de l'année suivante. ";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            return ($this->anneeref()+1).'0131';
+        }
+        $result = mysqli_fetch_row($query);
+        // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
+        return "$result[0]";
+    }
+    
     
     public function getidmodelalimcet()
     {

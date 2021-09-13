@@ -169,21 +169,24 @@
     $id_model = $fonctions->getidmodelalimcet();
     $eSignature_url = "https://esignature-test.univ-paris1.fr";
     
+/*
     $servername = $_SERVER['SERVER_NAME'];
     $serverport = $_SERVER['SERVER_PORT'];
     if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
     {
-        $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-        $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
+       $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+       $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
     }
     else
     {
-        $serverprotocol = "http";
+       $serverprotocol = "http";
     }
-    
+     
     //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
     $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
     $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
+*/
+    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
 ?>
     <script type="text/javascript">
           //window.addEventListener("load", function(event) {

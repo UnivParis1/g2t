@@ -97,6 +97,11 @@ switch ($_SERVER['REQUEST_METHOD'])
                         $affectation = current($affectationliste);
                         $infosLdap = $agent->getInfoDocCet();
                         $nameStructComplete = $structure->nomcompletcet();
+                        // quotité sur la période 01/09/N-1 - 31/08/N
+                        $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
+                        $datefin = $fonctions->anneeref().$fonctions->finperiode();
+                        $quotite = $agent->getQuotiteMoyPeriode($datedebut, $datefin).'%';
+                        
                         $agent = array('uid' => $agent->harpegeid(),
                             'email' => $agent->mail(),
                             'name' => $agent->nom(),
@@ -106,7 +111,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                                 'addr' => $infosLdap['postaladdress'],
                                 'type' => $structure->typestruct()),
                             'ref_year' => $anneeref,
-                            'activity' => $affectation->quotite() == '100%' ? 'Temps complet' : $affectation->quotite(),
+                            'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
                             'corps' => $agent->typepopulation()
                         );
                         error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos du droit d'option " . $esignatureid . " => Pas d'erreur"));
@@ -279,7 +284,10 @@ switch ($_SERVER['REQUEST_METHOD'])
                      }
                      error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour du droit d'option $esignatureid de l'agent " . $optionCET->agentid()));
                      $optionCET->statut($status);
-                     $optionCET->motif($reason);
+                     if ($status <> optionCET::STATUT_ABANDONNE)
+                     {
+                        $optionCET->motif($reason);
+                     }
                      $erreur = $optionCET->store();
                      
                      if ($erreur != "")

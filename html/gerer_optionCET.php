@@ -143,9 +143,10 @@ else
         
     require ("includes/menu.php");
     
-    $id_model = "251701";
-    $eSignature_url = "https://esignature-test.univ-paris1.fr";
-    
+    $id_model = $fonctions->liredbconstante("IDMODELOPTIONCET");  //    "251701";
+    $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL");  //   "https://esignature-test.univ-paris1.fr";
+
+/*
     $servername = $_SERVER['SERVER_NAME'];
     $serverport = $_SERVER['SERVER_PORT'];
     if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
@@ -161,6 +162,8 @@ else
     //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
     $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
     $full_g2t_ws_url = $g2t_ws_url . "/ws/optionWS.php";
+*/
+    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
     
     
     //echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
@@ -441,6 +444,9 @@ else
             var_dump($response);
             echo '</pre>';
 */
+            $optionCET->motif("Annulation à la demande de l'agent");
+            $optionCET->store();
+
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_delete après appel du WS eSignature de suppression."));
             $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_delete);
         }
@@ -816,7 +822,20 @@ else
         // On fait tous les contrôles pour voir si l'agent peut deposer une demande d'option sur CET
         // ----------------------------------------------------------------------------------------
         
-        // 1) Est-ce que l'agent à un CET ==> Sinon pas de droit d'option possible
+        // 1) Est-ce que la période de demande de droit d'option est ouverte
+        // Si campagne en cours et pas de demande en cours
+        $today = date('Ymd');
+        $debutperiode = $fonctions->debutoptioncet();
+        $finperiode = $fonctions->finoptioncet();
+        echo "La période afin d'exercer un droit d'option sur CET est comprise entre le " . $fonctions->formatdate($debutperiode) . " et le " . $fonctions->formatdate($finperiode)  . ".<br>";
+        if ($today < $debutperiode || $today > $finperiode)
+        {
+            echo "La campagne de droit d'option du CET est fermée actuellement.<br>";
+            die();
+        }
+        
+        
+        // 2) Est-ce que l'agent à un CET ==> Sinon pas de droit d'option possible
         $cet = new cet($dbcon);
         $erreur = $cet->load($agentid);
         if ($erreur <> "")
@@ -825,7 +844,7 @@ else
             die();
         }
         
-        // 2) Est-ce qu'il a déja une demande d'option en cours pour l'annee de référence ==> On ne peut pas faire 2 demandes d'option en même tps
+        // 3) Est-ce qu'il a déja une demande d'option en cours pour l'annee de référence ==> On ne peut pas faire 2 demandes d'option en même tps
         $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_INCONNU));
         if (count($listid)>0)
         {
@@ -833,7 +852,7 @@ else
             die();
         }
         
-        // 3) Est-ce qu'une demande de droit d’alimentation de CET est en l’état “En cours” ou “En préparation”
+        // 4) Est-ce qu'une demande de droit d’alimentation de CET est en l’état “En cours” ou “En préparation”
         $typeconge = 'ann' . substr(($fonctions->anneeref()-1),2,2);
         echo "Type annuel de congés  = $typeconge <br><br>";
         $listid = $agent->getDemandesAlim($typeconge,array(ALIMENTATIONCET::STATUT_EN_COURS, ALIMENTATIONCET::STATUT_PREPARE, ALIMENTATIONCET::STATUT_INCONNU));
@@ -843,7 +862,7 @@ else
             die();
         }
         
-        // 4) Est-ce qu'il a une demande de congés sur CET en cours ==> Son solde sur CET n'est pas à jour.
+        // 5) Est-ce qu'il a une demande de congés sur CET en cours ==> Son solde sur CET n'est pas à jour.
         //echo "Date interval = " . ($fonctions->anneeref()-1) . $fonctions->debutperiode() . "<br><br>";
         $debutinterval = ($fonctions->anneeref()-1) . $fonctions->debutperiode();
         $fininterval = ($fonctions->anneeref()+1) . $fonctions->finperiode();
@@ -858,7 +877,6 @@ else
                 die();
             }
         }
-        
         if (count((array)$agent->CETaverifier($debutinterval))>0)
         {
             // Il y a des demandes de congés sur CET qui ne sont pas à jour => On s'arrète là
