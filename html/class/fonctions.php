@@ -1089,6 +1089,57 @@ class fonctions
          */
     }
     
+    public function get_g2t_ws_url()
+    {
+        // On récuère le nom du serveur G2T
+        $servername = $_SERVER['SERVER_NAME'];
+        
+        
+        // Si on passe par un proxy ==> HTTP_X_FORWARDED_PROTO est défini dans le header (protocole utilisé entre le client et le proxy)
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
+        {
+            $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+        }
+        // Si la requète vient directement sur le serveur, on regarde si $_SERVER['HTTPS'] est défini
+        else if (isset($_SERVER['HTTPS']))
+        {
+             $serverprotocol = "https";
+        }
+        // Sinon c'est de l'HTTP
+        else
+        {
+            $serverprotocol = "http";
+        }
+        
+        //Si on passe par un proxy => HTTP_X_FORWARDED_PORT est défini dans le header (port utilisé entre le client et le proxy)
+        if (isset($_SERVER['HTTP_X_FORWARDED_PORT']))
+        {
+            $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
+        }
+        // Si la requête vient directement sur le serveur, on regarde si $_SERVER['SERVER_PORT'] est défini
+        else if (isset($_SERVER['SERVER_PORT']))
+        {
+            // Le port pour parler au serveur est contenu dans la variable
+            $serverport = $_SERVER['SERVER_PORT'];
+        }
+        // Si le protocole est en https => Le port par défaut est 443
+        else if ($serverprotocol == "https")
+        {
+            $serverport = "443";
+        }
+        // Si c'est de l'HTTP ou si on n'a aucune information => Le port par défaut est 80
+        else
+        {
+            $serverport = "80";
+        }
+        
+        //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
+        $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
+        error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est => $g2t_ws_url" ));
+        
+        return $g2t_ws_url;
+    }
+    
     
 }
 ?>

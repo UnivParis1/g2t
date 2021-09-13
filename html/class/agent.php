@@ -2196,6 +2196,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     
     function afficheAlimCetHtml($anneeref = '', $statuts = array())
     {
+/*
         $servername = $_SERVER['SERVER_NAME'];
         $serverport = $_SERVER['SERVER_PORT'];
         if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
@@ -2209,7 +2210,9 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
         }
         $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
         $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
+*/
         
+        $full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
         $alimcet = new alimentationCET($this->dbconnect);
     	$listid = $this->getDemandesAlim($anneeref, $statuts);
     	$htmltext = '';
@@ -2337,6 +2340,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
 
     function afficheOptionCetHtml($anneeref = '', $statuts = array())
     {
+/*
         $servername = $_SERVER['SERVER_NAME'];
         $serverport = $_SERVER['SERVER_PORT'];
         if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
@@ -2350,6 +2354,9 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
         }
         $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
         $full_g2t_ws_url = $g2t_ws_url . "/ws/optionWS.php";
+*/
+        $full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
+        
         
         $optioncet = new optionCET($this->dbconnect);
         $listid = $this->getDemandesOption($anneeref, $statuts);
@@ -2359,14 +2366,14 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
             $htmltext = "Informations sur les droits d'options sur CET pour " . $this->identitecomplete() . "<br>";
             $htmltext = $htmltext . "<div id='option_alim_cet'>";
             $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
             $htmltext = $htmltext . "</tr>";
             foreach ($listid as $id)
             {
                 $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
                 $optioncet->load($id);
                 //$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
-                $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
+                $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
             }
             $htmltext = $htmltext . "</table><br>";
             
