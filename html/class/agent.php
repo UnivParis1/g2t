@@ -2566,8 +2566,20 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		{
     			$nbjours += 0.5;
     		}
+    		elseif ($element->type() == 'atten')
+    		{
+    			$date_element = $this->fonctions->formatdatedb($element->date());
+    			$list_demandes = $this->demandesliste($date_element, $date_element + 1);
+    			foreach($list_demandes as $demande)
+    			{
+    				if ($demande->type() == $type_conge)
+    				{
+    					$nbjours += 0.5;
+    				}
+    			}
+    		}
     	}
-    	$errlog .= "$nbjours jours utilisés";
+    	$errlog .= " $nbjours jours utilisés";
     	error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	return $nbjours;
     }
