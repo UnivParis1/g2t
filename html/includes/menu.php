@@ -352,15 +352,39 @@
 						</form>
 						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
 					</li>
-<!--  
+<?php
+    // Si la date limite d'utilisation des reliquats est dépassée on n'affiche pas l'alimentation et le droit d'option sur CET
+	$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
+	$queryreliq = mysqli_query($dbcon, $sqldatereliq);
+	$erreur = mysqli_error($dbcon);
+	if ($erreur != "")
+	{
+		$errlog = "Problème SQL dans le chargement de la date limite d'utilisation du reliquat : " . $erreur;
+		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+	}
+	elseif ($res = mysqli_fetch_row($queryreliq))
+	{
+		$datereliq = ($fonctions->anneeref()+1).$res[0];
+	    if (date("Ymd") <= $datereliq) {
+?>  
 					<li onclick='document.alim_cet.submit();'>
-						<form name='alim_cet' method='post' action="alimentation.php">
+						<form name='alim_cet' method='post' action="gerer_alimentationCET.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
 							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
 						</form>
 						<a href="javascript:document.alim_cet.submit();">Alimentation du CET</a>
 					</li>
--->
+					<li onclick='document.option_cet.submit();'>
+						<form name='option_cet' method='post' action="gerer_optionCET.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.option_cet.submit();">Droit d'option sur CET</a>
+					</li>
+<?php
+	    }
+    }
+?>
 					<li onclick='document.agent_aide.submit();'>
 						<form name='agent_aide' method='get' TARGET=_BLANK action="https://ent.univ-paris1.fr/assets/aide/canal/g2t.html">
 						</form> 
@@ -717,6 +741,12 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
 						</form>
 						<a href="javascript:document.rh_gest_periode.submit();">Gestion des périodes de fermeture</a>
+					</li>
+					<li onclick='document.rh_param_cet.submit();'>
+						<form name='rh_param_cet' method='post' action="param_cet.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
 					</li>
 					
 <?php
