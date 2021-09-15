@@ -322,6 +322,27 @@
                                 break;
                             case 'refused':
                                 $status = $alimentationCET::STATUT_REFUSE;
+                                // Récupération du commentaire d'esignature
+                                $curl2 = curl_init();
+                                $opts2 = [
+                                		CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                                		CURLOPT_RETURNTRANSFER => true,
+                                		CURLOPT_SSL_VERIFYPEER => false,
+                                		CURLOPT_PROXY => ''
+                                ];
+                                curl_setopt_array($curl2, $opts2);
+                                curl_setopt($curl2, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                                $json2 = curl_exec($curl2);
+                                $error2 = curl_error ($curl2);
+                                curl_close($curl2);
+                                if ($error2 != "")
+                                {
+                                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error2));
+                                }
+                                //echo "<br>" . print_r($json,true) . "<br>";
+                                $response2 = json_decode($json2, true);
+                                if (isset($response2['comments'][0]['text']))
+                                	$reason = $response2['comments'][0]['text'];
                                 break;
                             case 'completed' :
                             case 'exported' :
@@ -334,7 +355,7 @@
                                 else
                                     $status = $alimentationCET::STATUT_INCONNU;
                                 break;
-                            case 'deleted' :
+                            case 'deleted' : // TODO : Attention le document est dans la corbeille
                             case 'canceled' :
                             case '' :
                                 $status = $alimentationCET::STATUT_ABANDONNE;
@@ -407,7 +428,7 @@
                             if ($status <> alimentationCET::STATUT_ABANDONNE)
                             {
                             	$alimentationCET->motif($reason);
-                            }
+                            } 
                             $erreur = $alimentationCET->store();
         
                             if ($erreur != "")
