@@ -197,6 +197,35 @@ switch ($_SERVER['REQUEST_METHOD'])
                          break;
                      case 'refused':
                          $status = $optionCET::STATUT_REFUSE;
+                         error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
+                         // On interroge le WS eSignature /ws/signrequests/{id}
+                         $curl = curl_init();
+                         $params_string = "";
+                         $opts = [
+                             CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                             CURLOPT_RETURNTRANSFER => true,
+                             CURLOPT_SSL_VERIFYPEER => false,
+                             CURLOPT_PROXY => ''
+                         ];
+                         curl_setopt_array($curl, $opts);
+                         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                         $json = curl_exec($curl);
+                         $error = curl_error ($curl);
+                         curl_close($curl);
+                         if ($error != "")
+                         {
+                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl (récup commentaire) =>  " . $error));
+                         }
+                         $response = json_decode($json, true);
+                         if (isset($response['comments']))
+                         {
+                             $reason = '';
+                             foreach ($response['comments'] as $comment)
+                             {
+                                 $reason = $reason . " " . $comment['text'];
+                             }
+                             $reason = trim($reason);
+                         }
                          break;
                      case 'completed' :
                      case 'exported' :
