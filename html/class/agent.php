@@ -2274,10 +2274,11 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     		$esignatureid_annule = $_POST['esignatureid_annule'];
     		$alimentationCET = new alimentationCET($this->dbconnect);
     		$alimentationCET->load($esignatureid_annule);
-    		// TODO récupérer statut si validée réalimenter le reliquat
+    		// récupérer statut si validée réalimenter le reliquat, déduire du CET et alerter la DRH
     		$statut_actuel = $alimentationCET->statut();
     		if ($statut_actuel == alimentationCET::STATUT_VALIDE)
     		{
+    			// réattribution des reliquats
     			$solde = new solde($this->dbconnect);
     			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
     			$solde->load($this->harpegeid(), $alimentationCET->typeconges());
@@ -2290,6 +2291,18 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     			
     			// Ajouter dans la table des commentaires la trace de l'opération
     			$this->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()),"Annulation de demande d'alimentation CET");
+    			
+    			// déduction du CET
+    			
+    			$cet = new cet($this->dbconnect);
+    			$erreur = $cet->load($this->harpegeid);
+    			if ($erreur == "") {
+    				$cet->cumultotal($cet->cumultotal() - $alimentationCET->valeur_f());
+    				$cumulannuel = $cet->cumulannuel($this->fonctions->anneeref());
+    				$cumulannuel = $cumulannuel + $alimentationCET->valeur_f();
+    				$cet->cumulannuel($this->fonctions->anneeref(),$cumulannuel);
+    				$cet->store();
+    			}
     			
     			// alerter la DRH
     			
