@@ -2579,6 +2579,21 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     			}
     		}
     	}
+    	// On ajoute le nombre de jours déposés sur le CET au titre de l'année de référence
+    	$alimentationCET = new alimentationCET($this->dbconnect);
+    	$list_id_alim = $this->getDemandesAlim($type_conge, array($alimentationCET::STATUT_VALIDE));
+    	if (sizeof($list_id_alim) > 0)
+    	{
+    		$datedeb_db = $this->fonctions->formatdatedb($datedeb);
+    		$datefin_db = $this->fonctions->formatdatedb($datefin);
+    		foreach ($list_id_alim as $id_alim)
+    		{
+    			$alimentationCET->load($id_alim);
+    			$date_alim = $this->fonctions->formatdatedb($alimentationCET->datestatut());
+    			if ($date_alim >= $datedeb_db && $date_alim <= $datefin_db)
+    				$nbjours += $alimentationCET->valeur_f();
+    		}
+    	}
     	$errlog .= " $nbjours jours utilisés";
     	error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	return $nbjours;
