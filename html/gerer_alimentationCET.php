@@ -689,8 +689,12 @@
     }
 	</script>
 <?php
-// Si campagne en cours et pas de demande en cours
-$today = date('Ymd');
+// Si campagne en cours, pas d'interruption d'affectation avec solde CET non nul et pas de demande en cours
+$today = date('Ymd'); 
+$ayearbefore = new DateTime(); 
+$ayearbefore->sub(new DateInterval('P1Y')); 
+$ayearbefore = $ayearbefore->format('Ymd');
+$hasInterruptionAff = $user->hasInterruptionAffectation($ayearbefore, $today);
 if ($today < $fonctions->debutalimcet() || $today > $fonctions->finalimcet())
 {
 	echo "La campagne d'alimentation du CET est fermée actuellement.<br>";
@@ -711,14 +715,14 @@ else {
 	{
 		echo "Vous avez une demande de droit d'option en cours. Vous pourrez effectuer une nouvelle demande d'alimentation lorsque celle-ci sera terminée ou annulée. <br>";
 	}
+	elseif ($hasInterruptionAff && $valeur_a == 0)
+	{
+		echo "Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise). <br>";
+	}
 	else 
 	{
 		$pr = $agent->getPlafondRefCet();
 		echo "Plafond de référence pour l'agent : $pr <br>";
-		if ($user->hasInterruptionAffectation(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()))
-		{
-			echo "Interruption d'affectation <br>";
-		}
 		// Consommation des congés au début de la période (case C)
 		$consodeb = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
 		echo "Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés au ".$fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->finperiode())." : $consodeb<br>";
