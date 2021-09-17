@@ -2299,7 +2299,7 @@ WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID L
     			if ($erreur == "") {
     				$cet->cumultotal($cet->cumultotal() - $alimentationCET->valeur_f());
     				$cumulannuel = $cet->cumulannuel($this->fonctions->anneeref());
-    				$cumulannuel = $cumulannuel + $alimentationCET->valeur_f();
+    				$cumulannuel = $cumulannuel - $alimentationCET->valeur_f();
     				$cet->cumulannuel($this->fonctions->anneeref(),$cumulannuel);
     				$cet->store();
     			}
