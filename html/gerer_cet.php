@@ -362,7 +362,7 @@
         // Affichage du solde de l'année en cours
         echo $agent->soldecongeshtml($fonctions->anneeref());
         // On affiche les commentaires pour avoir l'historique
-        echo $agent->affichecommentairecongehtml();
+        echo $agent->affichecommentairecongehtml(false, $fonctions->anneeref() - 2);
     }
 
 ?>

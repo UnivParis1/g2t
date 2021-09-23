@@ -1886,15 +1886,29 @@ AND DEMANDE.STATUT='v'";
      * @param
      * @return string the html text of the array
      */
-    function affichecommentairecongehtml($showonlycomplement = false)
+    function affichecommentairecongehtml($showonlycomplement = false, $anneeref = null)
     {
-        $sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID 
-FROM COMMENTAIRECONGE,TYPEABSENCE 
-WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
-                                             OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
-                                             OR COMMENTAIRECONGE.TYPEABSENCEID='cet') 
-                                           AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
-        // echo "SQL = " . $sql . "<br>";
+        //echo "<br>anneeref = XXX" . $anneeref  . "XXX<br>";
+        if (is_null($anneeref))
+        {
+            $sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID 
+    FROM COMMENTAIRECONGE,TYPEABSENCE 
+    WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
+                                                 OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
+                                                 OR COMMENTAIRECONGE.TYPEABSENCEID='cet') 
+                                               AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
+        }
+        else
+        {
+            $sql = "SELECT HARPEGEID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID
+    FROM COMMENTAIRECONGE,TYPEABSENCE
+    WHERE HARPEGEID='" . $this->harpegeid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
+                                                 OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
+                                                 OR COMMENTAIRECONGE.TYPEABSENCEID='cet')
+                                               AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
+            
+        }
+        //echo "SQL = " . $sql . "<br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
