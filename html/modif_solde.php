@@ -159,6 +159,19 @@ if (isset($_POST["userid"]))
 
     if (!is_null($agent)) {
         echo "<br><br>";
+        
+/*
+        $solde_agent = ($agent->getQuotiteMoyPeriode($anneeref . $fonctions->debutperiode(), ($anneeref+1) . $fonctions->finperiode()) * $fonctions->liredbconstante("NBJOURS" . $anneeref))/100;
+        $partie_decimale = $solde_agent - floor($solde_agent);
+        if ((float) $partie_decimale < (float) 0.25)
+            $solde_agent = floor($solde_agent);
+        elseif ((float) ($partie_decimale >= (float) 0.25) && ((float) $partie_decimale < (float) 0.75))
+            $solde_agent = floor($solde_agent) + (float) 0.5;
+        else
+            $solde_agent = floor($solde_agent) + (float) 1;
+                
+        echo "Le solde initial de l'agent pour $anneeref / " . ($anneeref+1) . " devrait être de : " . $solde_agent . "<br>";
+*/        
         echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
         //echo "Informations sur les congés de " . $agent->identitecomplete() . "<br>";
         $solde = new solde($dbcon);
@@ -169,6 +182,8 @@ if (isset($_POST["userid"]))
         }
         else
         {
+            echo $agent->soldecongeshtml("$anneeref");
+            echo "<br>";
             echo "<form name='submit_solde'  method='post' >";
             echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
             echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->harpegeid() . "' class='agent' /> ";
