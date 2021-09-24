@@ -168,6 +168,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                  }
                  //echo "<br>" . print_r($json,true) . "<br>";
                  $response = json_decode($json, true);
+                 error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json est : " . var_export($response,true)));
                  if (isset($response['form_current_status']))
                     $current_status = $response['form_current_status'];
                  else
@@ -175,6 +176,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                  error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status'"));
                  $optionCET = new optionCET($dbcon);
                  $validation = $optionCET::STATUT_INCONNU;
+/*              
                  if (isset($response['form_data_accepte']))
                  {
                      if ($response['form_data_accepte']=='on')
@@ -185,6 +187,56 @@ switch ($_SERVER['REQUEST_METHOD'])
                      if ($response['form_data_refuse']=='on')
                          $validation = $optionCET::STATUT_REFUSE;
                  }
+*/
+/*                     
+                 foreach($response as $key => $value) 
+                 {
+                     if (preg_match("/form_data_d.+cision/i",$key))
+                     {
+                         error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
+                     }
+                 }
+*/                 
+                 error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
+                 foreach((array)$response as $key => $value)
+                 {
+                     if (preg_match("/form_data_d.+cision/i",$key))
+                     {
+                         error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
+                         if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
+                         {
+                             error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut YES."));
+                             $validation = $optionCET::STATUT_VALIDE;
+                             break;
+                         }
+                         elseif (strcasecmp($value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
+                         {
+                             error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut NO."));
+                             $validation = $optionCET::STATUT_REFUSE;
+                             break;
+                         }
+                         else
+                         {
+                             error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key est vide."));
+                             $validation = $optionCET::STATUT_INCONNU;
+                         }
+                     }
+                 }
+                 
+                 if ($validation == $optionCET::STATUT_REFUSE)
+                 {
+                     foreach((array)$response as $key => $value)
+                     {
+                         if (preg_match("/form_data_motifrefus/i",$key))
+                         {
+                             error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key existe."));
+                             $reason = $response[$key];
+                             break;
+                          }
+                     }
+                 }
+                 
+                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Après tous les tests on as : current_status = $current_status     validation = $validation     reason = $reason"));
                  
                  switch (strtolower($current_status))
                  {
@@ -236,7 +288,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                          elseif ($validation == $optionCET::STATUT_REFUSE)
                             $status = $optionCET::STATUT_REFUSE;
                          else
-                             $status = $optionCET::STATUT_INCONNU;
+                            $status = $optionCET::STATUT_INCONNU;
                          break;
                      case 'deleted' :
                      case 'canceled' :

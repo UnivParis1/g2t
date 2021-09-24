@@ -140,9 +140,14 @@ else
     $esignatureid_delete = null;
     if (isset($_POST["esignatureid_delete"]))
         $esignatureid_delete = $_POST["esignatureid_delete"];
+    
+    $mode = "agent";
+    if (isset($_POST["mode"]))
+        $mode = $_POST["mode"];
+    
         
     require ("includes/menu.php");
-    
+
     $id_model = $fonctions->liredbconstante("IDMODELOPTIONCET");  //    "251701";
     $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL");  //   "https://esignature-test.univ-paris1.fr";
 
@@ -173,6 +178,32 @@ else
     echo "<br><br><br>";
 */    
     $anneeref = $fonctions->anneeref();
+    
+    // Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
+    if (is_null($agentid) and $mode == 'rh')
+    {
+        echo "<form name='demandeforagent'  method='post' action='gerer_optionCET.php'>";
+        echo "Personne à rechercher : <br>";
+        echo "<form name='selectagentcet'  method='post' >";
+        
+        echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
+        echo "' size=40 />";
+        echo "<input type='hidden' id='agentid' name='agentid' value='";
+        echo "' class='agent' /> ";
+        ?>
+        <script>
+                $("#agent").autocompleteUser(
+                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
+  	    </script>
+    	<?php
+        echo "<br>";
+        
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='submit' value='Soumettre' >";
+        echo "</form>";
+    }
 
     // Création d'un droit d'option
     if (!is_null($cree_option))
@@ -235,7 +266,7 @@ else
             
         // On appelle le WS eSignature pour créer le document
         $curl = curl_init();
-        echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
+        // echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
         $params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
         
         $params = array
@@ -348,7 +379,7 @@ else
         };
         array_walk( $params, $walk );
         $params_string = implode( '&', $output );
-        echo "<br>Output = " . $params_string . '<br><br>';
+        //echo "<br>Output = " . $params_string . '<br><br>';
         
         $opts = [
             CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
@@ -487,526 +518,531 @@ else
     }
     
     
-    
-    echo "<br><hr size=3 align=center><br>";
-    // Affichage des droits d'option CET dans la base G2T
-    $optionCET = new optionCET($dbcon);
-    $agent = new agent($dbcon);
-    $agent->load($agentid);
-    
-/*    
-    $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE HARPEGEID = '" .  $agentid . "'";
-    $query = mysqli_query($dbcon, $sql);
-    $erreur = mysqli_error($dbcon);
-    if ($erreur != "")
+
+    if (! is_null($agentid))
     {
-        $errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
-        echo $errlog;
-    }
-    else
-    {
-        echo "Informations sur les droits d'options sur CET pour " . $agent->identitecomplete() . "<br>";
-        echo "<div id='droit_option_cet'>";
-        echo "<table class='tableausimple'>";
-        echo "<tr><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
-        echo "</tr>";
-        while ($result = mysqli_fetch_row($query))
-        {
-            $id = $result[0];
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" On va afficher la demande $id => On la synchronise avec eSignature." ));
-            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
-            $option = new optionCET($dbcon);
-            $option->load($id);
-            echo "<tr><td class='cellulesimple'>" . $fonctions->formatdate(substr($option->datecreation(), 0, 10)).' '.substr($option->datecreation(), 10) . "</td><td class='cellulesimple'>" . $option->anneeref() . "</td><td class='cellulesimple'>" . $option->valeur_i() . "</td><td class='cellulesimple'>" . $option->valeur_j() . "</td><td class='cellulesimple'>" . $option->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($option->datestatut()) . "</td><td class='cellulesimple'>" . $option->motif() . "</td><td class='cellulesimple'><a href='" . $option->esignatureurl() . "' target='_blank'>".$option->esignatureurl()."</a></td></tr>";
-            unset ($option);
-        }
-        echo "</table><br>";
+        echo "<br><hr size=3 align=center><br>";
+        // Affichage des droits d'option CET dans la base G2T
+        $optionCET = new optionCET($dbcon);
+        $agent = new agent($dbcon);
+        $agent->load($agentid);
         
-        echo "</div>";
-    }
-
-    echo "<br><br>";
-*/
-    echo $agent->afficheOptionCetHtml($fonctions->anneeref());
-    
-    
-    echo "<br>";
-    echo $agent->soldecongeshtml("$anneeref");
-    echo "<br>";
-
-    
-    echo "<br><hr size=3 align=center><br>";
-    echo "<br>Suppression d'une demande de droit d'option.<br>";
-    
-    
-    $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_VALIDE, OPTIONCET::STATUT_INCONNU, OPTIONCET::STATUT_REFUSE));
-    if (count($listid)>0)
-    {
-        echo "<form name='form_esignature_delete'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-        echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
-        foreach ($listid as $id)
+    /*    
+        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE HARPEGEID = '" .  $agentid . "'";
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "")
         {
-            $optionCET = new optionCET($dbcon);
-            $optionCET->load($id);
-            if ($optionCET->statut() <> OPTIONCET::STATUT_ABANDONNE)
-            {
-                echo "<option value='" . $id  . "'>" . $id  . "</option>";
-            }
-            unset($optionCET);
-        }
-        echo "</select>";
-        echo "<br><br>";
-        echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande'>";
-        echo "</form>";
-    }
-    
-    echo "<br><br>";
-    
-
-?>
-    <script type="text/javascript">
-    function opendemande() {
-    	demandeliste = document.getElementById("esignatureid_aff")
-    	urldemande = demandeliste.value;
-    	//alert("opendemande est activé : " + urldemande );
-    	window.open(urldemande);
-    	return false;
-    }
-    
-    function isInt(value) {
-		return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
-	}
-    
-    function update_case()
-    {
-    	//alert("Update Case est activé");
-    	
-    	// On récupère la valeur A
-    	document.getElementById("valeur_a").value = document.getElementById("valeur_a").value.replace(",",".");
-        valeur_a = document.getElementById("valeur_a").value;
-        valeur_a = parseInt(valeur_a);
-        
-        // On récupère la valeur G
-    	document.getElementById("valeur_g").value = document.getElementById("valeur_g").value.replace(",",".");
-       	valeur_g = document.getElementById("valeur_g").value;
-        valeur_g = parseInt(valeur_g);
-        
-    	// On récupère la valeur H 
-    	document.getElementById("valeur_h").value = document.getElementById("valeur_h").value.replace(",",".");
-    	valeur_h = document.getElementById("valeur_h").value;
-    	valeur_h  = parseInt(valeur_h);
-
-        // On récupère la valeur I et on efface le label correspondant
-    	document.getElementById("valeur_i").value = document.getElementById("valeur_i").value.replace(",",".");
-       	valeur_i = document.getElementById("valeur_i").value;
-    	label_i = document.getElementById("label_i");
-    	if (label_i !== null)
-    		label_i.innerHTML = "";
-       	
-       	// On récupère la valeur J et on efface le label correspondant
-    	document.getElementById("valeur_j").value = document.getElementById("valeur_j").value.replace(",",".");
-       	valeur_j = document.getElementById("valeur_j").value;
-    	document.getElementById("label_j").innerHTML = "";
-       	
-       	// Les valeurs calculées K et L sont effacées et les labels correspondant également
- 		document.getElementById("valeur_k").value = "";
-       	document.getElementById("label_k").innerHTML = "";
- 		document.getElementById("valeur_l").value = "";
- 		document.getElementById("label_l").innerHTML = "";
-       	
-    	const button = document.getElementById('cree_option')
-    	deactive_button = false;
-
-    	//////////////////////////////////////////////////////
-    	// Traitement de la valeur de la case I
-    	//////////////////////////////////////////////////////
-		if (valeur_i == "")
-		{
-    		deactive_button = true;
-   		}
-    	else if (isNaN(valeur_i))
-    	{
-    		//alert("La valeur de la case I n'est pas un nombre.");
-    		if (label_i !== null)
-    			label_i.innerHTML = "La valeur de la case I n'est pas un nombre.";
-    		deactive_button = true;
-    	}    	
-    	else if (!isInt(valeur_i))
-    	{
-    		if (label_i !== null)
-    			label_i.innerHTML = "La valeur de la case I doit être un entier.";
-    		deactive_button = true;
-    	}
-    	else if (parseInt(valeur_i) < 0)
-    	{
-    		if (label_i !== null)
-    			label_i.innerHTML = "La valeur de la case I doit être positive ou nulle.";
-    		deactive_button = true;
-    	}
-
-    	//////////////////////////////////////////////////////
-    	// Traitement de la valeur de la case J
-    	//////////////////////////////////////////////////////
-		if (valeur_j == "")
-		{
-    		deactive_button = true;
-   		}
-    	else if (isNaN(valeur_j))
-    	{
-    		//alert("La valeur de la case J n'est pas un nombre.");
-    		document.getElementById("label_j").innerHTML = "La valeur de la case J n'est pas un nombre.";
-    		deactive_button = true;
-    	}    	
-    	else if (!isInt(valeur_j))
-    	{
-    		document.getElementById("label_j").innerHTML = "La valeur de la case J doit être un entier.";
-    		deactive_button = true;
-    	}
-    	else if (parseInt(valeur_j) < 0)
-    	{
-     		document.getElementById("label_j").innerHTML = "La valeur de la case J doit être positive ou nulle.";
-    		deactive_button = true;
-    	}
-
- 
-        if (!deactive_button) // Le bouton est encore activé => Les valeurs saisies sont des nombres entiers positifs ou nuls
-        {   
-        	// On vérifie les contraintes de répartition
-        
-        	// On sait que I et J sont des nombres => On récupère leurs valeurs
-            valeur_i = parseInt(valeur_i);
-            valeur_j = parseInt(valeur_j);
-            
-        	debordementCET = 0;
-        	// nbre de jours à indemniser ou à mettte sur RAFP
-        	if (valeur_g > 60)
-        	{
-        		debordementCET = valeur_g - 60;   // 60 => Nbre maxi sur le CET
-        	}
-        	
-        	// S'il y a plus de jours que les 60 maximum => On doit forcément répartir ce "surplus" dans les case I (RAFP) et J (Indemnistation) 
-        	if ((valeur_i + valeur_j) < debordementCET)
-        	{
-	     		if (label_i !== null)
-	     		{
-    				label_i.innerHTML = "La somme des valeurs I, J doit être supérieure ou égale à " + debordementCET + ".";
-	     			document.getElementById("label_j").innerHTML = "La somme des valeurs I, J doit être supérieure ou égale à " + debordementCET + ".";
-	     		}
-	     		else
-	     		{
-	     			document.getElementById("label_j").innerHTML = "La valeur J doit être supérieure ou égale à " + debordementCET + ".";
-	     		}
-        		deactive_button = true;
-        	}
-        }
-        
-        if (!deactive_button) // Le bouton est encore activé => Les répartitions sont bonnes
-        {
-
-        	// On calcule le nombre de jours à maintenir dans le CET (au dessus des 15 jours)
-        	valeur_k = valeur_h - valeur_i - valeur_j;
-	       	
-        	if (valeur_k < 0)  // On a demandé trop d'indemnisation ou trop de RAFP
-        	{
-    			if (label_i !== null)
-    			{
-    				label_i.innerHTML = "La somme des valeurs I, J doit être inférieure ou égale à " + valeur_h + ".";
-	     			document.getElementById("label_j").innerHTML = "La somme des valeurs I, J doit être inférieure ou égale à " + valeur_h + ".";
-	     		}
-	     		else
-	     		{
-	     			document.getElementById("label_j").innerHTML = "La valeur J doit être inférieure ou égale à " + valeur_h + ".";
-	     		}
-        		deactive_button = true;
-        	}
-        	
-
-            valeur_l = valeur_k + 15;
-        	if (valeur_l > 60)
-        	{
-         		document.getElementById("label_l").innerHTML = "La valeur de la case L doit être inférieure à 60.";
-        		deactive_button = true;
-	    	}
-        	else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
-        	{
-	     		document.getElementById("label_l").innerHTML = "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
-        		deactive_button = true;
-        	}
-        }
-        
-        if (!deactive_button) // Le bouton est encore activé => tous les contrôles sont ok, on peut afficher les résultats des calculs
-        {
-	    	document.getElementById("valeur_k").value = valeur_k;
-	        document.getElementById("valeur_l").value = valeur_l;
-        }
-        
-    	button.disabled = deactive_button;
-
-
-    }
-	</script>
-<?php     
-    
-    echo "<br><hr size=3 align=center><br>";
-    echo "<form name='simulation_option'  method='post' >";
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-    echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-    echo "<div style='color: red;font-weight: bold;'>ATTENTION : A n'utiliser que pour des tests de vérification des specifications.</div>";
-    
-
-    echo "Saisir le solde du CET avant alimentation : <input type=text placeholder='Case A' name=simul_a id=simul_a size=3 value='$simul_a'><br>";
-    echo "Saisir le solde du CET après alimentation : <input type=text placeholder='Case G' name=simul_g id=simul_g size=3 value='$simul_g'><br>";
-    echo "Type d'agent : ";
-    echo "<select name='type_agent' id='type_agent'>";
-    echo "  <option value='titu'";
-    if ($typeagent == 'titu')
-        echo " selected ";
-    echo ">Titulaire</option>";
-    echo "  <option value='cont'";
-    if ($typeagent == 'cont')
-        echo " selected ";
-    echo ">Contractuel</option>";
-    echo "</select>";
-    echo "<br><br>";
-    echo "<input type='submit' name='simul_option' id='simul_option' value='Soumettre' >";
-    echo "</form>";
-    
-    echo "<br><br>";
-    
-    echo "<br><hr size=3 align=center><br>";
-    echo "Création d'une option sur CET + création du document correspondant dans eSignature.<br>";
-    //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
-    echo "<form name='creation_option'  method='post' >";
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-    echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-     
-    $valeur_a = "";
-    $valeur_g = "";
-
-    if (!is_null($simul_option))
-    {
-        echo "<div style='color: red;font-weight: bold;'>";
-        $simul_a = str_replace(",",".",$simul_a);
-        $simul_g = str_replace(",",".",$simul_g);
-        //echo "Division entière de simul_a = " . intdiv($simul_a*10,10) . "  ceil(simul_a) = " . ceil($simul_a)   . "   float(simul_a)  = " . (float)$simul_a . "<br>";
-        //echo "Division entière de simul_g = " . intdiv($simul_g*10,10) . "  ceil(simul_g) = " . ceil($simul_g)   . "  float(simul_g)  = " . (float)$simul_g . "<br>";
-        
-        echo "Simul_A = $simul_a  Simul_G = $simul_g <br>";
-        if (is_null($simul_a) or is_null($simul_g))
-        {
-            echo "Au moins une des cases A ou G est nulle !<br>Impossible de poursuivre le test<br>";
-        }
-        else if (!is_numeric($simul_a) or !is_numeric($simul_g))
-        {
-            echo "Au moins une des cases A ou G n'est pas un nombre !<br>Impossible de poursuivre le test<br>";
-        }
-        else if ((ceil($simul_a) <> (float)$simul_a) or (ceil($simul_g) <> (float)$simul_g))
-        {
-            echo "Au moins une des cases A ou G n'est pas un nombre entier!<br>Impossible de poursuivre le test<br>";
-        }
-        else if (($simul_a < 0) or ($simul_g < 0))
-        {
-            echo "Au moins une des cases A ou G est un nombre négatif !<br>Impossible de poursuivre le test<br>"; 
-        }
-        else if ($simul_g < $simul_a)
-        {
-            echo "La valeur de la case G doit être supéreure à la valeur de la case A !<br>Impossible de poursuivre le test<br>"; 
+            $errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
+            echo $errlog;
         }
         else
         {
-            // On a forcer les valeurs de simulation
-            $valeur_a = $simul_a;
-            $valeur_g = $simul_g;
-            $alimentation = $valeur_g - $valeur_a;
-            echo "ATTENTION : Les valeurs des case A et G ont été forcées !!!";
+            echo "Informations sur les droits d'options sur CET pour " . $agent->identitecomplete() . "<br>";
+            echo "<div id='droit_option_cet'>";
+            echo "<table class='tableausimple'>";
+            echo "<tr><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            echo "</tr>";
+            while ($result = mysqli_fetch_row($query))
+            {
+                $id = $result[0];
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" On va afficher la demande $id => On la synchronise avec eSignature." ));
+                $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
+                $option = new optionCET($dbcon);
+                $option->load($id);
+                echo "<tr><td class='cellulesimple'>" . $fonctions->formatdate(substr($option->datecreation(), 0, 10)).' '.substr($option->datecreation(), 10) . "</td><td class='cellulesimple'>" . $option->anneeref() . "</td><td class='cellulesimple'>" . $option->valeur_i() . "</td><td class='cellulesimple'>" . $option->valeur_j() . "</td><td class='cellulesimple'>" . $option->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($option->datestatut()) . "</td><td class='cellulesimple'>" . $option->motif() . "</td><td class='cellulesimple'><a href='" . $option->esignatureurl() . "' target='_blank'>".$option->esignatureurl()."</a></td></tr>";
+                unset ($option);
+            }
+            echo "</table><br>";
+            
+            echo "</div>";
         }
-        echo "</div>";
-    }
-    else
-    {
-        // ----------------------------------------------------------------------------------------
-        // On fait tous les contrôles pour voir si l'agent peut deposer une demande d'option sur CET
-        // ----------------------------------------------------------------------------------------
-        
-        // 1) Est-ce que la période de demande de droit d'option est ouverte
-        // Si campagne en cours et pas de demande en cours
-        $today = date('Ymd');
-        $debutperiode = $fonctions->debutoptioncet();
-        $finperiode = $fonctions->finoptioncet();
-        echo "La période afin d'exercer un droit d'option sur CET est comprise entre le " . $fonctions->formatdate($debutperiode) . " et le " . $fonctions->formatdate($finperiode)  . ".<br>";
-        if ($today < $debutperiode || $today > $finperiode)
-        {
-            echo "La campagne de droit d'option du CET est fermée actuellement.<br>";
-            die();
-        }
+    
+        echo "<br><br>";
+    */
+        echo $agent->afficheOptionCetHtml($fonctions->anneeref());
         
         
-        // 2) Est-ce que l'agent à un CET ==> Sinon pas de droit d'option possible
-        $cet = new cet($dbcon);
-        $erreur = $cet->load($agentid);
-        if ($erreur <> "")
-        {
-            echo "Pas de CET pour l'agent " . $agent->identitecomplete() . " ==> Fin du chargement de la page <br>";
-            die();
-        }
+        echo "<br>";
+        echo $agent->soldecongeshtml("$anneeref");
+        echo "<br>";
+    
         
-        // 3) Est-ce qu'il a déja une demande d'option en cours pour l'annee de référence ==> On ne peut pas faire 2 demandes d'option en même tps
+        echo "<br><hr size=3 align=center><br>";
+        echo "<br>Suppression d'une demande de droit d'option.<br>";
+        
+        
         $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_INCONNU));
         if (count($listid)>0)
         {
-            echo "Il y a des demandes d'option sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont en cours de traitement ==> Fin du chargement de la page <br>";
-            die();
-        }
-        
-        // 4) Est-ce qu'une demande de droit d’alimentation de CET est en l’état “En cours” ou “En préparation”
-        $typeconge = 'ann' . substr(($fonctions->anneeref()-1),2,2);
-        echo "Type annuel de congés  = $typeconge <br><br>";
-        $listid = $agent->getDemandesAlim($typeconge,array(ALIMENTATIONCET::STATUT_EN_COURS, ALIMENTATIONCET::STATUT_PREPARE, ALIMENTATIONCET::STATUT_INCONNU));
-        if (count($listid)>0)
-        {
-            echo "Il y a des demandes d'alimentation sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont en cours de traitement ==> Fin du chargement de la page <br>";
-            die();
-        }
-        
-        // 5) Est-ce qu'il a une demande de congés sur CET en cours ==> Son solde sur CET n'est pas à jour.
-        //echo "Date interval = " . ($fonctions->anneeref()-1) . $fonctions->debutperiode() . "<br><br>";
-        $debutinterval = ($fonctions->anneeref()-1) . $fonctions->debutperiode();
-        $fininterval = ($fonctions->anneeref()+1) . $fonctions->finperiode();
-        $demandeliste = $agent->demandesliste($debutinterval, $fininterval);
-        $demande = new demande($dbcon);
-        foreach ((array)$demandeliste as $demande)
-        {
-            $statut = $demande->statut();
-            if ((strcasecmp($statut, 'a') == 0) and (strcasecmp($demande->type(),'cet')==0)) // Une demande de congés sur CET est en attente de validation ==> On ne peut pas saisir d'option sur CET
+            echo "<form name='form_esignature_delete'  method='post' >";
+            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+            echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
+            foreach ($listid as $id)
             {
-                echo "Il y a des demandes de congés sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont en cours de traitement ==> Fin du chargement de la page <br>";
+                $optionCET = new optionCET($dbcon);
+                $optionCET->load($id);
+                if ($optionCET->statut() <> OPTIONCET::STATUT_ABANDONNE)
+                {
+                    echo "<option value='" . $id  . "'>" . $id  . "</option>";
+                }
+                unset($optionCET);
+            }
+            echo "</select>";
+            echo "<br><br>";
+            echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande'>";
+            echo "</form>";
+        }
+        
+        echo "<br><br>";
+        
+    
+    ?>
+        <script type="text/javascript">
+        function opendemande() {
+        	demandeliste = document.getElementById("esignatureid_aff")
+        	urldemande = demandeliste.value;
+        	//alert("opendemande est activé : " + urldemande );
+        	window.open(urldemande);
+        	return false;
+        }
+        
+        function isInt(value) {
+    		return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
+    	}
+        
+        function update_case()
+        {
+        	//alert("Update Case est activé");
+        	
+        	// On récupère la valeur A
+        	document.getElementById("valeur_a").value = document.getElementById("valeur_a").value.replace(",",".");
+            valeur_a = document.getElementById("valeur_a").value;
+            valeur_a = parseInt(valeur_a);
+            
+            // On récupère la valeur G
+        	document.getElementById("valeur_g").value = document.getElementById("valeur_g").value.replace(",",".");
+           	valeur_g = document.getElementById("valeur_g").value;
+            valeur_g = parseInt(valeur_g);
+            
+        	// On récupère la valeur H 
+        	document.getElementById("valeur_h").value = document.getElementById("valeur_h").value.replace(",",".");
+        	valeur_h = document.getElementById("valeur_h").value;
+        	valeur_h  = parseInt(valeur_h);
+    
+            // On récupère la valeur I et on efface le label correspondant
+        	document.getElementById("valeur_i").value = document.getElementById("valeur_i").value.replace(",",".");
+           	valeur_i = document.getElementById("valeur_i").value;
+        	label_i = document.getElementById("label_i");
+        	if (label_i !== null)
+        		label_i.innerHTML = "";
+           	
+           	// On récupère la valeur J et on efface le label correspondant
+        	document.getElementById("valeur_j").value = document.getElementById("valeur_j").value.replace(",",".");
+           	valeur_j = document.getElementById("valeur_j").value;
+        	document.getElementById("label_j").innerHTML = "";
+           	
+           	// Les valeurs calculées K et L sont effacées et les labels correspondant également
+     		document.getElementById("valeur_k").value = "";
+           	document.getElementById("label_k").innerHTML = "";
+     		document.getElementById("valeur_l").value = "";
+     		document.getElementById("label_l").innerHTML = "";
+           	
+        	const button = document.getElementById('cree_option')
+        	deactive_button = false;
+    
+        	//////////////////////////////////////////////////////
+        	// Traitement de la valeur de la case I
+        	//////////////////////////////////////////////////////
+    		if (valeur_i == "")
+    		{
+        		deactive_button = true;
+       		}
+        	else if (isNaN(valeur_i))
+        	{
+        		//alert("La valeur de la case I n'est pas un nombre.");
+        		if (label_i !== null)
+        			label_i.innerHTML = "La valeur de la case I n'est pas un nombre.";
+        		deactive_button = true;
+        	}    	
+        	else if (!isInt(valeur_i))
+        	{
+        		if (label_i !== null)
+        			label_i.innerHTML = "La valeur de la case I doit être un entier.";
+        		deactive_button = true;
+        	}
+        	else if (parseInt(valeur_i) < 0)
+        	{
+        		if (label_i !== null)
+        			label_i.innerHTML = "La valeur de la case I doit être positive ou nulle.";
+        		deactive_button = true;
+        	}
+    
+        	//////////////////////////////////////////////////////
+        	// Traitement de la valeur de la case J
+        	//////////////////////////////////////////////////////
+    		if (valeur_j == "")
+    		{
+        		deactive_button = true;
+       		}
+        	else if (isNaN(valeur_j))
+        	{
+        		//alert("La valeur de la case J n'est pas un nombre.");
+        		document.getElementById("label_j").innerHTML = "La valeur de la case J n'est pas un nombre.";
+        		deactive_button = true;
+        	}    	
+        	else if (!isInt(valeur_j))
+        	{
+        		document.getElementById("label_j").innerHTML = "La valeur de la case J doit être un entier.";
+        		deactive_button = true;
+        	}
+        	else if (parseInt(valeur_j) < 0)
+        	{
+         		document.getElementById("label_j").innerHTML = "La valeur de la case J doit être positive ou nulle.";
+        		deactive_button = true;
+        	}
+    
+     
+            if (!deactive_button) // Le bouton est encore activé => Les valeurs saisies sont des nombres entiers positifs ou nuls
+            {   
+            	// On vérifie les contraintes de répartition
+            
+            	// On sait que I et J sont des nombres => On récupère leurs valeurs
+                valeur_i = parseInt(valeur_i);
+                valeur_j = parseInt(valeur_j);
+                
+            	debordementCET = 0;
+            	// nbre de jours à indemniser ou à mettte sur RAFP
+            	if (valeur_g > 60)
+            	{
+            		debordementCET = valeur_g - 60;   // 60 => Nbre maxi sur le CET
+            	}
+            	
+            	// S'il y a plus de jours que les 60 maximum => On doit forcément répartir ce "surplus" dans les case I (RAFP) et J (Indemnistation) 
+            	if ((valeur_i + valeur_j) < debordementCET)
+            	{
+    	     		if (label_i !== null)
+    	     		{
+        				label_i.innerHTML = "La somme des valeurs I, J doit être supérieure ou égale à " + debordementCET + ".";
+    	     			document.getElementById("label_j").innerHTML = "La somme des valeurs I, J doit être supérieure ou égale à " + debordementCET + ".";
+    	     		}
+    	     		else
+    	     		{
+    	     			document.getElementById("label_j").innerHTML = "La valeur J doit être supérieure ou égale à " + debordementCET + ".";
+    	     		}
+            		deactive_button = true;
+            	}
+            }
+            
+            if (!deactive_button) // Le bouton est encore activé => Les répartitions sont bonnes
+            {
+    
+            	// On calcule le nombre de jours à maintenir dans le CET (au dessus des 15 jours)
+            	valeur_k = valeur_h - valeur_i - valeur_j;
+    	       	
+            	if (valeur_k < 0)  // On a demandé trop d'indemnisation ou trop de RAFP
+            	{
+        			if (label_i !== null)
+        			{
+        				label_i.innerHTML = "La somme des valeurs I, J doit être inférieure ou égale à " + valeur_h + ".";
+    	     			document.getElementById("label_j").innerHTML = "La somme des valeurs I, J doit être inférieure ou égale à " + valeur_h + ".";
+    	     		}
+    	     		else
+    	     		{
+    	     			document.getElementById("label_j").innerHTML = "La valeur J doit être inférieure ou égale à " + valeur_h + ".";
+    	     		}
+            		deactive_button = true;
+            	}
+            	
+    
+                valeur_l = valeur_k + 15;
+            	if (valeur_l > 60)
+            	{
+             		document.getElementById("label_l").innerHTML = "La valeur de la case L doit être inférieure à 60.";
+            		deactive_button = true;
+    	    	}
+            	else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
+            	{
+    	     		document.getElementById("label_l").innerHTML = "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
+            		deactive_button = true;
+            	}
+            }
+            
+            if (!deactive_button) // Le bouton est encore activé => tous les contrôles sont ok, on peut afficher les résultats des calculs
+            {
+    	    	document.getElementById("valeur_k").value = valeur_k;
+    	        document.getElementById("valeur_l").value = valeur_l;
+            }
+            
+        	button.disabled = deactive_button;
+    
+    
+        }
+    	</script>
+    <?php     
+        
+        echo "<br><hr size=3 align=center><br>";
+        echo "<form name='simulation_option'  method='post' >";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+        echo "<div style='color: red;font-weight: bold;'>ATTENTION : A n'utiliser que pour des tests de vérification des specifications.</div>";
+        
+    
+        echo "Saisir le solde du CET avant alimentation : <input type=text placeholder='Case A' name=simul_a id=simul_a size=3 value='$simul_a'><br>";
+        echo "Saisir le solde du CET après alimentation : <input type=text placeholder='Case G' name=simul_g id=simul_g size=3 value='$simul_g'><br>";
+        echo "Type d'agent : ";
+        echo "<select name='type_agent' id='type_agent'>";
+        echo "  <option value='titu'";
+        if ($typeagent == 'titu')
+            echo " selected ";
+        echo ">Titulaire</option>";
+        echo "  <option value='cont'";
+        if ($typeagent == 'cont')
+            echo " selected ";
+        echo ">Contractuel</option>";
+        echo "</select>";
+        echo "<br><br>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='submit' name='simul_option' id='simul_option' value='Soumettre' >";
+        echo "</form>";
+        
+        echo "<br><br>";
+        
+        echo "<br><hr size=3 align=center><br>";
+        echo "Création d'une option sur CET + création du document correspondant dans eSignature.<br>";
+        //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
+        echo "<form name='creation_option'  method='post' >";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+         
+        $valeur_a = "";
+        $valeur_g = "";
+    
+        if (!is_null($simul_option))
+        {
+            echo "<div style='color: red;font-weight: bold;'>";
+            $simul_a = str_replace(",",".",$simul_a);
+            $simul_g = str_replace(",",".",$simul_g);
+            //echo "Division entière de simul_a = " . intdiv($simul_a*10,10) . "  ceil(simul_a) = " . ceil($simul_a)   . "   float(simul_a)  = " . (float)$simul_a . "<br>";
+            //echo "Division entière de simul_g = " . intdiv($simul_g*10,10) . "  ceil(simul_g) = " . ceil($simul_g)   . "  float(simul_g)  = " . (float)$simul_g . "<br>";
+            
+            echo "Simul_A = $simul_a  Simul_G = $simul_g <br>";
+            if (is_null($simul_a) or is_null($simul_g))
+            {
+                echo "Au moins une des cases A ou G est nulle !<br>Impossible de poursuivre le test<br>";
+            }
+            else if (!is_numeric($simul_a) or !is_numeric($simul_g))
+            {
+                echo "Au moins une des cases A ou G n'est pas un nombre !<br>Impossible de poursuivre le test<br>";
+            }
+            else if ((ceil($simul_a) <> (float)$simul_a) or (ceil($simul_g) <> (float)$simul_g))
+            {
+                echo "Au moins une des cases A ou G n'est pas un nombre entier!<br>Impossible de poursuivre le test<br>";
+            }
+            else if (($simul_a < 0) or ($simul_g < 0))
+            {
+                echo "Au moins une des cases A ou G est un nombre négatif !<br>Impossible de poursuivre le test<br>"; 
+            }
+            else if ($simul_g < $simul_a)
+            {
+                echo "La valeur de la case G doit être supéreure à la valeur de la case A !<br>Impossible de poursuivre le test<br>"; 
+            }
+            else
+            {
+                // On a forcer les valeurs de simulation
+                $valeur_a = $simul_a;
+                $valeur_g = $simul_g;
+                $alimentation = $valeur_g - $valeur_a;
+                echo "ATTENTION : Les valeurs des case A et G ont été forcées !!!";
+            }
+            echo "</div>";
+        }
+        else
+        {
+            // ----------------------------------------------------------------------------------------
+            // On fait tous les contrôles pour voir si l'agent peut deposer une demande d'option sur CET
+            // ----------------------------------------------------------------------------------------
+            
+            // 1) Est-ce que la période de demande de droit d'option est ouverte
+            // Si campagne en cours et pas de demande en cours
+            $today = date('Ymd');
+            $debutperiode = $fonctions->debutoptioncet();
+            $finperiode = $fonctions->finoptioncet();
+            echo "La période afin d'exercer un droit d'option sur CET est comprise entre le " . $fonctions->formatdate($debutperiode) . " et le " . $fonctions->formatdate($finperiode)  . ".<br>";
+            if ($today < $debutperiode || $today > $finperiode)
+            {
+                echo "La campagne de droit d'option du CET est fermée actuellement.<br>";
                 die();
             }
+            
+            
+            // 2) Est-ce que l'agent à un CET ==> Sinon pas de droit d'option possible
+            $cet = new cet($dbcon);
+            $erreur = $cet->load($agentid);
+            if ($erreur <> "")
+            {
+                echo "Pas de CET pour l'agent " . $agent->identitecomplete() . " ==> Fin du chargement de la page <br>";
+                die();
+            }
+            
+            // 3) Est-ce qu'il a déja une demande d'option en cours pour l'annee de référence ==> On ne peut pas faire 2 demandes d'option en même tps
+            $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_INCONNU));
+            if (count($listid)>0)
+            {
+                echo "Il y a des demandes d'option sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont en cours de traitement ==> Fin du chargement de la page <br>";
+                die();
+            }
+            
+            // 4) Est-ce qu'une demande de droit d’alimentation de CET est en l’état “En cours” ou “En préparation”
+            $typeconge = 'ann' . substr(($fonctions->anneeref()-1),2,2);
+            echo "Type annuel de congés  = $typeconge <br><br>";
+            $listid = $agent->getDemandesAlim($typeconge,array(ALIMENTATIONCET::STATUT_EN_COURS, ALIMENTATIONCET::STATUT_PREPARE)); //, ALIMENTATIONCET::STATUT_INCONNU));
+            if (count($listid)>0)
+            {
+                echo "Il y a des demandes d'alimentation sur CET pour l'agent " . $agent->identitecomplete() . " qui sont en cours de traitement ==> Fin du chargement de la page <br>";
+                die();
+            }
+            
+            // 5) Est-ce qu'il a une demande de congés sur CET en cours ==> Son solde sur CET n'est pas à jour.
+            //echo "Date interval = " . ($fonctions->anneeref()-1) . $fonctions->debutperiode() . "<br><br>";
+            $debutinterval = ($fonctions->anneeref()-1) . $fonctions->debutperiode();
+            $fininterval = ($fonctions->anneeref()+1) . $fonctions->finperiode();
+            $demandeliste = $agent->demandesliste($debutinterval, $fininterval);
+            $demande = new demande($dbcon);
+            foreach ((array)$demandeliste as $demande)
+            {
+                $statut = $demande->statut();
+                if ((strcasecmp($statut, 'a') == 0) and (strcasecmp($demande->type(),'cet')==0)) // Une demande de congés sur CET est en attente de validation ==> On ne peut pas saisir d'option sur CET
+                {
+                    echo "Il y a des demandes de congés sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont en cours de traitement ==> Fin du chargement de la page <br>";
+                    die();
+                }
+            }
+            if (count((array)$agent->CETaverifier($debutinterval))>0)
+            {
+                // Il y a des demandes de congés sur CET qui ne sont pas à jour => On s'arrète là
+                echo "Il y a des demandes de congés sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont pas validées par le service de la DRH. Votre solde CET n'est donc pas correct ==> Fin du chargement de la page <br>";
+                die();
+            }
+            
+            
+            
+            $alimentation = $cet->cumulannuel($anneeref); // ATTENTION : Il faudra mettre $anneref - 1 car le droit d'option se fait l'année suivante !!!! A VERIFIER !!!!!
+            //echo "Alimentation = XXXX" . $alimentation . "XXXX<br><br>";
+            $valeur_a = $cet->cumultotal()-$cet->jrspris()-$alimentation;
+            $valeur_g = $cet->cumultotal()-$cet->jrspris();
+            $affectation = new affectation($dbcon);
+            $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y'));
+            if (count((array)$affectationliste) == 0)
+            {
+                echo "Pas d'affectation actuellement => Impossible de poursuivre.<br>";
+                die();
+            }
+            $affectation = current($affectationliste);
+            if ($affectation->numcontrat() <> 0)
+               $typeagent = 'cont';
+            else
+               $typeagent = "titu";
         }
-        if (count((array)$agent->CETaverifier($debutinterval))>0)
-        {
-            // Il y a des demandes de congés sur CET qui ne sont pas à jour => On s'arrète là
-            echo "Il y a des demandes de congés sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont pas validées par le service de la DRH. Votre solde CET n'est donc pas correct ==> Fin du chargement de la page <br>";
-            die();
-        }
-        
-        
-        
-        $alimentation = $cet->cumulannuel($anneeref); // ATTENTION : Il faudra mettre $anneref - 1 car le droit d'option se fait l'année suivante !!!! A VERIFIER !!!!!
-        //echo "Alimentation = XXXX" . $alimentation . "XXXX<br><br>";
-        $valeur_a = $cet->cumultotal()-$cet->jrspris()-$alimentation;
-        $valeur_g = $cet->cumultotal()-$cet->jrspris();
-        $affectation = new affectation($dbcon);
-        $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y'));
-        if (count((array)$affectationliste) == 0)
-        {
-            echo "Pas d'affectation actuellement => Impossible de poursuivre.<br>";
-            die();
-        }
-        $affectation = current($affectationliste);
-        if ($affectation->numcontrat() <> 0)
-           $typeagent = 'cont';
+        if ($typeagent == 'titu')
+            echo "L'agent est : Titulaire.<br>";
+        else if ($typeagent == 'cont')
+            echo "L'agent est : Contractuel.<br>";
         else
-           $typeagent = "titu";
-    }
-    if ($typeagent == 'titu')
-        echo "L'agent est : Titulaire.<br>";
-    else if ($typeagent == 'cont')
-        echo "L'agent est : Contractuel.<br>";
-    else
-        echo "L'agent est : !!! AUTRE !!!!.<br>";
-    echo "<br><br>";
-    echo "Solde du CET avant versement (Case A) : <input type=text placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-    echo "<br>";
-    echo "Solde du CET après versement (Case G) : <input type=text placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-    echo "<br>";
-
-    $valeur_h = (float)$valeur_g - 15;
-    if ($valeur_h <= 0)
-    {
+            echo "L'agent est : !!! AUTRE !!!!.<br>";
         echo "<br><br>";
-        echo "Votre solde de CET est insuffisant pour pouvoir exercer un droit d'option.<br>";
-        echo "Impossible de continuer<br>";
-        die();
-    }
-    
-    
-    echo "Nombre de jours dépassant le seuil de 15 jours ==> Nombre de jours à répartir (Case H) : <input type=text placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-    echo "<br>";
-    if ($typeagent == 'titu')
-    {
-        echo "Nombre de jours à prendre en compte au titre du RAFP (Case I) : <input type=text placeholder='Case I' name=valeur_i id=valeur_i size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";   //      <input type=text placeholder='Case I' name=valeur_i id=valeur_i value=$valeur_i size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+        echo "Solde du CET avant versement (Case A) : <input type=text placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
         echo "<br>";
-    }
-    else
-    {
-        echo "<input type='hidden' name=valeur_i id=valeur_i value='0' >"; //<label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";
-    }
-    echo "Nombre de jours à indemniser (Case J) : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_j style='color: red;font-weight: bold; margin-left:20px;'></label>";   //     <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-    echo "<br>";
-    echo "Nombre de jours à maintenir sur le CET sous forme de congés (Case K) : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' onchange='update_case()' onkeyup='update_case()' ><label id=label_k style='color: red;font-weight: bold; margin-left:20px;'></label>";
-    echo "<br>";
-    echo "Solde du CET après option (Case L) : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' ><label id=label_l style='color: red;font-weight: bold; margin-left:20px;'></label>";
-
-    echo "<br>------------------------------------------------------------- <br>";
-    // On récupère le responsable du service de l'agent - Niveau 2
-    $structid = $agent->structureid();
-    $struct = new structure($dbcon);
-    $struct->load($structid);
-    $code = null;
-    if ($agent->estresponsable())
-    {
-        $resp = $struct->resp_envoyer_a($code);
-    }
-    else
-    {
-        $resp = $struct->agent_envoyer_a($code);
-    }
-    echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
-
-    echo "<br>------------------------------------------------------------- <br>";
-    $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-    $resp_agent = null;
-    // On récupère tous les agents avec le profil RHCET
-    foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
-    {
-        echo $qvt_agent->identitecomplete() . " (" . $qvt_agent->mail() . ") est gestionnaire CET <br>";
-        if (count((array)$qvt_agent->structrespliste())>0)
+        echo "Solde du CET après versement (Case G) : <input type=text placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+        echo "<br>";
+    
+        $valeur_h = (float)$valeur_g - 15;
+        if ($valeur_h <= 0)
         {
-            $resp_agent = $qvt_agent;
-            echo "J'ai trouvé le responsable : " . $resp_agent->identitecomplete() . " (" . $resp_agent->mail() . ") <br>";
-       }
-    }
-
-    echo "<br>------------------------------------------------------------- <br>";
-    // On récupère le responsable du service QVT (Qualité de vie au travail) - Niveau 4
-    if (is_null($resp_agent))
-    {
+            echo "<br><br>";
+            echo "Votre solde de CET est insuffisant pour pouvoir exercer un droit d'option.<br>";
+            echo "Impossible de continuer<br>";
+            die();
+        }
+        
+        
+        echo "Nombre de jours dépassant le seuil de 15 jours ==> Nombre de jours à répartir (Case H) : <input type=text placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+        echo "<br>";
+        if ($typeagent == 'titu')
+        {
+            echo "Nombre de jours à prendre en compte au titre du RAFP (Case I) : <input type=text placeholder='Case I' name=valeur_i id=valeur_i size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";   //      <input type=text placeholder='Case I' name=valeur_i id=valeur_i value=$valeur_i size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+            echo "<br>";
+        }
+        else
+        {
+            echo "<input type='hidden' name=valeur_i id=valeur_i value='0' >"; //<label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";
+        }
+        echo "Nombre de jours à indemniser (Case J) : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_j style='color: red;font-weight: bold; margin-left:20px;'></label>";   //     <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+        echo "<br>";
+        echo "Nombre de jours à maintenir sur le CET sous forme de congés (Case K) : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' onchange='update_case()' onkeyup='update_case()' ><label id=label_k style='color: red;font-weight: bold; margin-left:20px;'></label>";
+        echo "<br>";
+        echo "Solde du CET après option (Case L) : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' ><label id=label_l style='color: red;font-weight: bold; margin-left:20px;'></label>";
+    
+        echo "<br>------------------------------------------------------------- <br>";
+        // On récupère le responsable du service de l'agent - Niveau 2
+        $structid = $agent->structureid();
         $struct = new structure($dbcon);
-        $struct->load($qvt_id);
-        $resp_agent = $struct->responsable();
+        $struct->load($structid);
+        $code = null;
+        if ($agent->estresponsable())
+        {
+            $resp = $struct->resp_envoyer_a($code);
+        }
+        else
+        {
+            $resp = $struct->agent_envoyer_a($code);
+        }
+        echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
+    
+        echo "<br>------------------------------------------------------------- <br>";
+        $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
+        $resp_agent = null;
+        // On récupère tous les agents avec le profil RHCET
+        foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
+        {
+            echo $qvt_agent->identitecomplete() . " (" . $qvt_agent->mail() . ") est gestionnaire CET <br>";
+            if (count((array)$qvt_agent->structrespliste())>0)
+            {
+                $resp_agent = $qvt_agent;
+                echo "J'ai trouvé le responsable : " . $resp_agent->identitecomplete() . " (" . $resp_agent->mail() . ") <br>";
+           }
+        }
+    
+        echo "<br>------------------------------------------------------------- <br>";
+        // On récupère le responsable du service QVT (Qualité de vie au travail) - Niveau 4
+        if (is_null($resp_agent))
+        {
+            $struct = new structure($dbcon);
+            $struct->load($qvt_id);
+            $resp_agent = $struct->responsable();
+        }
+        echo $resp_agent->identitecomplete() . " (" . $resp_agent->mail() . ") est le responsable du service QVT <br>";
+        
+        echo "<br>------------------------------------------------------------- <br>";
+        // On récupère le responsable du service DRH et DGS - Niveau 5
+        $struct = new structure($dbcon);
+        $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
+        $struct->load($drh_id);
+        $drh_agent = $struct->responsable();
+        echo $drh_agent->identitecomplete() . " (" . $drh_agent->mail() . ") est le responsable du service DRH <br>";
+        $struct = new structure($dbcon);
+        $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
+        $struct->load($dgs_id);
+        $dgs_agent = $struct->responsable();
+        echo $dgs_agent->identitecomplete() . " (" . $dgs_agent->mail() . ") est le responsable du service DGS <br>";
+        
+        echo "<br><br>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='submit' name='cree_option' id='cree_option' value='Soumettre' disabled>";
+        echo "</form>";
     }
-    echo $resp_agent->identitecomplete() . " (" . $resp_agent->mail() . ") est le responsable du service QVT <br>";
-    
-    echo "<br>------------------------------------------------------------- <br>";
-    // On récupère le responsable du service DRH et DGS - Niveau 5
-    $struct = new structure($dbcon);
-    $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-    $struct->load($drh_id);
-    $drh_agent = $struct->responsable();
-    echo $drh_agent->identitecomplete() . " (" . $drh_agent->mail() . ") est le responsable du service DRH <br>";
-    $struct = new structure($dbcon);
-    $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-    $struct->load($dgs_id);
-    $dgs_agent = $struct->responsable();
-    echo $dgs_agent->identitecomplete() . " (" . $dgs_agent->mail() . ") est le responsable du service DGS <br>";
-    
-    echo "<br><br>";
-    echo "<input type='submit' name='cree_option' id='cree_option' value='Soumettre' disabled>";
-    echo "</form>";
-    
     echo "<br><br>";
 /*
     echo "<br><hr size=3 align=center><br>";

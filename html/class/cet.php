@@ -300,6 +300,10 @@ class cet
         }
         // echo "On va charger le solde... <br>";
         $solde->load($this->agentid, 'cet' . $this->fonctions->anneeref());
+        if (!isset($this->cumulannuel['cet' . $this->fonctions->anneeref()]))
+        {
+            $this->cumulannuel['cet' . $this->fonctions->anneeref()] = 0;
+        }
         $solde->droitaquis($this->cumulannuel['cet' . $this->fonctions->anneeref()]);
         // echo "On va store le solde <br>";
         $msgerreur = $msgerreur . $solde->store();
