@@ -483,7 +483,7 @@ else
             var_dump($response);
             echo '</pre>';
 */
-            $optionCET->motif("Annulation à la demande de l'agent");
+            $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
             $optionCET->store();
 
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_delete après appel du WS eSignature de suppression."));
