@@ -711,9 +711,13 @@ else {
 		echo "</form>";*/
 		
 	}
-	elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE, $optionCET::STATUT_VALIDE))) != 0)
+	elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
 	{
 		echo "Vous avez une demande de droit d'option en cours. Vous pourrez effectuer une nouvelle demande d'alimentation lorsque celle-ci sera terminée ou annulée. <br>";
+	}
+	elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_VALIDE))) != 0)
+	{
+		echo "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année. <br>";
 	}
 	elseif ($hasInterruptionAff && $valeur_a == 0)
 	{
