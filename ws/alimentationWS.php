@@ -300,15 +300,34 @@
         
                         $alimentationCET = new alimentationCET($dbcon);
                         $validation = $alimentationCET::STATUT_INCONNU;
-                        if (isset($response['form_data_accepte']))
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
+                        foreach((array)$response as $key => $value)
                         {
-                            if ($response['form_data_accepte']=='on')
-                                $validation = $alimentationCET::STATUT_VALIDE;
-                        }
-                        if (isset($response['form_data_refuse']))
-                        {
-                            if ($response['form_data_refuse']=='on')
-                                $validation = $alimentationCET::STATUT_REFUSE;
+                        	if (preg_match("/form_data_d.+cision/i",$key))
+                        	{
+                        		error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
+                        		if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
+                        		{
+                        			error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut YES."));
+                        			$validation = $alimentationCET::STATUT_VALIDE;
+                        			break;
+                        		}
+                        		elseif (strcasecmp($value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
+                        		{
+                        			error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut NO."));
+                        			$validation = $alimentationCET::STATUT_REFUSE;
+                        			if (isset($response['form_data_motifrefus']))
+                        			{
+                        				error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_motifrefus existe."));
+                        				$reason = $response['form_data_motifrefus'];
+                        			}
+                        			break;
+                        		}
+                        		else
+                        		{
+                        			$validation = $alimentationCET::STATUT_INCONNU;
+                        		}
+                        	}
                         }
                         
                         switch (strtolower($current_status))
