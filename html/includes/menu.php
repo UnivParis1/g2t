@@ -747,7 +747,21 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
 						</form>
 						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
-					</li>
+					</li>                    
+					<li onclick='document.rh_alimentation_cet.submit();'>
+                        <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
+                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                            <input type="hidden" name="mode" value="rh">
+                        </form>
+                        <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
+                    </li>                    
+					<li onclick='document.rh_option_cet.submit();'>
+                        <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
+                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                            <input type="hidden" name="mode" value="rh">
+                        </form>
+                        <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
+                    </li>
 					
 <?php
         }

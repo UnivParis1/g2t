@@ -2254,16 +2254,20 @@ AND DEMANDE.STATUT='v'";
     	return $htmltext;
     }
     
-    function afficheAlimCetHtmlPourSuppr($anneeref = '', $statuts = array())
+   /* function afficheAlimCetHtmlPourSuppr($anneeref = '', $statuts = array(), $mode = 'agent', $userid = '')
     {
     	$alimcet = new alimentationCET($this->dbconnect);
     	$listid = $this->getDemandesAlim($anneeref, $statuts);
     	$htmltext = '';
+    	if ($userid == '')
+    	{
+    		$userid = $this->harpegeid();
+    	}
     	if (sizeof($listid) != 0)
     	{    		
     		echo "<br>Annulation d'une demande d'alimentation.<br>";
     		echo "<form name='form_esignature_annule'  method='post' >";
-    		echo "<input type='hidden' name='userid' value='" . $this->harpegeid() . "'>";
+    		echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     		echo "<input type='hidden' name='agentid' value='" . $this->harpegeid() . "'>";
     		echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
     		foreach ($listid as $id)
@@ -2274,6 +2278,7 @@ AND DEMANDE.STATUT='v'";
     		
     		echo "</select>";
     		echo "<br><br>";
+    		echo "<input type='hidden' name='mode' value='" . $mode . "'>";
     		echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
     		echo "</form>";
     		echo "<br>";
@@ -2363,7 +2368,7 @@ AND DEMANDE.STATUT='v'";
     		$errlog .= "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->harpegeid() . ") a supprimé la demande d'alimentation du CET (esignatureid = ".$esignatureid_annule.")";
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
-    }
+    }*/
 
     function afficheOptionCetHtml($anneeref = '', $statuts = array())
     {
