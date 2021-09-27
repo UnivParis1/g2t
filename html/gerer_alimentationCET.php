@@ -868,9 +868,15 @@
 			$consoadd = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
 			echo "Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd." <br>";
 			
-			$nbjoursmax = floor($pr - $consodeb - $consoadd);
+			$nbjoursmax = floor($pr - $consodeb);
 			if ($nbjoursmax < 0)
 				$nbjoursmax = 0;
+			else 
+			{
+				$nbjoursrestants = $valeur_b - $consodeb - $consoadd;
+				if ($nbjoursmax > $nbjoursrestants)
+					$nbjoursmax = floor($nbjoursrestants);
+			}
 			echo "Nombre de jours déposables sur le CET : ".$nbjoursmax." <br><br>";
 			/*echo "Nombre de jours à déposer sur le CET <br>";
 			echo "<form name='form_esignature_new_alim'  method='post' >";
