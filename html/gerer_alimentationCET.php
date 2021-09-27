@@ -1150,8 +1150,17 @@
 	    		unset($erreur_test);
 	    		$plafond_quot_test = $plafond_ref * $quotite / 100;
 	    		$valeur_d_test = $valeur_b_test - $valeur_c_test;
-	    		$nbjmax = floor($plafond_quot_test - $valeur_c_test - $conge_supp);
-	    		$nbjmax = ($nbjmax < 0) ? 0 : $nbjmax;
+	    		
+	    		$nbjmax = floor($plafond_quot_test - $valeur_c_test);
+	    		if ($nbjmax < 0)
+	    			$nbjmax = 0;
+	    		else
+	    		{
+	    			$nbjrestants = $valeur_b_test - $valeur_c_test - $conge_supp;
+	    			if ($nbjmax > $nbjrestants)
+	    				$nbjmax = floor($nbjrestants);
+	    		}
+	    		
 	    		$valeur_e_test = $valeur_d_test - $valeur_f_test;
 	    		if ($valeur_e_test < 0)
 	    		{
