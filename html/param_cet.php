@@ -65,7 +65,18 @@
     		$fonctions->finoptioncet($datefinopt);
     	}
     }
-    
+    if (isset($_POST['valider_param_plafond']))
+    {
+    	$plafondcet = $_POST['plafondcet'];
+    	if (!is_numeric($plafondcet) || !is_int($plafondcet+0) || $plafondcet < 0)
+    		echo "Le nombre de jours maximum doit être un entier positif. <br>";
+    	else 
+    	{
+    		$update = "UPDATE CONSTANTES SET VALEUR = $plafondcet WHERE NOM = 'PLAFONDCET'";
+    		$query = mysqli_query($dbcon, $update);
+    	}
+    }
+    $plafondparam = $fonctions->liredbconstante('PLAFONDCET');
     ?>
 
     <form name="frm_calendrier_alim" method="post">
@@ -169,6 +180,11 @@
     	</table>
 		<input type='submit' name='valider_cal_option' id='valider_cal_option' value='Soumettre' />
 	</form>	
+	<form name="frm_param_plafond_cet" method="post">
+        <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
+		Nombre de jours maximum sur CET : <input type='text' name='plafondcet' value='<?php echo $plafondparam;?>'>
+		<input type='submit' name='valider_param_plafond' id='valider_param_plafond' value='Soumettre' />
+	</form>
 </body>
 </html>
         
