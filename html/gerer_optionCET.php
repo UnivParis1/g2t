@@ -715,9 +715,9 @@ else
                 
             	debordementCET = 0;
             	// nbre de jours à indemniser ou à mettte sur RAFP
-            	if (valeur_g > 60)
+            	if (valeur_g > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
             	{
-            		debordementCET = valeur_g - 60;   // 60 => Nbre maxi sur le CET
+            		debordementCET = valeur_g - <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>;   // <?php echo $fonctions->liredbconstante('PLAFONDCET') ?> => Nbre maxi sur le CET
             	}
             	
             	// S'il y a plus de jours que les 60 maximum => On doit forcément répartir ce "surplus" dans les case I (RAFP) et J (Indemnistation) 
@@ -758,9 +758,9 @@ else
             	
     
                 valeur_l = valeur_k + 15;
-            	if (valeur_l > 60)
+            	if (valeur_l > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
             	{
-             		document.getElementById("label_l").innerHTML = "La valeur de la case L doit être inférieure à 60.";
+             		document.getElementById("label_l").innerHTML = "La valeur de la case L doit être inférieure à <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>.";
             		deactive_button = true;
     	    	}
             	else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
