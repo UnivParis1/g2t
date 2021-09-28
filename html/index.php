@@ -75,8 +75,11 @@
     $errlog = "Index.php => Version de CAS.php utilisée  : " . $casversion;
     //echo "<br><br>" . $errlog . "<br><br>";
     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-    
 
+    // On recalcule le solde de congés initial pour l'année de référence et de l'année précédente + on met à jour les infos dans la base de données MAIS on ne trace pas dans les logs
+    $user->calculsoldeannuel($fonctions->anneeref(), true, false);
+    $user->calculsoldeannuel(($fonctions->anneeref()-1) ,true, false);
+    
     // echo '<html><body class="bodyhtml">';
 
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
@@ -187,7 +190,7 @@
 
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
-
+        
 ?>
 </body>
 </html>

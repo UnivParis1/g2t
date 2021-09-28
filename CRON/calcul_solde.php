@@ -1,6 +1,7 @@
 <?php
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
+    require_once ('../html/class/agent.php');
     
     $fonctions = new fonctions($dbcon);
     
@@ -178,7 +179,9 @@
          * }
          *
          */
-        
+
+         
+/*
         // Au départ l'agent à droit à 0 jours
         $solde_agent = 0;
         $DatePremAff = null;
@@ -395,6 +398,13 @@
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
             echo "INSERT ou UPDATE CONGE => $erreur_requete \n";
+*/
+        $agent = new agent($dbcon);
+        $agent->load($agentid);
+        echo "###############################################################\n";
+        echo "On est sur l'agent : " . $agent->identitecomplete() . " (id = $agentid) \n";
+        $solde = $agent->calculsoldeannuel($fonctions->anneeref(),true, true); // On calcule le solde de l'année courante + on met à jour le solde en base + on ecrit les traces d'exécution
+        echo "Le solde annuel de l'agent " . $agent->identitecomplete() . " (id = " . $agent->harpegeid() . ") pour l'annee " .  $fonctions->anneeref() . "-" . ($fonctions->anneeref()+1)  . " est de $solde jours.\n";
     }
     echo "Fin du calcul des soldes " . date("d/m/Y H:i:s") . "\n";
 

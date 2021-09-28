@@ -1061,15 +1061,28 @@ AND DEMANDE.STATUT='v'";
         $soldeliste = $this->soldecongesliste($anneeref);
         foreach ((array) $soldeliste as $key => $tempsolde) {
             $pdf->Cell(75, 5, utf8_decode($tempsolde->typelibelle()), 1, 0, 'C');
-            
-            $textdroitaquis = $tempsolde->droitaquis() . "";
-            if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
+            if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
             {
-                if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
-                    $textdroitaquis = $textdroitaquis . " (C. BONIF.)";
+                $textdroitaquis = "";
+            }
+            else
+            {
+                $textdroitaquis = $tempsolde->droitaquis() . "";
+                if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
+                {
+                    if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
+                        $textdroitaquis = $textdroitaquis . " (C. BONIF.)";
+                }
             }
             $pdf->Cell(30, 5, utf8_decode($textdroitaquis), 1, 0, 'C');
-            $pdf->Cell(30, 5, utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
+            if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas les droits pris
+            {
+                $pdf->Cell(30, 5, utf8_decode(""), 1, 0, 'C');
+            }
+            else
+            {
+                $pdf->Cell(30, 5, utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
+            }
             $pdf->Cell(30, 5, utf8_decode($tempsolde->solde() . ""), 1, 0, 'C');
             $pdf->Cell(50, 5, utf8_decode($tempsolde->demandeenattente() . ""), 1, 0, 'C');
             $totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis();
@@ -1126,14 +1139,28 @@ AND DEMANDE.STATUT='v'";
             foreach ($soldecongesliste as $key => $tempsolde) {
                 $htmltext = $htmltext . "      <tr class='element'>";
                 $htmltext = $htmltext . "         <td>" . $tempsolde->typelibelle() . "</td>";
-                $htmltext = $htmltext . "         <td>" . $tempsolde->droitaquis();
-                if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
+                if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
                 {
-                    if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
-                        $htmltext = $htmltext . " (C. BONIF.)";
+                    $htmltext = $htmltext . "         <td>";
                 }
-                $htmltext = $htmltext . "</td>";
-                $htmltext = $htmltext . "         <td>" . $tempsolde->droitpris() . "</td>";
+                else
+                {
+                    $htmltext = $htmltext . "         <td>" . $tempsolde->droitaquis();
+                    if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
+                    {
+                        if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
+                            $htmltext = $htmltext . " (C. BONIF.)";
+                    }
+                }
+                $htmltext = $htmltext . "             </td>";
+                if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas les droits pris
+                {
+                    $htmltext = $htmltext . "         <td></td>";
+                }
+                else
+                {
+                    $htmltext = $htmltext . "         <td>" . $tempsolde->droitpris() . "</td>";
+                }
                 $htmltext = $htmltext . "         <td>" . $tempsolde->solde() . "</td>";
                 $htmltext = $htmltext . "         <td>" . $tempsolde->demandeenattente() . "</td>";
                 $htmltext = $htmltext . "      </tr>";
@@ -2703,6 +2730,363 @@ AND DEMANDE.STATUT='v'";
         }
         return $listdemandes;
 
+    }
+    
+    /**
+     *
+     * @param string $anneeref
+     * @return number of days
+     */
+    function calculsoldeannuel($anneeref = null, $maj_solde = true, $loginfo = false)
+    {
+
+        
+        if ($loginfo == true) {
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" ###############################################################"));
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On est sur l'agent : " . $this->identitecomplete() . " (id = " . $this->harpegeid . ")"));
+        }
+        // Au départ l'agent à droit à 0 jours
+        $solde_agent = 0;
+        $DatePremAff = null;
+        $cas_general = true;
+        // Nombre de jours où l'agent a travaillé en continu
+        $nbre_total_jours = 0;
+        
+        // La date de la précédente fin d'affectation est mise à null
+        $datefinprecedenteaff = null;
+        $datefinaff = null;
+        $agentid = $this->harpegeid;
+        
+        if (is_null($anneeref))
+        {
+            $anneeref = $this->fonctions->anneeref();
+        }
+        // Construction des date de début et de fin de période (typiquement : 01/09/YYYY et 31/08/YYYY+1)
+        $date_deb_period = $anneeref . $this->fonctions->debutperiode();
+        $date_fin_period = ($anneeref + 1) . $this->fonctions->finperiode();
+        if ($loginfo == true) { 
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" date_deb_period = $date_deb_period   date_fin_period = $date_fin_period"));
+        }
+        
+        // Calcul du nombre de jours dans la période => Typiquement 365 ou 366 jours.
+        $nbre_jour_periode = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period);
+        if ($loginfo == true) { 
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" nbre_jour_periode = $nbre_jour_periode"));
+        }
+        
+        // On charge le nombre de jours auquel un agent à droit sur l'année
+        $nbr_jrs_offert = $this->fonctions->liredbconstante("NBJOURS" . substr($date_deb_period, 0, 4));
+        if ($loginfo == true) { 
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" nbr_jrs_offert = $nbr_jrs_offert"));
+        }
+        
+        // On prend toutes les affectations actives d'un agent, dont la date de début est inférieur à la fin de la période
+        // Les affectations futures ne sont pas prises en compte dans le calcul du solde
+        $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE HARPEGEID = '$agentid' AND OBSOLETE='N' AND DATEDEBUT < " . ($anneeref + 1) . $this->fonctions->finperiode() . " ORDER BY DATEDEBUT";
+        $query_aff = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "SELECT FROM AFFECTATION (Full) => $erreur_requete <br>";
+        }
+        if (mysqli_num_rows($query_aff) != 0) // On a des d'affectations
+        {
+            while ($result_aff = mysqli_fetch_row($query_aff)) {
+                if ($loginfo == true) { 
+                    error_log(basename(__FILE__) . $this->fonctions->stripAccents(" -----------------------------------------"));
+                }
+                
+                // Début de l'affectation courante
+                $dateDebAff = $result_aff[1];
+                if ($loginfo == true) { 
+                    error_log(basename(__FILE__) . $this->fonctions->stripAccents(" dateDebAff = $dateDebAff "));
+                }
+                
+                // On mémorise la fin de cette affectation précédente avant qu'elle ne soit modifiée pour pouvoir tester la continuité des affectations avec l'affectation courante
+                $datefinprecedenteaff = $datefinaff;
+                if ($loginfo == true) { 
+                    error_log(basename(__FILE__) . $this->fonctions->stripAccents(" datefinprecedenteaff = $datefinprecedenteaff "));
+                }
+                
+                // On parse la date de fin pour limiter la fin de la période si la date de fin n'est pas définie ou si elle est au dela de la période
+                $datearray = date_parse($this->fonctions->formatdatedb($result_aff[2]));
+                $year = $datearray["year"];
+                if (($result_aff[2] == '0000-00-00') or ($this->fonctions->formatdatedb($result_aff[2]) > ($anneeref + 1) . $this->fonctions->finperiode())) 
+                {
+                    $datefinaff = ($anneeref + 1) . $this->fonctions->finperiode();
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de fin de l'affectation est " . $result_aff[2] . " ==> On la force à $datefinaff"));
+                    }
+                }
+                else
+                {
+                    $datefinaff = $result_aff[2];
+                }
+                if ($loginfo == true) { 
+                    error_log(basename(__FILE__) . $this->fonctions->stripAccents(" datefinaff = $datefinaff"));
+                }
+                    
+                // Calcul de la quotité de l'agent sur cette affectation
+                $quotite = $result_aff[3] / $result_aff[4];
+                if ($loginfo == true) { 
+                    error_log(basename(__FILE__) . $this->fonctions->stripAccents(" quotite = $quotite "));
+                }
+                    
+                // Si c'est la première affectation, on mémorise sa date de début
+                if (is_null($DatePremAff)) 
+                {
+                    $DatePremAff = $result_aff[1];
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de première affectation est nulle => Maintenant elle vaut : $DatePremAff "));
+                    }
+                }
+                    
+                // Ce n'est pas un contrat ==> On calcule normalement
+                if ($result_aff[5] == "0")
+                {
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'affectation n'est pas un contrat ==> numcontrat = " . $result_aff[5] . " "));
+                    }
+                    
+                    // // On calcule le nombre de jours dans l'affectation dans le cas ou l'agent est en contrat pérenne puis repasse sur un contrat non pérenne
+                    // $nbre_jour_aff = $fonctions->nbjours_deux_dates($dateDebAff, $datefinaff);
+                    // echo "nbre_jour_aff = $nbre_jour_aff <br>";
+                    
+                    // Si la date de fin < date debut de la période, on ne s'en occupe pas car dans ce cas, seule les affectations de la période nous interressent
+                    if ($this->fonctions->formatdatedb($datefinaff) < $this->fonctions->formatdatedb($date_deb_period))
+                    {
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Fin de l'affectation avant le début de la période ==> On ignore "));
+                        }
+                        Continue;
+                    }
+                    
+                    // Si le début de l'affectation est avant le début de la période, on la force au début de la période
+                    if ($this->fonctions->formatdatedb($dateDebAff) < $this->fonctions->formatdatedb($date_deb_period)) {
+                        $dateDebAff = $date_deb_period;
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff "));
+                        }
+                    }
+                    
+                    // On calcule le nombre de jours dans l'affectation sur la période
+                    $nbre_jour_aff_periode = $this->fonctions->nbjours_deux_dates($dateDebAff, $datefinaff);
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" nbre_jour_aff_periode = $nbre_jour_aff_periode "));
+                    }
+                    
+                    $solde_agent = $solde_agent + (($nbr_jrs_offert * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde de l'agent est de : $solde_agent "));
+                    }
+                }            // On est dans le cas d'un contrat
+                else
+                {
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On est dans le cas d'un contrat"));
+                    }
+                    // Si ce n'est pas la première affectation
+                    if (! is_null($datefinprecedenteaff)) 
+                    {
+                        // Si il y a un trou entre la fin de l'affectation précédente et le début de l'actuelle, on mémorise sa date de début
+                        // <=> La date de début de l'affectation courante correspond au lendemain de la fin de l'affectation précédente
+                        if (date("Y-m-d", strtotime("+1 day", strtotime($datefinprecedenteaff))) != $result_aff[1]) 
+                        {
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de début de la nouvelle affectation est : " . $result_aff[1] . ""));
+                            }
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de fin de la précédente affectation est : $datefinprecedenteaff "));
+                            }
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Date du lendemain de la fin de la précédente affectation est : " . date("Y-m-d", strtotime("+1 day", strtotime($datefinprecedenteaff))) . " "));
+                            }
+                            $DatePremAff = $result_aff[1];
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a rupture dans la suite des affectations => On force la date de premiere affectation à $DatePremAff"));
+                            }
+                        }
+                        else
+                        {
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a continuité entre les affectations "));
+                            }
+                        }
+                    }
+                    
+                    // On calcule le nombre de jour écoulé depuis le début de la première affectation et la date de fin de cette affectation
+                    $NbreJoursTotalAff = $this->fonctions->nbjours_deux_dates($DatePremAff, $datefinaff);
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent est affecté depuis $NbreJoursTotalAff jours en continue depuis le $DatePremAff jusqu'au $datefinaff... "));
+                    }
+                    
+                    // Si la date de fin < date debut de la période, on ne s'en occupe pas car dans ce cas, seule les affectations de la période nous interressent
+                    if ($this->fonctions->formatdatedb($datefinaff) < $this->fonctions->formatdatedb($date_deb_period)) {
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Fin de l'affectation avant le début de la période ==> On ignore "));
+                        }
+                        Continue;
+                    }
+                    
+                    if ($loginfo == true) { 
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" RAPPEL : Le solde de l'agent actuellement est : $solde_agent "));
+                    }
+                    // L'agent est présent depuis plus d'un an à la fin de son affectation, donc on va calculer son solde avec les régles standards
+                    // Attention cependant, il faut calculer le solde pour la période avant les 365 jours
+                    if ($NbreJoursTotalAff > $nbre_jour_periode) 
+                    {
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent a plus de 365 jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... "));
+                        }
+                        
+                        // Si le début de l'affectation est avant le début de la période, on la force au début de la période
+                        if ($this->fonctions->formatdatedb($dateDebAff) < $this->fonctions->formatdatedb($date_deb_period))
+                        {
+                            $dateDebAff = $date_deb_period;
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff "));
+                            }
+                        }
+                        
+                        // Calcul du nombre de jours qui doivent être comptés à 2,5 jours
+                        $NbreJours = $NbreJoursTotalAff - $this->fonctions->nbjours_deux_dates($dateDebAff, $datefinaff);
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" A la date de début de l'affectation " . $this->fonctions->formatdate($dateDebAff) . ", l'agent avait cumulé $NbreJours consécutifs "));
+                        }
+                        // $NbreJours = $nbre_jour_periode - $NbreJours;
+                        // echo "dateDebAff = $dateDebAff datefinaff = $datefinaff dif_date = " . $fonctions->nbjours_deux_dates ($dateDebAff, $datefinaff ) . " NbreJours = $NbreJours <br>";
+                        // $NbreJours = $fonctions->nbjours_deux_dates ($dateDebAff, $datefinaff ) - $NbreJours;
+                        $NbreJours = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period) - $NbreJours;
+                        if ($NbreJours < 0)
+                        {
+                            $NbreJours = 0;
+                        }
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a $NbreJours jours à compter à 2,5 jours par mois soit : " . ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite) . " jours "));
+                        }
+                        if ($NbreJours > 0)
+                        {
+                            $solde_agent = $solde_agent + ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite);
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" solde_agent = $solde_agent "));
+                            }
+                        }
+                        
+                        // Calcul du nombre de jours qui doivent être comptés comme un "non contrat"
+                        // $NbreJours = $nbre_jour_periode - $NbreJours;
+                        $NbreJours = $this->fonctions->nbjours_deux_dates($dateDebAff, $datefinaff) - $NbreJours;
+                        if ($NbreJours < 0)
+                        {
+                            $NbreJours = 0;
+                        }
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a $NbreJours jours à compter à $nbr_jrs_offert jours par an soit : " . ((($nbr_jrs_offert * $NbreJours) / $nbre_jour_periode) * $quotite) . " jours "));
+                        }
+                        if ($NbreJours > 0) 
+                        {
+                            $solde_agent = $solde_agent + ((($nbr_jrs_offert * $NbreJours) / $nbre_jour_periode) * $quotite);
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" solde_agent = $solde_agent "));
+                            }
+                        }
+                    }
+                    else  // Le nombre de jours est < à 365 jours (donc l'agent n'est pas présent depuis plus d'un an)
+                    {
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent n'a pas atteint les 365 jours consécutifs => On calcule à 2,5 jours par mois "));
+                        }
+                        // Si le début de l'affectation est avant le début de la période, on la force au début de la période
+                        if ($this->fonctions->formatdatedb($dateDebAff) < $this->fonctions->formatdatedb($date_deb_period)) 
+                        {
+                            $dateDebAff = $date_deb_period;
+                            if ($loginfo == true) { 
+                                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff "));
+                            }
+                        }
+                        // Calcul du nombre de jours qui doivent être comptés à 2,5 jours sur la période de l'affectation
+                        $NbreJours = $this->fonctions->nbjours_deux_dates($dateDebAff, $datefinaff);
+                        $solde_agent = $solde_agent + ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite);
+                        if ($loginfo == true) { 
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" solde_agent = $solde_agent "));
+                        }
+                    }
+                }
+            }
+        }
+        if ($solde_agent > 0) 
+        {
+            $partie_decimale = $solde_agent - floor($solde_agent);
+            $agentinfo = $this->identitecomplete();
+            if ($loginfo == true) { 
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Code Agent = $agentid ($agentinfo)    solde_agent = $solde_agent     partie_decimale =  $partie_decimale     entiere = " . floor($solde_agent) . "          "));
+            }
+            if ((float) $partie_decimale < (float) 0.25)
+            {
+               $solde_agent = floor($solde_agent);
+            }
+            elseif ((float) ($partie_decimale >= (float) 0.25) && ((float) $partie_decimale < (float) 0.75))
+            {
+               $solde_agent = floor($solde_agent) + (float) 0.5;
+            }
+            else
+            {
+               $solde_agent = floor($solde_agent) + (float) 1;
+            }
+            if ($loginfo == true) { 
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" apres traitement : $solde_agent "));
+            }
+        }
+        if ($loginfo == true) { 
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde final est donc : $solde_agent "));
+        }
+        
+        // On vérifie si une demande de congé bonifié débute dans la période
+        $debutperiode = $anneeref . $this->fonctions->debutperiode();
+        $finperiode = ($anneeref + 1) . $this->fonctions->finperiode();
+        $sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE WHERE HARPEGEID='$agentid' AND (HARPTYPE='CONGE_BONIFIE' OR HARPTYPE LIKE 'Cg% Bonifi% (FPS)') AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+           echo "SELECT HARPEGEID,DATEDEBUT,DATEFIN FROM HARPABSENCE => $erreur_requete <br>";
+        }
+        if (mysqli_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
+        {
+            $resultcongbonif = mysqli_fetch_row($query);
+            $solde_agent = 0;
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent $agentid ($agentinfo) a une demande de congés bonifiés (du " . $resultcongbonif[1] . " au " . $resultcongbonif[2] . ") => Solde à 0 "));
+        }
+        
+        if ($maj_solde == true)
+        {
+            if ($loginfo == true) {
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On met à jour le solde de l'agent dans la base de données"));
+            }
+            $typeabsenceid = "ann" . substr($anneeref, 2, 2);
+            $sql = "SELECT HARPEGEID,TYPEABSENCEID FROM SOLDE WHERE HARPEGEID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur_requete = mysqli_error($this->dbconnect);
+            if ($erreur_requete != "")
+            {
+                echo "SELECT HARPEGEID,TYPEABSENCEID FROM CONGE => $erreur_requete <br>";
+            }
+            if (mysqli_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
+            {
+                $sql = "UPDATE SOLDE SET DROITAQUIS='$solde_agent' WHERE HARPEGEID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
+            }
+            else
+            {
+                $sql = "INSERT INTO SOLDE(HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $agentid . "','" . $typeabsenceid . "','$solde_agent','0')";
+            }
+            mysqli_query($this->dbconnect, $sql);
+            $erreur_requete = mysqli_error($this->dbconnect);
+            if ($erreur_requete != "")
+            {
+                echo "INSERT ou UPDATE CONGE => $erreur_requete <br>";
+            }
+        }
+        return ($solde_agent);
+        
     }
 }
 
