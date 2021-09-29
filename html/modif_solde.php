@@ -72,8 +72,13 @@ if (isset($_POST["userid"]))
         }
 
 
+        require ("includes/menu.php");
+        // echo '<html><body class="bodyhtml">';
+        echo "<br>";
+
         $msg_erreur = "";
-        if (isset($_POST["solde"]))
+        $info = "";
+        if (isset($_POST["newsolde"]))   //if (isset($_POST["solde"]))
         {
             $newsolde=$_POST["solde"];
             $newsolde = str_replace(",", ".", $newsolde);
@@ -104,18 +109,24 @@ if (isset($_POST["userid"]))
                         $pris=$solde->droitpris();
                         $solde->droitaquis($pris + $newsolde);
                         $solde->store();
-
+                        
                         $agent->ajoutecommentaireconge($typeconges, $solde->solde()-$anciensolde, "Modification du solde par " . $user->identitecomplete() . " (Ancien solde = $anciensolde / Nouveau solde = " . $solde->solde() .")");
+                        $info = "La modification du solde est bien prise en compte.";
                     }
                 }
             }
         }
-
-        require ("includes/menu.php");
-        // echo '<html><body class="bodyhtml">';
-        echo "<br>";
+        
+        if (isset($_POST["calculdroit"]))
+        {
+            $droitacquis = $agent->calculsoldeannuel($anneeref, true, false);
+            $info = "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
+        }
+        
+        
         echo "<P style='color: red'>" . $msg_erreur . "</P>";
-
+        echo "<P style='color: green'>" . $info . "</P>";
+        
         //print_r($_POST); echo "<br>";
 
         $msg_erreur = "";
@@ -159,7 +170,15 @@ if (isset($_POST["userid"]))
 
     if (!is_null($agent)) {
         echo "<br><br>";
-        
+        echo "Appuyez sur le bouton ci-dessous pour recalculer les droits acquis $anneeref/" . ($anneeref+1) . " de " . $agent->identitecomplete() . "<br>";
+        echo "<form name='submit_calculdroit'  method='post' >";
+        echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
+        echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->harpegeid() . "' class='agent' /> ";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
+        echo "<input type='submit' id='calculdroit' name='calculdroit' value='Recalculer' >";
+        echo "</form>";
+        echo "<br><br>";
 /*
         $solde_agent = ($agent->getQuotiteMoyPeriode($anneeref . $fonctions->debutperiode(), ($anneeref+1) . $fonctions->finperiode()) * $fonctions->liredbconstante("NBJOURS" . $anneeref))/100;
         $partie_decimale = $solde_agent - floor($solde_agent);
@@ -194,7 +213,7 @@ if (isset($_POST["userid"]))
             echo "Veuillez sasir le nouveau solde pour " . $solde->typelibelle() . " : ";
             echo "<input type='text' name='solde' value='" . $solde->solde() .  "'>";
             echo "<br><br>";
-            echo "<input type='submit' value='Soumettre' >";
+            echo "<input type='submit' id='newsolde' name='newsolde' value='Soumettre' >";
             echo "</form>";
         }
         echo "</span>";
