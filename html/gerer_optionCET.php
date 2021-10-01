@@ -208,235 +208,246 @@ else
     // Création d'un droit d'option
     if (!is_null($cree_option))
     {
-        $optionCET = new optionCET($dbcon);
-        $optionCET->agentid($agentid);
-        $optionCET->anneeref($anneeref);
-        $optionCET->valeur_a($valeur_a);
-        $optionCET->valeur_g($valeur_g);
-        $optionCET->valeur_h($valeur_h);
-        $optionCET->valeur_i($valeur_i);
-        $optionCET->valeur_j($valeur_j);
-        $optionCET->valeur_k($valeur_k);
-        $optionCET->valeur_l($valeur_l);
+        $agent = new agent($dbcon);
+        $agent->load($agentid);
+        if ((sizeof($agent->getDemandesAlim('', array(alimentationCET::STATUT_EN_COURS, alimentationCET::STATUT_PREPARE))) == 0)
+            and (sizeof($agent->getDemandesOption('', array(optionCET::STATUT_EN_COURS, optionCET::STATUT_PREPARE)))== 0))
+        {       // On vérifie au moment de traiter la demande d'option s'il n'y a pas de demande en cours (cas du F5 dans le navigateur ou du double onglet dans le navigateur)
         
-        if (!is_null($agentid))
-        {
-            // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
-            $agent = new agent($dbcon);
-            $agent->load($agentid);
-            $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-            $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-            $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-            $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-            $LDAP_CODE_AGENT_ATTR = "edupersonprincipalname";
-            $con_ldap = ldap_connect($LDAP_SERVER);
-            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-            $filtre = "(supannEmpId=" . $agentid . ")";
-            //echo "Filtre = $filtre <br>";
-            $dn = $LDAP_SEARCH_BASE;
-            $restriction = array(
-                "$LDAP_CODE_AGENT_ATTR"
-            );
-            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-            $info = ldap_get_entries($con_ldap, $sr);
-            //echo "Info = " . print_r($info,true) . "<br>";
-            //echo "L'EPPN de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-            if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-                $agent_eppn = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-                //echo "Agent EPPN = $agent_eppn <br>";
-            }
+            $optionCET = new optionCET($dbcon);
+            $optionCET->agentid($agentid);
+            $optionCET->anneeref($anneeref);
+            $optionCET->valeur_a($valeur_a);
+            $optionCET->valeur_g($valeur_g);
+            $optionCET->valeur_h($valeur_h);
+            $optionCET->valeur_i($valeur_i);
+            $optionCET->valeur_j($valeur_j);
+            $optionCET->valeur_k($valeur_k);
+            $optionCET->valeur_l($valeur_l);
             
-            
-            // On récupère le mail de l'agent en cours
-            $LDAP_CODE_AGENT_ATTR = "mail";
-            $restriction = array(
-                "$LDAP_CODE_AGENT_ATTR"
-            );
-            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-            $info = ldap_get_entries($con_ldap, $sr);
-            //echo "Info = " . print_r($info,true) . "<br>";
-            //echo "L'email de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-            if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-                $agent_mail = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-                // echo "Agent eMail = $agent_mail <br>";
-            }
-        }
-            
-            
-        // On appelle le WS eSignature pour créer le document
-        $curl = curl_init();
-        // echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
-        //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
-        
-        // ----------------------------------------------------------------
-        // On force l'EPPN avec le compte système de eSignature
-        $agent_eppn = 'system';
-        //-----------------------------------------------------------------
-        
-        $params = array
-        (
-            'eppn' => "$agent_eppn",
-            'targetEmails' => array
-            (
-                "$agent_mail"
-            ),
-            'targetUrl' => "$full_g2t_ws_url"
-        );
-
-        // On récupère le responsable de la structure de l'agent - Niveau 2
-        
-        $pasresptrouve = false;
-        $structid = $agent->structureid();
-        $struct = new structure($dbcon);
-        $struct->load($structid);
-        $code = null;
-        if ($agent->estresponsable())
-        {
-            $resp = $struct->resp_envoyer_a($code);
-        }
-        else
-        {
-            $resp = $struct->agent_envoyer_a($code);
-        }
-        $params['recipientEmails'] = array
-        (
-            "1*" . $agent_mail,
-            "2*" . $resp->mail()
-        );
-////////////////////////////////////////////////////////
-////////// ATTENTION : POUR TEST UNIQUEMENT   //////////
-////////////////////////////////////////////////////////
-//        $params['recipientEmails'] = array
-//        (
-//            "1*" . $agent_mail,
-//            "2*elodie.briere@univ-paris1.fr"
-//        );
-////////////////////////////////////////////////////////
-        
-/*        
-        $resp = $struct->responsable();
-        if (($resp->mail() . "") <> "")
-        {
-            if ($resp->harpegeid() == $agent->harpegeid())
+            if (!is_null($agentid))
             {
-                $structparent = $struct->parentstructure();
-                $resp = $structparent->responsable();
-                if (($resp->mail() . "") == "")
-                {
-                   $pasresptrouve = true;
+                // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
+                $agent = new agent($dbcon);
+                $agent->load($agentid);
+                $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
+                $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
+                $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
+                $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
+                $LDAP_CODE_AGENT_ATTR = "edupersonprincipalname";
+                $con_ldap = ldap_connect($LDAP_SERVER);
+                ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+                $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+                $filtre = "(supannEmpId=" . $agentid . ")";
+                //echo "Filtre = $filtre <br>";
+                $dn = $LDAP_SEARCH_BASE;
+                $restriction = array(
+                    "$LDAP_CODE_AGENT_ATTR"
+                );
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                //echo "Info = " . print_r($info,true) . "<br>";
+                //echo "L'EPPN de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+                    $agent_eppn = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                    //echo "Agent EPPN = $agent_eppn <br>";
+                }
+                
+                
+                // On récupère le mail de l'agent en cours
+                $LDAP_CODE_AGENT_ATTR = "mail";
+                $restriction = array(
+                    "$LDAP_CODE_AGENT_ATTR"
+                );
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                //echo "Info = " . print_r($info,true) . "<br>";
+                //echo "L'email de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+                    $agent_mail = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                    // echo "Agent eMail = $agent_mail <br>";
                 }
             }
-        }
-        else
-        {
-            $pasresptrouve = true;
-        }
-        if ($pasresptrouve)
-        {
-            echo "<br><br><font color='red'><B>Il n'y a pas de responsable pour la structure " . $struct->nomlong()  ."</B></font><br>";
-        }
-        else
-        {
+                
+                
+            // On appelle le WS eSignature pour créer le document
+            $curl = curl_init();
+            // echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
+            //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
+            
+            // ----------------------------------------------------------------
+            // On force l'EPPN avec le compte système de eSignature
+            $agent_eppn = 'system';
+            //-----------------------------------------------------------------
+            
+            $params = array
+            (
+                'eppn' => "$agent_eppn",
+                'targetEmails' => array
+                (
+                    "$agent_mail"
+                ),
+                'targetUrl' => "$full_g2t_ws_url"
+            );
+    
+            // On récupère le responsable de la structure de l'agent - Niveau 2
+            
+            $pasresptrouve = false;
+            $structid = $agent->structureid();
+            $struct = new structure($dbcon);
+            $struct->load($structid);
+            $code = null;
+            if ($agent->estresponsable())
+            {
+                $resp = $struct->resp_envoyer_a($code);
+            }
+            else
+            {
+                $resp = $struct->agent_envoyer_a($code);
+            }
             $params['recipientEmails'] = array
             (
+                "1*" . $agent_mail,
                 "2*" . $resp->mail()
             );
-        }
-*/
-        
-        $resp_agent = null;
-        // On récupère tous les agents avec le profil RHCET - Niveau 3
-        foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
-        {
-            $params['recipientEmails'][] = '3*' . $qvt_agent->mail();
-            if (count((array)$qvt_agent->structrespliste())>0)
+    ////////////////////////////////////////////////////////
+    ////////// ATTENTION : POUR TEST UNIQUEMENT   //////////
+    ////////////////////////////////////////////////////////
+    //        $params['recipientEmails'] = array
+    //        (
+    //            "1*" . $agent_mail,
+    //            "2*elodie.briere@univ-paris1.fr"
+    //        );
+    ////////////////////////////////////////////////////////
+            
+    /*        
+            $resp = $struct->responsable();
+            if (($resp->mail() . "") <> "")
             {
-                $resp_agent = $qvt_agent;
+                if ($resp->harpegeid() == $agent->harpegeid())
+                {
+                    $structparent = $struct->parentstructure();
+                    $resp = $structparent->responsable();
+                    if (($resp->mail() . "") == "")
+                    {
+                       $pasresptrouve = true;
+                    }
+                }
             }
-        }
-        
-        // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
-        $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-        if (is_null($resp_agent))
-        {
+            else
+            {
+                $pasresptrouve = true;
+            }
+            if ($pasresptrouve)
+            {
+                echo "<br><br><font color='red'><B>Il n'y a pas de responsable pour la structure " . $struct->nomlong()  ."</B></font><br>";
+            }
+            else
+            {
+                $params['recipientEmails'] = array
+                (
+                    "2*" . $resp->mail()
+                );
+            }
+    */
+            
+            $resp_agent = null;
+            // On récupère tous les agents avec le profil RHCET - Niveau 3
+            foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
+            {
+                $params['recipientEmails'][] = '3*' . $qvt_agent->mail();
+                if (count((array)$qvt_agent->structrespliste())>0)
+                {
+                    $resp_agent = $qvt_agent;
+                }
+            }
+            
+            // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
+            $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
+            if (is_null($resp_agent))
+            {
+                $struct = new structure($dbcon);
+                $struct->load($qvt_id);
+                $resp_agent = $struct->responsable();
+            }
+            $params['recipientEmails'][] = '4*' . $resp_agent->mail();
+            
+            // On récupère le responsable du service DRH et DGS - Niveau 5
             $struct = new structure($dbcon);
-            $struct->load($qvt_id);
-            $resp_agent = $struct->responsable();
-        }
-        $params['recipientEmails'][] = '4*' . $resp_agent->mail();
-        
-        // On récupère le responsable du service DRH et DGS - Niveau 5
-        $struct = new structure($dbcon);
-        $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-        $struct->load($drh_id);
-        $drh_agent = $struct->responsable();
-        $params['recipientEmails'][] = '5*' . $drh_agent->mail();
-        $struct = new structure($dbcon);
-        $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-        $struct->load($dgs_id);
-        $dgs_agent = $struct->responsable();
-        $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
-        
-        $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-                is_array( $item )
-                ? array_walk( $item, $walk, $key )
-                : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                
-        };
-        array_walk( $params, $walk );
-        $params_string = implode( '&', $output );
-        //echo "<br>Output = " . $params_string . '<br><br>';
-        
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $params_string,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        $json = curl_exec($curl);
-        $error = curl_error ($curl);
-        curl_close($curl);
-        if ($error != "")
-        {
-            echo "Erreur Curl = " . $error . "<br><br>";
-        }
-        //echo "<br>" . print_r($json,true) . "<br>";
-        $id = json_decode($json, true);
-        
-        //var_dump($id);
-        if ("$id" <> "")
-        {
-            if (is_array($id))
+            $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
+            $struct->load($drh_id);
+            $drh_agent = $struct->responsable();
+            $params['recipientEmails'][] = '5*' . $drh_agent->mail();
+            $struct = new structure($dbcon);
+            $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
+            $struct->load($dgs_id);
+            $dgs_agent = $struct->responsable();
+            $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
+            
+            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+                    is_array( $item )
+                    ? array_walk( $item, $walk, $key )
+                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                    
+            };
+            array_walk( $params, $walk );
+            $params_string = implode( '&', $output );
+            //echo "<br>Output = " . $params_string . '<br><br>';
+            
+            $opts = [
+                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $params_string,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false
+            ];
+            curl_setopt_array($curl, $opts);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            $json = curl_exec($curl);
+            $error = curl_error ($curl);
+            curl_close($curl);
+            if ($error != "")
             {
-                $erreur = print_r($id,true);
+                echo "Erreur Curl = " . $error . "<br><br>";
+            }
+            //echo "<br>" . print_r($json,true) . "<br>";
+            $id = json_decode($json, true);
+            
+            //var_dump($id);
+            if ("$id" <> "")
+            {
+                if (is_array($id))
+                {
+                    $erreur = print_r($id,true);
+                }
+                else
+                {
+                    echo "Id de la nouvelle demande = " . $id . "<br>";
+                    $optionCET->esignatureid($id);
+                    $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+                    $optionCET->statut($optionCET::STATUT_PREPARE);
+                    
+                    $erreur = $optionCET->store();
+                }
+                if ($erreur <> "")
+                {
+                    echo "Erreur (création) = $erreur <br>";
+                }
+                else
+                {
+                    //var_dump($optionCET);
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+                }
             }
             else
             {
-                echo "Id de la nouvelle demande = " . $id . "<br>";
-                $optionCET->esignatureid($id);
-                $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                $optionCET->statut($optionCET::STATUT_PREPARE);
-                
-                $erreur = $optionCET->store();
-            }
-            if ($erreur <> "")
-            {
-                echo "Erreur (création) = $erreur <br>";
-            }
-            else
-            {
-                //var_dump($optionCET);
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-                //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+                echo "Oups, la création du droit d'option dans eSignature a échouée !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
             }
         }
-        else
+        else // Il y a une demande d'alim ou d'option en cours
         {
-            echo "Oups, la création du droit d'option dans eSignature a échouée !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+            echo "Vous avez une demande d'alimentation ou de droit d'option sur CET en cours. Il n'est pas possible d'en avoir plusieurs en même temps.<br><br>";
         }
     }
     
