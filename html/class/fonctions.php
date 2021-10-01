@@ -1203,6 +1203,65 @@ class fonctions
         return $g2t_ws_url;
     }
     
+    public function get_alimCET_liste($typeconges, $listStatuts = array()) // $typeconges de la forme annYY
+    {
+        $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = '" . $typeconges . "'";
+        if (sizeof($listStatuts) != 0)
+        {
+            $statuts = $this->fonctions->formatlistedb($listStatuts);
+            $sql .=  "AND STATUT IN $statuts";
+        }
+        
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->get_alimCET_liste : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        $alimCETliste = array();
+        // Si pas de demande d'alimentation de CET, on retourne le tableau vide
+        if (mysqli_num_rows($query) == 0) {
+            return $alimCETliste;
+        }
+        while ($result = mysqli_fetch_row($query)) {
+            $alimid = $result[0];
+            $alimCET = new alimentationCET($this->dbconnect);
+            $alimCET->load($alimid);
+            $alimCETliste[] = $alimCET;
+        }
+        return $alimCETliste;
+    }
+
+    public function get_optionCET_liste($anneeref, $listStatuts = array()) 
+    {
+        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = '" . $anneeref . "'";
+        if (sizeof($listStatuts) != 0)
+        {
+            $statuts = $this->fonctions->formatlistedb($listStatuts);
+            $sql .=  "AND STATUT IN $statuts";
+        }
+        
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->get_optionCET_liste : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        $optionCETliste = array();
+        // Si pas de demande d'option de CET, on retourne le tableau vide
+        if (mysqli_num_rows($query) == 0) {
+            return $optionCETliste;
+        }
+        while ($result = mysqli_fetch_row($query)) {
+            $optionid = $result[0];
+            $optionCET = new optionCET($this->dbconnect);
+            $optionCET->load($optionid);
+            $optionCETliste[] = $optionCET;
+        }
+        return $optionCETliste;
+    }
     
 }
 ?>
