@@ -2253,24 +2253,24 @@ AND DEMANDE.STATUT='v'";
         $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
 */
         
-        $full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
         $alimcet = new alimentationCET($this->dbconnect);
     	$listid = $this->getDemandesAlim($anneeref, $statuts);
     	$htmltext = '';
     	if (sizeof($listid) != 0)
     	{
-	    	$htmltext = "Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "<br>";
 	    	$htmltext = $htmltext . "<div id='demandes_alim_cet'>";
+	    	$htmltext = $htmltext . "<center>";
 	    	$htmltext = $htmltext . "<table class='tableausimple'>";
+	    	$htmltext = $htmltext . "<tr class='titresimple'><td colspan=8>Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "</td></tr>";
 	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
 	    	$htmltext = $htmltext . "</tr>";
 	    	foreach ($listid as $id)
 	    	{
-	    	    $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
 	    		$alimcet->load($id);
 	    		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
 	    	}
 	    	$htmltext = $htmltext . "</table><br>";
+	    	$htmltext = $htmltext . "</center>";
 	    	
 	    	$htmltext = $htmltext . "</div>";
     	}
@@ -2414,7 +2414,6 @@ AND DEMANDE.STATUT='v'";
         $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
         $full_g2t_ws_url = $g2t_ws_url . "/ws/optionWS.php";
 */
-        $full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
         
         
         $optioncet = new optionCET($this->dbconnect);
@@ -2429,7 +2428,6 @@ AND DEMANDE.STATUT='v'";
             $htmltext = $htmltext . "</tr>";
             foreach ($listid as $id)
             {
-                $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$id);
                 $optioncet->load($id);
                 //$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
                 $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
@@ -2478,9 +2476,11 @@ AND DEMANDE.STATUT='v'";
     	}
     	else 
     	{
+    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
     		while ($result = mysqli_fetch_row($query)) 
     		{
 				$listdemandes[] = $result[0];
+				$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
     		}
     	}
     	return $listdemandes;
@@ -2723,9 +2723,11 @@ AND DEMANDE.STATUT='v'";
         }
         else
         {
+        	$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
             while ($result = mysqli_fetch_row($query))
             {
                 $listdemandes[] = $result[0];
+                $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
             }
         }
         return $listdemandes;
