@@ -1211,7 +1211,7 @@
 	    echo "<br>";
 	    echo "Quotité moyenne : <input type=text placeholder='quotité' name=quotite_test id=quotite_ref_test size=3 value=$quotite>";
 	    echo "<br>";
-	    echo "Plafond modifié : <input type=text placeholder='Plafond quotite' name=plafond_quot_test id=plafond_quot_test value=$plafond_quot_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;'>";
+	    echo "Plafond modifié : <input type=text placeholder='Plafond quotite' name=plafond_quot_test id=plafond_quot_test value=$plafond_quot_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden; color: red;'>";
 	    echo "<br>";
 	    echo "Solde du CET avant versement (Case A) : <input type=text placeholder='Case A' name=valeur_a_test id=valeur_a_test size=3 value=$valeur_a_test>";
 	    echo "<br>";
@@ -1221,15 +1221,15 @@
 	    echo "<br>";
 	    echo "Nombre de jours de congés utilisés au titre de l’année de référence (DEPUIS LE 01/09) : <input type=text placeholder='Congés supp' name=conge_supp id=conge_supp size=3 value=$conge_supp>";
 	    echo "<br>";
-	    echo "Solde de jours de congés non pris au titre de l’année de référence (Case D) : <input type=text placeholder='Case D' name=valeur_d_test id=valeur_d_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' value=$valeur_d_test >";
+	    echo "Solde de jours de congés non pris au titre de l’année de référence (Case D) : <input type=text placeholder='Case D' name=valeur_d_test id=valeur_d_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden; color: red;' value=$valeur_d_test >";
 	    echo "<br>";
-	    echo "Nombre de jours max déposables : <input type=text placeholder='Plafond' name=plafond_test id=plafond_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' value=$nbjmax >";
+	    echo "Nombre de jours max déposables : <input type=text placeholder='Plafond' name=plafond_test id=plafond_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden; color: red;' value=$nbjmax >";
 	    echo "<br>";
-	    echo "Nombre de jours de congés reportés sur l’année suivante (Case E) : <input type=text placeholder='Case E' name=valeur_e_test id=valeur_e_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' value=$valeur_e_test >";
+	    echo "Nombre de jours de congés reportés sur l’année suivante (Case E) : <input type=text placeholder='Case E' name=valeur_e_test id=valeur_e_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden; color: red;' value=$valeur_e_test >";
 	    echo "<br>";
 	    echo "Alimentation du CET (Case F) : <input type=text placeholder='Case F' name=valeur_f_test id=valeur_f_test size=3 onchange='update_case_test()' onkeyup='update_case_test()' value=$valeur_f_test ><label id=label_f style='color: red;font-weight: bold; margin-left:20px;' ></label>";
 	    echo "<br>";
-	    echo "Solde du CET après versement (Case G) : <input type=text placeholder='Case G' name=valeur_g_test id=valeur_g_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' value=$valeur_g_test ><br>";
+	    echo "Solde du CET après versement (Case G) : <input type=text placeholder='Case G' name=valeur_g_test id=valeur_g_test size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden; color: red;' value=$valeur_g_test ><br>";
 	    if (isset($erreur_test))
 	    	echo "<p style='color:red;'>".$erreur_test."</p>";
 	    	echo "<input type='hidden' name='mode' value='" . $mode . "'>";
