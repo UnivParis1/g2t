@@ -393,7 +393,12 @@
             $curl = curl_init();
             //echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
             //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
-    
+            
+            // ----------------------------------------------------------------
+            // On force l'EPPN avec le compte système de eSignature
+            $agent_eppn = 'system';
+            //-----------------------------------------------------------------
+            
             $params = array
             (
                 'eppn' => "$agent_eppn",
@@ -425,9 +430,10 @@
             	}
             	$params['recipientEmails'] = array
             	(
-            			"2*" . $resp->mail()
+            	    "1*" . $agent_mail,
+            	    "2*" . $resp->mail()
             	);
-           // }
+             // }
             
             //if (!is_null($drh_niveau))
             //{
