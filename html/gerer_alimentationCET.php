@@ -388,180 +388,183 @@
                 }
             }
             
-            
-            // On appelle le WS eSignature pour créer le document
-            $curl = curl_init();
-            //echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
-            //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
-            
-            // ----------------------------------------------------------------
-            // On force l'EPPN avec le compte système de eSignature
-            $agent_eppn = 'system';
-            //-----------------------------------------------------------------
-            
-            $params = array
-            (
-                'eppn' => "$agent_eppn",
-                'targetEmails' => array
-                (
-                    "$agent_mail"
-                ),
-                'targetUrl' => "$full_g2t_ws_url"
-            );
-            /*if ($responsable == 'resp_demo')
+            if (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) == 0)
             {
-                $params['recipientEmails'] = array
-                    (
-                        "2*pascal.comte@univ-paris1.fr",
-                        "2*elodie.briere@univ-paris1.fr"
-                    );
-            }
-            else // On met le vrai responsable de l'agent
-            {*/
-            	// On récupère le responsable de la structure de l'agent - Niveau 2
-            	$code = null;
-            	if ($agent->estresponsable())
-            	{
-            		$resp = $structure->resp_envoyer_a($code);
-            	}
-            	else
-            	{
-            		$resp = $structure->agent_envoyer_a($code);
-            	}
-            	$params['recipientEmails'] = array
-            	(
-            	    "1*" . $agent_mail,
-            	    "2*" . $resp->mail()
-            	);
-             // }
             
-            //if (!is_null($drh_niveau))
-            //{
-                //$params['recipientEmails'][] = '3*' . $agent_mail;
-                $resp_agent = null;
-                // On récupère tous les agents avec le profil RHCET - Niveau 3
-                foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
-                {
-                	$params['recipientEmails'][] = '3*' . $qvt_agent->mail();
-                	if (count((array)$qvt_agent->structrespliste())>0)
-                	{
-                		$resp_agent = $qvt_agent;
-                	}
-                }
-                
-                // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
-                $qvt_id = 'DGEE_4';  // Id = DGEE_4        Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-                if (is_null($resp_agent))
-                {
-                	$struct = new structure($dbcon);
-                	$struct->load($qvt_id);
-                	$resp_agent = $struct->responsable();
-                }
-                $params['recipientEmails'][] = '4*' . $resp_agent->mail();
-                
-                // On récupère le responsable du service DRH et DGS - Niveau 5
-                $struct = new structure($dbcon);
-                $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-                $struct->load($drh_id);
-                $drh_agent = $struct->responsable();
-                $params['recipientEmails'][] = '5*' . $drh_agent->mail();
-                $struct = new structure($dbcon);
-                $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-                $struct->load($dgs_id);
-                $dgs_agent = $struct->responsable();
-                $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
-           // }
-    /*        
-            $params_string = http_build_query($params);
-            echo "<br>Param = " . $params_string . "<br><br>";
-            
-            Voir la réponse : https://stackoverflow.com/questions/26563952/php-multidimensional-array-to-query-string/26565074
-            
-            $array = array('order_source' => array('google','facebook'),'order_medium' => 'google-text');
-            
-            //Array
-            //(
-            //    [order_source] => Array
-            //    (
-            //        [0] => google
-            //        [1] => facebook
-            //    )
-            //    [order_medium] => google-text
-            //)
-            
-            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-                is_array( $item ) 
-                    ? array_walk( $item, $walk, $key ) 
-                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-    
-            };
-    
-            array_walk( $array, $walk );
-    
-            echo implode( '&', $output );  // order_source=google&order_source=facebook&order_medium=google-text 
-    
-            
-    */      
-            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-                is_array( $item )
-                ? array_walk( $item, $walk, $key )
-                : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                
-            };
-            array_walk( $params, $walk );
-            $params_string = implode( '&', $output );
-            //echo "<br>Output = " . $params_string . '<br><br>';
-            
-            $opts = [
-                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => $params_string,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false
-            ];
-            curl_setopt_array($curl, $opts);
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            curl_close($curl);
-            if ($error != "")
-            {
-                echo "Erreur Curl = " . $error . "<br><br>";
-            }
-            //echo "<br>" . print_r($json,true) . "<br>";
-            $id = json_decode($json, true);
-    
-            //var_dump($id);
-            if ("$id" <> "")
-            {
-                if (is_array($id))
-                {
-                    $erreur = print_r($id,true);
-                }
-                else
-                {
-                    //echo "Id de la nouvelle demande = " . $id . "<br>";
-                    $alimentationCET->esignatureid($id);
-                    $alimentationCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                    $alimentationCET->statut($alimentationCET::STATUT_PREPARE);
-                    
-                    $erreur = $alimentationCET->store();
-                }
-                if ($erreur <> "")
-                {
-                    echo "Erreur (création) = $erreur <br>";
-                }
-                else
-                {
-                    //var_dump($alimentationCET);
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
-                }
-            }
-            else
-            {
-                echo "Oups, la création de la demande dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
-            }
+	            // On appelle le WS eSignature pour créer le document
+	            $curl = curl_init();
+	            //echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
+	            //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
+	            
+	            // ----------------------------------------------------------------
+	            // On force l'EPPN avec le compte système de eSignature
+	            $agent_eppn = 'system';
+	            //-----------------------------------------------------------------
+	            
+	            $params = array
+	            (
+	                'eppn' => "$agent_eppn",
+	                'targetEmails' => array
+	                (
+	                    "$agent_mail"
+	                ),
+	                'targetUrl' => "$full_g2t_ws_url"
+	            );
+	            /*if ($responsable == 'resp_demo')
+	            {
+	                $params['recipientEmails'] = array
+	                    (
+	                        "2*pascal.comte@univ-paris1.fr",
+	                        "2*elodie.briere@univ-paris1.fr"
+	                    );
+	            }
+	            else // On met le vrai responsable de l'agent
+	            {*/
+	            	// On récupère le responsable de la structure de l'agent - Niveau 2
+	            	$code = null;
+	            	if ($agent->estresponsable())
+	            	{
+	            		$resp = $structure->resp_envoyer_a($code);
+	            	}
+	            	else
+	            	{
+	            		$resp = $structure->agent_envoyer_a($code);
+	            	}
+	            	$params['recipientEmails'] = array
+	            	(
+	            	    "1*" . $agent_mail,
+	            	    "2*" . $resp->mail()
+	            	);
+	             // }
+	            
+	            //if (!is_null($drh_niveau))
+	            //{
+	                //$params['recipientEmails'][] = '3*' . $agent_mail;
+	                $resp_agent = null;
+	                // On récupère tous les agents avec le profil RHCET - Niveau 3
+	                foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
+	                {
+	                	$params['recipientEmails'][] = '3*' . $qvt_agent->mail();
+	                	if (count((array)$qvt_agent->structrespliste())>0)
+	                	{
+	                		$resp_agent = $qvt_agent;
+	                	}
+	                }
+	                
+	                // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
+	                $qvt_id = 'DGEE_4';  // Id = DGEE_4        Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
+	                if (is_null($resp_agent))
+	                {
+	                	$struct = new structure($dbcon);
+	                	$struct->load($qvt_id);
+	                	$resp_agent = $struct->responsable();
+	                }
+	                $params['recipientEmails'][] = '4*' . $resp_agent->mail();
+	                
+	                // On récupère le responsable du service DRH et DGS - Niveau 5
+	                $struct = new structure($dbcon);
+	                $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
+	                $struct->load($drh_id);
+	                $drh_agent = $struct->responsable();
+	                $params['recipientEmails'][] = '5*' . $drh_agent->mail();
+	                $struct = new structure($dbcon);
+	                $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
+	                $struct->load($dgs_id);
+	                $dgs_agent = $struct->responsable();
+	                $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
+	           // }
+	    /*        
+	            $params_string = http_build_query($params);
+	            echo "<br>Param = " . $params_string . "<br><br>";
+	            
+	            Voir la réponse : https://stackoverflow.com/questions/26563952/php-multidimensional-array-to-query-string/26565074
+	            
+	            $array = array('order_source' => array('google','facebook'),'order_medium' => 'google-text');
+	            
+	            //Array
+	            //(
+	            //    [order_source] => Array
+	            //    (
+	            //        [0] => google
+	            //        [1] => facebook
+	            //    )
+	            //    [order_medium] => google-text
+	            //)
+	            
+	            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+	                is_array( $item ) 
+	                    ? array_walk( $item, $walk, $key ) 
+	                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+	    
+	            };
+	    
+	            array_walk( $array, $walk );
+	    
+	            echo implode( '&', $output );  // order_source=google&order_source=facebook&order_medium=google-text 
+	    
+	            
+	    */      
+	            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+	                is_array( $item )
+	                ? array_walk( $item, $walk, $key )
+	                : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+	                
+	            };
+	            array_walk( $params, $walk );
+	            $params_string = implode( '&', $output );
+	            //echo "<br>Output = " . $params_string . '<br><br>';
+	            
+	            $opts = [
+	                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
+	                CURLOPT_POST => true,
+	                CURLOPT_POSTFIELDS => $params_string,
+	                CURLOPT_RETURNTRANSFER => true,
+	                CURLOPT_SSL_VERIFYPEER => false
+	            ];
+	            curl_setopt_array($curl, $opts);
+	            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
+	            $json = curl_exec($curl);
+	            $error = curl_error ($curl);
+	            curl_close($curl);
+	            if ($error != "")
+	            {
+	                echo "Erreur Curl = " . $error . "<br><br>";
+	            }
+	            //echo "<br>" . print_r($json,true) . "<br>";
+	            $id = json_decode($json, true);
+	    
+	            //var_dump($id);
+	            if ("$id" <> "")
+	            {
+	                if (is_array($id))
+	                {
+	                    $erreur = print_r($id,true);
+	                }
+	                else
+	                {
+	                    //echo "Id de la nouvelle demande = " . $id . "<br>";
+	                    $alimentationCET->esignatureid($id);
+	                    $alimentationCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+	                    $alimentationCET->statut($alimentationCET::STATUT_PREPARE);
+	                    
+	                    $erreur = $alimentationCET->store();
+	                }
+	                if ($erreur <> "")
+	                {
+	                    echo "Erreur (création) = $erreur <br>";
+	                }
+	                else
+	                {
+	                    //var_dump($alimentationCET);
+	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+	                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+	                }
+	            }
+	            else
+	            {
+	                echo "Oups, la création de la demande dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
+	            }
+	        }
         }
     }
     
@@ -758,7 +761,7 @@
 	    else
 	        $valeur_a = 0;
 	    $valeur_b = $solde->droitaquis();
-	    $valeur_c = $solde->droitpris();
+	    $valeur_c = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
 	    $valeur_d = $valeur_b-$valeur_c;
 	    
 	    //////////////////////////////////////
