@@ -1141,7 +1141,7 @@ AND DEMANDE.STATUT='v'";
                 $htmltext = $htmltext . "         <td>" . $tempsolde->typelibelle() . "</td>";
                 if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
                 {
-                    $htmltext = $htmltext . "         <td>";
+                    $htmltext = $htmltext . "         <td colspan='2' bgcolor='#E8E8E8' >"; // On fusionne les 2 colonnes "droit acquis" et "droit pris"
                 }
                 else
                 {
@@ -1155,7 +1155,8 @@ AND DEMANDE.STATUT='v'";
                 $htmltext = $htmltext . "             </td>";
                 if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas les droits pris
                 {
-                    $htmltext = $htmltext . "         <td></td>";
+                    //$htmltext = $htmltext . "         <td></td>";
+                    $htmltext = $htmltext . "";  // On a déjà fusionné les deux colonnes "droit acquis" et "droit pris" (colspan='2')
                 }
                 else
                 {
