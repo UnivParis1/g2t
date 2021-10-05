@@ -134,7 +134,16 @@
         echo "</form>";
         echo "<br>";
         echo "<br>";
+        echo "<form name='allagentcet'  method='post' >";
+        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='submit' value='Tous les agents' >";
+        echo "</form>";
+        echo "<br>";
+        echo "<br>";
     }
+    
+/*
 
     if (! is_null($nbr_jours_cet)) {
         if ($nbr_jours_cet <= 0 or $nbr_jours_cet == "") {
@@ -366,16 +375,40 @@
         // On affiche les commentaires pour avoir l'historique
         echo $agent->affichecommentairecongehtml(false, $fonctions->anneeref() - 2);
     }
+*/    
     
-    
-    $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));
-    echo "<br><br>";
-    $htmltext = '';    
-    $htmltext = $htmltext . "<table class='tableausimple'>";
-    $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
-    $htmltext = $htmltext . "</tr>";
-    foreach ($alimCETliste as $alimcet)
+    echo "Liste des demandes d'alimentation de CET : <br>";
+    if (! is_null($agent)) 
     {
+        $alimCETliste = $agent->getDemandesAlim('ann' . substr($fonctions->anneeref()-1,2,2));     //getDemandesOption
+    }
+    else
+    {
+        $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));
+    }
+    //var_dump($alimCETliste);
+    $htmltext = '';
+    foreach ($alimCETliste as $esignatureid)
+    {
+        if ($htmltext == '')
+        {
+            $htmltext = $htmltext . "<table class='tableausimple'>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "</tr>";
+        }
+        
+        $alimcet = new alimentationCET($dbcon);
+        $alimcet->load($esignatureid);
+        if (!is_null($agent))
+        {
+            $agentalim = $agent;
+        }
+        else
+        {
+            $agentalim = new agent($dbcon);
+            $agentalim->load($alimcet->agentid());
+        }
+        
         if (($alimcet->statut() == alimentationCET::STATUT_EN_COURS) or ($alimcet->statut() == alimentationCET::STATUT_PREPARE))
         {
             $statut = $alimcet->statut() . '<br>';
@@ -406,12 +439,11 @@
             {
                 $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
             }
-            
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
         }
         else
         {
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
         }
     }
     $htmltext = $htmltext . "</table><br>";
@@ -419,15 +451,38 @@
     //var_dump($alimCETliste);
     echo "<br><br>";
 
-    $optionCETliste = $fonctions->get_optionCET_liste($fonctions->anneeref());
-    echo "<br><br>";
+    echo "Liste des demandes d'option sur CET : <br>";
+    if (! is_null($agent))
+    {
+        $optionCETliste = $agent->getDemandesOption($fonctions->anneeref());
+    }
+    else
+    {
+        $optionCETliste = $fonctions->get_optionCET_liste($fonctions->anneeref());
+    }
 
     $htmltext = '';
-    $htmltext = $htmltext . "<table class='tableausimple'>";
-    $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
-    $htmltext = $htmltext . "</tr>";
-    foreach ($optionCETliste as $optioncet)
+    foreach ($optionCETliste as $esignatureid)
     {
+        $optioncet = new optionCET($dbcon);
+        $optioncet->load($esignatureid);
+        if ($htmltext == '')
+        {
+            $htmltext = $htmltext . "<table class='tableausimple'>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>RAFP</td><td class='titresimple'>Indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "</tr>";
+        }
+        
+        if (!is_null($agent))
+        {
+            $agentoption = $agent;
+        }
+        else
+        {
+            $agentoption = new agent($dbcon);
+            $agentoption->load($optioncet->agentid());
+        }
+        
         if (($optioncet->statut() == optionCET::STATUT_EN_COURS) or ($optioncet->statut() == optionCET::STATUT_PREPARE))
         {
             $statut = $optioncet->statut() . '<br>';
@@ -459,11 +514,11 @@
                 $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
             }
             
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
         }
         else
         {
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
         }
     }
     $htmltext = $htmltext . "</table><br>";
