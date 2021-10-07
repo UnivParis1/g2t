@@ -555,6 +555,7 @@
 	                    $alimentationCET->statut($alimentationCET::STATUT_PREPARE);
 	                    
 	                    $erreur = $alimentationCET->store();
+	                    $agent->synchroCET();
 	                }
 	                if ($erreur <> "")
 	                {

@@ -388,6 +388,7 @@ else
                     $optionCET->statut($optionCET::STATUT_PREPARE);
                     
                     $erreur = $optionCET->store();
+                    $agent->synchroCET();
                 }
                 if ($erreur <> "")
                 {
