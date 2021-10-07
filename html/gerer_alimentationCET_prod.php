@@ -234,6 +234,13 @@
         echo "</form>";
     }
 
+    if (!is_null($agentid))
+    {
+    	$agent = new agent($dbcon);
+    	$agent->load($agentid);
+    	$agent->synchroCET();
+    }
+    
     if (isset($_POST['annuler_demande']))
     {
     	$esignatureid_annule = $_POST['esignatureid_annule'];
@@ -833,6 +840,16 @@
 			$consoadd = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
 			//echo "Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd." <br>";
 			
+			// Nombre de jours déposés sur le CET au titre de l'année de ref
+			$joursCET = 0;
+			$alimentationCET = new alimentationCET($dbcon);
+			$list_id_alim = $agent->getDemandesAlim('ann'.substr($fonctions->anneeref() - 1,2, 2), array($alimentationCET::STATUT_VALIDE));
+			foreach ($list_id_alim as $id_alim)
+			{
+				$alimentationCET->load($id_alim);
+				$joursCET += $alimentationCET->valeur_f();
+			}
+			
 			$nbjoursmax = floor($pr - $consodeb);
 			if ($nbjoursmax < 0)
 				$nbjoursmax = 0;
@@ -840,7 +857,17 @@
 			{
 				$nbjoursrestants = $valeur_b - $consodeb - $consoadd;
 				if ($nbjoursmax > $nbjoursrestants)
+				{
 					$nbjoursmax = floor($nbjoursrestants);
+				}
+				if ($nbjoursmax > $joursCET)
+				{
+					$nbjoursmax = $nbjoursmax - $joursCET;
+				}
+				else
+				{
+					$nbjoursmax = 0;
+				}
 			}
 			// echo "Nombre de jours déposables sur le CET : ".$nbjoursmax." <br><br>";
 			/*echo "Nombre de jours à déposer sur le CET <br>";

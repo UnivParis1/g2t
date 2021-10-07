@@ -2236,7 +2236,7 @@ AND DEMANDE.STATUT='v'";
     	return $retour;
     }
     
-    function afficheAlimCetHtml($anneeref = '', $statuts = array())
+    function afficheAlimCetHtml($typeconge = '', $statuts = array())
     {
 /*
         $servername = $_SERVER['SERVER_NAME'];
@@ -2255,7 +2255,7 @@ AND DEMANDE.STATUT='v'";
 */
         
         $alimcet = new alimentationCET($this->dbconnect);
-    	$listid = $this->getDemandesAlim($anneeref, $statuts);
+    	$listid = $this->getDemandesAlim($typeconge, $statuts);
     	$htmltext = '';
     	if (sizeof($listid) != 0)
     	{
@@ -2450,17 +2450,19 @@ AND DEMANDE.STATUT='v'";
      * @param array $listStatuts
      * @return array of esignatureid 
      */
-    function getDemandesAlim($anneeref = '', $listStatuts = array())
+    function getDemandesAlim($typeconge = '', $listStatuts = array())
     {
     	$listdemandes = array();
     	$statuts = '';
     	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '".$this->harpegeid()."' ";
-    	if ($anneeref != '') 
-    		$sql .= " AND TYPECONGES = '$anneeref' " ;
+    	if ($typeconge != '') 
+    	{
+    		$sql .= " AND TYPECONGES = '$typeconge' " ;
+    	}
     	if (sizeof($listStatuts) != 0)
     	{
     		$statuts = $this->fonctions->formatlistedb($listStatuts);
-    		$sql .=  "AND STATUT IN $statuts";
+    		$sql .=  " AND STATUT IN $statuts";
     	}
     	$query = mysqli_query($this->dbconnect, $sql);
     	$erreur = mysqli_error($this->dbconnect);
@@ -2472,7 +2474,7 @@ AND DEMANDE.STATUT='v'";
     	elseif (mysqli_num_rows($query) == 0)
     	{
     		//echo "<br>load => pas de ligne dans la base de données<br>";
-    		$errlog = "Aucune demande d'alimentation ".$statuts." pour l'agent " . $this->identitecomplete() . "<br>";;
+    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";;
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
     	else 
@@ -2480,8 +2482,7 @@ AND DEMANDE.STATUT='v'";
     		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
     		while ($result = mysqli_fetch_row($query)) 
     		{
-				$listdemandes[] = $result[0];
-				$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+    			$listdemandes[] = $result[0];
     		}
     	}
     	return $listdemandes;
@@ -2724,15 +2725,75 @@ AND DEMANDE.STATUT='v'";
         }
         else
         {
-        	$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
             while ($result = mysqli_fetch_row($query))
             {
                 $listdemandes[] = $result[0];
-                $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
             }
         }
         return $listdemandes;
 
+    }
+    
+    // Synchronisation avec eSignature de l'ensemble des demandes d'alimentation et droit d'option sur CET de l'agent
+    function synchroCET($typeconge = '', $anneeref = '')
+    {
+    	// Synchronisation des demande d'alimentation
+    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE HARPEGEID = '".$this->harpegeid()."' ";
+    	if ($typeconge != '')
+    	{
+    		$sql .= " AND TYPECONGES = '$typeconge' " ;
+    	}
+    	$query = mysqli_query($this->dbconnect, $sql);
+    	$erreur = mysqli_error($this->dbconnect);
+    	if ($erreur != "")
+    	{
+    		$errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	}
+    	elseif (mysqli_num_rows($query) == 0)
+    	{
+    		//echo "<br>load => pas de ligne dans la base de données<br>";
+    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";;
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+    	}
+    	else
+    	{
+    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
+    		while ($result = mysqli_fetch_row($query))
+    		{
+    			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+    		}
+    	}
+    	
+    	// Synchronisation des demandes d'option
+    	$sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE HARPEGEID = '" .  $this->harpegeid() . "'";
+    	
+    	if ($anneeref != '')
+    	{
+    		$sql .= " AND ANNEEREF = '$anneeref' " ;
+    	}
+    	$query = mysqli_query($this->dbconnect, $sql);
+    	$erreur = mysqli_error($this->dbconnect);
+    	if ($erreur != "")
+   		{
+   			$errlog = "Problème SQL dans le chargement des id eSignature (droit d'option) : " . $erreur;
+   			echo $errlog;
+   		}
+    	elseif (mysqli_num_rows($query) == 0)
+    	{
+    		//echo "<br>load => pas de ligne dans la base de données<br>";
+    		$errlog = "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . "<br>";
+    		error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+    		//echo $errlog;
+    	}
+    	else
+    	{
+    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
+    		while ($result = mysqli_fetch_row($query))
+    		{
+    			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+    		}
+    	}
     }
     
     /**

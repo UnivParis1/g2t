@@ -188,6 +188,13 @@ else
         echo "</form>";
     }
 
+    if (!is_null($agentid))
+    {
+    	$agent = new agent($dbcon);
+    	$agent->load($agentid);
+    	$agent->synchroCET();
+    }
+    
     // Création d'un droit d'option
     if (!is_null($cree_option))
     {
