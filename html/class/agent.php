@@ -2425,7 +2425,7 @@ AND DEMANDE.STATUT='v'";
             $htmltext = "Informations sur les droits d'options sur CET pour " . $this->identitecomplete() . "<br>";
             $htmltext = $htmltext . "<div id='option_alim_cet'>";
             $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>Nombre de jours RAFP</td><td class='titresimple'>Nombre de jours indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>RAFP</td><td class='titresimple'>Indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
             $htmltext = $htmltext . "</tr>";
             foreach ($listid as $id)
             {

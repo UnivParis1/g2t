@@ -201,8 +201,10 @@ else
         $agent = new agent($dbcon);
         $agent->load($agentid);
         if ((sizeof($agent->getDemandesAlim('', array(alimentationCET::STATUT_EN_COURS, alimentationCET::STATUT_PREPARE))) == 0)
-            and (sizeof($agent->getDemandesOption('', array(optionCET::STATUT_EN_COURS, optionCET::STATUT_PREPARE)))== 0))
+            and (sizeof($agent->getDemandesOption('', array(optionCET::STATUT_EN_COURS, optionCET::STATUT_PREPARE)))== 0)
+            and (sizeof($agent->getDemandesOption($fonctions->anneeref(), array(optionCET::STATUT_VALIDE)))== 0))
         {       // On vérifie au moment de traiter la demande d'option s'il n'y a pas de demande en cours (cas du F5 dans le navigateur ou du double onglet dans le navigateur)
+                // et qu'il n'y a pas déjà eu une demande VALIDEE pour l'année en cours
         
             $optionCET = new optionCET($dbcon);
             $optionCET->agentid($agentid);
@@ -776,9 +778,17 @@ else
             $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_INCONNU));
             if (count($listid)>0)
             {
-                $errorcontroltxt = $errorcontroltxt . "Il y a au moins une demande d'option sur CET pour l'agent " . $agent->identitecomplete() . " qui est en cours de traitement <br>Il n'est donc pas possible d'établir une nouvelle demande de droit d'option.<br>";                
+                $errorcontroltxt = $errorcontroltxt . "Il y a au moins une demande d'option sur CET pour l'agent " . $agent->identitecomplete() . " qui est en cours de traitement.<br>Il n'est donc pas possible d'établir une nouvelle demande de droit d'option.<br>";                
                 $controleok = false;
             }
+            // Si une dmeande est déjà validée pour la campagne en cours => Pas possible de refaire une demande.
+            $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_VALIDE));
+            if (count($listid)>0)
+            {
+                $errorcontroltxt = $errorcontroltxt . "Il y a au moins une demande d'option sur CET pour l'agent " . $agent->identitecomplete() . " qui est validée pour cette campagne.<br>Il n'est donc pas possible d'établir une nouvelle demande de droit d'option.<br>";                
+                $controleok = false;
+            }
+            
             
             // 4) Est-ce qu'une demande de droit d’alimentation de CET est en l’état “En cours” ou “En préparation”
             $typeconge = 'ann' . substr(($fonctions->anneeref()-1),2,2);
@@ -973,3 +983,8 @@ else
     }
     
 ?>
+
+</body>
+</html>
+
+

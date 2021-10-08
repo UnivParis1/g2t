@@ -776,6 +776,12 @@
                         </form>
                         <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
                     </li>
+					<li onclick='document.rh_gest_deleg.submit();'>
+                        <form name='rh_gest_deleg' method='post' action="gestion_delegation.php">
+                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                        </form>
+                        <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégation sur les structures</a>
+                    </li>
 					
 <?php
         }
@@ -821,6 +827,12 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_import_conges.submit();">Importer des congés</a>
+					</li>
+					<li onclick='document.admin_solde_conges.submit();'>
+						<form name='admin_solde_conges' method='post' action="affiche_info_conges.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form> 
+						<a href="javascript:document.admin_solde_conges.submit();">Synthèse des congés</a>
 					</li>
 				</ul>
 			</li>
