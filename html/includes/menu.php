@@ -698,6 +698,13 @@
 						</form> 
 						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
 					</li>
+					<li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
+						<form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="mode" value="gestrh">
+						</form> 
+						<a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
+					</li>
 					<li onclick='document.gestrh_creercet.submit();'>
 						<form name='gestrh_creercet' method='post' action="creer_cet.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
@@ -780,7 +787,7 @@
                         <form name='rh_gest_deleg' method='post' action="gestion_delegation.php">
                             <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
                         </form>
-                        <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégation sur les structures</a>
+                        <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
                     </li>
 					
 <?php
