@@ -19,7 +19,7 @@ require_once ("../html/class/optionCET.php");
 $fonctions = new fonctions($dbcon);
 $errlog = '';
 $erreur = '';
-$eSignature_url = "https://esignature-test.univ-paris1.fr";
+$eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
 
 
 error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));
@@ -356,7 +356,53 @@ switch ($_SERVER['REQUEST_METHOD'])
                             
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
                             $cet->store();
-                             
+
+                            // On appelle le WS eSignature pour récupérer le document final
+                            $curl = curl_init();
+                            $params_string = "";
+                            $opts = [
+                                CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $esignatureid,
+                                CURLOPT_RETURNTRANSFER => true,
+                                CURLOPT_SSL_VERIFYPEER => false,
+                                CURLOPT_PROXY => ''
+                            ];
+                            curl_setopt_array($curl, $opts);
+                            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                            $pdf = curl_exec($curl);
+                            $error = curl_error ($curl);
+                            curl_close($curl);
+                            if ($error != "")
+                            {
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl (récup PDF) =>  " . $error));
+                                //echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
+                            }
+                            //echo "<br>" . print_r($json,true) . "<br>";
+                            //$response = json_decode($json, true);
+                            
+                            $optionCET = new optionCET($dbcon);
+                            $optionCET->load($esignatureid);
+                            $agent = new agent($dbcon);
+                            $agent->load($optionCET->agentid());
+                            $basename = "Option_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . date("Ymd_His") . ".pdf";
+                            $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
+                            //echo "<br>pdffilename = $pdffilename <br><br>";
+                            
+                            // création du fichier
+                            //$pdffilename = '/tmp/mon_fichier_test.pdf';
+                            $path = dirname("$pdffilename");
+                            if (!file_exists($path))
+                            {
+                                mkdir("$path");
+                                chmod("$path", 0777);
+                            }
+                            
+                            $f = fopen($pdffilename, "w");
+                            // écriture
+                            fputs($f, $pdf );
+                            // fermeture
+                            fclose($f);
+                            
+                         
                          }
                      }
                      else  // Le statut du droit d'option n'est pas validée

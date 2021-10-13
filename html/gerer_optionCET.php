@@ -152,7 +152,10 @@ else
     $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL");  //   "https://esignature-test.univ-paris1.fr";
 
     $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
+    //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
+    $sftpurl = "";
     
+    //echo "<br>sftpurl = $sftpurl <br><br>";
     
     //echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
     //echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
@@ -279,7 +282,8 @@ else
                 (
                     "$agent_mail"
                 ),
-                'targetUrl' => "$full_g2t_ws_url"
+                'targetUrls' => array("$full_g2t_ws_url")
+                //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
             );
     
             // On récupère le responsable de la structure de l'agent - Niveau 2

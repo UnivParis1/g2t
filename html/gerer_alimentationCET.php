@@ -159,7 +159,10 @@
         $send_mail = $_POST["send_mail"];
 */
     
-    
+    $writepdf = null;
+    if (isset($_POST["writepdf"]))
+        $writepdf = $_POST["writepdf"];
+        
       
     require ("includes/menu.php");
     
@@ -169,7 +172,9 @@
     echo "<br><br>";
 */
     $id_model = $fonctions->getidmodelalimcet();
-    $eSignature_url = "https://esignature-test.univ-paris1.fr";
+    $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+    //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
+    $sftpurl = "";
     
 /*
     $servername = $_SERVER['SERVER_NAME'];
@@ -291,7 +296,7 @@
 	    	
 	    	// purger esignature
 	    	
-	    	$eSignature_url = "https://esignature-test.univ-paris1.fr";
+	    	$eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
 	    	$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
 	    	$params = array('id' => $esignatureid_annule);
 	    	$walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
@@ -330,6 +335,55 @@
     
     $anneeref = $fonctions->anneeref()-1;
 
+    // recup du PDF
+    if (!is_null($writepdf))
+    {
+        // On appelle le WS eSignature pour récupérer le document final
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . "266323",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $pdf = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl (récup PDF) =>  " . $error));
+            echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
+        }
+        //echo "<br>" . print_r($json,true) . "<br>";
+        //$response = json_decode($json, true);
+
+        $alimCET = new alimentationCET($dbcon);
+        $alimCET->load("266323");
+        $agent = new agent($dbcon);
+        $agent->load($alimCET->agentid());
+        $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . date("Ymd_His") . ".pdf";
+        $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
+        echo "<br>pdffilename = $pdffilename <br><br>";
+        
+        // création du fichier
+        //$pdffilename = '/tmp/mon_fichier_test.pdf';
+        $path = dirname("$pdffilename");
+        if (!file_exists($path))
+        {
+            mkdir("$path");
+            chmod("$path", 0777);
+        }
+        
+        $f = fopen($pdffilename, "w");
+        // écriture
+        fputs($f, $pdf );
+        // fermeture
+        fclose($f);
+        
+    }
 
     // Création d'une alimentation
     if (!is_null($cree_demande))
@@ -416,7 +470,9 @@
 	                (
 	                    "$agent_mail"
 	                ),
-	                'targetUrl' => "$full_g2t_ws_url"
+	                'targetUrls' => array("$full_g2t_ws_url")
+	                //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
+	                // 'targetUrl' => "$full_g2t_ws_url"
 	            );
 	            /*if ($responsable == 'resp_demo')
 	            {
@@ -1382,6 +1438,16 @@
         echo "Message envoyé à " . $user->identitecomplete() . "\n";
     }
 */    
+/*
+    echo "<br><hr size=3 align=center><br>";
+    echo "<br>Récupération du PDF de la demande.<br>";
+    echo "<form name='form_pdf_post'  method='post' >";
+    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+    echo "<br>";
+    echo "<input type='submit' name='writepdf' value='Get PDF'>";
+    echo "</form>";
+*/
     
 ?>
 

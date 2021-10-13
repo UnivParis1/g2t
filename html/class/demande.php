@@ -766,7 +766,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         // $pdf->Cell(190,1,'Université Panthéon-Sorbonne - Paris 1, 12 place du Panthéon, 75005 PARIS',0,0,'C');
         
         // $pdf->Output();
-        $pdfname = dirname(dirname(__FILE__)) . '/pdf/' . date('Y-m') . '/demande_num' . $this->id() . '_' . date("YmdHis") . '.pdf';
+        $pdfname = $this->fonctions->g2tbasepath() . '/html/pdf/' . date('Y-m') . '/demande_num' . $this->id() . '_' . date("YmdHis") . '.pdf';
         // $pdfname = sys_get_temp_dir() . '/demande_num'.$this->id().'.pdf';
         // echo "Nom du PDF = " . $pdfname . "<br>";
         //$pdf->Output($pdfname, 'F');

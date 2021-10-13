@@ -169,7 +169,10 @@
     echo "<br><br>";
 */
     $id_model = $fonctions->getidmodelalimcet();
-    $eSignature_url = "https://esignature-test.univ-paris1.fr";
+    $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+    //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
+    $sftpurl = "";
+    
     
 /*
     $servername = $_SERVER['SERVER_NAME'];
@@ -291,7 +294,7 @@
 	    	
 	    	// purger esignature
 	    	
-	    	$eSignature_url = "https://esignature-test.univ-paris1.fr";
+	    	$eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
 	    	$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
 	    	$params = array('id' => $esignatureid_annule);
 	    	$walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
@@ -415,7 +418,9 @@
 	                (
 	                    "$agent_mail"
 	                ),
-	                'targetUrl' => "$full_g2t_ws_url"
+	                'targetUrls' => array("$full_g2t_ws_url")
+	                //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
+	                // 'targetUrl' => "$full_g2t_ws_url"
 	            );
 	            /*if ($responsable == 'resp_demo')
 	            {

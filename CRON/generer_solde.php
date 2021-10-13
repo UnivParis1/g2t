@@ -1,11 +1,11 @@
 <?php
-    define('K_PATH_IMAGES', dirname(dirname(__FILE__)) . '/html/images/');
-    define('K_PATH_CACHE', dirname(dirname(__FILE__)) . '/html/pdf/');
 
     require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
 
     $fonctions = new fonctions($dbcon);
+    define('K_PATH_IMAGES', $fonctions->g2tbasepath() . '/html/images/');
+    define('K_PATH_CACHE', $fonctions->g2tbasepath() . '/html/pdf/');
 
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
@@ -80,7 +80,7 @@
                     $agent->soldecongespdf($anneeref, FALSE, $pdf, TRUE);
                     $agent->demandeslistepdf($anneeref . $fonctions->debutperiode(), ($anneeref + 1) . $fonctions->finperiode(), $pdf, FALSE);
                 }
-                $filename = dirname(dirname(__FILE__)) . '/html/pdf/' . date('Y-m') . '/solde_' . str_replace('/', '_', $struct->nomcourt()) . '_' . date("YmdHis") . ".pdf";
+                $filename = $fonctions->g2tbasepath() . '/html/pdf/' . date('Y-m') . '/solde_' . str_replace('/', '_', $struct->nomcourt()) . '_' . date("YmdHis") . ".pdf";
                 //$pdf->Output($filename, 'F'); // F = file
                 $fonctions->savepdf($pdf, $filename);
                 $gest = $struct->gestionnaire();

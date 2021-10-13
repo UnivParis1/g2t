@@ -8,7 +8,7 @@
     echo "Début de l'import des structures " . date("d/m/Y H:i:s") . "\n";
     
     // On regarde si le fichier des fonctions est present
-    $filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_fonctions_$date.dat";
+    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_fonctions_$date.dat";
     if (file_exists($filename)) {
         $separateur = '|';
         // On ouvre le fichier des fonctions et on charge le contenu dans un tableau
@@ -51,7 +51,7 @@
     // Sinon
     // on update les infos
     
-    $filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_structures_$date.dat";
+    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_structures_$date.dat";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
         exit();

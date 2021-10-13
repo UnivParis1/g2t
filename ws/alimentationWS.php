@@ -18,7 +18,7 @@
     $fonctions = new fonctions($dbcon);
     $errlog = '';
     $erreur = '';
-    $eSignature_url = "https://esignature-test.univ-paris1.fr";
+    $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
 
     
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));
@@ -437,6 +437,60 @@
                                 
                                 // Ajouter dans la table des commentaires la trace de l'opération
                                 $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()*-1),"Retrait de jours pour alimentation CET");
+                                
+                                // On appelle le WS eSignature pour récupérer le document final
+                                $curl = curl_init();
+                                $params_string = "";
+                                $opts = [
+                                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $esignatureid,
+                                    CURLOPT_RETURNTRANSFER => true,
+                                    CURLOPT_SSL_VERIFYPEER => false,
+                                    CURLOPT_PROXY => ''
+                                ];
+                                curl_setopt_array($curl, $opts);
+                                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                                $pdf = curl_exec($curl);
+                                $error = curl_error ($curl);
+                                curl_close($curl);
+                                if ($error != "")
+                                {
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl (récup PDF) =>  " . $error));
+                                    //echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
+                                }
+                                //echo "<br>" . print_r($json,true) . "<br>";
+                                //$response = json_decode($json, true);
+                                
+                                $alimCET = new alimentationCET($dbcon);
+                                $alimCET->load($esignatureid);
+                                $agent = new agent($dbcon);
+                                $agent->load($alimCET->agentid());
+                                $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . date("Ymd_His") . ".pdf";
+                                $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
+                                //echo "<br>pdffilename = $pdffilename <br><br>";
+                                
+                                // création du fichier
+                                //$pdffilename = '/tmp/mon_fichier_test.pdf';
+                                $path = dirname("$pdffilename");
+                                if (!file_exists($path))
+                                {
+                                    mkdir("$path");
+                                    chmod("$path", 0777);
+                                }
+                                
+                                $f = fopen($pdffilename, "w");
+                                // écriture
+                                fputs($f, $pdf );
+                                // fermeture
+                                fclose($f);
+                                
+/*                                
+                                $sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
+                                $connection = ssh2_connect('obelix.univ-paris1.fr', 22);
+                                ssh2_auth_password($connection, 'app.esignature-test','hSYgaVavsw75FjQoqrl0RwY9gmKnmTI7');
+                                ssh2_scp_send($connection, "$pdffilename", '/nas/shares1/DSIUN-PAS-Esignature-TEST/', 0644);
+*/                                
+                                
+                                
                             }
                             else  // Le statut de la demande n'est pas signée
                             {

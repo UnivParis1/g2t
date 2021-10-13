@@ -39,7 +39,7 @@
      * ---------------------------------------------------------
      */
 
-    $filename = dirname(__FILE__) . "/../INPUT_FILES_V3/har_affectations_$date.dat";
+     $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/har_affectations_$date.dat";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
         exit();

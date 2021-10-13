@@ -9,7 +9,7 @@
     echo "Début de l'import des absences HARPEGE " . date("d/m/Y H:i:s") . "\n";
     
     // On charge la table des absences HARPEGE avec le fichier
-    $filename = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_absence_$date.dat";
+    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_absence_$date.dat";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
         exit();

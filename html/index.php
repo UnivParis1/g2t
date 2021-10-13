@@ -186,7 +186,8 @@
 
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
-        
+    
+    echo "<br>Le chemin de base de G2T est : "  . $fonctions->g2tbasepath();
 ?>
 </body>
 </html>

@@ -30,9 +30,9 @@
 
     echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
 
-    $modalitefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
-    $statutfile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_status_$date.dat";
-    $structurefile = dirname(__FILE__) . "/../INPUT_FILES_V3/siham_affectations_structures_$date.dat";
+    $modalitefile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
+    $statutfile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_status_$date.dat";
+    $structurefile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_structures_$date.dat";
 
     $skipreadfile = false;
     if (isset($argv[1])) {

@@ -1263,5 +1263,11 @@ class fonctions
         return $optionCETliste;
     }
     
+    public function g2tbasepath()
+    {
+        //echo "<br>File = " .  __FILE__  . " <br>Basename = " . basename(__FILE__) . "  <br>Path name = " .  dirname(__FILE__)  . "<br>";
+        return str_replace("\\", '/', dirname(__FILE__,3)) . "/";
+    }
+    
 }
 ?>

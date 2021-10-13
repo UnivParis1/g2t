@@ -995,7 +995,7 @@ AND DEMANDE.STATUT='v'";
         // echo "Apres le addpage <br>";
         if ($header == TRUE) {
             $pdf->AddPage('L');
-            $pdf->Image(dirname(dirname(__FILE__)) . '/images/logo_papeterie.png', 10, 5, 60, 20);
+            $pdf->Image($this->fonctions->g2tbasepath() . '/html/images/logo_papeterie.png', 10, 5, 60, 20);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
             $pdf->Ln(15);
             
