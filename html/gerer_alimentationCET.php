@@ -335,6 +335,7 @@
     
     $anneeref = $fonctions->anneeref()-1;
 
+/*
     // recup du PDF
     if (!is_null($writepdf))
     {
@@ -384,6 +385,7 @@
         fclose($f);
         
     }
+*/
 
     // Création d'une alimentation
     if (!is_null($cree_demande))

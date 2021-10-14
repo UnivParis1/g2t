@@ -170,9 +170,23 @@ switch ($_SERVER['REQUEST_METHOD'])
                  $response = json_decode($json, true);
                  error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json est : " . var_export($response,true)));
                  if (isset($response['form_current_status']))
+                 {
                     $current_status = $response['form_current_status'];
+                 }
                  else
+                 {
                     $current_status = '';
+                 }
+                 
+                if (isset($response['form_completed_date']))
+                {
+                    $date_status = $response['form_completed_date'];
+                }
+                else
+                {
+                    $date_status = date("d/m/Y H:i:s");
+                }
+                    
                  error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status'"));
                  $optionCET = new optionCET($dbcon);
                  $validation = $optionCET::STATUT_INCONNU;
@@ -356,7 +370,15 @@ switch ($_SERVER['REQUEST_METHOD'])
                             
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
                             $cet->store();
-
+                            
+                            $erreur = $optionCET->storepdf($date_status);
+                            if ($erreur != '')
+                            {
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
+                                $result_json = array('status' => 'Error', 'description' => $erreur);
+                            }
+                            
+/*
                             // On appelle le WS eSignature pour récupérer le document final
                             $curl = curl_init();
                             $params_string = "";
@@ -383,7 +405,8 @@ switch ($_SERVER['REQUEST_METHOD'])
                             $optionCET->load($esignatureid);
                             $agent = new agent($dbcon);
                             $agent->load($optionCET->agentid());
-                            $basename = "Option_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . date("Ymd_His") . ".pdf";
+                            $datetime_info = new DateTime($date_status);
+                            $basename = "Option_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . $datetime_info->format("Ymd_His") . ".pdf";
                             $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
                             //echo "<br>pdffilename = $pdffilename <br><br>";
                             
@@ -401,7 +424,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                             fputs($f, $pdf );
                             // fermeture
                             fclose($f);
-                            
+*/                           
                          
                          }
                      }

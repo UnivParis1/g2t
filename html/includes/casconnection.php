@@ -1,5 +1,5 @@
 <?php
-    require_once dirname(dirname(__FILE__)) . '/class/fonctions.php';
+    require_once ('./class/fonctions.php');
     require_once ('./includes/dbconnection.php');
     $fonctions = new fonctions($dbcon);
     // Parametres pour connexion CAS

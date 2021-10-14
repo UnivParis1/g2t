@@ -297,6 +297,15 @@
                         {
                             $current_status = '';
                         }
+                        
+                        if (isset($response['form_completed_date']))
+                        {
+                            $date_status = $response['form_completed_date'];
+                        }
+                        else
+                        {
+                            $date_status = date("d/m/Y H:i:s");
+                        }
         
                         $alimentationCET = new alimentationCET($dbcon);
                         $validation = $alimentationCET::STATUT_INCONNU;
@@ -438,6 +447,14 @@
                                 // Ajouter dans la table des commentaires la trace de l'opération
                                 $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()*-1),"Retrait de jours pour alimentation CET");
                                 
+                                $erreur = $alimentationCET->storepdf($date_status);
+                                if ($erreur != '')
+                                {
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
+                                    $result_json = array('status' => 'Error', 'description' => $erreur);
+                                }
+                                
+/*                                
                                 // On appelle le WS eSignature pour récupérer le document final
                                 $curl = curl_init();
                                 $params_string = "";
@@ -464,7 +481,8 @@
                                 $alimCET->load($esignatureid);
                                 $agent = new agent($dbcon);
                                 $agent->load($alimCET->agentid());
-                                $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . date("Ymd_His") . ".pdf";
+                                $datetime_info = new DateTime($date_status);
+                                $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . $datetime_info->format('Ymd_His') . ".pdf";
                                 $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
                                 //echo "<br>pdffilename = $pdffilename <br><br>";
                                 
@@ -482,6 +500,7 @@
                                 fputs($f, $pdf );
                                 // fermeture
                                 fclose($f);
+*/                               
                                 
 /*                                
                                 $sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
