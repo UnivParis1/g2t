@@ -525,15 +525,11 @@ class optionCET
         return $erreur;
     }
     
-    public function storepdf($date_status = null)
+    public function storepdf()
     {
         
         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On va demander le PDF à eSignature (demande = " .  $this->esignatureid .  ")"));
-        if (is_null($date_status))
-        {
-            $date_status = date("d/m/Y H:i:s");
-        }
-        
+
         $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
         $error = '';
         
@@ -568,8 +564,7 @@ class optionCET
         
         $agent = new agent($this->dbconnect);
         $agent->load($this->agentid());
-        $datetime_info = new DateTime($date_status);
-        $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . $datetime_info->format('Ymd_His') . ".pdf";
+        $basename = "Option_CET_" . $agent->nom() . "_" . $agent->prenom() . "_n°" . $this->esignatureid . ".pdf";
         $pdffilename = $this->fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
         //echo "<br>pdffilename = $pdffilename <br><br>";
         

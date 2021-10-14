@@ -447,7 +447,7 @@
                                 // Ajouter dans la table des commentaires la trace de l'opération
                                 $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()*-1),"Retrait de jours pour alimentation CET");
                                 
-                                $erreur = $alimentationCET->storepdf($date_status);
+                                $erreur = $alimentationCET->storepdf();
                                 if ($erreur != '')
                                 {
                                     error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));

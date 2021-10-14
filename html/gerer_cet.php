@@ -104,7 +104,7 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-    //print_r($_POST); echo "<br><br>";
+    print_r($_POST); echo "<br><br>";
 
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
@@ -143,239 +143,33 @@
         echo "<br>";
     }
     
-/*
-
-    if (! is_null($nbr_jours_cet)) {
-        if ($nbr_jours_cet <= 0 or $nbr_jours_cet == "") {
-            $errlog = "Le nombre de jours saisi est vide, inférieur à 0 ou est nul";
-            $msg_erreur .= $errlog . "<br/>";
-            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-        } elseif ((intval($nbr_jours_cet) != $nbr_jours_cet) and ($nocheck == 'no')) {
-            if (! is_null($ajoutcet))
-                $errlog = "Le nombre de jours à ajouter au CET doit être un nombre entier.";
-            else
-                $errlog = "Le nombre de jours à retirer du CET doit être un nombre entier.";
-            $msg_erreur .= $errlog . "<br/>";
-            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-        } elseif (! is_null($ajoutcet)) {
-            $soldeannuel = new solde($dbcon);
-            // On charge le solde de congés Annuel
-            $msg_erreur = $msg_erreur . $soldeannuel->load($agentid, "ann" . substr(($fonctions->anneeref() - 1), 2, 2));
-            // echo "msg_erreur = " . $msg_erreur . "<br>";
-            if ($msg_erreur == "") {
-                // Si le solde de congés est suffisant.......
-                if ($soldeannuel->solde() >= $nbr_jours_cet) { // echo "Avant le new cet (1) <br>";
-                    $cet = new cet($dbcon);
-                    // On regarde s'il existe deja un CET
-                    $msg_erreur = $msg_erreur . $cet->load($agentid);
-                    // echo "Apres le load cet (1) <br>";
-                    if ($msg_erreur != "") {
-                        $msg_erreur = "Création d'un nouveau CET pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom();
-                        echo "<p style='color: green'>" . $msg_erreur . "</p>";
-                        error_log(basename(__FILE__) . " uid : " . $agentid . " " . $msg_erreur);
-                        // On force $msg_erreur à "" car on se moque de savoir quelle est l'erreur
-                        $msg_erreur = "";
-                        unset($cet);
-                        // On crée un nouveau CET que l'on instancie avec les valeurs courantes
-                        $cet = new cet($dbcon);
-                        $cet->agentid($agentid);
-                        $cet->cumultotal($nbr_jours_cet);
-                        $cet->cumulannuel($fonctions->anneeref(), $nbr_jours_cet);
-                        // $cet->datedebut(date("Ymd"));
-                        // echo "Avant le store <br>";
-                        $msg_erreur = $cet->store();
-                        // echo "Apres le store <br>";
-                    } else {
-                        // La variable $msg_erreur est "" ==> Il n'y a pas eu de probleme
-                        // echo "Il y a un CET <br>";
-                        $cumul = ($cet->cumulannuel($fonctions->anneeref()));
-                        $cumul = $cumul + $nbr_jours_cet;
-                        // On ne peut pas mettre plus de 25 jours par an sur le CET.
-                        // 20 jours obligatoires
-                        // Base de calcul = 45 jours
-                        // ==> 45 - 20 = 25 jours maxi
-                        if ($cumul > 25) {
-                            $errlog = "Le nombre de jour de cumul annuel est supérieur à 25. Vous ne pouvez pas mettre autant de jours dans le CET. ";
-                            $msg_erreur .= $errlog . "<br/>";
-                            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-                        } else {
-                            $cet->cumulannuel($fonctions->anneeref(), $cumul);
-                            $cumul = ($cet->cumultotal());
-                            $cumul = $cumul + $nbr_jours_cet;
-                            $cet->cumultotal($cumul);
-                            // echo "Avant le store <br>";
-                            $msg_erreur = $cet->store();
-                            // echo "Apres le store <br>";
-                        }
-                    }
-                    // Si tout s'est bien passé dans le store du CET (création d'un nouveau CET ou ajout de jour dans un CET existant)
-                    if ($msg_erreur == "") {
-                        $tempsolde = ($soldeannuel->droitpris());
-                        $tempsolde = $tempsolde + $nbr_jours_cet;
-                        $soldeannuel->droitpris(($tempsolde));
-                        $msg_erreur = $msg_erreur . $soldeannuel->store();
-                        $agent->ajoutecommentaireconge("ann" . substr(($fonctions->anneeref() - 1), 2, 2), ($nbr_jours_cet * - 1), "Retrait de jours pour alimentation CET");
-                        // Envoi d'un mail à l'agent !
-                        // echo "Avant le pdf <br>";
-                        $cet = new cet($dbcon);
-                        $msg_erreur = $msg_erreur . $cet->load($agentid);
-                        $pdffilename = $cet->pdf($userid, TRUE);
-                        // echo "Avant l'envoi de mail <br>";
-                        $user->sendmail($agent, "Alimentation du CET", "Votre CET vient d'être alimenté.", $pdffilename);
-                        // echo "Apres l'envoi de mail <br>";
-                    }
-                } else {
-                    $errlog = "Le solde est insuffisant : Vous avez demandé " . $nbr_jours_cet . " jour(s) alors qu'il n'y a que " . ($soldeannuel->solde()) . " jour(s) disponible(s) sur '" . $soldeannuel->typelibelle() . "'.";
-                    $msg_erreur .= $errlog . "<br/>";
-                    error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-                }
-            }
-        } elseif (! is_null($retraitcet)) {
-            // echo "Je suis dans une indemnisation de CET => $nbr_jours_cet jours à retirer sur $nbrejoursdispo jour à retirer du CET maximum !!!<br>";
-            // echo "Le type de retrait est : " . $_POST["typeretrait"] . "<br>";
-            //$nbr_jours_cet = str_replace(',', '.', $nbr_jours_cet);
-            $cet = new cet($dbcon);
-            $msg_erreur = $cet->load($agentid);
-            if ($msg_erreur == "") {
-                // echo "Nombre de jour dans le CET de disponible = " . ($cet->cumultotal()-$cet->jrspris()) . " Nombre demande = $nbr_jours_cet <br>";
-                if (($cet->cumultotal() - $cet->jrspris()) >= $nbr_jours_cet) {
-                    $droit_cet = ($cet->jrspris());
-                    $droit_cet = $droit_cet + $nbr_jours_cet;
-                    $cet->jrspris(($droit_cet));
-                    $msg_erreur = $cet->store();
-                    if ($msg_erreur == "") {
-                        $msg_erreur = $agent->ajoutecommentaireconge("cet", ($nbr_jours_cet * - 1), "Retrait de jours - Motif : " . $typeretrait);
-                        if ($nbr_jours_cet > 1)
-                            $detail = $nbr_jours_cet . " jours vous ont été retirés du CET au motif : " . $typeretrait;
-                        else
-                            $detail = $nbr_jours_cet . " jour vous a été retiré du CET au motif : " . $typeretrait;
-                        unset($cet);
-                        $cet = new cet($dbcon);
-                        $msg_erreur = $msg_erreur . $cet->load($agentid);
-                        $pdffilename = $cet->pdf($userid, FALSE, $detail);
-                        // echo "Avant l'envoi de mail <br>";
-                        $user->sendmail($agent, "Alimentation du CET", "Votre CET vient d'être modifié.", $pdffilename);
-                    }
-                } else {
-                    $msg_erreur = $msg_erreur . "Vos droits à CET sont insuffisants : Demandé " . $nbr_jours_cet . " jour(s)   Disponible : " . $nbrejoursdispo . " jour(s)<br>";
-                }
-            }
-        } elseif ($msg_erreur == "") {
-            $errlog = "Je ne sais pas ce que je fais ici => Ni un retrait, ni un ajout !!!!!";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $errlog);
-        }
+    $alimid = null;
+    if (isset($_POST["alimid"]))
+    {
+        $alimid = $_POST["alimid"];
     }
-
-    if ($msg_erreur != "") {
-        echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
-        error_log(basename(__FILE__) . " " . $msg_erreur);
-        $msg_erreur = "";
+    
+    $optionid = null;
+    if (isset($_POST["optionid"]))
+    {
+        $optionid = $_POST["optionid"];
     }
-
-    if (! is_null($agent)) {
-        // echo "On a choisit un agent <br>";
-        $msg_bloquant = "";
-        // $soldeliste = $agent->soldecongesliste(($fonctions->anneeref()-1),$msg_bloquant);
-        $solde = new solde($dbcon);
-        // echo "Annee de recherche = " . substr($fonctions->anneeref()-1,2,2) . "<br>";
-        $msg_bloquant = "" . $solde->load($agentid, "ann" . substr($fonctions->anneeref() - 1, 2, 2));
-        $soldelibelle = "";
-        // echo "Avant le test msg bloquant..." . $msg_bloquant . "<br>";
-        if ($msg_bloquant == "" or is_null($msg_bloquant)) {
-            // echo "Tout Ok.... MsgBloquant est vide <br>" ;
-            $nbrejoursdispo = $solde->droitaquis() - $solde->droitpris();
-            $soldelibelle = $solde->typelibelle();
-        }
-        // echo "Apres le solde Liste<br>";
-        $nbrejourspris = 0;
-        $cet = new cet($dbcon);
-        $msg_erreur_load = $cet->load($agentid);
-        $msg_erreur = $msg_bloquant . $msg_erreur . $msg_erreur_load;
-
-        if ($msg_erreur == "") {
-            // Pas d'erreur lors du chargement du CET
-            // echo "Le CET de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est actuellement : <br>";
-            // echo "Date du début du CET : ". $cet->datedebut() . "<br>";
-            // echo "Sur l'année " . ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref() . ", " . $agent->identitecomplete() . " a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
-            echo "Le solde du CET de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est de " . (($cet->cumultotal() - $cet->jrspris())) . " jour(s)";
-        } elseif ($msg_erreur_load != "") {
-            // Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
-            $cet = null;
-            echo "<p style='color: red'>" . $msg_erreur . "</p>";
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msg_erreur));
-        } elseif ($msg_bloquant != "") {
-            $errlog = "Impossible de saisir un CET pour cet agent.";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $errlog);
-        }
-
-        echo "<br>";
-        if ($nbrejoursdispo > 0) {
-            echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
-            echo "<form name='frm_ajoutcet'  method='post' >";
-            echo "Nombre de jours à ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > déduit du solde " . $soldelibelle . "<br>";
-            echo "<br>";
-            echo "Le nombre maximum de jours à ajouter est : $nbrejoursdispo jour(s)<br>";
-            echo "<B>ATTENTION :</B> A n'utiliser que dans le cas d'une alimentation du CET à partir des reliquats<br>";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-            echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
-            echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
-            echo "<input type='hidden' name='ajoutcet' value='yes'>";
-            echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-            if ($msg_bloquant == "")
-                echo "<input type='submit' value='Soumettre' >";
-            echo "</form>";
-            echo "</span>";
-            echo "<br>";
-        } else {
-            echo "Le solde $soldelibelle est nul ==> impossible d'alimenter le CET....<br>";
-        }
-        // echo 'Avant le test null(CET) <br>';
-
-        if (! is_null($cet)) {
-            // Seuls les jours au delà de 20 jours de CET peuvent être indemnisés ou ajoutés à la RAFP
-            // echo 'Cumul total = ' . $cet->cumultotal() . ' JrsPris = ' . $cet->jrspris() . '<br>';
-            $nbrejoursdispo = (($cet->cumultotal() - $cet->jrspris()));
-            if ($nbrejoursdispo > 0) {
-                echo "<br>";
-                echo "<span style='border:solid 1px black; background:lightsteelblue; width:600px; display:block;'>";
-                echo "<form name='frm_retraitcet'  method='post' >";
-                echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > <br>";
-                // Calcul du nombre de jours disponibles en retrait du CET
-                // echo "cet->cumultotal() = " . $cet->cumultotal() . "<br>";
-
-                echo "Le nombre de jours maximum à retirer est : " . $nbrejoursdispo . " jour(s) <br>";
-                echo "<input type='checkbox' name='nocheck' value='yes'>Ne pas vérifier le nombre de jours saisi. <b><u>ATTENTION :</u></b> A utiliser avec précaution.<br><br>";
-
-                echo "Indiquer le type de retrait : ";
-                echo "<select name='typeretrait'>";
-                echo "<OPTION value='Indemnisation'>Indemnisation</OPTION>";
-                echo "<OPTION value='Prise en compte au sein de la RAFP'>Prise en compte au sein de la RAFP</OPTION>";
-                echo "</select>";
-                echo "<br>";
-                echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-                echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
-                echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
-                echo "<input type='hidden' name='retraitcet' value='yes'>";
-                echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-
-                if ($msg_bloquant == "")
-                    echo "<input type='submit' value='Soumettre' >";
-                echo "</form>";
-                echo "</span>";
-            } else {
-                echo " Le solde du CET de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est nul ==> Impossible de faire une indemnisation<br>";
-            }
-        }
-        // Affichage du solde de l'année précédente
-        echo $agent->soldecongeshtml($fonctions->anneeref() - 1);
-        // Affichage du solde de l'année en cours
-        echo $agent->soldecongeshtml($fonctions->anneeref());
-        // On affiche les commentaires pour avoir l'historique
-        echo $agent->affichecommentairecongehtml(false, $fonctions->anneeref() - 2);
+    
+    if (!is_null($alimid))
+    {
+        $alimcet = new alimentationCET($dbcon);
+        $alimcet->load($alimid);
+        $alimcet->storepdf();
+        $alimcet = null;
     }
-*/    
+    if (!is_null($optionid))
+    {
+        $optioncet = new optionCET($dbcon);
+        $optioncet->load($optionid);
+        $optioncet->storepdf();
+        $optioncet = null;
+    }
+    
     
     echo "Liste des demandes d'alimentation de CET : <br>";
     if (! is_null($agent)) 
@@ -393,7 +187,7 @@
         if ($htmltext == '')
         {
             $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td><td class='titresimple'>PDF</td>";
             $htmltext = $htmltext . "</tr>";
         }
         
@@ -439,12 +233,28 @@
             {
                 $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
             }
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
         else
         {
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
+        $htmltext = $htmltext . "<td class='cellulesimple'><form name='alim_" . $alimcet->esignatureid() . "'  method='post' >";
+        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST["agentid"]))
+        {
+            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
+        }
+        $htmltext = $htmltext . "<input type='hidden' name='alimid' value='" . $alimcet->esignatureid() . "'>";
+        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' value='Générer le PDF'";
+        if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
+        {
+            $htmltext = $htmltext . " disabled='disabled' ";
+        }
+        $htmltext = $htmltext . ">";
+        $htmltext = $htmltext . "</form></td>";
+        $htmltext = $htmltext . "</tr>";
     }
     $htmltext = $htmltext . "</table><br>";
     echo $htmltext;
@@ -469,7 +279,7 @@
         if ($htmltext == '')
         {
             $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>RAFP</td><td class='titresimple'>Indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>RAFP</td><td class='titresimple'>Indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td><td class='titresimple'>PDF</td>";
             $htmltext = $htmltext . "</tr>";
         }
         
@@ -514,12 +324,28 @@
                 $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
             }
             
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
         else
         {
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
+            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
+        $htmltext = $htmltext . "<td class='cellulesimple'><form name='option_" . $optioncet->esignatureid() . "'  method='post' >";
+        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST["agentid"]))
+        {
+            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
+        }
+        $htmltext = $htmltext . "<input type='hidden' name='optionid' value='" . $optioncet->esignatureid() . "'>";
+        $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' value='Générer le PDF' ";
+        if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optionCET::STATUT_REFUSE )
+        {
+            $htmltext = $htmltext . " disabled='disabled' ";
+        }
+        $htmltext = $htmltext . ">";
+        $htmltext = $htmltext . "</form></td>";
+        $htmltext = $htmltext . "</tr>";
     }
     $htmltext = $htmltext . "</table><br>";
     echo $htmltext;

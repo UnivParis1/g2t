@@ -371,7 +371,7 @@ switch ($_SERVER['REQUEST_METHOD'])
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
                             $cet->store();
                             
-                            $erreur = $optionCET->storepdf($date_status);
+                            $erreur = $optionCET->storepdf();
                             if ($erreur != '')
                             {
                                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
