@@ -246,6 +246,10 @@
         {
             $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
         }
+        if (isset($_POST["agent"]))
+        {
+            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
+        }
         $htmltext = $htmltext . "<input type='hidden' name='alimid' value='" . $alimcet->esignatureid() . "'>";
         $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' value='Générer le PDF'";
         if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
@@ -336,6 +340,10 @@
         if (isset($_POST["agentid"]))
         {
             $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
+        }
+        if (isset($_POST["agent"]))
+        {
+            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
         }
         $htmltext = $htmltext . "<input type='hidden' name='optionid' value='" . $optioncet->esignatureid() . "'>";
         $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' value='Générer le PDF' ";
