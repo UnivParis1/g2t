@@ -178,6 +178,7 @@
                     curl_setopt_array($curl, $opts);
                     curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
                     $json = curl_exec($curl);
+                    
                     $error = curl_error ($curl);
                     curl_close($curl);
                     if ($error != "")
@@ -190,204 +191,211 @@
 
                     error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse est =>  " . var_export($response,true)));
 
-                    
-                    if (! isset($response['error']))
+                    if (stristr(substr($json,0,20),'HTML') === false)
                     {
-                    
-                        if (isset($response['form_current_status']))
-                        {
-                            $current_status = $response['form_current_status'];
-                        }
-                        else
-                        {
-                            $current_status = '';
-                        }
-                        
-                        if (isset($response['form_completed_date']))
-                        {
-                            $date_status = $response['form_completed_date'];
-                        }
-                        else
-                        {
-                            $date_status = date("d/m/Y H:i:s");
-                        }
-        
-                        $alimentationCET = new alimentationCET($dbcon);
-                        $validation = $alimentationCET::STATUT_INCONNU;
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
-                        foreach((array)$response as $key => $value)
-                        {
-                        	if (preg_match("/form_data_d.+cision/i",$key))
-                        	{
-                        		error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
-                        		if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
-                        		{
-                        			error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut YES."));
-                        			$validation = $alimentationCET::STATUT_VALIDE;
-                        			break;
-                        		}
-                        		elseif (strcasecmp($value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
-                        		{
-                        			error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut NO."));
-                        			$validation = $alimentationCET::STATUT_REFUSE;
-                        			if (isset($response['form_data_motifrefus']))
-                        			{
-                        				error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_motifrefus existe."));
-                        				$reason = $response['form_data_motifrefus'];
-                        			}
-                        			break;
-                        		}
-                        		else
-                        		{
-                        			$validation = $alimentationCET::STATUT_INCONNU;
-                        		}
-                        	}
-                        }
-                        
-                        switch (strtolower($current_status))
-                        {
-                            //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
-                            case 'draft' :
-                            case 'pending' :
-                            case 'signed' :
-                            case 'checked' :
-                                $status = $alimentationCET::STATUT_EN_COURS;
-                                break;
-                            case 'refused':
-                                $status = $alimentationCET::STATUT_REFUSE;
-                                // Récupération du commentaire d'esignature
-                                $curl2 = curl_init();
-                                $opts2 = [
-                                		CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
-                                		CURLOPT_RETURNTRANSFER => true,
-                                		CURLOPT_SSL_VERIFYPEER => false,
-                                		CURLOPT_PROXY => ''
-                                ];
-                                curl_setopt_array($curl2, $opts2);
-                                curl_setopt($curl2, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                                $json2 = curl_exec($curl2);
-                                $error2 = curl_error ($curl2);
-                                curl_close($curl2);
-                                if ($error2 != "")
-                                {
-                                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error2));
-                                }
-                                //echo "<br>" . print_r($json,true) . "<br>";
-                                $response2 = json_decode($json2, true);
-                                if (isset($response2['comments'][0]['text']))
-                                	$reason = $response2['comments'][0]['text'];
-                                break;
-                            case 'completed' :
-                            case 'exported' :
-                            case 'archived' :
-                            case 'cleaned' :
-                                if ($validation == $alimentationCET::STATUT_VALIDE)
-                                    $status = $alimentationCET::STATUT_VALIDE;
-                                elseif ($validation == $alimentationCET::STATUT_REFUSE)
-                                    $status = $alimentationCET::STATUT_REFUSE;
-                                else
-                                    $status = $alimentationCET::STATUT_INCONNU;
-                                break;
-                            case 'deleted' : // TODO : Attention le document est dans la corbeille
-                            case 'canceled' :
-                            case '' :
-                                $status = $alimentationCET::STATUT_ABANDONNE;
-                                break;
-                            default :
-                                $status = $alimentationCET::STATUT_INCONNU;
-                        }
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Le status de la demande $esignatureid est : $status car la validation est : $validation "));
-                        //$status = mb_strtolower("$status", 'UTF-8');
-    
-                        $erreur = $alimentationCET->load($esignatureid);
-                        if ($erreur != "")
-                        {
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = " . $erreur));
-                            $result_json = array('status' => 'Error', 'description' => $erreur);
-                        }
-                        else
-                        {
-                            //if ($status == mb_strtolower($alimentationCET::STATUT_VALIDE, 'UTF-8'))
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" status = $status"));
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" alimentationCET->statut() = " . $alimentationCET->statut()));
-                            if (($status == $alimentationCET::STATUT_VALIDE) and ($alimentationCET->statut() == $alimentationCET::STATUT_EN_COURS or $alimentationCET->statut() == $alimentationCET::STATUT_PREPARE))
-                            {
-                                $agent = new agent($dbcon);
-                                $agentid = $alimentationCET->agentid();
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent id =  " . $agentid ));
-                                $agent->load($agentid);
-                                $cet = new cet($dbcon);
-                                $erreur = $cet->load($agentid);
-                                if ($erreur <> '')
-                                {
-                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Pas de CET pour cet agent : " . $agent->identitecomplete() ." ! On le crée. "));
-                                    unset($cet);
-                                    $cet = new cet($dbcon);
-                                    $cet->agentid($agentid);
-                                    $cet->cumultotal('0');
-                                    $cet->cumulannuel($fonctions->anneeref(),'0');
-                                    $cet->datedebut('01/01/1900');   //date('d/m/Y'));
-                                    $erreur = $cet->store();
-                                    unset($cet);
-                                    $cet = new cet($dbcon);
-                                    $cet->load($agentid);
-                                }
-                                $cet->cumultotal( $alimentationCET->valeur_f() + $cet->cumultotal()) ;
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . $cet->cumultotal()));
-                                $cumulannuel = $cet->cumulannuel($fonctions->anneeref());
-                                $cumulannuel = $cumulannuel + $alimentationCET->valeur_f();
-                                $cet->cumulannuel($fonctions->anneeref(),$cumulannuel);
-                                $cet->store();
-                                
-                                $solde = new solde($dbcon);
-                                //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
-                                $solde->load($agentid, $alimentationCET->typeconges());
-                                //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
-                                $new_solde = $solde->droitpris()+$alimentationCET->valeur_f();
-                                $solde->droitpris($new_solde);
-                                //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
-                                $solde->store();
-                                
-                                // Ajouter dans la table des commentaires la trace de l'opération
-                                $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()*-1),"Retrait de jours pour alimentation CET");
-                                
-                                $erreur = $alimentationCET->storepdf();
-                                if ($erreur != '')
-                                {
-                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
-                                    $result_json = array('status' => 'Error', 'description' => $erreur);
-                                }
-                            }
-                            else  // Le statut de la demande n'est pas signée
-                            {
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $alimentationCET->agentid()));
-                            }
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour de la demande d'alimentation du CET $esignatureid de l'agent " . $alimentationCET->agentid()));
-                            $alimentationCET->statut($status);
-                            if ($status <> alimentationCET::STATUT_ABANDONNE)
-                            {
-                            	$alimentationCET->motif($reason);
-                            } 
-                            $erreur = $alimentationCET->store();
-        
-                            if ($erreur != "")
-                            {
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de l'enregistrement de la demande " . $esignatureid . " => Erreur = " . $erreur));
-                                $result_json = array('status' => 'Error', 'description' => $erreur);
-                            }
-                            else
-                            {
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Traitement OK de la demande " . $esignatureid . " => Pas d'erreur"));
-                                $result_json = array('status' => 'Ok', 'description' => $erreur);
-                            }
-                        }
+	                    if (! isset($response['error']))
+	                    {                    
+	                        if (isset($response['form_current_status']))
+	                        {
+	                            $current_status = $response['form_current_status'];
+	                        }
+	                        else
+	                        {
+	                            $current_status = '';
+	                        }
+	                        
+	                        if (isset($response['form_completed_date']))
+	                        {
+	                            $date_status = $response['form_completed_date'];
+	                        }
+	                        else
+	                        {
+	                            $date_status = date("d/m/Y H:i:s");
+	                        }
+	        
+	                        $alimentationCET = new alimentationCET($dbcon);
+	                        $validation = $alimentationCET::STATUT_INCONNU;
+	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
+	                        foreach((array)$response as $key => $value)
+	                        {
+	                        	if (preg_match("/form_data_d.+cision/i",$key))
+	                        	{
+	                        		error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
+	                        		if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
+	                        		{
+	                        			error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut YES."));
+	                        			$validation = $alimentationCET::STATUT_VALIDE;
+	                        			break;
+	                        		}
+	                        		elseif (strcasecmp($value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
+	                        		{
+	                        			error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut NO."));
+	                        			$validation = $alimentationCET::STATUT_REFUSE;
+	                        			if (isset($response['form_data_motifrefus']))
+	                        			{
+	                        				error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_motifrefus existe."));
+	                        				$reason = $response['form_data_motifrefus'];
+	                        			}
+	                        			break;
+	                        		}
+	                        		else
+	                        		{
+	                        			$validation = $alimentationCET::STATUT_INCONNU;
+	                        		}
+	                        	}
+	                        }
+	                        
+	                        switch (strtolower($current_status))
+	                        {
+	                            //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
+	                            case 'draft' :
+	                            case 'pending' :
+	                            case 'signed' :
+	                            case 'checked' :
+	                                $status = $alimentationCET::STATUT_EN_COURS;
+	                                break;
+	                            case 'refused':
+	                                $status = $alimentationCET::STATUT_REFUSE;
+	                                // Récupération du commentaire d'esignature
+	                                $curl2 = curl_init();
+	                                $opts2 = [
+	                                		CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+	                                		CURLOPT_RETURNTRANSFER => true,
+	                                		CURLOPT_SSL_VERIFYPEER => false,
+	                                		CURLOPT_PROXY => ''
+	                                ];
+	                                curl_setopt_array($curl2, $opts2);
+	                                curl_setopt($curl2, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+	                                $json2 = curl_exec($curl2);
+	                                $error2 = curl_error ($curl2);
+	                                curl_close($curl2);
+	                                if ($error2 != "")
+	                                {
+	                                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error2));
+	                                }
+	                                //echo "<br>" . print_r($json,true) . "<br>";
+	                                $response2 = json_decode($json2, true);
+	                                if (isset($response2['comments'][0]['text']))
+	                                	$reason = $response2['comments'][0]['text'];
+	                                break;
+	                            case 'completed' :
+	                            case 'exported' :
+	                            case 'archived' :
+	                            case 'cleaned' :
+	                                if ($validation == $alimentationCET::STATUT_VALIDE)
+	                                    $status = $alimentationCET::STATUT_VALIDE;
+	                                elseif ($validation == $alimentationCET::STATUT_REFUSE)
+	                                    $status = $alimentationCET::STATUT_REFUSE;
+	                                else
+	                                    $status = $alimentationCET::STATUT_INCONNU;
+	                                break;
+	                            case 'deleted' : // TODO : Attention le document est dans la corbeille
+	                            case 'canceled' :
+	                            case '' :
+	                                $status = $alimentationCET::STATUT_ABANDONNE;
+	                                break;
+	                            default :
+	                                $status = $alimentationCET::STATUT_INCONNU;
+	                        }
+	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Le status de la demande $esignatureid est : $status car la validation est : $validation "));
+	                        //$status = mb_strtolower("$status", 'UTF-8');
+	    
+	                        $erreur = $alimentationCET->load($esignatureid);
+	                        if ($erreur != "")
+	                        {
+	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = " . $erreur));
+	                            $result_json = array('status' => 'Error', 'description' => $erreur);
+	                        }
+	                        else
+	                        {
+	                            //if ($status == mb_strtolower($alimentationCET::STATUT_VALIDE, 'UTF-8'))
+	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" status = $status"));
+	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" alimentationCET->statut() = " . $alimentationCET->statut()));
+	                            if (($status == $alimentationCET::STATUT_VALIDE) and ($alimentationCET->statut() == $alimentationCET::STATUT_EN_COURS or $alimentationCET->statut() == $alimentationCET::STATUT_PREPARE))
+	                            {
+	                                $agent = new agent($dbcon);
+	                                $agentid = $alimentationCET->agentid();
+	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent id =  " . $agentid ));
+	                                $agent->load($agentid);
+	                                $cet = new cet($dbcon);
+	                                $erreur = $cet->load($agentid);
+	                                if ($erreur <> '')
+	                                {
+	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Pas de CET pour cet agent : " . $agent->identitecomplete() ." ! On le crée. "));
+	                                    unset($cet);
+	                                    $cet = new cet($dbcon);
+	                                    $cet->agentid($agentid);
+	                                    $cet->cumultotal('0');
+	                                    $cet->cumulannuel($fonctions->anneeref(),'0');
+	                                    $cet->datedebut('01/01/1900');   //date('d/m/Y'));
+	                                    $erreur = $cet->store();
+	                                    unset($cet);
+	                                    $cet = new cet($dbcon);
+	                                    $cet->load($agentid);
+	                                }
+	                                $cet->cumultotal( $alimentationCET->valeur_f() + $cet->cumultotal()) ;
+	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . $cet->cumultotal()));
+	                                $cumulannuel = $cet->cumulannuel($fonctions->anneeref());
+	                                $cumulannuel = $cumulannuel + $alimentationCET->valeur_f();
+	                                $cet->cumulannuel($fonctions->anneeref(),$cumulannuel);
+	                                $cet->store();
+	                                
+	                                $solde = new solde($dbcon);
+	                                //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
+	                                $solde->load($agentid, $alimentationCET->typeconges());
+	                                //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
+	                                $new_solde = $solde->droitpris()+$alimentationCET->valeur_f();
+	                                $solde->droitpris($new_solde);
+	                                //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
+	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
+	                                $solde->store();
+	                                
+	                                // Ajouter dans la table des commentaires la trace de l'opération
+	                                $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()*-1),"Retrait de jours pour alimentation CET");
+	                                
+	                                $erreur = $alimentationCET->storepdf();
+	                                if ($erreur != '')
+	                                {
+	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
+	                                    $result_json = array('status' => 'Error', 'description' => $erreur);
+	                                }
+	                            }
+	                            else  // Le statut de la demande n'est pas signée
+	                            {
+	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $alimentationCET->agentid()));
+	                            }
+	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour de la demande d'alimentation du CET $esignatureid de l'agent " . $alimentationCET->agentid()));
+	                            $alimentationCET->statut($status);
+	                            if ($status <> alimentationCET::STATUT_ABANDONNE)
+	                            {
+	                            	$alimentationCET->motif($reason);
+	                            } 
+	                            $erreur = $alimentationCET->store();
+	        
+	                            if ($erreur != "")
+	                            {
+	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de l'enregistrement de la demande " . $esignatureid . " => Erreur = " . $erreur));
+	                                $result_json = array('status' => 'Error', 'description' => $erreur);
+	                            }
+	                            else
+	                            {
+	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Traitement OK de la demande " . $esignatureid . " => Pas d'erreur"));
+	                                $result_json = array('status' => 'Ok', 'description' => $erreur);
+	                            }
+	                        }
+	                    }
+	                    else
+	                    {
+	                        $erreur = "Erreur dans eSignature : \n\t |  Statut = " . $response['status'] . " \n\t |  Error = " . $response['error'] . " \n\t |  Message = " . $response['message'] . " \n\t |  Path = " . $response['path'];
+	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
+	                        $result_json = array('status' => 'Error', 'description' => $erreur);
+	                    }
                     }
                     else
                     {
-                        $erreur = "Erreur dans eSignature : \n\t |  Statut = " . $response['status'] . " \n\t |  Error = " . $response['error'] . " \n\t |  Message = " . $response['message'] . " \n\t |  Path = " . $response['path'];
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-                        $result_json = array('status' => 'Error', 'description' => $erreur);
+                    	$erreur = "Erreur dans eSignature : \n\t |  ".$json;
+                    	error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
+                    	$result_json = array('status' => 'Error', 'description' => $erreur);
                     }
                 }
             }

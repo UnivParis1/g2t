@@ -1269,5 +1269,15 @@ class fonctions
         return str_replace("\\", '/', dirname(__FILE__,3)) . "/";
     }
     
+    public function synchroGlobaleCETeSignature($typeconge, $anneeref)
+    {
+    	$this->fonctions->get_alimCET_liste($typeconge);
+    	$this->fonctions->get_optionCET_liste($anneeref);
+    }
+    
+    public function typeCongeAlimCET()
+    {
+    	return 'ann'.substr($this->anneeref() - 1,2, 2);
+    }
 }
 ?>

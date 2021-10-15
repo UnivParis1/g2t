@@ -258,79 +258,87 @@
     	{
     		$agent = new agent($dbcon);
     		$agent->load($agentid);
-	    	if ($statut_actuel == alimentationCET::STATUT_VALIDE)
-	    	{
-	    		// réattribution des reliquats
-	    		$solde = new solde($dbcon);
-	    		//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
-	    		$solde->load($agent->harpegeid(), $alimentationCET->typeconges());
-	    		//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
-	    		$new_solde = $solde->droitpris()-$alimentationCET->valeur_f();
-	    		$solde->droitpris($new_solde);
-	    		//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
-	    		error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
-	    		$solde->store();
-	    		
-	    		// Ajouter dans la table des commentaires la trace de l'opération
-	    		$agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()),"Annulation de demande d'alimentation CET");
-	    		
-	    		// déduction du CET
-	    		
-	    		$cet = new cet($dbcon);
-	    		$erreur = $cet->load($agent->harpegeid());
-	    		if ($erreur == "") {
-	    			$cet->cumultotal($cet->cumultotal() - $alimentationCET->valeur_f());
-	    			$cumulannuel = $cet->cumulannuel($fonctions->anneeref());
-	    			$cumulannuel = $cumulannuel - $alimentationCET->valeur_f();
-	    			$cet->cumulannuel($fonctions->anneeref(),$cumulannuel);
-	    			$cet->store();
-	    		}
-	    		
-	    		// alerter la DRH
-	    		
-	    		$arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
-	    		foreach ($arrayagentrh as $gestrh) {
-	    			error_log(basename(__FILE__) . " envoi de mail Annulation d'une demande d'alimentation de CET validée a " . $gestrh->identitecomplete());
-	    			$agent->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$user->identitecomplete()." a demandé l'annulation de la demande d'alimentation de " .$agent->identitecomplete(). " n ". $esignatureid_annule . ".\n");
-	    		}
-	    	}
-	    	
-	    	// purger esignature
-	    	
-	    	$eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
-	    	$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
-	    	$params = array('id' => $esignatureid_annule);
-	    	$walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-	    		is_array( $item )
-	    		? array_walk( $item, $walk, $key )
-	    		: $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-	    		
-	    	};
-	    	array_walk( $params, $walk );
-	    	$json = implode( '&', $output );
-	    	$ch = curl_init();
-	    	curl_setopt($ch, CURLOPT_URL, $url);
-	    	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-	    	curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-	    	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	    	curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-	    	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	    	$result = curl_exec($ch);
-	    	$result = json_decode($result);
-	    	$error = curl_error ($ch);
-	    	curl_close($ch);
-	    	$errlog = '';
-	    	if ($error != "")
-	    	{
-	    		$errlog = "Erreur Curl = " . $error . "<br><br>";
-	    	}
-	    	
-	    	// Abandon dans G2T
-	    	$alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
-	    	$alimentationCET->motif("Annulation à la demande de ".$user->identitecomplete());
-	    	$alimentationCET->store();
-	    	$errlog = "L'utilisateur " . $user->identitecomplete() . " (identifiant = " . $user->harpegeid() . ") a supprimé la demande d'alimentation du CET de ".$agent->identitecomplete()." (esignatureid = ".$esignatureid_annule.")";
-	    	error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+    		
+    		// purger esignature
+    		
+    		$eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
+    		$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
+    		$params = array('id' => $esignatureid_annule);
+    		$walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+    			is_array( $item )
+    			? array_walk( $item, $walk, $key )
+    			: $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+    			
+    		};
+    		array_walk( $params, $walk );
+    		$json = implode( '&', $output );
+    		$ch = curl_init();
+    		curl_setopt($ch, CURLOPT_URL, $url);
+    		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    		curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+    		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    		curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    		$result = curl_exec($ch);
+    		$result = json_decode($result);
+    		error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE SUPPRESSION ALIM -- " . var_export($result, true));
+    		$error = curl_error ($ch);
+    		curl_close($ch);
+    		$errlog = '';
+    		if ($error != "")
+    		{
+    			$errlog .= "Erreur Curl = " . $error . "<br><br>";
+    		}
+    		if (!is_null($result)) 
+    		{
+    			$errlog .= " Erreur lors de la suppression de la demande d'alimentation dans Esignature : ".var_export($result, true);
+    		}
+    		else
+    		{
+		    	if ($statut_actuel == alimentationCET::STATUT_VALIDE)
+		    	{
+		    		// réattribution des reliquats
+		    		$solde = new solde($dbcon);
+		    		//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
+		    		$solde->load($agent->harpegeid(), $alimentationCET->typeconges());
+		    		//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
+		    		$new_solde = $solde->droitpris()-$alimentationCET->valeur_f();
+		    		$solde->droitpris($new_solde);
+		    		//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
+		    		error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
+		    		$solde->store();
+		    		
+		    		// Ajouter dans la table des commentaires la trace de l'opération
+		    		$agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()),"Annulation de demande d'alimentation CET");
+		    		
+		    		// déduction du CET
+		    		
+		    		$cet = new cet($dbcon);
+		    		$erreur = $cet->load($agent->harpegeid());
+		    		if ($erreur == "") {
+		    			$cet->cumultotal($cet->cumultotal() - $alimentationCET->valeur_f());
+		    			$cumulannuel = $cet->cumulannuel($fonctions->anneeref());
+		    			$cumulannuel = $cumulannuel - $alimentationCET->valeur_f();
+		    			$cet->cumulannuel($fonctions->anneeref(),$cumulannuel);
+		    			$cet->store();
+		    		}
+		    		
+		    		// alerter la DRH
+		    		
+		    		$arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+		    		foreach ($arrayagentrh as $gestrh) {
+		    			error_log(basename(__FILE__) . " envoi de mail Annulation d'une demande d'alimentation de CET validée a " . $gestrh->identitecomplete());
+		    			$agent->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$user->identitecomplete()." a demandé l'annulation de la demande d'alimentation de " .$agent->identitecomplete(). " n ". $esignatureid_annule . ".\n");
+		    		}
+		    	}
+		    	
+		    	// Abandon dans G2T
+		    	$alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
+		    	$alimentationCET->motif("Annulation à la demande de ".$user->identitecomplete());
+		    	$alimentationCET->store();
+		    	$errlog .= "L'utilisateur " . $user->identitecomplete() . " (identifiant = " . $user->harpegeid() . ") a supprimé la demande d'alimentation du CET de ".$agent->identitecomplete()." (esignatureid = ".$esignatureid_annule.")";
+    		}
+    		error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     	}
     }
     
@@ -547,7 +555,9 @@
 	            }
 	            //echo "<br>" . print_r($json,true) . "<br>";
 	            $id = json_decode($json, true);
-	    
+	            
+	            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
+	            
 	            //var_dump($id);
 	            if ("$id" <> "")
 	            {
@@ -567,7 +577,8 @@
 	                }
 	                if ($erreur <> "")
 	                {
-	                    echo "Erreur (création) = $erreur <br>";
+	                	echo "Erreur (création) = $erreur <br>";
+	                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
 	                }
 	                else
 	                {
