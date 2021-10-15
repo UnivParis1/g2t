@@ -383,36 +383,42 @@ else
             $id = json_decode($json, true);
             
             //var_dump($id);
-            if ("$id" <> "")
+            if (is_array($id))
             {
-                if (is_array($id))
-                {
-                    $erreur = print_r($id,true);
-                }
-                else
-                {
-                    //echo "Id de la nouvelle demande = " . $id . "<br>";
-                    $optionCET->esignatureid($id);
-                    $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                    $optionCET->statut($optionCET::STATUT_PREPARE);
-                    
-                    $erreur = $optionCET->store();
-                    $agent->synchroCET();
-                }
-                if ($erreur <> "")
-                {
-                    echo "Erreur (création) = $erreur <br>";
-                }
-                else
-                {
-                    //var_dump($optionCET);
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
-                }
+                $erreur = $id['error'];  
+            }
+            elseif ("$id" <> "")
+            {
+                //echo "Id de la nouvelle demande = " . $id . "<br>";
+                $optionCET->esignatureid($id);
+                $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+                $optionCET->statut($optionCET::STATUT_PREPARE);
+                
+                $erreur = $optionCET->store();
+                $agent->synchroCET();
+
             }
             else
             {
-                echo "Oups, la création du droit d'option dans eSignature a échouée !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+                $erreur =  "La création du droit d'option dans eSignature a échouée !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+            }
+            if ($erreur <> "")
+            {
+                if (is_array($id))
+                {
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . print_r($id,true)));
+                }
+                else
+                {
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
+                }
+                echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
+            }
+            else
+            {
+                //var_dump($optionCET);
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+                //echo "La sauvegarde (création) s'est bien passée...<br><br>";
             }
         }
         else // Il y a une demande d'alim ou d'option en cours
