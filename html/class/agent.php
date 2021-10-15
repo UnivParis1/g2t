@@ -2801,13 +2801,18 @@ AND DEMANDE.STATUT='v'";
      * @param string $anneeref
      * @return number of days
      */
-    function calculsoldeannuel($anneeref = null, $maj_solde = true, $loginfo = false)
+    function calculsoldeannuel($anneeref = null, $maj_solde = true, $loginfo = false, $displayinfo = false)
     {
 
         
         if ($loginfo == true) {
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" ###############################################################"));
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On est sur l'agent : " . $this->identitecomplete() . " (id = " . $this->harpegeid . ")"));
+        }
+        if ($displayinfo == true)
+        {
+            echo " ###############################################################\n";
+            echo " On est sur l'agent : " . $this->identitecomplete() . " (id = " . $this->harpegeid . ")\n";
         }
         // Au départ l'agent à droit à 0 jours
         $solde_agent = 0;
@@ -2859,17 +2864,30 @@ AND DEMANDE.STATUT='v'";
                 if ($loginfo == true) { 
                     error_log(basename(__FILE__) . $this->fonctions->stripAccents(" -----------------------------------------"));
                 }
+                if ($displayinfo == true)
+                {
+                    echo " -----------------------------------------\n";
+                }
+                    
                 
                 // Début de l'affectation courante
                 $dateDebAff = $result_aff[1];
                 if ($loginfo == true) { 
                     error_log(basename(__FILE__) . $this->fonctions->stripAccents(" dateDebAff = $dateDebAff "));
                 }
+                if ($displayinfo == true)
+                {
+                    echo " dateDebAff = $dateDebAff \n";
+                }
                 
                 // On mémorise la fin de cette affectation précédente avant qu'elle ne soit modifiée pour pouvoir tester la continuité des affectations avec l'affectation courante
                 $datefinprecedenteaff = $datefinaff;
                 if ($loginfo == true) { 
                     error_log(basename(__FILE__) . $this->fonctions->stripAccents(" datefinprecedenteaff = $datefinprecedenteaff "));
+                }
+                if ($displayinfo == true)
+                {
+                    echo " datefinprecedenteaff = $datefinprecedenteaff \n";
                 }
                 
                 // On parse la date de fin pour limiter la fin de la période si la date de fin n'est pas définie ou si elle est au dela de la période
@@ -2881,6 +2899,10 @@ AND DEMANDE.STATUT='v'";
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de fin de l'affectation est " . $result_aff[2] . " ==> On la force à $datefinaff"));
                     }
+                    if ($displayinfo == true)
+                    {
+                       echo " La date de fin de l'affectation est " . $result_aff[2] . " ==> On la force à $datefinaff \n";
+                    }
                 }
                 else
                 {
@@ -2889,19 +2911,31 @@ AND DEMANDE.STATUT='v'";
                 if ($loginfo == true) { 
                     error_log(basename(__FILE__) . $this->fonctions->stripAccents(" datefinaff = $datefinaff"));
                 }
-                    
+                if ($displayinfo == true)
+                {
+                    echo " datefinaff = $datefinaff \n";
+                }
+                
                 // Calcul de la quotité de l'agent sur cette affectation
                 $quotite = $result_aff[3] / $result_aff[4];
                 if ($loginfo == true) { 
                     error_log(basename(__FILE__) . $this->fonctions->stripAccents(" quotite = $quotite "));
                 }
-                    
+                if ($displayinfo == true)
+                {
+                    echo " quotite = $quotite \n";
+                }
+                
                 // Si c'est la première affectation, on mémorise sa date de début
                 if (is_null($DatePremAff)) 
                 {
                     $DatePremAff = $result_aff[1];
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de première affectation est nulle => Maintenant elle vaut : $DatePremAff "));
+                    }
+                    if ($displayinfo == true)
+                    {
+                        echo " La date de première affectation est nulle => Maintenant elle vaut : $DatePremAff \n";
                     }
                 }
                     
@@ -2910,6 +2944,10 @@ AND DEMANDE.STATUT='v'";
                 {
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'affectation n'est pas un contrat ==> numcontrat = " . $result_aff[5] . " "));
+                    }
+                    if ($displayinfo == true)
+                    {
+                        echo " L'affectation n'est pas un contrat ==> numcontrat = " . $result_aff[5] . " \n";
                     }
                     
                     // // On calcule le nombre de jours dans l'affectation dans le cas ou l'agent est en contrat pérenne puis repasse sur un contrat non pérenne
@@ -2922,6 +2960,10 @@ AND DEMANDE.STATUT='v'";
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Fin de l'affectation avant le début de la période ==> On ignore "));
                         }
+                        if ($displayinfo == true)
+                        {
+                            echo " Fin de l'affectation avant le début de la période ==> On ignore \n";
+                        }
                         Continue;
                     }
                     
@@ -2931,6 +2973,10 @@ AND DEMANDE.STATUT='v'";
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff "));
                         }
+                        if ($displayinfo == true)
+                        {
+                            echo " le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff \n";
+                        }
                     }
                     
                     // On calcule le nombre de jours dans l'affectation sur la période
@@ -2938,16 +2984,28 @@ AND DEMANDE.STATUT='v'";
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" nbre_jour_aff_periode = $nbre_jour_aff_periode "));
                     }
+                    if ($displayinfo == true)
+                    {
+                        echo " nbre_jour_aff_periode = $nbre_jour_aff_periode \n";
+                    }
                     
                     $solde_agent = $solde_agent + (($nbr_jrs_offert * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde de l'agent est de : $solde_agent "));
+                    }
+                    if ($displayinfo == true)
+                    {
+                        echo " Le solde de l'agent est de : $solde_agent \n";
                     }
                 }            // On est dans le cas d'un contrat
                 else
                 {
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On est dans le cas d'un contrat"));
+                    }
+                    if ($displayinfo == true)
+                    {
+                        echo " On est dans le cas d'un contrat \n";
                     }
                     // Si ce n'est pas la première affectation
                     if (! is_null($datefinprecedenteaff)) 
@@ -2958,22 +3016,32 @@ AND DEMANDE.STATUT='v'";
                         {
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de début de la nouvelle affectation est : " . $result_aff[1] . ""));
-                            }
-                            if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La date de fin de la précédente affectation est : $datefinprecedenteaff "));
-                            }
-                            if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Date du lendemain de la fin de la précédente affectation est : " . date("Y-m-d", strtotime("+1 day", strtotime($datefinprecedenteaff))) . " "));
+                            }
+                            if ($displayinfo == true)
+                            {
+                                echo " La date de début de la nouvelle affectation est : " . $result_aff[1] . " \n";
+                                echo " La date de fin de la précédente affectation est : $datefinprecedenteaff \n";
+                                echo " Date du lendemain de la fin de la précédente affectation est : " . date("Y-m-d", strtotime("+1 day", strtotime($datefinprecedenteaff))) . " \n";
                             }
                             $DatePremAff = $result_aff[1];
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a rupture dans la suite des affectations => On force la date de premiere affectation à $DatePremAff"));
+                            }
+                            if ($displayinfo == true)
+                            {
+                                echo " Il y a rupture dans la suite des affectations => On force la date de premiere affectation à $DatePremAff \n";
                             }
                         }
                         else
                         {
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a continuité entre les affectations "));
+                            }
+                            if ($displayinfo == true)
+                            {
+                                echo " Il y a continuité entre les affectations \n";
                             }
                         }
                     }
@@ -2983,11 +3051,19 @@ AND DEMANDE.STATUT='v'";
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent est affecté depuis $NbreJoursTotalAff jours en continue depuis le $DatePremAff jusqu'au $datefinaff... "));
                     }
+                    if ($displayinfo == true)
+                    {
+                        echo " L'agent est affecté depuis $NbreJoursTotalAff jours en continue depuis le $DatePremAff jusqu'au $datefinaff... \n";
+                    }
                     
                     // Si la date de fin < date debut de la période, on ne s'en occupe pas car dans ce cas, seule les affectations de la période nous interressent
                     if ($this->fonctions->formatdatedb($datefinaff) < $this->fonctions->formatdatedb($date_deb_period)) {
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Fin de l'affectation avant le début de la période ==> On ignore "));
+                        }
+                        if ($displayinfo == true)
+                        {
+                            echo " Fin de l'affectation avant le début de la période ==> On ignore \n";
                         }
                         Continue;
                     }
@@ -2995,12 +3071,20 @@ AND DEMANDE.STATUT='v'";
                     if ($loginfo == true) { 
                         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" RAPPEL : Le solde de l'agent actuellement est : $solde_agent "));
                     }
+                    if ($displayinfo == true)
+                    {
+                        echo " RAPPEL : Le solde de l'agent actuellement est : $solde_agent \n";
+                    }
                     // L'agent est présent depuis plus d'un an à la fin de son affectation, donc on va calculer son solde avec les régles standards
                     // Attention cependant, il faut calculer le solde pour la période avant les 365 jours
                     if ($NbreJoursTotalAff > $nbre_jour_periode) 
                     {
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent a plus de 365 jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... "));
+                        }
+                        if ($displayinfo == true)
+                        {
+                            echo " L'agent a plus de 365 jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... \n";
                         }
                         
                         // Si le début de l'affectation est avant le début de la période, on la force au début de la période
@@ -3010,12 +3094,20 @@ AND DEMANDE.STATUT='v'";
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff "));
                             }
+                            if ($displayinfo == true)
+                            {
+                                echo " le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff \n";
+                            }
                         }
                         
                         // Calcul du nombre de jours qui doivent être comptés à 2,5 jours
                         $NbreJours = $NbreJoursTotalAff - $this->fonctions->nbjours_deux_dates($dateDebAff, $datefinaff);
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" A la date de début de l'affectation " . $this->fonctions->formatdate($dateDebAff) . ", l'agent avait cumulé $NbreJours consécutifs "));
+                        }
+                        if ($displayinfo == true)
+                        {
+                            echo " A la date de début de l'affectation " . $this->fonctions->formatdate($dateDebAff) . ", l'agent avait cumulé $NbreJours consécutifs \n";
                         }
                         // $NbreJours = $nbre_jour_periode - $NbreJours;
                         // echo "dateDebAff = $dateDebAff datefinaff = $datefinaff dif_date = " . $fonctions->nbjours_deux_dates ($dateDebAff, $datefinaff ) . " NbreJours = $NbreJours <br>";
@@ -3028,11 +3120,19 @@ AND DEMANDE.STATUT='v'";
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a $NbreJours jours à compter à 2,5 jours par mois soit : " . ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite) . " jours "));
                         }
+                        if ($displayinfo == true)
+                        {
+                            echo " Il y a $NbreJours jours à compter à 2,5 jours par mois soit : " . ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite) . " jours \n";
+                        }
                         if ($NbreJours > 0)
                         {
                             $solde_agent = $solde_agent + ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite);
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" solde_agent = $solde_agent "));
+                            }
+                            if ($displayinfo == true)
+                            {
+                                echo " solde_agent = $solde_agent \n";
                             }
                         }
                         
@@ -3046,11 +3146,19 @@ AND DEMANDE.STATUT='v'";
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Il y a $NbreJours jours à compter à $nbr_jrs_offert jours par an soit : " . ((($nbr_jrs_offert * $NbreJours) / $nbre_jour_periode) * $quotite) . " jours "));
                         }
+                        if ($displayinfo == true)
+                        {
+                            echo " Il y a $NbreJours jours à compter à $nbr_jrs_offert jours par an soit : " . ((($nbr_jrs_offert * $NbreJours) / $nbre_jour_periode) * $quotite) . " jours \n";
+                        }
                         if ($NbreJours > 0) 
                         {
                             $solde_agent = $solde_agent + ((($nbr_jrs_offert * $NbreJours) / $nbre_jour_periode) * $quotite);
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" solde_agent = $solde_agent "));
+                            }
+                            if ($displayinfo == true)
+                            {
+                                echo " solde_agent = $solde_agent \n";
                             }
                         }
                     }
@@ -3059,6 +3167,10 @@ AND DEMANDE.STATUT='v'";
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent n'a pas atteint les 365 jours consécutifs => On calcule à 2,5 jours par mois "));
                         }
+                        if ($displayinfo == true)
+                        {
+                            echo " L'agent n'a pas atteint les 365 jours consécutifs => On calcule à 2,5 jours par mois \n";
+                        }
                         // Si le début de l'affectation est avant le début de la période, on la force au début de la période
                         if ($this->fonctions->formatdatedb($dateDebAff) < $this->fonctions->formatdatedb($date_deb_period)) 
                         {
@@ -3066,12 +3178,20 @@ AND DEMANDE.STATUT='v'";
                             if ($loginfo == true) { 
                                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff "));
                             }
+                            if ($displayinfo == true)
+                            {
+                                echo " le début de l'affectation est avant le début de la période, on la force au début de la période => dateDebAff = $dateDebAff \n";
+                            }
                         }
                         // Calcul du nombre de jours qui doivent être comptés à 2,5 jours sur la période de l'affectation
                         $NbreJours = $this->fonctions->nbjours_deux_dates($dateDebAff, $datefinaff);
                         $solde_agent = $solde_agent + ((((2.5 * 12) / $nbre_jour_periode) * $NbreJours) * $quotite);
                         if ($loginfo == true) { 
                             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" solde_agent = $solde_agent "));
+                        }
+                        if ($displayinfo == true)
+                        {
+                            echo " solde_agent = $solde_agent \n";
                         }
                     }
                 }
@@ -3083,6 +3203,10 @@ AND DEMANDE.STATUT='v'";
             $agentinfo = $this->identitecomplete();
             if ($loginfo == true) { 
                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Code Agent = $agentid ($agentinfo)    solde_agent = $solde_agent     partie_decimale =  $partie_decimale     entiere = " . floor($solde_agent) . "          "));
+            }
+            if ($displayinfo == true)
+            {
+                echo " Code Agent = $agentid ($agentinfo)    solde_agent = $solde_agent     partie_decimale =  $partie_decimale     entiere = " . floor($solde_agent) . "          \n";
             }
             if ((float) $partie_decimale < (float) 0.25)
             {
@@ -3099,9 +3223,17 @@ AND DEMANDE.STATUT='v'";
             if ($loginfo == true) { 
                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" apres traitement : $solde_agent "));
             }
+            if ($displayinfo == true)
+            {
+                echo " apres traitement : $solde_agent \n";
+            }
         }
         if ($loginfo == true) { 
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde final est donc : $solde_agent "));
+        }
+        if ($displayinfo == true)
+        {
+            echo " Le solde final est donc : $solde_agent \n";
         }
         
         // On vérifie si une demande de congé bonifié débute dans la période

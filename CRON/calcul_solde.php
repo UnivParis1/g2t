@@ -405,7 +405,7 @@
         $agent->load($agentid);
         echo "###############################################################\n";
         echo "On est sur l'agent : " . $agent->identitecomplete() . " (id = $agentid) \n";
-        $solde = $agent->calculsoldeannuel($fonctions->anneeref(),true, true); // On calcule le solde de l'année courante + on met à jour le solde en base + on ecrit les traces d'exécution
+        $solde = $agent->calculsoldeannuel($fonctions->anneeref(),true, false, true); // On calcule le solde de l'année courante + on met à jour le solde en base + on n'ecrit pas les traces d'exécution + on les affiche
         echo "Le solde annuel de l'agent " . $agent->identitecomplete() . " (id = " . $agent->harpegeid() . ") pour l'annee " .  $fonctions->anneeref() . "-" . ($fonctions->anneeref()+1)  . " est de $solde jours.\n";
     }
     echo "Fin du calcul des soldes " . date("d/m/Y H:i:s") . "\n";

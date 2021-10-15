@@ -126,7 +126,7 @@ include './includes/casconnection.php';
     
     if (isset($_POST["calculdroit"]))
     {
-        $droitacquis = $agent->calculsoldeannuel($anneeref, true, false);
+        $droitacquis = $agent->calculsoldeannuel($anneeref, true, true, false);
         $info = "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
     }
     
