@@ -1,11 +1,14 @@
 <?php
-    require_once ("../html/class/fonctions.php");
+    //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
 
+    require_once ('../html/includes/all_g2t_classes.php');
+    
     $fonctions = new fonctions($dbcon);
     define('K_PATH_IMAGES', $fonctions->g2tbasepath() . '/html/images/');
     define('K_PATH_CACHE', $fonctions->g2tbasepath() . '/html/pdf/');
 
+/*    
     require_once ("../html/class/agent.php");
     require_once ("../html/class/structure.php");
     require_once ("../html/class/solde.php");
@@ -17,7 +20,7 @@
     require_once ("../html/class/cet.php");
     require_once ("../html/class/affectation.php");
     require_once ("../html/class/complement.php");
-
+*/
     
     // Recherche de tous les services avec un gestionnaire
     // Pour chaque service => Récupération des agents du service

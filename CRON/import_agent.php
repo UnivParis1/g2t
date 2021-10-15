@@ -1,7 +1,8 @@
 <?php
-    require_once ("../html/class/fonctions.php");
+    //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-
+    require_once ('../html/includes/all_g2t_classes.php');
+    
     $fonctions = new fonctions($dbcon);
 
     $date = date("Ymd");

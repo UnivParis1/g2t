@@ -1,5 +1,8 @@
 <?php
     require_once ('../html/includes/dbconnection.php');
+    
+    require_once ('../html/includes/all_g2t_classes.php');
+ /*
     require_once ('../html/class/fonctions.php');
     require_once ('../html/class/agent.php');
     require_once ('../html/class/structure.php');
@@ -14,7 +17,7 @@
     require_once ("../html/class/complement.php");
     require_once ("../html/class/periodeobligatoire.php");
     require_once ("../html/class/alimentationCET.php");
-
+*/
     $fonctions = new fonctions($dbcon);
     $errlog = '';
     $erreur = '';
@@ -32,104 +35,6 @@
             $erreur = "Le mode POST n'est pas supporté dans ce WS";
             $result_json = array('status' => 'Error', 'description' => $erreur);
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
- 
-/*            
-            $esignatureid = "";
-            $status = "";
-            $reason = "";
-            
-            if (array_key_exists("esignatureid", $_POST))
-                $esignatureid = $_POST["esignatureid"];
-            if (array_key_exists("status", $_POST))
-                $status = $_POST["status"];
-            if (array_key_exists("reason", $_POST))
-                $reason = $_POST["reason"];
-
-            switch (strtolower($status))
-            {
-                //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
-                case 'draft' :
-                case 'pending' :
-                case 'signed' :
-                case 'checked' :
-                    $status = "En cours";
-                    break;
-                case 'refused':
-                    $status = "Refusée";
-                    break;
-                case 'completed' :
-                case 'exported' :
-                case 'archived' :
-                case 'cleaned' :
-                    $status = "Signée";
-                    break;
-                case 'deleted' :
-                case 'canceled' :
-                    $status = "Abandonnée";
-                    break;
-                default :
-                    $status = $status;
-            }
-
-            $status = mb_strtolower("$status", 'UTF-8');
-            if ("$esignatureid" == "")
-            {
-                $erreur = "Le paramètre esignature n'est pas renseigné.";
-            }
-            else if ("$status" == "")
-            {
-                $erreur = "Le paramètre status n'est pas renseigné.";
-            }
-            else if (!in_array($status, $statutvalide))
-            {
-                $erreur = "Statut invalide => $status. Liste des statuts valides => " . implode(", ", $statutvalide);
-            }
-            else if ((array_search($status,$statutvalide ) == 'REFUS') and ($reason == ""))
-            {
-                $erreur = "La demande doit passer au statut '$status' mais le motif est vide";
-            }
-*/
-/*            
-            if ($status == 'Terminee')
-            {
-                $cet = new cet($dbcon);
-                $cet->load();
-                $cet->cumultotal($nbjrs + $cet->cumultotal()) ; 
-                //$cet->store;
-                
-                $solde = new solde($dbcon);
-                $solde->load($agentid,'ann' . $anneref);
-                $solde->droitpris($solde->droitpris() + $nbjrs);
-                //$solde->store;
-                
-                // Ajouter dans la table des commentaires la trace de l'opération
-            }
-
-*/
-/*            
-            if ($erreur == "")
-            {
-                $alimentationCET = new alimentationCET($dbcon);
-                $erreur = $alimentationCET->load($esignatureid);
-            }
-            if ($erreur == "")
-            {
-                $alimentationCET->statut($status);
-                $alimentationCET->motif($reason);
-                $erreur = $alimentationCET->store();
-            }
-            if ($erreur != "")
-            {
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la modification de la demande " . $esignatureid . " => Erreur = " . $erreur));
-                $result_json = array('status' => 'Error', 'description' => $erreur);
-            }
-            else
-            {
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Modification OK de la demande " . $esignatureid . " => Erreur = " . $erreur));
-                $result_json = array('status' => 'Ok', 'description' => $erreur);
-            }
-*/
-
             break;
         case 'GET': 
             if (array_key_exists("esignatureid", $_GET)) // Retourne les informations liées à une demande d'alimentation
@@ -453,63 +358,6 @@
                                     error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
                                     $result_json = array('status' => 'Error', 'description' => $erreur);
                                 }
-                                
-/*                                
-                                // On appelle le WS eSignature pour récupérer le document final
-                                $curl = curl_init();
-                                $params_string = "";
-                                $opts = [
-                                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $esignatureid,
-                                    CURLOPT_RETURNTRANSFER => true,
-                                    CURLOPT_SSL_VERIFYPEER => false,
-                                    CURLOPT_PROXY => ''
-                                ];
-                                curl_setopt_array($curl, $opts);
-                                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                                $pdf = curl_exec($curl);
-                                $error = curl_error ($curl);
-                                curl_close($curl);
-                                if ($error != "")
-                                {
-                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl (récup PDF) =>  " . $error));
-                                    //echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
-                                }
-                                //echo "<br>" . print_r($json,true) . "<br>";
-                                //$response = json_decode($json, true);
-                                
-                                $alimCET = new alimentationCET($dbcon);
-                                $alimCET->load($esignatureid);
-                                $agent = new agent($dbcon);
-                                $agent->load($alimCET->agentid());
-                                $datetime_info = new DateTime($date_status);
-                                $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . $datetime_info->format('Ymd_His') . ".pdf";
-                                $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
-                                //echo "<br>pdffilename = $pdffilename <br><br>";
-                                
-                                // création du fichier
-                                //$pdffilename = '/tmp/mon_fichier_test.pdf';
-                                $path = dirname("$pdffilename");
-                                if (!file_exists($path))
-                                {
-                                    mkdir("$path");
-                                    chmod("$path", 0777);
-                                }
-                                
-                                $f = fopen($pdffilename, "w");
-                                // écriture
-                                fputs($f, $pdf );
-                                // fermeture
-                                fclose($f);
-*/                               
-                                
-/*                                
-                                $sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
-                                $connection = ssh2_connect('obelix.univ-paris1.fr', 22);
-                                ssh2_auth_password($connection, 'app.esignature-test','hSYgaVavsw75FjQoqrl0RwY9gmKnmTI7');
-                                ssh2_scp_send($connection, "$pdffilename", '/nas/shares1/DSIUN-PAS-Esignature-TEST/', 0644);
-*/                                
-                                
-                                
                             }
                             else  // Le statut de la demande n'est pas signée
                             {

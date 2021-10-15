@@ -13,6 +13,8 @@
         exit();
     }
 
+    require_once ("./includes/all_g2t_classes.php");
+/*    
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -26,7 +28,8 @@
     require_once ("./class/cet.php");
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
-
+*/
+    
     $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
     $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
     $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");

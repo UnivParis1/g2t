@@ -1,6 +1,7 @@
 <?php
-    require_once ("../html/class/fonctions.php");
+    //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
+    require_once ('../html/includes/all_g2t_classes.php');
     
     $fonctions = new fonctions($dbcon);
     $date = date("Ymd");
@@ -246,7 +247,11 @@
                     $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
                     $info = ldap_get_entries($con_ldap, $sr);
                     // echo "Info = " . print_r($info,true) . "\n";
-                    $oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
+                    $oldstructid = '';
+                    if (isset($info[0]["$LDAP_CODE_STRUCT_ATTR"][0]))
+                    {
+                        $oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
+                    }
                     echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
                     
                     if ($oldstructid == $code_struct) {

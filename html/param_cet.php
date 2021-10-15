@@ -13,6 +13,8 @@
         exit();
     }
     
+    require_once ("./includes/all_g2t_classes.php");
+/*
     require_once ("./class/agent.php");    
     require_once ("./class/structure.php");
     require_once ("./class/solde.php");
@@ -27,6 +29,7 @@
     require_once ("./class/affectation.php");
     require_once ("./class/complement.php");
     require_once ("./class/periodeobligatoire.php");
+*/
     
     $user = new agent($dbcon);
     $user->load($userid);
