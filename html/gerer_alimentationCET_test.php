@@ -219,7 +219,7 @@
 	// Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
 	if (is_null($agentid) and $mode == 'rh')
 	{
-		echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET.php'>";
+		echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET_test.php'>";
 		echo "Personne à rechercher : <br>";
 		echo "<form name='selectagentcet'  method='post' >";
 		

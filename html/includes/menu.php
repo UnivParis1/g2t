@@ -4,8 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=0.8" />
 
-<?php
-    // On charge l'URL du WebService de l'autocompletion
+<?php    
     $WSGROUPURL = $fonctions->liredbconstante("WSGROUPURL");
     // echo "<br><br>WSGROUPURL = $WSGROUPURL <br>";
 ?>
@@ -367,19 +366,19 @@
 		$datereliq = ($fonctions->anneeref()+1).$res[0];
 	    if (date("Ymd") <= $datereliq) {
 ?>  
+					<li onclick='document.alim_cet_test.submit();'>
+						<form name='alim_cet_test' method='post' action="gerer_alimentationCET_test.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.alim_cet_test.submit();">Alimentation du CET TEST</a>
+					</li>
 					<li onclick='document.alim_cet.submit();'>
 						<form name='alim_cet' method='post' action="gerer_alimentationCET.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
 							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
 						</form>
 						<a href="javascript:document.alim_cet.submit();">Alimentation du CET</a>
-					</li>
-					<li onclick='document.alim_cet_prod.submit();'>
-						<form name='alim_cet_prod' method='post' action="gerer_alimentationCET_prod.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
-						</form>
-						<a href="javascript:document.alim_cet_prod.submit();">Alimentation du CET PROD</a>
 					</li>
 					<li onclick='document.option_cet.submit();'>
 						<form name='option_cet' method='post' action="gerer_optionCET.php">
@@ -762,6 +761,13 @@
 						</form>
 						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
 					</li>                    
+					<li onclick='document.rh_alimentation_cet_test.submit();'>
+                        <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
+                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                            <input type="hidden" name="mode" value="rh">
+                        </form>
+                        <a href="javascript:document.rh_alimentation_cet_test.submit();">Alimentation du CET TEST</a>
+                    </li>                    
 					<li onclick='document.rh_alimentation_cet.submit();'>
                         <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
                             <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
@@ -769,13 +775,6 @@
                         </form>
                         <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
                     </li>          
-					<li onclick='document.rh_alimentation_cet_prod.submit();'>
-                        <form name='rh_alimentation_cet_prod' method='post' action="gerer_alimentationCET_prod.php">
-                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-                            <input type="hidden" name="mode" value="rh">
-                        </form>
-                        <a href="javascript:document.rh_alimentation_cet_prod.submit();">Alimentation du CET PROD</a>
-                    </li>                    
 					<li onclick='document.rh_option_cet.submit();'>
                         <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
                             <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
