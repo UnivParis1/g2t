@@ -366,13 +366,15 @@
 		$datereliq = ($fonctions->anneeref()+1).$res[0];
 	    if (date("Ymd") <= $datereliq) {
 ?>  
-					<li onclick='document.alim_cet_test.submit();'>
+<!--					
+                    <li onclick='document.alim_cet_test.submit();'>
 						<form name='alim_cet_test' method='post' action="gerer_alimentationCET_test.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
 							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
 						</form>
 						<a href="javascript:document.alim_cet_test.submit();">Alimentation du CET TEST</a>
 					</li>
+-->
 					<li onclick='document.alim_cet.submit();'>
 						<form name='alim_cet' method='post' action="gerer_alimentationCET.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
@@ -683,111 +685,121 @@
         if ($user->estprofilrh('1')) // PROFIL RH = 1 ==> GESTIONNAIRE RH DE CET
         {
 ?>
-					<li onclick='document.gestrh_utilisationcet.submit();'>
-						<form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="mode" value="gestrh">
-						</form> 
-						<a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
-					</li>
-					<li onclick='document.gestrh_gestcet.submit();'>
-						<form name='gestrh_gestcet' method='post' action="gerer_cet.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="mode" value="gestrh">
-						</form> 
-						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
-					</li>
-					<li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
-						<form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="mode" value="gestrh">
-						</form> 
-						<a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
-					</li>
-					<li onclick='document.gestrh_creercet.submit();'>
-						<form name='gestrh_creercet' method='post' action="creer_cet.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="mode" value="gestrh">
-						</form> 
-						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
-					</li>
-					<li onclick='document.rh_conge.submit();'>
-						<form name='rh_conge' method='post' action="etablir_demande.php">
-							<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="typedemande" value="conges"> 
-							<input type="hidden" name="previous" value="no">
-							<input type="hidden" name="rh_mode" value="yes">
-						</form> 
-						<a href="javascript:document.rh_conge.submit();">Demande de congés imputés sur le CET</a>
-					</li>
-					<li onclick='document.rh_gest_conge.submit();'>
-						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="mode" value="rh"> 
-							<input type="hidden" name="previous" value="no">
-						</form> 
-						<a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
-					</li>
-					<li onclick='document.affiche_info_agent.submit();'>
-						<form name='affiche_info_agent' method='post' action="affiche_info_agent.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">					
-						</form> 
-						<a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
-					</li>
-					<li onclick='document.modif_solde.submit();'>
-						<form name='modif_solde' method='post' action="modif_solde.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">					
-						</form> 
-						<a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
-					</li>
-					<li onclick='document.rh_aff_solde.submit();'>
-						<form name='rh_aff_solde' method='post' action="affiche_solde.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="mode" value="rh"> 
-							<input type="hidden" name="previous" value="no">
-						</form>
-						<a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>
-					</li>
 					<li onclick='document.rh_gest_periode.submit();'>
 						<form name='rh_gest_periode' method='post' action="gestion_periodes.php">
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
 						</form>
 						<a href="javascript:document.rh_gest_periode.submit();">Gestion des périodes de fermeture</a>
 					</li>
-					<li onclick='document.rh_param_cet.submit();'>
-						<form name='rh_param_cet' method='post' action="param_cet.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-						</form>
-						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
-					</li>                    
-					<li onclick='document.rh_alimentation_cet_test.submit();'>
-                        <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
-                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-                            <input type="hidden" name="mode" value="rh">
-                        </form>
-                        <a href="javascript:document.rh_alimentation_cet_test.submit();">Alimentation du CET TEST</a>
-                    </li>                    
-					<li onclick='document.rh_alimentation_cet.submit();'>
-                        <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
-                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-                            <input type="hidden" name="mode" value="rh">
-                        </form>
-                        <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
-                    </li>          
-					<li onclick='document.rh_option_cet.submit();'>
-                        <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
-                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-                            <input type="hidden" name="mode" value="rh">
-                        </form>
-                        <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
-                    </li>
 					<li onclick='document.rh_gest_deleg.submit();'>
                         <form name='rh_gest_deleg' method='post' action="gestion_delegation.php">
                             <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
                         </form>
                         <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
                     </li>
+					<li class="plus"><a>Gestion des CET et paramétrage</a>
+						<ul class="niveau3">
+        					<li onclick='document.gestrh_utilisationcet.submit();'>
+        						<form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="mode" value="gestrh">
+        						</form> 
+        						<a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
+        					</li>
+        					<li onclick='document.gestrh_gestcet.submit();'>
+        						<form name='gestrh_gestcet' method='post' action="gerer_cet.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="mode" value="gestrh">
+        						</form> 
+        						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
+        					</li>
+        					<li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
+        						<form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="mode" value="gestrh">
+        						</form> 
+        						<a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
+        					</li>
+        					<li onclick='document.gestrh_creercet.submit();'>
+        						<form name='gestrh_creercet' method='post' action="creer_cet.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="mode" value="gestrh">
+        						</form> 
+        						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
+        					</li>
+        					<li onclick='document.rh_param_cet.submit();'>
+        						<form name='rh_param_cet' method='post' action="param_cet.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        						</form>
+        						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
+        					</li>
+<!--                     
+        					<li onclick='document.rh_alimentation_cet_test.submit();'>
+                                <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
+                                    <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                                    <input type="hidden" name="mode" value="rh">
+                                </form>
+                                <a href="javascript:document.rh_alimentation_cet_test.submit();">Alimentation du CET TEST</a>
+                            </li>   
+-->                 
+        					<li onclick='document.rh_alimentation_cet.submit();'>
+                                <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
+                                    <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                                    <input type="hidden" name="mode" value="rh">
+                                </form>
+                                <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
+                            </li>          
+        					<li onclick='document.rh_option_cet.submit();'>
+                                <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
+                                    <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                                    <input type="hidden" name="mode" value="rh">
+                                </form>
+                                <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
+                            </li>
+        				</ul>
+    				</li>
+					<li class="plus"><a>Gestion des congés</a>
+						<ul class="niveau3">
+        					<li onclick='document.rh_conge.submit();'>
+        						<form name='rh_conge' method='post' action="etablir_demande.php">
+        							<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="typedemande" value="conges"> 
+        							<input type="hidden" name="previous" value="no">
+        							<input type="hidden" name="rh_mode" value="yes">
+        						</form> 
+        						<a href="javascript:document.rh_conge.submit();">Demande de congés imputés sur le CET</a>
+        					</li>
+        					<li onclick='document.rh_gest_conge.submit();'>
+        						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+        							<input type="hidden" name="mode" value="rh"> 
+        							<input type="hidden" name="previous" value="no">
+        						</form> 
+        						<a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
+        					</li>
+        					<li onclick='document.affiche_info_agent.submit();'>
+        						<form name='affiche_info_agent' method='post' action="affiche_info_agent.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">					
+        						</form> 
+        						<a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
+        					</li>
+        					<li onclick='document.modif_solde.submit();'>
+        						<form name='modif_solde' method='post' action="modif_solde.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">					
+        						</form> 
+        						<a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
+        					</li>
+        					<li onclick='document.rh_aff_solde.submit();'>
+        						<form name='rh_aff_solde' method='post' action="affiche_solde.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="mode" value="rh"> 
+        							<input type="hidden" name="previous" value="no">
+        						</form>
+        						<a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>
+        					</li>
+    					</ul>
+    				</li>
 					
 <?php
         }
