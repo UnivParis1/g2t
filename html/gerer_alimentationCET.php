@@ -589,7 +589,7 @@
 	            }
 	            else
 	            {
-	                echo "Oups, la création de la demande dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
+	                echo "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
 	            }
 	        }
         }
@@ -813,6 +813,7 @@
 	$ayearbefore->sub(new DateInterval('P1Y')); 
 	$ayearbefore = $ayearbefore->format('Ymd');
 	$hasInterruptionAff = $user->hasInterruptionAffectation($ayearbefore, $today);
+	$hasOption = FALSE;
 	echo "Alimentation du CET pour " . $agent->identitecomplete() . "<br><br>";
 	if ($today < $fonctions->debutalimcet() || $today > $fonctions->finalimcet())
 	{
@@ -835,13 +836,15 @@
 		}
 		elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
 		{
-			echo "<font color='#EF4001'>Vous avez une demande de droit d'option en cours. Vous pourrez effectuer une nouvelle demande d'alimentation lorsque celle-ci sera terminée ou annulée. </font><br>";
+			echo "<font color='#EF4001'>Vous avez une demande de droit d'option en cours. Vous avez une demande de droit d'option en cours. Vous pourrez effectuer une nouvelle demande d'alimentation lorsque celle-ci sera terminée ou annulée. </font><br>";
 			echo "<br>";
+			$hasOption = TRUE;
 		}
 		elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_VALIDE))) != 0)
 		{
 			echo "<font color='#EF4001'>Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année. </font><br>";
 			echo "<br>";
+			$hasOption = TRUE;
 		}
 		elseif ($hasInterruptionAff && $valeur_a == 0)
 		{
@@ -949,55 +952,64 @@
 			echo "<br>";
 		}
 	}
-	// contrôle de la date de fin d'utilisation des reliquats
-	$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
-	$queryreliq = mysqli_query($dbcon, $sqldatereliq);
-	$erreur = mysqli_error($dbcon);
-	if ($erreur != "")
+	// Si une demande d'option est en cours ou validée, pas de suppression possible de demande d'alimentation
+	if (!$hasOption)
 	{
-		$errlog = "Problème SQL dans le chargement de la date limite d'utilisation du reliquat : " . $erreur;
-		echo $errlog;
-	}
-	elseif ($res = mysqli_fetch_row($queryreliq))
-	{
-		$limitereliq = ($fonctions->anneeref()+1).$res[0];
-		if ($fonctions->verifiedate($fonctions->formatdate($limitereliq)))
+		// contrôle de la date de fin d'utilisation des reliquats
+		$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
+		$queryreliq = mysqli_query($dbcon, $sqldatereliq);
+		$erreur = mysqli_error($dbcon);
+		if ($erreur != "")
 		{
-			if (date('Ymd') <= $limitereliq)
+			$errlog = "Problème SQL dans le chargement de la date limite d'utilisation du reliquat : " . $erreur;
+			echo $errlog;
+		}
+		elseif ($res = mysqli_fetch_row($queryreliq))
+		{
+			$limitereliq = ($fonctions->anneeref()+1).$res[0];
+			if ($fonctions->verifiedate($fonctions->formatdate($limitereliq)))
 			{
-				//$agent->afficheAlimCetHtmlPourSuppr('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE), $mode, $userid);
-				$alimcet = new alimentationCET($dbcon);
-				$listid = $agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE));
-				$htmltext = '';
-				if (sizeof($listid) != 0)
+				if (date('Ymd') <= $limitereliq)
 				{
-					echo "Annulation d'une demande d'alimentation.<br>";
-					echo "<form name='form_esignature_annule'  method='post' >";
-					echo "<input type='hidden' name='userid' value='" . $userid . "'>";
-					echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
-					echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
-					foreach ($listid as $id)
+					//$agent->afficheAlimCetHtmlPourSuppr('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE), $mode, $userid);
+					$alimcet = new alimentationCET($dbcon);
+					$listid = $agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE));
+					$htmltext = '';
+					if (sizeof($listid) != 0)
 					{
-						$alimcet->load($id);
-						echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+						echo "Annulation d'une demande d'alimentation.<br>";
+						echo "<form name='form_esignature_annule'  method='post' >";
+						echo "<input type='hidden' name='userid' value='" . $userid . "'>";
+						echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+						echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
+						foreach ($listid as $id)
+						{
+							$alimcet->load($id);
+							echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+						}
+						
+						echo "</select>";
+						echo "<br><br>";
+						echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+						echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
+						echo "</form>";
+						echo "<br>";
 					}
-					
-					echo "</select>";
-					echo "<br><br>";
-					echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-					echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
-					echo "</form>";
-					echo "<br>";
 				}
+				else
+					echo "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats est dépassé. (".$fonctions->formatdate($limitereliq).")<br>";
 			}
-			else
-				echo "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats est dépassé. (".$fonctions->formatdate($limitereliq).")<br>";
+			else {
+				echo "Annulation de demande d'alimentation impossible car la date limite d'utilisation des reliquats est invalide. <br>";
+			}
 		}
-		else {
-			echo "Annulation de demande d'alimentation impossible car la date limite d'utilisation des reliquats est invalide. <br>";
-		}
+		else echo "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats n'est pas défini.<br>";
 	}
-	else echo "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats n'est pas défini.<br>";
+	else 
+	{
+		echo "<font color='#EF4001'>Annulation de demande d'alimentation impossible car une demande de droit d'option est en cours ou validée. </font><br>";
+		echo "<br>";
+	}
 	echo $agent->afficheAlimCetHtml();
 	echo $agent->soldecongeshtml($anneeref + 1);
 }

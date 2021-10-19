@@ -400,7 +400,7 @@ else
             }
             else
             {
-                $erreur =  "La création du droit d'option dans eSignature a échouée !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+                $erreur =  "La création du droit d'option dans eSignature a échoué !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
             }
             if ($erreur <> "")
             {
@@ -468,6 +468,7 @@ else
             if ($error != "")
             {
                 echo "Erreur Curl = " . $error . "<br><br>";
+                $error_suppr = "Erreur Curl = " . $error . "<br><br>";
             }
             //echo "<br>" . print_r($json,true) . "<br>";
             $response = json_decode($json, true);
@@ -476,12 +477,28 @@ else
             echo '<pre>';
             var_dump($response);
             echo '</pre>';
-*/
-            $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
-            $optionCET->store();
-
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_delete après appel du WS eSignature de suppression."));
-            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_delete);
+            */
+            if (!is_null($response))
+            {
+            	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($response, true)));
+            	$error_suppr = "Erreur lors de la suppression de la demande de droit d'option dans Esignature !!==> Pas de suppression dans G2T.<br><br>";
+            }
+            else
+            {
+            	if (stristr(substr($json,0,20),'HTML') === false)
+            	{
+		            $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
+		            $optionCET->store();
+		
+		            error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_delete après appel du WS eSignature de suppression."));
+		            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_delete);
+            	}
+            	else 
+            	{
+            		$error_suppr = "Erreur lors de la suppression de la demande de droit d'option dans Esignature !!==> Pas de suppression dans G2T.<br><br>";
+            		error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur de connexion à Esignature lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($json, true)));
+            	}
+            }
         }
     }
 
@@ -895,6 +912,12 @@ else
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande'>";
             echo "</form>";
+            if (isset($error_suppr))
+            {
+            	echo "<div style='color: red;font-weight: bold; '>";
+            	echo "$error_suppr";
+            	echo "</div>";
+            }
         }
                
 

@@ -188,6 +188,7 @@
                     //echo "<br>" . print_r($json,true) . "<br>";
                     $response = json_decode($json, true);
                     
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le json est =>  " . var_export($json,true)));
 
                     error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse est =>  " . var_export($response,true)));
 

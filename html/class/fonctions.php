@@ -1140,10 +1140,20 @@ class fonctions
         if ($error != "")
         {
             echo "Erreur Curl = " . $error . "<br><br>";
-            error_log(basename(__FILE__) . $this->stripAccents(" Impossible de synchroniser G2T avec eSingature (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . $error ));
+            error_log(basename(__FILE__) . $this->stripAccents(" Impossible de synchroniser G2T avec eSignature (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . $error ));
+            return "Pas de réponse du webservice G2T.";
         }
         //echo "<br>" . print_r($json,true) . "<br>";
         $response = json_decode($json, true);
+        if (isset($response['description']))
+        {
+        	return $response['description'];
+        }
+        else 
+        {
+        	error_log(basename(__FILE__) . $this->stripAccents(" Réponse du webservice G2T non conforme (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . var_export($response, true) ));
+        	return "Réponse du webservice G2T non conforme.";
+        }
         /*
          echo "<br>";
          echo '<pre>';
