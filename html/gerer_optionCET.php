@@ -695,7 +695,7 @@ else
         }
     	</script>
 <?php     
-        
+/*        
         echo "<br><hr size=3 align=center><br>";
         echo "<form name='simulation_option'  method='post' >";
         echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
@@ -724,6 +724,7 @@ else
         echo "<br><br>";
         
         echo "<br><hr size=3 align=center><br>";
+*/
         echo "Création d'une demande d'option sur CET pour " . $agent->identitecomplete() . "<br>";
         //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
         echo "<form name='creation_option'  method='post' >";
