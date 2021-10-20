@@ -1,6 +1,7 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
+    require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
     
     $fonctions = new fonctions($dbcon);
@@ -270,7 +271,15 @@
                             echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
                         } else {
                             $result = mysqli_fetch_row($oldquery);
-                            if ($fonctions->formatdatedb($result[10]) > "20151231") // Si l'ancienne structuture n'est pas fermée
+                            if (is_null($result[10]))
+                            {
+                                $datecloture = "01/01/1900";
+                            }
+                            else
+                            {
+                                $datecloture = $result[10];
+                            }
+                            if ($fonctions->formatdatedb($datecloture) > "20151231") // Si l'ancienne structuture n'est pas fermée
                             {
                                 $sql = "UPDATE STRUCTURE 
     								        SET GESTIONNAIREID ='$result[5]', 
