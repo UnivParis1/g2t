@@ -540,7 +540,7 @@ class alimentationCET
         
         $agent = new agent($this->dbconnect);
         $agent->load($this->agentid());
-        $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_n°" . $this->esignatureid . ".pdf";
+        $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_num_" . $this->esignatureid . ".pdf";
         $pdffilename = $this->fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
         //echo "<br>pdffilename = $pdffilename <br><br>";
         
