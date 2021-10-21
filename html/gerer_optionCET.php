@@ -911,7 +911,7 @@ else
             echo "</select>";
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande'>";
+            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"return confirm('Annuler la demande ?')\">";
             echo "</form>";
             if (isset($error_suppr))
             {

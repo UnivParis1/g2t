@@ -1000,7 +1000,7 @@
 						echo "</select>";
 						echo "<br><br>";
 						echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-						echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
+						echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
 						echo "</form>";
 						if (isset($error_suppr))
 						{
