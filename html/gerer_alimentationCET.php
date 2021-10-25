@@ -155,6 +155,11 @@
     $mode = "agent";
     if (isset($_POST["mode"]))
     	$mode = $_POST["mode"];
+    
+    $no_verify = null;
+    if (isset($_POST["no_verify"]))
+        $no_verify = $_POST["no_verify"];
+
         
 /*        
     $send_mail = null;
@@ -206,13 +211,13 @@
 <?php 
 
 	//$user->supprimeDemandeAlimentation();	
-	
-	/*echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . " id du modele " .$id_model. "<br>";
+/*	
+	echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . " id du modele " .$id_model. "<br>";
 
     echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
-    echo "<br>" . print_r($_POST,true);*/
+    echo "<br>" . print_r($_POST,true);
     //echo "<br><br><br>";
-
+*/
     
 	// Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
 	if (is_null($agentid) and $mode == 'rh')
@@ -768,9 +773,37 @@
 			return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
 		}
 	    
-	    function update_case()
+	    function update_case(elem)
 	    {
 	    	//alert("Update Case est activé");
+		    const elem_no_verify = document.getElementById('no_verify'); 
+	    	//alert("Apres le elem_no_verify = ");
+	    	check_plafond = true;
+	    	if (elem_no_verify === null)
+	    	{
+		    	//alert("elem_no_verify est NULL");
+		    }
+		    
+	    	if (elem_no_verify !== null)
+	    	{
+	    		//alert("elem_no_verify n'est pas null " + elem_no_verify.id);
+	    		document.getElementById('check_planfond').style.color = "initial";
+	    		document.getElementById('check_planfond').style.fontWeight = "normal";
+	    		document.getElementById('label_plafond').innerHTML = "";
+	    		if (elem_no_verify.checked)
+	    		{
+	    			check_plafond = false;
+	    			document.getElementById('check_planfond').style.color = "red";
+	    			document.getElementById('check_planfond').style.fontWeight = "bold";
+	    			document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur !";
+	    			//alert("no_verify est checked");
+		    		//const button = document.getElementById('cree_demande');
+	    			//button.disabled = false;
+	    			//return;
+	    	    }	    	
+	    	}
+	    
+
 	    	document.getElementById("valeur_f").value = document.getElementById("valeur_f").value.replace(",",".");
 	       	valeur_f = document.getElementById("valeur_f").value;
 	    	const button = document.getElementById('cree_demande')
@@ -798,7 +831,7 @@
 	     		document.getElementById("label_f").innerHTML = "La valeur est négative. Vous devez saisir un entier positif.";
 	    		button.disabled = true;
 	    	}
-	    	else if (parseInt(valeur_f) > parseInt(plafond))
+	    	else if ((parseInt(valeur_f) > parseInt(plafond)) && check_plafond)
 	    	{
 	    		document.getElementById("label_f").innerHTML = "Le nombre de jours doit être inférieur ou égal au dépôt maximum.";
 	    		button.disabled = true;
@@ -924,7 +957,7 @@
 			echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
 			echo "Solde actuel de votre CET : $valeur_a jour(s)";
 			echo "<br>";
-			echo "Dépôt maximum : $nbjoursmax jour(s)";
+			echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond style='color: red;font-weight: bold; margin-left:20px;'></label>";
 			echo "<br>";
 			echo "Combien de jours souhaitez-vous ajouter à votre CET ? <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_f style='color: red;font-weight: bold; margin-left:20px;'></label>";
 			echo "<br>";
@@ -951,6 +984,15 @@
 				$resp = $structure->agent_envoyer_a($code);
 			}
 			echo "<br><br>";
+			if ($mode == 'rh')
+			{
+			    echo "<p id='check_planfond'><input type='checkbox' id='no_verify' name='no_verify' '>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
+?>
+
+				 <script type="text/javascript">const no_verify = document.getElementById('no_verify'); no_verify.addEventListener('input', update_case);</script>
+
+<?php 
+			}
 			//echo "Responsable de l'agent (" . $resp->identitecomplete() .  " - " .  $resp->mail() . ")";
 			// echo "<br><br>";
 			//echo "<input type='checkbox' id='drh_niveau' name='drh_niveau' checked><label for='drh_niveau'>Ajouter un 3e niveau dans le circuit de validation (Destinataire : " . $agent->identitecomplete()  .")</label><br>";
