@@ -154,7 +154,7 @@ else
     $id_model = $fonctions->liredbconstante("IDMODELOPTIONCET");  //    "251701";
     $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL");  //   "https://esignature-test.univ-paris1.fr";
 
-    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
+    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/optionWS.php";
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
     

@@ -199,7 +199,7 @@
     $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
     $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
 */
-    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
+    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/alimentationWS.php";
 ?>
     <script type="text/javascript">
           //window.addEventListener("load", function(event) {

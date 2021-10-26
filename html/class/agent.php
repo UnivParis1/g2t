@@ -2479,7 +2479,7 @@ AND DEMANDE.STATUT='v'";
     	}
     	else 
     	{
-    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
+    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/alimentationWS.php";
     		while ($result = mysqli_fetch_row($query)) 
     		{
     			$listdemandes[] = $result[0];
@@ -2758,7 +2758,7 @@ AND DEMANDE.STATUT='v'";
     	}
     	else
     	{
-    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/alimentationWS.php";
+    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/alimentationWS.php";
     		while ($result = mysqli_fetch_row($query))
     		{
     			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
@@ -2788,7 +2788,7 @@ AND DEMANDE.STATUT='v'";
     	}
     	else
     	{
-    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/ws/optionWS.php";
+    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/optionWS.php";
     		while ($result = mysqli_fetch_row($query))
     		{
     			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);

@@ -1215,7 +1215,7 @@ class fonctions
             }
             
             //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
-            $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
+            $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport.'/ws';
             error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est => $g2t_ws_url" ));
         }
         return $g2t_ws_url;
@@ -1223,7 +1223,7 @@ class fonctions
     
     public function get_alimCET_liste($typeconges, $listStatuts = array()) // $typeconges de la forme annYY
     {
-        $full_g2t_ws_url = $this->get_g2t_ws_url() . "/ws/alimentationWS.php";
+        $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
         $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = '" . $typeconges . "'";
         if (sizeof($listStatuts) != 0)
         {
@@ -1253,7 +1253,7 @@ class fonctions
 
     public function get_optionCET_liste($anneeref, $listStatuts = array()) 
     {
-        $full_g2t_ws_url = $this->get_g2t_ws_url() . "/ws/optionWS.php";
+        $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
         $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = '" . $anneeref . "'";
         if (sizeof($listStatuts) != 0)
         {
