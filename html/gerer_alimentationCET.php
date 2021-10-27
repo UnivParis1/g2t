@@ -804,7 +804,7 @@
 	    			check_plafond = false;
 	    			document.getElementById('check_plafond').style.color = "red";
 	    			document.getElementById('check_plafond').style.fontWeight = "bold";
-	    			document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur ! "; //- Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
+	    			document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur ni le solde <?php echo $solde->typelibelle()  ?>! "; //- Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
 	    			//alert("no_verify est checked");
 		    		//const button = document.getElementById('cree_demande');
 	    			//button.disabled = false;
