@@ -854,7 +854,7 @@
 	$ayearbefore = new DateTime(); 
 	$ayearbefore->sub(new DateInterval('P1Y')); 
 	$ayearbefore = $ayearbefore->format('Ymd');
-	$hasInterruptionAff = $user->hasInterruptionAffectation($ayearbefore, $today);
+	$hasInterruptionAff = $agent->hasInterruptionAffectation($ayearbefore, $today);
 	$hasOption = FALSE;
 	echo "Alimentation du CET pour " . $agent->identitecomplete() . "<br><br>";
 	if ($today < $fonctions->debutalimcet() || $today > $fonctions->finalimcet())
@@ -915,23 +915,31 @@
 				$joursCET += $alimentationCET->valeur_f();
 			}
 			
-			$nbjoursmax = floor($pr - $consodeb);
-			if ($nbjoursmax < 0)
-				$nbjoursmax = 0;
-			else 
+			if ($valeur_c < (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100))
 			{
-				$nbjoursrestants = $valeur_b - $consodeb - $consoadd;
-				if ($nbjoursmax > $nbjoursrestants)
-				{
-					$nbjoursmax = floor($nbjoursrestants);
-				}
-				if ($nbjoursmax > $joursCET)
-				{
-					$nbjoursmax = $nbjoursmax - $joursCET;
-				}
-				else
-				{
+				echo "<font color='#EF4001'> Vous n'avez pas posé les 20 jours de congés obligatoires. Vous ne pouvez donc pas alimenter votre CET. </font><br>";
+				echo "<br>";
+				$nbjoursmax = 0;
+			}
+			else {
+				$nbjoursmax = floor($pr - $consodeb);
+				if ($nbjoursmax < 0)
 					$nbjoursmax = 0;
+				else 
+				{
+					$nbjoursrestants = $valeur_b - $consodeb - $consoadd;
+					if ($nbjoursmax > $nbjoursrestants)
+					{
+						$nbjoursmax = floor($nbjoursrestants);
+					}
+					if ($nbjoursmax > $joursCET)
+					{
+						$nbjoursmax = $nbjoursmax - $joursCET;
+					}
+					else
+					{
+						$nbjoursmax = 0;
+					}
 				}
 			}
 			// echo "Nombre de jours déposables sur le CET : ".$nbjoursmax." <br><br>";
