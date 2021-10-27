@@ -156,10 +156,12 @@
     if (isset($_POST["mode"]))
     	$mode = $_POST["mode"];
     
-    $no_verify = null;
+    $no_verify = false;
     if (isset($_POST["no_verify"]))
-        $no_verify = $_POST["no_verify"];
-
+    {
+        if ($_POST["no_verify"] == 'on')
+            $no_verify = true;
+    }
         
 /*        
     $send_mail = null;
@@ -752,6 +754,10 @@
 	    $valeur_b = $solde->droitaquis();
 	    // Consommation des congés au début de la période (case C)
 	    $valeur_c = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
+	    if ($valeur_c == 0 and $no_verify==true)
+	    {
+	        $valeur_c = $solde->droitpris() - $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
+	    }
 	    $valeur_d = $valeur_b-$valeur_c;
 
 	    //////////////////////////////////////
@@ -787,20 +793,29 @@
 	    	if (elem_no_verify !== null)
 	    	{
 	    		//alert("elem_no_verify n'est pas null " + elem_no_verify.id);
-	    		document.getElementById('check_planfond').style.color = "initial";
-	    		document.getElementById('check_planfond').style.fontWeight = "normal";
+	    		document.getElementById('check_plafond').style.color = "initial";
+	    		document.getElementById('check_plafond').style.fontWeight = "normal";
 	    		document.getElementById('label_plafond').innerHTML = "";
 	    		if (elem_no_verify.checked)
 	    		{
+	    		    //alert("Il est checked");
+	    		    document.getElementById('valeur_c').value = "<?php echo $solde->droitpris() - $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());?>";
+	    		    document.getElementById('valeur_d').value = document.getElementById("valeur_b").value - document.getElementById('valeur_c').value;
 	    			check_plafond = false;
-	    			document.getElementById('check_planfond').style.color = "red";
-	    			document.getElementById('check_planfond').style.fontWeight = "bold";
-	    			document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur !";
+	    			document.getElementById('check_plafond').style.color = "red";
+	    			document.getElementById('check_plafond').style.fontWeight = "bold";
+	    			document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur ! "; //- Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
 	    			//alert("no_verify est checked");
 		    		//const button = document.getElementById('cree_demande');
 	    			//button.disabled = false;
 	    			//return;
-	    	    }	    	
+	    	    }
+	    	    else
+	    	    {
+	    		    document.getElementById('valeur_c').value = "<?php echo $valeur_c ?>";
+	    		    document.getElementById('valeur_d').value = "<?php echo $valeur_d ?>";
+	    			//document.getElementById('label_plafond').innerHTML = " Valeur initiale ==> Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
+	    	    }
 	    	}
 	    
 
@@ -994,7 +1009,7 @@
 			echo "<br><br>";
 			if ($mode == 'rh')
 			{
-			    echo "<p id='check_planfond'><input type='checkbox' id='no_verify' name='no_verify' '>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
+			    echo "<p id='check_plafond'><input type='checkbox' id='no_verify' name='no_verify' value='on'>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
 ?>
 
 				 <script type="text/javascript">const no_verify = document.getElementById('no_verify'); no_verify.addEventListener('input', update_case);</script>
