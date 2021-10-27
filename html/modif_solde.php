@@ -87,6 +87,7 @@ include './includes/casconnection.php';
     $info = "";
     if (isset($_POST["newsolde"]))   //if (isset($_POST["solde"]))
     {
+/*
         $newsolde=$_POST["solde"];
         $newsolde = str_replace(",", ".", $newsolde);
         //echo "int => " . intval($newsolde * 2) . "   et l'autre => " . ($newsolde * 2) . "<br>";
@@ -121,6 +122,66 @@ include './includes/casconnection.php';
                     $info = "La modification du solde est bien prise en compte.";
                 }
             }
+        }
+*/
+        $newacquis = $_POST["droitaquis"];
+        $newpris = $_POST["droitpris"];
+        if (! is_numeric($newacquis))
+        {
+            $msg_erreur = "Vous n'avez pas saisi une valeur nunérique correcte dans le champs 'Droit acquis'.<br>";
+            $newacquis = "";
+        }
+        elseif (intval($newacquis * 2) <> ($newacquis * 2)) // On vérifie que $newacquis est soit un entier soit un multiple de 1/2 journée
+        {
+            $msg_erreur = "Vous ne pouvez saisir qu'un nombre entier ou un multiple de 1/2 journée dans le champs 'Droit acquis'.<br>";
+            $newacquis = "";
+        }
+        elseif ($newacquis == "" or $newacquis < 0) {
+            $msg_erreur = "Vous n'avez pas saisi de droit acquis ou il est négatif.<br>";
+        }
+        if (! is_numeric($newpris))
+        {
+            $msg_erreur = "Vous n'avez pas saisi une valeur nunérique correcte dans le champs 'Droit pris'.<br>";
+            $newpris = "";
+        }
+        elseif (intval($newpris * 2) <> ($newpris * 2)) // On vérifie que $newacquis est soit un entier soit un multiple de 1/2 journée
+        {
+            $msg_erreur = "Vous ne pouvez saisir qu'un nombre entier ou un multiple de 1/2 journée dans le champs 'Droit pris'.<br>";
+            $newpris = "";
+        }
+        elseif ($newpris == "" or $newpris < 0) {
+            $msg_erreur = "Vous n'avez pas saisi de droit pris ou il est négatif.<br>";
+        }
+        if ($newpris != "" and $newacquis != "") // Si tout est ok
+        {
+            if ($newpris > $newacquis)
+            {
+                $msg_erreur = "La valeur dans le champs 'Droit pris' est plus grande que celle du champs 'Droit acquis'.<br>";
+            }
+            else
+            {
+                $typeconges = "ann" . substr($anneeref,-2,2);
+                $solde = new solde($dbcon);
+                $msg_erreur = $solde->load($agent->harpegeid(),$typeconges);
+                if ($msg_erreur=="")
+                {
+                    $ancienacquis = $solde->droitaquis();
+                    $ancienpris = $solde->droitpris();
+                    $solde->droitaquis($newacquis);
+                    $solde->droitpris($newpris);
+                    $solde->store();
+                    if (floatval($ancienacquis) <> floatval($newacquis))
+                    {
+                        $agent->ajoutecommentaireconge($typeconges, '0', "Modification du droit aquis par " . $user->identitecomplete() . " (Ancien droit acquis = $ancienacquis / Nouveau droit acquis = " . $solde->droitaquis() .")");
+                    }
+                    if (floatval($ancienpris) <> floatval($newpris))
+                    {
+                        $agent->ajoutecommentaireconge($typeconges, '0', "Modification du droit pris par " . $user->identitecomplete() . " (Ancien droit pris = $ancienpris / Nouveau droit pris = " . $solde->droitpris() .")");
+                    }
+                    $info = "La modification du droit aquis et/ou droit pris est bien prise en compte.";
+                }
+            }
+            
         }
     }
     
@@ -217,8 +278,11 @@ include './includes/casconnection.php';
             echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
             echo "Le solde " . $solde->typelibelle() . " de l'agent " . $agent->identitecomplete() . " est de " . $solde->solde() . " jour(s)";
             echo "<br><br>";
-            echo "Veuillez sasir le nouveau solde pour " . $solde->typelibelle() . " : ";
-            echo "<input type='text' name='solde' value='" . $solde->solde() .  "'>";
+            echo "Veuillez saisir le nouveau droit acquis pour " . $solde->typelibelle() . " : ";
+            echo "<input type='text' name='droitaquis' value='" . $solde->droitaquis() .  "'>";
+            echo "<br><br>";
+            echo "Veuillez saisir le nouveau droit pris pour " . $solde->typelibelle() . " : ";
+            echo "<input type='text' name='droitpris' value='" . $solde->droitpris() .  "'>";
             echo "<br><br>";
             echo "<input type='submit' id='newsolde' name='newsolde' value='Soumettre' >";
             echo "</form>";

@@ -120,7 +120,7 @@
 
     $count = 0;
     echo "<table class='tableausimple' >";
-    echo "<tr><td class='titresimple'>Numéro</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Solde 2020/2021 au 31/08/2021</td><td class='titresimple'>Congés 2020/2021 entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 2021/2022</td><td class='titresimple'>Droit 2021/2022 pris</td></tr>";
+    echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Solde 2020/2021 au 31/08/2021</td><td class='titresimple'>Congés 2020/2021 entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 2021/2022</td><td class='titresimple'>Droit 2021/2022 pris</td></tr>";
     while ($result = mysqli_fetch_row($query)) 
     {
         $count ++;
@@ -149,7 +149,7 @@
         }
         
         echo "<tr class='element'>";
-        echo "<td class='cellulesimple'>$count</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td>"; 
+        echo "<td class='cellulesimple'>UP1" . str_pad($agent->harpegeid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td>"; 
         $nbjrsconsommes = $agent->getNbJoursConsommés('2020', '20190901', '20210831');
 //        echo "nbjrsconsommes 2020 = $nbjrsconsommes <br>";
         echo "<td class='cellulesimple'>" . ($solde2020->droitaquis() - $nbjrsconsommes) . "</td>";
