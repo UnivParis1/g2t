@@ -833,7 +833,7 @@ class fonctions
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             return $agentarray;
         }
-        $sql = $sql . ")";
+        $sql = $sql . ") AND UPPER(VALEUR) = 'O'";
         // echo "sql = " . $sql . "<br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
