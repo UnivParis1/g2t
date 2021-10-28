@@ -573,16 +573,16 @@
 	            $id = json_decode($json, true);
 	            
 	            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
-	            
 	            //var_dump($id);
-	            if ("$id" <> "")
+	            if (is_array($id))
 	            {
-	                if (is_array($id))
-	                {
-	                    $erreur = print_r($id,true);
-	                }
-	                else
-	                {
+	            	$erreur = print_r($id,true);
+	            }
+	            else
+	            {
+		            if ("$id" <> "")
+		            {
+	
 	                    //echo "Id de la nouvelle demande = " . $id . "<br>";
 	                    $alimentationCET->esignatureid($id);
 	                    $alimentationCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
@@ -590,22 +590,22 @@
 	                    
 	                    $erreur = $alimentationCET->store();
 	                    $agent->synchroCET();
-	                }
-	                if ($erreur <> "")
-	                {
-	                	echo "Erreur (création) = $erreur <br>";
-	                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
-	                }
-	                else
-	                {
-	                    //var_dump($alimentationCET);
-	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-	                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
-	                }
-	            }
-	            else
-	            {
-	                echo "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
+		                if ($erreur <> "")
+		                {
+		                	echo "Erreur (création) = $erreur <br>";
+		                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
+		                }
+		                else
+		                {
+		                    //var_dump($alimentationCET);
+		                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+		                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+		                }
+		            }
+		            else
+		            {
+		                echo "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
+		            }
 	            }
 	        }
         }
