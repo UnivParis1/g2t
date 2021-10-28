@@ -148,6 +148,8 @@
     $datefausse = FALSE;
     $masquerboutonvalider = FALSE;
     $msg_erreur = "";
+    $erreurCET = '';
+    
 
     // Récupération de la date de début
     if (isset($_POST["date_debut"])) {
@@ -725,7 +727,6 @@
     			<td colspan="2">
     <?php
         if (strcasecmp($typedemande, "conges") == 0) {
-        	$erreurCET = '';
             // echo "congesanticipe = " . $congeanticipe . "<br>";
             // C'est une demande par anticipation
             if ($congeanticipe != "") {
