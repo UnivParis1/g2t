@@ -74,7 +74,7 @@
 	    //var input_elt = $( ".token-autocomplete input" );
 	    $( "#user" ).autocompleteUser(
   	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
 
 
 
