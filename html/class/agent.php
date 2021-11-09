@@ -2575,7 +2575,11 @@ AND DEMANDE.STATUT='v'";
     {
     	$retour = FALSE;
     	$errlog = '';
+//    	echo "datedebut = $datedebut   datefin = $datefin <br>";
     	$liste_affectations = $this->affectationliste($datedebut, $datefin);
+//    	echo "Liste_affectation = ";
+//    	var_dump($liste_affectations);
+//    	echo "<br>";
     	if (sizeof($liste_affectations) >= 1)
     	{
     		$debutaffprec = null;
@@ -2583,33 +2587,41 @@ AND DEMANDE.STATUT='v'";
     		foreach($liste_affectations as $affectation)
     		{
     			$debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
-    			
+//    			echo "debutaffectation = $debutaffectation <br>";
     			if (is_null($debutaffprec) && $debutaffectation > $datedebut)
     			{
     				$errlog .= "Pas d'affectation entre  le ".$this->fonctions->formatdate($datedebut)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
+    				error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     				return TRUE;
     			}
     			$debutaffprec = $debutaffectation;
     			$finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
+//    			echo "debutaffprec = $debutaffprec <br>";
+//    			echo "finaffectation = $finaffectation <br>";
     			if (!is_null($finaffprec))
     			{
     				// nombre de jours entre la fin de la dernière affectation et le début de la courante
+//    				echo "Avant dateconsecutive => $finaffprec   $debutaffectation <br>";
     				if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
     				{
     					$errlog .= "Pas d'affectation entre le ".$this->fonctions->formatdate($finaffprec)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
+    					error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     					return TRUE;
     				}
     			}
     			$finaffprec = $finaffectation;
+//    			echo "finaffprec = $finaffprec";
     		}    		
     	}
     	else
     	{
     		$errlog .= "Aucune affectation entre le ".$this->fonctions->formatdate($datedebut)." et le ".$this->fonctions->formatdate($datefin).". En cas d'erreur, contactez la DRH. ";
+    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     		return TRUE;
     	}    	
     	if ($errlog != '')
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+//    	echo "Avant le return...<br>";
     	return $retour;
     }
     

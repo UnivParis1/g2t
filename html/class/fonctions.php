@@ -1106,11 +1106,16 @@ class fonctions
     	$retour = FALSE;
     	$dbdate1 = $this->formatdatedb($date1);
     	$dbdate2 = $this->formatdatedb($date2);
-    	if (date("Y-m-d", strtotime("+1 day", strtotime($dbdate1))) == $dbdate2)
+//    	echo "date1 = $date1 <br>";
+//    	echo "date1 + 1 = " . $this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate1)))) . "<br>";
+//    	echo "date2 = $date2 <br>";
+//    	echo "date2 + 1 = " . $this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate2)))) . "<br>";
+    	
+    	if ($this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate1)))) == $dbdate2)
     	{
     		return TRUE;
     	}
-    	elseif (date("Y-m-d", strtotime("+1 day", strtotime($dbdate2))) == $dbdate1)
+    	elseif ($this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate2)))) == $dbdate1)
     	{
     		return TRUE;
     	}
