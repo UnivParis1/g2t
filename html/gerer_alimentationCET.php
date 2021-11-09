@@ -571,7 +571,7 @@
 	            }
 	            //echo "<br>" . print_r($json,true) . "<br>";
 	            $id = json_decode($json, true);
-	            
+	            error_log(basename(__FILE__) . " " . var_export($opts, true));
 	            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
 	            //var_dump($id);
 	            if (is_array($id))
