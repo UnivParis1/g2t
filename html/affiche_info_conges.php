@@ -1,5 +1,8 @@
 <?php
-    ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
+    ini_set('max_execution_time', '1200'); //300 seconds = 5 minutes  1200 seconds = 20 minutes
+    header('X-Accel-Buffering: no'); // pour nginx
+    header("Content-Type: text/html");
+    
     require_once ('CAS.php');
     include './includes/casconnection.php';
     
@@ -105,7 +108,7 @@
         echo "$errlog \n";
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     }
-    
+    ob_start();
     if (($numligne = mysqli_num_rows($query)) == 0)
     {
         //echo "<br>load => pas de ligne dans la base de données<br>";
@@ -120,7 +123,9 @@
 
     $count = 0;
     echo "<table class='tableausimple' >";
-    echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Solde 2020/2021 au 31/08/2021</td><td class='titresimple'>Congés 2020/2021 entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 2021/2022</td><td class='titresimple'>Droit 2021/2022 pris</td></tr>";
+    echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Droit 2020/2021</td><td class='titresimple'>Solde 2020/2021 au 31/08/2021</td><td class='titresimple'>Congés 2020/2021 entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 2021/2022</td><td class='titresimple'>Droit 2021/2022 pris</td></tr>";
+    ob_flush();
+    flush();
     while ($result = mysqli_fetch_row($query)) 
     {
         $count ++;
@@ -149,7 +154,7 @@
         }
         
         echo "<tr class='element'>";
-        echo "<td class='cellulesimple'>UP1" . str_pad($agent->harpegeid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td>"; 
+        echo "<td class='cellulesimple'>UP1" . str_pad($agent->harpegeid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde2020->droitaquis()  ."</td>"; 
         $nbjrsconsommes = $agent->getNbJoursConsommés('2020', '20190901', '20210831');
 //        echo "nbjrsconsommes 2020 = $nbjrsconsommes <br>";
         echo "<td class='cellulesimple'>" . ($solde2020->droitaquis() - $nbjrsconsommes) . "</td>";
@@ -164,11 +169,18 @@
         unset($solde2020);
         unset($solde2021);
         unset($agent);
+        ob_flush();
+        flush();
     }
     echo "</table>";
     echo "<br>";
-    
-    
+    ob_flush();
+    flush();
+    ob_end_flush();
     
     
 ?>
+
+</body>
+</html>
+
