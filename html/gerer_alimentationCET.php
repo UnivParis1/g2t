@@ -461,12 +461,14 @@
 	            {*/
 	            	// On récupère le responsable de la structure de l'agent - Niveau 2
 	            	$code = null;
-	            	if ($agent->estresponsable())
+	            	if ($structure->responsable() == $agent->harpegeid())
 	            	{
+	            		error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
 	            		$resp = $structure->resp_envoyer_a($code);
 	            	}
 	            	else
 	            	{
+	            		error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
 	            		$resp = $structure->agent_envoyer_a($code);
 	            	}
 	            	error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
@@ -1000,7 +1002,7 @@
 			//echo "<input type='radio' id='resp_demo' name='responsable' value='resp_demo' checked><label for='resp_demo'>Responsable de démo (Pascal+Elodie)</label>";
 			// echo "&nbsp;&nbsp;&nbsp;";
 			$code = null;
-			if ($agent->estresponsable())
+			if ($structure->responsable() == $agent->harpegeid())
 			{
 				$resp = $structure->resp_envoyer_a($code);
 			}

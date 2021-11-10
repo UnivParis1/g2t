@@ -342,7 +342,8 @@ class structure
             }
             $result = mysqli_fetch_row($query);
             $codeinterne = $result[0];
-            // echo "codeinterne = $codeinterne <br>";
+            //echo "codeinterne = $codeinterne <br>";
+            error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne <br>");
             switch ($codeinterne) {
                 case 2: // Envoi au gestionnaire du service parent
                     $parentstruct = $this->parentstructure();
@@ -355,6 +356,8 @@ class structure
                 default: // $codeinterne = 1 ou $codeinterne non initialisé
                     $codeinterne = 1; // Envoi au responsable du service parent
                     $parentstruct = $this->parentstructure();
+                    error_log(basename(__FILE__) . " " . $this->nomlong);
+                    error_log(basename(__FILE__) . " " . $parentstruct->nomlong);
                     if (! is_null($parentstruct))
                         return $parentstruct->responsable();
             }
@@ -469,7 +472,7 @@ class structure
                     }
                 }                // Sinon c'est le responsable SIHAM qu'il faut retourner
                 else {
-                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" Le responsable est " . $this->responsablesiham()->identitecomplete()));
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" Le responsable de " . $this->nomlong . " est " . $this->responsablesiham()->identitecomplete()));
                     return $this->responsablesiham();
                 }
             }
