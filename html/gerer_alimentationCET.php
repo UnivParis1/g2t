@@ -469,6 +469,8 @@
 	            	{
 	            		$resp = $structure->agent_envoyer_a($code);
 	            	}
+	            	error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
+	            	
 	            	$params['recipientEmails'] = array
 	            	(
 	            	    "1*" . $agent_mail,

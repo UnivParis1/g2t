@@ -456,16 +456,20 @@ class structure
                 $responsable = new agent($this->dbconnect);
                 // Si le délégué est renseigné ==> On retourne le délégué comme responsable
                 if (! is_null($this->delegueid) and ($this->delegueid != "")) {
-                    if ($responsable->load("$this->delegueid")) {
+                    if ($responsable->load("$this->delegueid")) 
+                    {
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" La délégation est active => L'agent délégué est " . $responsable->identitecomplete()));
                         return $responsable;
                     } else {
                         $responsable->civilite('');
                         $responsable->nom('INCONNU');
                         $responsable->prenom('INCONNU');
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" La délégation est active mais problème dans le chargement (id délégué = " . $this->delegueid . ")"));
                         return $responsable;
                     }
                 }                // Sinon c'est le responsable SIHAM qu'il faut retourner
                 else {
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" Le responsable est " . $this->responsablesiham()->identitecomplete()));
                     return $this->responsablesiham();
                 }
             }
