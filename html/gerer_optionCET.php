@@ -961,10 +961,12 @@ else
             $code = null;
             if ($struct->responsable() == $agent->harpegeid())
             {
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
                 $resp = $struct->resp_envoyer_a($code);
             }
             else
             {
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
                 $resp = $struct->agent_envoyer_a($code);
             }
             //echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
