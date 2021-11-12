@@ -297,7 +297,7 @@ else
             $struct = new structure($dbcon);
             $struct->load($structid);
             $code = null;
-            if ($agent->estresponsable())
+            if ($struct->responsable() == $agent->harpegeid())
             {
                 $resp = $struct->resp_envoyer_a($code);
             }
@@ -959,7 +959,7 @@ else
             $struct = new structure($dbcon);
             $struct->load($structid);
             $code = null;
-            if ($agent->estresponsable())
+            if ($struct->responsable() == $agent->harpegeid())
             {
                 $resp = $struct->resp_envoyer_a($code);
             }
