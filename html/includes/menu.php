@@ -852,6 +852,12 @@
 						</form> 
 						<a href="javascript:document.admin_solde_conges.submit();">Synthèse des congés</a>
 					</li>
+					<li onclick='document.admin_affiche_demandeCET.submit();'>
+						<form name='admin_affiche_demandeCET' method='post' action="affiche_demandeCET.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form> 
+						<a href="javascript:document.admin_affiche_demandeCET.submit();">Afficher une demande sur CET/eSignature</a>
+					</li>
 				</ul>
 			</li>
 		</ul>  
