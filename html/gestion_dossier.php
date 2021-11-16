@@ -277,7 +277,7 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "", "");
+                $structure->setdelegation("", "", "", $userid);
             } else {
                 // echo "Dans le else avant le filtre LDAP <br>";
                 // On va chercher dans le LDAP la correspondance UID => HARPEGEID
@@ -326,7 +326,7 @@
                             echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                         } else {
                             // echo "On enregistre la delegation.... <br>";
-                            $structure->setdelegation($harpegeid, $datedebutdeleg, $datefindeleg);
+                        	$structure->setdelegation($harpegeid, $datedebutdeleg, $datefindeleg, $userid);
                             $errlog = $user->identitecomplete() . " : Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $harpegeid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
                             // echo $errlog."<br/>";
                             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));

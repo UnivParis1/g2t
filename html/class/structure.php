@@ -1000,7 +1000,7 @@ class structure
         }
     }
 
-    function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg)
+    function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="")
     {
         // echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Il manque l'enregistrement de la délégation..... </B></FONT><br> Harpege Id = $delegationuserid Début = $datedebutdeleg fin = $datefindeleg <br>";
         if ($datedebutdeleg != "") {
@@ -1009,7 +1009,11 @@ class structure
         if ($datefindeleg != "") {
             $datefindeleg = $this->fonctions->formatdatedb($datefindeleg);
         }
-        $sql = "UPDATE STRUCTURE SET IDDELEG='" . $delegationuserid . "', DATEDEBUTDELEG='" . $datedebutdeleg . "',DATEFINDELEG='" . $datefindeleg . "'  WHERE STRUCTUREID='" . $this->id() . "'";
+        $datemodifdeleg = NULL;
+        if ($idmodifdeleg != "") {
+        	$datemodifdeleg = $this->fonctions->formatdatedb(date("d/m/Y"));
+        }
+        $sql = "UPDATE STRUCTURE SET IDDELEG='" . $delegationuserid . "', DATEDEBUTDELEG='" . $datedebutdeleg . "',DATEFINDELEG='" . $datefindeleg . "',DATEMODIFDELEG='" . $datemodifdeleg . "',IDMODIFDELEG='" . $idmodifdeleg . "'  WHERE STRUCTUREID='" . $this->id() . "'";
         // echo "SQL = " . $sql . "<br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
