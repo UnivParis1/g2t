@@ -28,7 +28,7 @@
     echo "<form name='demandeesignatureid'  method='post' action='affiche_demandeCET.php'>";
     echo "Numéro eSignature à afficher : <br>";
     echo "<select name='esignatureid' id='esignatureid'>";
-    echo "<optgroup label='Demandes d''alimentation'>";
+    echo "<optgroup label='Demandes d&apos;alimentation'>";
 //    echo "<option value='Demande alimentation' disabled>Demande d'alimentation</option>";
     $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));
     //echo "On a récup <br>";
@@ -48,7 +48,7 @@
         echo ">" . $alimCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $alimCET->statut()  . ")</option>";
     }
     $optionCETliste = $fonctions->get_optionCET_liste($fonctions->anneeref());
-    echo "<optgroup label='Demandes d''option'>";
+    echo "<optgroup label='Demandes d&apos;option'>";
 //    echo "<option value='Demande option' disabled>Demande d'option</option>";
     foreach ($optionCETliste as $optionid)
     {
@@ -60,7 +60,7 @@
             echo " selected='selected' ";
         }
         $demandeur = new agent($dbcon);
-        $demandeur->load($alimCET->agentid());
+        $demandeur->load($optionCET->agentid());
         echo ">" . $optionCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $optionCET->statut()  . ")</option>";
     }
     echo "</select>";
