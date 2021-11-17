@@ -933,9 +933,10 @@
 				$alimentationCET->load($id_alim);
 				$joursCET += $alimentationCET->valeur_f();
 			}
-			if ($valeur_c < (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100))
+			$nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
+			if ($valeur_c < $nbjoursobli)
 			{
-			    echo "<font color='#EF4001'> Vous n'avez pas posé les 20 jours de congés obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET. </font><br>";
+			    echo "<font color='#EF4001'> Vous n'avez pas posé les $nbjoursobli jours de congés obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET. </font><br>";
 				echo "<br>";
 				$nbjoursmax = 0;
 			}
