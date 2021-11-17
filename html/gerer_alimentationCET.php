@@ -461,7 +461,7 @@
 	            {*/
 	            	// On récupère le responsable de la structure de l'agent - Niveau 2
 	            	$code = null;
-	            	if ($structure->responsable() == $agent->harpegeid())
+	            	if ($structure->responsable()->harpegeid() == $agent->harpegeid())
 	            	{
 	            		error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
 	            		$resp = $structure->resp_envoyer_a($code);
@@ -1001,7 +1001,7 @@
 			//echo "<input type='radio' id='resp_demo' name='responsable' value='resp_demo' checked><label for='resp_demo'>Responsable de démo (Pascal+Elodie)</label>";
 			// echo "&nbsp;&nbsp;&nbsp;";
 			$code = null;
-			if ($structure->responsable() == $agent->harpegeid())
+			if ($structure->responsable()->harpegeid() == $agent->harpegeid())
 			{
 				$resp = $structure->resp_envoyer_a($code);
 			}

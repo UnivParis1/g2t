@@ -297,7 +297,7 @@ else
             $struct = new structure($dbcon);
             $struct->load($structid);
             $code = null;
-            if ($struct->responsable() == $agent->harpegeid())
+            if ($struct->responsable()->harpegeid() == $agent->harpegeid())
             {
                 $resp = $struct->resp_envoyer_a($code);
             }
@@ -305,6 +305,8 @@ else
             {
                 $resp = $struct->agent_envoyer_a($code);
             }
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
+            
             $params['recipientEmails'] = array
             (
                 "1*" . $agent_mail,
@@ -959,7 +961,7 @@ else
             $struct = new structure($dbcon);
             $struct->load($structid);
             $code = null;
-            if ($struct->responsable() == $agent->harpegeid())
+            if ($struct->responsable()->harpegeid() == $agent->harpegeid())
             {
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
                 $resp = $struct->resp_envoyer_a($code);
@@ -969,6 +971,7 @@ else
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
                 $resp = $struct->agent_envoyer_a($code);
             }
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
             //echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
         
             //echo "<br>------------------------------------------------------------- <br>";
