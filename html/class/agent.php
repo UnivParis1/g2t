@@ -2645,7 +2645,7 @@ AND DEMANDE.STATUT='v'";
     			$list_demandes = $this->demandesliste($date_element, $date_element + 1);
     			foreach($list_demandes as $demande)
     			{
-    				if ($demande->type() == $type_conge)
+    				if (($demande->type() == $type_conge) and (strcasecmp($demande->statut(), 'r')!=0) )
     				{
     					$nbjours += 0.5;
     				}
