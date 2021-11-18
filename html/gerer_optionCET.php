@@ -306,122 +306,128 @@ else
                 $resp = $struct->agent_envoyer_a($code);
             }
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-            
-            $params['recipientEmails'] = array
-            (
-                "1*" . $agent_mail,
-                "2*" . $resp->mail()
-            );
-    ////////////////////////////////////////////////////////
-    ////////// ATTENTION : POUR TEST UNIQUEMENT   //////////
-    ////////////////////////////////////////////////////////
-    //        $params['recipientEmails'] = array
-    //        (
-    //            "1*" . $agent_mail,
-    //            "2*elodie.briere@univ-paris1.fr"
-    //        );
-    ////////////////////////////////////////////////////////
-            
-            
-            $resp_agent = null;
-            // On récupère tous les agents avec le profil RHCET - Niveau 3
-            foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
+            if ($resp->harpegeid() != '-1')
             {
-                $params['recipientEmails'][] = '3*' . $qvt_agent->mail();
-                if (count((array)$qvt_agent->structrespliste())>0)
-                {
-                    $resp_agent = $qvt_agent;
-                }
+	            $params['recipientEmails'] = array
+	            (
+	                "1*" . $agent_mail,
+	                "2*" . $resp->mail()
+	            );
+	    ////////////////////////////////////////////////////////
+	    ////////// ATTENTION : POUR TEST UNIQUEMENT   //////////
+	    ////////////////////////////////////////////////////////
+	    //        $params['recipientEmails'] = array
+	    //        (
+	    //            "1*" . $agent_mail,
+	    //            "2*elodie.briere@univ-paris1.fr"
+	    //        );
+	    ////////////////////////////////////////////////////////
+	            
+	            
+	            $resp_agent = null;
+	            // On récupère tous les agents avec le profil RHCET - Niveau 3
+	            foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
+	            {
+	                $params['recipientEmails'][] = '3*' . $qvt_agent->mail();
+	                if (count((array)$qvt_agent->structrespliste())>0)
+	                {
+	                    $resp_agent = $qvt_agent;
+	                }
+	            }
+	            
+	            // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
+	            $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
+	            if (is_null($resp_agent))
+	            {
+	                $struct = new structure($dbcon);
+	                $struct->load($qvt_id);
+	                $resp_agent = $struct->responsable();
+	            }
+	            $params['recipientEmails'][] = '4*' . $resp_agent->mail();
+	            
+	            // On récupère le responsable du service DRH et DGS - Niveau 5
+	            $struct = new structure($dbcon);
+	            $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
+	            $struct->load($drh_id);
+	            $drh_agent = $struct->responsable();
+	            $params['recipientEmails'][] = '5*' . $drh_agent->mail();
+	            $struct = new structure($dbcon);
+	            $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
+	            $struct->load($dgs_id);
+	            $dgs_agent = $struct->responsable();
+	            $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
+	            
+	            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+	                    is_array( $item )
+	                    ? array_walk( $item, $walk, $key )
+	                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+	                    
+	            };
+	            array_walk( $params, $walk );
+	            $params_string = implode( '&', $output );
+	            //echo "<br>Output = " . $params_string . '<br><br>';
+	            
+	            $opts = [
+	                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
+	                CURLOPT_POST => true,
+	                CURLOPT_POSTFIELDS => $params_string,
+	                CURLOPT_RETURNTRANSFER => true,
+	                CURLOPT_SSL_VERIFYPEER => false
+	            ];
+	            curl_setopt_array($curl, $opts);
+	            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+	            $json = curl_exec($curl);
+	            $error = curl_error ($curl);
+	            curl_close($curl);
+	            if ($error != "")
+	            {
+	                echo "Erreur Curl = " . $error . "<br><br>";
+	            }
+	            //echo "<br>" . print_r($json,true) . "<br>";
+	            $id = json_decode($json, true);
+	            
+	            //var_dump($id);
+	            if (is_array($id))
+	            {
+	                $erreur = $id['error'];  
+	            }
+	            elseif ("$id" <> "")
+	            {
+	                //echo "Id de la nouvelle demande = " . $id . "<br>";
+	                $optionCET->esignatureid($id);
+	                $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+	                $optionCET->statut($optionCET::STATUT_PREPARE);
+	                
+	                $erreur = $optionCET->store();
+	                $agent->synchroCET();
+	
+	            }
+	            else
+	            {
+	                $erreur =  "La création du droit d'option dans eSignature a échoué !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+	            }
+	            if ($erreur <> "")
+	            {
+	                if (is_array($id))
+	                {
+	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . print_r($id,true)));
+	                }
+	                else
+	                {
+	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
+	                }
+	                echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
+	            }
+	            else
+	            {
+	                //var_dump($optionCET);
+	                error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+	                //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+	            }
             }
-            
-            // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
-            $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-            if (is_null($resp_agent))
+            else // Le responsable est g2t cron
             {
-                $struct = new structure($dbcon);
-                $struct->load($qvt_id);
-                $resp_agent = $struct->responsable();
-            }
-            $params['recipientEmails'][] = '4*' . $resp_agent->mail();
-            
-            // On récupère le responsable du service DRH et DGS - Niveau 5
-            $struct = new structure($dbcon);
-            $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-            $struct->load($drh_id);
-            $drh_agent = $struct->responsable();
-            $params['recipientEmails'][] = '5*' . $drh_agent->mail();
-            $struct = new structure($dbcon);
-            $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-            $struct->load($dgs_id);
-            $dgs_agent = $struct->responsable();
-            $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
-            
-            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-                    is_array( $item )
-                    ? array_walk( $item, $walk, $key )
-                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                    
-            };
-            array_walk( $params, $walk );
-            $params_string = implode( '&', $output );
-            //echo "<br>Output = " . $params_string . '<br><br>';
-            
-            $opts = [
-                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
-                CURLOPT_POST => true,
-                CURLOPT_POSTFIELDS => $params_string,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false
-            ];
-            curl_setopt_array($curl, $opts);
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            curl_close($curl);
-            if ($error != "")
-            {
-                echo "Erreur Curl = " . $error . "<br><br>";
-            }
-            //echo "<br>" . print_r($json,true) . "<br>";
-            $id = json_decode($json, true);
-            
-            //var_dump($id);
-            if (is_array($id))
-            {
-                $erreur = $id['error'];  
-            }
-            elseif ("$id" <> "")
-            {
-                //echo "Id de la nouvelle demande = " . $id . "<br>";
-                $optionCET->esignatureid($id);
-                $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                $optionCET->statut($optionCET::STATUT_PREPARE);
-                
-                $erreur = $optionCET->store();
-                $agent->synchroCET();
-
-            }
-            else
-            {
-                $erreur =  "La création du droit d'option dans eSignature a échoué !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
-            }
-            if ($erreur <> "")
-            {
-                if (is_array($id))
-                {
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . print_r($id,true)));
-                }
-                else
-                {
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
-                }
-                echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
-            }
-            else
-            {
-                //var_dump($optionCET);
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-                //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+            	echo "<font color='#EF4001'>Votre responsable n'est pas renseigné, veuillez contacter la DRH.</font><br><br>";
             }
         }
         else // Il y a une demande d'alim ou d'option en cours
