@@ -461,6 +461,9 @@
 	            {*/
 	            	// On récupère le responsable de la structure de l'agent - Niveau 2
 	            	$code = null;
+	            	$structid = $agent->structureid();
+	            	$structure = new structure($dbcon);
+	            	$structure->load($structid);
 	            	if ($structure->responsable()->harpegeid() == $agent->harpegeid())
 	            	{
 	            		error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
