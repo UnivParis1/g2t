@@ -375,6 +375,9 @@
         $alimentationCET->valeur_f($valeur_f);
         $alimentationCET->valeur_g($valeur_g);
         
+        error_log(basename(__FILE__) . " " . var_export($alimentationCET,true));
+        
+
         if (((float)$valeur_f+0)==0)
         {
             echo "<br><br><font color='red'><B>La valeur de la case F est vide ou égale à 0... On ne peut pas sauvegarder la demande d'alimentation.</B></font><br>";
@@ -871,7 +874,7 @@
 	        	valeur_d = document.getElementById("valeur_d").value;
 	        	plafond = document.getElementById("plafond").value;
 	        	document.getElementById("valeur_e").value = parseInt(valeur_d,10)-parseInt(valeur_f,10);
-	        	document.getElementById("valeur_g").value = parseInt(valeur_a,10)+parseInt(valeur_f,10);
+	        	document.getElementById("valeur_g").value = parseFloat(valeur_a,10)+parseInt(valeur_f,10);
 	    		button.disabled = false;
 	        }
 	    }

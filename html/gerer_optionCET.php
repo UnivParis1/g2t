@@ -223,6 +223,8 @@ else
             $optionCET->valeur_k($valeur_k);
             $optionCET->valeur_l($valeur_l);
             
+            error_log(basename(__FILE__) . " " . var_export($optionCET,true));
+            
             if (!is_null($agentid))
             {
                 // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
@@ -542,17 +544,17 @@ else
         	// On récupère la valeur A
         	document.getElementById("valeur_a").value = document.getElementById("valeur_a").value.replace(",",".");
             valeur_a = document.getElementById("valeur_a").value;
-            valeur_a = parseInt(valeur_a);
+            valeur_a = parseFloat(valeur_a);
             
             // On récupère la valeur G
         	document.getElementById("valeur_g").value = document.getElementById("valeur_g").value.replace(",",".");
            	valeur_g = document.getElementById("valeur_g").value;
-            valeur_g = parseInt(valeur_g);
+            valeur_g = parseFloat(valeur_g);
             
         	// On récupère la valeur H 
         	document.getElementById("valeur_h").value = document.getElementById("valeur_h").value.replace(",",".");
         	valeur_h = document.getElementById("valeur_h").value;
-        	valeur_h  = parseInt(valeur_h);
+        	valeur_h  = parseFloat(valeur_h);
     
             // On récupère la valeur I et on efface le label correspondant
         	document.getElementById("valeur_i").value = document.getElementById("valeur_i").value.replace(",",".");
