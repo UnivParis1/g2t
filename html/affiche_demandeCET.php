@@ -15,8 +15,29 @@
     require_once ("./includes/all_g2t_classes.php");
     
     $esignatureid = null;
+    $currentoption = null;
+    $currentalim = null;
+    $error = "";
     if (isset($_POST["esignatureid"]))
-        $esignatureid = $_POST["esignatureid"];
+    {
+        $valeur = explode('|',$_POST["esignatureid"]);
+        $esignatureid = $valeur[1];
+        if (strcasecmp($valeur[0],'opt')==0)  // Si c'est une option
+        {
+            $currentoption = new optionCET($dbcon);
+            $currentoption->load($esignatureid);
+        }
+        elseif (strcasecmp($valeur[0],'alim')==0) // Si c'est une alimentation
+        {
+            $currentalim = new alimentationCET($dbcon);
+            $currentalim->load($esignatureid);
+        }
+        else
+        {
+            $esignatureid = null;
+            $error = "Impossible de déterminer si c'est une option ou une alimentation.<br><br>";
+        }
+    }
         
     $user = new agent($dbcon);
     $user->load($userid);
@@ -25,6 +46,7 @@
     
     //echo "<br>" . print_r($_POST,true) . "<br>";
 
+    echo "<B><FONT color='red'>$error</FONT></B>";
     echo "<form name='demandeesignatureid'  method='post' action='affiche_demandeCET.php'>";
     echo "Numéro eSignature à afficher : <br>";
     echo "<select name='esignatureid' id='esignatureid'>";
@@ -38,7 +60,7 @@
         $alimCET = new alimentationCET($dbcon);
         $alimCET->load($alimid);
         //echo "Apres le load alim <br>";
-        echo "<option value='" . $alimid . "' ";
+        echo "<option value='alim|" . $alimid . "' ";
         if ($alimid == $esignatureid)
         {
             echo " selected='selected' ";
@@ -54,7 +76,7 @@
     {
         $optionCET = new optionCET($dbcon);
         $optionCET->load($optionid);
-        echo "<option value='" . $optionid . "' ";
+        echo "<option value='opt|" . $optionid . "' ";
         if ($optionid == $esignatureid)
         {
             echo " selected='selected' ";
@@ -69,6 +91,8 @@
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
     echo "<input type='submit' value='Soumettre' >";
     echo "</form>";
+    $optionCET = null;
+    $alimCET = null;
 
     if (!is_null($esignatureid))
     {
@@ -167,24 +191,70 @@
             echo "Date de création : " . date("d/m/Y H:i:s", substr($response["parentSignBook"]["createDate"],0,strlen($response["parentSignBook"]["createDate"])-3)) . "<br>";
             echo "Statut de la demande : " . $response["parentSignBook"]["status"] . "<br>";
             echo "<br>";
+            $nextstep = null;
             foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
             {
                 echo "<B>Etape " . ($numstep+1) . " : </B><br>";
                 foreach ($step["recipients"] as $esignatureuser)
                 {
+                    if ($esignatureuser["signed"])
+                    {
+                        echo " <FONT color='green'>";
+                    }
+                    elseif (is_null($nextstep))
+                    {
+                        $nextstep = $numstep;
+                    }
                     echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ")<br>";
+                    if ($esignatureuser["signed"])
+                    {
+                        echo " </FONT>";
+                    }
                 }
             }
             echo "<br>";
-            $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
-            echo "<B>En attente de l'étape : " . $response['parentSignBook']['liveWorkflow']["currentStepNumber"] . "</B><br>";
-            foreach ((array)$currentstep['recipients'] as $recipient)
+                        
+            if (!is_null($nextstep) and ($response["parentSignBook"]["status"]=='pending'))
+            {   // On affiche les infos de l'étape suivante si la demande n'est pas terminée
+                $currentstep = $response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"][$nextstep];
+                echo "<B>En attente de l'étape : " . ($nextstep+1) . "</B><br>";
+                foreach ((array)$currentstep['recipients'] as $recipient)
+                {
+                    echo "&emsp;" . $recipient['user']['firstname'] . " " . $recipient['user']['name'] . " (" . $recipient['user']["email"] . ")<br>";
+                    //echo "&emsp;Nom de l'étape : " . $currentstep['workflowStep']["description"] . "<br>";
+                }
+            }
+            else
             {
-                echo "&emsp;" . $recipient['user']['firstname'] . " " . $recipient['user']['name'] . " (" . $recipient['user']["email"] . ")<br>";
-                //echo "&emsp;Nom de l'étape : " . $currentstep['workflowStep']["description"] . "<br>";
+                echo "<B>En attente de l'étape : Pas d'étape en attente (circuit terminé)</B><br>";
             }
             echo "<br><br>";
         }
+        
+        echo "<B>Affichage des informations sur la demande dans la base G2T :</B><br>";
+        if (!is_null($currentalim))
+        {
+            echo "&emsp;Valeur A = " . $currentalim->valeur_a() . "<br>";
+            echo "&emsp;Valeur B = " . $currentalim->valeur_b() . "<br>";
+            echo "&emsp;Valeur C = " . $currentalim->valeur_c() . "<br>";
+            echo "&emsp;Valeur D = " . $currentalim->valeur_d() . "<br>";
+            echo "&emsp;Valeur E = " . $currentalim->valeur_e() . "<br>";
+            echo "&emsp;Valeur F = " . $currentalim->valeur_f() . "<br>";
+            echo "&emsp;Valeur G = " . $currentalim->valeur_g() . "<br>";
+            echo "&emsp;Motif du refus : " . $currentalim->motif() . "<br>";
+        }
+        else
+        {
+            echo "&emsp;Valeur A = " . $currentoption->valeur_a() . "<br>";
+            echo "&emsp;Valeur G = " . $currentoption->valeur_g() . "<br>";
+            echo "&emsp;Valeur H = " . $currentoption->valeur_h() . "<br>";
+            echo "&emsp;Valeur I = " . $currentoption->valeur_i() . "<br>";
+            echo "&emsp;Valeur J = " . $currentoption->valeur_j() . "<br>";
+            echo "&emsp;Valeur K = " . $currentoption->valeur_k() . "<br>";
+            echo "&emsp;Valeur L = " . $currentoption->valeur_l() . "<br>";
+            echo "&emsp;Motif du refus : " . $currentoption->motif() . "<br>";
+        }
+        echo "<br><br>";
         
         // On appelle le WS eSignature pour récupérer le document correspondant à la demande
         $curl = curl_init();
