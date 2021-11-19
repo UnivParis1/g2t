@@ -450,7 +450,8 @@
 	                ),
 	                //'targetUrls' => array("$full_g2t_ws_url")
 	                //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
-	                'targetUrl' => "$full_g2t_ws_url"
+	                'targetUrl' => "$full_g2t_ws_url",
+	                'targetUrls' => array("$full_g2t_ws_url")
 	            );
 	            /*if ($responsable == 'resp_demo')
 	            {
