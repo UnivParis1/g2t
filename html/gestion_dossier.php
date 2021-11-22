@@ -503,9 +503,18 @@
                 echo "\n<tr>";
                 echo "<td>Nom du gestionnaire : ";
                 echo "<input id='infouser[" . $structure->id() . "]' name='infouser[" . $structure->id() . "]' placeholder='Nom et/ou prenom' value='";
+                $style = '';
+                $extrainfo = '';
                 if (! is_null($gestionnaire))
+                {
                     echo $gestionnaire->identitecomplete();
-                echo "' size=40 />";
+                    if (!$gestionnaire->isG2tUser())
+                    {
+                        $style = " style='background-color : #f5b7b1 ;' ";
+                        $extrainfo = "<b><font color = 'red'> &#x1F828; Le gestionnaire défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</font></b>";
+                    }
+                }
+                echo "' size=40 $style/>$extrainfo";
                 //
                 echo "<input type='hidden' id='gestion[" . $structure->id() . "]' name='gestion[" . $structure->id() . "]' value='";
                 if (! is_null($gestionnaire))
@@ -538,8 +547,15 @@
                     echo "Délégation de responsabilité à ";
                     echo "<input id='infodelegation[" . $structure->id() . "]' name='infodelegation[" . $structure->id() . "]' placeholder='Nom et/ou prenom' value='";
                     if (! is_null($delegationuser))
+                    {
                         echo $delegationuser->identitecomplete();
-                    echo "' size=40 />";
+                        if (!$delegationuser->isG2tUser())
+                        {
+                            $style = " style='background-color : #f5b7b1 ;' ";
+                            $extrainfo = "<b><font color = 'red'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</font></b>";
+                        }
+                    }
+                    echo "' size=40 $style/>$extrainfo";
 
                     echo "<input type='hidden' id='delegation[" . $structure->id() . "]' name='delegation[" . $structure->id() . "]' value='";
                     if (! is_null($delegationuser))
@@ -553,8 +569,7 @@
         	   </script>
     <?php
 
-                    echo "</td>";
-                    echo "<td>";
+                    echo "</td></tr>";
                     // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
                     $calendrierid_deb = "date_debut";
                     $calendrierid_fin = "date_fin";
@@ -580,34 +595,32 @@
         });
         </script>
     <?php
-
-                    echo "Début de la période :";
+                    echo "<tr><td style='padding-left:50px;'>";
+                    echo "Début de la période de délégation :";
                     if ($fonctions->verifiedate($datedebutdeleg)) {
                         $datedebutdeleg = $fonctions->formatdate($datedebutdeleg);
                     }
                     ?>
-    <td width=1px><input class="calendrier" type=text
+    <input class="calendrier" type=text
     	name=<?php echo $calendrierid_deb . '[' . $structure->id() . ']'?>
     	id=<?php echo $calendrierid_deb . '[' . $structure->id() .']'?> size=10
     	minperiode='<?php echo date("d/m/Y"); // $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()); ?>'
     	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
-    	value='<?php echo $datedebutdeleg ?>'></td>
+    	value='<?php echo $datedebutdeleg ?>'>
     <?php
-                    echo "</td>";
-                    echo "<td>";
-                    echo "Fin de la période :";
+                    echo "Fin de la période de délégation :";
                     if ($fonctions->verifiedate($datefindeleg)) {
                         $datefindeleg = $fonctions->formatdate($datefindeleg);
                     }
 
                     ?>
-    <td width=1px><input class="calendrier" type=text
+    <input class="calendrier" type=text
     	name=<?php echo $calendrierid_fin . '[' . $structure->id() . ']' ?>
     	id=<?php echo $calendrierid_fin . '[' . $structure->id() . ']' ?>
     	size=10
     	minperiode='<?php echo date("d/m/Y"); //$fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()); ?>'
     	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
-    	value='<?php echo $datefindeleg ?>'></td>
+    	value='<?php echo $datefindeleg ?>'>
     <?php
                     echo "</td>";
                     echo "</tr>";

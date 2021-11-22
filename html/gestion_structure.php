@@ -251,9 +251,42 @@
             if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true)) {
                 $gestionnaire = $struct->gestionnaire();
                 // echo "Apres recup du gestionnaire.... <br>";
+                
+
+                // On va récupérer le premiers agents de la structure et demander à LDAP s'il sont dans le group users.g2t
+                $agentliste = $struct->agentlist(date("d/m/Y"), date("d/m/Y"),'n');  // On ne veut pas les agents des sous-structures
+                $infoagent = "";
+                $nbprobleme = 0;
+                $sign = '&#128077;';
+                // Pour chaque agent de la structure, on regarde si c'est un G2Tuser
+                foreach ((array)$agentliste as $structagent)
+                {
+//                    if ($structagent->harpegeid() > 0)
+//                    {
+                        if (!$structagent->isG2tUser())
+                        {
+                            $nbprobleme = $nbprobleme + 1;
+
+                            $infoagent = $infoagent . "L'agent " . $structagent->identitecomplete() . " n'est pas un utilisateur G2T valide.<br>";
+                            $sign = "&#9888;";
+                        }
+                        else
+                        {
+                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : L'agent " . $structagent->identitecomplete() . " est ok."));
+                        }
+//                    }
+                }
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : J'ai " . count((array)$agentliste) . " agents dans la structure et $nbprobleme sont erronés."));
+                if (count((array)$agentliste) == $nbprobleme)
+                {
+                    $infoagent = "Aucun agent n'est dans un groupe valide.<br>";
+                    $sign = "&#128711;";
+                }
+                
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() . " - Responsable : " . $struct->responsablesiham()->identitecomplete() . " ";
+                echo "<font size='3'>&nbsp;$sign</font>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
                     echo "(Date fermeture : " . $struct->datecloture() . ") ";
@@ -262,9 +295,16 @@
                 echo "<tr>";
                 echo "<td align=center>Gestionnaire : ";
                 echo "<input id='infouser[" . $struct->id() . "]' name='infouser[" . $struct->id() . "]' placeholder='Nom et/ou prenom' value='";
+                $style = '';
                 if (! is_null($gestionnaire))
+                {
                     echo $gestionnaire->identitecomplete();
-                echo "' size=40 />";
+                    if (!$gestionnaire->isG2tUser())
+                    {
+                        $style = " style='background-color : #f5b7b1 ;' ";
+                    }
+                }
+                echo "' size=40 $style />";
                 //
                 echo "<input type='hidden' id='gestion[" . $struct->id() . "]' name='gestion[" . $struct->id() . "]' value='";
                 if (! is_null($gestionnaire))
@@ -282,7 +322,13 @@
                 $responsable = $struct->responsablesiham();
                 // echo "Apres recup du responsable <br>";
                 echo " &nbsp; Direction : ";
-                echo "<input id='responsableinfo[" . $struct->id() . "]' name='responsableinfo[" . $struct->id() . "]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete() . "' size=40 />";
+                echo "<input id='responsableinfo[" . $struct->id() . "]' name='responsableinfo[" . $struct->id() . "]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete() . "' ";
+                $style = '';
+                if (!$responsable->isG2tUser())
+                {
+                    $style = " style='background-color : #f5b7b1 ;' ";
+                }
+                echo " size=40 $style/>";
                 //
                 echo "<input type='hidden' id='resp[" . $struct->id() . "]' name='resp[" . $struct->id() . "]' value='" . $responsable->harpegeid() . "' class='responsableinfo[" . $struct->id() . "]' /> ";
                 ?>
@@ -353,6 +399,10 @@
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
+                if ($infoagent != "")
+                {
+                    echo "<tr><td><b><font color=' #6c3483 '>$infoagent</font></b></td></tr>";
+                }
                 echo "<tr><td height=15></td></tr>";
             }
         }
