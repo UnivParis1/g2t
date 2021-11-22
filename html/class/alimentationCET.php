@@ -128,7 +128,14 @@ class alimentationCET
             }
             else
             {
-                $this->esignatureurl = $esignatureurl;
+                // On remplace éventuellement le nom du serveur par celui paramétré
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Avant transformation l'URL est : " . $esignatureurl));
+                $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
+                $urlpath = parse_url($esignatureurl,PHP_URL_PATH);
+                $this->esignatureurl = $eSignature_url . $urlpath;
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Après transformation l'URL est : " . $this->esignatureurl));
+                
+                //$this->esignatureurl = $esignatureurl;
                 //echo "esignatureurl = " . $this->esignatureurl . "<br>";;
             }
         }
@@ -413,6 +420,14 @@ class alimentationCET
         $this->statut           = "$result[13]";
         $this->datestatut       = "$result[14]";
         $this->motif            = "$result[15]";
+        
+        // On remplace éventuellement le nom du serveur par celui paramétré
+        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Avant transformation l'URL est : " . $this->esignatureurl));
+        $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
+        $urlpath = parse_url($this->esignatureurl,PHP_URL_PATH);
+        $this->esignatureurl = $eSignature_url . $urlpath;
+        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Après transformation l'URL est : " . $this->esignatureurl));
+        
         
         return $errlog;
     }
