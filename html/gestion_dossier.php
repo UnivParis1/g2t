@@ -546,6 +546,8 @@
                     }
                     echo "Délégation de responsabilité à ";
                     echo "<input id='infodelegation[" . $structure->id() . "]' name='infodelegation[" . $structure->id() . "]' placeholder='Nom et/ou prenom' value='";
+                    $style = '';
+                    $extrainfo = '';
                     if (! is_null($delegationuser))
                     {
                         echo $delegationuser->identitecomplete();
