@@ -92,6 +92,7 @@
 
 <script>$(document).ready(function() {
     $('#structureid').select2();
+    $('#esignatureid').select2();
 });</script>
 <!--   
 	<script>

@@ -285,11 +285,14 @@
                 
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
-                echo "<td align=center class='titresimple'>" . $struct->nomcourt() . " " . $struct->nomlong() . " - Responsable : " . $struct->responsablesiham()->identitecomplete() . " ";
+                echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable : " . $struct->responsablesiham()->identitecomplete() . " ";
                 echo "<font size='3'>&nbsp;$sign</font>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
                     echo "(Date fermeture : " . $struct->datecloture() . ") ";
+
+                echo "</span>";
+                    
                 echo "</td>";
                 echo "</tr>";
                 echo "<tr>";

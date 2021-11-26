@@ -590,6 +590,20 @@
                         }
                     }
                 }
+                else
+                {
+                    // On met la tentative dans l'agenda de l'agent
+                    $demandeid = $demande->id();
+                    unset($demande);
+                    $demande = new demande($dbcon);
+                    $demande->load($demandeid);
+                    $agent = $demande->agent();
+                    
+                    $ics = $demande->ics($agent->mail());
+                    //echo "ics = " . $ics . "<br><br>";
+                    $errormsg = $agent->updatecalendar($ics);
+                    //echo "errormsg = $errormsg <br>";
+                }
                 $msgstore = "Votre demande a été enregistrée... ==> ";
                 if (strcasecmp($typedemande, "conges") == 0) {
                     if (($demande->nbrejrsdemande()) > 1) {

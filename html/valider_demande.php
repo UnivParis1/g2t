@@ -84,7 +84,12 @@
                         $ics = null;
                         $pdffilename[0] = $demande->pdf($user->harpegeid());
                         $agent = $demande->agent();
+                        //echo "<br>Le statut de la demande est : $statut <br><br>"; 
                         if ((strcasecmp($statut, 'v') == 0) or (strcmp($statut, 'R') == 0)) {
+                            $ics = $demande->ics($agent->mail());
+                        }
+                        elseif ((strcmp($statut, 'r') == 0)) {
+                            // On refuse une demande => On doit mettre à jour l'agenda car la demande est en statut "TENTATIVE"
                             $ics = $demande->ics($agent->mail());
                         }
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";

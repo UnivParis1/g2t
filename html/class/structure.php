@@ -131,16 +131,39 @@ class structure
             $this->nomcourt = $name;
     }
     
-    function nomcompletcet()
+    function nomcompletcet($fullpath = false, $fullname = false)
     {
-    	$type_struct_final = array('UO', 'DIR');
-    	$nameStructComplete = $this->nomcourt();
+        if ($fullpath)
+        {
+            $type_struct_final = array();
+        }
+        else
+        {
+    	   $type_struct_final = array('UO', 'DIR');
+        }
+        if ($fullname)
+        {
+            $nameStructComplete = $this->nomlong() . ' (' . $this->nomcourt() . ')';
+        }
+        else
+        {
+    	   $nameStructComplete = $this->nomcourt();  
+        }
     	$struct_tmp = $this;
     	while (! is_null($struct_tmp) && ! in_array($struct_tmp->typestruct(), $type_struct_final))
     	{
     		$struct_tmp = $struct_tmp->parentstructure();
     		if (! is_null($struct_tmp))
-    			$nameStructComplete =  $struct_tmp->nomcourt().' / '.$nameStructComplete;
+    		{
+    		    if ($fullname)
+    		    {
+    		        $nameStructComplete = $struct_tmp->nomlong() . ' (' . $struct_tmp->nomcourt() . ')' . ' / '.$nameStructComplete;
+    		    }
+    		    else
+    		    {
+    		        $nameStructComplete =  $struct_tmp->nomcourt().' / '.$nameStructComplete;
+    		    }
+    		}
     	}
     	return $nameStructComplete;
     }

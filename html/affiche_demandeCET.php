@@ -47,9 +47,9 @@
     //echo "<br>" . print_r($_POST,true) . "<br>";
 
     echo "<B><FONT color='red'>$error</FONT></B>";
-    echo "<form name='demandeesignatureid'  method='post' action='affiche_demandeCET.php'>";
-    echo "Numéro eSignature à afficher : <br>";
-    echo "<select name='esignatureid' id='esignatureid'>";
+    echo "<form name='demandeesignatureid'  method='post' action='affiche_demandeCET.php' >";
+    echo "Numéro eSignature à afficher : <br>";    
+    echo "<select size='1' name='esignatureid' id='esignatureid'>";
     echo "<optgroup label='Demandes d&apos;alimentation'>";
 //    echo "<option value='Demande alimentation' disabled>Demande d'alimentation</option>";
     $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));

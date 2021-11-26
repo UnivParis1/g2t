@@ -807,6 +807,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             $subject = 'Absence';
         }
         
+        //echo "<br>Le statut de la demande est : " . $this->statut . " <br>";
+        
         if (strcasecmp($this->statut, 'v') == 0) 
         // La demande est validée
         {

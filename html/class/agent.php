@@ -447,9 +447,11 @@ AND DEMANDE.STATUT='v'";
      *
      * @param string $ics
      *            the ics string content
+     * @param boolean $deleteics
+     *            true if ics must be deleted from calendar
      * @return string empty string if ok, error description if ko
      */
-    function updatecalendar($ics = null)
+    function updatecalendar($ics = null, $deleteics = false)
     {
         $errlog = "";
         if (! is_null($ics)) {
@@ -477,6 +479,11 @@ AND DEMANDE.STATUT='v'";
                     curl_setopt($ch, CURLINFO_HEADER_OUT, true);
                     curl_setopt($ch, CURLOPT_POST, true);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, $ics);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    if ($deleteics)
+                    {
+                       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+                    }
                     
                     // Set HTTP Header for POST request
                     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -485,6 +492,7 @@ AND DEMANDE.STATUT='v'";
                     
                     // Submit the POST request
                     $result = "";
+                    //error_log(basename(__FILE__)." Curl de MAJ du calendrier : ".$this->fonctions->stripAccents(var_export($ch,true)));
                     $result = curl_exec($ch);
                     if (curl_errno($ch)) {
                         $curlerror = 'Curl error: ' . curl_error($ch) . ' URL = ' . $url;
@@ -1709,25 +1717,31 @@ AND DEMANDE.STATUT='v'";
          * }
          * //echo "#######demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
          */
+         
+        //echo "<br>debut_interval = $debut_interval <br>fin_interval = $fin_interval<br>agentid = $agentid<br>mode = $mode<br>cleelement = $cleelement<br>";
         
         $liste = $this->demandesliste($debut_interval, $fin_interval);
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
         $htmltext = "";
+
         // $htmltext = "<br>";
         if (count($liste) == 0) {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
             $htmltext = "";
         } else {
             $premieredemande = TRUE;
-            foreach ($liste as $key => $demande) {
+            foreach ($liste as $key => $demande) 
+            {
                 // echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
                 // if (($demande->statut() == "a" and $mode == "agent") or ($demande->statut() == "v" and $mode == "resp"))
                 if ((strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0) or (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)) {
                     if ($premieredemande) {
-                        $htmltext = $htmltext . "<table class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='tabledemande_" . $this->harpegeid() . "' class='tableausimple'>";
+                        $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=7 align=center ><font color=#BF3021>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</font></td></tr>";
+/*
                         $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td>";
                         if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Commentaire</td>";
@@ -1735,6 +1749,16 @@ AND DEMANDE.STATUT='v'";
                         if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
                         $htmltext = $htmltext . "</tr>";
+*/                                
+                        $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de début <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de fin <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Type congé <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours <font></font></th>";
+                        if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
+                            $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
+                        $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
+                        if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
+                            $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé)</th>";
+                        $htmltext = $htmltext . "</tr>";
+                        $htmltext = $htmltext . "</thead>";
+                        $htmltext = $htmltext . "<tbody>";
                         $premieredemande = FALSE;
                     }
                     
@@ -1742,9 +1766,9 @@ AND DEMANDE.STATUT='v'";
                     {
                         $htmltext = $htmltext . "<tr align=center >";
                         // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->date_demande()) . "_" . str_replace(':','',$demande->heure_demande()) . "'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datedebut()) . "_" . (($demande->moment_debut()=='m')?'AM':'PM') . "'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()=='m')?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
                         if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
@@ -1759,7 +1783,73 @@ AND DEMANDE.STATUT='v'";
             }
             // $htmltext = $htmltext . "<br>";
             if ($htmltext != "")
+            {
+                $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
+                $htmltext = $htmltext . "
+<script>
+const getCellValue = (tr, idx) => 
+{
+    if (tr.children[idx].querySelector('time')!==null) // Si on a un time dans le td, alors on trie sur l'attribut datetime
+    {
+        return tr.children[idx].querySelector('time').getAttribute('datetime');
+    }
+    else
+    {
+        return tr.children[idx].innerText || tr.children[idx].textContent;
+    }
+}
+                    
+const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+    v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+                    
+// do the work...
+document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+    const table = th.closest('table');
+    const tbody = table.querySelector('tbody');
+    //alert (table.id);
+    Array.from(tbody.querySelectorAll('tr'))
+        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
+        .forEach(tr => tbody.appendChild(tr) );
+    theader = table.querySelector('theader');
+
+    //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+
+//    for (var thindex in document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelectorAll('th'))
+    for (var thindex = 0 ; thindex < document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelectorAll('th').length; thindex++)
+    {
+        //alert (thindex);
+        if (th.parentNode.children[thindex]!==null)
+        {
+            //alert (th.parentNode.children[thindex].innerHTML);
+            if (th.parentNode.children[thindex].querySelector('font')!==null)
+            {
+                //alert (th.parentNode.children[thindex].querySelector('font').innerText);
+                th.parentNode.children[thindex].querySelector('font').innerText = ' ';
+                //alert (th.parentNode.children[thindex].querySelector('font').innerText);
+            }
+        }
+    }
+
+    if (this.asc)
+    {
+        //alert ('plouf');
+        th.querySelector('font').innerHTML = '&darr;'; // flêhe qui descend
+    }
+    else
+    {
+        //alert ('ploc');
+        th.querySelector('font').innerHTML = '&uarr;'; // flêche qui monte
+    }
+        
+})));
+
+document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche et initialiser le asc
+
+
+</script>";
+            }
         }
         return $htmltext;
     }

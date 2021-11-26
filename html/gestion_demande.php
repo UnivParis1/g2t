@@ -108,10 +108,10 @@
     $responsableid = null;
     $noresponsableset = TRUE;
     if (isset($_POST["responsableid"])) {
-        // echo "responsableid = " . $responsableid . "<br>";
+        //echo "responsableid = " . $responsableid . "<br>";
         $responsableid = $_POST["responsableid"];
         if (! is_null($responsableid) and $responsableid != "") {
-            // echo "Je load le responsable...<br>";
+            //echo "Je load le responsable...<br>";
             $responsable = new agent($dbcon);
             $responsable->load($responsableid);
             $noresponsableset = FALSE;
@@ -119,10 +119,10 @@
         }
     }
     if (isset($_POST["gestionnaireid"])) {
-        // echo "gestionnaireid = " . $gestionnaireid . "<br>";
+        //echo "gestionnaireid = " . $gestionnaireid . "<br>";
         $responsableid = $_POST["gestionnaireid"];
         if (! is_null($responsableid) and $responsableid != "") {
-            // echo "Je load le responsable...<br>";
+            //echo "Je load le responsable...<br>";
             $responsable = new agent($dbcon);
             $responsable->load($responsableid);
             $noresponsableset = FALSE;
@@ -179,12 +179,22 @@
                     if (is_null($responsableid) == false) // Il y a un responsable ==> On envoie le mail
                     {
                         $pdffilename = $demande->pdf($user->harpegeid());
-                        $agent = $demande->agent();
+                        $agentdemande = $demande->agent();
                         $ics = null;
-                        $ics = $demande->ics($agent->mail());
+                        $ics = $demande->ics($agentdemande->mail());
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".\n\n";
                         // $corpmail = $corpmail . "Pensez à supprimer manuellement l'évènement dans votre agenda.\n";
-                        $user->sendmail($agent, "Annulation d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
+                        $user->sendmail($agentdemande, "Annulation d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
+                    }
+                    else
+                    {
+                        // On est dans le cas où c'est l'agent qui supprime sa propre demande
+                        // On met à jour le calendar car la demande est annulée
+                        $agentdemande = $demande->agent();
+                        $ics = null;
+                        $ics = $demande->ics($agentdemande->mail());
+                        $agentdemande->updatecalendar($ics,true);
+                        //echo "On vient de mettre le calendrier à jour....<br>";
                     }
                     if (strcasecmp($demande->type(), "cet") == 0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
                     {
@@ -224,10 +234,11 @@
     // echo "Debut = $debut fin = $fin <br>";
     // echo "structure->id() = " . $structure->id() . "<br>";
 
+    //echo "noresponsableset = $noresponsableset <br> mode = $mode <br>";
     echo "<form name='frm_gest_demande'  method='post' >";
-    if ($noresponsableset and is_null($mode)) {
+    if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
-        // echo "Pas de responsable.... <br>";
+        //echo "Pas de responsable.... C'est un agent qui veut gérer ses demandes<br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "agent", null);
         if ($htmltext != "")
             echo $htmltext;
