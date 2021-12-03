@@ -191,7 +191,110 @@
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
     
-    //echo "<br>Le chemin de base de G2T est : "  . $fonctions->g2tbasepath();
+/*   
+    $teletravail = new teletravail($dbcon);
+    $teletravail->agentid('9328');
+    $teletravail->datedebut('01/09/2020');
+    $teletravail->datefin('31/08/2022');
+    $teletravail->tabteletravail('11000011110000');
+    echo "<br>Store => " . $teletravail->store();
+    
+    $teletravail = new teletravail($dbcon);
+    $teletravail->agentid('9328');
+    $teletravail->datedebut('01/09/2022');
+    $teletravail->datefin('31/08/2023');
+    $teletravail->tabteletravail('11000011110000');
+    $teletravail->statut(teletravail::STATUT_INACTIVE);
+    echo "<br>Store => " . $teletravail->store();
+*/
+/*
+    $teletravailliste = $user->teletravailliste('01/01/2021', '03/03/2021');
+    foreach ($teletravailliste as $teletravailid)
+    {
+        unset ($teletravail);
+        $teletravail = new teletravail($dbcon);
+        $teletravail->load($teletravailid);
+        echo "<br>";
+        var_dump($teletravail);
+        echo '<br>';
+    }
+*/    
+    $date = '29/11/2021';
+    $jourteletravail = $user->estenteletravail($date,'m');
+    if ($jourteletravail == true)
+        echo "La date du $date est télétravaillé pour " . $user->identitecomplete()  . "<br>";
+    else
+        echo "La date du $date n'est pas télétravaillé pour " . $user->identitecomplete()  . " <br>";
+    
+    $date = '30/11/2021';
+    $jourteletravail = $user->estenteletravail($date,'a');
+    if ($jourteletravail == true)
+        echo "La date du $date est télétravaillé pour " . $user->identitecomplete()  . " <br>";
+    else
+        echo "La date du $date n'est pas télétravaillé pour " . $user->identitecomplete()  . " <br>";
+            
+    $date = '24/11/2022';
+    $jourteletravail = $user->estenteletravail($date,'a');
+    if ($jourteletravail == true)
+        echo "La date du $date est télétravaillé pour " . $user->identitecomplete()  . " <br>";
+    else
+        echo "La date du $date n'est pas télétravaillé pour " . $user->identitecomplete()  . " <br>";
+ 
+    $datedebut = '01/03/2021';
+    $datefin = '30/04/2021';
+    echo "<br>Liste des agents en télétravail entre le : $datedebut et le $datefin : <br>";
+    $liste = $fonctions->listeagentteletravail($datedebut,$datefin);
+    var_dump($liste);
+    echo "<br><br>";
+        
+    foreach ($liste as $agentid)
+    {
+        $agent = new agent($dbcon);
+        $agent->load($agentid);
+        echo "---------------------------------------------------------------------------<br>";
+
+        echo "Affichage avec le télétravail : <br>";
+        echo $agent->planninghtml($datedebut, $datefin,false,true,true);
+        echo "<br><br>";
+        echo "Nombre de jours en télétravail entre le $datedebut et le $datefin pour " . $agent->identitecomplete()  . " => " . $agent->nbjoursteletravail($datedebut, $datefin);
+        echo "<br><br>";
+ 
+/*        
+        $planning = new planning($dbcon);
+        echo $planning->planninghtml($agent->harpegeid(),$datedebut, $datefin,false,true,false,true);
+        echo "<br><br>";
+        echo "Nombre de jours en télétravail entre le $datedebut et le $datefin pour " . $agent->identitecomplete()  . " => " . $planning->nbjoursteletravail($agent->harpegeid(),$datedebut, $datefin);
+        echo "<br><br>";
+        
+        echo "#########################################################################<br>";
+*/ 
+/*
+        echo "Affichage sans le télétravail : <br>";
+
+        echo $agent->planninghtml($datedebut, $datefin,false,true,false);
+        echo "<br><br>";
+        echo "Nombre de jours en télétravail entre le $datedebut et le $datefin pour " . $agent->identitecomplete()  . " => " . $agent->nbjoursteletravail($datedebut, $datefin);
+        echo "<br><br>";
+*/       
+/*        
+        $planning = new planning($dbcon);
+        echo $planning->planninghtml($agent->harpegeid(),$datedebut, $datefin,false,true,false,false);
+        echo "<br><br>";
+        echo "Nombre de jours en télétravail entre le $datedebut et le $datefin pour " . $agent->identitecomplete()  . " => " . $planning->nbjoursteletravail($agent->harpegeid(),$datedebut, $datefin);
+        echo "<br><br>";
+*/
+    }
+ 
+    $structure = new structure($dbcon);
+    $structure->load('DGHA_4');
+    $datedebut = '01/03/2021';
+    $datefin = '31/03/2021';
+    echo "Planning de la structure " . $structure->nomlong() . " pour la période $datedebut -> $datefin <br>";
+    echo $structure->planninghtml("03/2021", null, false, true);
+    echo "<br><br>";
+    
+    
+    
 ?>
 </body>
 </html>

@@ -24,7 +24,7 @@ class planning
         $this->fonctions = new fonctions($db);
     }
 
-    function load($agentid, $datedebut, $datefin)
+    function load($agentid, $datedebut, $datefin, $includeteletravail = false)
     {
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
@@ -593,6 +593,25 @@ WHERE HARPEGEID = '" . $agentid . "'
                 $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
             }
         }
+        
+        if ($includeteletravail)
+        {
+            foreach ((array)$this->listeelement as $element)
+            {
+                if ($element->type() == '')
+                {
+                    if ($agent->estenteletravail($element->date(), $element->moment()))
+                    {
+                        $element->type('teletrav');
+                        $element->info('Télétravail');
+                    }
+                }
+                
+            }
+        }
+        
+        
+        
         // echo "Fin de la procédure Load <br>";
         
         // echo "<br>Liste des éléments = " . print_r($this->listeelement,true) . "<br>";
@@ -620,13 +639,13 @@ WHERE HARPEGEID = '" . $agentid . "'
             return $this->listeelement;
     }
 
-    function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE)
+    function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE, $includeteletravail = FALSE)
     {
         // echo "datedebut = $datedebut datefin = $datefin <br>";
         // $this->listeelement = null;
         if (is_null($this->listeelement)) {
             // echo "Début chargement : " . date("d/m/Y H:i:s") . "<br>";
-            $this->load($agentid, $datedebut, $datefin);
+            $this->load($agentid, $datedebut, $datefin, $includeteletravail);
             // echo "Fin chargement : " . date("d/m/Y H:i:s") . "<br>";
         }
         
@@ -668,7 +687,7 @@ WHERE HARPEGEID = '" . $agentid . "'
         
         // echo "Avant affichage legende <br>";
         if ($noiretblanc == false) {
-            $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee);
+            $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail);
         }
         // echo "Apres affichage legende <br>";
         if ($showpdflink == TRUE) {
@@ -678,6 +697,10 @@ WHERE HARPEGEID = '" . $agentid . "'
             $htmltext = $htmltext . "<input type='hidden' name='userpdf' value='yes'>";
             $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
             $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . $tempannee . "'>";
+            if ($includeteletravail)
+                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+            else
+                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
             $htmltext = $htmltext . "</form>";
             $htmltext = $htmltext . "<a href='javascript:document.userplanningpdf_" . $agentid . ".submit();'>Planning en PDF</a>";
             
@@ -686,6 +709,10 @@ WHERE HARPEGEID = '" . $agentid . "'
             $htmltext = $htmltext . "<input type='hidden' name='userpdf' value='yes'>";
             $htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
             $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . ($tempannee - 1) . "'>";
+            if ($includeteletravail)
+                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+            else
+                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
             $htmltext = $htmltext . "</form>";
             $htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (année précédente)</a>";
         }
@@ -773,12 +800,12 @@ WHERE HARPEGEID = '" . $agentid . "'
         return $nbredemijour / 2;
     }
 
-    function pdf($agentid, $datedebut, $datefin, $noiretblanc = FALSE)
+    function pdf($agentid, $datedebut, $datefin, $noiretblanc = FALSE, $includeteletravail = FALSE)
     {
         
         // echo "Début fonction PDF <br>";
         if (is_null($this->listeelement))
-            $this->load($agentid, $datedebut, $datefin);
+            $this->load($agentid, $datedebut, $datefin, $includeteletravail);
         
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
@@ -882,13 +909,27 @@ WHERE HARPEGEID = '" . $agentid . "'
         
         // echo "Avant legende <br>";
         $anneeref = date("Y", strtotime($this->fonctions->formatdatedb($datedebut)));
-        $this->fonctions->legendepdf($pdf,$anneeref);
+        $this->fonctions->legendepdf($pdf,$anneeref,$includeteletravail);
         // echo "Apres legende <br>";
         
         $pdf->Ln(8);
         ob_end_clean();
         $pdf->Output();
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
+    }
+    
+    function nbjoursteletravail($agentid, $datedebut, $datefin)
+    {
+        $elementliste = $this->load($agentid, $datedebut, $datefin, true);
+        $nbjoursteletravail = 0;
+        foreach ($elementliste as $element)
+        {
+            if ($element->type() == 'teletrav')
+            {
+                $nbjoursteletravail = $nbjoursteletravail + 0.5;
+            }
+        }
+        return $nbjoursteletravail;
     }
 }
 

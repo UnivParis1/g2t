@@ -417,10 +417,10 @@ AND DEMANDE.STATUT='v'";
      *            ending date of the planning
      * @return object the planning object.
      */
-    function planning($debut_interval, $fin_interval)
+    function planning($debut_interval, $fin_interval, $incudeteletravail = false)
     {
         $planning = new planning($this->dbconnect);
-        $planning->load($this->harpegeid, $debut_interval, $fin_interval);
+        $planning->load($this->harpegeid, $debut_interval, $fin_interval, $incudeteletravail);
         return $planning;
     }
 
@@ -436,10 +436,10 @@ AND DEMANDE.STATUT='v'";
      *            optional true means that a link to display planning in pdf format is allowed. false means the link is hidden
      * @return string the planning html text.
      */
-    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE)
+    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $incudeteletravail = FALSE)
     {
         $planning = new planning($this->dbconnect);
-        $htmltext = $planning->planninghtml($this->harpegeid, $debut_interval, $fin_interval, $clickable, $showpdflink);
+        $htmltext = $planning->planninghtml($this->harpegeid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $incudeteletravail);
         return $htmltext;
     }
 
@@ -3386,6 +3386,72 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
         return ($solde_agent);
         
     }
+
+    function teletravailliste($datedebut, $datefin)
+    {
+        $datedebut = $this->fonctions->formatdatedb($datedebut);
+        $datefin = $this->fonctions->formatdatedb($datefin);
+        
+        $listteletravail = array();
+        $sql = "SELECT TELETRAVAILID 
+                FROM TELETRAVAIL 
+                WHERE HARPEGEID = '" .  $this->harpegeid() . "' 
+                  AND ((DATEDEBUT <= '" . $datedebut . "' AND DATEFIN >='" . $datedebut . "')
+                    OR (DATEFIN >= '" . $datefin . "' AND DATEDEBUT <='" . $datefin . "')
+                    OR (DATEDEBUT >= '" . $datedebut . "' AND DATEFIN <= '" . $datefin . "'))
+                ORDER BY DATEDEBUT,DATEFIN";
+        
+        //echo "<br>SQL = $sql <br>";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement des id teletravail : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            $errlog = "Aucune demande de télétravail pour l'agent " . $this->identitecomplete() . "<br>";
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $listteletravail[] = $result[0];
+            }
+        }
+        return $listteletravail;    
+    }
+    
+    function estenteletravail($date, $moment = null)
+    {
+        $date = $this->fonctions->formatdatedb($date);
+        $liste = $this->teletravailliste($date, $date);
+        $reponse = false;
+        foreach ($liste as $teletravailid)
+        {
+            $teletravail = new teletravail($this->dbconnect);
+            $teletravail->load($teletravailid);
+            if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+            {
+                if ($teletravail->estteletravaille($date,$moment))
+                {
+                    $reponse = true;
+                }
+            }
+        }
+        return $reponse;
+    }
+    
+    function nbjoursteletravail($datedebut, $datefin)
+    {
+        $planning = new planning($this->dbconnect);
+        return $planning->nbjoursteletravail($this->harpegeid, $datedebut, $datefin);
+    }
+    
 }
 
 ?> 

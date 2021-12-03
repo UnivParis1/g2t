@@ -859,6 +859,12 @@
 						</form> 
 						<a href="javascript:document.admin_affiche_demandeCET.submit();">Afficher une demande sur CET/eSignature</a>
 					</li>
+					<li onclick='document.rh_gest_teletravail.submit();'>
+						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
+					</li>
 				</ul>
 			</li>
 		</ul>  

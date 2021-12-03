@@ -14,6 +14,7 @@
     require_once (dirname(__FILE__,2) . "/class/periodeobligatoire.php");
     require_once (dirname(__FILE__,2) . "/class/alimentationCET.php");
     require_once (dirname(__FILE__,2) . "/class/optionCET.php");
+    require_once (dirname(__FILE__,2) . "/class/teletravail.php");
     
     //echo "Le chemin parent = " . dirname(__FILE__,2) . "<br><br>"
 

@@ -543,7 +543,7 @@ class fonctions
      *  anneeref : Année de référence de la légende
      * @return array list of caption
      */
-    public function legende($anneeref)
+    public function legende($anneeref, $includeteletravail = false)
     {
 /*
         $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
@@ -553,8 +553,12 @@ class fonctions
 */
         $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
  				WHERE (ANNEEREF=" . $anneeref . " OR ANNEEREF=" . ($anneeref - 1) . ")
- 				   OR ANNEEREF IS NULL
- 				ORDER BY LIBELLE";
+ 				   OR ANNEEREF IS NULL ";
+        if ($includeteletravail)
+        {
+            $sql = $sql . " OR TYPEABSENCEID = 'teletrav' ";
+        }
+ 		$sql = $sql . "		ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
         
         $query = mysqli_query($this->dbconnect, $sql);
@@ -584,9 +588,9 @@ class fonctions
      *  anneeref : Année de référence de la légende
      * @return string html text representing the list of caption
      */
-    public function legendehtml($anneeref)
+    public function legendehtml($anneeref, $includeteletravail = FALSE)
     {
-        $tablegende = $this->legende($anneeref);
+        $tablegende = $this->legende($anneeref,$includeteletravail);
         $htmltext = "";
         $htmltext = $htmltext . "<table>";
         $htmltext = $htmltext . "<tr>";
@@ -607,9 +611,9 @@ class fonctions
      *  anneeref : Année de référence de la légende
      * @return
      */
-    public function legendepdf($pdf, $anneeref)
+    public function legendepdf($pdf, $anneeref, $includeteletravail = FALSE)
     {
-        $tablegende = $this->legende($anneeref);
+        $tablegende = $this->legende($anneeref,$includeteletravail);
         $long_chps = 0;
         foreach ($tablegende as $key => $legende) {
             if ($pdf->GetStringWidth($legende["libelle"]) > $long_chps)
@@ -1301,6 +1305,45 @@ class fonctions
     public function typeCongeAlimCET()
     {
     	return 'ann'.substr($this->anneeref() - 1,2, 2);
+    }
+    
+    public function listeagentteletravail($datedebut,$datefin)
+    {
+        $datedebut = $this->formatdatedb($datedebut);
+        $datefin = $this->formatdatedb($datefin);
+        
+        $listeagentteletravail = array();
+        $sql = "SELECT DISTINCT HARPEGEID
+                FROM TELETRAVAIL
+                WHERE STATUT = '" . teletravail::STATUT_ACTIVE  . "'
+                  AND ((DATEDEBUT <= '" . $datedebut . "' AND DATEFIN >='" . $datedebut . "')
+                    OR (DATEFIN >= '" . $datefin . "' AND DATEDEBUT <='" . $datefin . "')
+                    OR (DATEDEBUT >= '" . $datedebut . "' AND DATEFIN <= '" . $datefin . "'))";
+        
+        //echo "<br>SQL = $sql <br>";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement des id agent : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            $errlog = "Aucune demande de télétravail pour la période $datedebut -> $datefin <br>";
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $listeagentteletravail[] = $result[0];
+            }
+        }
+        return $listeagentteletravail;
+    
     }
 }
 ?>

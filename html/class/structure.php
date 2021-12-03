@@ -527,7 +527,7 @@ class structure
             $this->gestionnaireid = $gestid;
     }
 
-    function planning($mois_annee_debut, $mois_annee_fin, $showsousstruct = null)
+    function planning($mois_annee_debut, $mois_annee_fin, $showsousstruct = null, $includeteletravail = false)
     {
         $planningservice = null;
         if (is_null($mois_annee_debut) or is_null($mois_annee_fin)) {
@@ -551,14 +551,14 @@ class structure
         if (is_array($listeagent)) {
             foreach ($listeagent as $key => $agent) {
                 // echo "structure -> planning : Interval du planning a charger pour l'agent : " . $agent->nom() . " " . $agent->prenom() ." = " . $fulldatedebut . " --> " . $fulldatefin . "<br>";
-                $planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin);
+                $planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin,$includeteletravail);
                 // echo "structure -> planning : Apres planning de ". $agent->nom() . " " . $agent->prenom() . "<br>";
             }
         }
         return $planningservice;
     }
 
-    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false) // Le format doit être MM/YYYY
+    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false) // Le format doit être MM/YYYY
     {
         // echo "Je debute planninghtml <br>";
         //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
@@ -568,7 +568,7 @@ class structure
             // echo "<font color=#FF0000></font><br>";
         }
         
-        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct);
+        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail);
         
         if (! is_array($planningservice)) {
             return ""; // Si aucun élément du planning => On retourne vide
@@ -629,7 +629,7 @@ class structure
                 // Si on est entre janvier et la fin de période 
                 $annee = $annee - 1;
             }
-            $htmltext = $htmltext . $this->fonctions->legendehtml($annee);
+            $htmltext = $htmltext . $this->fonctions->legendehtml($annee,$includeteletravail);
         }
         
         $htmltext = $htmltext . "<br>";
@@ -642,6 +642,11 @@ class structure
         else
             $htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
         $htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut . "'>";
+        if ($includeteletravail)
+            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+        else
+            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
+            
         $htmltext = $htmltext . "<a href='javascript:document.structplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF</a>";
         $htmltext = $htmltext . "</form>";
         
@@ -659,7 +664,7 @@ class structure
         return $htmltext;
     }
 
-    function planningresponsablesousstructhtml($mois_annee_debut) // Le format doit être MM/YYYY
+    function planningresponsablesousstructhtml($mois_annee_debut, $includeteletravail = false) // Le format doit être MM/YYYY
     {
         $fulldatedebut = "01/" . $mois_annee_debut;
         $tempfulldatefindb = $this->fonctions->formatdatedb("01/" . $mois_annee_debut);
@@ -696,7 +701,7 @@ class structure
             
             $titre_a_ajouter = TRUE;
             foreach ($resplist as $agentid => $responsable) {
-                $planning = $responsable->planning($fulldatedebut, $fulldatefin)->planning();
+                $planning = $responsable->planning($fulldatedebut, $fulldatefin,$includeteletravail)->planning();
                 /*
                  * echo "Planning = ";
                  * print_r($planning);
@@ -722,7 +727,7 @@ class structure
                 $htmltext = $htmltext . "<tr class='ligneplanning'>";
                 $htmltext = $htmltext . "<td>" . $responsable->nom() . " " . $responsable->prenom() . "</td>";
                 // echo "Avant chargement des elements <br>";
-                $listeelement = $responsable->planning($fulldatedebut, $fulldatefin)->planning();
+                $listeelement = $responsable->planning($fulldatedebut, $fulldatefin, $includeteletravail)->planning();
                 // echo "Apres chargement des elements <br>";
                 foreach ($listeelement as $keyelement => $element) {
                     // echo "Boucle sur l'element <br>";
@@ -741,7 +746,7 @@ class structure
                 // Si on est entre janvier et la fin de période
                 $annee = $annee - 1;
             }
-            $htmltext = $htmltext . $this->fonctions->legendehtml($annee);
+            $htmltext = $htmltext . $this->fonctions->legendehtml($annee, $includeteletravail);
             $htmltext = $htmltext . "<br>";
         }
         return $htmltext;
@@ -894,7 +899,7 @@ class structure
         return $msgerreur;
     }
 
-    function pdf($mois_annee_debut, $noiretblanc = false) // Le format doit être MM/YYYY
+    function pdf($mois_annee_debut, $noiretblanc = false,$includeteletravail = false) // Le format doit être MM/YYYY
     {
         // echo "Avant le new PDF <br>";
         $pdf=new FPDF();
@@ -924,7 +929,7 @@ class structure
         $pdf->Ln(10);
         
         // echo "Avant le planning <br>";
-        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut);
+        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut,false,$includeteletravail);
         
         list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
@@ -987,7 +992,7 @@ class structure
                 // Si on est entre janvier et la fin de période
                 $annee = $annee - 1;
             }
-            $this->fonctions->legendepdf($pdf,$annee);
+            $this->fonctions->legendepdf($pdf,$annee,$includeteletravail);
         // echo "Apres legende <br>";
         
         $pdf->Ln(8);

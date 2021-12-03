@@ -97,8 +97,13 @@
     if (isset($_POST["userpdf"])) {
         if (strcasecmp($_POST["userpdf"], "yes") == 0) {
             $agentid = $_POST["agentid"];
+            $includeteletravail = $_POST["includeteletravail"];
+            if (strcasecmp($includeteletravail, "yes") == 0)
+                $includeteletravail = true;
+            else
+                $includeteletravail = false;
             $planning = new planning($dbcon);
-            $planning->pdf($agentid, $fonctions->formatdate($anneeref . $fonctions->debutperiode()), $fonctions->formatdate(($anneeref + 1) . $fonctions->finperiode()));
+            $planning->pdf($agentid, $fonctions->formatdate($anneeref . $fonctions->debutperiode()), $fonctions->formatdate(($anneeref + 1) . $fonctions->finperiode()),false,$includeteletravail);
         }
     }
 
@@ -111,6 +116,13 @@
                 $noiretblanc = true;
             else
                 $noiretblanc = false;
+            
+            $includeteletravail = $_POST["includeteletravail"];
+            if (strcasecmp($includeteletravail, "yes") == 0)
+                $includeteletravail = true;
+            else
+                $includeteletravail = false;
+                
             $structure = new structure($dbcon);
             $structure->load($structid);
 
@@ -118,7 +130,7 @@
             // Puis on la reformate
             // Le format de la variable mois_annee est MM/YYYY (voir fonction structure::planninghtml)
             $mois_annee = substr($mois_annee, 0, 3) . (substr($mois_annee, 3) - $previous);
-            $structure->pdf(($mois_annee), $noiretblanc);
+            $structure->pdf(($mois_annee), $noiretblanc,$includeteletravail);
         }
     }
 ?>
