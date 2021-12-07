@@ -135,7 +135,9 @@
 	                        $codefonction = "2002"; // Responsable
 	                    elseif (array_key_exists("#1521", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1521"; // Chef de service
-	                    elseif (array_key_exists("#1522", (array) $tabfonctions[$code_struct]))
+                        elseif (array_key_exists("#1043", (array) $tabfonctions[$code_struct]))
+                            $codefonction = "1043"; // Secrétaire général
+                        elseif (array_key_exists("#1522", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1522"; // Directeur(ice)
 	                    elseif (array_key_exists("#1615", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1615"; // Chef de département
@@ -153,10 +155,14 @@
 	                        $codefonction = "1530"; // Directeur(ice) d'UMR
 	                    elseif (array_key_exists("#1532", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1532"; // Directeur(ice) de laboratoire
+	                    elseif (array_key_exists("#2038", (array) $tabfonctions[$code_struct]))
+	                        $codefonction = "2038"; // Administrateur
 	                    elseif (array_key_exists("#38", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "38"; // Dir. d'UFR
 	                    elseif (array_key_exists("#1525", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1525"; // Directeur adjoint
+	                    elseif (array_key_exists("#2039", (array) $tabfonctions[$code_struct]))
+	                        $codefonction = "2039"; // Adjoint à l'administrateur
 	                    elseif (array_key_exists("#1523", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1523"; // Adjoint(e)
 	                    else
