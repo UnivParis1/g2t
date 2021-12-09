@@ -47,7 +47,7 @@
     } else {
         $datefin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
     }
-    echo $user->planninghtml($datedebut, $datefin);
+    echo $user->planninghtml($datedebut, $datefin,false,true,true);
 
     echo "<br>";
 

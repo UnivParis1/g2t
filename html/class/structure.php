@@ -576,7 +576,7 @@ class structure
         // echo "Apres le chargement du planning du service <br>";
         $htmltext = "";
         $htmltext = $htmltext . "<div id='structplanning'>";
-        $htmltext = $htmltext . "<table class='tableau'>";
+        $htmltext = $htmltext . "<table class='tableau' id='struct_plan_" . $this->id() . "'>";
         
         $titre_a_ajouter = TRUE;
         foreach ($planningservice as $agentid => $planning) {
@@ -634,6 +634,11 @@ class structure
         
         $htmltext = $htmltext . "<br>";
         $htmltext = $htmltext . "<form name='structplanningpdf_" . $this->structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+        if ($includeteletravail and !$noiretblanc)
+        {
+            $htmltext = $htmltext . "<input type='checkbox' id='hide_teletravail_". $this->id() . "' name='hide_teletravail_". $this->id() . "' onclick='hide_teletravail(\"struct_plan_" . $this->id() . "\");' >Masquer le télétravail</input>";
+            $htmltext = $htmltext . "<br><br>";
+        }
         $htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid . "'>";
         $htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
         $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";

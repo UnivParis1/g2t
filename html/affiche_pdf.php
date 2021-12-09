@@ -98,7 +98,11 @@
         if (strcasecmp($_POST["userpdf"], "yes") == 0) {
             $agentid = $_POST["agentid"];
             $includeteletravail = $_POST["includeteletravail"];
-            if (strcasecmp($includeteletravail, "yes") == 0)
+            $checkbox = 'off';
+            if (isset($_POST["hide_teletravail_". $agentid ]))
+                $checkbox = $_POST["hide_teletravail_". $agentid ];
+            //error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Checkbox = $checkbox"));
+            if (strcasecmp($includeteletravail, "yes") == 0 and strcasecmp($checkbox, "off") == 0)
                 $includeteletravail = true;
             else
                 $includeteletravail = false;
@@ -118,7 +122,10 @@
                 $noiretblanc = false;
             
             $includeteletravail = $_POST["includeteletravail"];
-            if (strcasecmp($includeteletravail, "yes") == 0)
+            $checkbox = 'off';
+            if (isset($_POST["hide_teletravail_". $structid ]))
+                $checkbox = $_POST["hide_teletravail_". $structid ];
+            if (strcasecmp($includeteletravail, "yes") == 0 and strcasecmp($checkbox, "off") == 0)
                 $includeteletravail = true;
             else
                 $includeteletravail = false;

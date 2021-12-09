@@ -220,17 +220,26 @@ class planningelement
         else
             $checkboxtext = "";
         
+        if ($this->type() == 'teletrav' and !$noiretblanc)
+        {
+            $extraclass = ' teletravail '; 
+        }
+        else
+        {
+            $extraclass = '';
+        }
+        
         if ($this->moment == 'm') {
             // $htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
             if ($this->date == date("Ymd")) {
                 // echo "Le matin du jour " . $this->date . " <br>";
-                $htmltext = $htmltext . "<td class='planningelement_jour_matin' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
             } else {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) {
                     $htmltext = $htmltext . "<td class='planningelement_matin rayureplanning' " . $clickabletext . " >";
                 } else {
-                    $htmltext = $htmltext . "<td class='planningelement_matin' " . $clickabletext . "  bgcolor='" . $htmlbackcolor . "' >";
+                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . "  bgcolor='" . $htmlbackcolor . "' >";
                 }
             }
             if (strlen($this->info()) != 0 and $noiretblanc == false) {
@@ -248,13 +257,13 @@ class planningelement
             // $htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
             if ($this->date == date("Ymd")) {
                 // echo "Le soir du jour " . $this->date . " <br>";
-                $htmltext = $htmltext . "<td class='planningelement_jour_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
             } else {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) {
                     $htmltext = $htmltext . "<td class='planningelement_aprem rayureplanning' " . $clickabletext . "  >";
                 } else {
-                    $htmltext = $htmltext . "<td class='planningelement_aprem' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
                 }
             }
             if (strlen($this->info()) != 0 and $noiretblanc == false) {

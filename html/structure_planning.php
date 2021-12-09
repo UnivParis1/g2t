@@ -128,14 +128,14 @@
         // echo "<br>StructureListe = "; print_r($structureliste); echo "<br>";
         foreach ($structureliste as $structkey => $structure) {
             echo "<br>";
-            echo $structure->planninghtml($indexmois . "/" . $annee);
+            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true);
         }
 
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
             if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
                 echo "<br>";
-                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee);
+                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true);
             }
         }
     } elseif (strcasecmp($mode, "gestion") == 0) {
@@ -166,14 +166,14 @@
         // echo "StructureListe = "; print_r($structureliste); echo "<br>";
         foreach ($structureliste as $structkey => $structure) {
             echo "<br>";
-            echo $structure->planninghtml($indexmois . "/" . $annee);
+            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true);
         }
 
         $structureliste = $user->structgestliste();
         foreach ($structureliste as $structkey => $structure) {
             if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
                 echo "<br>";
-                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee);
+                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true);
             }
         }
     } else {
@@ -192,7 +192,7 @@
             if (strcasecmp($structure->affichetoutagent(), "o") == 0) {
                 echo "<br>";
                 // echo "Planning de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
-                echo $structure->planninghtml($indexmois . "/" . $annee, 'n', true); // 'n' car l'agent ne doit pas voir les conges des sous-structures (si autorisé)
+                echo $structure->planninghtml($indexmois . "/" . $annee, 'n', true,false); // 'n' car l'agent ne doit pas voir les conges des sous-structures (si autorisé) + Pas de télétravail sinon visuellement c'est trompeur
             }
         }
     }

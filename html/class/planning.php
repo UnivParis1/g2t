@@ -651,7 +651,7 @@ WHERE HARPEGEID = '" . $agentid . "'
         
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau'>";
+        $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'>";
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
         $htmltext = $htmltext . "<tr class='entete'><td>Mois</td>";
@@ -690,30 +690,40 @@ WHERE HARPEGEID = '" . $agentid . "'
             $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail);
         }
         // echo "Apres affichage legende <br>";
+        $htmltext = $htmltext . "<br>";
+        
+        $htmltext = $htmltext . "<br>";
+        $htmltext = $htmltext . "<form name='userplanningpdf_" . $agentid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+        if ($includeteletravail and !$noiretblanc)
+        {
+            $htmltext = $htmltext . "<input type='checkbox' id='hide_teletravail_". $agentid . "' name='hide_teletravail_". $agentid . "' onclick='hide_teletravail(\"tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."\",\"hidden_input_teletravail_". $agentid . "\");' >Masquer le télétravail</input>";
+            $htmltext = $htmltext . "<br><br>";
+        }
+        $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+        $htmltext = $htmltext . "<input type='hidden' name='userpdf' value='yes'>";
+        $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
+        $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . $tempannee . "'>";
+        if ($includeteletravail)
+            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+         else
+            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
+        $htmltext = $htmltext . "</form>";
+        $htmltext = $htmltext . "<form name='userpreviousplanningpdf_" . $agentid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+        $htmltext = $htmltext . "<input type='hidden' name='hide_teletravail_". $agentid . "' id='hidden_input_teletravail_". $agentid . "' value='off'>";
+        $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+        $htmltext = $htmltext . "<input type='hidden' name='userpdf' value='yes'>";
+        $htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
+        $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . ($tempannee - 1) . "'>";
+        if ($includeteletravail)
+            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+        else
+            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
+        $htmltext = $htmltext . "</form>";
+                
+        
         if ($showpdflink == TRUE) {
-            $htmltext = $htmltext . "<br>";
-            $htmltext = $htmltext . "<form name='userplanningpdf_" . $agentid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
-            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-            $htmltext = $htmltext . "<input type='hidden' name='userpdf' value='yes'>";
-            $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
-            $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . $tempannee . "'>";
-            if ($includeteletravail)
-                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
-            else
-                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
-            $htmltext = $htmltext . "</form>";
             $htmltext = $htmltext . "<a href='javascript:document.userplanningpdf_" . $agentid . ".submit();'>Planning en PDF</a>";
-            
-            $htmltext = $htmltext . "<form name='userpreviousplanningpdf_" . $agentid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
-            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-            $htmltext = $htmltext . "<input type='hidden' name='userpdf' value='yes'>";
-            $htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
-            $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . ($tempannee - 1) . "'>";
-            if ($includeteletravail)
-                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
-            else
-                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
-            $htmltext = $htmltext . "</form>";
+            $htmltext = $htmltext . "<br>";
             $htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (année précédente)</a>";
         }
         

@@ -122,6 +122,48 @@
 
 		return false;
     };
+
+<?php 
+    $planningelement = new planningelement($dbcon);
+    $planningelement->type('teletrav');
+    $couleur = $planningelement->couleur();
+    //echo "couleur = $couleur <br>";
+?>
+
+    var hide_teletravail = function (nomtableau, id_hidden_input ="")
+    {
+		//alert ('Plouf !');
+	    var tableau = document.getElementById(nomtableau);
+	    //alert (tableau.id);
+    	var checkboxvalue = document.activeElement.checked;
+		for (var indexcellule = 0; indexcellule < tableau.querySelectorAll('.teletravail').length; indexcellule++)
+		{
+            //alert(indexcellule);
+            var currenttd = tableau.querySelectorAll('.teletravail')[indexcellule];
+            if (checkboxvalue)
+            {
+                //alert('Suppression de la couleur');
+                // C'est du télétravail et on doit le masquer
+                currenttd.bgColor = '<?php echo planningelement::COULEUR_VIDE ?>';
+            }
+            else
+            {
+                //alert('On remet la couleur');
+                // C'est du télétravail et on doit le montrer
+                currenttd.bgColor = '<?php echo "$couleur"  ?>';
+            }    
+        }
+        if (id_hidden_input != "")
+        {
+        	var hidden_input = document.getElementById(id_hidden_input);
+        	if (checkboxvalue)
+        		hidden_input.value='on';
+       		else
+       			hidden_input.value='off';
+        }
+	};
+
+
 </script>
 
 <!-- On rend la CSS "dynamique" en lui passant en paramètre le timestamp Unix de dernière modification du fichier -->

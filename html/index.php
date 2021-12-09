@@ -222,23 +222,23 @@
     $date = '29/11/2021';
     $jourteletravail = $user->estenteletravail($date,'m');
     if ($jourteletravail == true)
-        echo "La date du $date est télétravaillé pour " . $user->identitecomplete()  . "<br>";
+        echo "La date du $date est télétravaillée pour " . $user->identitecomplete()  . "<br>";
     else
-        echo "La date du $date n'est pas télétravaillé pour " . $user->identitecomplete()  . " <br>";
+        echo "La date du $date n'est pas télétravaillée pour " . $user->identitecomplete()  . " <br>";
     
     $date = '30/11/2021';
     $jourteletravail = $user->estenteletravail($date,'a');
     if ($jourteletravail == true)
-        echo "La date du $date est télétravaillé pour " . $user->identitecomplete()  . " <br>";
+        echo "La date du $date est télétravaillée pour " . $user->identitecomplete()  . " <br>";
     else
-        echo "La date du $date n'est pas télétravaillé pour " . $user->identitecomplete()  . " <br>";
+        echo "La date du $date n'est pas télétravaillée pour " . $user->identitecomplete()  . " <br>";
             
     $date = '24/11/2022';
     $jourteletravail = $user->estenteletravail($date,'a');
     if ($jourteletravail == true)
-        echo "La date du $date est télétravaillé pour " . $user->identitecomplete()  . " <br>";
+        echo "La date du $date est télétravaillée pour " . $user->identitecomplete()  . " <br>";
     else
-        echo "La date du $date n'est pas télétravaillé pour " . $user->identitecomplete()  . " <br>";
+        echo "La date du $date n'est pas télétravaillée pour " . $user->identitecomplete()  . " <br>";
  
     $datedebut = '01/03/2021';
     $datefin = '30/04/2021';
@@ -293,7 +293,15 @@
     echo $structure->planninghtml("03/2021", null, false, true);
     echo "<br><br>";
     
-    
+
+    $structure = new structure($dbcon);
+    $structure->load('DGH_3');
+    $datedebut = '01/03/2021';
+    $datefin = '31/03/2021';
+    echo "Planning de la structure " . $structure->nomlong() . " pour la période $datedebut -> $datefin <br>";
+    echo $structure->planninghtml("03/2021", null, false, true);
+    echo "<br><br>";
+   
     
 ?>
 </body>
