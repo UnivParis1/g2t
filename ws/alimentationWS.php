@@ -127,7 +127,7 @@
                                 'firstname' => $agent->prenom(),
                                 'service' => array('name' => $nameStructComplete,
                                                    'id' => $structure->id(),
-                                                   'addr' => $infosLdap['postaladdress'],
+                                                   'addr' => $infosLdap['postaladdress']."",
                                                    'type' => $structure->typestruct()),
                                 'ref_year' => $anneeref,
                                 'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
