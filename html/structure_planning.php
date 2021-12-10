@@ -32,10 +32,9 @@
     $user = new agent($dbcon);
     $user->load($userid);
 
-    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
-
     require ("includes/menu.php");
-
+    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
+    
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
@@ -71,7 +70,7 @@
         $mode = $_POST["mode"]; // Mode = resp ou agent
     else
         $mode = "resp";
-    
+
     $date_selected = '';
     if (isset($_POST["date_selected"]))
         $date_selected = $_POST["date_selected"];
@@ -83,7 +82,7 @@
     $agentid_selected = '';
     if (isset($_POST['agentid_selected']))
         $agentid_selected = $_POST['agentid_selected'];
-
+        
     if ($date_selected != "" and $moment_selected != "" and $agentid_selected != "")
     {
         $complement = new complement($dbcon);
@@ -160,7 +159,7 @@
 </script>
 
 <?php 
-        
+
     echo "<form name='select_mois' id='select_mois' method='post'>";
     echo "<center><select name='indexmois'>";
 
@@ -190,7 +189,6 @@
     echo "<input type='hidden' name='agentid_selected' id='agentid_selected' value='' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
-
     if (strcasecmp($mode, "resp") == 0) {
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
@@ -221,6 +219,58 @@
         foreach ($structureliste as $structkey => $structure) {
             echo "<br>";
             echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true,true);
+
+            if ($structure->responsable()->harpegeid() == $user->harpegeid())
+            {
+                echo "<br>";
+                echo "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
+                echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
+                echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
+                
+                $currentyrear = date('Y');
+                $currentmonth = date('m');
+                if ($currentmonth >= 10)
+                    $currentmonth = 7;
+                elseif ($currentmonth >= 7)
+                    $currentmonth = 4;
+                elseif ($currentmonth >= 4)
+                    $currentmonth = 1;
+                else
+                {
+                    $currentmonth = 10;
+                    $currentyrear = $currentyrear - 1;
+                }
+                $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
+                $datedebut = $currentyrear . $currentmonth . '01';
+                
+                
+                $currentyrear = date('Y');
+                $currentmonth = date('m');
+                if ($currentmonth >= 10)
+                    $currentmonth = 9;
+                elseif ($currentmonth >= 7)
+                    $currentmonth = 6;
+                elseif ($currentmonth >= 4)
+                    $currentmonth = 3;
+                else
+                {
+                    $currentmonth = 12;
+                    $currentyrear = $currentyrear - 1;
+                }
+                $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
+                $datefin = $currentyrear . $currentmonth . $fonctions->nbr_jours_dans_mois($currentmonth, $currentyrear);
+                        
+                
+                echo "<input type='hidden' name='datedebut' value='" . $datedebut . "' />";
+                echo "<input type='hidden' name='datefin' value='" . $datefin .  "' />";
+                
+                echo "Générer le document 'télétravail' du trimestre précédent pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
+                echo "<input type='submit' name='teletravailPDF' />";
+                echo "</form>";
+            }
         }
 
         $structureliste = $user->structrespliste();
@@ -288,6 +338,7 @@
             }
         }
     }
+
     unset($strucuture);
 ?>
 

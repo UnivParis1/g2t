@@ -140,4 +140,27 @@
             $structure->pdf(($mois_annee), $noiretblanc,$includeteletravail);
         }
     }
+    
+
+     if (isset($_POST["teletravailPDF"]))
+     {
+         // On va éditer le document PDF de télétravail
+         
+         $structureid = null;
+         if (isset($_POST['structureid']))
+            $structureid = $_POST['structureid'];
+         
+        if (isset($_POST['datedebut']))
+            $datedebut = $_POST['datedebut'];
+        if (isset($_POST['datefin']))
+            $datefin = $_POST['datefin'];
+                
+          
+         //echo "<br>L'id de la structure est : " . $structureid . "<br>";
+         $structure = new structure($dbcon);
+         $structure->load($structureid);
+         $structure->teletravailpdf($datedebut,$datefin);
+     }
+
+    
 ?>

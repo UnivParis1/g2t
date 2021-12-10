@@ -1332,7 +1332,7 @@ class fonctions
         {
             //echo "<br>load => pas de ligne dans la base de données<br>";
             $errlog = "Aucune demande de télétravail pour la période $datedebut -> $datefin <br>";
-            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             //echo $errlog;
         }
         else
@@ -1345,5 +1345,24 @@ class fonctions
         return $listeagentteletravail;
     
     }
+    
+    public function enlevemois($date, $nbremois)
+    {
+        $date = $this->formatdatedb($date);
+        $timestamp = strtotime($date);
+        $mois = date("m", $timestamp);
+        $annee = date("Y", $timestamp);
+        $mois = $mois - $nbremois;
+        if ($mois<1)
+        {
+            $mois = 12 - abs($mois);
+            $annee = $annee - 1;
+        }
+        $mois = str_pad($mois, 2, '0',STR_PAD_LEFT);
+        return array($annee,$mois);
+        
+    }
+    
 }
+
 ?>

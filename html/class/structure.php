@@ -1063,6 +1063,107 @@ class structure
         $this->delegueid = $delegationuserid;
         return $msgerreur;
     }
+        
+    function teletravailpdf($datedebut, $datefin)
+    {
+        $agenttrouve = false;
+        
+        $tableaudate = array();
+        $datefininterval = $this->fonctions->formatdatedb($datefin);
+        $datedebutinterval = $this->fonctions->formatdatedb($datedebut);
+        $month = substr($datedebutinterval,4,2);
+        $year = substr($datedebutinterval,0,4);
+        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("month = " . $month . "  year = " . $year));
+        if ($month >= 10)
+            $libelle = "4e trimestre ";
+        elseif ($month >= 7)
+            $libelle = "3e trimestre ";
+        elseif ($month >= 4)
+            $libelle = "2e trimestre ";
+        else
+            $libelle = "1er trimestre ";
+        $tableaudate[3] = array($datedebutinterval,$datefininterval, $libelle . $year);
+        for ($cpt=2; $cpt >= 0 ; $cpt --)
+        {
+            // Caclul du début du nouvel interval => 3 mois avant
+            $result = $this->fonctions->enlevemois($datedebutinterval, 3);
+            $datedebutinterval = $result[0] . $result[1] . '01';
+            // Caclul de la fin du nouvel interval => 3 mois avant
+            $result = $this->fonctions->enlevemois($datefininterval, 3);
+            $datefininterval = $result[0] . $result[1] . $this->fonctions->nbr_jours_dans_mois($result[1],$result[0]);
+            if ($result[1] >= 10)
+                $libelle = "4e trimestre ";
+            elseif ($result[1] >= 7)
+                $libelle = "3e trimestre ";
+            elseif ($result[1] >= 4)
+                $libelle = "2e trimestre ";
+            else
+                $libelle = "1er trimestre ";
+            
+            $tableaudate[$cpt] = array($datedebutinterval,$datefininterval,$libelle . $result[0]);
+        }
+        // On trie le tableau dans l'ordre croissant des clés (=> date plus vieille en premier)
+        ksort($tableaudate);
+        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("tableaudate = " . print_r($tableaudate,true)));
+        
+        $pdf=new FPDF();
+        $pdf->AddPage('L');
+        // echo "Apres le addpage <br>";
+        $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
+        $pdf->SetFont('helvetica', 'B', 15, '', true);
+        $pdf->Ln(15);
+        $pdf->Cell(60, 10, utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
+        $pdf->Ln(10);
+        $pdf->Cell(60, 10, utf8_decode('Liste des agents en télétravail pour la période du ' . $this->fonctions->formatdate($tableaudate[0][0]) . " au " . $this->fonctions->formatdate($tableaudate[count($tableaudate)-1][1])));
+        $pdf->Ln(10);
+        $pdf->SetFont('helvetica', 'B', 11, '', true);
+        $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
+        $pdf->Ln(10);
+        $pdf->SetFont('helvetica', 'B', 8, '', true);
+        
+        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("fin complet = " . $tableaudate[0][1] . "  debut complet = " . $tableaudate[count($tableaudate)-1][0]));
+        $agentteletravail = $this->fonctions->listeagentteletravail($tableaudate[0][0],$tableaudate[count($tableaudate)-1][1] );
+        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("agentteletravail = " . print_r($agentteletravail,true)));
+        $agentliste = $this->agentlist($tableaudate[0][0],$tableaudate[count($tableaudate)-1][1],'n');
+        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("agentliste = " . print_r($agentliste,true)));
+        foreach ($agentliste as $agent)
+        {
+            if (array_search($agent->harpegeid(),(array)$agentteletravail)!==false)
+            {
+                if (!$agenttrouve)
+                {
+                    // C'est le premier agent qu'on trouve ==> On crée l'entête
+                    $pdf->Cell(60, 5, utf8_decode("Nom de l'agent"), 1, 0, 'C');
+                    foreach ($tableaudate as $tabdebutfin)
+                    {
+                        $pdf->cell(40, 5, utf8_decode("$tabdebutfin[2]"), 1, 0, 'C');
+                    }
+                }
+                // L'agent est dans la structure et est en télétravail durant la période
+                $pdf->Ln(5);
+                $pdf->Cell(60, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
+                foreach ($tableaudate as $tabdebutfin)
+                {
+                    //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("debut = " . $tabdebutfin[0] . " fin = " . $tabdebutfin[1]));
+                    $nombrejoursteletravail = $agent->nbjoursteletravail($tabdebutfin[0], $tabdebutfin[1]);
+                    $pdf->cell(40, 5, utf8_decode($nombrejoursteletravail), 1, 0, 'C');
+                }
+                $agenttrouve = true;
+            }
+        }
+        if (!$agenttrouve)
+        {
+            $pdf->Cell(60, 5, utf8_decode("Aucun agent n'est en télétravail durant cette période."));
+        }
+        $responsable = $this->responsable();
+        $pdf->Ln(10);
+        $pdf->SetFont('helvetica', 'B', 8, '', true);
+        $pdf->Cell(60, 5, utf8_decode("Signature du responsable : " . $responsable->identitecomplete()));
+        
+        $pdf->Ln(8);
+        ob_end_clean();
+        $pdf->Output();
+    }
 }
 
 ?>
