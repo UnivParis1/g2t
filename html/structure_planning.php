@@ -32,7 +32,7 @@
     $user = new agent($dbcon);
     $user->load($userid);
 
-    // echo "<br><br><br>"; print_r($_POST); echo "<br>";
+    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
 
     require ("includes/menu.php");
 
@@ -71,8 +71,97 @@
         $mode = $_POST["mode"]; // Mode = resp ou agent
     else
         $mode = "resp";
+    
+    $date_selected = '';
+    if (isset($_POST["date_selected"]))
+        $date_selected = $_POST["date_selected"];
 
-    echo "<form name='select_mois' method='post'>";
+    $moment_selected = '';
+    if (isset($_POST["moment_selected"]))
+        $moment_selected = $_POST["moment_selected"];
+            
+    $agentid_selected = '';
+    if (isset($_POST['agentid_selected']))
+        $agentid_selected = $_POST['agentid_selected'];
+
+    if ($date_selected != "" and $moment_selected != "" and $agentid_selected != "")
+    {
+        $complement = new complement($dbcon);
+        $agent = new agent($dbcon);
+        $agent->load($agentid_selected);
+        $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
+        if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
+        {   // On n'a pas trouvé la date dans la liste
+            $complement->complementid('TT_EXCLU_' . $fonctions->formatdatedb($date_selected));
+            $complement->harpegeid($agentid_selected);
+            $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
+            $complement->store();
+        }
+        else
+        {   // La date est dans liste des exclusions
+            $erreur = $agent->supprjourteletravailexclu($date_selected);
+            echo "<br>$erreur<br>";
+        }
+    }
+
+    $planningelement = new planningelement($dbcon);
+    $planningelement->type('teletrav');
+    $couleur = $planningelement->couleur();
+    
+?>
+<script>
+	var dbclick_element = function(elementid, agentid, date,moment)
+	{
+		var element = document.getElementById(elementid);
+		var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
+		//alert ('Active element = ' + document.activeElement.innerHTML + '   elementid = ' + elementid);
+		if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler
+		{
+    		if (confirm ('Supprimer le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
+    		{
+    			//alert('Le télétravail du ' + date + ' est supprimé.');
+    			
+    			var input = document.getElementById('date_selected');
+    			input.value = date;
+    			var input = document.getElementById('moment_selected');
+    			input.value = moment;
+    			var input = document.getElementById('agentid_selected');
+    			input.value = agentid;
+    			var submit_form = document.getElementById('select_mois');
+    			submit_form.submit();
+    
+    		}
+    		else
+    		{
+    			//alert('Le télétravail du ' + date + ' est maintenu.');
+    		}
+    	}
+    	else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé
+    	{
+    		if (confirm ('Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
+    		{
+    			var input = document.getElementById('date_selected');
+    			input.value = date;
+    			var input = document.getElementById('moment_selected');
+    			input.value = moment;
+    			var input = document.getElementById('agentid_selected');
+    			input.value = agentid;
+    			var submit_form = document.getElementById('select_mois');
+    			submit_form.submit();
+    		}
+    		else
+    		{
+    			//alert('Pas de réactivation du télétravail du ' + date + '.');
+    		}
+    	}
+	};
+
+
+</script>
+
+<?php 
+        
+    echo "<form name='select_mois' id='select_mois' method='post'>";
     echo "<center><select name='indexmois'>";
 
     // On reprend le mois de début de période
@@ -96,6 +185,9 @@
     echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
     echo "<input type='hidden' name='mode' value='" . $mode . "' />";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+    echo "<input type='hidden' name='date_selected' id='date_selected' value='' />";
+    echo "<input type='hidden' name='moment_selected' id='moment_selected' value='' />";
+    echo "<input type='hidden' name='agentid_selected' id='agentid_selected' value='' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
 
@@ -128,14 +220,14 @@
         // echo "<br>StructureListe = "; print_r($structureliste); echo "<br>";
         foreach ($structureliste as $structkey => $structure) {
             echo "<br>";
-            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true);
+            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true,true);
         }
 
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
             if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
                 echo "<br>";
-                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true);
+                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true,false);
             }
         }
     } elseif (strcasecmp($mode, "gestion") == 0) {

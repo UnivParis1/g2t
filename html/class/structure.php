@@ -558,7 +558,7 @@ class structure
         return $planningservice;
     }
 
-    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false) // Le format doit être MM/YYYY
+    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false, $dbclickable = false) // mois_annee_debut => Le format doit être MM/YYYY
     {
         // echo "Je debute planninghtml <br>";
         //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
@@ -607,13 +607,14 @@ class structure
             $agent->load($agentid);
             // echo "l'agent $agentid est chargé ... <br>";
             $htmltext = $htmltext . "<tr class='ligneplanning'>";
-            $htmltext = $htmltext . "<td>" . $agent->nom() . " " . $agent->prenom() . "</td>";
+//            $htmltext = $htmltext . "<td>" . $agent->nom() . " " . $agent->prenom() . "</td>";
+            $htmltext = $htmltext . "<td>" . $agent->identitecomplete() . "</td>";
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";
             foreach ($listeelement as $keyelement => $element) {
                 // echo "Boucle sur l'element <br>";
-                $htmltext = $htmltext . $element->html(false, null, $noiretblanc);
+                $htmltext = $htmltext . $element->html(false, null, $noiretblanc, $dbclickable);
             }
             // echo "Fin boucle sur les elements <br>";
             $htmltext = $htmltext . "</tr>";
@@ -669,7 +670,7 @@ class structure
         return $htmltext;
     }
 
-    function planningresponsablesousstructhtml($mois_annee_debut, $includeteletravail = false) // Le format doit être MM/YYYY
+    function planningresponsablesousstructhtml($mois_annee_debut, $includeteletravail = false, $dbclickable = false) // Le format doit être MM/YYYY
     {
         $fulldatedebut = "01/" . $mois_annee_debut;
         $tempfulldatefindb = $this->fonctions->formatdatedb("01/" . $mois_annee_debut);
@@ -730,13 +731,14 @@ class structure
                     $titre_a_ajouter = FALSE;
                 }
                 $htmltext = $htmltext . "<tr class='ligneplanning'>";
-                $htmltext = $htmltext . "<td>" . $responsable->nom() . " " . $responsable->prenom() . "</td>";
+//                $htmltext = $htmltext . "<td>" . $responsable->nom() . " " . $responsable->prenom() . "</td>";
+                $htmltext = $htmltext . "<td>" . $responsable->identitecomplete() . "</td>";
                 // echo "Avant chargement des elements <br>";
                 $listeelement = $responsable->planning($fulldatedebut, $fulldatefin, $includeteletravail)->planning();
                 // echo "Apres chargement des elements <br>";
                 foreach ($listeelement as $keyelement => $element) {
                     // echo "Boucle sur l'element <br>";
-                    $htmltext = $htmltext . $element->html();
+                    $htmltext = $htmltext . $element->html(false, null, false, $dbclickable);
                 }
                 // echo "Fin boucle sur les elements <br>";
                 $htmltext = $htmltext . "</tr>";
@@ -968,7 +970,8 @@ class structure
             // echo "l'agent $agentid est chargé ... <br>";
             $pdf->Ln(5);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
-            $pdf->Cell(60, 5, utf8_decode($agent->nom() . " " . $agent->prenom()), 1, 0, 'C');
+//            $pdf->Cell(60, 5, utf8_decode($agent->nom() . " " . $agent->prenom()), 1, 0, 'C');
+            $pdf->Cell(60, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";

@@ -194,7 +194,7 @@ class planningelement
         }
     }
 
-    function html($clickable = FALSE, $checkboxname = null, $noiretblanc = false)
+    function html($clickable = FALSE, $checkboxname = null, $noiretblanc = false, $dbclickable = FALSE)
     {
         $htmltext = "";
         // $htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" ></td>";
@@ -215,14 +215,30 @@ class planningelement
             $clickabletext = "oncontextmenu=\"planning_rclick('" . $this->date() . "','" . $this->moment() . "');return false;\" onclick=\"planning_lclick('" . $this->date() . "','" . $this->moment() . "')\" ";
         else
             $clickabletext = "";
+            
         if (! is_null($checkboxname))
             $checkboxtext = "<input type='checkbox' name='elmtcheckbox[" . $checkboxname . "]' value='1'>";
         else
             $checkboxtext = "";
         
-        if ($this->type() == 'teletrav' and !$noiretblanc)
+        $agent = new agent($this->dbconnect);
+        $agent->load($this->agentid());
+        $listeexclusion = $agent->listejoursteletravailexclus($this->date(), $this->date());
+        if (array_search($this->fonctions->formatdatedb($this->date()),(array)$listeexclusion)===false)
+        {   // On n'a pas trouvé la date dans la liste 
+            $exclusion = false;
+        }
+        else
+        {   // La date est dans liste des exclusions
+            $exclusion = true;
+        }
+        if (($this->type() == 'teletrav' or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
             $extraclass = ' teletravail '; 
+            if ($dbclickable)
+                $clickabletext = $clickabletext . " id='" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "' ondblclick=\"dbclick_element('" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "','" . $this->agentid()  . "','" . $this->date() . "','" . $this->moment() . "');\" ";
+            else
+                $clickabletext = $clickabletext . "";
         }
         else
         {

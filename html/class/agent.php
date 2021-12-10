@@ -3412,8 +3412,8 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
         elseif (mysqli_num_rows($query) == 0)
         {
             //echo "<br>load => pas de ligne dans la base de données<br>";
-            $errlog = "Aucune demande de télétravail pour l'agent " . $this->identitecomplete() . "<br>";
-            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //$errlog = "Aucune demande de télétravail pour l'agent " . $this->identitecomplete() . "<br>";
+            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
             //echo $errlog;
         }
         else
@@ -3431,13 +3431,14 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
         $date = $this->fonctions->formatdatedb($date);
         $liste = $this->teletravailliste($date, $date);
         $reponse = false;
+        $listeexclusion  = $this->listejoursteletravailexclus($date, $date);
         foreach ($liste as $teletravailid)
         {
             $teletravail = new teletravail($this->dbconnect);
             $teletravail->load($teletravailid);
             if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
             {
-                if ($teletravail->estteletravaille($date,$moment))
+                if ($teletravail->estteletravaille($date,$moment) and (array_search($date,(array)$listeexclusion)===false))  // Si c'est un jour de télétravail et qu'il n'est pas exclu
                 {
                     $reponse = true;
                 }
@@ -3450,6 +3451,71 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
     {
         $planning = new planning($this->dbconnect);
         return $planning->nbjoursteletravail($this->harpegeid, $datedebut, $datefin);
+    }
+    
+    function listejoursteletravailexclus($datedebut,$datefin)
+    {
+        $datedebut = $this->fonctions->formatdatedb($datedebut);
+        $datefin = $this->fonctions->formatdatedb($datefin);
+        
+        $listteletravail = array();
+        $sql = "SELECT VALEUR
+                FROM COMPLEMENT
+                WHERE HARPEGEID = '" .  $this->harpegeid() . "'
+                  AND COMPLEMENTID LIKE 'TT_EXCLU_%'
+                  AND VALEUR >= '" . $datedebut . "' 
+                  AND VALEUR <='" . $datefin . "'
+                ORDER BY VALEUR";
+        
+        //echo "<br>SQL = $sql <br>";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement des complement TT_EXCLU : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            //$errlog = "Aucun jour de télétravail n'est exclu pour l'agent " . $this->identitecomplete() . " dans la période $datedebut -> $datefin <br>";
+            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $listteletravail[] = $result[0];
+            }
+        }
+        return $listteletravail;
+    }
+
+    function supprjourteletravailexclu($date)
+    {
+        $date = $this->fonctions->formatdatedb($date);
+        $errlog = '';
+        $sql = "DELETE 
+                FROM COMPLEMENT
+                WHERE HARPEGEID = '" .  $this->harpegeid() . "'
+                  AND COMPLEMENTID = 'TT_EXCLU_" . $date . "'";
+        
+        //echo "<br>SQL = $sql <br>";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans la suppression du complement TT_EXCLU_" . $date . " : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_affected_rows($this->dbconnect) == 0)
+        {
+            $errlog = "Aucune exclusion de télétravail n'a été supprimée pour l'agent " . $this->identitecomplete() . " pour la date $date.<br>";
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        return $errlog;
     }
     
 }
