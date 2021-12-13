@@ -113,6 +113,13 @@
 	{
 		var element = document.getElementById(elementid);
 		var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
+		var tableau = element.closest("table");
+		if (tableau.classList.contains('teletravail_hidden'))
+		{
+			// Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
+			alert ('L\'affichage du télétravail est désactivé.');
+			return;
+		}
 		//alert ('Active element = ' + document.activeElement.innerHTML + '   elementid = ' + elementid);
 		if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler
 		{

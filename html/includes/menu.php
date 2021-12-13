@@ -157,9 +157,21 @@
         {
         	var hidden_input = document.getElementById(id_hidden_input);
         	if (checkboxvalue)
+        	{
         		hidden_input.value='on';
+       		}
        		else
+       		{
        			hidden_input.value='off';
+       		}
+        }
+        if (checkboxvalue)
+        {
+			tableau.classList.add('teletravail_hidden');
+        }
+        else
+        {
+        	tableau.classList.remove('teletravail_hidden');
         }
 	};
 
