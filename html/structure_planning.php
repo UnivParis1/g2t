@@ -82,24 +82,44 @@
     $agentid_selected = '';
     if (isset($_POST['agentid_selected']))
         $agentid_selected = $_POST['agentid_selected'];
+    
+    $action = '';
+    if (isset($_POST['action']))
+        $action = $_POST['action'];
+        
         
     if ($date_selected != "" and $moment_selected != "" and $agentid_selected != "")
     {
         $complement = new complement($dbcon);
         $agent = new agent($dbcon);
         $agent->load($agentid_selected);
-        $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
-        if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
-        {   // On n'a pas trouvé la date dans la liste
-            $complement->complementid('TT_EXCLU_' . $fonctions->formatdatedb($date_selected));
-            $complement->harpegeid($agentid_selected);
-            $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
-            $complement->store();
+        if ($action == 'desactive')
+        {   // On fait une désactivation de la date
+            $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
+            if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
+            {   // On n'a pas trouvé la date dans la liste
+                $complement->complementid('TT_EXCLU_' . $fonctions->formatdatedb($date_selected));
+                $complement->harpegeid($agentid_selected);
+                $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
+                $complement->store();
+            }
+            else
+            {
+                //echo "On demande une désactivation alors que la date est déjà désactivé. On ne fait rien. <br>";
+            }
         }
-        else
-        {   // La date est dans liste des exclusions
-            $erreur = $agent->supprjourteletravailexclu($date_selected);
-            echo "<br>$erreur<br>";
+        elseif ($action == 'reactive')
+        {   // On fait une réactivation
+            $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
+            if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)!==false)
+            {   // On a trouvé la date dans la liste
+                $erreur = $agent->supprjourteletravailexclu($date_selected);
+                echo "<br>$erreur<br>";
+            }
+            else
+            {
+                //echo "On demande une réactivation alors que la date n'est pas désactivé. On ne fait rien. <br>";
+            }
         }
     }
 
@@ -133,6 +153,8 @@
     			input.value = moment;
     			var input = document.getElementById('agentid_selected');
     			input.value = agentid;
+    			var input = document.getElementById('action');
+    			input.value = 'desactive';
     			var submit_form = document.getElementById('select_mois');
     			submit_form.submit();
     
@@ -152,6 +174,8 @@
     			input.value = moment;
     			var input = document.getElementById('agentid_selected');
     			input.value = agentid;
+    			var input = document.getElementById('action');
+    			input.value = 'reactive';
     			var submit_form = document.getElementById('select_mois');
     			submit_form.submit();
     		}
@@ -194,6 +218,7 @@
     echo "<input type='hidden' name='date_selected' id='date_selected' value='' />";
     echo "<input type='hidden' name='moment_selected' id='moment_selected' value='' />";
     echo "<input type='hidden' name='agentid_selected' id='agentid_selected' value='' />";
+    echo "<input type='hidden' name='action' id='action' value='' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
     if (strcasecmp($mode, "resp") == 0) {
