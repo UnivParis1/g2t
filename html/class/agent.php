@@ -669,9 +669,11 @@ AND DEMANDE.STATUT='v'";
      *            the beginning date of the interval to search affectations
      * @param date $datefin
      *            the ending date of the interval to search affectations
+     * @param boolean $ignoremissingstruct
+     *            allow the structure to be empty for affectation
      * @return array list of objects affectation
      */
-    function affectationliste($datedebut, $datefin)
+    function affectationliste($datedebut, $datefin, $ignoremissingstruct  = false)
     {
         $affectationliste = null;
         $sql = "SELECT SUBREQ.AFFECTATIONID FROM ((SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,HARPEGEID FROM AFFECTATION WHERE HARPEGEID = '" . $this->harpegeid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
@@ -682,9 +684,12 @@ AND DEMANDE.STATUT='v'";
         $sql = $sql . ", AGENT ";
         $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N' ";
         $sql = $sql . "   AND AGENT.HARPEGEID = SUBREQ.HARPEGEID ";
-        $sql = $sql . "   AND AGENT.STRUCTUREID <> '' ";
+        if (!$ignoremissingstruct) // Si on ne doit pas ignorer la structure vide
+        {
+            $sql = $sql . "   AND AGENT.STRUCTUREID <> '' ";
+        }
         $sql = $sql . " ORDER BY SUBREQ.DATEDEBUT";
-        // echo "sql = $sql <br>";
+        //echo "sql = $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
@@ -698,7 +703,7 @@ AND DEMANDE.STATUT='v'";
         while ($result = mysqli_fetch_row($query)) {
             $affectation = new affectation($this->dbconnect);
             // echo "result[0] = $result[0] <br>";
-            $affectation->load("$result[0]");
+            $affectation->load("$result[0]",$ignoremissingstruct);
             $affectationliste[$affectation->affectationid()] = $affectation;
             unset($affectation);
         }

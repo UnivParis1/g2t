@@ -99,18 +99,19 @@
                     if ($msg_erreur == "") {
                         echo "Demande de congés pour " . $agent->identitecomplete() . " du " . $date_debut . " au " . $date_fin . " : ";
                         // On recherche les declarations de TP relatives à cette demande
-                        $affectationliste = $agent->affectationliste($date_debut, $date_fin);
+                        $affectationliste = $agent->affectationliste($date_debut, $date_fin, true);
+                        //echo "affectationliste = "; print_r($affectationliste); echo "<br>";
+                        $declarationTPliste = array();
                         if (! is_null($affectationliste)) {
-
-                            $declarationTPliste = array();
-                            foreach ($affectationliste as $affectation) {
+                            foreach ((array)$affectationliste as $affectation) {
                                 // On recupère la première affectation
                                 // $affectation = new affectation($dbcon);
                                 // $affectation = reset($affectationliste);
                                 // echo "Datedebut = $date_debut, Date fin = $date_fin <br>";
+                                //echo "Import_Congés : On va rechercher les declarationTPliste liées à l'affectation <br>";
                                 $declarationTPliste = array_merge((array) $declarationTPliste, (array) $affectation->declarationTPliste($date_debut, $date_fin));
                             }
-                            // echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
+                            //echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
                         }
 
                         // echo "Je vais sauver la demande <br>";
@@ -124,10 +125,13 @@
                         $demande->moment_debut($deb_mataprem);
                         $demande->moment_fin($fin_mataprem);
                         $demande->commentaire("Ajout manuel de la demande (par " . $user->identitecomplete() . ")");
-                        $ignoreabsenceautodecla = false;
+                        $ignoreabsenceautodecla = true;
                         $ignoresoldeinsuffisant = false;
                         // echo "demande->nbredemijrs_demande() AVANT = " . $demande->nbredemijrs_demande() . "<br>";
+                        //echo "Import_Congés : Avant le store de la demande....<br>";
                         $resultat = $demande->store($declarationTPliste, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
+                        //echo "Import_Congés : Apres le store de la demande....<br>";
+                        
                         // echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
                         if ($resultat == "") {
                             $demandeid = $demande->id();

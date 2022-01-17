@@ -57,9 +57,11 @@ class affectation
      *
      * @param string $idaffectation
      *            the nomination identifier
+     * @param boolean $ignoremissingstruct
+     *            Allow the structure to be empty for current affectation
      * @return boolean true on success / false on fail
      */
-    function load($idaffectation = null)
+    function load($idaffectation = null, $ignoremissingstruct = false)
     {
         if (is_null($idaffectation)) {
             $errlog = "Affectation->Load : l'identifiant de l'affectation est NULL ";
@@ -98,8 +100,13 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
                 //echo "Warning : This usage of structureid is deprecated.<br>";
                 $structureid =  "$result[5]" . "";
             }
-            
-            if ($structureid == "")
+/*            
+            if ($ignoremissingstruct == true)
+                echo "affectation->load : ignoremissingstruct => true <br>";
+            else
+                echo "affectation->load : ignoremissingstruct => False <br>";
+*/                
+            if ($structureid == "" and $ignoremissingstruct == false)
             {
                 $errlog = "Affectation->Load : L'identifiant de la structure liée à l'affectation $idaffectation ou à l'agent " . $result[1] . " est vide/null";
                 echo $errlog . "<br/>";

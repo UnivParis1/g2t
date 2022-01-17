@@ -447,7 +447,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 $errlog = "Demande->Store : La liste des déclarationsTP n'est pas un tableau";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                return;
+                return $errlog;
             }
             
             if (count($declarationTPListe) == 0) {
@@ -460,7 +460,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             $declarationTP = reset($declarationTPListe);
             $affectationid = $declarationTP->affectationid();
             $affectation = new affectation($this->dbconnect);
-            if ($affectation->load($affectationid) == false) {
+            if ($affectation->load($affectationid,$ignoreabsenceautodecla) == false) {
                 $errlog = "Demande->Store : Impossible de trouver l'affectation correspondante !!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
