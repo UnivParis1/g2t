@@ -14,6 +14,7 @@
 /html/pdf*/
 /html/includes/g2t_ws_url.php_DO_NOT_USE
 /pdf/
+/config/config.php
 /.settings/
 /phpinfos.php
 /Test.php
