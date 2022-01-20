@@ -1,7 +1,7 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
 /*    
     require_once ("../html/class/agent.php");
@@ -131,7 +131,7 @@
                             $datefin = "9999-12-31";
                         // echo "datefin = $datefin \n";
                         $declarationTP->datefin($datefin);
-                        $declarationTP->statut("v");
+                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                         $erreur = $declarationTP->store();
                         if ($erreur != "")
                             echo "Erreur dans la declarationTP->store : " . $erreur . "\n";
@@ -173,8 +173,8 @@
                                 // Pour chaque declaration => On les annule
                                 foreach ($declarationliste as $declaration) {
                                     $msg = "";
-                                    if (strcasecmp($declaration->statut(), "r") != 0) {
-                                        $declaration->statut("r");
+                                    if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
+                                        $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
                                         $msg = $declaration->store();
                                     }
                                     if ($msg != "")
@@ -194,7 +194,7 @@
                                     $datefin = "9999-12-31";
                                 // echo "datefin = $datefin \n";
                                 $declarationTP->datefin($datefin);
-                                $declarationTP->statut("v");
+                                $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                                 $erreur = $declarationTP->store();
                                 if ($erreur != "")
                                     echo "Erreur dans la déclarationTP->store : " . $erreur . "\n";
@@ -221,7 +221,7 @@
                                 $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
                                 if (! is_null($declarationliste)) {
                                     foreach ($declarationliste as $declarationTP) {
-                                        if (strcasecmp($declarationTP->statut(), "r") != 0) {
+                                        if (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                                             $declarationTP->datedebut($datedebut);
                                             if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000"))
                                                 $datefin = "9999-12-31";
@@ -248,10 +248,10 @@
                                 if (! is_null($declarationliste)) {
                                     foreach ($declarationliste as $declaration) {
                                         $msg = "";
-                                        if (strcasecmp($declaration->statut(), "r") != 0) {
+                                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                                             // Si la nvlle date de debut est apres la date de fin => On annule la declaration
                                             if ($fonctions->formatdatedb($datedebut) > $fonctions->formatdatedb($declaration->datefin()))
-                                                $declaration->statut("r");
+                                                $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
                                             else
                                                 $declaration->datedebut($datedebut);
 
@@ -274,10 +274,10 @@
                                         print_r($declaration);
                                         echo " \n";
                                         $msg = "";
-                                        if (strcasecmp($declaration->statut(), "r") != 0) {
+                                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                                             // Si la nvlle date de fin est avant la date de début => On annule la declaration
                                             if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($declaration->datedebut()))
-                                                $declaration->statut("r");
+                                                $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
                                             else
                                                 $declaration->datefin($datefin);
 
@@ -321,7 +321,7 @@
         $sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID FROM AFFECTATION,DECLARATIONTP ";
         $sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
         $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
-        $sql = $sql . "   AND DECLARATIONTP.STATUT != 'r'";
+        $sql = $sql . "   AND DECLARATIONTP.STATUT != '" . declarationTP::DECLARATIONTP_REFUSE . "'";
         // echo "$sql (obsolete) = $sql \n";
         $query = mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
@@ -420,7 +420,7 @@
                      * // On cherche pour chaque demandes de l'ancienne affectation/declarationTP si une déclaration de TP la couvre avec la même quotité
                      * $sql = "SELECT AGENT.HARPEGEID,AGENT.NOM, DEMANDE.DEMANDEID, DEMANDE.TYPEABSENCEID,DEMANDE.DATEDEBUT,DEMANDE.MOMENTDEBUT,DEMANDE.DATEFIN,DEMANDE.MOMENTFIN,DEMANDE.STATUT ";
                      * $sql = $sql . "FROM AGENT,AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP,DEMANDE ";
-                     * $sql = $sql . "WHERE DEMANDE.STATUT = 'v' ";
+                     * $sql = $sql . "WHERE DEMANDE.STATUT = '" . demande:DEMANDE_VALIDE . "' ";
                      * $sql = $sql . "AND DEMANDE.DEMANDEID=DEMANDEDECLARATIONTP.DEMANDEID ";
                      * $sql = $sql . "AND DEMANDEDECLARATIONTP.DECLARATIONID=DECLARATIONTP.DECLARATIONID ";
                      * $sql = $sql . "AND DECLARATIONTP.AFFECTATIONID=AFFECTATION.AFFECTATIONID ";
@@ -446,7 +446,7 @@
                 $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
                 if (! is_null($declarationliste)) {
                     foreach ($declarationliste as $declaration) {
-                        $declaration->statut("r");
+                        $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
                         $msg = $declaration->store();
                         if ($msg != "")
                             echo "Problème lors de la suppression de la déclaration " . $declaration->declarationTPid() . " : " . $msg . " \n";

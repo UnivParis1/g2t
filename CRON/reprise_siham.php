@@ -1,7 +1,7 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
 /*    
     require_once ("../html/class/agent.php");
@@ -250,7 +250,7 @@
             }
 
             // $affectation[0] = Identifiant de l'ancienne affectation HARPEGE
-            $sql = "SELECT DECLARATIONID, AFFECTATIONID, TABTPSPARTIEL, DATEDEMANDE, DATEDEBUT, DATEFIN, DATESTATUT, STATUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $affectation[0] . "' AND DATEFIN > '2015-12-31' AND (STATUT<>'R' OR STATUT<>'r') ";
+            $sql = "SELECT DECLARATIONID, AFFECTATIONID, TABTPSPARTIEL, DATEDEMANDE, DATEDEBUT, DATEFIN, DATESTATUT, STATUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $affectation[0] . "' AND DATEFIN > '2015-12-31' AND (STATUT<>'" . declarationTP::DECLARATIONTP_REFUSE . "') ";
             echo "SQL SELECT FROM DECLARATIONTP => " . $sql . "\n";
             $querydeclaration = mysqli_query($dbcon, $sql);
             while ($declarationtp = mysqli_fetch_row($querydeclaration)) {

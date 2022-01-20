@@ -704,13 +704,13 @@ class fonctions
 
     public function demandestatutlibelle($statut = null)
     {
-        if (strcasecmp($statut, 'v') == 0)
+        if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
             return "Validée";
-        elseif (strcmp($statut, 'r') == 0)
+            elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
             return "Refusée";
-        elseif (strcmp($statut, 'R') == 0)
+            elseif (strcmp($statut, demande::DEMANDE_ANNULE) == 0)
             return "Annulée";
-        elseif (strcasecmp($statut, 'a') == 0)
+            elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
             return "En attente";
         else
             echo "Demandestatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
@@ -724,11 +724,11 @@ class fonctions
      */
     public function declarationTPstatutlibelle($statut = null)
     {
-        if (strcasecmp($statut, 'v') == 0)
+        if (strcasecmp($statut, declarationTP::DECLARATIONTP_VALIDE) == 0)
             return "Validée";
-        elseif (strcasecmp($statut, 'r') == 0)
+        elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_REFUSE) == 0)
             return "Refusée";
-        elseif (strcasecmp($statut, 'a') == 0)
+            elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_ATTENTE) == 0)
             return "En attente";
         else
             echo "declarationTPstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
@@ -912,11 +912,11 @@ class fonctions
             $complement = new complement($this->dbconnect);
             $complement->load($result[1], 'DEM_CET_' . $demandeid);
             
-            if ($demande->statut() == 'v' and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
+            if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
             {
                 $demandeliste[] = $demande;
             }
-            if ($demande->statut() == 'R' and $complement->valeur() == 'v') // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
+            if ($demande->statut() == demande::DEMANDE_ANNULE and $complement->valeur() == demande::DEMANDE_VALIDE) // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
             {
                 $demandeliste[] = $demande;
             }
@@ -1173,14 +1173,19 @@ class fonctions
     
     public function get_g2t_ws_url()
     {
-        
-        if (!isset($_SERVER['SERVER_NAME']))
+        if (defined('G2T_WS_URL')) /* A partir de la version 6 de G2T, la constante est forcément déclarée ==> Donc on devrait passer systématiquement ici */
         {
             $g2t_ws_url = G2T_WS_URL;
             error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est récupérée de la constante => $g2t_ws_url" ));
         }
+        else if (!isset($_SERVER['SERVER_NAME'])) /* Si on passe là, on a un problème car la constante n'est pas défini et on n'a aucun moyen de calculer l'URL du WS!! */
+        {
+            $g2t_ws_url = "URL invalide !";
+            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T n'est pas dans la constante et impossible de calculer l'URL => $g2t_ws_url" ));
+        }
         else
         {
+            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T va être calculée" ));
             // On récuère le nom du serveur G2T
             $servername = $_SERVER['SERVER_NAME'];
             
@@ -1293,8 +1298,35 @@ class fonctions
     public function g2tbasepath()
     {
         //echo "<br>File = " .  __FILE__  . " <br>Basename = " . basename(__FILE__) . "  <br>Path name = " .  dirname(__FILE__)  . "<br>";
+        // On retourne le chemin du fichier fonctions.php remonté de 2 dossiers (<=> <racine>\html\class\fonctions.php)
+        // dirname(...., 1) <=> Le dossier courant du fichier
+        // dirname(...., 2) <=> Le dossier parent du fichier (donc niveau - 1)
+        // dirname(...., 3) <=> Le dossier parent du parent du fichier (donc niveau - 2)
+        // ==> La fonction retourne donc le dossier <racine>
         return str_replace("\\", '/', dirname(__FILE__,3)) . "/";
     }
+    
+    public function imagepath()
+    {
+        $basepath = $this->g2tbasepath();
+        //return $basepath . '/html/images/';
+        return $basepath . '/images/';
+    }
+    
+    public function pdfpath()
+    {
+        $basepath = $this->g2tbasepath();
+        //return $basepath . '/html/pdf/';
+        return $basepath . '/pdf/';
+    }
+    
+    public function documentpath()
+    {
+        $basepath = $this->g2tbasepath();
+        //return $basepath . '/html/documents/';
+        return $basepath . '/documents/';
+    }
+    
     
     public function synchroGlobaleCETeSignature($typeconge, $anneeref)
     {

@@ -547,7 +547,7 @@
                     unset($demande);
                     $demande = new demande($dbcon);
                     $demande->load($demandeid);
-                    $demande->statut("v");
+                    $demande->statut(demande::DEMANDE_VALIDE);
                     $msgerreur = "";
                     $msgerreur = $demande->store();
                     if ($msgerreur != "")
@@ -558,14 +558,19 @@
                         $agent = $demande->agent();
                         $ics = $demande->ics($agent->mail());
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
-                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
+                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                         {
+                            /*
                             // On remplace les '\' par des '/' et on cherche la position du dernier '/'
                             $position = strrpos(str_replace('\\', '/', $pdffilename[0]), '/');
                             // La base du chemin PDF est donc la sous-chaine du nom du fichier PDF de la demande !!
                             $basepdfpath = substr($pdffilename[0], 0, $position);
                             // On ajoute le fichier PDF d'utilisation du CET en congés
                             $pdffilename[1] = $basepdfpath . '/../../documents/Utilisation_CET_Conges.pdf';
+                            */
+                            
+                            // On ajoute le fichier PDF d'utilisation du CET en congés
+                            $pdffilename[1] = $fonctions->documentpath() . '/Utilisation_CET_Conges.pdf';
                             $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
@@ -574,7 +579,7 @@
                         }
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
 
-                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         {
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {

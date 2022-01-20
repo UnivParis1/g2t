@@ -3,6 +3,10 @@
 class declarationTP
 {
 
+    public const DECLARATIONTP_VALIDE = "v";
+    public const DECLARATIONTP_REFUSE = "r";
+    public const DECLARATIONTP_ATTENTE = "a";
+    
     private $declarationid = null;
 
     private $affectationid = null;
@@ -110,22 +114,6 @@ WHERE DECLARATIONID=" . $id;
             $this->statut = $statut;
     }
 
-    // function statutlibelle()
-    // {
-    // if (is_null($this->declarationid))
-    // echo "DeclarationTP->statutlibelle : La déclaration de TP n'est pas enregistrée, donc pas de statut !!! <br>";
-    // else
-    // {
-    // if (strcasecmp($this->statut,'v') == 0)
-    // return "Validée";
-    // elseif (strcasecmp($this->statut,'r') == 0)
-    // return "Refusée";
-    // elseif (strcasecmp($this->statut,'a') == 0)
-    // return "En attente";
-    // else
-    // echo "DeclarationTP->statutlibelle : le statut n'est pas connu [statut = $this->statut] !!! <br>";
-    // }
-    // }
     function datedebut($date = null)
     {
         if (is_null($date)) {
@@ -425,7 +413,8 @@ WHERE DECLARATIONID=" . $id;
                  * {
                  * foreach ($demandeliste as $key => $demande)
                  * {
-                 * if (strcasecmp($demande->statut(),"r")!=0)
+                 * //if (strcasecmp($demande->statut(),demande::DEMANDE_REFUSE)!=0)
+                 * if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)
                  * {
                  * $demande->statut("R");
                  * $demande->motifrefus("Modification de la déclaration de temps partiel ou d'affectation - " . $this->datedebut() . "->" . $this->datefin());
@@ -476,7 +465,7 @@ WHERE DECLARATIONID=" . $id;
                  * ///////////////////////////////////////////////////////////////////////////////////////////////
                  */
             }
-            if (strcasecmp($this->statut, "r") == 0) {
+            if (strcasecmp($this->statut, declarationTP::DECLARATIONTP_REFUSE) == 0) {
                 /*
                  * ///////////////////////////////////////////////////////////////////////////////////////////////
                  * ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -495,7 +484,8 @@ WHERE DECLARATIONID=" . $id;
                  * {
                  * foreach ($demandeliste as $key => $demande)
                  * {
-                 * if (strcasecmp($demande->statut(),"r")!=0)
+                 * //if (strcasecmp($demande->statut(),demande::DEMANDE_REFUSE)!=0)
+                 * if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)
                  * {
                  * $demande->statut("R");
                  * $demande->motifrefus("Annulation de la déclaration de temps partiel - " . $this->datedebut() . "->" . $this->datefin());
@@ -571,36 +561,24 @@ WHERE DECLARATIONID=" . $id;
             $htmltext = $htmltext . "<B><FONT COLOR='#FF0000'>" . $this->datefin() . "</FONT></B>";
         $htmltext = $htmltext . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >";
-        if ($pourmodif and strcasecmp($this->statut(), "a") == 0) {
+        if ($pourmodif and strcasecmp($this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) {
             // Affichager les selections !!!!
             $htmltext = $htmltext . "<select name='statut[" . $this->declarationTPid() . "]'>";
-            $htmltext = $htmltext . "<option value='a'";
-            if (strcasecmp($this->statut(), "a") == 0)
+            $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_ATTENTE . "'";
+            if (strcasecmp($this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0)
                 $htmltext = $htmltext . " selected ";
-            $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('a') . "</option>";
-            $htmltext = $htmltext . "<option value='v'";
-            if (strcasecmp($this->statut(), "v") == 0)
+            $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_ATTENTE) . "</option>";
+            $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_VALIDE ."'";
+            if (strcasecmp($this->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0)
                 $htmltext = $htmltext . " selected ";
-            $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle('v') . "</option>";
-            $htmltext = $htmltext . "<option value='r";
-            if (strcasecmp($this->statut(), "r") == 0)
+            $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_VALIDE) . "</option>";
+            $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_REFUSE ."";
+            if (strcasecmp($this->statut(), declarationTP::DECLARATIONTP_REFUSE) == 0)
                 $htmltext = $htmltext . " selected ";
-            $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle('r') . "</option>";
+            $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_REFUSE) . "</option>";
             $htmltext = $htmltext . "</select>";
         } else {
             $htmltext = $htmltext . $this->fonctions->declarationTPstatutlibelle($this->statut());
-            // switch ($this->statut())
-            // {
-            // case "v":
-            // $htmltext = $htmltext . "Validé";
-            // break;
-            // case "a":
-            // $htmltext = $htmltext . "En attente";
-            // break;
-            // case "r":
-            // $htmltext = $htmltext . "Refusé";
-            // break;
-            // }
         }
         $htmltext = $htmltext . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple'>";
@@ -651,7 +629,7 @@ WHERE DECLARATIONID=" . $id;
         //    define('FPDF_FONTPATH','font/');
         //$pdf->Open();
         $pdf->AddPage();
-        $pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
+        $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
         // echo "Apres l'image... <br>";
         $pdf->SetFont('helvetica', 'B', 14, '', true);
         $pdf->Ln(50);
@@ -662,7 +640,7 @@ WHERE DECLARATIONID=" . $id;
         $pdf->SetFont('helvetica', '', 10, '', true);
         // echo "Avant le test statut <br>";
         $decision = mb_strtolower($this->fonctions->declarationTPstatutlibelle($this->statut()),'UTF-8');
-        // if($this->statut()=='v')
+        // if($this->statut()==declarationTP::DECLARATIONTP_VALIDE)
         // $decision='validée';
         // else
         // $decision='refusée';
@@ -717,7 +695,7 @@ WHERE DECLARATIONID=" . $id;
         // $pdf->Cell(25,5,'TP:Demi-journée non travaillée pour un temps partiel WE:Week end');
         $pdf->Ln(10);
         
-        $pdfname = $this->fonctions->g2tbasepath() . '/html/pdf/' . date('Y-m') . '/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
+        $pdfname = $this->fonctions->pdfpath() . '/' . date('Y-m') . '/declarationTP_num' . $this->declarationTPid() . '_' . date("YmdHis") . '.pdf';
         // $pdfname = './pdf/declarationTP_num'.$this->declarationTPid().'.pdf';
         // $pdfname = sys_get_temp_dir() . '/autodeclaration_num'.$this->id().'.pdf';
         // echo "Nom du PDF = " . $pdfname . "<br>";

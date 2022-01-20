@@ -852,7 +852,7 @@ else
             foreach ((array)$demandeliste as $demande)
             {
                 $statut = $demande->statut();
-                if ((strcasecmp($statut, 'a') == 0) and (strcasecmp($demande->type(),'cet')==0)) // Une demande de congés sur CET est en attente de validation ==> On ne peut pas saisir d'option sur CET
+                if ((strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0) and (strcasecmp($demande->type(),'cet')==0)) // Une demande de congés sur CET est en attente de validation ==> On ne peut pas saisir d'option sur CET
                 {
                     $errorcontroltxt = $errorcontroltxt . "Il y a des demandes de congés sur CET pour l'agent " . $agent->identitecomplete() . " qui ne sont en cours de traitement <br>Il n'est donc pas possible d'établir une demande de droit d'option.<br>";                    
                     $controleok = false;

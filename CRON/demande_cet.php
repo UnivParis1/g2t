@@ -1,11 +1,11 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
     
     $fonctions = new fonctions($dbcon);
-    define('K_PATH_IMAGES', $fonctions->g2tbasepath() . '/html/images/');
+    define('K_PATH_IMAGES', $fonctions->imagepath());
     define('K_PATH_CACHE', $fonctions->g2tbasepath() . '/html/pdf/');
 
 /*    
@@ -84,7 +84,7 @@
         //    255
         //));
         $pdf->AddPage('L');
-        $pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
+        $pdf->Image($fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
         $pdf->Ln(40);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Cell(60, 10, utf8_decode("Historique des demandes de congés de CET depuis le $datedebut -- Edité le " . date("d/m/Y")));
@@ -111,14 +111,16 @@
 
             // Si la demande est validée mais que la valeur du complément n'est pas identique
             // Si la demande est annulée mais que la valeur du complement n'est pas identique et n'est pas vide (si vide => Jamais pris en compte par la RH, donc on ignore)
-            if (($demande->statut() == "v" and $complement->valeur() != $demande->statut()) or ($demande->statut() == "R" and $complement->valeur() != $demande->statut() and $complement->valeur() != "")) {
+            //if (($demande->statut() == "v" and $complement->valeur() != $demande->statut()) or ($demande->statut() == "R" and $complement->valeur() != $demande->statut() and $complement->valeur() != "")) {
+            if (($demande->statut() == demande::DEMANDE_VALIDE and $complement->valeur() != $demande->statut()) or ($demande->statut() == demande::DEMANDE_ANNULE and $complement->valeur() != $demande->statut() and $complement->valeur() != "")) {
                 $pdf->SetFont('helvetica', '', 11, '', true);
                 $pdf->SetTextColor(0, 0, 0);
                 $pdf->Cell(100, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
                 $pdf->Cell(60, 5, utf8_decode($demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
                 $pdf->Cell(60, 5, utf8_decode($demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
                 $pdf->Cell(30, 5, utf8_decode($demande->nbrejrsdemande() . "jour(s)"), 1, 0, 'C');
-                if (strcasecmp($demande->statut(), 'R') == 0) {
+//                if (strcasecmp($demande->statut(), 'R') == 0) {
+                if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) == 0 or strcmp($demande->statut(), demande::DEMANDE_REFUSE) == 0) { // Si la demande est annulée ou refusée
                     $pdf->SetFont('helvetica', 'B', 11, '', true);
                     $pdf->SetTextColor(255, 0, 0);
                 }
@@ -157,7 +159,7 @@
              * $pdf->Ln();
              */
         }
-        $filename = $fonctions->g2tbasepath() . '/html/pdf/' . date('Y-m') . '/historique_demande_cet_' . date("YmdHis") . ".pdf";
+        $filename = $fonctions->pdfpath() . '/' . date('Y-m') . '/historique_demande_cet_' . date("YmdHis") . ".pdf";
         //ob_end_clean();
         //$pdf->Output($filename, 'F'); // F = file
         $fonctions->savepdf($pdf, $filename);

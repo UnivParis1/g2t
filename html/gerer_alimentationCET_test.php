@@ -376,7 +376,7 @@
         $agent = new agent($dbcon);
         $agent->load($alimCET->agentid());
         $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_" . date("Ymd_His") . ".pdf";
-        $pdffilename = $fonctions->g2tbasepath() . '/html/pdf/cet/' . $basename;
+        $pdffilename = $fonctions->pdfpath() . '/cet/' . $basename;
         echo "<br>pdffilename = $pdffilename <br><br>";
         
         // création du fichier

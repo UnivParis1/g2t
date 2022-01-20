@@ -92,12 +92,12 @@ class planningelement
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->info;
-        } elseif (strcasecmp($this->statut, "a") != 0)
+        } elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) != 0)
             $this->info = $info;
-        elseif (strcasecmp($this->statut, "a") == 0)
+        elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0)
             $this->info = $this->info . "  " . $info;
         else {
-            // echo "PlanningElement->info : Le statut est 'a' ==> On ne modifie pas l'info <br>";
+            // echo "PlanningElement->info : Le statut est '" . demande::DEMANDE_ATTENTE . "' ==> On ne modifie pas l'info <br>";
         }
     }
 
@@ -173,7 +173,7 @@ class planningelement
                 return $this->statut;
         } else {
             $this->statut = $statut;
-            if (strcasecmp($this->statut, "a") == 0) {
+            if (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0) {
                 $this->type("atten");
                 $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
                 $query = mysqli_query($this->dbconnect, $sql);

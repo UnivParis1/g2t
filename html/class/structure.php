@@ -924,7 +924,7 @@ class structure
         //));
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
-        $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
+        $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
         $pdf->Cell(60, 10, utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
@@ -1109,7 +1109,7 @@ class structure
         $pdf=new FPDF();
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
-        $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
+        $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
         $pdf->Cell(60, 10, utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));

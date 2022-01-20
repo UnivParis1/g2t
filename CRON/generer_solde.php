@@ -2,11 +2,11 @@
 
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
     
     $fonctions = new fonctions($dbcon);
-    define('K_PATH_IMAGES', $fonctions->g2tbasepath() . '/html/images/');
+    define('K_PATH_IMAGES', $fonctions->imagepath());
     define('K_PATH_CACHE', $fonctions->g2tbasepath() . '/html/pdf/');
 
 /*
@@ -77,13 +77,13 @@
                 //    255
                 //));
                 //$pdf->AddPage('L');
-                //$pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
+                //$pdf->Image($fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
                 foreach ($tablisteagent as $key => $agent) {
                     echo "Agent = " . $agent->identitecomplete() . "\n";
                     $agent->soldecongespdf($anneeref, FALSE, $pdf, TRUE);
                     $agent->demandeslistepdf($anneeref . $fonctions->debutperiode(), ($anneeref + 1) . $fonctions->finperiode(), $pdf, FALSE);
                 }
-                $filename = $fonctions->g2tbasepath() . '/html/pdf/' . date('Y-m') . '/solde_' . str_replace('/', '_', $struct->nomcourt()) . '_' . date("YmdHis") . ".pdf";
+                $filename = $fonctions->pdfpath() . '/' . date('Y-m') . '/solde_' . str_replace('/', '_', $struct->nomcourt()) . '_' . date("YmdHis") . ".pdf";
                 //$pdf->Output($filename, 'F'); // F = file
                 $fonctions->savepdf($pdf, $filename);
                 $gest = $struct->gestionnaire();

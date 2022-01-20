@@ -390,7 +390,7 @@ AND DEMANDE.DEMANDEID = DEMANDEDECLARATIONTP.DEMANDEID
 AND DEMANDE.TYPEABSENCEID='enmal'
 AND DEMANDE.DATEDEBUT>='" . $this->fonctions->formatdatedb($debut_interval) . "'
 AND DEMANDE.DATEFIN<='" . $this->fonctions->formatdatedb($fin_interval) . "'
-AND DEMANDE.STATUT='v'";
+AND DEMANDE.STATUT='" . demande::DEMANDE_VALIDE . "'";
         
         // $this->fonctions->anneeref() . $this->fonctions->debutperiode()
         // ($this->fonctions->anneeref() +1) . $this->fonctions->finperiode()
@@ -1008,7 +1008,7 @@ AND DEMANDE.STATUT='v'";
         // echo "Apres le addpage <br>";
         if ($header == TRUE) {
             $pdf->AddPage('L');
-            $pdf->Image($this->fonctions->g2tbasepath() . '/html/images/logo_papeterie.png', 10, 5, 60, 20);
+            $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
             $pdf->Ln(15);
             
@@ -1316,7 +1316,8 @@ AND DEMANDE.STATUT='v'";
             $htmltext = $htmltext . "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
             $htmltext = $htmltext . "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Etat de la demande</td><td>Motif (obligatoire si le congé est annulé)</td></tr>";
             foreach ($demandeliste as $key => $demande) {
-                if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), "r") != 0) {
+                //if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) {
+                if ($demande->motifrefus() != "" or (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)) {
                     $htmltext = $htmltext . "<tr class='element'>";
                     $libelledemande = $demande->typelibelle();
                     if (strlen($libelledemande) > 40) {
@@ -1379,15 +1380,6 @@ AND DEMANDE.STATUT='v'";
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>" . $demande->motifrefus() . "</td>";
                     $htmltext = $htmltext . "</tr>";
-/*
-                    if (strcasecmp($demande->statut(), "r") != 0) // Si la demande n'est pas annulée ou refusée
-                    {
-                        if (isset($synthesetab[$demande->typelibelle()]))
-                            $synthesetab[$demande->typelibelle()] = $synthesetab[$demande->typelibelle()] + $demande->nbrejrsdemande();
-                        else
-                            $synthesetab[$demande->typelibelle()] = $demande->nbrejrsdemande();
-                    }
-*/
                 }
             }
         }
@@ -1535,7 +1527,7 @@ AND DEMANDE.STATUT='v'";
             //    255,
             //    255
             //));
-            $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
+            $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
             $pdf->Ln(15);
             /*
@@ -1590,7 +1582,8 @@ AND DEMANDE.STATUT='v'";
             $pdf->Cell(80, 5, utf8_decode("Motif (obligatoire si le congé est annulé)"), 1, 0, 'C');
             $pdf->ln(5);
             foreach ($demandeliste as $key => $demande) {
-                if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), "r") != 0) {
+                //if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) {
+                if ($demande->motifrefus() != "" or (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)) {
                     $libelledemande = $demande->typelibelle();
                     if (strlen($libelledemande) > 40) {
                         $libelledemande = substr($demande->typelibelle(), 0, 40) . "...";
@@ -1603,15 +1596,6 @@ AND DEMANDE.STATUT='v'";
                     $pdf->Cell(30, 5, utf8_decode($this->fonctions->demandestatutlibelle($demande->statut())), 1, 0, 'C');
                     $pdf->Cell(80, 5, utf8_decode($demande->motifrefus()), 1, 0, 'C');
                     $pdf->ln(5);
-/*                    
-                    if (strcasecmp($demande->statut(), "r") != 0) // Si la demande n'est pas annulée ou refusée
-                    {
-                        if (isset($synthesetab[$demande->typelibelle()]))
-                            $synthesetab[$demande->typelibelle()] = $synthesetab[$demande->typelibelle()] + $demande->nbrejrsdemande();
-                        else
-                            $synthesetab[$demande->typelibelle()] = $demande->nbrejrsdemande();
-                    }
-*/
                 }
             }
         }
@@ -1741,25 +1725,25 @@ AND DEMANDE.STATUT='v'";
             {
                 // echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
                 // if (($demande->statut() == "a" and $mode == "agent") or ($demande->statut() == "v" and $mode == "resp"))
-                if ((strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0) or (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)) {
+                if ((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0) or (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)) {
                     if ($premieredemande) {
                         $htmltext = $htmltext . "<table id='tabledemande_" . $this->harpegeid() . "' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=7 align=center ><font color=#BF3021>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</font></td></tr>";
 /*
                         $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td>";
-                        if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Commentaire</td>";
                         $htmltext = $htmltext . "<td class='cellulesimple'>Annuler</td>";
-                        if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
                         $htmltext = $htmltext . "</tr>";
 */                                
                         $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de début <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de fin <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Type congé <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours <font></font></th>";
-                        if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
-                        if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                             $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé)</th>";
                         $htmltext = $htmltext . "</tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -1776,10 +1760,10 @@ AND DEMANDE.STATUT='v'";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()=='m')?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
-                        if (strcasecmp($demande->statut(), "a") == 0 and strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
                         $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] value='yes' /></td>";
-                        if (strcasecmp($demande->statut(), "v") == 0 and strcasecmp($mode, "resp") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                             $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "'  size=40></td>";
                         $htmltext = $htmltext . "</tr>";
                     }
@@ -1935,7 +1919,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
         } else {
             $premieredemande = TRUE;
             foreach ($liste as $key => $demande) {
-                if (strcasecmp($demande->statut(), "a") == 0) {
+                if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0) {
                     $todisplay = true;
                     // On n'affiche pas les demandes du responsable !!!!
                     if ($agentid == $this->harpegeid) {
@@ -1979,17 +1963,18 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
                         $htmltext = $htmltext . "   <td class='cellulesimple'>";
                         $htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]'>";
                         $htmltext = $htmltext . "         <option ";
-                        if (strcasecmp($demande->statut(), "v") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0)
                             $htmltext = $htmltext . " selected ";
-                        $htmltext = $htmltext . " value='v'>" . $this->fonctions->demandestatutlibelle("v") . "</option>";
+                        $htmltext = $htmltext . " value='" . demande::DEMANDE_VALIDE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_VALIDE) . "</option>";
                         $htmltext = $htmltext . "         <option ";
-                        if (strcasecmp($demande->statut(), "r") == 0)
+                        //if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) == 0 or strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) == 0)
                             $htmltext = $htmltext . " selected ";
-                        $htmltext = $htmltext . " value='r'>" . $this->fonctions->demandestatutlibelle("r") . "</option>";
+                        $htmltext = $htmltext . " value='" . demande::DEMANDE_REFUSE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_REFUSE) . "</option>";
                         $htmltext = $htmltext . "         <option ";
-                        if (strcasecmp($demande->statut(), "a") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0)
                             $htmltext = $htmltext . " selected ";
-                        $htmltext = $htmltext . " value='a'>" . $this->fonctions->demandestatutlibelle("a") . "</option>";
+                        $htmltext = $htmltext . " value='" . demande::DEMANDE_ATTENTE ."'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_ATTENTE) . "</option>";
                         $htmltext = $htmltext . "      <select>";
                         $htmltext = $htmltext . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' size=40 ></td>";
@@ -2239,11 +2224,11 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
             $complement = new complement($this->dbconnect);
             $complement->load($this->harpegeid(), 'DEM_CET_' . $demandeid);
             
-            if ($demande->statut() == 'v' and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
+            if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
             {
                 $demandeliste[] = $demande;
             }
-            if ($demande->statut() == 'R' and $complement->valeur() == 'v') // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
+            if ($demande->statut() == demande::DEMANDE_ANNULE and $complement->valeur() == demande::DEMANDE_VALIDE) // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
             {
                 $demandeliste[] = $demande;
             }
@@ -2569,7 +2554,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
     	elseif (mysqli_num_rows($query) == 0)
     	{
     		//echo "<br>load => pas de ligne dans la base de données<br>";
-    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";;
+    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . ".";
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
     	else 
@@ -2740,7 +2725,9 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
     			$list_demandes = $this->demandesliste($date_element, $date_element + 1);
     			foreach($list_demandes as $demande)
     			{
-    				if (($demande->type() == $type_conge) and (strcasecmp($demande->statut(), 'r')!=0) )
+    			    //if (($demande->type() == $type_conge) and (strcasecmp($demande->statut(), 'r')!=0) )
+    			    //if (($demande->type() == $type_conge) and (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE)!=0))
+    			    if (($demande->type() == $type_conge) and (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0))
     				{
     					$nbjours += 0.5;
     				}
@@ -2826,7 +2813,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
         elseif (mysqli_num_rows($query) == 0)
         {
             //echo "<br>load => pas de ligne dans la base de données<br>";
-            $errlog = "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . "<br>";
+            $errlog = "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . ".";
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
             //echo $errlog;
         }

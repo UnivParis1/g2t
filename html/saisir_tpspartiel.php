@@ -130,7 +130,7 @@
         foreach ($tabdeclaannule as $key => $valeur) {
             $declaration = new declarationTP($dbcon);
             $declaration->load($key);
-            $declaration->statut("r");
+            $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
             $declaration->store();
         }
     }
@@ -180,7 +180,7 @@
         if (! is_null($declarationliste)) {
             // echo "Il y a potentiellement chevauchement entre des declarations !!!! <br>";
             foreach ($declarationliste as $key => $declaration) {
-                if (strcasecmp($declaration->statut(), "r") != 0) {
+                if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                     // Si la date de fin de l'ancienne est après la date de debut de la nouvelle
                     $msg = "";
                     // Nouvelle [--------------]
@@ -194,7 +194,7 @@
                         $nvlledatedebut = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour d'avant (donc la veille)
                                                                                          // echo "nvlledatedebut = $nvlledatedebut <br>";
                         $declaration->datedebut($fonctions->formatdate($nvlledatedebut));
-                        if (strcasecmp($declaration->statut(), "r") != 0)
+                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                             $msg = $declaration->store();
                         // echo "Apres le store de l'ID " . $declaration->declarationTPid() . "... <br>";
                         if ($msg != "") {
@@ -216,7 +216,7 @@
                         $nvlledatefin = date("Ymd", strtotime("-1days", $timestamp)); // On passe au jour d'après (donc le lendemain)
                                                                                        // echo "nvlledatefin = $nvlledatefin <br>";
                         $declaration->datefin($fonctions->formatdate($nvlledatefin));
-                        if (strcasecmp($declaration->statut(), "r") != 0)
+                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                             $msg = $declaration->store();
                         // echo "Apres le store de l'ID " . $declaration->declarationTPid() . "... <br>";
                         if ($msg != "") {
@@ -238,7 +238,7 @@
                         $nvlledatefin = date("Ymd", strtotime("-1days", $timestamp)); // On passe au jour d'après (donc le lendemain)
                                                                                        // echo "nvlledatefin = $nvlledatefin <br>";
                         $declaration->datefin($fonctions->formatdate($nvlledatefin));
-                        if (strcasecmp($declaration->statut(), "r") != 0)
+                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                             $msg = $declaration->store();
                         // echo "Apres le store de l'ID " . $declaration->declarationTPid() . "... <br>";
                         if ($msg != "") {
@@ -254,7 +254,7 @@
                     if ($fonctions->formatdatedb($declaration->datedebut()) > $fonctions->formatdatedb($declaration->datefin())) {
                         // echo "----- CAS 4 ------<br>";
                         // echo "La date de début de la declaration est apres la date de fin !!!! <br>";
-                        $declaration->statut("r");
+                        $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
                         $msg = $declaration->store();
                         if ($msg != "")
                             $msg_erreur = $msg_erreur . $msg;
@@ -280,7 +280,7 @@
          * //echo "nvlledatedebut = $nvlledatedebut <br>";
          * $declaration->datedebut($fonctions->formatdate($nvlledatedebut));
          * //echo "Nvlle date de fin dans l'objet = " .$autodecla->datedebut() . "<br>";
-         * if ($declaration->statut() != "r")
+         * if ($declaration->statut() != declarationTP::DECLARATIONTP_REFUSE)
          * {
          * $msg_erreur = $msg_erreur . "Il y a chevauchement entre la nouvelle declaration et une ancienne declaration !!!! <br>";
          * $msg = $declaration->store();
@@ -302,7 +302,7 @@
         // echo "Avant le initTP <br>";
         $declaration->tabtpspartiel(implode($tabTP));
         $declaration->affectationid($affectationid);
-        $declaration->statut("a");
+        $declaration->statut(declarationTP::DECLARATIONTP_ATTENTE);
         // echo "Avant le Store <br>";
         $msg = $declaration->store();
         if ($msg != "")
@@ -321,7 +321,7 @@
         // $afficheheader = TRUE;
         // foreach ($demandeliste as $demandekey => $demande)
         // {
-        // if (($demande->statut() != "r") and ($fonctions->formatdatedb($demande->datedebut())>=($fonctions->anneeref() . $fonctions->debutperiode())))
+        // if (($demande->statut() != demande::DEMANDE_REFUSE) and ($fonctions->formatdatedb($demande->datedebut())>=($fonctions->anneeref() . $fonctions->debutperiode())))
         // {
         // if ($afficheheader)
         // {
@@ -330,7 +330,7 @@
         // $afficheheader = FALSE;
         // }
         // $msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la période du " . $demande->datedebut() . " au " . $demande->datefin() . " <br>";
-        // $demande->statut("r");
+        // $demande->statut(demande::DEMANDE_REFUSE);
         // $demande->motifrefus("Changement d'autodéclaration");
         // //echo "Avant le store...<br>";
         // //print_r($demande); echo "<br>";

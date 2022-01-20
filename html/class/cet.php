@@ -370,7 +370,7 @@ class cet
         //    255
         //));
         $pdf->AddPage();
-        $pdf->Image('../html/images/logo_papeterie.png', 70, 25, 60, 20);
+        $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
         
         // echo "Apres image <br>";
         $pdf->SetFont('helvetica', 'B', 16, '', true);
@@ -434,7 +434,7 @@ class cet
         $pdf->Ln(10);
         
         // echo "Nom du fichier....<br>";
-        $pdfname = $this->fonctions->g2tbasepath() . '/html/pdf/' . date('Y-m') . '/modification_cet_' . $agent->harpegeid() . '_' . date("YmdHis") . '.pdf';
+        $pdfname = $this->fonctions->pdfpath() . '/' . date('Y-m') . '/modification_cet_' . $agent->harpegeid() . '_' . date("YmdHis") . '.pdf';
         // echo "Avant le output... pdfname = $pdfname <br>";
         
         //$pdf->Output($pdfname, 'F');

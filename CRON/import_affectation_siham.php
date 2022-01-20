@@ -10,7 +10,7 @@
     
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
     
 /*    
@@ -368,7 +368,7 @@
                             $datefin = "9999-12-31";
                         // echo "datefin = $datefin \n";
                         $declarationTP->datefin($datefin);
-                        $declarationTP->statut("v");
+                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                         $erreur = $declarationTP->store();
                         if ($erreur != "")
                             echo "Erreur dans la declarationTP->store : " . $erreur . "\n";
@@ -427,9 +427,9 @@
                             if (! is_null($declarationliste)) {
                                 // Pour chaque declaration => On les annule
                                 foreach ($declarationliste as $declaration) {
-                                    if (strcasecmp($declaration->statut(), "r") != 0) {
+                                    if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
     
-                                        $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($declaration->declarationTPid()));
+                                        $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='" . declarationTP::DECLARATIONTP_REFUSE . "' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($declaration->declarationTPid()));
                                         mysqli_query($dbcon, $sql);
                                         $erreur_requete = mysqli_error($dbcon);
                                         if ($erreur_requete != "")
@@ -450,7 +450,7 @@
                                     $datefin = "9999-12-31";
                                 // echo "datefin = $datefin \n";
                                 $declarationTP->datefin($datefin);
-                                $declarationTP->statut("v");
+                                $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                                 $erreur = $declarationTP->store();
                                 if ($erreur != "")
                                     echo "Erreur dans la déclarationTP->store : " . $erreur . "\n";
@@ -468,7 +468,7 @@
                                 $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
                                 if (! is_null($declarationliste)) {
                                     foreach ($declarationliste as $declarationTP) {
-                                        if (strcasecmp($declarationTP->statut(), "r") != 0) {
+                                        if (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                                             $sql = sprintf("UPDATE DECLARATIONTP SET DATEDEBUT='%s', DATEFIN='%s' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datedebut)), $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datefin)), $fonctions->my_real_escape_utf8($declarationTP->declarationTPid()));
                                             mysqli_query($dbcon, $sql);
                                             $erreur_requete = mysqli_error($dbcon);
@@ -488,7 +488,7 @@
                             $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
                             if (! is_null($declarationliste)) {
                                 foreach ($declarationliste as $declarationTP) {
-                                    if (strcasecmp($declarationTP->statut(), "r") != 0) {
+                                    if (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                                         echo "datedebut = $datedebut    datefin = $datefin   DECLARATIONID = " . $declarationTP->declarationTPid() . "\n";
                                         $sql = sprintf("UPDATE DECLARATIONTP SET DATEDEBUT='%s', DATEFIN='%s' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datedebut)), $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datefin)), $fonctions->my_real_escape_utf8($declarationTP->declarationTPid()));
                                         echo "SQL UPDATE DECLARATIONTP => $sql \n";
@@ -534,7 +534,7 @@
                             $declarationTP->load($declarationTPid);
                             $declarationTP->datedebut($fonctions->formatdate($result[3]));
                             $declarationTP->datefin($fonctions->formatdate($result[4]));
-                            $declarationTP->statut('v');
+                            $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                             $erreur = $declarationTP->store();
                             if ($erreur != "")
                                 echo "Erreur dans la declarationTP->store (reactivation de la declarationTP) : " . $erreur . "\n";
@@ -550,7 +550,7 @@
                             $statut = "$result[2]";
                             $datedebut = "$result[3]";
                             $datefin = "$result[4]";
-                            if ($statut <> 'r')
+                            if ($statut <> declarationTP::DECLARATIONTP_REFUSE)
                             {
                                 $declaTPactive = true;
                             }
@@ -565,7 +565,7 @@
                             $declarationTP->tabtpspartiel(str_repeat("0", 20));
                             $declarationTP->datedebut($fonctions->formatdate($datedebut));
                             $declarationTP->datefin($fonctions->formatdate($datefin));
-                            $declarationTP->statut('v');
+                            $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                             $erreur = $declarationTP->store();
                             if ($erreur != "")
                                 echo "Erreur dans la declarationTP->store (declarationTP manquante 100%) : " . $erreur . "\n";
@@ -582,7 +582,7 @@
     $sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID,DECLARATIONTP.DECLARATIONID FROM AFFECTATION,DECLARATIONTP ";
     $sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
     $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
-    $sql = $sql . "   AND DECLARATIONTP.STATUT != 'r'";
+    $sql = $sql . "   AND DECLARATIONTP.STATUT != '" . declarationTP::DECLARATIONTP_REFUSE . "'";
     // echo "$sql (obsolete) = $sql \n";
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
@@ -600,12 +600,12 @@
                 if ($erreur_requete != "") {
                     echo "UPDATE AFFECTATION (Mise du date de modification)=> $erreur_requete \n";
                 }
-                $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='r' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($result[2]));
+                $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='" . declarationTP::DECLARATIONTP_REFUSE . "' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($result[2]));
                 echo "SQL (UPDATE STATUT) => $sql \n";
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") {
-                    echo "UPDATE DECLARATIONTP (Mise du Statut à 'r')=> $erreur_requete \n";
+                    echo "UPDATE DECLARATIONTP (Mise du Statut à '" . declarationTP::DECLARATIONTP_REFUSE . "')=> $erreur_requete \n";
                 }
             }
         }
@@ -628,7 +628,7 @@
     $sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID FROM AFFECTATION,DECLARATIONTP ";
     $sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
     $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
-    $sql = $sql . "   AND DECLARATIONTP.STATUT != 'r'";
+    $sql = $sql . "   AND DECLARATIONTP.STATUT != '" . declarationTP::DECLARATIONTP_REFUSE . "'";
     // echo "$sql (obsolete) = $sql \n";
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
@@ -731,7 +731,7 @@
             $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
             if (! is_null($declarationliste)) {
                 foreach ($declarationliste as $declaration) {
-                    $declaration->statut("r");
+                    $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
                     $msg = $declaration->store();
                     if ($msg != "")
                         echo "Problème lors de la suppression de la déclaration " . $declaration->declarationTPid() . " : " . $msg . " \n";

@@ -1,7 +1,7 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
 /*
     require_once ("../html/class/agent.php");
@@ -110,7 +110,8 @@
         foreach ($tabanalyse as $demandeid => $textanalyse) {
             $demande = new demande($dbcon);
             $demande->load($demandeid);
-            if (strcasecmp($demande->statut(), 'r') != 0) // Si la demande n'est pas annulée ou refusée !
+//            if (strcasecmp($demande->statut(), 'r') != 0) // Si la demande n'est pas annulée ou refusée !
+            if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) != 0 and strcmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) // Si la demande n'est pas annulée et si elle n'est pas refusée !
             {
                 $text .= " * Compte-rendu de l'analyse de la demande du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n" . $textanalyse . "\n";
             }

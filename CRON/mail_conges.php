@@ -1,7 +1,7 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
 /*
     require_once ("../html/class/agent.php");
@@ -26,7 +26,7 @@
 
     // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente) mais qui ne sont pas postérieure à la période en cours (< Anneeref +1 + debut_période)
     // Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.
-    $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = 'a' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "' AND DATEDEBUT < '" . ($fonctions->anneeref() + 1) . $fonctions->debutperiode() . "'";
+    $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = '" . demande::DEMANDE_ATTENTE . "' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "' AND DATEDEBUT < '" . ($fonctions->anneeref() + 1) . $fonctions->debutperiode() . "'";
     // echo "SQL des demandes = $sql \n";
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);

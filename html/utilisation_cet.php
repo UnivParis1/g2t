@@ -100,8 +100,8 @@
             $complement = new complement($dbcon);
             $complement->load($agentid, 'DEM_CET_' . $demande->id());
 
-            // La demande est validée et il n'y a pas de complément (<=> Le statut du complément est vide) => on doit déduire les jours du solde du CET et mettre le complément (Statut = 'v' comme la demande)
-            if ($demande->statut() == "v" and $complement->valeur() != $demande->statut()) {
+            // La demande est validée et il n'y a pas de complément (<=> Le statut du complément est vide) => on doit déduire les jours du solde du CET et mettre le complément (Statut = demande::DEMANDE_VALIDE comme la demande)
+            if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->valeur() != $demande->statut()) {
                 $solde->load($agentid, 'cet');
                 // echo "Solde chargé = " . $solde->droitpris() . "<br>";
                 $droitpris = $solde->droitpris();
@@ -119,7 +119,7 @@
                 $msg_erreur = $msg_erreur . $complement->store();
                 // echo "Apres store complement.... <br>";
             }        // La demande est annulée et que le statut du complément est <> du statut de la demande => On doit recréditer les jours de CET et désactiver le complément (statut = 'R' comme la demande)
-            elseif ($demande->statut() == "R" and $complement->valeur() != $demande->statut() and $complement->valeur() != "") {
+            elseif ($demande->statut() == demande::DEMANDE_ANNULE and $complement->valeur() != $demande->statut() and $complement->valeur() != "") {
                 $solde->load($agentid, 'cet');
                 $droitpris = $solde->droitpris();
                 $droitpris = $droitpris - $demande->nbrejrsdemande();

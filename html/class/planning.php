@@ -115,7 +115,7 @@ class planning
                 foreach ((array) $declarationTPliste as $tempdeclarationTP) {
                     if (($this->fonctions->formatdatedb($tempdeclarationTP->datedebut()) <= $this->fonctions->formatdatedb($datetemp)) and ($this->fonctions->formatdatedb($tempdeclarationTP->datefin()) >= $this->fonctions->formatdatedb($datetemp))) {
                         // Si la déclaration de TP est validée
-                        if (strcasecmp($tempdeclarationTP->statut(), "v") == 0) {
+                        if (strcasecmp($tempdeclarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0) {
                             // C'est la bonne declaration de TP !
                             $declarationTP = $tempdeclarationTP;
                             break;
@@ -212,7 +212,7 @@ class planning
              * //echo "Apres le declarationTP = declarationTPliste <br>";
              * //echo "declarationTP->statut() = " . $declarationTP->statut() . "<br>";
              * // Si la déclaration de TP n'est pas validée alors c'est comme si on avait rien
-             * if ((strcasecmp($declarationTP->statut(),"v")==0) and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
+             * if ((strcasecmp($declarationTP->statut(),declarationTP::DECLARATIONTP_VALIDE)==0) and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
              * {
              * // Si on a trouvée une declatation de TP validée on sort
              * //echo "Je break... <br>";
@@ -258,7 +258,7 @@ class planning
                 $element->type("nondec");
                 $element->info("Période non déclarée");
             }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-            elseif (strcasecmp($declarationTP->statut(), "v") != 0) {
+            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) {
                 $element->type("nondec");
                 $element->info("Période non déclarée");
             } elseif ($declarationTP->enTP($element->date(), $element->moment())) {
@@ -288,7 +288,7 @@ class planning
                 $element->type("nondec");
                 $element->info("Période non déclarée");
             }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-            elseif (strcasecmp($declarationTP->statut(), "v") != 0) {
+            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) {
                 $element->type("nondec");
                 $element->info("Période non déclarée");
             } elseif ($declarationTP->enTP($element->date(), $element->moment())) {
@@ -316,7 +316,7 @@ class planning
         $demandeliste = $agent->demandesliste($datedebut, $datefin);
         $demande = new demande($this->dbconnect);
         foreach ((array) $demandeliste as $demandeid => $demande) {
-            if (($demande->statut() == 'v') or ($demande->statut() == 'a')) {
+            if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
                 $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
                 $demandedatefin = $this->fonctions->formatdate($demande->datefin());
                 $demandemomentdebut = $demande->moment_debut();
@@ -421,7 +421,7 @@ class planning
          * AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($datedebut) . "')
          * OR (DATEFIN >= '" . $this->fonctions->formatdatedb($datefin) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($datefin) . "')
          * OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))
-         * AND STATUT <> 'r'";
+         * AND STATUT <> '" . demande::DEMANDE_REFUSE .  "'";
          * //echo "Planning Load sql = $sql <br>";
          * $query=mysqli_query ($this->dbconnect, $sql);
          * $erreur=mysqli_error($this->dbconnect);
@@ -835,7 +835,7 @@ WHERE HARPEGEID = '" . $agentid . "'
         // $pdf->Open();
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
-        $pdf->Image('../html/images/logo_papeterie.png', 10, 5, 60, 20);
+        $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
         

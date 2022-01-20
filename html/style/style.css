@@ -1,4 +1,5 @@
-@CHARSET "ISO-8859-1";
+@charset "utf-8";
+/* @CHARSET "ISO-8859-1"; */
 
 /*<group=Navigation principale>*/
 
@@ -185,6 +186,7 @@
 #mainmenu LI A {
    TEXT-DECORATION: none; 
    COLOR: #336699;
+/*   width: calc(100% - 30px); */
 }
 #mainmenu UL.niveau1 LI {
 /*   BACKGROUND-COLOR: #336699; */ 
@@ -234,9 +236,19 @@
 #mainmenu LI.plus {
    COLOR: #336699; 
    BACKGROUND-POSITION: right 50%; 
+/*
    BACKGROUND-IMAGE: url(../images/fdroite.gif); 
+*/
    BORDER-BOTTOM: #888B8A 1px solid; 
    BACKGROUND-REPEAT: no-repeat;
+}
+
+LI.plus::after {
+	text-align: center;
+	content: "\25B6";  /* triangle vers la droite ▶ */
+	/* COLOR: red; */
+	position: absolute; 
+	right: 10px;
 }
 
 /****************************************************

@@ -47,7 +47,7 @@
 
     if (is_array($statutliste)) {
         foreach ($statutliste as $declarationid => $statut) {
-            if (strcasecmp($statut, "a") != 0 and $statut != "") {
+            if (strcasecmp($statut, declarationTP::DECLARATIONTP_ATTENTE) != 0 and $statut != "") {
                 $declaration = new declarationTP($dbcon);
                 // echo "Avant le load... <br>";
                 $declaration->load($declarationid);
@@ -90,7 +90,7 @@
      * //echo "header = $header autodeclaid = $autodeclaid <br>";
      * $statut = $_POST[$header . "_statut_". $autodeclaid];
      * //echo "statut = $statut <br>";
-     * if ($statut != "a" and $statut != "")
+     * if ($statut != declarationTP::DECLARATIONTP_ATTENTE and $statut != "")
      * {
      * $autodecla = new autodeclaration($dbcon);
      * //echo "Avant le load... <br>";
@@ -162,7 +162,7 @@
                             $declaTPliste = $affectation->declarationTPliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 99) . $fonctions->finperiode());
                             if (is_array($declaTPliste)) {
                                 foreach ($declaTPliste as $declaration) {
-                                    if (strcasecmp($declaration->statut(), "r") != 0)
+                                    if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                                         echo $declaration->html(TRUE, $structure->id());
                                 }
                             }

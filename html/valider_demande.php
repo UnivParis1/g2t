@@ -63,15 +63,16 @@
 
     if (is_array($statutliste) and is_array($motifliste)) {
         foreach ($statutliste as $demandeid => $statut) {
-            if (strcasecmp($statut, "a") != 0) {
+            if (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0) {
                 $motif = $motifliste["$demandeid"];
                 $demande = new demande($dbcon);
                 // echo "cleelement = $cleelement demandeid = $demandeid <br>";
                 $demande->load($demandeid);
-                if ($statut == 'r')
+                if ($statut == demande::DEMANDE_REFUSE)
                     $demande->motifrefus($motif);
                 $demande->statut($statut);
-                if (strcasecmp($statut, "r") == 0 and $motif == "") {
+//                if (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 and $motif == "") {
+                if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "") {
                     $errlog = "Le motif du refus est obligatoire !!!!";
                     echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
@@ -85,23 +86,28 @@
                         $pdffilename[0] = $demande->pdf($user->harpegeid());
                         $agent = $demande->agent();
                         //echo "<br>Le statut de la demande est : $statut <br><br>"; 
-                        if ((strcasecmp($statut, 'v') == 0) or (strcmp($statut, 'R') == 0)) {
+                        if ((strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) or (strcmp($statut, demande::DEMANDE_ANNULE) == 0)) {
                             $ics = $demande->ics($agent->mail());
                         }
-                        elseif ((strcmp($statut, 'r') == 0)) {
+                        elseif ((strcmp($statut, demande::DEMANDE_REFUSE) == 0)) {
                             // On refuse une demande => On doit mettre à jour l'agenda car la demande est en statut "TENTATIVE"
                             $ics = $demande->ics($agent->mail());
                         }
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
 
-                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
+                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                         {
+                            /*
                             // On remplace les '\' par des '/' et on cherche la position du dernier '/'
                             $position = strrpos(str_replace('\\', '/', $pdffilename[0]), '/');
                             // La base du chemin PDF est donc la sous-chaine du nom du fichier PDF de la demande !!
                             $basepdfpath = substr($pdffilename[0], 0, $position);
                             // On ajoute le fichier PDF d'utilisation du CET en congés
                             $pdffilename[1] = $basepdfpath . '/../../documents/Utilisation_CET_Conges.pdf';
+                            */
+
+                            // On ajoute le fichier PDF d'utilisation du CET en congés
+                            $pdffilename[1] = $fonctions->documentpath() . '/Utilisation_CET_Conges.pdf';
                             $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
@@ -111,7 +117,7 @@
 
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
 
-                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, "v") == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         {
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {

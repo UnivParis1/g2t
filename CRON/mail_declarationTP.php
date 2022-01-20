@@ -1,7 +1,7 @@
 <?php
     //require_once ("../html/class/fonctions.php");
     require_once ('../html/includes/dbconnection.php');
-    require_once ('../html/includes/g2t_ws_url.php');
+    //require_once ('../html/includes/g2t_ws_url.php');
     require_once ('../html/includes/all_g2t_classes.php');
 /*    
     require_once ("../html/class/agent.php");
@@ -26,7 +26,7 @@
     echo "Début de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
 
     // On selectionne les demandes en attente de validation
-    $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = 'a'";
+    $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = '" . declarationTP::DECLARATIONTP_ATTENTE . "'";
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")

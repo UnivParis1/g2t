@@ -25,9 +25,9 @@ REM %PHPDIR%\php import_agent.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PAT
 REM %PHPDIR%\php import_absence.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 REM %PHPDIR%\php import_structure.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 REM %PHPDIR%\php p1_specific_update.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
-REM %PHPDIR%\php import_affectation_siham.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
+REM%PHPDIR%\php import_affectation_siham.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 REM %PHPDIR%\php p1_post_affectation.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
-%PHPDIR%\php calcul_solde.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
+REM %PHPDIR%\php calcul_solde.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 %PHPDIR%\php synchro_demandes_cet.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 
 REM ----------------------------------------

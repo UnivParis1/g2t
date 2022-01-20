@@ -160,12 +160,12 @@
             // echo "cleelement = $cleelement demandeid = $demandeid <br>";
             $demande->load($demandeid);
             $demande->motifrefus($motif);
-            if (strcasecmp($demande->statut(), "v") == 0 and $motif == "") {
+            if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and $motif == "") {
                 $errlog = "Le motif du refus est obligatoire !!!!";
                 echo "<p style='color: red'>" . $errlog . "</p><br/>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } else {
-                $demande->statut("R");
+                $demande->statut(demande::DEMANDE_ANNULE);
                 $msgerreur = "";
                 $msgerreur = $demande->store();
                 if ($msgerreur != "") {

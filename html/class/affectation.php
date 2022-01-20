@@ -423,7 +423,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
                     // Si on est en mode "resp" (responsable de service) on affiche toutes les déclarations de TP
                     // qui sont liés à cette affectation
                     if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp($mode, "resp") == 0) {
-                        if (strcasecmp($declaration->statut(), "r") != 0) {
+                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                             if ($premiereligne) {
                                 $htmltext = $htmltext . "Tableau des temps partiels déclarés dans G2T pour " . $agent->identitecomplete() . "<br>";
                                 $htmltext = $htmltext . "<table class='tableausimple'>";
