@@ -2847,7 +2847,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
     	elseif (mysqli_num_rows($query) == 0)
     	{
     		//echo "<br>load => pas de ligne dans la base de données<br>";
-    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . "<br>";;
+    		$errlog = "Aucune demande d'alimentation pour l'agent " . $this->identitecomplete() . ".";
     		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     	}
     	else
@@ -2876,7 +2876,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
     	elseif (mysqli_num_rows($query) == 0)
     	{
     		//echo "<br>load => pas de ligne dans la base de données<br>";
-    		$errlog = "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . "<br>";
+    		$errlog = "Aucune demande de droit d'option pour l'agent " . $this->identitecomplete() . ".";
     		error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
     		//echo $errlog;
     	}

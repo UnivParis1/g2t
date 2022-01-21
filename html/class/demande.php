@@ -596,9 +596,13 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 }
                 // Si le nouveau statut est annulé => On doit recréditer le nombre de jour....
                 //if (strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) != 0 and strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0) {
-                if ((strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) != 0 and strcasecmp($this->ancienstatut, demande::DEMANDE_ANNULE) != 0)
+                /*
+                *if ((strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) != 0 and strcasecmp($this->ancienstatut, demande::DEMANDE_ANNULE) != 0)
+                *   and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) {
+                */
+                if ((strcasecmp($this->ancienstatut, demande::DEMANDE_VALIDE) == 0 or strcasecmp($this->ancienstatut, demande::DEMANDE_ATTENTE) == 0)
                    and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) {
-                    // Si ce n'est pas un CET on doit recréditer le nombre de jour
+                       // Si ce n'est pas un CET on doit recréditer le nombre de jour
                     if (strcasecmp($this->typeabsenceid, 'cet') != 0) {
                         // On recrédite le nombre de jours dans les congés....
                         $sql = "UPDATE SOLDE
