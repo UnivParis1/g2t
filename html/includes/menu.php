@@ -183,7 +183,7 @@
 <link rel="stylesheet" type="text/css"
 	href="style/style.css?<?php echo filemtime('style/style.css')  ?>"
 	media="screen"></link>
-<link rel="stylesheet" type="text/css" href="style/jquery-ui.css"
+<link rel="stylesheet" type="text/css" href="style/jquery-ui.css?<?php echo filemtime('style/jquery-ui.css')  ?>"
 	media="screen"></link>
 </head>
 
