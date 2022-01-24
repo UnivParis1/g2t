@@ -77,7 +77,8 @@
                 //    255
                 //));
                 //$pdf->AddPage('L');
-                //$pdf->Image($fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
+                ////$pdf->Image($fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
+                //$pdf->Image($fonctions->imagepath() . '/' . LOGO_FILENAME, 70, 25, 60, 20);
                 foreach ($tablisteagent as $key => $agent) {
                     echo "Agent = " . $agent->identitecomplete() . "\n";
                     $agent->soldecongespdf($anneeref, FALSE, $pdf, TRUE);

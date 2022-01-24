@@ -107,7 +107,7 @@
                             */
 
                             // On ajoute le fichier PDF d'utilisation du CET en congés
-                            $pdffilename[1] = $fonctions->documentpath() . '/Utilisation_CET_Conges.pdf';
+                            $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
                             $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {

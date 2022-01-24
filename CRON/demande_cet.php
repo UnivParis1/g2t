@@ -84,7 +84,8 @@
         //    255
         //));
         $pdf->AddPage('L');
-        $pdf->Image($fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
+        //$pdf->Image($fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
+        $pdf->Image($fonctions->imagepath() . '/' . LOGO_FILENAME, 70, 25, 60, 20);
         $pdf->Ln(40);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Cell(60, 10, utf8_decode("Historique des demandes de congés de CET depuis le $datedebut -- Edité le " . date("d/m/Y")));

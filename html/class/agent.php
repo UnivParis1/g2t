@@ -1008,7 +1008,8 @@ AND DEMANDE.STATUT='" . demande::DEMANDE_VALIDE . "'";
         // echo "Apres le addpage <br>";
         if ($header == TRUE) {
             $pdf->AddPage('L');
-            $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
+            //$pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
+            $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
             $pdf->Ln(15);
             
@@ -1527,7 +1528,8 @@ AND DEMANDE.STATUT='" . demande::DEMANDE_VALIDE . "'";
             //    255,
             //    255
             //));
-            $pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
+            //$pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
+            $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
             $pdf->Ln(15);
             /*
