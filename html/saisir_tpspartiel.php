@@ -403,6 +403,9 @@
         $debut_interval = $fonctions->anneeref() . $fonctions->debutperiode();
         $fin_interval = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
         $affectationliste = $agent->affectationliste($debut_interval, $fin_interval);
+        
+        //var_dump($affectationliste);
+        
         $affectation = new affectation($dbcon);
         $tppossible = false;
         if (is_array($affectationliste)) {
@@ -434,8 +437,9 @@
                 if ($affectation->quotite() != "100%") {
                     echo "<form name='frm_saisir_tpspartiel_" . $affectation->affectationid() . "' method='post' >";
                     echo "<input type='hidden' name='affectationid' value='" . $affectation->affectationid() . "'>";
+                    //echo "Avant le affectation->html <br>";
                     echo $affectation->html(true, false, $mode);
-
+                    //echo "Apres le affectation->html <br>";
                     echo "<br>Réaliser une nouvelle déclaration de temps partiel<br>";
                     echo "<table>";
                     echo "<tr>";

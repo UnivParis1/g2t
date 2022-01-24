@@ -221,16 +221,25 @@ class planningelement
         else
             $checkboxtext = "";
         
-        $agent = new agent($this->dbconnect);
-        $agent->load($this->agentid());
-        $listeexclusion = $agent->listejoursteletravailexclus($this->date(), $this->date());
-        if (array_search($this->fonctions->formatdatedb($this->date()),(array)$listeexclusion)===false)
-        {   // On n'a pas trouvé la date dans la liste 
+        // ATTENTION : Ce cas arrive lorsque l'on veut déclarer un TP dans l'écran saisir_tpspartiel.php
+        if (is_null($this->agentid))
+        {
+            $listeexclusion = array();
             $exclusion = false;
         }
         else
-        {   // La date est dans liste des exclusions
-            $exclusion = true;
+        {
+            $agent = new agent($this->dbconnect);
+            $agent->load($this->agentid());
+            $listeexclusion = $agent->listejoursteletravailexclus($this->date(), $this->date());
+            if (array_search($this->fonctions->formatdatedb($this->date()),(array)$listeexclusion)===false)
+            {   // On n'a pas trouvé la date dans la liste 
+                $exclusion = false;
+            }
+            else
+            {   // La date est dans liste des exclusions
+                $exclusion = true;
+            }
         }
         if (($this->type() == 'teletrav' or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {

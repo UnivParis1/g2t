@@ -433,7 +433,11 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
                                 $htmltext = $htmltext . "</tr>";
                                 $premiereligne = false;
                             }
+                            //echo "<B>Avant le declaration->html </B><br><br>";
+                            //var_dump($declaration);
+                            
                             $htmltext = $htmltext . $declaration->html($pour_modif);
+                            //echo "<B>Après le declaration->html </B><br><br>";
                         }
                     }
                 }

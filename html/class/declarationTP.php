@@ -221,7 +221,9 @@ WHERE DECLARATIONID=" . $id;
                     $element->type("");
                     $element->info("");
                 }
+                //echo "<b><br>Avant le element->html<br><br></b>";
                 $htmltext = $htmltext . $element->html(false, $checkboxname);
+                //echo "<b><br>Apres le element->html<br><br></b>";
                 unset($element);
             }
             $htmltext = $htmltext . "</tr>";
@@ -295,12 +297,12 @@ WHERE DECLARATIONID=" . $id;
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
-                $errlog = "Demande->agent : " . $erreur;
+                $errlog = "DeclarationTP->agent : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             if (mysqli_num_rows($query) == 0) {
-                $errlog = "Demande->agent : Pas d'agent trouvé pour la déclaration de TP " . $this->declarationTPid();
+                $errlog = "DeclarationTP->agent : Pas d'agent trouvé pour la déclaration de TP " . $this->declarationTPid();
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
