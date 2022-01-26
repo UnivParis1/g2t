@@ -103,7 +103,7 @@
                             // quotité sur la période 01/09/N-1 - 31/08/N
                             $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
                             $datefin = $fonctions->anneeref().$fonctions->finperiode();
-                            $quotite = $agent->getQuotiteMoyPeriode($datedebut, $datefin).'%';
+                            $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
                             
                             $agent = array('uid' => $agent->harpegeid(),
                                 'email' => $agent->mail(),
