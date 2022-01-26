@@ -947,6 +947,17 @@
 				$joursCET += $alimentationCET->valeur_f();
 			}
 			$nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
+			if ($nbjoursobli - floor($nbjoursobli) != 0)
+			{
+				if ($nbjoursobli - floor($nbjoursobli) <= 0.5)
+				{
+					$nbjoursobli = floor($nbjoursobli) + 0.5;
+				}
+				else 
+				{
+					$nbjoursobli = floor($nbjoursobli) + 1;
+				}
+			}
 			if ($valeur_c < $nbjoursobli)
 			{
 			    echo "<font color='#EF4001'> Vous n'avez pas posé les $nbjoursobli jours de congés obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET. </font><br>";
