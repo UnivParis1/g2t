@@ -752,6 +752,12 @@
                         </form>
                         <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
                     </li>
+					<li onclick='document.rh_gest_teletravail.submit();'>
+						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+						</form>
+						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
+					</li>
 					<li class="plus"><a>Gestion des CET et paramétrage</a>
 						<ul class="niveau3">
         					<li onclick='document.gestrh_utilisationcet.submit();'>
@@ -912,12 +918,6 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_affiche_demandeCET.submit();">Afficher une demande sur CET/eSignature</a>
-					</li>
-					<li onclick='document.rh_gest_teletravail.submit();'>
-						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-						</form>
-						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
 				</ul>
 			</li>
