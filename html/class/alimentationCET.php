@@ -555,7 +555,7 @@ class alimentationCET
         
         $agent = new agent($this->dbconnect);
         $agent->load($this->agentid());
-        $basename = "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_num_" . $this->esignatureid . ".pdf";
+        $basename = str_replace(' ', '_', "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_num_" . $this->esignatureid . ".pdf");
         $pdffilename = $this->fonctions->pdfpath() . '/cet/' . $basename;
         //echo "<br>pdffilename = $pdffilename <br><br>";
         
