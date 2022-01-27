@@ -111,7 +111,7 @@
         $responsable->load($agentid);
         echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") \n";
 
-        $agentcron->sendmail($responsable, "Des demandes de temps partiel sont en attentes", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que responsable de structure, merci de bien vouloir les valider dès que possible.\n", null);
+        $agentcron->sendmail($responsable, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que responsable de structure, merci de bien vouloir les valider dès que possible.\n", null);
         unset($responsable);
     }
     foreach ($mail_gest as $agentid => $nbredemande) {
@@ -119,7 +119,7 @@
         $gestionnaire->load($agentid);
         echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") \n";
 
-        $agentcron->sendmail($gestionnaire, "Des demandes de temps partiel sont en attentes", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que gestionnaire de structure, merci de bien vouloir les valider dès que possible.\n", null);
+        $agentcron->sendmail($gestionnaire, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que gestionnaire de structure, merci de bien vouloir les valider dès que possible.\n", null);
         unset($gestionnaire);
     }
 

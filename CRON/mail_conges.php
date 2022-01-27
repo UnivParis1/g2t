@@ -142,7 +142,7 @@
         $nbredemande = substr_count($listedemande, ',');
         echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
 
-        $agentcron->sendmail($responsable, "En tant que responsable de service, des demandes de congés ou d'autorisations d'absence sont en attentes", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n", null);
+        $agentcron->sendmail($responsable, "En tant que responsable de service, des demandes de congés ou d'autorisations d'absence sont en attente", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n", null);
         unset($responsable);
     }
     foreach ($mail_gest as $agentid => $listedemande) {
@@ -151,7 +151,7 @@
         $nbredemande = substr_count($listedemande, ',');
         echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
 
-        $agentcron->sendmail($gestionnaire, "En tant que gestionnaire de service, des demandes de congés ou d'autorisations d'absence sont en attentes", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n", null);
+        $agentcron->sendmail($gestionnaire, "En tant que gestionnaire de service, des demandes de congés ou d'autorisations d'absence sont en attente", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n", null);
         unset($gestionnaire);
     }
     unset($agentcron);

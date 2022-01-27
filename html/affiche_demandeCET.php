@@ -194,22 +194,24 @@
             $nextstep = null;
             foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
             {
+                $signedstep = false;
                 echo "<B>Etape " . ($numstep+1) . " : </B><br>";
                 foreach ($step["recipients"] as $esignatureuser)
                 {
                     if ($esignatureuser["signed"])
                     {
                         echo " <FONT color='green'>";
-                    }
-                    elseif (is_null($nextstep))
-                    {
-                        $nextstep = $numstep;
+                        $signedstep = true;
                     }
                     echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ")<br>";
                     if ($esignatureuser["signed"])
                     {
                         echo " </FONT>";
                     }
+                }
+                if ($signedstep==false and is_null($nextstep))
+                {
+                    $nextstep = $numstep;
                 }
             }
             echo "<br>";
