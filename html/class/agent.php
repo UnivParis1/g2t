@@ -2662,7 +2662,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
 //    	echo "Liste_affectation = ";
 //    	var_dump($liste_affectations);
 //    	echo "<br>";
-    	if (sizeof($liste_affectations) >= 1)
+    	if (sizeof((array)$liste_affectations) >= 1)
     	{
     		$debutaffprec = null;
     		$finaffprec = null;

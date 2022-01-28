@@ -876,17 +876,21 @@ else
             
             
             $affectation = new affectation($dbcon);
+            $typeagent = '';
             $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y'));
             if (count((array)$affectationliste) == 0)
             {
                 $errorcontroltxt = $errorcontroltxt . "L'agent " . $agent->identitecomplete() . " n'a d'affectation actuellement.<br>Il n'est donc pas possible d'établir une demande de droit d'option.<br>";
                 $controleok = false;
             }
-            $affectation = current($affectationliste);
-            if ($affectation->numcontrat() <> 0)
-               $typeagent = 'cont';
             else
-               $typeagent = "titu";
+            {
+                $affectation = current((array)$affectationliste);
+                if ($affectation->numcontrat() <> 0)
+                   $typeagent = 'cont';
+                else
+                   $typeagent = "titu";
+            }
         }
         
         
