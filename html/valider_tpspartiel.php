@@ -52,23 +52,33 @@
                 // echo "Avant le load... <br>";
                 $declaration->load($declarationid);
                 // echo "Apres le load... <br>";
-                $declaration->statut($statut);
-                // echo "Avant le store <br>";
-                $msgerreur = "";
-                $msgerreur = $declaration->store();
-                // echo "Apres le store <br>";
-                if ($msgerreur != "") {
-                    $errlog = "Pas de sauvegarde car " . $msgerreur;
+                if ($declaration->statut() == $statut)
+                {
+                    // Pas de changement de statut de la demande => On ne sauvegarde rien !!!
+                    $errlog = "Le statut de la demande de TP est inchangé !!!! Donc pas de sauvegarde.";
                     echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                } else {
-                    $pdffilename = $declaration->pdf($user->harpegeid());
-                    // $agentid = $declaration->agent();
-                    // $agent = new agent($dbcon);
-                    // $agent->load($agentid);
-                    $user->sendmail($declaration->agent(), "Validation d'un temps-partiel", "La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . mb_strtolower($fonctions->declarationTPstatutlibelle($declaration->statut()),'UTF-8') . ".", $pdffilename);
-                    // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-                    error_log("Sauvegarde du temps-partiel " . $declaration->declarationTPid() . " avec le statut " . $declaration->statut());
+                }
+                else
+                {
+                    $declaration->statut($statut);
+                    // echo "Avant le store <br>";
+                    $msgerreur = "";
+                    $msgerreur = $declaration->store();
+                    // echo "Apres le store <br>";
+                    if ($msgerreur != "") {
+                        $errlog = "Pas de sauvegarde car " . $msgerreur;
+                        echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                    } else {
+                        $pdffilename = $declaration->pdf($user->harpegeid());
+                        // $agentid = $declaration->agent();
+                        // $agent = new agent($dbcon);
+                        // $agent->load($agentid);
+                        $user->sendmail($declaration->agent(), "Validation d'un temps-partiel", "La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . mb_strtolower($fonctions->declarationTPstatutlibelle($declaration->statut()),'UTF-8') . ".", $pdffilename);
+                        // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
+                        error_log("Sauvegarde du temps-partiel " . $declaration->declarationTPid() . " avec le statut " . $declaration->statut());
+                    }
                 }
             }
         }
