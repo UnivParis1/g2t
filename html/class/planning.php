@@ -24,7 +24,7 @@ class planning
         $this->fonctions = new fonctions($db);
     }
 
-    function load($agentid, $datedebut, $datefin, $includeteletravail = false)
+    function load($agentid, $datedebut, $datefin, $includeteletravail = false, $includecongeabsence = true)
     {
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
@@ -50,7 +50,12 @@ class planning
         // echo "Début For : " . date("d/m/Y H:i:s") . "<br>";
         
         $fulldeclarationTPliste = array();
-        $affectationliste = $agent->affectationliste($datedebut, $datefin);
+        $ignoremissinggstructure = false;
+        //if ($includeteletravail)
+        //{
+        //    $ignoremissinggstructure = true;
+        //}
+        $affectationliste = $agent->affectationliste($datedebut, $datefin, $ignoremissinggstructure);
         
         foreach ((array) $affectationliste as $affectation) {
             $declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
@@ -313,92 +318,95 @@ class planning
         // echo " " . date("H:i:s") . "<br>";
         // echo "Planning->Load : fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
         
-        $demandeliste = $agent->demandesliste($datedebut, $datefin);
-        $demande = new demande($this->dbconnect);
-        foreach ((array) $demandeliste as $demandeid => $demande) {
-            if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
-                $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
-                $demandedatefin = $this->fonctions->formatdate($demande->datefin());
-                $demandemomentdebut = $demande->moment_debut();
-                $demandemomentfin = $demande->moment_fin();
-                $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
-                $demandetempmoment = $demandemomentdebut;
-                
-                // echo "demandedatedeb = $demandedatedeb demandedatefin = $demandedatefin demandemomentdebut=$demandemomentdebut demandemomentfin = $demandemomentfin datetemp =$datetemp <br>";
-                // echo "fonctions->formatdatedb(demandedatefin) = " . $this->fonctions->formatdatedb($demandedatefin) . "<br>";
-                while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) {
-                    // echo "demandetempmoment = $demandetempmoment datetemp = $datetemp <br>";
-                    if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) {
-                        // echo "demandemomentdebut = $demandemomentdebut <br>";
-                        if ($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandetempmoment != $demandemomentdebut)
-                            $demandetempmoment = "";
-                        // echo "demandetempmoment (apres le if - matin)= " . $demandetempmoment . "<br>";
-                        if ($demandetempmoment == 'm') {
-                            // echo "Avant le new planningElement (bloc 'm') <br>";
-                            unset($element);
-                            $element = new planningelement($this->dbconnect);
-                            $element->date($this->fonctions->formatdate($datetemp));
-                            $element->moment("m");
-                            $element->type($demande->type());
-                            $element->statut($demande->statut());
-                            $element->info($demande->typelibelle()); // motifrefus()
-                            $element->agentid($agentid);
-                            // echo "<br>Je set (matin) le demande id => " . $demande->id() ."<br>";
-                            $element->demandeid($demande->id());
-                            // echo "<br>Je l'ai fixé (matin) demande id => " . $element->demandeid() . "<br>";
-                            // echo "Planning->load : Type = " . $result[2] . " Info = " . $result[15] . "<br>";
-                            // echo "Planning->load : Type (element) = " . $element->type() . " Info (element) = " . $element->info() . "<br>";
-                            // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-                            // echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
-                            if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-                                $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                            elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
-                                // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
-                                    $element->demandeid("");
+        if ($includecongeabsence)
+        {
+            $demandeliste = $agent->demandesliste($datedebut, $datefin);
+            $demande = new demande($this->dbconnect);
+            foreach ((array) $demandeliste as $demandeid => $demande) {
+                if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
+                    $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
+                    $demandedatefin = $this->fonctions->formatdate($demande->datefin());
+                    $demandemomentdebut = $demande->moment_debut();
+                    $demandemomentfin = $demande->moment_fin();
+                    $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
+                    $demandetempmoment = $demandemomentdebut;
+                    
+                    // echo "demandedatedeb = $demandedatedeb demandedatefin = $demandedatefin demandemomentdebut=$demandemomentdebut demandemomentfin = $demandemomentfin datetemp =$datetemp <br>";
+                    // echo "fonctions->formatdatedb(demandedatefin) = " . $this->fonctions->formatdatedb($demandedatefin) . "<br>";
+                    while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) {
+                        // echo "demandetempmoment = $demandetempmoment datetemp = $datetemp <br>";
+                        if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) {
+                            // echo "demandemomentdebut = $demandemomentdebut <br>";
+                            if ($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandetempmoment != $demandemomentdebut)
+                                $demandetempmoment = "";
+                            // echo "demandetempmoment (apres le if - matin)= " . $demandetempmoment . "<br>";
+                            if ($demandetempmoment == 'm') {
+                                // echo "Avant le new planningElement (bloc 'm') <br>";
+                                unset($element);
+                                $element = new planningelement($this->dbconnect);
+                                $element->date($this->fonctions->formatdate($datetemp));
+                                $element->moment("m");
+                                $element->type($demande->type());
+                                $element->statut($demande->statut());
+                                $element->info($demande->typelibelle()); // motifrefus()
+                                $element->agentid($agentid);
+                                // echo "<br>Je set (matin) le demande id => " . $demande->id() ."<br>";
+                                $element->demandeid($demande->id());
+                                // echo "<br>Je l'ai fixé (matin) demande id => " . $element->demandeid() . "<br>";
+                                // echo "Planning->load : Type = " . $result[2] . " Info = " . $result[15] . "<br>";
+                                // echo "Planning->load : Type (element) = " . $element->type() . " Info (element) = " . $element->info() . "<br>";
+                                // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
+                                // echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
+                                if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
+                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                    // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
+                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                        $element->demandeid("");
+                                    }
+                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
                                 }
-                                $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                                $demandetempmoment = 'a';
+                                unset($element);
+                                // echo "Fin du traitement du demandetempmoment = 'matin' <br>";
                             }
-                            $demandetempmoment = 'a';
-                            unset($element);
-                            // echo "Fin du traitement du demandetempmoment = 'matin' <br>";
-                        }
-                        // echo "datetemp = $datetemp demandedatefin = " . $this->fonctions->formatdatedb($demandedatefin) . " demandetempmoment = $demandetempmoment demandemomentfin = $demandemomentfin <br>";
-                        if ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandetempmoment != $demandemomentfin)
-                            $demandetempmoment = "";
-                        // echo "demandetempmoment (apres le if - apres-midi)= " . $demandetempmoment . "<br>";
-                        if ($demandetempmoment == 'a') {
-                            // echo "Avant le new planningElement (bloc 'a') <br>";
-                            unset($element);
-                            $element = new planningelement($this->dbconnect);
-                            $element->date($this->fonctions->formatdate($datetemp));
-                            $element->moment("a");
-                            $element->type($demande->type());
-                            $element->statut($demande->statut());
-                            $element->info($demande->typelibelle()); // motifrefus()
-                            $element->agentid($agentid);
-                            // echo "<br>Je set (apres midi) le demande id => " . $demande->id() ."<br>";
-                            $element->demandeid($demande->id());
-                            // echo "<br>Je l'ai fixé (apres midi) demande id => " . $element->demandeid() . "<br>";
-                            // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-                            if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-                                $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                            elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
-                                // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
-                                    $element->demandeid("");
+                            // echo "datetemp = $datetemp demandedatefin = " . $this->fonctions->formatdatedb($demandedatefin) . " demandetempmoment = $demandetempmoment demandemomentfin = $demandemomentfin <br>";
+                            if ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandetempmoment != $demandemomentfin)
+                                $demandetempmoment = "";
+                            // echo "demandetempmoment (apres le if - apres-midi)= " . $demandetempmoment . "<br>";
+                            if ($demandetempmoment == 'a') {
+                                // echo "Avant le new planningElement (bloc 'a') <br>";
+                                unset($element);
+                                $element = new planningelement($this->dbconnect);
+                                $element->date($this->fonctions->formatdate($datetemp));
+                                $element->moment("a");
+                                $element->type($demande->type());
+                                $element->statut($demande->statut());
+                                $element->info($demande->typelibelle()); // motifrefus()
+                                $element->agentid($agentid);
+                                // echo "<br>Je set (apres midi) le demande id => " . $demande->id() ."<br>";
+                                $element->demandeid($demande->id());
+                                // echo "<br>Je l'ai fixé (apres midi) demande id => " . $element->demandeid() . "<br>";
+                                // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
+                                if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
+                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                    // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
+                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                        $element->demandeid("");
+                                    }
+                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
                                 }
-                                $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                                unset($element);
+                                // echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
                             }
-                            unset($element);
-                            // echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
                         }
+                        $demandetempmoment = 'm';
+                        // echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
+                        $timestamp = strtotime($datetemp);
+                        $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
+                                                                                       // echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
                     }
-                    $demandetempmoment = 'm';
-                    // echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
-                    $timestamp = strtotime($datetemp);
-                    $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
-                                                                                   // echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
                 }
             }
         }

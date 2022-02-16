@@ -758,6 +758,12 @@
 						</form>
 						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
+					<li onclick='document.rh_affiche_info_teletravail.submit();'>
+						<form name='rh_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form> 
+						<a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
+					</li>
 					<li class="plus"><a>Gestion des CET et paramétrage</a>
 						<ul class="niveau3">
         					<li onclick='document.gestrh_utilisationcet.submit();'>
@@ -918,6 +924,12 @@
 							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_affiche_demandeCET.submit();">Afficher une demande sur CET/eSignature</a>
+					</li>
+					<li onclick='document.admin_affiche_info_teletravail.submit();'>
+						<form name='admin_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+						</form> 
+						<a href="javascript:document.admin_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
 					</li>
 				</ul>
 			</li>

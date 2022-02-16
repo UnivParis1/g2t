@@ -397,29 +397,29 @@
     	        for ($index = 0 ; $index < strlen($teletravail->tabteletravail()) ; $index ++)
     	        {
     	            $demijrs = substr($teletravail->tabteletravail(),$index,1);
-    	            if (($index % 2) == 0)
+    	            if ($demijrs>0) // Si dans le tableau la valeur est > 0
     	            {
-    	                if ($index > 0 and $somme > 0) // Si pas de télétravail => On affiche rien
+    	                if (($index % 2) == 0)  // Si c'est le matin => On ajoute 1 à la somme
+    	                    $somme = $somme + 1;
+    	                elseif (($index % 2) == 1)  // Si c'est l'après-midi => On ajoute 2 à la somme
+    	                    $somme = $somme + 2;
+    	            }
+    	            if (($index % 2) == 1)
+    	            {
+    	                if ($somme > 0) // Si pas de télétravail => On affiche rien
     	                {
                             if ($somme == 1)  // Que le matin
-    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)) . " " . $fonctions->nommoment("m");
+                                $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment("m"); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
     	                    elseif ($somme == 2) // Que l'après-midi
-    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)) . " " . $fonctions->nommoment("a");
+    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment("a");
     	                    elseif ($somme == 3) // Toute la journée
-    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2));
+    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1);
     	                    else // Là, on ne sait pas !!
     	                       $htmltext = $htmltext . "Problème => index = $index  demijrs = $demijrs   somme = $somme";
      	                    
     	                    $htmltext = $htmltext . ", ";
    	                    }
      	                $somme = 0;
-   	                }
-   	                if ($demijrs>0) // Si dans le tableau la valeur est > 0
-   	                {
-                        if (($index % 2) == 0)  // Si c'est le matin => On ajoute 1 à la somme
-                            $somme = $somme + 1;
-                        elseif (($index % 2) == 1)  // Si c'est l'après-midi => On ajoute 2 à la somme 
-                            $somme = $somme + 2;
    	                }
     	        }
     	        echo substr($htmltext, 0, strlen($htmltext)-2);

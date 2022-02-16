@@ -96,6 +96,11 @@ class agent
     {
         return $this->harpegeid;
     }
+    
+    function sihamid()
+    {
+        return "UP1" . str_pad($this->harpegeid(),9,'0', STR_PAD_LEFT);
+    }
 
     /**
      *
@@ -417,10 +422,10 @@ AND DEMANDE.STATUT='" . demande::DEMANDE_VALIDE . "'";
      *            ending date of the planning
      * @return object the planning object.
      */
-    function planning($debut_interval, $fin_interval, $incudeteletravail = false)
+    function planning($debut_interval, $fin_interval, $incudeteletravail = false, $includecongeabsence = true)
     {
         $planning = new planning($this->dbconnect);
-        $planning->load($this->harpegeid, $debut_interval, $fin_interval, $incudeteletravail);
+        $planning->load($this->harpegeid, $debut_interval, $fin_interval, $incudeteletravail, $includecongeabsence);
         return $planning;
     }
 
@@ -436,10 +441,10 @@ AND DEMANDE.STATUT='" . demande::DEMANDE_VALIDE . "'";
      *            optional true means that a link to display planning in pdf format is allowed. false means the link is hidden
      * @return string the planning html text.
      */
-    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $incudeteletravail = FALSE)
+    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $incudeteletravail = FALSE, $includecongeabsence = true)
     {
         $planning = new planning($this->dbconnect);
-        $htmltext = $planning->planninghtml($this->harpegeid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $incudeteletravail);
+        $htmltext = $planning->planninghtml($this->harpegeid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $incudeteletravail, $includecongeabsence);
         return $htmltext;
     }
 

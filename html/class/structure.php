@@ -34,6 +34,8 @@ class structure
     private $fonctions = null;
     
     private $typestruct = null;
+    
+    private $isincluded = null;
 
     function __construct($db)
     {
@@ -49,7 +51,7 @@ class structure
     function load($structureid)
     {
         if (is_null($this->structureid)) {
-            $sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT, TYPESTRUCT FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
+            $sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT, TYPESTRUCT, ISINCLUDED FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "'";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -80,6 +82,7 @@ class structure
             $this->respvalidsousstruct = "$result[10]";
             $this->gestvalidagent = "$result[11]";
             $this->typestruct = "$result[12]";
+            $this->isincluded = "$result[13]";
             
             // Prise en compte du cas de la délégation
             $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID='" . $structureid . "' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
@@ -171,6 +174,14 @@ class structure
     function typestruct()
     {
     	return $this->typestruct;
+    }
+    
+    function isincluded()
+    {
+        if ($this->isincluded == 0)
+            return false;
+        else
+            return true;
     }
 
     function affichetoutagent($affiche = null)
@@ -527,7 +538,7 @@ class structure
             $this->gestionnaireid = $gestid;
     }
 
-    function planning($mois_annee_debut, $mois_annee_fin, $showsousstruct = null, $includeteletravail = false)
+    function planning($mois_annee_debut, $mois_annee_fin, $showsousstruct = null, $includeteletravail = false, $includecongeabsence = true)
     {
         $planningservice = null;
         if (is_null($mois_annee_debut) or is_null($mois_annee_fin)) {
@@ -551,14 +562,14 @@ class structure
         if (is_array($listeagent)) {
             foreach ($listeagent as $key => $agent) {
                 // echo "structure -> planning : Interval du planning a charger pour l'agent : " . $agent->nom() . " " . $agent->prenom() ." = " . $fulldatedebut . " --> " . $fulldatefin . "<br>";
-                $planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin,$includeteletravail);
+                $planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin,$includeteletravail,$includecongeabsence);
                 // echo "structure -> planning : Apres planning de ". $agent->nom() . " " . $agent->prenom() . "<br>";
             }
         }
         return $planningservice;
     }
 
-    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false, $dbclickable = false) // mois_annee_debut => Le format doit être MM/YYYY
+    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false, $dbclickable = false, $includecongeabsence = true) // mois_annee_debut => Le format doit être MM/YYYY
     {
         // echo "Je debute planninghtml <br>";
         //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
@@ -568,7 +579,7 @@ class structure
             // echo "<font color=#FF0000></font><br>";
         }
         
-        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail);
+        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail,$includecongeabsence);
         
         if (! is_array($planningservice)) {
             return ""; // Si aucun élément du planning => On retourne vide
@@ -1126,7 +1137,15 @@ class structure
         //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("fin complet = " . $tableaudate[0][1] . "  debut complet = " . $tableaudate[count($tableaudate)-1][0]));
         $agentteletravail = $this->fonctions->listeagentteletravail($tableaudate[0][0],$tableaudate[count($tableaudate)-1][1] );
         //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("agentteletravail = " . print_r($agentteletravail,true)));
+        $agentliste = array();
         $agentliste = $this->agentlist($tableaudate[0][0],$tableaudate[count($tableaudate)-1][1],'n');
+        $includedstructliste = $this->structureinclue();
+        foreach ($includedstructliste as $includedstruct)
+        {
+            $agentliste = array_merge($agentliste, $includedstruct->agentlist($tableaudate[0][0],$tableaudate[count($tableaudate)-1][1],'n'));
+        }
+        ksort($agentliste);
+        
         //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("agentliste = " . print_r($agentliste,true)));
         foreach ($agentliste as $agent)
         {
@@ -1165,6 +1184,51 @@ class structure
         $pdf->Ln(8);
         ob_end_clean();
         $pdf->Output();
+    }
+    
+    function structureenglobante()
+    {
+        if (!$this->isincluded()) // Si la structure courante n'est pas inclue ==> On s'arrète
+        {
+            return $this;
+        }
+        else
+        {
+            $structureparent = $this->parentstructure();
+            while ($structureparent->isincluded())
+            {
+                // La structure courante est incluse dans celle du dessus donc on récupère la structure parente
+                $structureparent = $structureparent->parentstructure();
+            }
+            $errlog = "La structure incluante de " . $this->nomlong() . " (" . $this->nomcourt() . " - " . $this->structureid . ") est " . $structureparent->nomlong() . " (" . $structureparent->nomcourt() . " - " . $structureparent->structureid . ")";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return $structureparent;
+        }
+    }
+    
+    function structureinclue()
+    {
+        $structureliste = array();
+        if (! is_null($this->structureid)) {
+            $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT='" . $this->structureid . "' AND ISINCLUDED <> 0";
+            $query = mysqli_query($this->dbconnect, $sql);
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Structure->structureinclue : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            if (mysqli_num_rows($query) == 0) {
+                // echo "Structure->structureinclue : La structure $this->structureid n'a pas de structure inclue<br>";
+            }
+            while ($result = mysqli_fetch_row($query)) {
+                $structure = new structure($this->dbconnect);
+                $structure->load("$result[0]");
+                $structureliste[$structure->id()] = $structure;
+                unset($structure);
+            }
+            return $structureliste;
+        }
     }
 }
 

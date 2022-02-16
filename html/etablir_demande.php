@@ -880,7 +880,7 @@
         {
             for ($index=$rh_annee_previous; $index>=0; $index--)
             {
-                echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE,true);
+                echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE,false);
                 echo "<br>";
             }
 
@@ -891,9 +891,9 @@
             $datetemp = date("Ymd", strtotime("+1month", $timestamp)); // On passe au mois suivant
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("-1days", $timestamp)); // On passe à la veille
-            echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE,true,true);
+            echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE,true,false);
         } else
-            echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode()), TRUE,true, true);
+            echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode()), TRUE,true, false);
 
         echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
         echo $agent->affichecommentairecongehtml();

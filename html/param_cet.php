@@ -37,38 +37,58 @@
     
     // PARAMETRAGE DU CALENDRIER D'ALIMENTATION
     
-    if (isset($_POST['valider_cal_alim']))
+    echo "<div style='color: red;font-weight: bold; '>";
+
+    //if (isset($_POST['valider_cal_alim']))
+    if (isset($_POST['date_debut_alim']) and isset($_POST['date_fin_alim']))
     {
-    	$datedebutalim = $fonctions->formatdatedb($_POST['date_debut_alim']);
-    	$datefinalim = $fonctions->formatdatedb($_POST['date_fin_alim']);
-    	if ($datefinalim < $datedebutalim)
-    	{
-    		echo "Incohérence dates (date début > date fin). <br>";
-    	}
-    	else
-    	{
-    		$fonctions->debutalimcet($datedebutalim);
-    		$fonctions->finalimcet($datefinalim);
-    	}
+        if ($fonctions->verifiedate($_POST['date_debut_alim']) and $fonctions->verifiedate($_POST['date_fin_alim']))
+        {
+        	$datedebutalim = $fonctions->formatdatedb($_POST['date_debut_alim']);
+        	$datefinalim = $fonctions->formatdatedb($_POST['date_fin_alim']);
+        	if ($datefinalim < $datedebutalim)
+        	{
+        		echo "Incohérence dates (date début > date fin). <br>";
+        	}
+        	else
+        	{
+        		$fonctions->debutalimcet($datedebutalim);
+        		$fonctions->finalimcet($datefinalim);
+        	}
+        }
+        else
+        {
+            echo "Au moins une des dates de l'intervalle d'alimentation n'est pas valide. <br>";
+        }
     }
     
     // PARAMETRAGE DU CALENDRIER DE DROIT D'OPTION
     
-    if (isset($_POST['valider_cal_option']))
+    //if (isset($_POST['valider_cal_option']))
+    if (isset($_POST['date_debut_option']) and isset($_POST['date_fin_option']))
     {
-    	$datedebutopt = $fonctions->formatdatedb($_POST['date_debut_option']);
-    	$datefinopt = $fonctions->formatdatedb($_POST['date_fin_option']);
-    	if ($datefinopt < $datedebutopt)
-    	{
-    		echo "Incohérence dates (date début > date fin). <br>";
-    	}
-    	else
-    	{
-    		$fonctions->debutoptioncet($datedebutopt);
-    		$fonctions->finoptioncet($datefinopt);
-    	}
+        if ($fonctions->verifiedate($_POST['date_debut_option']) and $fonctions->verifiedate($_POST['date_fin_option']))
+        {
+            $datedebutopt = $fonctions->formatdatedb($_POST['date_debut_option']);
+        	$datefinopt = $fonctions->formatdatedb($_POST['date_fin_option']);
+        	if ($datefinopt < $datedebutopt)
+        	{
+        		echo "Incohérence dates (date début > date fin). <br>";
+        	}
+        	else
+        	{
+        		$fonctions->debutoptioncet($datedebutopt);
+        		$fonctions->finoptioncet($datefinopt);
+        	}
+        }
+        else
+        {
+            echo "Au moins une des dates de l'intervalle d'option n'est pas valide. <br>";
+        }
     }
-    if (isset($_POST['valider_param_plafond']))
+    
+    //if (isset($_POST['valider_param_plafond']))
+    if (isset($_POST['plafondcet']))
     {
     	$plafondcet = $_POST['plafondcet'];
     	if (!is_numeric($plafondcet) || !is_int($plafondcet+0) || $plafondcet < 0)
@@ -79,13 +99,19 @@
     		$query = mysqli_query($dbcon, $update);
     	}
     }
+    echo "</div>";
+    
     $plafondparam = $fonctions->liredbconstante('PLAFONDCET');
+    
     ?>
 
+<!-- 
     <form name="frm_calendrier_alim" method="post">
+ -->
+    <form name="frm_param_cet" method="post">
     
         <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
-        		<br>Paramétrage du calendrier de la campagne d'alimentation du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutalimcet()).' - '.$fonctions->formatdate($fonctions->finalimcet());?>)<br>
+        		<br>Paramétrage du calendrier de la campagne d'alimentation du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutalimcet()).' - '.$fonctions->formatdate($fonctions->finalimcet());?>)
         		<table>
         		<tr>
         		<td>Date d'ouverture de la campagne d'alimentation :</td>
@@ -121,23 +147,25 @@
     ?>
     			<br>
     			<td width=1px><input class="calendrier" type=text name=date_debut_alim
-    				id=<?php echo $calendrierid_deb_alim ?> size=10></td>
+    				id=<?php echo $calendrierid_deb_alim ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->debutalimcet()) ?>'></td>
     		</tr>
     		<tr>
     			<td>Date de fermeture de la campagne d'alimentation :</td>
     			<td width=1px><input class="calendrier" type=text name=date_fin_alim
-    				id=<?php echo $calendrierid_fin_alim ?> size=10></td>
+    				id=<?php echo $calendrierid_fin_alim ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->finalimcet()) ?>'></td>
     		</tr>
     	</table>
+<!-- 
 		<input type='submit' name='valider_cal_alim' id='valider_cal_alim' value='Soumettre' />
 	</form>	
-	
-	<?php  // AFFICHAGE DU PARAMETRAGE DU DROIT D'OPTION ?>
-
+-->	
+<!--    AFFICHAGE DU PARAMETRAGE DU DROIT D'OPTION -->
+<!-- 
     <form name="frm_calendrier_option" method="post">
-    
+ -->    
+		<br><br>
         <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
-        		<br>Paramétrage du calendrier de la campagne de droit d'option du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutoptioncet()).' - '.$fonctions->formatdate($fonctions->finoptioncet());?>)<br>
+        		<br>Paramétrage du calendrier de la campagne de droit d'option du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutoptioncet()).' - '.$fonctions->formatdate($fonctions->finoptioncet());?>)
         		<table>
         		<tr>
         		<td>Date d'ouverture de la campagne de droit d'option :</td>
@@ -173,20 +201,25 @@
     ?>
     			<br>
     			<td width=1px><input class="calendrier" type=text name=date_debut_option
-    				id=<?php echo $calendrierid_deb_option ?> size=10></td>
+    				id=<?php echo $calendrierid_deb_option ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->debutoptioncet()) ?>'></td>
     		</tr>
     		<tr>
     			<td>Date de fermeture de la campagne de droit d'option :</td>
     			<td width=1px><input class="calendrier" type=text name=date_fin_option
-    				id=<?php echo $calendrierid_fin_option ?> size=10></td>
+    				id=<?php echo $calendrierid_fin_option ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->finoptioncet()) ?>'></td>
     		</tr>
     	</table>
+    	
+<!-- 
 		<input type='submit' name='valider_cal_option' id='valider_cal_option' value='Soumettre' />
 	</form>	
 	<form name="frm_param_plafond_cet" method="post">
+ -->
+ 		<br><br>
         <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
 		Nombre de jours maximum sur CET : <input type='text' name='plafondcet' value='<?php echo $plafondparam;?>'>
-		<input type='submit' name='valider_param_plafond' id='valider_param_plafond' value='Soumettre' />
+		<br><br>
+		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' />
 	</form>
 </body>
 </html>

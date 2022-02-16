@@ -290,7 +290,8 @@ else
                 //'targetUrls' => array("$full_g2t_ws_url")
                 //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
                 'targetUrl' => "$full_g2t_ws_url",
-                'targetUrls' => array("$full_g2t_ws_url")
+                'targetUrls' => array("$full_g2t_ws_url"),
+                'formDatas' => "{}" 
                 );
     
             // On récupère le responsable de la structure de l'agent - Niveau 2
@@ -393,6 +394,10 @@ else
 	            if (is_array($id))
 	            {
 	                $erreur = $id['error'];  
+	            }
+	            elseif ("$id" < 0)
+	            {
+	                $erreur =  "La création du droit d'option dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
 	            }
 	            elseif ("$id" <> "")
 	            {

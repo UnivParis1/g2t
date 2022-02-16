@@ -1395,6 +1395,36 @@ class fonctions
         
     }
     
+    public function listestructurenoninclue()
+    {
+        $listestruct = array();
+        $sql = "SELECT STRUCTUREID
+                FROM STRUCTURE
+                WHERE DATECLOTURE > NOW()
+                  AND ISINCLUDED = 0";
+        
+        //echo "<br>SQL = $sql <br>";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "fonctions->listestructurenoninclue : Problème SQL dans le chargement des id structure : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>fonctions->listestructurenoninclue => pas de ligne dans la base de données<br>";
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $listestruct[] = $result[0];
+            }
+        }
+        return $listestruct;
+    }
+    
 }
 
 ?>

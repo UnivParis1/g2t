@@ -251,8 +251,42 @@
         foreach ($structureliste as $structkey => $structure) {
             echo "<br>";
             echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true,true);
-
-            if ($structure->responsable()->harpegeid() == $user->harpegeid())
+/*
+            echo "<br><br><br>";
+            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true,true,false);
+            echo "<br>";
+*/
+/*            
+            $agent = new agent($dbcon);
+            $agent->load('9328');
+            // On charge le plannig de l'agent AVEC les congés
+            $planning = $agent->planning('01/02/2022', '28/02/2022',true,true);
+            //var_dump($planning);
+            $nbjrsteletravail = 0;
+            foreach ($planning->planning() as $element)
+            {
+                echo "<br>Le type est : " . $element->type();
+                if (in_array($element->type(),array('teletrav', 'teleetab', 'telegouv', 'telesante'))) // Si c'est un télétravail => On compte +0.5 (car un element pour matin et un element pour apres-midi)
+                {
+                    $nbjrsteletravail = $nbjrsteletravail + 0.5;
+                }
+            }
+            echo "<br>Avec les congés (donc pratique), le nombre de jours de télétravail pour " . $agent->identitecomplete()  ." est : $nbjrsteletravail <br><br>";
+            // On charge le plannig de l'agent SANS les congés
+            $planning = $agent->planning('01/02/2022', '28/02/2022',true,false);
+            //var_dump($planning);
+            $nbjrsteletravail = 0;
+            foreach ($planning->planning() as $element)
+            {
+                echo "<br>Le type est : " . $element->type();
+                if (in_array($element->type(),array('teletrav', 'teleetab', 'telegouv', 'telesante'))) // Si c'est un télétravail => On compte +0.5 (car un element pour matin et un element pour apres-midi)
+                {
+                    $nbjrsteletravail = $nbjrsteletravail + 0.5;
+                }
+            }
+            echo "<br>Sans les congés (donc théorique), le nombre de jours de télétravail pour " . $agent->identitecomplete()  ." est : $nbjrsteletravail <br><br>";
+*/            
+            if ($structure->responsable()->harpegeid() == $user->harpegeid() and !$structure->isincluded())
             {
                 echo "<br>";
                 echo "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
@@ -299,12 +333,18 @@
                 echo "<input type='hidden' name='datedebut' value='" . $datedebut . "' />";
                 echo "<input type='hidden' name='datefin' value='" . $datefin .  "' />";
                 
-                echo "Générer le document 'télétravail' du trimestre précédent pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
+                //echo "Générer le document 'télétravail' du trimestre précédent pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
+                echo "Générer le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
                 echo "<input type='submit' name='teletravailPDF' />";
                 echo "</form>";
             }
         }
-
+/*
+        $structincluelist = $fonctions->listestructurenoninclue();
+        echo "Liste des id de structures non inclue :" ;
+        var_dump($structincluelist);
+        echo "<br>";
+*/
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure) {
             if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {

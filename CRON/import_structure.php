@@ -84,7 +84,6 @@
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
         $LDAP_SEARCH_BASE = "ou=structures,dc=univ-paris1,dc=fr"; // $fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_STRUCT_ATTR = "supanncodeentite"; // $fonctions->liredbconstante("LDAPATTRIBUTE");
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
@@ -102,6 +101,34 @@
                 $parent_struct = trim($ligne_element[3]);
                 $type_struct = trim($ligne_element[6]);
                 $statut_struct = trim($ligne_element[7]);
+
+                // On interroge LDAP pour récupérer les extra-infos
+                $filtre = "supannRefId={SIHAM.UO}" . $code_struct;
+                $dn = $LDAP_SEARCH_BASE;
+                $LDAP_CODE_STRUCT_ATTR = "supanncodeentite";
+                $LDAP_IS_INCLUDED_ATTR = "up1flags";
+                $restriction = array(
+                    "$LDAP_CODE_STRUCT_ATTR", "$LDAP_IS_INCLUDED_ATTR"
+                );
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                //echo "Info = " . print_r($info,true) . "\n";
+                
+                // Récupération du code de l'ancienne structure
+                $oldstructid = '';
+                if (isset($info[0]["$LDAP_CODE_STRUCT_ATTR"][0]))
+                {
+                    $oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
+                }
+                // Récupération du code d'inclusion de la structure dans la parente
+                $isincluded = 0;
+                if (isset($info[0]["$LDAP_IS_INCLUDED_ATTR"][0]))
+                {
+                    $isincluded = (int)(in_array("included",$info[0]["$LDAP_IS_INCLUDED_ATTR"])); // On regarde si 'included' est dans la tableau des valeurs
+                }
+                echo "La structure $code_struct est inclue dans la structure parente (1 = true, 0 = false) : $isincluded \n";
+                echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
+                
                 
                 $type_struct_RA = array(
                     ''
@@ -135,8 +162,6 @@
 	                        $codefonction = "2002"; // Responsable
 	                    elseif (array_key_exists("#1521", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1521"; // Chef de service
-                        elseif (array_key_exists("#1043", (array) $tabfonctions[$code_struct]))
-                            $codefonction = "1043"; // Secrétaire général
                         elseif (array_key_exists("#1522", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1522"; // Directeur(ice)
 	                    elseif (array_key_exists("#1615", (array) $tabfonctions[$code_struct]))
@@ -153,7 +178,9 @@
 	                        $codefonction = "1529"; // Directeur(ice) d'institut
 	                    elseif (array_key_exists("#1530", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1530"; // Directeur(ice) d'UMR
-	                    elseif (array_key_exists("#1532", (array) $tabfonctions[$code_struct]))
+                        elseif (array_key_exists("#1043", (array) $tabfonctions[$code_struct]))
+	                        $codefonction = "1043"; // Secrétaire général
+                        elseif (array_key_exists("#1532", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1532"; // Directeur(ice) de laboratoire
 	                    elseif (array_key_exists("#2038", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "2038"; // Administrateur
@@ -217,10 +244,10 @@
                     if (mysqli_num_rows($query) == 0) // Structure manquante
                     {
                         echo "Création d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
-                        $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE,TYPESTRUCT) VALUES('%s','%s','%s','%s','%s','%s', '%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct));
+                        $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE,TYPESTRUCT,ISINCLUDED) VALUES('%s','%s','%s','%s','%s','%s', '%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $isincluded);
                     } else {
                         echo "Mise à jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
-                        $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s', TYPESTRUCT='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $fonctions->my_real_escape_utf8($code_struct));
+                        $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s', TYPESTRUCT='%s', ISINCLUDED='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $isincluded, $fonctions->my_real_escape_utf8($code_struct));
                         // echo $sql."\n";
                     }
                     mysqli_query($dbcon, $sql);
@@ -246,20 +273,6 @@
                     // On sauvegarde l'ancienne structure
                     // Fin Si (structure ouverte)
                     // Fin Si (Correspondance existe)
-                    $filtre = "supannRefId={SIHAM.UO}" . $code_struct;
-                    $dn = $LDAP_SEARCH_BASE;
-                    $restriction = array(
-                        "$LDAP_CODE_STRUCT_ATTR"
-                    );
-                    $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                    $info = ldap_get_entries($con_ldap, $sr);
-                    // echo "Info = " . print_r($info,true) . "\n";
-                    $oldstructid = '';
-                    if (isset($info[0]["$LDAP_CODE_STRUCT_ATTR"][0]))
-                    {
-                        $oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
-                    }
-                    echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
                     
                     if ($oldstructid == $code_struct) {
                         echo "On détecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
@@ -294,7 +307,8 @@
     								            DEST_MAIL_RESPONSABLE = '$result[8]', 
     								            DEST_MAIL_AGENT = '$result[9]', 
     								            AFFICHERESPSOUSSTRUCT = '$result[11]' ,
-												TYPESTRUCT = '$type_struct'
+												TYPESTRUCT = '$type_struct',
+                                                ISINCLUDED = '$isincluded'
     								        WHERE STRUCTUREID = '$code_struct'";
                                 if (substr($code_struct, 0, 3) == 'DGH') {
                                     // echo "SQL complement new struct = $sql \n";

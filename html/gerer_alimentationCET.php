@@ -451,7 +451,8 @@
 	                //'targetUrls' => array("$full_g2t_ws_url")
 	                //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
 	                'targetUrl' => "$full_g2t_ws_url",
-	                'targetUrls' => array("$full_g2t_ws_url")
+	                'targetUrls' => array("$full_g2t_ws_url"),
+    		    	'formDatas' => "{}"
 	            );
 	            /*if ($responsable == 'resp_demo')
 	            {
@@ -582,17 +583,26 @@
 		                echo "Erreur Curl = " . $error . "<br><br>";
 		            }
 		            //echo "<br>" . print_r($json,true) . "<br>";
+		            //echo "<br>"; var_dump($json); echo "<br>";
 		            $id = json_decode($json, true);
 		            error_log(basename(__FILE__) . " " . var_export($opts, true));
 		            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
 		            //var_dump($id);
 		            if (is_array($id))
 		            {
-		            	$erreur = print_r($id,true);
+		            	$erreur = "La création de la demande d'alimentation dans eSignature a échoué => " . print_r($id,true);
+		            	error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+		            	echo "$erreur <br><br>";
 		            }
 		            else
 		            {
-			            if ("$id" <> "")
+		                if ("$id" < 0)
+		                {
+		                    $erreur =  "La création de la demande d'alimentation dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde du droit d'option dans G2T.";
+		                    error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+		                    echo "$erreur <br><br>";
+		                }
+		                elseif ("$id" <> "")
 			            {
 		
 		                    //echo "Id de la nouvelle demande = " . $id . "<br>";
@@ -616,7 +626,9 @@
 			            }
 			            else
 			            {
-			                echo "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.<br><br>";
+			                $erreur  = "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
+			                error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+			                echo "$erreur <br><br>";
 			            }
 		            }
             	}
