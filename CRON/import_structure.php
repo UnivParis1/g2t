@@ -205,6 +205,7 @@
                     $resp_struct = trim($ligne_element[4]);
                     // Si pas de responsable défini dans le fichier de structure
                     if ($resp_struct == "") {
+/*
                         // On regarde si un responsable de la structure est défini dans la table STRUCTURE
                         // => Si oui, on ne le change pas.... Soit c'est un ancien responsable, soit il a été forcé à la main
                         // à partir de l'insterface de gestion des structures
@@ -224,6 +225,10 @@
                             echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
                             $resp_struct = '-1';
                         }
+*/                        
+                        // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
+                        echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
+                        $resp_struct = '-1';
                     }
                 }
                 echo "Le code du responsable est : $resp_struct \n";
