@@ -106,7 +106,7 @@
         echo "</select>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='previous' value='no'>";
         echo "<br>";
 
@@ -150,7 +150,7 @@
             // echo "Avant le foreach <br>";
             if (is_array($agentliste)) {
                 foreach ($agentliste as $agentkey => $agent) {
-                    $listeagent = $listeagent . "," . $agent->harpegeid();
+                    $listeagent = $listeagent . "," . $agent->agentid();
                 }
             }
             // echo "listeagent = $listeagent <br>";
@@ -198,7 +198,7 @@
             // echo "Avant le foreach <br>";
             if (is_array($agentliste)) {
                 foreach ($agentliste as $agentkey => $agent) {
-                    $listeagent = $listeagent . "," . $agent->harpegeid();
+                    $listeagent = $listeagent . "," . $agent->agentid();
                 }
             }
             // echo "listeagent = $listeagent <br>";

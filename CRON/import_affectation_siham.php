@@ -33,10 +33,11 @@
 
     $date = date("Ymd");
 
-    echo "Début de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
+    echo "Début de la création des affectations " . date("d/m/Y H:i:s") . "\n";
 
     $modalitefile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_modalite_$date.dat";
     $statutfile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_status_$date.dat";
+    $situationfile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_situation_$date.dat";
     $structurefile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_structures_$date.dat";
 
     $skipreadfile = false;
@@ -60,6 +61,13 @@
             echo "Le fichier $structurefile n'existe pas !!! \n";
             $exit = true;
         }
+        if (! file_exists($situationfile)) {
+            echo "Le fichier $situationfile n'existe pas !!! \n";
+            $exit = true;
+        }
+        
+        
+
         if ($exit == true) {
             echo "Il manque au moins un fichier => Aucune mise à jour réalisée !!! \n";
             exit();
@@ -109,6 +117,26 @@
 
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
+        $fp = fopen("$situationfile", "r");
+        while (! feof($fp)) {
+            $ligne = fgets($fp); // lecture du contenu de la ligne
+            if (trim($ligne) != "") {
+                $ligne_element = explode($separateur, $ligne);
+                if (count($ligne_element) == 0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
+                {
+                    // On doit arréter tout !!!!
+                    echo "#######################################################";
+                    echo "ALERTE : Le format du fichier $situationfile n'est pas correct !!! => Erreur dans la ligne $ligne \n";
+                    echo "#######################################################";
+                    fclose($fp);
+                    exit();
+                }
+            }
+        }
+        fclose($fp);
+        
+        // Vérification que le fichier d'entree est bien conforme
+        // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$structurefile", "r");
         while (! feof($fp)) {
             $ligne = fgets($fp); // lecture du contenu de la ligne
@@ -127,51 +155,229 @@
         }
         fclose($fp);
 
-        echo "Import des MODALITES D'AFFECTATION \n";
+        echo "Import des MODALITES D'AFFECTATION (QUOTITE)\n";
         // Import des affectations-modalite.txt
-        $sql = "DELETE FROM W_MODALITE";
+        $sql = "DELETE FROM QUOTITE";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
-            echo "DELETE W_MODALITE => $erreur_requete \n";
-
+            echo "Error : DELETE QUOTITE => $erreur_requete \n";
+                
         if (! file_exists($modalitefile)) {
             echo "Le fichier $modalitefile n'existe pas !!! \n";
         } else {
+            
+            $agent = new agent($dbcon);
+            $currentagent = null;
             $fp = fopen("$modalitefile", "r");
             while (! feof($fp)) {
                 $ligne = fgets($fp); // lecture du contenu de la ligne
                 if (trim($ligne) != "") {
                     $ligne_element = explode($separateur, $ligne);
-                    $harpegeid = trim($ligne_element[0]);
+                    $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
-                    $quotite = trim($ligne_element[2]);
+                    $numquotite = trim($ligne_element[2]);
                     $datedebut = trim($ligne_element[3]);
                     $datefin = trim($ligne_element[4]);
+
+                    if ($agent->agentid() != $agentid) 
+                    //if ($currentagent != $agentid )
+                    {
+                        $currentagent = $agentid;
+                        $agent = new agent($dbcon);
+                        if (!$agent->load($agentid))
+                        {
+                            echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa quotité \n";
+                            continue;
+                        }
+                        //echo "Le load est ok pour l'agent " . $agent->agentid() . "   agentid = $agentid \n";
+                    }
+                     
+                    
+                    ////////////////////////////////////////////////////////////////////////////
+                    // Les déclarations de TP qui se terminent avant 2016 ne sont pas créées.
+                    if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb('01/01/2016'))
+                    {
+                        //echo "La date de fin est avant le 01/01/2016 \n";
+                        continue;
+                    }
+                    ////////////////////////////////////////////////////////////////////////////
+                    
                     if (! isset($debug) or $debug == false)
-                        echo "harpegeid = $harpegeid   numligne=$numligne   quotite=$quotite   datedebut=$datedebut   datefin=$datefin\n";
-                    $sql = sprintf("INSERT INTO W_MODALITE (HARPEGEID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($quotite), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
+                    {
+                        echo "agentid = $agentid   numligne=$numligne   quotite=$numquotite   datedebut=$datedebut   datefin=$datefin\n";
+                    }
+                    $sql = sprintf("INSERT INTO QUOTITE (AGENTID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) 
+                                    VALUES('%s','%s','%s','%s','%s')", 
+                           $fonctions->my_real_escape_utf8($agentid), 
+                           $fonctions->my_real_escape_utf8($numligne), 
+                           $fonctions->my_real_escape_utf8($numquotite), 
+                           $fonctions->my_real_escape_utf8($datedebut), 
+                           $fonctions->my_real_escape_utf8($datefin));
 
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
-                        echo "INSERT W_MODALITE => $erreur_requete \n";
+                        echo "Error : INSERT QUOTITE => $erreur_requete \n";
                         echo "sql = $sql \n";
                     }
+                    
+                    // On traite ICI le changement de quotité
+                    // Si la quotité est à 100% on crée une déclaration de TP
+                    if ($numquotite == '100') 
+                    {
+                        echo "La quotité est à 100% \n";
+
+                        // On regarde si une déclarationTP existe déjà pour cet agent/numligne
+                        $declarationTP = new declarationTP($dbcon);
+                        $sql = sprintf("SELECT DECLARATIONID 
+                                        FROM DECLARATIONTP 
+                                        WHERE AGENTID = '%s' AND NUMLIGNEQUOTITE = '%s'",
+                               $fonctions->my_real_escape_utf8($agentid), 
+                               $fonctions->my_real_escape_utf8($numligne));
+                        $query_decla  = mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
+                        if ($erreur_requete != "")
+                        {
+                            echo "Error : SELECT DECLARATIONTP A 100% => $erreur_requete \n";
+                        }
+                        
+                        if (mysqli_num_rows($query_decla) == 0) {
+                            echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la crée \n";
+                            $declarationTP->agentid($agentid);
+                            $declarationTP->numlignequotite($numligne);
+                            $declarationTP->tabtpspartiel(str_repeat("0", 20));
+                            $declarationTP->datedebut($datedebut);
+                            $declarationTP->datefin($datefin);
+                            $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
+                            $erreur = $declarationTP->store();
+                            if ($erreur != "")
+                                echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                        }
+                        else // Il y a une déclarationTP pour cet agent/numligne
+                        {
+                            echo "Il y a une declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la charge \n";
+                            // On sait qu'il y a en qu'une seul !!!
+                            $result = mysqli_fetch_row($query_decla);
+                            $declarationid = "$result[0]";
+                            $declarationTP->load($declarationid);
+                            $declarationTP->tabtpspartiel(str_repeat("0", 20));
+                            $declarationTP->datedebut($datedebut);
+                            $declarationTP->datefin($datefin);
+                            $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
+                            $erreur = $declarationTP->store();
+                            if ($erreur != "")
+                                echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                        }
+                    } else {
+                        echo "La quotité n'est pas à 100% \n";
+                        
+                        // Quotité != 100% donc on ne crée pas de declaration TP
+                        // On cherche si une declarationTP existe 
+                        $declarationTP = new declarationTP($dbcon);
+                        $sql = sprintf("SELECT DECLARATIONID 
+                                        FROM DECLARATIONTP 
+                                        WHERE AGENTID = '%s' 
+                                          AND NUMLIGNEQUOTITE = '%s' 
+                                          AND STATUT IN ('%s','%s')",
+                                $fonctions->my_real_escape_utf8($agentid), 
+                                $fonctions->my_real_escape_utf8($numligne),
+                                $fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_VALIDE),$fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_ATTENTE));
+                        $query_decla  = mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
+                        if ($erreur_requete != "")
+                        {
+                            echo "Error : SELECT DECLARATIONTP NON 100% => $erreur_requete \n";
+                        }
+                        if (mysqli_num_rows($query_decla) == 0) {
+                            echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On laisse l'agent déclarer son TP \n";
+                        }
+                        else {
+                            while  ($result = mysqli_fetch_row($query_decla))
+                            {
+                                $declarationid = "$result[0]";
+                                //echo "On va charger la déclarationTP id = $declarationid \n";
+                                $declarationTP->load($declarationid);
+                                echo "L'ancienne quotité (dans le tableau) = " . $declarationTP->tabtptoquotite() . " et la nouvelle = $numquotite \n";
+                                if ($declarationTP->tabtptoquotite() == $numquotite)
+                                {
+                                    // La nouvelle quotité est la même que l'ancienne => On ne touche rien
+                                }
+                                else 
+                                {
+                                    // L'ancienne quantité est != de la nouvelle => On annule la déclarationTP
+                                    $declarationTP->statut(declarationTP::DECLARATIONTP_REFUSE);
+                                    $erreur = $declarationTP->store();
+                                    if ($erreur != "")
+                                    {
+                                        echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    ///////////////////////////////////////////////////////////////////////
+                    // On va traiter ici le changement de date début et/ou de date de fin
+                    ///////////////////////////////////////////////////////////////////////
+                    $sql = sprintf("SELECT DECLARATIONID 
+                                    FROM DECLARATIONTP 
+                                    WHERE AGENTID = '%s' 
+                                      AND NUMLIGNEQUOTITE = '%s' 
+                                      AND STATUT IN ('%s','%s')
+                                      AND (DATEDEBUT < '%s'
+                                      OR DATEFIN > '%s')",
+                           $fonctions->my_real_escape_utf8($agentid), 
+                           $fonctions->my_real_escape_utf8($numligne),
+                           $fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_VALIDE),$fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_ATTENTE),
+                           $datedebut,
+                           $datefin);
+                    $query_decla  = mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
+                    if ($erreur_requete != "")
+                    {
+                        echo "Error : SELECT DECLARATIONTP MODIF DEBUT FIN => $erreur_requete \n";
+                    }
+                    if (mysqli_num_rows($query_decla) == 0) {
+                        echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne avec une date début et fin différente \n";
+                    }
+                    else {
+                        while  ($result = mysqli_fetch_row($query_decla))
+                        {
+                            unset($declarationTP);
+                            $declarationTP = new declarationTP($dbcon);
+                            $declarationTP->load($result[0]);
+                            echo "DeclarationTP " . $result[0] . " chargée pour l'agent " . $declarationTP->agentid() .  " pour déplacer la date début ou fin \n";
+                            // On va bouger la date de début de la déclarationTP
+                            if ($fonctions->formatdatedb($declarationTP->datedebut()) < $datedebut)
+                            {
+                                echo "On déplace la date de début \n";
+                                $declarationTP->datedebut($datedebut);
+                            }
+                            if ($fonctions->formatdatedb($declarationTP->datefin()) > $datefin)
+                            {
+                                echo "On déplace la date de fin \n";
+                                $declarationTP->datefin($datefin);
+                            }
+                            $declarationTP->store();
+                            echo "Déplacement terminé ! \n";
+                        }
+                    } 
                 }
             }
             fclose($fp);
+            
         }
 
-        echo "Import des STATUTS D'AFFECTATION \n";
+        echo "Import des STATUTS D'AFFECTATION (NUMERO DE CONTRAT/TITULAIRE)\n";
         // Import des affectations-statut.txt
-        $sql = "DELETE FROM W_STATUT";
+        $sql = "DELETE FROM STATUT";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
-            echo "DELETE W_STATUT => $erreur_requete \n";
+            echo "Error : DELETE STATUT => $erreur_requete \n";
 
-        // On charge la table des absences HARPEGE avec le fichier
+        // On charge la table des statut avec le fichier
         if (! file_exists($statutfile)) {
             echo "Le fichier $statutfile n'existe pas !!! \n";
         } else {
@@ -180,19 +386,19 @@
                 $ligne = fgets($fp); // lecture du contenu de la ligne
                 if (trim($ligne) != "") {
                     $ligne_element = explode($separateur, $ligne);
-                    $harpegeid = trim($ligne_element[0]);
+                    $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
-                    $statut = trim($ligne_element[2]);
+                    $codecontrat = trim($ligne_element[2]);
                     $datedebut = trim($ligne_element[3]);
                     $datefin = trim($ligne_element[4]);
                     if (! isset($debug) or $debug == false)
-                        echo "harpegeid = $harpegeid   numligne=$numligne   statut=$statut   datedebut=$datedebut   datefin=$datefin\n";
-                    $sql = sprintf("INSERT INTO W_STATUT (HARPEGEID,NUMLIGNE,TYPESTATUT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($statut), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
+                        echo "agentid = $agentid   numligne=$numligne   codecontrat=$codecontrat   datedebut=$datedebut   datefin=$datefin\n";
+                        $sql = sprintf("INSERT INTO STATUT (AGENTID,NUMLIGNE,CODECONTRAT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($codecontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
 
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "") {
-                        echo "INSERT W_STATUT => $erreur_requete \n";
+                        echo "Error : INSERT STATUT => $erreur_requete \n";
                         echo "sql = $sql \n";
                     }
                 }
@@ -200,15 +406,47 @@
             fclose($fp);
         }
 
-        echo "Import des STRUCTURES D'AFFECTATION \n";
-        // Import des affectations-structure.txt
-        $sql = "DELETE FROM W_STRUCTURE";
+        echo "Import des situations administratives \n";
+        // Import des affectations-statut.txt
+        $sql = "DELETE FROM SITUATIONADMIN";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
-            echo "DELETE W_STRUCTURE => $erreur_requete \n";
-
-        // On charge la table des absences HARPEGE avec le fichier
+            echo "Error : DELETE SITUATIONADMIN => $erreur_requete \n";
+            
+        // On charge la table des statut avec le fichier
+        if (! file_exists($situationfile)) {
+            echo "Le fichier $situationfile n'existe pas !!! \n";
+        } else {
+            $fp = fopen("$situationfile", "r");
+            while (! feof($fp)) {
+                $ligne = fgets($fp); // lecture du contenu de la ligne
+                if (trim($ligne) != "") {
+                    $ligne_element = explode($separateur, $ligne);
+                    $agentid = trim($ligne_element[0]);
+                    $numligne = trim($ligne_element[1]);
+                    $codesituation = trim($ligne_element[2]);
+                    $datedebut = trim($ligne_element[3]);
+                    $datefin = trim($ligne_element[4]);
+                    if (! isset($debug) or $debug == false)
+                        echo "agentid = $agentid   numligne=$numligne   codesituation=$codesituation   datedebut=$datedebut   datefin=$datefin\n";
+                        $sql = sprintf("INSERT INTO SITUATIONADMIN (AGENTID,NUMLIGNE,POSITIONADMIN,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($codesituation), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
+                        
+                        mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
+                        if ($erreur_requete != "") {
+                            echo "Error : INSERT SITUATIONADMIN => $erreur_requete \n";
+                            echo "sql = $sql \n";
+                        }
+                }
+            }
+            fclose($fp);
+        }
+            
+        echo "Import des STRUCTURES D'AFFECTATION \n";
+        // Import des affectations-structure.txt
+        
+        // On charge la table des structures avec le fichier
         if (! file_exists($structurefile)) {
             echo "Le fichier $structurefile n'existe pas !!! \n";
         } else {
@@ -217,529 +455,85 @@
                 $ligne = fgets($fp); // lecture du contenu de la ligne
                 if (trim($ligne) != "") {
                     $ligne_element = explode($separateur, $ligne);
-                    $harpegeid = trim($ligne_element[0]);
+                    $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
                     $idstruct = trim($ligne_element[2]);
                     $datedebut = trim($ligne_element[3]);
                     $datefin = trim($ligne_element[4]);
+                    
                     if (! isset($debug) or $debug == false)
-                        echo "harpegeid = $harpegeid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
-                    $sql = sprintf("INSERT INTO W_STRUCTURE (HARPEGEID,NUMLIGNE,IDSTRUCT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
-
-                    mysqli_query($dbcon, $sql);
-                    $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "") {
-                        echo "INSERT W_STRUCTURE => $erreur_requete \n";
-                        echo "sql = $sql \n";
+                        echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
+                    if ($fonctions->formatdatedb($datedebut) <= date('Ymd') and $fonctions->formatdatedb($datefin) >= date('Ymd'))
+                    {
+                        $sql = sprintf("UPDATE AGENT SET STRUCTUREID = '%s' WHERE AGENTID = '%s'", $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($agentid));
+                        mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
+                        if ($erreur_requete != "") {
+                            echo "Error : UPDATE STRUCTUREID dans AGENT=> $erreur_requete \n";
+                            echo "sql = $sql \n";
+                        }
                     }
                 }
             }
             fclose($fp);
         }
+  
     }
-
-    $sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='O' WHERE DATEDEBUT>='20160101'");
-    $query_aff = mysqli_query($dbcon, $sql);
+    
+    $sql = "DELETE FROM AFFECTATION";
+    mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
-        echo "UPDATE OBSOLETE AFFECTATION => $erreur_requete \n";
-
-    // $sql = sprintf("SELECT DISTINCT HARPEGEID FROM W_MODALITE WHERE HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STATUT) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STRUCTURE)");
-    $sql = sprintf("SELECT DISTINCT HARPEGEID FROM W_MODALITE WHERE HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STATUT) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM W_STRUCTURE) AND HARPEGEID IN (SELECT DISTINCT HARPEGEID FROM AGENT)");
-    $query_harpegeid = mysqli_query($dbcon, $sql);
+    {
+        echo "Error : DELETE AFFECTATION => $erreur_requete \n";
+    }
+    $sql = sprintf("SELECT DISTINCT AGENTID FROM STATUT WHERE AGENTID IN (SELECT DISTINCT AGENTID FROM QUOTITE) AND AGENTID IN (SELECT DISTINCT AGENTID FROM SITUATIONADMIN) AND AGENTID IN (SELECT DISTINCT AGENTID FROM AGENT)");
+    $query_agentid = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
-        echo "SELECT HARPEGEID FROM W.... => $erreur_requete \n";
-
-    while ($harpid = mysqli_fetch_row($query_harpegeid)) {
-        // ///////////////////////////////////////////////////
-        // ///////////////////////////////////////////////////
-        // -- PERMET DE NE TESTER QU'UN SEUL DOSSIER !! -- //
-        if (isset($debug)) {
-            if ($debug == true) {
-                if ($harpid[0] != '83940' and $harpid[0] != '9328') {
-                    continue;
-                }
-            }
-        }
-        // ///////////////////////////////////////////////////
-        // ///////////////////////////////////////////////////
-
-        echo "-----------------------------------------\n";
-        echo "On travaille sur l'agent : " . $harpid[0] . "\n";
+    {
+        echo "Error : SELECT AGENTID FROM STATUT QUOTITE SITUATIONADMIN AGENT => $erreur_requete \n";
+    }
+    while ($agentid = mysqli_fetch_row($query_agentid)) 
+    {
         $agent = new agent($dbcon);
-        if (! $agent->load($harpid[0])) {
-            $tabaffectation = null;
-        } else {
-            $tabaffectation = $agent->creertimeline();
-            echo "Timeline de l'agent " . $agent->harpegeid() . " => " . print_r($tabaffectation, true) . "\n";
-        }
-
-        // On met à jour la structure d'affectation de l'agent en premier pour éviter les erreurs dans affectation->load() si la structure est vide
-        $structureid = "";
-        if (count((array) $tabaffectation) > 0)
+        $agent->load($agentid[0]);
+        $tabaffectation = $agent->creertimeline();
+        //echo "Timeline de l'agent " . $agent->agentid() . " => " . print_r($tabaffectation, true) . "\n";
+        
+        foreach ($tabaffectation as $ligne_element)
         {
-            $datejour = date('Ymd');
-            $sql = "SELECT IDSTRUCT FROM W_STRUCTURE WHERE HARPEGEID = '" . $agent->harpegeid() . "' AND DATEDEBUT<= '" . $datejour . "' AND DATEFIN >= '". $datejour ."'";
-            echo "SQL SELECT IDSTRUCT => $sql \n";
-            $query_struct = mysqli_query($dbcon, $sql);
-            $erreur_requete = mysqli_error($dbcon);
-            if ($erreur_requete != "") {
-                echo "SQL SELECT IDSTRUCT (de W_STRUCTURE) => $erreur_requete \n";
-            }
-            if (mysqli_num_rows($query_struct) == 0) {
-                echo "Pas de structure active pour l'agent " . $agent->harpegeid() . " dans la table W_STRUCTURE => On ne traite pas les affectations \n";
-                $structureid = '';
-            }
-            else
+            $ligne_element = explode(";", $ligne_element);
+            $affectationid = $ligne_element[0];
+            $agentid = $ligne_element[1];
+            if ($ligne_element[2] != '') // Si c'est un contrat !!!!
             {
-                $result = mysqli_fetch_row($query_struct);
-                $structureid = "$result[0]";
+                $numcontrat = "1";
+            } else {
+                // Si le numéro du contrat est vide alors on le force à 0 ==> Ce n'est pas une contrat
+                $numcontrat = '0'; // $ligne_element[2]; // Pourrait être remplacé par $numcontrat = 0 car lors de l'insertion SQL, si $numcontrat = '' => SQL prend la valeur par défaut = 0
             }
-            $sql = sprintf("UPDATE AGENT SET STRUCTUREID='%s' WHERE HARPEGEID='%s'", $fonctions->my_real_escape_utf8($structureid), $fonctions->my_real_escape_utf8($agent->harpegeid()));
-            echo "SQL UPDATE AGENT => $sql \n";
+            $datedebut = $ligne_element[3];
+            $datefin = $ligne_element[4];
+            if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) {
+                $datefin = "9999-12-31";
+            }
+            $datemodif = $ligne_element[5];
+            $structureid = $ligne_element[6];
+            $numquotite = $ligne_element[7];
+            $denomquotite = $ligne_element[8];
+         
+            //echo "affectationid = $affectationid   agentid=$agentid   numcontrat=$numcontrat   datemodif=$datemodif datedebut=$datedebut  datefin=$datefin\n";
+
+            $sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,AGENTID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
+        	  		VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N');
             mysqli_query($dbcon, $sql);
             $erreur_requete = mysqli_error($dbcon);
-            if ($erreur_requete != "") {
-                echo "UPDATE AGENT (modification structureid) => $erreur_requete \n";
-            }
-        }
-        
-        if ($structureid != "")
-        {
-            foreach ((array) $tabaffectation as $ligneaffectation) {
-                $affectation = null;
-                $ligne_element = explode(";", $ligneaffectation);
-                $affectationid = $ligne_element[0];
-                $harpegeid = $ligne_element[1];
-                if ($ligne_element[2] != '') // Si c'est un contrat !!!!
-                {
-                    $numcontrat = "1";
-                } else {
-                    // Si le numéro du contrat est vide alors on le force à 0 ==> Ce n'est pas une contrat
-                    $numcontrat = '0'; // $ligne_element[2]; // Pourrait être remplacé par $numcontrat = 0 car lors de l'insertion SQL, si $numcontrat = '' => SQL prend la valeur par défaut = 0
-                }
-                $datedebut = $ligne_element[3];
-                $datefin = $ligne_element[4];
-                if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) {
-                    $datefin = "9999-12-31";
-                }
-                $datemodif = $ligne_element[5];
-                $structureid = $ligne_element[6];
-                $numquotite = $ligne_element[7];
-                $denomquotite = $ligne_element[8];
-    
-                echo "affectationid = $affectationid   harpegeid=$harpegeid   numcontrat=$numcontrat   datemodif=$datemodif datedebut=$datedebut  datefin=$datefin\n";
-                //if ($fonctions->formatdatedb($datedebut) < '20160101')
-                //    continue;
-    
-                $sql = sprintf("SELECT DATEMODIFICATION,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
-                // if ($harpegeid == '9328')
-                // echo "sql (SELECT) = $sql \n";
-                $query_aff = mysqli_query($dbcon, $sql);
-                $erreur_requete = mysqli_error($dbcon);
-                if ($erreur_requete != "")
-                    echo "SELECT AFFECTATION => $erreur_requete \n";
-    
-                // -------------------------------
-                // Affectation manquante
-                // -------------------------------
-                if (mysqli_num_rows($query_aff) == 0) {
-                    echo "On est dans le cas ou l'affectation est manquante : $affectationid \n";
-                    // echo "Date de fin de l'affectation => $datefin \n";
-                    if (("$datefin" == "") or ("$datefin" == "0000-00-00") or ("$datefin" == "00000000") or ("$datefin" == "00/00/0000"))
-                        $datefin = "9999-12-31";
-                    $sql = sprintf("INSERT INTO AFFECTATION(AFFECTATIONID,HARPEGEID,NUMCONTRAT,DATEDEBUT,DATEFIN,DATEMODIFICATION,NUMQUOTITE,DENOMQUOTITE,OBSOLETE)
-        										VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($affectationid), $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N');
-                    mysqli_query($dbcon, $sql);
-                    $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "")
-                        echo "INSERT AFFECTATION => $erreur_requete \n";
-    
-                    // echo "Import_affectation => numquotite = $numquotite denomquotite = $denomquotite \n";
-                    if ($numquotite == $denomquotite) {
-                        $declarationTP = new declarationTP($dbcon);
-                        $declarationTP->affectationid($affectationid);
-                        $declarationTP->tabtpspartiel(str_repeat("0", 20));
-                        // echo "datedebut = $datedebut \n";
-                        $declarationTP->datedebut($datedebut);
-                        // echo "Datefin de la declaration TP = $datefin \n";
-                        if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000"))
-                            $datefin = "9999-12-31";
-                        // echo "datefin = $datefin \n";
-                        $declarationTP->datefin($datefin);
-                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
-                        $erreur = $declarationTP->store();
-                        if ($erreur != "")
-                            echo "Erreur dans la declarationTP->store : " . $erreur . "\n";
-                    }
-                }        // -------------------------------------------
-                // L'affectation existe déjà
-                // -------------------------------------------
-                else {
-                    echo "On est dans le cas ou l'affectation existe : $affectationid \n";
-                    $affectation = new affectation($dbcon);
-                    $affectation->load($fonctions->my_real_escape_utf8($affectationid));
-    
-                    // Si tout est pareil.... => On réactive la ligne d'affectation
-                    if (($fonctions->formatdatedb($affectation->datedebut()) == $fonctions->formatdatedb($datedebut)) and ($fonctions->formatdatedb($affectation->datefin()) == $fonctions->formatdatedb($datefin)) and ($affectation->numquotite() == $numquotite) and ($affectation->numcontrat() == $numcontrat)) {
-                        echo "Reactivation de la ligne d'affectation car tout est pareil \n";
-                        $sql = sprintf("UPDATE AFFECTATION SET OBSOLETE='N' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($affectationid));
-                        // if ($harpegeid == '9328')
-                        // echo "sql (Statut seul) = $sql \n";
-                        mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        if ($erreur_requete != "")
-                            echo "UPDATE AFFECTATION (Statut seul)=> $erreur_requete \n";
-                    }            // Il y a au moins une différence
-                    else {
-                        // On réactive la ligne d'affectation (puisqu'elle existe toujours) mais on update avec les bonnes valeurs du fichier
-                        echo "On update l'affectation (identifiant = " . $affectationid . ")\n";
-                        $sql = sprintf("UPDATE AFFECTATION SET HARPEGEID='%s',NUMCONTRAT='%s',DATEDEBUT='%s',DATEFIN='%s',DATEMODIFICATION='%s',NUMQUOTITE='%s',DENOMQUOTITE='%s',OBSOLETE='%s' WHERE AFFECTATIONID='%s'", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($numcontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($datemodif), $fonctions->my_real_escape_utf8($numquotite), $fonctions->my_real_escape_utf8($denomquotite), 'N', $fonctions->my_real_escape_utf8($affectationid));
-    
-                        // if ($harpegeid == '9328')
-                        // {
-                        // echo "sql = $sql \n";
-                        // }
-    
-                        mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        if ($erreur_requete != "")
-                            echo "UPDATE AFFECTATION => $erreur_requete \n";
-    
-                        // ------------------------------------------------
-                        // Cas ou le num contrat est modifié
-                        // On ne modifie rien car le changement de numcontrat n'a aucun impact sur les autres informations
-                        // Ca n'impacte que le nombre de jour calculé
-                        // ------------------------------------------------
-                        if ($affectation->numcontrat() != $numcontrat) {
-                            echo "Changement de numero de contrat : Ancien numcontrat = " . $affectation->numcontrat() . "  Nouveau numcontrat = " . $numcontrat . "\n";
-                        }
-    
-                        // ------------------------------------------------
-                        // Cas ou la quotité est modifiée
-                        // On annule la déclaration de TP correspondante
-                        // Si la nouvelle quotité est 100% => on crée la déclaration de TP sur la période d'affectation
-                        // ------------------------------------------------
-                        if ($affectation->numquotite() != $numquotite) {
-                            echo "Cas ou la quotite est modifiee \n";
-                            $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
-                            if (! is_null($declarationliste)) {
-                                // Pour chaque declaration => On les annule
-                                foreach ($declarationliste as $declaration) {
-                                    if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
-    
-                                        $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='" . declarationTP::DECLARATIONTP_REFUSE . "' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($declaration->declarationTPid()));
-                                        mysqli_query($dbcon, $sql);
-                                        $erreur_requete = mysqli_error($dbcon);
-                                        if ($erreur_requete != "")
-                                            echo "UPDATE DECLARATIONTP (Statut seul)=> $erreur_requete \n";
-                                    }
-                                }
-                            }
-                            // Si la quotité est à 100% on crée une déclaration de TP
-                            if ($numquotite == $denomquotite) {
-                                echo "La nouvelle quotité est à 100% \n";
-                                $declarationTP = new declarationTP($dbcon);
-                                $declarationTP->affectationid($affectationid);
-                                $declarationTP->tabtpspartiel(str_repeat("0", 20));
-                                // echo "datedebut = $datedebut \n";
-                                $declarationTP->datedebut($datedebut);
-                                // echo "Datefin de la declaration TP = $datefin \n";
-                                if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000"))
-                                    $datefin = "9999-12-31";
-                                // echo "datefin = $datefin \n";
-                                $declarationTP->datefin($datefin);
-                                $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
-                                $erreur = $declarationTP->store();
-                                if ($erreur != "")
-                                    echo "Erreur dans la déclarationTP->store : " . $erreur . "\n";
-                            } else {
-                                // Quotité != 100% donc on ne crée pas de declaration TP
-                                echo "La nouvelle quotité n'est pas 100% => On laisse l'agent déclarer son TP\n";
-                            }
-                        }                // ----------------------------------------------------
-                        // Cas ou la date de début est avancée ou la date de fin est reculée
-                        // -----------------------------------------------------
-                        elseif (($fonctions->formatdatedb($datedebut) < $fonctions->formatdatedb($affectation->datedebut())) or ($fonctions->formatdatedb($datefin) > $fonctions->formatdatedb($affectation->datefin()))) {
-                            echo "Cas ou la date de debut est avancee ou de fin reculee \n";
-                            // Si on est à 100% => On modifie la date de début et/ou de fin de la déclaration de TP
-                            if ($numquotite == $denomquotite) {
-                                $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
-                                if (! is_null($declarationliste)) {
-                                    foreach ($declarationliste as $declarationTP) {
-                                        if (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
-                                            $sql = sprintf("UPDATE DECLARATIONTP SET DATEDEBUT='%s', DATEFIN='%s' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datedebut)), $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datefin)), $fonctions->my_real_escape_utf8($declarationTP->declarationTPid()));
-                                            mysqli_query($dbcon, $sql);
-                                            $erreur_requete = mysqli_error($dbcon);
-                                            if ($erreur_requete != "") {
-                                                echo "UPDATE DECLARATIONTP (Date debut avancee ou date fin reculee)=> $erreur_requete \n";
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }                // ----------------------------------------------------
-                        // Cas ou la date de début est reculée ou la date de fin est avancée
-                        // -----------------------------------------------------
-                        elseif (($fonctions->formatdatedb($datedebut) > $fonctions->formatdatedb($affectation->datedebut())) or ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb($affectation->datefin()))) {
-                            echo "Cas ou la date de debut est reculee ou de fin avancee \n";
-                            // Quelque soit la quotité => On réduit la période de la déclaration de TP
-                            $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
-                            if (! is_null($declarationliste)) {
-                                foreach ($declarationliste as $declarationTP) {
-                                    if (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
-                                        echo "datedebut = $datedebut    datefin = $datefin   DECLARATIONID = " . $declarationTP->declarationTPid() . "\n";
-                                        $sql = sprintf("UPDATE DECLARATIONTP SET DATEDEBUT='%s', DATEFIN='%s' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datedebut)), $fonctions->my_real_escape_utf8($fonctions->formatdatedb($datefin)), $fonctions->my_real_escape_utf8($declarationTP->declarationTPid()));
-                                        echo "SQL UPDATE DECLARATIONTP => $sql \n";
-                                        mysqli_query($dbcon, $sql);
-                                        $erreur_requete = mysqli_error($dbcon);
-                                        if ($erreur_requete != "") {
-                                            echo "UPDATE DECLARATIONTP (Date debut reculee ou date fin avancee)=> $erreur_requete \n";
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // Si on est dans le cas d'une affectation à 100%
-                if ($numquotite == $denomquotite)
-                {
-                    // On récupère les éventuels déclarations de temps partiel (pour les temps complet)
-                    $sql = "SELECT DECLARATIONTP.DECLARATIONID, DECLARATIONTP.TABTPSPARTIEL, DECLARATIONTP.STATUT, AFFECTATION.DATEDEBUT, AFFECTATION.DATEFIN 
-                            FROM DECLARATIONTP,AFFECTATION 
-                            WHERE AFFECTATION.AFFECTATIONID = '" . $fonctions->my_real_escape_utf8($affectationid) . "' 
-                              AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID
-                              AND AFFECTATION.OBSOLETE = 'N'";
-                    $query_decla = mysqli_query($dbcon, $sql);
-                    $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "")
-                        echo "SELECT DECLARATIONID, TABTPSPARTIEL => $erreur_requete \n";
-                    // -------------------------------
-                    // Si on a une déclaration de TP et une seule
-                    // -------------------------------
-                    if (mysqli_num_rows($query_decla) == 1) 
-                    {
-                        $result = mysqli_fetch_row($query_decla);
-                        $declarationTPid = "$result[0]";
-                        $tabTP = "$result[1]";
-                        // Si le tableau du TP ne contient que des 0 => C'est bien une déclaration de TP pour un temps complet
-                        if ($tabTP == str_repeat("0", 20))
-                        {
-                            // On peut donc réactiver la declaration de TP
-                            echo "On a une seule declaration de TP (sans temps partiel) pour une affectation à 100% active.\n";
-                            echo "On reactive/ajuste la ligne de declarationTP ($declarationTPid) de l'affectation " . $fonctions->my_real_escape_utf8($affectationid) ." \n";
-                            $declarationTP = new declarationTP($dbcon);
-                            $declarationTP->load($declarationTPid);
-                            $declarationTP->datedebut($fonctions->formatdate($result[3]));
-                            $declarationTP->datefin($fonctions->formatdate($result[4]));
-                            $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
-                            $erreur = $declarationTP->store();
-                            if ($erreur != "")
-                                echo "Erreur dans la declarationTP->store (reactivation de la declarationTP) : " . $erreur . "\n";
-                        }
-                    }
-                    elseif (mysqli_num_rows($query_decla) > 1) 
-                    {
-                        $declaTPactive = false;
-                        while ($result = mysqli_fetch_row($query_decla)) 
-                        {
-                            $declarationTPid = "$result[0]";
-                            $tabTP = "$result[1]";
-                            $statut = "$result[2]";
-                            $datedebut = "$result[3]";
-                            $datefin = "$result[4]";
-                            if ($statut <> declarationTP::DECLARATIONTP_REFUSE)
-                            {
-                                $declaTPactive = true;
-                            }
-                        }
-                        // Si toutes les declarations de TP sont désactivées => On en recrée une avec les bonnes valeurs
-                        if ($declaTPactive == false)
-                        {
-                            echo "On a plusieurs declarations de TP pour une affectation a 100% active et elles sont toutes desactivees.\n";
-                            echo "On cree une nouvelle ligne de declarationTP pour l'affectation " . $fonctions->my_real_escape_utf8($affectationid) ." \n";
-                            $declarationTP = new declarationTP($dbcon);
-                            $declarationTP->affectationid($affectationid);
-                            $declarationTP->tabtpspartiel(str_repeat("0", 20));
-                            $declarationTP->datedebut($fonctions->formatdate($datedebut));
-                            $declarationTP->datefin($fonctions->formatdate($datefin));
-                            $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
-                            $erreur = $declarationTP->store();
-                            if ($erreur != "")
-                                echo "Erreur dans la declarationTP->store (declarationTP manquante 100%) : " . $erreur . "\n";
-                        }
-                    }
-                }   
-            }
-        }
-    }
-
-    // Pour toutes les affectations obsolètes
-    // qui ont des déclarations non supprimées
-    // On doit supprimer les déclarations de TP ===> ON NE TOUCHE PAS AUX CONGES !!!!!!
-    $sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID,DECLARATIONTP.DECLARATIONID FROM AFFECTATION,DECLARATIONTP ";
-    $sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
-    $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
-    $sql = $sql . "   AND DECLARATIONTP.STATUT != '" . declarationTP::DECLARATIONTP_REFUSE . "'";
-    // echo "$sql (obsolete) = $sql \n";
-    $query = mysqli_query($dbcon, $sql);
-    $erreur_requete = mysqli_error($dbcon);
-    if ($erreur_requete != "")
-        echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
-    if (mysqli_num_rows($query) > 0) // Il y a des affectations obsoletes
-    {
-        if (! isset($debug) or ($debug == false)) {
-            echo "ATTENTION : Il y a des affectations obsoletes \n";
-            while ($result = mysqli_fetch_row($query)) {
-                $sql = sprintf("UPDATE AFFECTATION SET DATEMODIFICATION='%s' WHERE AFFECTATIONID = '%s'", $fonctions->my_real_escape_utf8(date("Ymd")), $fonctions->my_real_escape_utf8($result[0]));
-                echo "SQL (UPDATE DATEMODIF) => $sql \n";
-                mysqli_query($dbcon, $sql);
-                $erreur_requete = mysqli_error($dbcon);
-                if ($erreur_requete != "") {
-                    echo "UPDATE AFFECTATION (Mise du date de modification)=> $erreur_requete \n";
-                }
-                $sql = sprintf("UPDATE DECLARATIONTP SET STATUT='" . declarationTP::DECLARATIONTP_REFUSE . "' WHERE DECLARATIONID='%s'", $fonctions->my_real_escape_utf8($result[2]));
-                echo "SQL (UPDATE STATUT) => $sql \n";
-                mysqli_query($dbcon, $sql);
-                $erreur_requete = mysqli_error($dbcon);
-                if ($erreur_requete != "") {
-                    echo "UPDATE DECLARATIONTP (Mise du Statut à '" . declarationTP::DECLARATIONTP_REFUSE . "')=> $erreur_requete \n";
-                }
-            }
-        }
-    }// Pas d'affectation obsolete !!!
-    else {
-        echo "Pas d'affectation obsolete.... \n";
-    }
-    echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
-
-    exit();
-
-    // ///////////////////////////////////////////////////////////////////////////
-    // ///////////////////////////////////////////////////////////////////////////
-    // ///////////////////////////////////////////////////////////////////////////
-    // ///////////////// A VOIR CE QUE L'ON FAIT DE CA !!!! //////////////////////
-    // ///////////////////////////////////////////////////////////////////////////
-    // ///////////////////////////////////////////////////////////////////////////
-
-    // on doit supprimer les déclarations de temps partiels => suppression des demandes
-    $sql = "SELECT AFFECTATION.AFFECTATIONID,AFFECTATION.HARPEGEID FROM AFFECTATION,DECLARATIONTP ";
-    $sql = $sql . " WHERE AFFECTATION.OBSOLETE='O'";
-    $sql = $sql . "   AND AFFECTATION.AFFECTATIONID=DECLARATIONTP.AFFECTATIONID ";
-    $sql = $sql . "   AND DECLARATIONTP.STATUT != '" . declarationTP::DECLARATIONTP_REFUSE . "'";
-    // echo "$sql (obsolete) = $sql \n";
-    $query = mysqli_query($dbcon, $sql);
-    $erreur_requete = mysqli_error($dbcon);
-    if ($erreur_requete != "")
-        echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
-    if (mysqli_num_rows($query) > 0) // Il y a des affectation obsoletes
-    {
-        echo "ATTENTION : Il y a des affectations obsoletes \n";
-        while ($result = mysqli_fetch_row($query)) {
-            // On recherche si une affectation avec les mêmes critères existe
-            echo "On regarde s'il y a une affectation identique pour l'ancienne affectation " . $result[0] . " (HarpegeId = " . $result[1] . ") : ";
-            $sql = "SELECT AFFNEW.AFFECTATIONID ";
-            $sql = $sql . " FROM AFFECTATION AFFNEW, AFFECTATION AFFOLD ";
-            $sql = $sql . " WHERE AFFNEW.DATEDEBUT = AFFOLD.DATEDEBUT ";
-            $sql = $sql . "   AND (AFFNEW.DATEFIN = AFFOLD.DATEFIN OR AFFOLD.DATEFIN >= '" . date('Y-m-d') . "') "; // AFFOLD.DATEFIN = '9999-12-31') ";
-            $sql = $sql . "   AND AFFNEW.STRUCTUREID = AFFOLD.STRUCTUREID ";
-            $sql = $sql . "   AND AFFNEW.NUMQUOTITE = AFFOLD.NUMQUOTITE ";
-            $sql = $sql . "   AND AFFNEW.DENOMQUOTITE = AFFOLD.DENOMQUOTITE ";
-            $sql = $sql . "   AND AFFNEW.OBSOLETE = 'N' ";
-            $sql = $sql . "   AND AFFNEW.AFFECTATIONID != AFFOLD.AFFECTATIONID ";
-            $sql = $sql . "   AND AFFNEW.HARPEGEID = AFFOLD.HARPEGEID ";
-            $sql = $sql . "   AND AFFOLD.AFFECTATIONID = " . $result[0];
-            $query2 = mysqli_query($dbcon, $sql);
-            // echo "SQL = " . $sql . "\n";
-            $erreur_requete = mysqli_error($dbcon);
             if ($erreur_requete != "")
-                echo "SELECT AFFECTATION OBSOLETE => $erreur_requete \n";
-            if (mysqli_num_rows($query2) > 0) // Il y a une affectations nouvelles avec les mêmes critères qu'une ancienne
             {
-                $result2 = mysqli_fetch_row($query2);
-                echo "OUI => nouvelle affectation = " . $result2[0] . "\n";
-                $affnew = new affectation($dbcon);
-                $affold = new affectation($dbcon);
-                $affnew->load($result2[0]); // On charge la nouvelle affectation
-                $affold->load($result[0]); // On charge l'ancienne affectation
-                                           // echo "Avant le test 100% quotité \n";
-                if ($affold->numquotite() != $affold->denumquotite()) // Si ce n'est pas une affectation à 100%, on va cloner les demandes de TP associées à l'ancienne Affectation
-                {
-                    // echo "On charge les declarationTP Old \n ";
-                    $declarationliste = $affold->declarationTPliste($fonctions->formatdate($affold->datedebut()), $fonctions->formatdate($affold->datefin()));
-                    $oldTP = new $declarationTP($dbcon);
-                    foreach ($declarationliste as $oldTP) {
-                        // echo "On va cloner les nouvelle declarationTP \n";
-                        $newTP = new declarationTP($dbcon);
-                        $newTP->affectationid($affnew->affectationid());
-                        $newTP->tabtpspartiel($oldTP->tabtpspartiel());
-                        $newTP->datedebut($oldTP->datedebut());
-                        $newTP->datefin($oldTP->datefin());
-                        $newTP->statut($oldTP->statut());
-                        // $newTP->datedemande($oldTP->datedemande()); => Initialisé dans la fonction STORE
-                        // $newTP->datestatut($oldTP->datestatut()); => Initialisé dans la fonction STORE
-                        // echo "Avant le store ... \n";
-                        $erreur = $newTP->store();
-                        if ($erreur != "") {
-                            echo "ERREUR DANS LE STORE (CLONE DU TP " . $oldTP->declarationTPid() . ") => $erreur \n";
-                        }
-                    }
-                }
-                // On a maintenant les TP qui sont déclarés comme dans l'ancienne affectation
-                // On va les recharger
-                $affnew = new affectation($dbcon);
-                $affold = new affectation($dbcon);
-                // echo "Avant le load affnew ..... \n";
-                $affnew->load($result2[0]); // On charge la nouvelle affectation
-                                            // echo "Avant le load affold ..... \n";
-                $affold->load($result[0]); // On charge l'ancienne affectation
-                                           // echo "Avant le declartationTP pour Old \n";
-                $olddeclarationliste = $affold->declarationTPliste($fonctions->formatdate($affold->datedebut()), $fonctions->formatdate($affold->datefin()));
-                // echo "Avant le declartationTP pour New \n";
-                $newdeclarationliste = $affnew->declarationTPliste($fonctions->formatdate($affold->datedebut()), $fonctions->formatdate($affold->datefin()));
-                // echo "olddeclarationliste = "; print_r($olddeclarationliste); echo "\n";
-                // echo "newdeclarationliste = "; print_r($newdeclarationliste); echo "\n";
-                if (! is_null($olddeclarationliste)) {
-                    $indexnewTP = 0;
-                    foreach ($olddeclarationliste as $oldTP) {
-
-                        $newTP = $newdeclarationliste[$indexnewTP];
-                        // echo "newTP->declarationTPid() = " . $newTP->declarationTPid() . " oldTP->declarationTPid() = " . $oldTP->declarationTPid() . "\n";
-                        // On va maintenant raccrocher les anciennes demandes de congés à la nouvelle declarationTP
-                        $sql = "UPDATE DEMANDEDECLARATIONTP SET DECLARATIONID = " . $newTP->declarationTPid() . " WHERE DECLARATIONID = " . $oldTP->declarationTPid() . "  ";
-                        $sql = $sql . " AND DEMANDEID IN (SELECT DEMANDEID FROM DEMANDE WHERE DATEFIN <= '" . $fonctions->formatdatedb($newTP->datefin()) . "')";
-                        // echo "SQL (UPDATE DEMANDEDECLARATIONTP....) = " . $sql . "\n";
-                        $result_update = mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        $nbreligne = mysqli_affected_rows($dbcon); // => Savoir combien de lignes ont été modifiées
-                        echo "\tIl y a $nbreligne demandes de congés qui ont été déplacées. \n";
-                        if ($erreur_requete != "") {
-                            echo "ERREUR DANS LE DEPLACEMENT DES DEMANDE => Ancien TP.ID=" . $oldTP->declarationTPid() . "  Nouveau TP.ID=" . $newTP->declarationTPid() . "\n";
-                        }
-                        $indexnewTP = $indexnewTP + 1;
-                    }
-                }
-            } else {
-                echo "NON \n";
-            }
-
-            unset($affectation);
-            $affectation = new affectation($dbcon);
-            $affectation->load($result[0]);
-            $declarationliste = $affectation->declarationTPliste($fonctions->formatdate($affectation->datedebut()), $fonctions->formatdate($affectation->datefin()));
-            if (! is_null($declarationliste)) {
-                foreach ($declarationliste as $declaration) {
-                    $declaration->statut(declarationTP::DECLARATIONTP_REFUSE);
-                    $msg = $declaration->store();
-                    if ($msg != "")
-                        echo "Problème lors de la suppression de la déclaration " . $declaration->declarationTPid() . " : " . $msg . " \n";
-                }
+               echo "Error : INSERT AFFECTATION => $erreur_requete \n";
             }
         }
-    } else {
-        echo "Pas d'affectation obsolete.... \n";
     }
 
     echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";

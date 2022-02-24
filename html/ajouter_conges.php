@@ -69,23 +69,23 @@
             $structurefille = $structure->structurefille();
             foreach ((array) $structurefille as $structure) {
                 $responsable = $structure->responsable();
-                if ($responsable->harpegeid() != '-1') {
-                    $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+                if ($responsable->agentid() != '-1') {
+                    $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                 }
             }
         }
-        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
-            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
+            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
         }
         ksort($agentlistefull);
         echo "<SELECT name='agentid'>";
         foreach ($agentlistefull as $keyagent => $membre) {
-            echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
         }
         echo "</SELECT>";
         echo "<br>";
 
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     } else {
@@ -164,8 +164,8 @@
         echo "Motif (Obligatoire) : <input type=text name=commentaire_supp id=commentaire_supp size=25 >";
         echo "<br>";
 
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-        echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     }

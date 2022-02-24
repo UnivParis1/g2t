@@ -51,7 +51,7 @@
     // $restriction=array("$LDAP_CODE_AGENT_ATTR");
     // $sr=ldap_search ($con_ldap,$dn,$filtre,$restriction);
     // $info=ldap_get_entries($con_ldap,$sr);
-    // //echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+    // //echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
     // $agent->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
     // }
     // else
@@ -82,7 +82,7 @@
            );
            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
            $info = ldap_get_entries($con_ldap, $sr);
-           // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+           // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
            if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
            }
@@ -178,7 +178,7 @@
                     $demande->load($demandeid);
                     if (is_null($responsableid) == false) // Il y a un responsable ==> On envoie le mail
                     {
-                        $pdffilename = $demande->pdf($user->harpegeid());
+                        $pdffilename = $demande->pdf($user->agentid());
                         $agentdemande = $demande->agent();
                         $ics = null;
                         $ics = $demande->ics($agentdemande->mail());
@@ -239,7 +239,7 @@
     if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
         //echo "Pas de responsable.... C'est un agent qui veut gérer ses demandes<br>";
-        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "agent", null);
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "agent", null);
         if ($htmltext != "")
             echo $htmltext;
         else
@@ -267,7 +267,7 @@
                             if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
                                 $agentliste = null;
                                 $respfille = $fille->responsable();
-                                $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->harpegeid()] = $respfille;
+                                $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->agentid()] = $respfille;
                                 $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
                             }
                         }
@@ -287,12 +287,12 @@
             }
             ksort($agentlistefull);
             //echo "<br>"; print_r($agentlistefull); echo "<br>";
-            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
-                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
+                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
             }
             echo "<SELECT name='agentid'>";
             foreach ($agentlistefull as $keyagent => $membre) {
-                echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
             }
             echo "</SELECT>";
             echo "<br>";
@@ -321,7 +321,7 @@
     } elseif ($mode == 'resp' or $mode == 'gest') {
         // => On est en mode "reponsable" et un agent est sélectionné
         //echo "Avant le mode responsable <br>";
-        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "resp", null);
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "resp", null);
         if ($htmltext != "")
             echo $htmltext;
         else
@@ -334,7 +334,7 @@
         // On élargie de période de début de recherche des demades de CET pour l'agent à -2 ans.
         //echo "Mode RH <br>";
         $debut = $fonctions->formatdate(($fonctions->anneeref() - 2) . $fonctions->debutperiode());
-        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->harpegeid(), "resp", 'cet');
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "resp", 'cet');
         if ($htmltext != "")
             echo $htmltext;
         else

@@ -45,7 +45,7 @@
     );
     $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
     $info = ldap_get_entries($con_ldap, $sr);
-    // echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+    // echo "Le numÃ©ro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
     $adminuser = new agent($dbcon);
     $adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
     if (! $adminuser->estadministrateur()) {
@@ -118,7 +118,7 @@
                         // echo "Je vais sauver la demande <br>";
                         unset($demande);
                         $demande = new demande($dbcon);
-                        // $demande->agent($agent->harpegeid());
+                        // $demande->agent($agent->agentid());
                         // $demande->structure($agent->structure()->id());
                         $demande->type($listetype);
                         $demande->datedebut($date_debut);
@@ -166,7 +166,7 @@
     <br>
     Format des demandes :
     <br>
-    HARPEGEID;CODETYPE_CONGE;DATE_DEBUT;MOMENT_DEBUT;DATE_FIN;MOMENT_FIN;STATUT
+    AGENTID;CODETYPE_CONGE;DATE_DEBUT;MOMENT_DEBUT;DATE_FIN;MOMENT_FIN;STATUT
     <br>
     Exemple :
     <br>
@@ -177,7 +177,7 @@
 
     	<textarea name="conge_liste" cols="60" rows="20"><?php echo $liste_conges ?></textarea>
     <?php
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 ?>
 <input type='submit' value='Soumettre'>
 </form>

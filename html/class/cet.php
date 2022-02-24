@@ -82,7 +82,7 @@ class cet
     /**
      *
      * @param string $agentid
-     *            optional identifier of the agent (harpege)
+     *            optional identifier of the agent
      * @return string the identifier of the agent if $agentid is not set
      */
     function agentid($agentid = null)
@@ -203,7 +203,7 @@ class cet
     /**
      *
      * @param string $agentid
-     *            identifier of the agent (harpege)
+     *            identifier of the agent
      * @return string empty string if all correct. An error message otherwise
      */
     function load($agentid)
@@ -215,7 +215,7 @@ class cet
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
         // On charge le cumul annuel => tous les 'cet%' mais pas 'cet'
-        $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid . "' AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
+        $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE AGENTID = '" . $agentid . "' AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
@@ -238,7 +238,7 @@ class cet
         }
         
         // On charge le solde du CET
-        $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE HARPEGEID = '" . $agentid . "' AND TYPEABSENCEID ='cet'";
+        $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE AGENTID = '" . $agentid . "' AND TYPEABSENCEID ='cet'";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
@@ -263,7 +263,7 @@ class cet
         // On charge la date de début du CET
         $complement = new complement($this->dbconnect);
         $complement->load($agentid, "DEBUTCET");
-        if ($complement->harpegeid() == "") {
+        if ($complement->agentid() == "") {
             // echo "Cet->Load (date début) : La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " non trouvée <br>";
             $errlog = "La date de début du CET pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " n'a pas pu être trouvée";
             // Suppression de la trace car pas une erreur
@@ -318,7 +318,7 @@ class cet
             // echo "On va recharger le solde... <br>";
             
             $complement = new complement($this->dbconnect);
-            $complement->harpegeid($this->agentid);
+            $complement->agentid($this->agentid);
             $complement->complementid('DEBUTCET');
             if (! $this->fonctions->verifiedate($this->datedebut)) {
                 // echo "CET->Store : Date début n'est pas une date => " . $this->datedebut() . "<br>";
@@ -435,7 +435,7 @@ class cet
         $pdf->Ln(10);
         
         // echo "Nom du fichier....<br>";
-        $pdfname = $this->fonctions->pdfpath() . '/' . date('Y-m') . '/modification_cet_' . $agent->harpegeid() . '_' . date("YmdHis") . '.pdf';
+        $pdfname = $this->fonctions->pdfpath() . '/' . date('Y-m') . '/modification_cet_' . $agent->agentid() . '_' . date("YmdHis") . '.pdf';
         // echo "Avant le output... pdfname = $pdfname <br>";
         
         //$pdf->Output($pdfname, 'F');

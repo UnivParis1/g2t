@@ -38,7 +38,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -108,7 +108,7 @@
     echo "</select>";
     echo "</div>";
     echo "<br>";
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='submit' value='Soumettre' name='selection_trim'/>";
     echo "</form>";
 

@@ -265,44 +265,23 @@
         }
         unset($declarationliste);
 
-        /*
-         * $declarationliste = $affectation->declarationTPliste($date_fin,$date_fin) ;
-         * // On regarde s'il y a une declaration de TP qui inclue la date de fin !!!
-         * $msg = "";
-         * if (!is_null($declarationliste))
-         * {
-         * //echo "Il y a chevauchement entre la nouvelle declaration et une ancienne declaration !!!! <br>";
-         * $declaration = reset($declarationliste);
-         * //echo "formatdb = " . $fonctions->formatdatedb($date_fin) . "<br>";
-         * $timestamp = strtotime($fonctions->formatdatedb($date_fin));
-         * //echo "Avant nvlle date <br>";
-         * $nvlledatedebut = date("Ymd", strtotime("+1days", $timestamp )); // On passe au jour suivant (donc le lendemain)
-         * //echo "nvlledatedebut = $nvlledatedebut <br>";
-         * $declaration->datedebut($fonctions->formatdate($nvlledatedebut));
-         * //echo "Nvlle date de fin dans l'objet = " .$autodecla->datedebut() . "<br>";
-         * if ($declaration->statut() != declarationTP::DECLARATIONTP_REFUSE)
-         * {
-         * $msg_erreur = $msg_erreur . "Il y a chevauchement entre la nouvelle declaration et une ancienne declaration !!!! <br>";
-         * $msg = $declaration->store();
-         * }
-         * //echo "Apres le store de l'ID " . $autodecla->id() . "... <br>";
-         * if ($msg != "")
-         * $msg_erreur = $msg_erreur . $msg;
-         * }
-         * unset($declaration);
-         * unset($declarationliste);
-         */
-
         // On va enregistrer la nouvelle déclaration de TP
 
         // echo "Avant le new... <br>";
         $declaration = new declarationTP($dbcon);
         $declaration->datedebut($date_debut);
         $declaration->datefin($date_fin);
+        $declaration->agentid($agentid);
+        $numquotiteligne = $affectation->numlignequotite();
+        $declaration->numlignequotite($numquotiteligne);
         // echo "Avant le initTP <br>";
         $declaration->tabtpspartiel(implode($tabTP));
-        $declaration->affectationid($affectationid);
         $declaration->statut(declarationTP::DECLARATIONTP_ATTENTE);
+
+/*
+        echo "declaration avant l'enregistrement : ";
+        var_dump($declaration);
+*/        
         // echo "Avant le Store <br>";
         $msg = $declaration->store();
         if ($msg != "")
@@ -312,60 +291,6 @@
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             echo "<font color='green'>" . $errlog . "</font><br/><br/>";
         }
-
-        // $timestamp = strtotime($fonctions->formatdatedb($date_debut));
-        // $nvlledatefin = date("d/m/Y", strtotime("+1year", $timestamp )); // On ajoute un an pour chercher les éventuelles demandes faites après la fin de période
-        // $demandeliste = $agent->demandesliste($date_debut , $nvlledatefin );
-        // if (count($demandeliste) != 0)
-        // {
-        // $afficheheader = TRUE;
-        // foreach ($demandeliste as $demandekey => $demande)
-        // {
-        // if (($demande->statut() != demande::DEMANDE_REFUSE) and ($fonctions->formatdatedb($demande->datedebut())>=($fonctions->anneeref() . $fonctions->debutperiode())))
-        // {
-        // if ($afficheheader)
-        // {
-        // //echo "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
-        // $msg_erreur = $msg_erreur . "Il y a des demandes de congés qu'il faudra supprimer !!!!! <br>";
-        // $afficheheader = FALSE;
-        // }
-        // $msg_erreur = $msg_erreur . " La demande du " . $demande->date_demande() . " pour la période du " . $demande->datedebut() . " au " . $demande->datefin() . " <br>";
-        // $demande->statut(demande::DEMANDE_REFUSE);
-        // $demande->motifrefus("Changement d'autodéclaration");
-        // //echo "Avant le store...<br>";
-        // //print_r($demande); echo "<br>";
-        // $demande->store();
-        // //echo "Apres le store...<br>";
-        //
-        // // DANS LE CAS DU MODE RESPONSABLE
-        // // => 1 mail à l'agent => expéditeur = $user et destinataire = $agent
-        // // => 1 mail au responsable => expéditeur = $user et destinataire = $user
-        // if ($mode=="resp")
-        // {
-        // //echo "Avant le PDF... <br>";
-        // $pdffilename = $demande->pdf($user->harpegeid());
-        // // Mail à l'agent
-        // //echo "Avant le mail à l'agent... <br>";
-        // $user->sendmail($agent,"Annulation d'une demande (Changement d'autodéclaration)","Votre autodéclaration a été modifiée par " . $user->civilite() . " " . $user->nom() . " " . $user->prenom() . "!! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-        // // Mail au responsable (donc c'est un automail)
-        // //echo "Avant le mail AU RESP... <br>";
-        // $user->sendmail($user,"Annulation d'une demande (Changement d'autodéclaration)","Vous venez de changer l'autodéclaration de l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-        // //echo "Apres mail resp...<br>";
-        // }
-        // // DANS LE CAS DU MODE AGENT
-        // // => 1 mail à l'agent => expéditeur = $agent et destinataire = $agent
-        // // => 1 mail au responsable => expéditeur = $agent et destinataire = $resp récup a partir de la strcture
-        // else
-        // {
-        // $pdffilename = $demande->pdf($agent->harpegeid());
-        // $agent->sendmail($agent,"Annulation d'une demande (Changement d'autodéclaration)","Vous avez changé d'autodéclaration !! Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-        // $resp = $agent->structure()->responsable();
-        // $agent->sendmail($resp,"Annulation d'une demande (Changement d'autodéclaration)","L'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " a changé d'autodéclaration !! Sa demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . $demande->statutlibelle() . ".", $pdffilename);
-        // }
-        //
-        // }
-        // }
-        // }
     }
 
     if ($agentid == "") {
@@ -383,12 +308,12 @@
         ksort($agentlistefull);
         echo "<SELECT name='agentid'>";
         foreach ($agentlistefull as $keyagent => $membre) {
-            echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
         }
         echo "</SELECT>";
         echo "<br>";
 
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";

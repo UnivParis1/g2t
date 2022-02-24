@@ -54,7 +54,7 @@ else
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -188,7 +188,7 @@ else
     	<?php
         echo "<br>";
         
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
@@ -301,7 +301,7 @@ else
             $struct = new structure($dbcon);
             $struct->load($structid);
             $code = null;
-            if ($struct->responsable()->harpegeid() == $agent->harpegeid())
+            if ($struct->responsable()->agentid() == $agent->agentid())
             {
                 $resp = $struct->resp_envoyer_a($code);
             }
@@ -310,7 +310,7 @@ else
                 $resp = $struct->agent_envoyer_a($code);
             }
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-            if ($resp->harpegeid() != '-1')
+            if ($resp->agentid() != '-1')
             {
 	            $params['recipientEmails'] = array
 	            (
@@ -715,7 +715,7 @@ else
 /*        
         echo "<br><hr size=3 align=center><br>";
         echo "<form name='simulation_option'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
         echo "<div style='color: red;font-weight: bold;'>ATTENTION : A n'utiliser que pour des tests de vérification des specifications.</div>";
         
@@ -745,7 +745,7 @@ else
         echo "Création d'une demande d'option sur CET pour " . $agent->identitecomplete() . "<br>";
         //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
         echo "<form name='creation_option'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
          
         $valeur_a = "";
@@ -916,7 +916,7 @@ else
         {
             echo "<br>Suppression d'une demande de droit d'option.<br>";
             echo "<form name='form_esignature_delete'  method='post' >";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
             echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
             foreach ($listid as $id)
@@ -979,7 +979,7 @@ else
             $struct = new structure($dbcon);
             $struct->load($structid);
             $code = null;
-            if ($struct->responsable()->harpegeid() == $agent->harpegeid())
+            if ($struct->responsable()->agentid() == $agent->agentid())
             {
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
                 $resp = $struct->resp_envoyer_a($code);

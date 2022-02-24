@@ -20,7 +20,7 @@
 	type="text/css" media="all"></link>
 <script type="text/javascript">
 <?php
-    if (is_null($user) or is_null($user->harpegeid())) {
+    if (is_null($user) or is_null($user->agentid())) {
         echo "PROBLEME : L'utilisateur n'est pas renseigné ==> objet \$user!!!! <br>";
         exit();
     }
@@ -193,7 +193,7 @@
     // On vérifie que la personne connectée (la vraie personne avec le compte LDAP) est administrateur de l'appli
     // On n'utilise pas la variable $user car dans le cas de la subtitution (se faire passer pour...) on ne serait plus admin
     $adminuser = new agent($dbcon);
-    if (! isset($_SESSION['phpCAS']['harpegeid'])) {
+    if (! isset($_SESSION['phpCAS']['agentid'])) {
         $uid = phpCAS::getUser();
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
@@ -210,11 +210,11 @@
         );
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
-        $_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+        $_SESSION['phpCAS']['agentid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
         // echo "Je viens de set le param - menu.php<br>";
     }
-    $adminuser->load($_SESSION['phpCAS']['harpegeid']);
-    // echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+    $adminuser->load($_SESSION['phpCAS']['agentid']);
+    // echo "Le numéro Agent de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
 
     $arraystructpartielle = array();
     // $arraystructpartielle = array_merge($arraystructpartielle,array('SC4_3','IU1_3','IU4_3','IU21_4','IU22_4','IU24_4','IU25_4','IU23_4','IU2C_4','IU2D_4'));
@@ -277,7 +277,7 @@
                 // L'utilisateur est dans le groupe recherché, on peut continuer
                 // echo "Yes !! Il est dedans !!! <br>";
             } else {
-                $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->harpegeid() . ") !!!";
+                $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->agentid() . ") !!!";
                 echo "$errlog<br>";
                 echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
@@ -285,7 +285,7 @@
             }
         }    // Pas de groupe pour cet utilisateur => On doit s'arréter
         else {
-            $errlog = "L'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->harpegeid() . ") ne fait parti d'aucun groupe LDAP....";
+            $errlog = "L'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->agentid() . ") ne fait parti d'aucun groupe LDAP....";
             echo "$errlog <br>";
             echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
@@ -306,8 +306,8 @@
         }
     }
     
-    if ($user->harpegeid() != $_SESSION['phpCAS']['harpegeid'])
-        echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->harpegeid() . ")</CENTER></P><BR>";
+    if ($user->agentid() != $_SESSION['phpCAS']['agentid'])
+        echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER></P><BR>";
             
     if ($structurepartielle == true)
     {
@@ -339,20 +339,20 @@
 				<ul class="niveau2">
 					<li onclick='document.accueil.submit();'>
 						<form name='accueil' method='post' action="index.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.accueil.submit();">Accueil</a>
 					</li>
 					<li onclick='document.planning.submit();' <?php echo $hidemenu; ?> >
 						<form name='planning' method='post' action="affiche_planning.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form>
 						<a href="javascript:document.planning.submit();">Planning</a>
 					</li>
 					<li onclick='document.agentannulation.submit();'>
 						<form name='agentannulation' method='post' action="gestion_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>">
 						</form>
 						<a href="javascript:document.agentannulation.submit();">Annulation de demandes</a>
 					</li>				
@@ -373,7 +373,7 @@
 ?>
 				    <li onclick='document.agent_struct_planning.submit();' <?php echo $hidemenu; ?> >
 						<form name='agent_struct_planning' method='post' action="structure_planning.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 							<input type="hidden" name="mode" value="agent">
 							<input type="hidden" name="previous" value="no">
 						</form>
@@ -384,24 +384,24 @@
 ?>	
 				   <li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
 						<form name='dem_conge' method='post' action="etablir_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="typedemande" value="conges">
 						</form> 
 						<a href="javascript:document.dem_conge.submit();">Etablir une demande de congé</a>
 					</li>
 					<li onclick='document.dem_absence.submit();'>
 						<form name='dem_absence' method='post' action="etablir_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="typedemande" value="absence">
 						</form>
 						<a href="javascript:document.dem_absence.submit();">Etablir une demande d'autorisation d'absence</a>
 					</li>
 					<li onclick='document.agent_tpspartiel.submit();'>
 						<form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="agent">
 						</form>
 						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
@@ -424,23 +424,23 @@
 <!--					
                     <li onclick='document.alim_cet_test.submit();'>
 						<form name='alim_cet_test' method='post' action="gerer_alimentationCET_test.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 						</form>
 						<a href="javascript:document.alim_cet_test.submit();">Alimentation du CET TEST</a>
 					</li>
 -->
 					<li onclick='document.alim_cet.submit();'>
 						<form name='alim_cet' method='post' action="gerer_alimentationCET.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 						</form>
 						<a href="javascript:document.alim_cet.submit();">Alimentation du CET</a>
 					</li>
 					<li onclick='document.option_cet.submit();'>
 						<form name='option_cet' method='post' action="gerer_optionCET.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 						</form>
 						<a href="javascript:document.option_cet.submit();">Droit d'option sur CET</a>
 					</li>
@@ -466,52 +466,52 @@
 						<ul class="niveau3">
 							<li onclick='document.resp_gest_conge.submit();'>
 								<form name='resp_gest_conge' method='post' action="gestion_demande.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-									<input type="hidden" name="responsableid" value="<?php echo $user->harpegeid(); ?>">
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+									<input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>">
 									<input type="hidden" name="previous" value="no">
 								</form> 
 								<a href="javascript:document.resp_gest_conge.submit();">Annulation de congé ou d'absence</a>
 							</li>
 							<li onclick='document.resp_conge.submit();'>
 								<form name='resp_conge' method='post' action="etablir_demande.php">
-									<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>">
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="conges">
 									<input type="hidden" name="previous" value="no">
 								</form> <a href="javascript:document.resp_conge.submit();">Etablir une demande de congé pour un agent</a>
 							</li>
 							<li onclick='document.resp_absence.submit();'>
 								<form name='resp_absence' method='post' action="etablir_demande.php">
-									<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="absence"> 
 									<input type="hidden" name="previous" value="no">
 								</form> <a href="javascript:document.resp_absence.submit();">Etablir une demande d'absence pour un agent</a>
 							</li>
 							<li onclick='document.resp_valid_conge.submit();'>
-								<form name='resp_valid_conge' method='post'action="valider_demande.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+								<form name='resp_valid_conge' method='post' action="valider_demande.php">
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp"> 
 									<input type="hidden" name="previous" value="no">
 								</form> <a href="javascript:document.resp_valid_conge.submit();">Demandes en attente</a>
 							</li>
 							<li onclick='document.resp_valid_tpspartiel.submit();'>
 								<form name='resp_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp">
 								</form>
 								<a href="javascript:document.resp_valid_tpspartiel.submit();">Validation des temps partiels</a>
 							</li>
 							<li onclick='document.resp_tpspartiel.submit();'>
 								<form name='resp_tpspartiel' method='post' action="saisir_tpspartiel.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp">
 								</form> <a href="javascript:document.resp_tpspartiel.submit();">Saisir le temps partiel pour un agent</a>
 							</li>
 <!-- 
 							<li onclick='document.resp_gestcet.submit();'>
 								<form name='resp_gestcet'  method='post' action="gerer_cet.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 									<input type="hidden" name="mode" value="resp">
 								</form>
 								<a href="javascript:document.resp_gestcet.submit();">Gestion du CET d'un agent</a>
@@ -519,13 +519,13 @@
 -->
 							<li onclick='document.resp_ajout_conge.submit();'>
 								<form name='resp_ajout_conge' method='post' action="ajouter_conges.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 								</form> 
 								<a href="javascript:document.resp_ajout_conge.submit();">Ajout de jours supplémentaires pour un agent</a>
 							</li>
 							<li onclick='document.resp_aff_solde.submit();'>
 								<form name='resp_aff_solde' method='post' action="affiche_solde.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp">
 									<input type="hidden" name="previous" value="no">
 								</form> 
@@ -533,7 +533,7 @@
 							</li>
 							<li onclick='document.resp_struct_planning.submit();'>
 								<form name='resp_struct_planning' method='post' action="structure_planning.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp"> <input type="hidden" name="previous" value="no">
 								</form> 
 								<a href="javascript:document.resp_struct_planning.submit();">Planning de la structure</a>
@@ -548,8 +548,8 @@
 ?>				
 							<li onclick='document.resp_conge_anticipe.submit();'>
 								<form name='resp_conge_anticipe' method='post' action="etablir_demande.php">
-									<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="conges"> 
 									<input type="hidden" name="congeanticipe" value="yes">
 								</form> 
@@ -565,16 +565,16 @@
 						<ul class="niveau3">
 							<li onclick='document.resp_gest_conge_previous.submit();'>
 								<form name='resp_gest_conge_previous' method='post' action="gestion_demande.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-									<input type="hidden" name="responsableid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+									<input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
 								<a href="javascript:document.resp_gest_conge_previous.submit();">Annulation de congé ou d'absence</a>
 							</li>
 							<li onclick='document.resp_conge_previous.submit();'>
 								<form name='resp_conge_previous' method='post' action="etablir_demande.php">
-									<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="conges"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
@@ -582,8 +582,8 @@
 							</li>
 							<li onclick='document.resp_absence_previous.submit();'>
 								<form name='resp_absence_previous' method='post' action="etablir_demande.php">
-									<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="absence"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
@@ -591,7 +591,7 @@
 							</li>
 							<li onclick='document.resp_valid_conge_previous.submit();'>
 								<form name='resp_valid_conge_previous' method='post' action="valider_demande.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
@@ -599,7 +599,7 @@
 							</li>
 							<li onclick='document.resp_aff_solde_previous.submit();'>
 								<form name='resp_aff_solde_previous' method='post' action="affiche_solde.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
@@ -607,7 +607,7 @@
 							</li>
 							<li onclick='document.resp_struct_planning_previous.submit();'>
 								<form name='resp_struct_planning_previous' method='post' action="structure_planning.php">
-									<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="mode" value="resp"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
@@ -622,7 +622,7 @@
 ?> 
 					<li onclick='document.resp_parametre.submit();'>
 						<form name='resp_parametre' method='post' action="gestion_dossier.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="action" value="modif"> 
 							<input type="hidden" name="mode" value="resp">
 						</form> 
@@ -643,14 +643,14 @@
 				<ul class="niveau2">
 					<li onclick='document.gest_valid_conge.submit();'>
 						<form name='gest_valid_conge' method='post' action="valider_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion">
 						</form> 
 						<a href="javascript:document.gest_valid_conge.submit();">Demandes en attente</a>
 					</li>
 					<li onclick='document.gest_valid_conge_prev.submit();'>
 						<form name='gest_valid_conge_prev' method='post' action="valider_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion"> 
 							<input type="hidden" name="previous" value="yes">
 						</form> 
@@ -658,22 +658,22 @@
 					</li>
 					<li onclick='document.gest_gest_conge.submit();'>
 						<form name='gest_gest_conge' method='post' action="gestion_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
-							<input type="hidden" name="gestionnaireid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="gestionnaireid" value="<?php echo $user->agentid(); ?>">
 							<input type="hidden" name="previous" value="no">
 						</form> 
 						<a href="javascript:document.gest_gest_conge.submit();">Annulation de congé ou d'absence</a>
 					</li>
 					<li onclick='document.gest_aff_solde.submit();'>
 						<form name='gest_aff_solde' method='post' action="affiche_solde.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion">
 						</form>
 						<a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
 					</li>
 					<li onclick='document.gest_aff_solde_ant.submit();'>
 						<form name='gest_aff_solde_ant' method='post' action="affiche_solde.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion"> 
 							<input type="hidden" name="previous" value="yes">
 						</form> 
@@ -681,14 +681,14 @@
 					</li>
 					<li onclick='document.gest_parametre.submit();'>
 						<form name='gest_parametre' method='post' action="gestion_dossier.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="action" value="lecture"> 
 							<input type="hidden" name="mode" value="gestion">
 						</form> <a href="javascript:document.gest_parametre.submit();">Affichage paramétrage des dossiers</a>
 					</li>
 					<li onclick='document.gest_struct_planning.submit();'>
 						<form name='gest_struct_planning' method='post' action="structure_planning.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion"> 
 							<input type="hidden" name="previous" value="no">
 						</form> 
@@ -696,7 +696,7 @@
 					</li>
 					<li onclick='document.gest_struct_planning_previous.submit();'>
 						<form name='gest_struct_planning_previous' method='post' action="structure_planning.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion"> 
 							<input type="hidden" name="previous" value="yes">
 						</form> 
@@ -704,7 +704,7 @@
 					</li>
 					<li onclick='document.gest_parametre_modif.submit();'>
 						<form name='gest_parametre_modif' method='post' action="gestion_dossier.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="action" value="modif"> 
 							<input type="hidden" name="mode" value="gestion">
 						</form>
@@ -712,7 +712,7 @@
 					</li>
 					<li onclick='document.gest_valid_tpspartiel.submit();'>
 						<form name='gest_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="mode" value="gestion">
 						</form> 
 						<a href="javascript:document.gest_valid_tpspartiel.submit();">Validation des temps partiels</a>
@@ -720,7 +720,7 @@
 <!-- 
 					<li onclick='document.gest_gestcet.submit();'>
 						<form name='gest_gestcet'  method='post' action="gerer_cet.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 							<input type="hidden" name="mode" value="gest">
 						</form>
 						<a href="javascript:document.gest_gestcet.submit();">Gestion du CET d'un agent</a>
@@ -742,25 +742,25 @@
 ?>
 					<li onclick='document.rh_gest_periode.submit();'>
 						<form name='rh_gest_periode' method='post' action="gestion_periodes.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 						</form>
 						<a href="javascript:document.rh_gest_periode.submit();">Gestion des périodes de fermeture</a>
 					</li>
 					<li onclick='document.rh_gest_deleg.submit();'>
                         <form name='rh_gest_deleg' method='post' action="gestion_delegation.php">
-                            <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form>
                         <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
                     </li>
 					<li onclick='document.rh_gest_teletravail.submit();'>
 						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 						</form>
 						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
 					<li onclick='document.rh_affiche_info_teletravail.submit();'>
 						<form name='rh_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
 					</li>
@@ -768,42 +768,42 @@
 						<ul class="niveau3">
         					<li onclick='document.gestrh_utilisationcet.submit();'>
         						<form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         							<input type="hidden" name="mode" value="gestrh">
         						</form> 
         						<a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
         					</li>
         					<li onclick='document.gestrh_gestcet.submit();'>
         						<form name='gestrh_gestcet' method='post' action="gerer_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         							<input type="hidden" name="mode" value="gestrh">
         						</form> 
         						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
         					</li>
         					<li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
         						<form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         							<input type="hidden" name="mode" value="gestrh">
         						</form> 
         						<a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
         					</li>
         					<li onclick='document.gestrh_creercet.submit();'>
         						<form name='gestrh_creercet' method='post' action="creer_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         							<input type="hidden" name="mode" value="gestrh">
         						</form> 
         						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
         					</li>
         					<li onclick='document.rh_param_cet.submit();'>
         						<form name='rh_param_cet' method='post' action="param_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         						</form>
         						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
         					</li>
 <!--                     
         					<li onclick='document.rh_alimentation_cet_test.submit();'>
                                 <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
-                                    <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="rh">
                                 </form>
                                 <a href="javascript:document.rh_alimentation_cet_test.submit();">Alimentation du CET TEST</a>
@@ -811,14 +811,14 @@
 -->                 
         					<li onclick='document.rh_alimentation_cet.submit();'>
                                 <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
-                                    <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="rh">
                                 </form>
                                 <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
                             </li>          
         					<li onclick='document.rh_option_cet.submit();'>
                                 <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
-                                    <input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="rh">
                                 </form>
                                 <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
@@ -829,8 +829,8 @@
 						<ul class="niveau3">
         					<li onclick='document.rh_conge.submit();'>
         						<form name='rh_conge' method='post' action="etablir_demande.php">
-        							<input type="hidden" name="responsable" value="<?php echo $user->harpegeid(); ?>"> 
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         							<input type="hidden" name="typedemande" value="conges"> 
         							<input type="hidden" name="previous" value="no">
         							<input type="hidden" name="rh_mode" value="yes">
@@ -839,7 +839,7 @@
         					</li>
         					<li onclick='document.rh_gest_conge.submit();'>
         						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
         							<input type="hidden" name="mode" value="rh"> 
         							<input type="hidden" name="previous" value="no">
         						</form> 
@@ -847,19 +847,19 @@
         					</li>
         					<li onclick='document.affiche_info_agent.submit();'>
         						<form name='affiche_info_agent' method='post' action="affiche_info_agent.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">					
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
         						</form> 
         						<a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
         					</li>
         					<li onclick='document.modif_solde.submit();'>
         						<form name='modif_solde' method='post' action="modif_solde.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">					
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
         						</form> 
         						<a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
         					</li>
         					<li onclick='document.rh_aff_solde.submit();'>
         						<form name='rh_aff_solde' method='post' action="affiche_solde.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         							<input type="hidden" name="mode" value="rh"> 
         							<input type="hidden" name="previous" value="no">
         						</form>
@@ -883,51 +883,51 @@
 				<ul class="niveau2">
 					<li onclick='document.admin_mode_maintenance.submit();'>
 						<form name='admin_mode_maintenance' method='post' action="admin_maintenance.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_mode_maintenance.submit();">Activer/désactiver maintenance</a>
 					</li>
 					<li onclick='document.admin_struct_gest.submit();'>
 						<form name='admin_struct_gest' method='post' action="gestion_structure.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_struct_gest.submit();">Paramétrage des structures</a>
 					</li>
 <!-- 
 					<li onclick='document.admin_info_agent.submit();'>
 						<form name='admin_info_agent'  method='post' action="affiche_info_agent.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form>
 						<a href="javascript:document.admin_info_agent.submit();">Affichage informations agent</a>
 					</li>
 -->
 					<li onclick='document.admin_subst_agent.submit();'>
 						<form name='admin_subst_agent' method='post' action="admin_substitution.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_subst_agent.submit();">Se faire passer pour un autre agent</a>
 					</li>
 					<li onclick='document.admin_import_conges.submit();'>
 						<form name='admin_import_conges' method='post' action="import_conges.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_import_conges.submit();">Importer des congés</a>
 					</li>
 					<li onclick='document.admin_solde_conges.submit();'>
 						<form name='admin_solde_conges' method='post' action="affiche_info_conges.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_solde_conges.submit();">Synthèse des congés</a>
 					</li>
 					<li onclick='document.admin_affiche_demandeCET.submit();'>
 						<form name='admin_affiche_demandeCET' method='post' action="affiche_demandeCET.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_affiche_demandeCET.submit();">Afficher une demande sur CET/eSignature</a>
 					</li>
 					<li onclick='document.admin_affiche_info_teletravail.submit();'>
 						<form name='admin_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
-							<input type="hidden" name="userid" value="<?php echo $user->harpegeid(); ?>">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
 					</li>

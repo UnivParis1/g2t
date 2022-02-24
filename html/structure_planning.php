@@ -99,7 +99,7 @@
             if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
             {   // On n'a pas trouvé la date dans la liste
                 $complement->complementid('TT_EXCLU_' . $fonctions->formatdatedb($date_selected));
-                $complement->harpegeid($agentid_selected);
+                $complement->agentid($agentid_selected);
                 $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
                 $complement->store();
             }
@@ -212,7 +212,7 @@
     }
 
     echo "</select>";
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
     echo "<input type='hidden' name='mode' value='" . $mode . "' />";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
     echo "<input type='hidden' name='date_selected' id='date_selected' value='' />";
@@ -286,12 +286,12 @@
             }
             echo "<br>Sans les congés (donc théorique), le nombre de jours de télétravail pour " . $agent->identitecomplete()  ." est : $nbjrsteletravail <br><br>";
 */            
-            if ($structure->responsable()->harpegeid() == $user->harpegeid() and !$structure->isincluded())
+            if ($structure->responsable()->agentid() == $user->agentid() and !$structure->isincluded())
             {
                 echo "<br>";
                 echo "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
                 echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
-                echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
+                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
                 echo "<input type='hidden' name='mode' value='" . $mode . "' />";
                 echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
                 echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";

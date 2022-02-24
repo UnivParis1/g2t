@@ -76,9 +76,9 @@
     // on a demandé l'extraction du fichier
     if (!is_null($extractfile))
     {
-        $sql = "SELECT  DISTINCT  AGENT.HARPEGEID,AGENT.NOM, AGENT.PRENOM
+        $sql = "SELECT  DISTINCT  AGENT.AGENTID,AGENT.NOM, AGENT.PRENOM
                 FROM AGENT,AFFECTATION
-                WHERE AGENT.HARPEGEID = AFFECTATION.HARPEGEID
+                WHERE AGENT.AGENTID = AFFECTATION.AGENTID
                   AND AFFECTATION.OBSOLETE = 'N'
                   AND AFFECTATION.DATEDEBUT<='" . $periodeid . $fonctions->debutperiode() . "'
                   AND AFFECTATION.DATEFIN>='" . ($periodeid+1) . $fonctions->finperiode() . "'
@@ -256,7 +256,7 @@
         echo "</SELECT>";
         echo "    ";
         
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     } 
@@ -319,7 +319,7 @@
 <?php             
         echo "<td class='cellulesimple'></td></tr>";
         echo "</table>";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='periodeid' value='" . $periodeid . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
@@ -327,7 +327,7 @@
 /*      Bouton pour générer le fichier de synthèse.... => Masqué pour le moment et requête d'extraction à reprendre.  
         echo "<br><br><br>";
         echo "<form name='extractfile'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='periodeid' value='" . $periodeid . "'>";
         echo "<input type='submit' name='extractbutton' value='Extraction' >";
         echo "</form>";

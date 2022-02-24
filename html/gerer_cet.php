@@ -52,7 +52,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -131,14 +131,14 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
     	<?php
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
         echo "<br>";
         echo "<br>";
         echo "<form name='allagentcet'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Tous les agents' >";
         echo "</form>";
@@ -243,7 +243,7 @@
             $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
         $htmltext = $htmltext . "<td class='cellulesimple'><form name='alim_" . $alimcet->esignatureid() . "'  method='post' >";
-        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
         if (isset($_POST["agentid"]))
         {
@@ -338,7 +338,7 @@
             $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
         $htmltext = $htmltext . "<td class='cellulesimple'><form name='option_" . $optioncet->esignatureid() . "'  method='post' >";
-        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
         if (isset($_POST["agentid"]))
         {

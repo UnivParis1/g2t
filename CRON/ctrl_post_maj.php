@@ -30,24 +30,24 @@
     $cron->load('-1'); // L'utilisateur -1 est l'utilisateur CRON
 
     $tabadministrateur = array();
-    $sql = "SELECT HARPEGEID FROM COMPLEMENT WHERE COMPLEMENTID = 'ESTADMIN' AND VALEUR = 'O'";
+    $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID = 'ESTADMIN' AND VALEUR = 'O'";
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
-    while ($harpid = mysqli_fetch_row($query)) {
+    while ($agentid = mysqli_fetch_row($query)) {
         $admin = new agent($dbcon);
         // echo "Avant le load \n";
-        $admin->load($harpid[0]);
+        $admin->load($agentid[0]);
         // echo "Apres le load \n";
-        $tabadministrateur[$admin->harpegeid()] = $admin;
+        $tabadministrateur[$admin->agentid()] = $admin;
         unset($admin);
     }
 
     // echo "Liste des admins : " . print_r($tabadministrateur,true) . "\n";
 
     echo "Recherche des soldes négatifs...\n";
-    $sql = "SELECT HARPEGEID,SOLDE.TYPEABSENCEID,DROITAQUIS,DROITPRIS ,LIBELLE
+    $sql = "SELECT AGENTID,SOLDE.TYPEABSENCEID,DROITAQUIS,DROITPRIS ,LIBELLE
     			FROM SOLDE , TYPEABSENCE
     			WHERE DROITPRIS > DROITAQUIS
     				  AND SOLDE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
@@ -56,16 +56,16 @@
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
-    while ($harpid = mysqli_fetch_row($query)) // Des agents ont des soldes négatifs !!!
+    while ($agentid = mysqli_fetch_row($query)) // Des agents ont des soldes négatifs !!!
     {
         $agent = new agent($dbcon);
-        $agent->load($harpid[0]);
+        $agent->load($agentid[0]);
         $affectationarray = $agent->affectationliste(date("d/m/Y"), date("d/m/Y"));
         if (is_array($affectationarray)) { // On envoie un mail aux responsable de la structure pour informer le solde négatif
             $struct = new structure($dbcon);
             $affectation = current($affectationarray);
             $struct->load($affectation->structureid());
-            $corpmail = "L'application G2T a détecté que le solde de congés " . $harpid[4] . " pour l'agent " . $agent->identitecomplete() . " est négatif.\n";
+            $corpmail = "L'application G2T a détecté que le solde de congés " . $agentid[4] . " pour l'agent " . $agent->identitecomplete() . " est négatif.\n";
             $corpmail = $corpmail . "Cette situation peut se présenter lors d'une modification de temps partiel ou lors d'un passage à temps partiel.\n";
             $corpmail = $corpmail . "\n";
             $corpmail = $corpmail . "Nous vous invitons donc prendre contact avec l'agent " . $agent->identitecomplete() . " afin de régulariser la situation.\n";
@@ -88,22 +88,22 @@
 
     echo "Période => début  : $datedebut    fin : $datefin \n";
 
-    $sql = "SELECT DISTINCT AFFECTATION.HARPEGEID
+    $sql = "SELECT DISTINCT AFFECTATION.AGENTID
     				FROM AFFECTATION,AGENT
     				WHERE OBSOLETE = 'N'
     				  AND DATEFIN >= '" . date("Ymd") . "'
-    				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
-    				ORDER BY AFFECTATION.HARPEGEID"; // DATEMODIFICATION = " . date('Ymd');
+    				  AND AGENT.AGENTID = AFFECTATION.AGENTID
+    				ORDER BY AFFECTATION.AGENTID"; // DATEMODIFICATION = " . date('Ymd');
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         error_log(basename(__FILE__) . " " . $erreur_requete);
 
-    while ($harpid = mysqli_fetch_row($query)) // Des agents ont des affectations modifiées !!!
+    while ($agentid = mysqli_fetch_row($query)) // Des agents ont des affectations modifiées !!!
     {
         $agent = new agent($dbcon);
-        $agent->load($harpid[0]);
-        echo "Recherche pour l'agent : " . $agent->identitecomplete() . " (Id = " . $agent->harpegeid() . ")\n";
+        $agent->load($agentid[0]);
+        echo "Recherche pour l'agent : " . $agent->identitecomplete() . " (Id = " . $agent->agentid() . ")\n";
         $tabanalyse = $agent->controlecongesTP($datedebut, $datefin);
         $text = "";
         // echo "tabanalyse = " . print_r($tabanalyse,true) . "\n";

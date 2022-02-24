@@ -121,7 +121,7 @@
                             $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
                             $datefin = $fonctions->anneeref().$fonctions->finperiode();
                             $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
-                            $agent = array('uid' => $agent->harpegeid(),
+                            $agent = array('uid' => $agent->agentid(),
                                 'email' => $agent->mail(),
                                 'name' => $agent->nom(),
                                 'firstname' => $agent->prenom(),

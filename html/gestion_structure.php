@@ -108,7 +108,7 @@
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
         // echo "Connexion au LDAP => Ok ??<br>";
         // On parcours touts les gestionnaires - mais on pourrait prendre les responsables
-        // ATTENTION : $gestionnaireid contient UID de l'agent et non son numéro HARPEGE si celui ci est modifié !!!
+        // ATTENTION : $gestionnaireid contient UID de l'agent et non son numéro AGENT si celui ci est modifié !!!
         foreach ($gestionnaireliste as $structid => $gestionnaireid) {
             // echo "On boucle sur les gestionnaires....<br>";
             $structure = new structure($dbcon);
@@ -119,7 +119,7 @@
             $structure->resp_envoyer_a($_POST["resp_mail"][$structid], true);
             $structure->agent_envoyer_a($_POST["agent_mail"][$structid], true);
 
-            // On va chercher dans le LDAP la correspondance UID => HARPEGEID
+            // On va chercher dans le LDAP la correspondance UID => AGENTID
             $filtre = "(uid=" . $responsableliste[$structid] . ")";
             $dn = $LDAP_SEARCH_BASE;
             $restriction = array(
@@ -127,22 +127,22 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+            // echo "Le numéro AGENT du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-                $harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             else
-                $harpegeid = '';
-            // Si le harpegeid n'est pas vide ou null
-            if ($harpegeid != '' and (! is_null($harpegeid))) {
+                $agentid = '';
+            // Si le agentid n'est pas vide ou null
+            if ($agentid != '' and (! is_null($agentid))) {
                 // echo "On fixe le responsable !!!!<br>";
-                $structure->responsable($harpegeid);
+                $structure->responsable($agentid);
             }
 
             // Si on n'a pas de nom dans la zone de saisie du gestionnaire => On doit effacer le gestionnaire
             if (trim($arrayinfouser[$structid]) == "") {
                 $structure->gestionnaire("");
             } else {
-                // On va chercher dans le LDAP la correspondance UID => HARPEGEID
+                // On va chercher dans le LDAP la correspondance UID => AGENTID
                 $filtre = "(uid=" . $gestionnaireid . ")";
                 $dn = $LDAP_SEARCH_BASE;
                 $restriction = array(
@@ -150,15 +150,15 @@
                 );
                 $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
                 $info = ldap_get_entries($con_ldap, $sr);
-                // echo "Le numéro HARPEGE du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+                // echo "Le numéro AGENT du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
                 if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-                    $harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                    $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
                 else
-                    $harpegeid = '';
-                // Si le harpegeid n'est pas vide ou null
-                if ($harpegeid != '' and (! is_null($harpegeid))) {
+                    $agentid = '';
+                // Si le agentid n'est pas vide ou null
+                if ($agentid != '' and (! is_null($agentid))) {
                     // echo "On fixe le gestionnaire !!!!<br>";
-                    $structure->gestionnaire($harpegeid);
+                    $structure->gestionnaire($agentid);
                 }
             }
 
@@ -214,7 +214,7 @@
      * echo "</select>";
      */
 
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br><input type='checkbox' name='showall' value='true'";
     if ($showall == true)
         echo " checked ";
@@ -261,7 +261,7 @@
                 // Pour chaque agent de la structure, on regarde si c'est un G2Tuser
                 foreach ((array)$agentliste as $structagent)
                 {
-//                    if ($structagent->harpegeid() > 0)
+//                    if ($structagent->agentid() > 0)
 //                    {
                         if (!$structagent->isG2tUser())
                         {
@@ -311,7 +311,7 @@
                 //
                 echo "<input type='hidden' id='gestion[" . $struct->id() . "]' name='gestion[" . $struct->id() . "]' value='";
                 if (! is_null($gestionnaire))
-                    echo $gestionnaire->harpegeid();
+                    echo $gestionnaire->agentid();
                 echo "' class='infouser[" . $struct->id() . "]' /> ";
                 ?>
     <script>
@@ -333,7 +333,7 @@
                 }
                 echo " size=40 $style/>";
                 //
-                echo "<input type='hidden' id='resp[" . $struct->id() . "]' name='resp[" . $struct->id() . "]' value='" . $responsable->harpegeid() . "' class='responsableinfo[" . $struct->id() . "]' /> ";
+                echo "<input type='hidden' id='resp[" . $struct->id() . "]' name='resp[" . $struct->id() . "]' value='" . $responsable->agentid() . "' class='responsableinfo[" . $struct->id() . "]' /> ";
                 ?>
     <script>
     		    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
@@ -347,7 +347,7 @@
 
                 // Si il y a une délégation ==> On l'affiche
                 // Delegation <=> Le responsable SIHAM n'est pas le responable retourné par la fonction "responsable"
-                if ($struct->responsable()->harpegeid() != $responsable->harpegeid()) {
+                if ($struct->responsable()->agentid() != $responsable->agentid()) {
                     echo "<tr>";
                     echo "<td>";
                     $delegueid = "";
@@ -410,7 +410,7 @@
             }
         }
         echo "</table>";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='structureid' value='" . $structureid . "'>";
         echo "<input type='submit' name= 'Modif_struct' value='Enregistrer les modifications' >";
         echo "</form>";

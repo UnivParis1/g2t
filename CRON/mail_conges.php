@@ -43,13 +43,6 @@
         $demande = new demande($dbcon);
         $demande->load($result[0]);
 
-        /*
-         * $declarationliste = $demande->declarationTPliste();
-         * $declaration = reset($declarationliste);
-         * $affectation = new affectation($dbcon);
-         * $affectation->load($declaration->affectationid());
-         */
-
         // On récupère le demandeur
         $demandeur = $demande->agent();
         // On récupère la liste des affectation du demandeur à la date du jour
@@ -81,38 +74,38 @@
         else {
             // Si l'affectation correspondant à la demande est commencée => Sinon on ne dit rien !!!
             if ($fonctions->formatdatedb($affectation->datedebut()) <= $fonctions->formatdatedb($date)) {
-                if ($affectation->agentid() != $structure->responsable()->harpegeid()) {
+                if ($affectation->agentid() != $structure->responsable()->agentid()) {
                     $destinatairemail = $structure->agent_envoyer_a($codeinterne);
                     if ($codeinterne == 2) // Gestionnaire service courant
                     {
-                        if (isset($mail_gest[$destinatairemail->harpegeid()]))
-                            $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] . $demande->id() . ',' ;
+                        if (isset($mail_gest[$destinatairemail->agentid()]))
+                            $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
                         else
-                            $mail_gest[$destinatairemail->harpegeid()] = $demande->id() . ',';
+                            $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
                     } else // Responsable service courant
                     {
-                        if (isset($mail_resp[$destinatairemail->harpegeid()]))
-                            $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] . $demande->id() . ',';
+                        if (isset($mail_resp[$destinatairemail->agentid()]))
+                            $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
                         else
-                            $mail_resp[$destinatairemail->harpegeid()] = $demande->id() . ',';
+                            $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
                     }
                 }            // C'est le responsable de la structure qui a fait la demande
                 else {
                     $destinatairemail = $structure->resp_envoyer_a($codeinterne);
                     if (! is_null($destinatairemail)) {
-                        // echo "destinatairemailid = " . $destinatairemail->harpegeid() . "\n";
+                        // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
                         if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                         {
-                            if (isset($mail_gest[$destinatairemail->harpegeid()]))
-                                $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] . $demande->id() . ',';
+                            if (isset($mail_gest[$destinatairemail->agentid()]))
+                                $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',';
                             else
-                                $mail_gest[$destinatairemail->harpegeid()] = $demande->id() . ',';
+                                $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
                         } else // Responsable service parent
                         {
-                            if (isset($mail_resp[$destinatairemail->harpegeid()]))
-                                $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] . $demande->id() . ',';
+                            if (isset($mail_resp[$destinatairemail->agentid()]))
+                                $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
                             else
-                                $mail_resp[$destinatairemail->harpegeid()] = $demande->id() . ',';
+                                $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
                         }
                     }
                 }
@@ -140,7 +133,7 @@
         $responsable = new agent($dbcon);
         $responsable->load($agentid);
         $nbredemande = substr_count($listedemande, ',');
-        echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
+        echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " agentid = " . $responsable->agentid() . ") : Il y a $nbredemande demandes en attente \n";
 
         $agentcron->sendmail($responsable, "En tant que responsable de service, des demandes de congés ou d'autorisations d'absence sont en attente", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n", null);
         unset($responsable);
@@ -149,7 +142,7 @@
         $gestionnaire = new agent($dbcon);
         $gestionnaire->load($agentid);
         $nbredemande = substr_count($listedemande, ',');
-        echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") : Il y a $nbredemande demandes en attente \n";
+        echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " agentid = " . $gestionnaire->agentid() . ") : Il y a $nbredemande demandes en attente \n";
 
         $agentcron->sendmail($gestionnaire, "En tant que gestionnaire de service, des demandes de congés ou d'autorisations d'absence sont en attente", "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n", null);
         unset($gestionnaire);

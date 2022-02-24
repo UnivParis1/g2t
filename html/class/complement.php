@@ -12,7 +12,7 @@
 class complement
 {
 
-    private $harpegeid = null;
+    private $agentid = null;
 
     private $complementid = null;
 
@@ -47,15 +47,15 @@ class complement
 
     /**
      *
-     * @param string $harpegeid
-     *            identifier of the agent (harpege)
+     * @param string $agentid
+     *            identifier of the agent
      * @param string $complementid
      *            identifier of the complement
      * @return
      */
-    function load($harpegeid, $complementid)
+    function load($agentid, $complementid)
     {
-        $sql = "SELECT HARPEGEID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE HARPEGEID='$harpegeid' AND COMPLEMENTID='$complementid'";
+        $sql = "SELECT AGENTID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE AGENTID='$agentid' AND COMPLEMENTID='$complementid'";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
@@ -65,14 +65,14 @@ class complement
         }
         if (mysqli_num_rows($query) != 0) {
             $result = mysqli_fetch_row($query);
-            $this->harpegeid = "$result[0]";
+            $this->agentid = "$result[0]";
             $this->complementid = "$result[1]";
             $this->valeur = "$result[2]";
         } else {
-            $this->harpegeid = "";
+            $this->agentid = "";
             $this->complementid = "";
             $this->valeur = "";
-            // echo "CET->Load : CET pour agent $harpegeid et complement $complementid non trouvé <br>";
+            // echo "CET->Load : CET pour agent $agentid et complement $complementid non trouvé <br>";
         }
     }
 
@@ -83,13 +83,13 @@ class complement
      */
     function store()
     {
-        if (strlen($this->harpegeid) == 0 or strlen($this->complementid) == 0) {
-            $errlog = "Complement->Store : Le numéro HARPEGE (" . $this->harpegeid . ")ou le code du complément (" . $this->complementid . ") n'est pas initialisé";
+        if (strlen($this->agentid) == 0 or strlen($this->complementid) == 0) {
+            $errlog = "Complement->Store : Le numéro AGENTID (" . $this->agentid . ") ou le code du complément (" . $this->complementid . ") n'est pas initialisé";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return;
         }
-        $sql = "DELETE FROM COMPLEMENT WHERE HARPEGEID='" . $this->harpegeid . "' AND COMPLEMENTID='" . $this->complementid . "'";
+        $sql = "DELETE FROM COMPLEMENT WHERE AGENTID='" . $this->agentid . "' AND COMPLEMENTID='" . $this->complementid . "'";
         // echo "SQL Complement->Store : $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
@@ -98,7 +98,7 @@ class complement
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        $sql = "INSERT INTO COMPLEMENT(HARPEGEID,COMPLEMENTID,VALEUR) VALUES('" . $this->harpegeid . "','" . $this->complementid . "','" . str_replace("'", "''", $this->valeur) . "')";
+        $sql = "INSERT INTO COMPLEMENT(AGENTID,COMPLEMENTID,VALEUR) VALUES('" . $this->agentid . "','" . $this->complementid . "','" . str_replace("'", "''", $this->valeur) . "')";
         // echo "SQL Complement->Store : $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
@@ -113,20 +113,20 @@ class complement
     /**
      *
      * @param string $agentid
-     *            identifier of the agent (harpege)
-     * @return string the identifier of the agent if $harpegeid is not set
+     *            identifier of the agent
+     * @return string the identifier of the agent if $agentid is not set
      */
-    function harpegeid($agentid = null)
+    function agentid($agentid = null)
     {
         if (is_null($agentid)) {
-            if (is_null($this->harpegeid)) {
-                $errlog = "Complement->harpegeid : L'Id de l'agent n'est pas défini !!!";
+            if (is_null($this->agentid)) {
+                $errlog = "Complement->agentid : L'Id de l'agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
-                return $this->harpegeid;
+                return $this->agentid;
         } else
-            $this->harpegeid = $agentid;
+            $this->agentid = $agentid;
     }
 
     /**

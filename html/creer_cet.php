@@ -50,7 +50,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numÃ©ro HARPEGE de l'agent sÃ©lectionnÃ© est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sÃ©lectionnÃ© est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -158,7 +158,7 @@
              	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
     	</script>
         <?php
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
@@ -178,7 +178,7 @@
 
         echo "<form name='frm_creercet'  method='post' >";
         $cet = new cet($dbcon);
-        $msg_erreur = $cet->load($agent->harpegeid());
+        $msg_erreur = $cet->load($agent->agentid());
         // echo "Message erreur = " . $msg_erreur . "<br>";
         if ($msg_erreur == "") // Le CET existe déja
         {
@@ -190,8 +190,8 @@
             echo "<br>";
             echo "Nombre de jours à créditer au CET de l'agent " . $agent->identitecomplete() . " : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 >";
             echo "<br>";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-            echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='agent' value='" . $agent->identitecomplete() . "'>";
             // echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
             // echo "<input type='hidden' name='ajoutcet' value='yes'>";

@@ -28,14 +28,14 @@
                     fclose($fp);
                     exit();
                 }
-                $harpegeid = trim($ligne_element[0]);
+                $agentid = trim($ligne_element[0]);
                 $code_fonction = trim($ligne_element[1]);
                 $libelle_fctn_cours = trim($ligne_element[2]);
                 $libelle_fctn_long = trim($ligne_element[3]);
                 $code_struct = trim($ligne_element[4]);
                 
                 if ($code_struct != "") {
-                    $tabfonctions[$code_struct]["#" . intval("$code_fonction")] = $harpegeid;
+                    $tabfonctions[$code_struct]["#" . intval("$code_fonction")] = $agentid;
                 }
             }
         }
@@ -205,6 +205,7 @@
                     $resp_struct = trim($ligne_element[4]);
                     // Si pas de responsable défini dans le fichier de structure
                     if ($resp_struct == "") {
+/*
                         // On regarde si un responsable de la structure est défini dans la table STRUCTURE
                         // => Si oui, on ne le change pas.... Soit c'est un ancien responsable, soit il a été forcé à la main
                         // à partir de l'insterface de gestion des structures
@@ -224,6 +225,10 @@
                             echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
                             $resp_struct = '-1';
                         }
+*/
+                        // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
+                        echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
+                        $resp_struct = '-1';
                     }
                 }
                 echo "Le code du responsable est : $resp_struct \n";
@@ -370,6 +375,101 @@
             }
         }
         fclose($fp);
+        
+        ///////////////////////////////////////////////////
+        // On ajoute les responsables / les gestionnaires à partir de LDAP s'il n'existent pas dans la base
+        // On supprime les agents qui ont comme typepopulation => 'Import automatique LDAP'
+        echo "------------------------------------------------------------ \n";
+        echo "On complete les agents avec les infos LDAP \n";
+        $typepopulation = "Import automatique LDAP";
+        $sql = "DELETE FROM AGENT WHERE TYPEPOPULATION = '$typepopulation'";
+        mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
+        if ($erreur_requete != "") {
+            echo "Error : DELETE AGENT sur TYPEPOPULATION => $erreur_requete \n";
+            echo "sql = $sql \n";
+        }
+        else
+        {
+            $sql = "SELECT DISTINCT SUBREQ.AGENTID FROM (
+                            	SELECT DISTINCT RESPONSABLEID AGENTID, DATECLOTURE FROM STRUCTURE WHERE RESPONSABLEID NOT IN (SELECT AGENTID FROM AGENT)
+                            	UNION
+                            	SELECT DISTINCT GESTIONNAIREID AGENTID, DATECLOTURE FROM STRUCTURE WHERE RESPONSABLEID NOT IN (SELECT AGENTID FROM AGENT)
+                    ) AS SUBREQ
+                    WHERE SUBREQ.DATECLOTURE > '" . $fonctions->formatdatedb(date('d/m/Y')) .  "' AND SUBREQ.AGENTID != ''";
+            //echo "SQL = $sql \n";
+            $query = mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
+            if ($erreur_requete != "")
+            {
+                echo "Error : SELECT DISTINCT SUBREQ.AGENTID => $erreur_requete \n";
+            }
+            while ($result = mysqli_fetch_row($query))
+            {
+                $agentid = $result[0];
+                
+                if (is_numeric($agentid))
+                {
+                    // On interroge LDAP pour récupérer le nom, le prénom, l'adrese mai
+                    $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
+                    $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
+                    $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
+                    $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
+                    
+                    $LDAP_AGENT_NOM = 'sn';
+                    $LDAP_AGENT_PRENOM = 'givenname';
+                    $LDAP_AGENT_MAIL = 'mail';
+                    
+                    $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
+                    
+                    $con_ldap = ldap_connect($LDAP_SERVER);
+                    ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+                    $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+                    $filtre = "($LDAP_CODE_AGENT_ATTR=" . $agentid . ")";
+                    $dn = $LDAP_SEARCH_BASE;
+                    $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL");
+                    $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                    $info = ldap_get_entries($con_ldap, $sr);
+                    $nomagent = null;
+                    if (isset($info[0]["$LDAP_AGENT_NOM"][0])) {
+                        $nomagent = $info[0]["$LDAP_AGENT_NOM"][0];
+                    }
+                    $prenomagent = null;
+                    if (isset($info[0]["$LDAP_AGENT_PRENOM"][0])) {
+                        $prenomagent = $info[0]["$LDAP_AGENT_PRENOM"][0];
+                    }
+                    $mailagent = null;
+                    if (isset($info[0]["$LDAP_AGENT_MAIL"][0])) {
+                        $mailagent = $info[0]["$LDAP_AGENT_MAIL"][0];
+                    }
+                    
+                    if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent))
+                    {
+                        $sql = "INSERT INTO AGENT(AGENTID, NOM, PRENOM, ADRESSEMAIL, TYPEPOPULATION) VALUES ('$agentid', '" . str_replace("'", "''", $nomagent) . "', '" . str_replace("'", "''", $prenomagent) . "', '$mailagent', '$typepopulation')";
+                        mysqli_query($dbcon, $sql);
+                        $erreur_requete = mysqli_error($dbcon);
+                        if ($erreur_requete != "") {
+                            echo "Error : INSERT AGENT FROM LDAP => $erreur_requete \n";
+                            echo "sql = $sql \n";
+                        }
+                        else
+                        {
+                            echo "L'agent $agentid  ($nomagent $prenomagent) a ete ajoute (mail = $mailagent) \n";
+                        }
+                    }
+                    else
+                    {
+                        echo "Probleme dans recup LDAP => agentid = $agentid  nomagent = $nomagent  prenomagent = $prenomagent  mail = $mailagent \n";
+                        echo "infos LDAP = " . print_r($info,true) . " \n";
+                    }
+                }
+                else
+                {
+                    echo "Probleme : agentid n'est pas numerique => agentid = $agentid \n";
+                }
+            }
+        }
+        
     }
     echo "Fin de l'import des structures " . date("d/m/Y H:i:s") . "\n";
 

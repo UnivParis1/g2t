@@ -290,20 +290,20 @@ class structure
         
         // echo "Liste finale des agents : <br>"; print_r($agentliste); echo "<br>";
         
-        // $sql = "SELECT SUBREQ.HARPEGEID FROM ((SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID = '" . $this->structureid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
+        // $sql = "SELECT SUBREQ.AGENTID FROM ((SELECT AGENTID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID = '" . $this->structureid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
         // $sql = $sql . " UNION ";
-        // $sql = $sql . "(SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
+        // $sql = $sql . "(SELECT AGENTID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
         // $sql = $sql . " UNION ";
-        // $sql = $sql . "(SELECT HARPEGEID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
+        // $sql = $sql . "(SELECT AGENTID,OBSOLETE FROM AFFECTATION WHERE STRUCTUREID='" . $this->structureid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
         // $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
         
-        $sql = "SELECT SUBREQ.HARPEGEID FROM ((SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID = '" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND (DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "' OR DATEFIN='0000-00-00'))";
+        $sql = "SELECT SUBREQ.AGENTID FROM ((SELECT AFFECTATION.AGENTID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID = '" . $this->structureid . "' AND AGENT.AGENTID = AFFECTATION.AGENTID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND (DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "' OR DATEFIN='0000-00-00'))";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN<='" . $this->fonctions->formatdatedb($datefin) . "')";
+        $sql = $sql . "(SELECT AFFECTATION.AGENTID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.AGENTID = AFFECTATION.AGENTID AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN<='" . $this->fonctions->formatdatedb($datefin) . "')";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "')";
+        $sql = $sql . "(SELECT AFFECTATION.AGENTID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.AGENTID = AFFECTATION.AGENTID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "')";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATION.HARPEGEID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datefin) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "')";
+        $sql = $sql . "(SELECT AFFECTATION.AGENTID,OBSOLETE FROM AFFECTATION,AGENT WHERE AGENT.STRUCTUREID='" . $this->structureid . "' AND AGENT.AGENTID = AFFECTATION.AGENTID AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datefin) . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datefin) . "')";
         $sql = $sql . ") AS SUBREQ";
         $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N'";
         
@@ -321,9 +321,9 @@ class structure
             // echo "Apres le new et avant le load =" . $result[0] . "<br>";
             if ($agent->load("$result[0]")) {
                 // echo "Apres le load...<br>";
-                // La clé est NOM + PRENOM + HARPEGEID => permet de trier les tableaux par ordre alphabétique
-                $agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->harpegeid()] = $agent;
-                // / $agentliste[$agent->harpegeid()] = $agent;
+                // La clé est NOM + PRENOM + AGENTID => permet de trier les tableaux par ordre alphabétique
+                $agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->agentid()] = $agent;
+                // / $agentliste[$agent->agentid()] = $agent;
                 // echo "Apres la mise dans le tableau <br>";
                 unset($agent);
             }
@@ -562,7 +562,7 @@ class structure
         if (is_array($listeagent)) {
             foreach ($listeagent as $key => $agent) {
                 // echo "structure -> planning : Interval du planning a charger pour l'agent : " . $agent->nom() . " " . $agent->prenom() ." = " . $fulldatedebut . " --> " . $fulldatefin . "<br>";
-                $planningservice[$agent->harpegeid()] = $agent->planning($fulldatedebut, $fulldatefin,$includeteletravail,$includecongeabsence);
+                $planningservice[$agent->agentid()] = $agent->planning($fulldatedebut, $fulldatefin,$includeteletravail,$includecongeabsence);
                 // echo "structure -> planning : Apres planning de ". $agent->nom() . " " . $agent->prenom() . "<br>";
             }
         }
@@ -707,7 +707,7 @@ class structure
             // Si la structure n'est pas fermée on cherche le responsable
             if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
                 if (! is_null($structure->responsable())) {
-                    $resplist[$structure->responsable()->harpegeid()] = $structure->responsable();
+                    $resplist[$structure->responsable()->agentid()] = $structure->responsable();
                 }
             }
         }
@@ -794,10 +794,10 @@ class structure
                 foreach ($structureliste as $key => $structure) {
                     if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
                         $responsable = $structure->responsable();
-                        if ($responsable->harpegeid() != '-1') {
-                            // La clé NOM + PRENOM + HARPEGEID permet de trier les éléments par ordre alphabétique
-                            $responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
-                            // /$responsableliste[$responsable->harpegeid()] = $responsable;
+                        if ($responsable->agentid() != '-1') {
+                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                            $responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
+                            // /$responsableliste[$responsable->agentid()] = $responsable;
                         }
                     }
                 }
@@ -808,17 +808,17 @@ class structure
         if (is_array($agentliste)) {
             foreach ($agentliste as $key => $membre) {
                 // echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
-                if ($membre->harpegeid() != $responsableid) {
+                if ($membre->agentid() != $responsableid) {
                     $htmltext = $htmltext . "<tr>";
                     $htmltext = $htmltext . "<center><td class='cellulesimple' style='text-align:center;'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
                     
                     $complement = new complement($this->dbconnect);
-                    $complement->load($membre->harpegeid(), "REPORTACTIF");
+                    $complement->load($membre->agentid(), "REPORTACTIF");
                     if ($complement->valeur() == "")
                         $complement->valeur("n"); // Si le complement n'est pas saisi, alors la valeur est "N" (non)
                     $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>";
                     if ($pourmodif) {
-                        $htmltext = $htmltext . "<select name=report[" . $membre->harpegeid() . "]>";
+                        $htmltext = $htmltext . "<select name=report[" . $membre->agentid() . "]>";
                         $htmltext = $htmltext . "<option value='n'";
                         if (strcasecmp($complement->valeur(), "n") == 0)
                             $htmltext = $htmltext . " selected ";
@@ -836,17 +836,17 @@ class structure
                     
                     // Ajout du nombre de jours "enfant malade"
                     $complement = new complement($this->dbconnect);
-                    $complement->load($membre->harpegeid(), "ENFANTMALADE");
+                    $complement->load($membre->agentid(), "ENFANTMALADE");
                     $htmltext = $htmltext . "<td class='cellulesimple' >";
                     if ($pourmodif)
-                        $htmltext = $htmltext . "<input type='text' style='text-align:center;' name=enfantmalade[" . $membre->harpegeid() . "] value='" . intval($complement->valeur()) . "'/>";
+                        $htmltext = $htmltext . "<input type='text' style='text-align:center;' name=enfantmalade[" . $membre->agentid() . "] value='" . intval($complement->valeur()) . "'/>";
                     else
                         $htmltext = $htmltext . "<center>" . intval($complement->valeur()) . "</center>";
                     $htmltext = $htmltext . "</td>";
                     
                     // // --- Masquage des infos sur le CET
                     // $cet = new cet($this->dbconnect);
-                    // $msg = $cet->load($membre->harpegeid());
+                    // $msg = $cet->load($membre->agentid());
                     // $cumultotal = "";
                     // $datedebut = "";
                     // if ($msg == "")
@@ -863,8 +863,8 @@ class structure
                     // }
                     // else
                     // {
-                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->harpegeid() ."] value=''/></td></center>";
-                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->harpegeid() ."] value=''/></td></center>";
+                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->agentid() ."] value=''/></td></center>";
+                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->agentid() ."] value=''/></td></center>";
                     // }
                     // // --- Fin masquage des infos sur le CET
                     $htmltext = $htmltext . "</tr>";
@@ -898,7 +898,7 @@ class structure
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
-            $errlog = "Structure->store (HARP_STRUCTURE) : " . $erreur;
+            $errlog = "Structure->store (STRUCTURE) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             $msgerreur = $msgerreur . $erreur;
@@ -909,7 +909,7 @@ class structure
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
-            $errlog = "Structure->store (HARP_STRUCTURE) : " . $erreur;
+            $errlog = "Structure->store (STRUCTURE) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             $msgerreur = $msgerreur . $erreur;
@@ -1050,7 +1050,7 @@ class structure
 
     function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="")
     {
-        // echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Il manque l'enregistrement de la délégation..... </B></FONT><br> Harpege Id = $delegationuserid Début = $datedebutdeleg fin = $datefindeleg <br>";
+        // echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Il manque l'enregistrement de la délégation..... </B></FONT><br> Agent Id = $delegationuserid Début = $datedebutdeleg fin = $datefindeleg <br>";
         if ($datedebutdeleg != "") {
             $datedebutdeleg = $this->fonctions->formatdatedb($datedebutdeleg);
         }
@@ -1149,7 +1149,7 @@ class structure
         //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("agentliste = " . print_r($agentliste,true)));
         foreach ($agentliste as $agent)
         {
-            if (array_search($agent->harpegeid(),(array)$agentteletravail)!==false)
+            if (array_search($agent->agentid(),(array)$agentteletravail)!==false)
             {
                 if (!$agenttrouve)
                 {

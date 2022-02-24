@@ -37,7 +37,7 @@ class solde
      * // if (is_null($this->$soldeid))
      * if (!isset($this->$soldeid))
      * {
-     * $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $soldeid . "'";
+     * $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $soldeid . "'";
      * $query=mysqli_query ($this->dbconnect, $sql);
      * $erreur=mysqli_error($this->dbconnect);
      * if ($erreur != "")
@@ -63,7 +63,7 @@ class solde
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
-            $sql = "SELECT HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $typecongeid . "' AND HARPEGEID='" . $agentid . "'";
+            $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE TYPEABSENCEID='" . $typecongeid . "' AND AGENTID='" . $agentid . "'";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -172,13 +172,11 @@ class solde
 
     function demandeenattente()
     {
-        $sql = "SELECT COUNT(DISTINCT DEMANDE.DEMANDEID) FROM DEMANDE, DECLARATIONTP, AFFECTATION, DEMANDEDECLARATIONTP
-WHERE DEMANDE.TYPEABSENCEID='" . $this->typeabsenceid . "'
-AND DEMANDE.DEMANDEID = DEMANDEDECLARATIONTP.DEMANDEID
-AND DEMANDEDECLARATIONTP.DECLARATIONID = DECLARATIONTP.DECLARATIONID
-AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID
-AND AFFECTATION.HARPEGEID='" . $this->agentid . "'
-AND DEMANDE.STATUT='" . demande::DEMANDE_ATTENTE . "';";
+        $sql = "SELECT COUNT(DISTINCT DEMANDE.DEMANDEID) 
+                FROM DEMANDE
+                WHERE TYPEABSENCEID='" . $this->typeabsenceid . "'
+                AND AGENTID='" . $this->agentid . "'
+                AND STATUT='" . demande::DEMANDE_ATTENTE . "';";
         
         // echo "Solde->demandeenattente SQL : $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
@@ -211,7 +209,7 @@ AND DEMANDE.STATUT='" . demande::DEMANDE_ATTENTE . "';";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog . "<br/>" . $msgerreur;
         } else {
-            $sql = "INSERT INTO SOLDE(HARPEGEID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $codeagent . "','" . $codeconge . "','0','0')";
+            $sql = "INSERT INTO SOLDE(AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $codeagent . "','" . $codeconge . "','0','0')";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -226,7 +224,7 @@ AND DEMANDE.STATUT='" . demande::DEMANDE_ATTENTE . "';";
     function store()
     {
         if (! is_null($this->agentid) and (! is_null($this->typeabsenceid))) {
-            $sql = "UPDATE SOLDE SET DROITAQUIS='" . $this->droitaquis() . "',DROITPRIS='" . $this->droitpris() . "' WHERE HARPEGEID='" . $this->agentid . "' AND TYPEABSENCEID='" . $this->typeabsenceid . "'";
+            $sql = "UPDATE SOLDE SET DROITAQUIS='" . $this->droitaquis() . "',DROITPRIS='" . $this->droitpris() . "' WHERE AGENTID='" . $this->agentid . "' AND TYPEABSENCEID='" . $this->typeabsenceid . "'";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {

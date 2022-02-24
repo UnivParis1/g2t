@@ -50,7 +50,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -129,7 +129,7 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
     	<?php
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
@@ -310,8 +310,8 @@
             echo "<br>";
             echo "Le nombre maximum de jours à ajouter est : $nbrejoursdispo jour(s)<br>";
             echo "<B>ATTENTION :</B> A n'utiliser que dans le cas d'une alimentation du CET à partir des reliquats<br>";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-            echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
             echo "<input type='hidden' name='ajoutcet' value='yes'>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
@@ -346,8 +346,8 @@
                 echo "<OPTION value='Prise en compte au sein de la RAFP'>Prise en compte au sein de la RAFP</OPTION>";
                 echo "</select>";
                 echo "<br>";
-                echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-                echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+                echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
                 echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
                 echo "<input type='hidden' name='retraitcet' value='yes'>";
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";

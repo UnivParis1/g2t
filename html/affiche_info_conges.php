@@ -59,7 +59,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -81,22 +81,22 @@
     echo "<br>";
     
     
-    //$sql = "SELECT DISTINCT SOLDE.HARPEGEID, NOM, PRENOM FROM SOLDE, AGENT WHERE TYPEABSENCEID IN ('ann20', 'ann21') AND SOLDE.HARPEGEID = AGENT.HARPEGEID";
-    //$sql = "SELECT DISTINCT SOLDE.HARPEGEID, NOM, PRENOM FROM SOLDE, AGENT WHERE TYPEABSENCEID IN ('ann20', 'ann21') AND SOLDE.HARPEGEID = AGENT.HARPEGEID AND AGENT.HARPEGEID IN ('9328','3715','19803', '24606', '13825','90223')";
+    //$sql = "SELECT DISTINCT SOLDE.AGENTID, NOM, PRENOM FROM SOLDE, AGENT WHERE TYPEABSENCEID IN ('ann20', 'ann21') AND SOLDE.AGENTID = AGENT.AGENTID";
+    //$sql = "SELECT DISTINCT SOLDE.AGENTID, NOM, PRENOM FROM SOLDE, AGENT WHERE TYPEABSENCEID IN ('ann20', 'ann21') AND SOLDE.AGENTID = AGENT.AGENTID AND AGENT.AGENTID IN ('9328','3715','19803', '24606', '13825','90223')";
 
-    $sql = "SELECT DISTINCT SUB1.HARPEGEID, NOM, PRENOM
-            FROM AGENT,((SELECT HARPEGEID 
+    $sql = "SELECT DISTINCT SUB1.AGENTID, NOM, PRENOM
+            FROM AGENT,((SELECT AGENTID 
                            FROM SOLDE S1 
                            WHERE S1.TYPEABSENCEID = 'ann20'
                              AND S1.DROITAQUIS <> 0
                         )
                         UNION
-                        (SELECT HARPEGEID 
+                        (SELECT AGENTID 
                            FROM SOLDE S2
                            WHERE S2.TYPEABSENCEID = 'ann21'
                              AND S2.DROITAQUIS <> 0
                         )) SUB1
-            WHERE SUB1.HARPEGEID = AGENT.HARPEGEID
+            WHERE SUB1.AGENTID = AGENT.AGENTID
               -- AND NOM BETWEEN 'A' AND 'G'
             ORDER BY NOM, PRENOM";
     
@@ -134,13 +134,13 @@
         //echo "Identité = " . $agent->identitecomplete() ." <br>";
         $solde2020 = new solde($dbcon); 
         $solde2021 = new solde($dbcon);
-        $error = $solde2020->load($agent->harpegeid(),'ann20');
+        $error = $solde2020->load($agent->agentid(),'ann20');
         //echo "error = XXXX" . $error . "XXXX <br>";
         if ($error != "")
         {
             $solde2020->droitaquis(0);
         }
-        $error = $solde2021->load($agent->harpegeid(),'ann21');
+        $error = $solde2021->load($agent->agentid(),'ann21');
         //echo "error = YYYY" . $error . "YYYY <br>";
         if ( $error != "")
         {
@@ -154,7 +154,7 @@
         }
         
         echo "<tr class='element'>";
-        echo "<td class='cellulesimple'>UP1" . str_pad($agent->harpegeid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde2020->droitaquis()  ."</td>"; 
+        echo "<td class='cellulesimple'>UP1" . str_pad($agent->agentid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde2020->droitaquis()  ."</td>"; 
         $nbjrsconsommes = $agent->getNbJoursConsommés('2020', '20190901', '20210831');
 //        echo "nbjrsconsommes 2020 = $nbjrsconsommes <br>";
         echo "<td class='cellulesimple'>" . ($solde2020->droitaquis() - $nbjrsconsommes) . "</td>";

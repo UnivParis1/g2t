@@ -46,7 +46,7 @@
     );
     $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
     $info = ldap_get_entries($con_ldap, $sr);
-    // echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+    // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
     $adminuser = new agent($dbcon);
     $adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
     if (! $adminuser->estadministrateur()) {

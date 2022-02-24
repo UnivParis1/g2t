@@ -7,9 +7,9 @@
     
     $date = date("Ymd");
     
-    echo "Début de l'import des absences HARPEGE " . date("d/m/Y H:i:s") . "\n";
+    echo "Début de l'import des absences de l'application RH " . date("d/m/Y H:i:s") . "\n";
     
-    // On charge la table des absences HARPEGE avec le fichier
+    // On charge la table des absences avec le fichier
     $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_absence_$date.dat";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
@@ -36,29 +36,29 @@
         }
         fclose($fp);
         
-        // On vide la table des absences HARPEGE pour la recharger complètement
-        $sql = "DELETE FROM HARPABSENCE";
+        // On vide la table des absences pour la recharger complètement
+        $sql = "DELETE FROM ABSENCERH";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
-            echo "DELETE HARPABSENCE => $erreur_requete \n";
+            echo "DELETE ABSENCERH => $erreur_requete \n";
         
         $fp = fopen("$filename", "r");
         while (! feof($fp)) {
             $ligne = fgets($fp); // lecture du contenu de la ligne
             if (trim($ligne) != "") {
                 $ligne_element = explode($separateur, $ligne);
-                $harpegeid = trim($ligne_element[0]);
+                $agentid = trim($ligne_element[0]);
                 $datedebut = trim($ligne_element[1]);
                 $datefin = trim($ligne_element[2]);
-                $harptype = trim($ligne_element[3]);
-                echo "harpegeid = $harpegeid   datedebut=$datedebut   datefin=$datefin   harptype=$harptype   \n";
-                $sql = sprintf("INSERT INTO HARPABSENCE (HARPEGEID,DATEDEBUT,DATEFIN,HARPTYPE) VALUES('%s','%s	','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($harptype));
+                $typeabsence = trim($ligne_element[3]);
+                echo "agentid = $agentid   datedebut=$datedebut   datefin=$datefin   typeabsence=$typeabsence   \n";
+                $sql = sprintf("INSERT INTO ABSENCERH (AGENTID,DATEDEBUT,DATEFIN,TYPEABSENCE) VALUES('%s','%s	','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($typeabsence));
                 
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") {
-                    echo "INSERT HARPABSENCE => $erreur_requete \n";
+                    echo "INSERT ABSENCERH => $erreur_requete \n";
                     echo "sql = $sql \n";
                 }
             }
@@ -66,6 +66,6 @@
         fclose($fp);
     }
     
-    echo "Fin de l'import des absences HARPEGE " . date("d/m/Y H:i:s") . "\n";
+    echo "Fin de l'import des absences de l'application RH " . date("d/m/Y H:i:s") . "\n";
 
 ?>

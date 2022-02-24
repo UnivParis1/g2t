@@ -821,8 +821,8 @@ class fonctions
     function listeprofilrh($typeprofil = null)
     {
         $agentarray = array();
-        $sql = "SELECT HARPEGEID FROM COMPLEMENT WHERE COMPLEMENTID IN (";
-        // $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE HARPEGEID='%s' AND COMPLEMENTID IN (";
+        $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID IN (";
+        // $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID='%s' AND COMPLEMENTID IN (";
         if (is_null($typeprofil)) {
             $sql = $sql . "'RHCET', 'RHCONGE', 'RHANOMALIE'";
         } elseif ($typeprofil == 1) {
@@ -850,7 +850,7 @@ class fonctions
         while ($result = mysqli_fetch_row($query)) {
             $agentrh = new agent($this->dbconnect);
             if ($agentrh->load("$result[0]")) {
-                $agentarray[$agentrh->harpegeid()] = $agentrh;
+                $agentarray[$agentrh->agentid()] = $agentrh;
             }
             unset($agentrh);
         }
@@ -885,16 +885,12 @@ class fonctions
 
     public function CETaverifier($datedebut)
     {
-        $sql = "SELECT DISTINCT DEMANDE.DEMANDEID,AGENT.HARPEGEID, DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT
-    				FROM DEMANDE,DEMANDEDECLARATIONTP,DECLARATIONTP,AFFECTATION,AGENT
-    				WHERE AFFECTATION.AFFECTATIONID = DECLARATIONTP.AFFECTATIONID
-    				  AND DECLARATIONTP.DECLARATIONID = DEMANDEDECLARATIONTP.DECLARATIONID
-    				  AND DEMANDEDECLARATIONTP.DEMANDEID = DEMANDE.DEMANDEID
-    				  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
-    				  AND DEMANDE.TYPEABSENCEID = 'cet'
-    				  AND (DEMANDE.DATEDEBUT >= '" . $this->formatdatedb($datedebut) . "'
-    				    OR DEMANDE.DATESTATUT >= '" . $this->formatdatedb($datedebut) . "' )
-    			    ORDER BY AGENT.HARPEGEID, DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
+        $sql = "SELECT DISTINCT DEMANDEID,AGENTID, DATEDEBUT,DATESTATUT
+    				FROM DEMANDE
+    				WHERE TYPEABSENCEID = 'cet'
+    				  AND (DATEDEBUT >= '" . $this->formatdatedb($datedebut) . "'
+    				    OR DATESTATUT >= '" . $this->formatdatedb($datedebut) . "' )
+    			    ORDER BY AGENTID, DATEDEBUT,DATESTATUT";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
@@ -912,7 +908,7 @@ class fonctions
             $complement = new complement($this->dbconnect);
             $complement->load($result[1], 'DEM_CET_' . $demandeid);
             
-            if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->harpegeid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
+            if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->agentid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
             {
                 $demandeliste[] = $demande;
             }
@@ -1345,7 +1341,7 @@ class fonctions
         $datefin = $this->formatdatedb($datefin);
         
         $listeagentteletravail = array();
-        $sql = "SELECT DISTINCT HARPEGEID
+        $sql = "SELECT DISTINCT AGENTID
                 FROM TELETRAVAIL
                 WHERE STATUT = '" . teletravail::STATUT_ACTIVE  . "'
                   AND ((DATEDEBUT <= '" . $datedebut . "' AND DATEFIN >='" . $datedebut . "')

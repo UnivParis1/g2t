@@ -94,7 +94,7 @@
                             echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
                         else {
                             $ics = null;
-                            $pdffilename[0] = $demande->pdf($user->harpegeid());
+                            $pdffilename[0] = $demande->pdf($user->agentid());
                             $agent = $demande->agent();
                             //echo "<br>Le statut de la demande est : $statut <br><br>"; 
                             if ((strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) or (strcmp($statut, demande::DEMANDE_ANNULE) == 0)) {
@@ -183,7 +183,7 @@
                     // echo "Membre = " . $membre->nom() . "<br>";
 
                     // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->harpegeid(), $structure->id(), $cleelement);
+                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structure->id(), $cleelement);
                     if ($htmltodisplay != "") {
                         echo $htmltodisplay;
                         echo "<br>";
@@ -206,13 +206,13 @@
                             $oktodisplay = true;
                             if (is_array($agentliste)) {
                                 // On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
-                                if (array_key_exists($responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid(), $agentliste))
+                                if (array_key_exists($responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid(), $agentliste))
                                     $oktodisplay = false;
                             }
                             if ($oktodisplay) {
-                                $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->harpegeid(), $structfille->id(), $cleelement);
+                                $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structfille->id(), $cleelement);
                                 // On ajoute le responsable dans la liste des agents à afficher
-                                $agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+                                $agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                             }
                         }
                         if ($htmltodisplay != "") {
@@ -228,7 +228,7 @@
             }
         }
         echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
         echo "<br>";
         echo "<input type='submit' value='Soumettre' />";
@@ -272,10 +272,10 @@
                         // echo "structure->id() = " . $structure->id() . "<br>";
                         // echo "Membre = " . $membre->nom() . "<br>";
 
-                        // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+                        // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
                         // -------------------------------------------------------------
-                        // Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->harpegeid()) car il doit pouvoir valider ses propres congés ??
-                        // $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structure->id(), $cleelement);
+                        // Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->agentid()) car il doit pouvoir valider ses propres congés ??
+                        // $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
                         $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null, $structure->id(), $cleelement);
                         // -------------------------------------------------------------
                         // echo "htmltodisplay = $htmltodisplay <br>";
@@ -312,8 +312,8 @@
              * else
              * $fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
              *
-             * //echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
-             * $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->harpegeid(),$structfille->id(), $cleelement);
+             * //echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structfille->id(), $cleelement);
+             * $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structfille->id(), $cleelement);
              * if ($htmltodisplay != "")
              * {
              * echo $htmltodisplay;
@@ -343,7 +343,7 @@
                 $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
                 // echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
                 if (! is_null($responsable)) {
-                    $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->harpegeid(), $structure->id(), $cleelement);
+                    $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structure->id(), $cleelement);
                 }
                 if ($htmltodisplay != "") {
                     echo $htmltodisplay;
@@ -357,7 +357,7 @@
         }
 
         echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
         echo "<br>";
         echo "<input type='submit' value='Soumettre' />";

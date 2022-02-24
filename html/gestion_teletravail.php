@@ -38,7 +38,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -188,14 +188,14 @@
         //echo "On va creer une convention de télétravail.<br>";
         //Array ( [date_debut] => Array ( [9328] => 01/12/2021 ) [date_fin] => Array ( [9328] => 05/12/2021 ) [jours] => Array ( [0] => 2 [1] => 3 ) [userid] => 9328 [agentid] => 9328 [creation] => Soumettre ) 
         $datedebutteletravail = null;
-        if (isset($_POST["date_debut"][$agent->harpegeid()]))
+        if (isset($_POST["date_debut"][$agent->agentid()]))
         {
-            $datedebutteletravail = $_POST["date_debut"][$agent->harpegeid()];
+            $datedebutteletravail = $_POST["date_debut"][$agent->agentid()];
         }
         $datefinteletravail = null;
-        if (isset($_POST["date_fin"][$agent->harpegeid()]))
+        if (isset($_POST["date_fin"][$agent->agentid()]))
         {
-            $datefinteletravail = $_POST["date_fin"][$agent->harpegeid()];
+            $datefinteletravail = $_POST["date_fin"][$agent->agentid()];
         }
         $jours = null;
         if (isset($_POST["jours"]))
@@ -260,7 +260,7 @@
             $teletravail->datedebut($datedebutteletravail);
             $teletravail->datefin($datefinteletravail);
             $teletravail->tabteletravail($tabteletravail);
-            $teletravail->agentid($agent->harpegeid());
+            $teletravail->agentid($agent->agentid());
             $erreur = $teletravail->store();
             if ($erreur != "")
             {
@@ -300,7 +300,7 @@
     	<?php
         echo "<br>";
         
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     }
@@ -428,8 +428,8 @@
                       </tr>";
     	    }
             echo "</table>";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-    	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->harpegeid() . "'>";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
     	    echo "<input type='submit' value='Soumettre' name='modification'/>";
     	    echo "</form>";
             echo "<br>";
@@ -484,20 +484,20 @@
     <script>
         $(function()
         {
-        	$('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').attr("minperiode"), maxDate: $('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').attr("maxperiode")});
-        	$('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').change(function () {
-        			$('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').datepicker("destroy");
-        			$('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').datepicker("getDate"), maxDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').attr("maxperiode")});
+        	$('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').attr("minperiode"), maxDate: $('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').attr("maxperiode")});
+        	$('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').change(function () {
+        			$('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').datepicker("destroy");
+        			$('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').datepicker("getDate"), maxDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').attr("maxperiode")});
         	});
         });
     </script>
     <script>
         $(function()
         {
-        	$('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').attr("minperiode"), maxDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').attr("maxperiode")});
-        	$('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').change(function () {
-        			$('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').datepicker("destroy");
-        			$('[id="<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').attr("minperiode"), maxDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . "]" ?>"]').datepicker("getDate")});
+        	$('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').attr("minperiode"), maxDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').attr("maxperiode")});
+        	$('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').change(function () {
+        			$('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').datepicker("destroy");
+        			$('[id="<?php echo $calendrierid_deb . '[' . $agent->agentid() . "]" ?>"]').datepicker({minDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').attr("minperiode"), maxDate: $('[id="<?php echo $calendrierid_fin . '[' . $agent->agentid() . "]" ?>"]').datepicker("getDate")});
         	});
         });
     </script>
@@ -511,8 +511,8 @@
     	}
 ?>
         <input class="calendrier" type=text
-        	name=<?php echo $calendrierid_deb . '[' . $agent->harpegeid() . ']'?>
-        	id=<?php echo $calendrierid_deb . '[' . $agent->harpegeid() .']'?> size=10
+        	name=<?php echo $calendrierid_deb . '[' . $agent->agentid() . ']'?>
+        	id=<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?> size=10
         	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
         	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
         	value='<?php echo $datedebutteletravail ?>'>
@@ -524,8 +524,8 @@
         }      
 ?>
         <input class="calendrier" type=text
-        	name=<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . ']' ?>
-        	id=<?php echo $calendrierid_fin . '[' . $agent->harpegeid() . ']' ?>
+        	name=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
+        	id=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
         	size=10
         	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
         	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+4 . $fonctions->finperiode()); ?>'
@@ -544,8 +544,8 @@
               </center></tr>";
         echo "</table>";
 	    echo "<br>";
-	    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->harpegeid() . "'>";
+	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
 	    echo "<input type='submit' value='Soumettre'  name='creation'/>";
 	    echo "</form>";
     }

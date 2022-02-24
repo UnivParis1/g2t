@@ -69,7 +69,7 @@ class affectation
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return false;
         } else {
-            $sql = "SELECT AFFECTATIONID,HARPEGEID,DATEDEBUT,DATEFIN,DATEMODIFICATION,STRUCTUREID,NUMQUOTITE,DENOMQUOTITE,OBSOLETE, NUMCONTRAT
+            $sql = "SELECT AFFECTATIONID,AGENTID,DATEDEBUT,DATEFIN,DATEMODIFICATION,NUMQUOTITE,DENOMQUOTITE,OBSOLETE, NUMCONTRAT
 FROM AFFECTATION
 WHERE AFFECTATIONID='" . $idaffectation . "'";
             $query = mysqli_query($this->dbconnect, $sql);
@@ -88,18 +88,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             }
             $result = mysqli_fetch_row($query);
             
+            // On récupère le code de la structure à partir de l'agent
             $agent = new agent($this->dbconnect);
-            $structureid = "";
-            if (method_exists($agent,'structureid'))
-            {
-                $agent->load("$result[1]");
-                $structureid = $agent->structureid() . "";
-            }
-            else
-            {
-                //echo "Warning : This usage of structureid is deprecated.<br>";
-                $structureid =  "$result[5]" . "";
-            }
+            $agent->load("$result[1]");
+            $structureid = $agent->structureid() . "";
 /*            
             if ($ignoremissingstruct == true)
                 echo "affectation->load : ignoremissingstruct => true <br>";
@@ -120,10 +112,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             // echo "Avant affectation qutotite <br>";
             $this->datemodif = "$result[4]";
             $this->structureid = "$structureid";
-            $this->numerateurquotite = "$result[6]";
-            $this->denominateurquotite = "$result[7]";
-            $this->obsolete = "$result[8]";
-            $this->numcontrat = "$result[9]";
+            $this->numerateurquotite = "$result[5]";
+            $this->denominateurquotite = "$result[6]";
+            $this->obsolete = "$result[7]";
+            $this->numcontrat = "$result[8]";
             return true;
         }
     }
@@ -133,7 +125,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
      * @param string $date
      *            optional date to search the nomination. Current date if not set
      * @param string $agentid
-     *            optional agent identifier (harpege)
+     *            optional agent identifier
      * @return boolean true on success / false on fail
      */
     function loadbydate($date = null, $agentid = null)
@@ -149,7 +141,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return false;
         } else {
-            $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= '" . $date . "' AND ('" . $date . "' <= DATEFIN OR DATEFIN = '0000-00-00')) AND HARPEGEID ='" . $agentid . "' AND OBSOLETE='N'";
+            $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= '" . $date . "' AND ('" . $date . "' <= DATEFIN OR DATEFIN = '0000-00-00')) AND AGENTID ='" . $agentid . "' AND OBSOLETE='N'";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -187,7 +179,7 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
     /**
      *
      * @param
-     * @return string the agent identifier (harpege) for the current nomination
+     * @return string the agent identifier for the current nomination
      */
     function agentid()
     {
@@ -343,6 +335,12 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
         } else
             return $this->numcontrat;
     }
+    
+    function numlignequotite()
+    {
+        $affectationidelement = explode('_',$this->affectationid());
+        return $affectationidelement[2];
+    }
 
     /**
      *
@@ -355,14 +353,28 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
     function declarationTPliste($datedebut, $datefin)
     {
         // echo "Je suis dans la affectation->declarationTPliste <br>";
+        
+        $affectationidelement = explode('_',$this->affectationid()); 
+        $quotitenumligne = $affectationidelement[2];
+        
+        //$sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  ";
+ 
+        $sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  AND DATEDEBUT<'" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN)";
+        $sql = $sql . " UNION ";
+        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
+        $sql = $sql . " UNION ";
+        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)) AS SUBQUERY";
+        $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
+
         $declarationliste = null;
+/*        
         $sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID = '" . $this->affectationid . "' AND DATEDEBUT<'" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN)";
         $sql = $sql . " UNION ";
         $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
         $sql = $sql . " UNION ";
         $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)) AS SUBQUERY";
         $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
-        
+*/        
         // echo "affectation->declarationTPliste SQL = $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);

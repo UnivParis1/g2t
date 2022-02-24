@@ -110,7 +110,7 @@
  -->
     <form name="frm_param_cet" method="post">
     
-        <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
+        <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
         		<br>Paramétrage du calendrier de la campagne d'alimentation du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutalimcet()).' - '.$fonctions->formatdate($fonctions->finalimcet());?>)
         		<table>
         		<tr>
@@ -164,7 +164,7 @@
     <form name="frm_calendrier_option" method="post">
  -->    
 		<br><br>
-        <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
+        <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
         		<br>Paramétrage du calendrier de la campagne de droit d'option du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutoptioncet()).' - '.$fonctions->formatdate($fonctions->finoptioncet());?>)
         		<table>
         		<tr>
@@ -216,7 +216,7 @@
 	<form name="frm_param_plafond_cet" method="post">
  -->
  		<br><br>
-        <input type='hidden' name='userid' value='<?php echo $user->harpegeid();?>'>
+        <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
 		Nombre de jours maximum sur CET : <input type='text' name='plafondcet' value='<?php echo $plafondparam;?>'>
 		<br><br>
 		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' />

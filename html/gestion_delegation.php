@@ -78,7 +78,7 @@
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
         
-        // ATTENTION : La $valeur est soit le HARPEGEID soit le UID si on vient de le modifier !!
+        // ATTENTION : La $valeur est soit le AGENTID soit le UID si on vient de le modifier !!
         foreach ($arraydelegation as $structureid => $valeur) {
             $resp_est_delegue = false;
             // echo "dans le foreach <br>";
@@ -90,7 +90,7 @@
                 $structure->setdelegation("", "", "", $userid);
             } else {
                 // echo "Dans le else avant le filtre LDAP <br>";
-                // On va chercher dans le LDAP la correspondance UID => HARPEGEID
+                // On va chercher dans le LDAP la correspondance UID => AGENTID
                 $filtre = "(uid=" . $valeur . ")";
                 $dn = $LDAP_SEARCH_BASE;
                 $restriction = array(
@@ -98,21 +98,21 @@
                 );
                 $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
                 $info = ldap_get_entries($con_ldap, $sr);
-                // echo "Le numéro HARPEGE du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
+                // echo "Le numéro AGENT du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
                 if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-                    $harpegeid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                    $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
                 } else {
-                    $harpegeid = $valeur;
+                    $agentid = $valeur;
                 }
-                // echo "Harpegeid = $harpegeid <br>";
-                // Si le harpegeid n'est pas vide ou null
-                if ($harpegeid != '' and (! is_null($harpegeid))) {
+                // echo "agentid = $agentid <br>";
+                // Si le agentid n'est pas vide ou null
+                if ($agentid != '' and (! is_null($agentid))) {
                     // $structureid = str_replace("'", "", $structureid);
                     $structure = new structure($dbcon);
                     $structure->load($structureid);
                     $resp = $structure->responsablesiham();
                     // On ne peut pas mettre le responsable de la structure comme délégué
-                    if ($harpegeid == $resp->harpegeid()) {
+                    if ($agentid == $resp->agentid()) {
                         // On récupère la liste des structures ou l'utilisateur est responsable (sens strict)
                         $structrespliste = $resp->structrespliste(false);
                         // Si la structure courante est définie dans le tableau des structures
@@ -137,8 +137,8 @@
                             echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                         } else {
                             // echo "On enregistre la delegation.... <br>";
-                            $structure->setdelegation($harpegeid, $datedebutdeleg, $datefindeleg, $userid);
-                            $errlog = $resp->identitecomplete() . " : Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $harpegeid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
+                            $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid);
+                            $errlog = $resp->identitecomplete() . " : Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
                             // echo $errlog."<br/>";
                             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                         }
@@ -195,7 +195,7 @@
         affichestructureliste($struct, 0);
     }
     echo "</select>";
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br>";
     echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
     echo "</form>";
@@ -237,7 +237,7 @@
     
         echo "<input type='hidden' id='delegation[" . $structure->id() . "]' name='delegation[" . $structure->id() . "]' value='";
         if (! is_null($delegationuser))
-            echo $delegationuser->harpegeid();
+            echo $delegationuser->agentid();
         echo "' class='infodelegation[" . $structure->id() . "]' /> ";
 ?>
     <script>
@@ -303,7 +303,7 @@
 <?php
         echo "</p>";
     
-        echo "<input type='hidden' name='userid' value=" . $user->harpegeid() . ">";
+        echo "<input type='hidden' name='userid' value=" . $user->agentid() . ">";
         echo "<input type='hidden' name='structureid' value=" . $structureid . ">";
         echo "<br><br>";
         echo "<input type='submit' value='Soumettre' />";

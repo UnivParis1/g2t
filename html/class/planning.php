@@ -410,131 +410,13 @@ class planning
                 }
             }
         }
-        
-        /*
-         * ///////////////////////////////////////////////////////////
-         * //// On ne doit plus charger les demandes en fonction du TP
-         * /// SELECT DEMANDE WHERE DATEDEBUT < ..... AND DATEFIN > ....
-         * ///
-         * /// Donc requête à revoir !!!!
-         * //////////////////////////////////////////////////////////
-         *
-         * if (!is_null($fulldeclarationTPliste))
-         * {
-         * foreach ($fulldeclarationTPliste as $key => $declarationTP)
-         * {
-         * $sql = "SELECT DISTINCT DEMANDE.DEMANDEID FROM DEMANDE,DEMANDEDECLARATIONTP
-         * WHERE DEMANDE.DEMANDEID = DEMANDEDECLARATIONTP.DEMANDEID
-         * AND DECLARATIONID = '" . $declarationTP->declarationTPid() . "'
-         * AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($datedebut) . "')
-         * OR (DATEFIN >= '" . $this->fonctions->formatdatedb($datefin) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($datefin) . "')
-         * OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))
-         * AND STATUT <> '" . demande::DEMANDE_REFUSE .  "'";
-         * //echo "Planning Load sql = $sql <br>";
-         * $query=mysqli_query ($this->dbconnect, $sql);
-         * $erreur=mysqli_error($this->dbconnect);
-         * if ($erreur != "") {
-         * $errlog = "Planning->load : " . $erreur;
-         * echo $errlog."<br/>";
-         * error_log(basename(__FILE__)." ".$this->fonctions->stripAccents($errlog));
-         * }
-         * if (mysqli_num_rows($query) == 0)
-         * {
-         * //echo "Planning->load : Pas de congé pour cette agent dans la période demandée <br>";
-         * }
-         * while ($result = mysqli_fetch_row($query))
-         * {
-         * $demande = new demande($this->dbconnect);
-         * $demande->load($result[0]);
-         *
-         * $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
-         * $demandedatefin = $this->fonctions->formatdate($demande->datefin());
-         * $demandemomentdebut = $demande->moment_debut();
-         * $demandemomentfin = $demande->moment_fin();
-         * $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
-         * $demandetempmoment = $demandemomentdebut;
-         *
-         * //echo "demandedatedeb = $demandedatedeb demandedatefin = $demandedatefin demandemomentdebut=$demandemomentdebut demandemomentfin = $demandemomentfin datetemp =$datetemp <br>";
-         * //echo "fonctions->formatdatedb(demandedatefin) = " . $this->fonctions->formatdatedb($demandedatefin) . "<br>";
-         * while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin))
-         * {
-         * //echo "demandetempmoment = $demandetempmoment datetemp = $datetemp <br>";
-         * if ($datetemp >=$this->fonctions->formatdatedb($datedebut) and $datetemp <=$this->fonctions->formatdatedb($datefin))
-         * {
-         * //echo "demandemomentdebut = $demandemomentdebut <br>";
-         * if ($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandetempmoment <> $demandemomentdebut)
-         * $demandetempmoment = "";
-         * //echo "demandetempmoment (apres le if - matin)= " . $demandetempmoment . "<br>";
-         * if ($demandetempmoment == 'm')
-         * {
-         * //echo "Avant le new planningElement (bloc 'm') <br>";
-         * unset($element);
-         * $element = new planningelement($this->dbconnect);
-         * $element->date($this->fonctions->formatdate($datetemp));
-         * $element->moment("m");
-         * $element->type($demande->type());
-         * $element->statut($demande->statut());
-         * $element->info($demande->typelibelle()); //motifrefus()
-         * $element->agentid($agentid);
-         * echo "<br>Je set (matin) le demande id => $result[0] <br>";
-         * $element->demandeid($result[0]);
-         * echo "<br>Je l'ai fixé (matin) demande id => " . $element->demandeid() . "<br>";
-         * //echo "Planning->load : Type = " . $result[2] . " Info = " . $result[15] . "<br>";
-         * //echo "Planning->load : Type (element) = " . $element->type() . " Info (element) = " . $element->info() . "<br>";
-         * //$element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-         * //echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
-         * if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-         * $this->listeelement[$datetemp . $demandetempmoment] = $element;
-         * elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(),"nondec")==0)
-         * $this->listeelement[$datetemp . $demandetempmoment] = $element;
-         * $demandetempmoment = 'a';
-         * unset($element);
-         * //echo "Fin du traitement du demandetempmoment = 'matin' <br>";
-         * }
-         * //echo "datetemp = $datetemp demandedatefin = " . $this->fonctions->formatdatedb($demandedatefin) . " demandetempmoment = $demandetempmoment demandemomentfin = $demandemomentfin <br>";
-         * if ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandetempmoment <> $demandemomentfin)
-         * $demandetempmoment = "";
-         * //echo "demandetempmoment (apres le if - apres-midi)= " . $demandetempmoment . "<br>";
-         * if ($demandetempmoment == 'a')
-         * {
-         * //echo "Avant le new planningElement (bloc 'a') <br>";
-         * unset($element);
-         * $element = new planningelement($this->dbconnect);
-         * $element->date($this->fonctions->formatdate($datetemp));
-         * $element->moment("a");
-         * $element->type($demande->type());
-         * $element->statut($demande->statut());
-         * $element->info($demande->typelibelle()); //motifrefus()
-         * $element->agentid($agentid);
-         * echo "<br>Je set (apres midi) le demande id => $result[0] <br>";
-         * $element->demandeid($result[0]);
-         * echo "<br>Je l'ai fixé (apres midi) demande id => " . $element->demandeid() . "<br>";
-         * // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-         * if (!array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-         * $this->listeelement[$datetemp . $demandetempmoment] = $element;
-         * elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(),"nondec")==0)
-         * $this->listeelement[$datetemp . $demandetempmoment] = $element;
-         * unset ($element);
-         * //echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
-         * }
-         * }
-         * $demandetempmoment = 'm';
-         * //echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
-         * $timestamp = strtotime($datetemp);
-         * $datetemp = date("Ymd", strtotime("+1days", $timestamp )); // On passe au jour suivant
-         * //echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
-         * }
-         * }
-         * }
-         * }
-         */
-        
+                
         // echo "<br><br>fin 1er while => "; print_r ($this->listeelement); echo "<br>";
         // echo "Fin premier while ... <br>";
         
-        $sql = "SELECT HARPEGEID,DATEDEBUT,DATEFIN,HARPTYPE
-FROM HARPABSENCE
-WHERE HARPEGEID = '" . $agentid . "'
+        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN,TYPEABSENCE
+FROM ABSENCERH
+WHERE AGENTID = '" . $agentid . "'
   AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($datedebut) . "')
     OR (DATEFIN >= '" . $this->fonctions->formatdatedb($datefin) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($datefin) . "')
     OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))";
@@ -542,12 +424,12 @@ WHERE HARPEGEID = '" . $agentid . "'
         $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
-            $errlog = "Planning->load (HARPABSENCE) : " . $erreur;
+            $errlog = "Planning->load (ABSENCERH) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         if (mysqli_num_rows($query) == 0) {
-            // echo "Planning->load (HARPABSENCE) : Pas de congé pour cette agent dans la période demandée <br>";
+            // echo "Planning->load (ABSENCERH) : Pas de congé pour cette agent dans la période demandée <br>";
         }
         // echo "Avant le while 2 <br>";
         while ($result = mysqli_fetch_row($query)) {
@@ -566,7 +448,7 @@ WHERE HARPEGEID = '" . $agentid . "'
                         // echo "avant le element date <br>";
                         $element->date($this->fonctions->formatdate($datetemp));
                         $element->moment($demandetempmoment);
-                        $element->type("harp"); // ==> Le type de congé est fixé - Ce sont des congés HARPEGE
+                        $element->type("harp"); // ==> Le type de congé est fixé - Ce sont des congés RH
                         $element->info("$result[3]");
                         $element->agentid($agentid);
                         // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
@@ -584,7 +466,7 @@ WHERE HARPEGEID = '" . $agentid . "'
                         $element = new planningelement($this->dbconnect);
                         $element->date($this->fonctions->formatdate($datetemp));
                         $element->moment($demandetempmoment);
-                        $element->type("harp"); // ==> Le type de congé est fixé - Ce sont des congés HARPEGE
+                        $element->type("harp"); // ==> Le type de congé est fixé - Ce sont des congés RH
                         $element->info("$result[3]");
                         $element->agentid($agentid);
                         // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning

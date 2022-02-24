@@ -71,7 +71,7 @@
                         echo "<p style='color: red'>" . $errlog . "</p><br/>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     } else {
-                        $pdffilename = $declaration->pdf($user->harpegeid());
+                        $pdffilename = $declaration->pdf($user->agentid());
                         // $agentid = $declaration->agent();
                         // $agent = new agent($dbcon);
                         // $agent->load($agentid);
@@ -147,9 +147,9 @@
                 foreach((array) $sousstructliste as $sousstruct)
                 {
                     $respsousstruct = $sousstruct->responsable();
-                    if ($respsousstruct->harpegeid() != "" and $respsousstruct->harpegeid() > "0")
+                    if ($respsousstruct->agentid() != "" and $respsousstruct->agentid() > "0")
                     {
-                        $agentlist[$respsousstruct->nom() . " " . $respsousstruct->prenom() . " " . $respsousstruct->harpegeid()] = $respsousstruct;
+                        $agentlist[$respsousstruct->nom() . " " . $respsousstruct->prenom() . " " . $respsousstruct->agentid()] = $respsousstruct;
                     }
                 }
             }
@@ -182,7 +182,7 @@
             }
             echo "</table>";
             echo "<input type='submit' value='Soumettre' />";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "' />";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
             echo "<input type='hidden' name='mode' value='" . $mode . "' />";
             echo "</form>";
             echo "<br>";

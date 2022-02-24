@@ -44,7 +44,7 @@
         );
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
-        // echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
         if (! $user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
             echo '<head>';
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
@@ -55,11 +55,11 @@
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             exit();
         }
-        $_SESSION['phpCAS']['harpegeid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+        $_SESSION['phpCAS']['agentid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
         $_SESSION['phpCAS']['dn'] = $info[0]["dn"];
         // echo "Je viens de set le param - index.php<br>";
         // echo "Avant le recup user-> id";
-        $userid = $user->harpegeid();
+        $userid = $user->agentid();
         // echo "Apres le recup user-> id";
     } else {
         if (! $user->load($userid)) {

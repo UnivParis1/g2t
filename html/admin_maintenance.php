@@ -47,7 +47,7 @@
     );
     $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
     $info = ldap_get_entries($con_ldap, $sr);
-    // echo "Le numÃ©ro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+    // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
     $adminuser = new agent($dbcon);
     $adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
     if (! $adminuser->estadministrateur()) {
@@ -88,7 +88,7 @@ Gestion du mode maintenance...
 <br>
 <br>
 <form name='maintenance_mode' method='post'>
-<?php echo "<input type='hidden' name='userid' value='" . $user->harpegeid() ."'>";  ?>
+<?php echo "<input type='hidden' name='userid' value='" . $user->agentid() ."'>";  ?>
 <INPUT type="radio" name="maintenance" value="on"> Activer le mode
 	maintenance <br> <INPUT type="radio" name="maintenance" value="off">
 	Désactiver le mode maintenance <br> <br> <input type='submit'

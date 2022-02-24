@@ -26,12 +26,14 @@
     echo "Début de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
 
     // On selectionne les demandes en attente de validation
-    $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = '" . declarationTP::DECLARATIONTP_ATTENTE . "'";
+    $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = '" . declarationTP::DECLARATIONTP_ATTENTE . "' AND AGENTID IN (SELECT AGENTID FROM AGENT)";
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
-        echo "SELECT DEMANDEID => $erreur_requete \n";
-
+    {
+        echo "Erreur : SELECT DEMANDEID => $erreur_requete \n";
+    }
+    
     $arraystruct = array();
     $mail_gest = array();
     $mail_resp = array();
@@ -40,59 +42,63 @@
     while ($result = mysqli_fetch_row($query)) {
         $declaration = new declarationTP($dbcon);
         $declaration->load($result[0]);
-        $affectation = new affectation($dbcon);
-        $affectation->load($declaration->affectationid());
+        
+        $agent = new agent($dbcon);
+        $agent->load($declaration->agentid());
 
+        if ($agent->structureid() == "")
+        {
+            echo "Le structureid n'est pas défini pour l'agent " . $agent->identitecomplete() . ".... Donc impossible d'envoyer un mail au responsable \n";
+            continue;
+        }
         $structure = new structure($dbcon);
-        $structure->load($affectation->structureid());
+        $structure->load($agent->structureid());
 
         // Si ce n'est pas le responsable de la structure qui a fait la demande
         // => C'est un agent
         // On regarde à qui on doit envoyer la demande de TP pour sa structure
         if (is_null($structure->responsable()))
-            echo "Pas de responsable de structure(id : " . $affectation->structureid() . "), pas d'envoi de mail. \n";
+            echo "Pas de responsable de structure (id : " . $structure->id() . "), pas d'envoi de mail. \n";
         else {
-            if ($affectation->agentid() != $structure->responsable()->harpegeid()) {
+            if ($agent->agentid() != $structure->responsable()->agentid()) {
                 $destinatairemail = $structure->agent_envoyer_a($codeinterne);
                 if ($codeinterne == 2) // Gestionnaire service courant
                 {
-                    if (isset($mail_gest[$destinatairemail->harpegeid()]))
-                        $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] + 1;
+                    if (isset($mail_gest[$destinatairemail->agentid()]))
+                        $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
                     else
-                        $mail_gest[$destinatairemail->harpegeid()] = 1;
+                        $mail_gest[$destinatairemail->agentid()] = 1;
                 } else // Responsable service courant
                 {
-                    if (isset($mail_resp[$destinatairemail->harpegeid()]))
-                        $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] + 1;
+                    if (isset($mail_resp[$destinatairemail->agentid()]))
+                        $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
                     else
-                        $mail_resp[$destinatairemail->harpegeid()] = 1;
+                        $mail_resp[$destinatairemail->agentid()] = 1;
                 }
             }        // C'est le responsable de la structure qui a fait la demande
             else {
                 $destinatairemail = $structure->resp_envoyer_a($codeinterne);
                 if (! is_null($destinatairemail)) {
-                    // echo "destinatairemailid = " . $destinatairemail->harpegeid() . "\n";
+                    // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
                     if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                     {
-                        if (isset($mail_gest[$destinatairemail->harpegeid()]))
-                            $mail_gest[$destinatairemail->harpegeid()] = $mail_gest[$destinatairemail->harpegeid()] + 1;
+                        if (isset($mail_gest[$destinatairemail->agentid()]))
+                            $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
                         else
-                            $mail_gest[$destinatairemail->harpegeid()] = 1;
+                            $mail_gest[$destinatairemail->agentid()] = 1;
                     } else // Responsable service parent
                     {
-                        if (isset($mail_resp[$destinatairemail->harpegeid()]))
-                            $mail_resp[$destinatairemail->harpegeid()] = $mail_resp[$destinatairemail->harpegeid()] + 1;
+                        if (isset($mail_resp[$destinatairemail->agentid()]))
+                            $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
                         else
-                            $mail_resp[$destinatairemail->harpegeid()] = 1;
+                            $mail_resp[$destinatairemail->agentid()] = 1;
                     }
                 }
             }
         }
-        unset($demande);
         unset($structure);
-        unset($declarationliste);
         unset($declaration);
-        unset($affectation);
+        unset($agent);
     }
 
     echo "mail_resp=";
@@ -109,7 +115,7 @@
     foreach ($mail_resp as $agentid => $nbredemande) {
         $responsable = new agent($dbcon);
         $responsable->load($agentid);
-        echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " Harpegeid = " . $responsable->harpegeid() . ") \n";
+        echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " agentid = " . $responsable->agentid() . ") \n";
 
         $agentcron->sendmail($responsable, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que responsable de structure, merci de bien vouloir les valider dès que possible.\n", null);
         unset($responsable);
@@ -117,7 +123,7 @@
     foreach ($mail_gest as $agentid => $nbredemande) {
         $gestionnaire = new agent($dbcon);
         $gestionnaire->load($agentid);
-        echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " Harpegeid = " . $gestionnaire->harpegeid() . ") \n";
+        echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " agentid = " . $gestionnaire->agentid() . ") \n";
 
         $agentcron->sendmail($gestionnaire, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que gestionnaire de structure, merci de bien vouloir les valider dès que possible.\n", null);
         unset($gestionnaire);

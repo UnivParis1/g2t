@@ -103,7 +103,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -136,7 +136,7 @@
         );
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
-        // echo "Le numéro HARPEGE de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
         $agent->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
     } elseif ((! is_null($agentid)) and $agentid != "")
         $agent->load($agentid);
@@ -365,26 +365,26 @@
                 $structurefille = $structure->structurefille();
                 foreach ((array) $structurefille as $structure) {
                     $responsable = $structure->responsable();
-                    if ($responsable->harpegeid() != '-1') {
-                        $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->harpegeid()] = $responsable;
+                    if ($responsable->agentid() != '-1') {
+                        $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                     }
                 }
             }
-            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()])) {
-                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->harpegeid()]);
+            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
+                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
             }
             ksort($agentlistefull);
             echo "<SELECT name='agentid'>";
             foreach ($agentlistefull as $keyagent => $membre) {
-                echo "<OPTION value='" . $membre->harpegeid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
             }
             echo "</SELECT>";
         }
         echo "<br>";
 
         echo "<input type='hidden' name='typedemande' value='" . $typedemande . "'>";
-        echo "<input type='hidden' name='responsable' value='" . $responsable->harpegeid() . "'>";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='responsable' value='" . $responsable->agentid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
@@ -420,14 +420,14 @@
             echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
             $solde = new solde($dbcon);
             $codecongeanticipe = "ann" . substr($fonctions->anneeref() + 1 - $previous, 2);
-            $result = $solde->load($agent->harpegeid(), $codecongeanticipe);
+            $result = $solde->load($agent->agentid(), $codecongeanticipe);
             if ($congeanticipe != "") {
                 // On pose un congé par anticipation
                 // - Vérifier que l'utilisateur est responsable (ou pas !!!)
                 // - Vérifier que le solde du congé annuel est = 0
                 // - Afficher le congé annuel de l'année de ref + 1
                 if ($result != "") {
-                    $result = $solde->creersolde($codecongeanticipe, $agent->harpegeid());
+                    $result = $solde->creersolde($codecongeanticipe, $agent->agentid());
                     if ($result != "") {
                         $msg_erreur = $msg_erreur . "<br/><b>" . $result . "</b>";
                         $msg_erreur = $msg_erreur . "<b>Contactez l'administrateur pour qu'il crée le type de congés...</b><br/>";
@@ -488,7 +488,7 @@
                 $ignoreabsenceautodecla = FALSE;
 
             // Echo "Avant le est present .... <br>";
-            $present = $planning->agentpresent($agent->harpegeid(), $date_debut, $deb_mataprem, $date_fin, $fin_mataprem, $ignoreabsenceautodecla);
+            $present = $planning->agentpresent($agent->agentid(), $date_debut, $deb_mataprem, $date_fin, $fin_mataprem, $ignoreabsenceautodecla);
             if (! $present)
                 $msg_erreur = $msg_erreur . $agent->prenom() . "  " . $agent->nom() . " n'est pas présent durant la période du $date_debut au $date_fin......!!! <br>";
         }
@@ -506,6 +506,9 @@
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
             // echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider <br>";
         } elseif (! $datefausse) {
+            
+            
+/*            
             // On recherche les declarations de TP relatives à cette demande
             $affectationliste = $agent->affectationliste($date_debut, $date_fin);
             if (! is_null($affectationliste)) {
@@ -520,12 +523,13 @@
                 }
                 // echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
             }
-
+*/
             // echo "Je vais sauver la demande <br>";
             unset($demande);
             $demande = new demande($dbcon);
-            // $demande->agent($agent->harpegeid());
+            // $demande->agent($agent->agentid());
             // $demande->structure($agent->structure()->id());
+            $demande->agentid($agent->agentid());
             $demande->type($listetype);
             $demande->datedebut($date_debut);
             $demande->datefin($date_fin);
@@ -537,7 +541,7 @@
             else
                 $ignoresoldeinsuffisant = FALSE;
             // echo "demande->nbredemijrs_demande() AVANT = " . $demande->nbredemijrs_demande() . "<br>";
-            $resultat = $demande->store($declarationTPliste, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
+            $resultat = $demande->store(null, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
             // echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
             if ($resultat == "") {
                 // Si on est en mode "responsable" alors la demande doit être validée automatiquement
@@ -554,7 +558,7 @@
                         echo "<p style='color: red'>Pas de validation automatique de la demande car " . $msgerreur . "</p><br>";
                     else {
                         $ics = null;
-                        $pdffilename[0] = $demande->pdf($user->harpegeid());
+                        $pdffilename[0] = $demande->pdf($user->agentid());
                         $agent = $demande->agent();
                         $ics = $demande->ics($agent->mail());
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
@@ -627,6 +631,17 @@
                 echo "<P style='color: red'><B><FONT SIZE='5pt'>" . $msgstore . " </B></FONT></P>";
             }
         }
+        $warninginfo  = "ATTENTION : Votre structure n'est pas définie. Vos demandes ne seront pas validées.";
+        if ($agent->structureid() <> "")
+        {
+            $struct = new structure($dbcon);
+            if ($struct->load($agent->structureid()))
+            {
+                $warninginfo = '';
+            }
+        }
+        echo "<P style='color: red'><B>$warninginfo</B></P>";
+        
         echo "<span style='border:solid 1px black; background:orange; width:600px; display:block;'>";
         echo "<P style='color: black'>";
         echo "Les situations particulières (notamment liées à des problèmes de santé) ne font pas l'objet d'un suivi dans G2T. Vous devez pour ces cas précis vous rapprocher de votre chef de service.<br>";
@@ -637,7 +652,7 @@
     <form name="frm_demande_conge" method="post">
 
     	<input type="hidden" name="agentid"
-    		value="<?php echo $agent->harpegeid(); ?>">
+    		value="<?php echo $agent->agentid(); ?>">
 
     	<table>
     		<tr>
@@ -847,16 +862,16 @@
             echo "Commentaire (obligatoire) : <br>";
             echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
             echo "<textarea rows='4' cols='60' name='commentaire'></textarea> <br>";
-            echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";
         } elseif (strcasecmp($typedemande, "conges") != 0) {
             echo "Commentaire (obligatoire pour les 'Absences autorisées par l'établissement', sinon facultatif) : <br>";
             echo "<textarea rows='4' cols='60' name='commentaire'></textarea> <br>";
-            echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";
         }
 
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";

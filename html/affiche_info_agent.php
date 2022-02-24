@@ -50,7 +50,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -105,7 +105,7 @@
         	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
     </script>
     <?php
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br><br>";
     echo "Période d'affichage : ";
     echo "<select name='annee_ref' id='annee_ref'>";

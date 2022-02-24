@@ -84,7 +84,7 @@
                     $agent->soldecongespdf($anneeref, FALSE, $pdf, TRUE);
                     $agent->demandeslistepdf($anneeref . $fonctions->debutperiode(), ($anneeref + 1) . $fonctions->finperiode(), $pdf, FALSE);
                 }
-                $filename = $fonctions->pdfpath() . '/' . date('Y-m') . '/solde_' . str_replace('/', '_', $struct->nomcourt()) . '_' . date("YmdHis") . ".pdf";
+                $filename = $fonctions->pdfpath() . '/' . date('Y-m') . '/solde_' . str_replace('/', '_', str_replace(' ', '-', $struct->nomcourt())) . '_' . date("YmdHis") . ".pdf";
                 //$pdf->Output($filename, 'F'); // F = file
                 $fonctions->savepdf($pdf, $filename);
                 $gest = $struct->gestionnaire();

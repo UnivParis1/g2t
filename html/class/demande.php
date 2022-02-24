@@ -58,7 +58,7 @@ class demande
     {
         // if (is_null($this->$demandeid))
         if (! isset($this->$demandeid)) {
-            $sql = "SELECT DEMANDEID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE)
+            $sql = "SELECT DEMANDEID,AGENTID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE)
 FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             // echo "Demande load sql = $sql <br>";
             $query = mysqli_query($this->dbconnect, $sql);
@@ -75,18 +75,19 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             }
             $result = mysqli_fetch_row($query);
             $this->demandeid = "$result[0]";
-            $this->typeabsenceid = "$result[1]";
-            $this->datedebut = "$result[2]";
-            $this->momentdebut = "$result[3]";
-            $this->datefin = "$result[4]";
-            $this->momentfin = "$result[5]";
-            $this->commentaire = str_replace("'", "''", $result[6]);
-            $this->nbrejrsdemande = "$result[7]";
-            $this->datedemande = "$result[8]";
-            $this->datestatut = "$result[9]";
-            $this->statut = "$result[10]";
-            $this->motifrefus = str_replace("'", "''", $result[11]);
-            $this->heuredemande = "$result[12]";
+            $this->agentid = "$result[1]";
+            $this->typeabsenceid = "$result[2]";
+            $this->datedebut = "$result[3]";
+            $this->momentdebut = "$result[4]";
+            $this->datefin = "$result[5]";
+            $this->momentfin = "$result[6]";
+            $this->commentaire = str_replace("'", "''", $result[7]);
+            $this->nbrejrsdemande = "$result[8]";
+            $this->datedemande = "$result[9]";
+            $this->datestatut = "$result[10]";
+            $this->statut = "$result[11]";
+            $this->motifrefus = str_replace("'", "''", $result[12]);
+            $this->heuredemande = "$result[13]";
             
             $this->ancienstatut = $this->statut;
         }
@@ -346,7 +347,19 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         } else
             $this->motifrefus = str_replace("'", "''", $motif);
     }
+    
+    function agentid($agentid = null)
+    {
+        if (is_null($agentid)) {
+            return $this->agentid;
+        } else
+            $this->agentid = $agentid;
+    }
 
+    /**
+     *
+     * @deprecated
+     */
     function declarationTPliste()
     {
         $sql = "SELECT DECLARATIONID FROM DEMANDEDECLARATIONTP WHERE DEMANDEID= '" . $this->demandeid . "'";
@@ -376,9 +389,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
     function agent()
     {
         if (is_null($this->agent)) {
-            $sql = "SELECT HARPEGEID FROM AFFECTATION,DECLARATIONTP,DEMANDEDECLARATIONTP WHERE DEMANDEDECLARATIONTP.DEMANDEID='" . $this->demandeid . "'";
-            $sql = $sql . " AND DEMANDEDECLARATIONTP.DECLARATIONID = DECLARATIONTP.DECLARATIONID ";
-            $sql = $sql . " AND DECLARATIONTP.AFFECTATIONID = AFFECTATION.AFFECTATIONID";
+            $sql = "SELECT AGENTID FROM DEMANDE WHERE DEMANDEID='" . $this->demandeid . "'";
             $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -408,7 +419,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
         // echo "identite de l'agent => " . $agent->identitecomplete() . "<br>";
         if (($this->statut() == demande::DEMANDE_VALIDE) or ($this->statut() == demande::DEMANDE_ATTENTE)) {
             $planning = new planning($this->dbconnect);
-            $planning->load($agent->harpegeid(), $this->datedebut(), $this->datefin());
+            $planning->load($agent->agentid(), $this->datedebut(), $this->datefin());
             $listelement = $planning->planning();
             // echo "<br>Liste des elements => " . print_r($listelement,true) . "\n<br>";
             foreach ((array) $listelement as $element) {
@@ -436,37 +447,13 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
     {
         // echo "Demande->store : En cours de réécriture !!!!! <br>";
         if (is_null($this->demandeid)) {
-            if (! is_array($declarationTPListe)) {
-                $errlog = "Demande->Store : La liste des déclarationsTP n'est pas un tableau";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                return $errlog;
-            }
-            
-            if (count($declarationTPListe) == 0) {
-                $errlog = "Demande->Store : La liste des déclarationsTP est un tableau vide";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                return $errlog;
-            }
-            $declarationTP = new declarationTP($this->dbconnect);
-            $declarationTP = reset($declarationTPListe);
-            $affectationid = $declarationTP->affectationid();
-            $affectation = new affectation($this->dbconnect);
-            if ($affectation->load($affectationid,$ignoreabsenceautodecla) == false) {
-                $errlog = "Demande->Store : Impossible de trouver l'affectation correspondante !!";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                return $errlog;
-            }
-            
             // On vérifie que le nombre de jour demandé est >= Nbre de jour restant (si c'est un conge !!)
             // echo "Demande->Store : typdemande=". $this->typdemande . "<br>";
             if ($this->fonctions->estunconge($this->typeabsenceid)) {
                 // echo "C'est un congé... <br>";
                 unset($solde);
                 $solde = new solde($this->dbconnect);
-                $solde->load($affectation->agentid(), $this->typeabsenceid);
+                $solde->load($this->agentid(), $this->typeabsenceid);
             }
             
             // echo "datedemande = " . $this->datedemande;
@@ -480,14 +467,14 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 // echo "this->demijrs_fin " . $this->demijrs_fin . "<br>";
                 // echo "ignoreabsenceautodecla " . $ignoreabsenceautodecla . "<br>";
                 
-                $this->nbrejrsdemande = $planning->nbrejourtravaille($affectation->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, $ignoreabsenceautodecla);
+                $this->nbrejrsdemande = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, $ignoreabsenceautodecla);
                 // echo "nbredemijrs_demande = " . $this->nbredemijrs_demande . "<br>";
             }
             
             $nbjrrestant = 0;
             if ($this->fonctions->estunconge($this->typeabsenceid)) {
                 if (is_null($solde)) {
-                    $errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $affectation->agentid();
+                    $errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $this->agentid();
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 } else {
@@ -511,9 +498,9 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 mysqli_query($this->dbconnect, $sql);
                 $sql = "SET AUTOCOMMIT = 0";
                 mysqli_query($this->dbconnect, $sql);
-                $sql = "INSERT INTO DEMANDE(TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,
+                $sql = "INSERT INTO DEMANDE(AGENTID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,
 				        COMMENTAIRE,NBREJRSDEMANDE,DATEDEMANDE,DATESTATUT,STATUT,MOTIFREFUS) ";
-                $sql = $sql . "VALUES('" . $this->typeabsenceid . "','" . $this->fonctions->formatdatedb($this->datedebut) . "',";
+                $sql = $sql . "VALUES('" . $this->agentid . "','" . $this->typeabsenceid . "','" . $this->fonctions->formatdatedb($this->datedebut) . "',";
                 $sql = $sql . "'" . $this->momentdebut . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->momentfin . "',";
                 $sql = $sql . "'" . $this->commentaire . "',";
                 $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '','" . demande::DEMANDE_ATTENTE . "','')";
@@ -538,25 +525,12 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 mysqli_query($this->dbconnect, $sql);
                 $sql = "SET AUTOCOMMIT = 1";
                 mysqli_query($this->dbconnect, $sql);
-                
-                // On sauvegarde le lien entre la/les declaration(s) de TP et la demande
-                foreach ($declarationTPListe as $key => $declaration) {
-                    $sql = "INSERT INTO DEMANDEDECLARATIONTP(DEMANDEID,DECLARATIONID) VALUES('" . $this->demandeid . "','" . $declaration->declarationTPid() . "')";
-                    // echo "sql = $sql <br>";
-                    $query = mysqli_query($this->dbconnect, $sql);
-                    $erreur = mysqli_error($this->dbconnect);
-                    if ($erreur != "") {
-                        $errlog = "Demande->store (DEMANDEDECLARATIONTP) : " . $erreur;
-                        echo $errlog . "<br/>";
-                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                    }
-                }
-                
+                                
                 // On decompte le nombre de jours que l'on vient de poser sauf si c'est un CET
                 if ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp($this->typeabsenceid, 'cet') != 0)) {
                     $sql = "UPDATE SOLDE
 					  		 SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
-							 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $affectation->agentid() . "'";
+							 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
                     // echo "SQL = $sql <br>";
                     $query = mysqli_query($this->dbconnect, $sql);
                     $erreur = mysqli_error($this->dbconnect);
@@ -607,7 +581,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                         // On recrédite le nombre de jours dans les congés....
                         $sql = "UPDATE SOLDE
 							  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
-									 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND HARPEGEID = '" . $this->agent()->harpegeid() . "'";
+									 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
                         // echo "SQL = $sql <br>";
                         $query = mysqli_query($this->dbconnect, $sql);
                         $erreur = mysqli_error($this->dbconnect);
@@ -801,7 +775,7 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             $dtend .= '170000';
         }
         $cur_agent = $this->agent();
-        $cal_uid = 'G2T' . '-' . $cur_agent->harpegeid() . '-' . $this->demandeid; // ."@echange.univ-paris1.fr" ; /// date('md').'T'.date('His')."-".rand()."@echange.univ-paris1.fr";
+        $cal_uid = 'G2T' . '-' . $cur_agent->agentid() . '-' . $this->demandeid; // ."@echange.univ-paris1.fr" ; /// date('md').'T'.date('His')."-".rand()."@echange.univ-paris1.fr";
                                                                                    // $todaystamp = date("Ymd\THis\Z");
         if ($this->fonctions->estunconge($this->typeabsenceid)) {
             $meeting_description = 'Congé';

@@ -50,7 +50,7 @@
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -93,7 +93,7 @@
             $demande = new demande($dbcon);
             $demande->load($demandeid);
 
-            $agentid = $demande->agent()->harpegeid();
+            $agentid = $demande->agent()->agentid();
             //echo "Demande chargée = " . $demande->id() . " pour l'agent $agentid et le statut = " . $demande->statut() . "<br>";
             $solde = new solde($dbcon);
 
@@ -110,7 +110,7 @@
 
                 unset($complement);
                 $complement = new complement($dbcon);
-                $complement->harpegeid($agentid);
+                $complement->agentid($agentid);
                 $complement->complementid('DEM_CET_' . $demande->id());
                 $complement->valeur($demande->statut());
 
@@ -168,7 +168,7 @@
                 	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
     	   </script>
     	<?php
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "<input type='hidden' name='selectall' value='no'>";
@@ -177,7 +177,7 @@
         echo "<br>";
         echo "<br>";
         echo "<input type='submit' value='Tout afficher' >";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='selectall' value='yes'>";
         echo "</form>";
@@ -256,7 +256,7 @@
                         $agent = $demande->agent();
                         $newagent = true;
                     }
-                    elseif ($agent->harpegeid() <> $demande->agent()->harpegeid())
+                    elseif ($agent->agentid() <> $demande->agent()->agentid())
                     {
                         $agent = $demande->agent();
                         $newagent = true;
@@ -275,7 +275,7 @@
                             $htmltext = $htmltext . "<br><br>";
                         }
                         $htmltext = $htmltext . "<table class='tableausimple'>";
-                        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . " (id : " . $agent->harpegeid() . ")</td></tr>";
+                        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . " (id : " . $agent->agentid() . ")</td></tr>";
                         $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Ident. demande</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Traiter</td></tr>";
                     }
                     $htmltext = $htmltext . "<tr align=center>";
@@ -311,8 +311,8 @@
              * echo "</select>";
              */
 
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
-            echo "<input type='hidden' name='agentid' value='" . $agent->harpegeid() . "'>";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             echo "<input type='hidden' name='selectall' value='". $selectall ."'>";
             echo "<br>";

@@ -45,16 +45,12 @@
     $datedebut = "01/" . $mois . "/" . $annee;
     echo "Date debut = $datedebut \n";
 
-    $sql = "SELECT AGENT.HARPEGEID, DEMANDE.DEMANDEID
-    			FROM DEMANDE,DEMANDEDECLARATIONTP,DECLARATIONTP,AFFECTATION,AGENT
-    			WHERE AFFECTATION.AFFECTATIONID = DECLARATIONTP.AFFECTATIONID
-    			  AND DECLARATIONTP.DECLARATIONID = DEMANDEDECLARATIONTP.DECLARATIONID
-    			  AND DEMANDEDECLARATIONTP.DEMANDEID = DEMANDE.DEMANDEID
-    			  AND AGENT.HARPEGEID = AFFECTATION.HARPEGEID
-    			  AND DEMANDE.TYPEABSENCEID = 'cet'
-    			  AND (DEMANDE.DATEDEBUT >= '" . $fonctions->formatdatedb($datedebut) . "'
-    			    OR DEMANDE.DATESTATUT >= '" . $fonctions->formatdatedb($datedebut) . "' )
-    		    ORDER BY DEMANDE.DATEDEBUT,DEMANDE.DATESTATUT";
+    $sql = "SELECT AGENTID, DEMANDEID
+    			FROM DEMANDE
+    			WHERE TYPEABSENCEID = 'cet'
+    			  AND (DATEDEBUT >= '" . $fonctions->formatdatedb($datedebut) . "'
+    			    OR DATESTATUT >= '" . $fonctions->formatdatedb($datedebut) . "' )
+    		    ORDER BY DATEDEBUT,DATESTATUT";
 
     // AND DEMANDE.STATUT = 'v'
 
@@ -107,7 +103,7 @@
             $demande->load("$result[1]");
 
             $complement = new complement($dbcon);
-            $complement->load($agent->harpegeid(), 'DEM_CET_' . $demande->id());
+            $complement->load($agent->agentid(), 'DEM_CET_' . $demande->id());
             echo "Demande : Identifiant = " . $demande->id() . " Statut = " . $demande->statut() . "  Complement Valeur  = " . $complement->valeur() . " ==> ";
 
             // Si la demande est validée mais que la valeur du complément n'est pas identique

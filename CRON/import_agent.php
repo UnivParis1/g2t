@@ -49,14 +49,14 @@
             $ligne = fgets($fp); // lecture du contenu de la ligne
             if (trim($ligne) != "") {
                 $ligne_element = explode($separateur, $ligne);
-                $harpegeid = trim($ligne_element[0]);
+                $agentid = trim($ligne_element[0]);
                 $civilite = trim($ligne_element[1]);
                 $nom = str_replace("\'", "'", trim($ligne_element[2]));
                 $prenom = str_replace("\'", "'", trim($ligne_element[3]));
                 $adressemail = trim($ligne_element[4]);
                 $typepop = trim($ligne_element[5]);
-                echo "harpegeid = $harpegeid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
-                $sql = sprintf("INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($harpegeid), $fonctions->my_real_escape_utf8($civilite), $fonctions->my_real_escape_utf8($nom), $fonctions->my_real_escape_utf8($prenom), $fonctions->my_real_escape_utf8($adressemail), $fonctions->my_real_escape_utf8($typepop));
+                echo "agentid = $agentid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
+                $sql = sprintf("INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($civilite), $fonctions->my_real_escape_utf8($nom), $fonctions->my_real_escape_utf8($prenom), $fonctions->my_real_escape_utf8($adressemail), $fonctions->my_real_escape_utf8($typepop));
 
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
@@ -69,13 +69,13 @@
         fclose($fp);
     }
 
-    // Ajout manuel de l'agent CRON-G2T avec un harpegeid = -1
-    $sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-1','','CRON','G2T','noreply-g2t@univ-paris1.fr','')";
+    // Ajout manuel de l'agent CRON-G2T avec un agentid = -1
+    $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-1','','CRON','G2T','noreply-g2t@univ-paris1.fr','')";
     mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
         echo "INSERT INTO AGENT CRON-G2T => $erreur_requete \n";
-    $sql = "INSERT INTO AGENT(HARPEGEID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-2','','Gestion','Temps','gestion.temps@univ-paris1.fr','')";
+    $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-2','','Gestion','Temps','gestion.temps@univ-paris1.fr','')";
     mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")

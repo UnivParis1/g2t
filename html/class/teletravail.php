@@ -4,7 +4,7 @@
  * 
 CREATE TABLE `TELETRAVAIL` (
   `TELETRAVAILID` INT(11) NOT NULL AUTO_INCREMENT,
-  `HARPEGEID` VARCHAR(10) NOT NULL,
+  `AGENTID` VARCHAR(10) NOT NULL,
   `DATEDEBUT` DATE NOT NULL,
   `DATEFIN` DATE NOT NULL,
   `TABTELETRAVAIL` VARCHAR(14) NOT NULL,
@@ -19,7 +19,7 @@ class teletravail
     public const STATUT_INACTIVE = "Inactive";
     
     private $teletravailid = null;
-    private $harpegeid = null;
+    private $agentid = null;
     private $datedebut = null;
     private $datefin = null;
     private $tabteletravail = null;
@@ -46,7 +46,7 @@ class teletravail
     
     function load($teletravailid)
     {
-        $sql = "SELECT TELETRAVAILID, HARPEGEID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT 
+        $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT 
                 FROM TELETRAVAIL
                 WHERE TELETRAVAILID = '" . $teletravailid  . "' ";
         $query = mysqli_query($this->dbconnect, $sql);
@@ -65,7 +65,7 @@ class teletravail
         }
         $result = mysqli_fetch_row($query);
         $this->teletravailid = "$result[0]";
-        $this->harpegeid = "$result[1]";
+        $this->agentid = "$result[1]";
         $this->datedebut = "$result[2]";
         $this->datefin = "$result[3]";
         $this->tabteletravail = "$result[4]";
@@ -82,23 +82,23 @@ class teletravail
     function agentid($agentid = null)
     {
         if (is_null($agentid)) {
-            if (is_null($this->harpegeid)) {
+            if (is_null($this->agentid)) {
                 $errlog = "teletravail->agentid : Le numéro agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
-                return $this->harpegeid;
+                return $this->agentid;
         }
         else
         {
-            if (!is_null($this->harpegeid))
+            if (!is_null($this->agentid))
             {
                 $errlog = "teletravail->agentid : Impossible de modifier le numéro de l'agent !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             else
-                $this->harpegeid = $agentid;
+                $this->agentid = $agentid;
         }
     }
     
@@ -178,8 +178,8 @@ class teletravail
         // Si on est en train de créer un teletravail
         if (is_null($this->teletravailid))
         {
-            // On doit vérifier que les éléments olbigatoires sont bien renseignés : HarpegeId, tabteletravail, datefin, datedebut
-            if (is_null($this->harpegeid)
+            // On doit vérifier que les éléments olbigatoires sont bien renseignés : agentid, tabteletravail, datefin, datedebut
+            if (is_null($this->agentid)
                 or is_null($this->tabteletravail)
                 or is_null($this->datefin)
                 or is_null($this->datedebut))
@@ -198,8 +198,8 @@ class teletravail
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO TELETRAVAIL(HARPEGEID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT)
-                    VALUES('" . $this->harpegeid  ."',
+            $sql = "INSERT INTO TELETRAVAIL(AGENTID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT)
+                    VALUES('" . $this->agentid  ."',
                            '" . $this->fonctions->formatdatedb($this->datedebut)  ."',
                            '" . $this->fonctions->formatdatedb($this->datefin)  ."',
                            '" . $this->tabteletravail  ."',

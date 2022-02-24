@@ -54,7 +54,7 @@ include './includes/casconnection.php';
             );
             $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
             $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro HARPEGE de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+            // echo "Le numéro AGENT de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
             if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
                 $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
             }
@@ -108,7 +108,7 @@ include './includes/casconnection.php';
         {
             $typeconges = "ann" . substr($anneeref,-2,2);
             $solde = new solde($dbcon);
-            $msg_erreur = $solde->load($agent->harpegeid(),$typeconges);
+            $msg_erreur = $solde->load($agent->agentid(),$typeconges);
             if ($msg_erreur=="")
             {
                 $anciensolde = $solde->solde();
@@ -162,7 +162,7 @@ include './includes/casconnection.php';
             {
                 $typeconges = "ann" . substr($anneeref,-2,2);
                 $solde = new solde($dbcon);
-                $msg_erreur = $solde->load($agent->harpegeid(),$typeconges);
+                $msg_erreur = $solde->load($agent->agentid(),$typeconges);
                 if ($msg_erreur=="")
                 {
                     $ancienacquis = $solde->droitaquis();
@@ -220,7 +220,7 @@ include './includes/casconnection.php';
         	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
 </script>
 <?php
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br><br>";
     echo "Période d'affichage : ";
     echo "<select name='annee_ref' id='annee_ref'>";
@@ -241,8 +241,8 @@ include './includes/casconnection.php';
         echo "Appuyez sur le bouton ci-dessous pour recalculer les droits acquis $anneeref/" . ($anneeref+1) . " de " . $agent->identitecomplete() . "<br>";
         echo "<form name='submit_calculdroit'  method='post' >";
         echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
-        echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->harpegeid() . "' class='agent' /> ";
-        echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+        echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "' class='agent' /> ";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
         echo "<input type='submit' id='calculdroit' name='calculdroit' value='Recalculer' >";
         echo "</form>";
@@ -262,7 +262,7 @@ include './includes/casconnection.php';
         echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
         //echo "Informations sur les congés de " . $agent->identitecomplete() . "<br>";
         $solde = new solde($dbcon);
-        $msg_erreur = $solde->load($agent->harpegeid(),"ann" . substr($anneeref,-2,2));
+        $msg_erreur = $solde->load($agent->agentid(),"ann" . substr($anneeref,-2,2));
         if ($msg_erreur <> "")
         {
             echo $msg_erreur;
@@ -273,8 +273,8 @@ include './includes/casconnection.php';
             echo "<br>";
             echo "<form name='submit_solde'  method='post' >";
             echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
-            echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->harpegeid() . "' class='agent' /> ";
-            echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+            echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "' class='agent' /> ";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
             echo "Le solde " . $solde->typelibelle() . " de l'agent " . $agent->identitecomplete() . " est de " . $solde->solde() . " jour(s)";
             echo "<br><br>";

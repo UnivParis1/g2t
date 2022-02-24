@@ -88,7 +88,7 @@
     echo "</select>";
     //echo "<input id='esignatureid' name='esignatureid' placeholder='Id. eSignature' value='$esignatureid' size=40 />";
     echo "<br>";
-    echo "<input type='hidden' name='userid' value='" . $user->harpegeid() . "'>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='submit' value='Soumettre' >";
     echo "</form>";
     $optionCET = null;

@@ -14,7 +14,7 @@ class alimentationCET
     private $fonctions = null;
     
     private $alimentationid = null;
-    private $harpegeid = null;
+    private $agentid = null;
     private $datecreation = null;
     private $esignatureid = null;
     private $esignatureurl = null;
@@ -50,23 +50,23 @@ class alimentationCET
     function agentid($agentid = null)
     {
         if (is_null($agentid)) {
-            if (is_null($this->harpegeid)) {
+            if (is_null($this->agentid)) {
                 $errlog = "alimentationCET->agentid : Le numéro agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
-                return $this->harpegeid;
+                return $this->agentid;
         } 
         else
         {
-            if (!is_null($this->harpegeid))
+            if (!is_null($this->agentid))
             {
                 $errlog = "alimentationCET->agentid : Impossible de modifier le numéro de l'agent !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             else
-                $this->harpegeid = $agentid;
+                $this->agentid = $agentid;
         }
     }
     
@@ -370,7 +370,7 @@ class alimentationCET
     function load($esignatureid = null, $alimentationid = null )
     {
         $errlog = '';
-        $sql = "SELECT ALIMENTATIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF FROM ALIMENTATIONCET WHERE ";
+        $sql = "SELECT ALIMENTATIONID,AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF FROM ALIMENTATIONCET WHERE ";
         if (!is_null($esignatureid))
         {
             $sql = $sql . "ESIGNATUREID = '" . str_replace("'","''",$esignatureid) . "'";
@@ -405,7 +405,7 @@ class alimentationCET
         
         $result = mysqli_fetch_row($query);
         $this->alimentationid   = "$result[0]";
-        $this->harpegeid        = "$result[1]";
+        $this->agentid        = "$result[1]";
         $this->datecreation     = "$result[2]";
         $this->esignatureid     = "$result[3]";
         $this->esignatureurl    = "$result[4]";
@@ -439,8 +439,8 @@ class alimentationCET
         if (is_null($this->alimentationid))
         {
             //echo "alimentationCET->Store : Création d'une nouvelle alimentation <br>";
-            // On doit vérifier que les éléments olbigatoires sont bien renseignés : HarpegeId, typeconges, valeur_a, valeur_b, valeur_c, valeur_d, valeur_e,, valeur_f, valeur_g
-            if (is_null($this->harpegeid) 
+            // On doit vérifier que les éléments olbigatoires sont bien renseignés : agentid, typeconges, valeur_a, valeur_b, valeur_c, valeur_d, valeur_e,, valeur_f, valeur_g
+            if (is_null($this->agentid) 
              or is_null($this->typeconges) 
              or is_null($this->valeur_a) 
              or is_null($this->valeur_b) 
@@ -463,8 +463,8 @@ class alimentationCET
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO ALIMENTATIONCET(HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF) 
-                    VALUES('". $this->harpegeid . "',
+            $sql = "INSERT INTO ALIMENTATIONCET(AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF) 
+                    VALUES('". $this->agentid . "',
                            now(),
                            '" . str_replace("'","''",$this->esignatureid) . "',
                            '" . str_replace("'","''",$this->esignatureurl) . "',

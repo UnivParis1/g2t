@@ -7,7 +7,7 @@ class optionCET
  * 
     CREATE TABLE `OPTIONCET` (
         `OPTIONID` int(11) NOT NULL AUTO_INCREMENT,
-        `HARPEGEID` varchar(10) NOT NULL,
+        `AGENTID` varchar(10) NOT NULL,
         `DATECREATION` datetime NOT NULL,
         `ESIGNATUREID` varchar(30) DEFAULT NULL,
         `ESIGNATUREURL` varchar(200) DEFAULT NULL,
@@ -40,7 +40,7 @@ class optionCET
     private $fonctions = null;
     
     private $optionid = null;
-    private $harpegeid = null;
+    private $agentid = null;
     private $datecreation = null;
     private $esignatureid = null;
     private $esignatureurl = null;
@@ -75,23 +75,23 @@ class optionCET
     function agentid($agentid = null)
     {
         if (is_null($agentid)) {
-            if (is_null($this->harpegeid)) {
+            if (is_null($this->agentid)) {
                 $errlog = "optionCET->agentid : Le numéro agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
-                return $this->harpegeid;
+                return $this->agentid;
         }
         else
         {
-            if (!is_null($this->harpegeid))
+            if (!is_null($this->agentid))
             {
                 $errlog = "optionCET->agentid : Impossible de modifier le numéro de l'agent !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             else
-                $this->harpegeid = $agentid;
+                $this->agentid = $agentid;
         }
     }
     
@@ -394,7 +394,7 @@ class optionCET
     function load($esignatureid = null, $optionid = null )
     {
         $errlog = '';
-        $sql = "SELECT OPTIONID,HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,ANNEEREF,VALEUR_A,VALEUR_G,VALEUR_H,VALEUR_I,VALEUR_J,VALEUR_K,VALEUR_L,STATUT,DATESTATUT,MOTIF FROM OPTIONCET WHERE ";
+        $sql = "SELECT OPTIONID,AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,ANNEEREF,VALEUR_A,VALEUR_G,VALEUR_H,VALEUR_I,VALEUR_J,VALEUR_K,VALEUR_L,STATUT,DATESTATUT,MOTIF FROM OPTIONCET WHERE ";
         if (!is_null($esignatureid))
         {
             $sql = $sql . "ESIGNATUREID = '" . str_replace("'","''",$esignatureid) . "'";
@@ -429,7 +429,7 @@ class optionCET
         
         $result = mysqli_fetch_row($query);
         $this->optionid   = "$result[0]";
-        $this->harpegeid        = "$result[1]";
+        $this->agentid        = "$result[1]";
         $this->datecreation     = "$result[2]";
         $this->esignatureid     = "$result[3]";
         $this->esignatureurl    = "$result[4]";
@@ -462,8 +462,8 @@ class optionCET
         if (is_null($this->optionid))
         {
             //echo "optionCET->Store : Création d'une nouvelle option CET <br>";
-            // On doit vérifier que les éléments olbigatoires sont bien renseignés : HarpegeId, anneeref, valeur_a, valeur_g, valeur_h, valeur_i, valeur_j, valeur_k, valeur_l
-            if (is_null($this->harpegeid)
+            // On doit vérifier que les éléments olbigatoires sont bien renseignés : agentid, anneeref, valeur_a, valeur_g, valeur_h, valeur_i, valeur_j, valeur_k, valeur_l
+            if (is_null($this->agentid)
                 or is_null($this->anneeref)
                 or is_null($this->valeur_a)
                 or is_null($this->valeur_g)
@@ -486,8 +486,8 @@ class optionCET
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO OPTIONCET(HARPEGEID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,ANNEEREF,VALEUR_A,VALEUR_G,VALEUR_H,VALEUR_I,VALEUR_J,VALEUR_K,VALEUR_L,STATUT,DATESTATUT,MOTIF)
-                    VALUES('". $this->harpegeid . "',
+            $sql = "INSERT INTO OPTIONCET(AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,ANNEEREF,VALEUR_A,VALEUR_G,VALEUR_H,VALEUR_I,VALEUR_J,VALEUR_K,VALEUR_L,STATUT,DATESTATUT,MOTIF)
+                    VALUES('". $this->agentid . "',
                            now(),
                            '" . str_replace("'","''",$this->esignatureid) . "',
                            '" . str_replace("'","''",$this->esignatureurl) . "',
