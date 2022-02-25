@@ -392,8 +392,18 @@
                     $datedebut = trim($ligne_element[3]);
                     $datefin = trim($ligne_element[4]);
                     if (! isset($debug) or $debug == false)
+                    {
                         echo "agentid = $agentid   numligne=$numligne   codecontrat=$codecontrat   datedebut=$datedebut   datefin=$datefin\n";
-                        $sql = sprintf("INSERT INTO STATUT (AGENTID,NUMLIGNE,CODECONTRAT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($codecontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
+                    }
+                    
+                    $agent = new agent($dbcon);
+                    if (!$agent->load($agentid))
+                    {
+                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas son statut  \n";
+                        continue;
+                    }
+
+                    $sql = sprintf("INSERT INTO STATUT (AGENTID,NUMLIGNE,CODECONTRAT,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($codecontrat), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
 
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
@@ -429,15 +439,25 @@
                     $datedebut = trim($ligne_element[3]);
                     $datefin = trim($ligne_element[4]);
                     if (! isset($debug) or $debug == false)
+                    {
                         echo "agentid = $agentid   numligne=$numligne   codesituation=$codesituation   datedebut=$datedebut   datefin=$datefin\n";
-                        $sql = sprintf("INSERT INTO SITUATIONADMIN (AGENTID,NUMLIGNE,POSITIONADMIN,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($codesituation), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
+                    }
+                    
+                    $agent = new agent($dbcon);
+                    if (!$agent->load($agentid))
+                    {
+                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa situation administrative  \n";
+                        continue;
+                    }
+                    
+                    $sql = sprintf("INSERT INTO SITUATIONADMIN (AGENTID,NUMLIGNE,POSITIONADMIN,DATEDEBUT,DATEFIN) VALUES('%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($numligne), $fonctions->my_real_escape_utf8($codesituation), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin));
                         
-                        mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        if ($erreur_requete != "") {
-                            echo "Error : INSERT SITUATIONADMIN => $erreur_requete \n";
-                            echo "sql = $sql \n";
-                        }
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
+                    if ($erreur_requete != "") {
+                        echo "Error : INSERT SITUATIONADMIN => $erreur_requete \n";
+                        echo "sql = $sql \n";
+                    }
                 }
             }
             fclose($fp);
@@ -462,7 +482,17 @@
                     $datefin = trim($ligne_element[4]);
                     
                     if (! isset($debug) or $debug == false)
+                    {
                         echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
+                    }
+                    
+                    $agent = new agent($dbcon);
+                    if (!$agent->load($agentid))
+                    {
+                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa structure d'affectation  \n";
+                        continue;
+                    }
+                    
                     if ($fonctions->formatdatedb($datedebut) <= date('Ymd') and $fonctions->formatdatedb($datefin) >= date('Ymd'))
                     {
                         $sql = sprintf("UPDATE AGENT SET STRUCTUREID = '%s' WHERE AGENTID = '%s'", $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($agentid));

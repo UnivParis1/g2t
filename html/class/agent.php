@@ -2253,9 +2253,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $strresultat = $strresultat . ';';
                 
                 //echo $strresultat . '<br>' . $situationposition . '<br>';
-                // Si la postion administrative de l'agent est "En activité" (situationposition = 'ACI01') on enregistre l'info
+                // Si la postion administrative de l'agent est "En activité" (les 3 premiers caractères de situationposition = 'ACI') 
+                // ou "Détachement entrant"  (les 3 premiers caractères de situationposition = 'DEE%') on enregistre l'info
                 // Sinon on crée un 'trou' dans son activité
-                if (trim($situationposition) == 'ACI01')
+                $situationposition = strtoupper(trim($situationposition));
+                if (substr($situationposition,0,3) == 'ACI' or substr($situationposition,0,3) == 'DEE' )
                 {
                     $tabresult[] = $strresultat;
                 }

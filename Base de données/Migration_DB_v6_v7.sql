@@ -19,7 +19,7 @@ ALTER TABLE `TELETRAVAIL` CHANGE COLUMN `HARPEGEID` `AGENTID` VARCHAR(10) NOT NU
 ALTER TABLE `DEMANDE` ADD COLUMN `AGENTID` VARCHAR(10) NOT NULL AFTER `DEMANDEID`, ADD INDEX `DEMANDE_INDX` (`AGENTID` ASC);
 
 ---------------------------------------------------
--- On récupère le numéro de l'agent de l'ancienne oragnisation BDD
+-- On rÃ©cupÃ¨re le numÃ©ro de l'agent de l'ancienne oragnisation BDD
 -- pour l'injecter dans la colonne AGENTID de la table DEMANDE
 DROP TABLE IF EXISTS DUMMYTABLE;
 CREATE TABLE DUMMYTABLE(

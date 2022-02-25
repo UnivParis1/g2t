@@ -53,6 +53,15 @@
                 $datefin = trim($ligne_element[2]);
                 $typeabsence = trim($ligne_element[3]);
                 echo "agentid = $agentid   datedebut=$datedebut   datefin=$datefin   typeabsence=$typeabsence   \n";
+                
+                $agent = new agent($dbcon);
+                if (!$agent->existe($agentid))
+                {
+                    // L'agent n'est pas dans la base => On n'intègre pas ses absences
+                    echo "L'agent $agentid n'existe pas dans la base. On ne charge pas ses absences \n";
+                    continue;
+                }
+                
                 $sql = sprintf("INSERT INTO ABSENCERH (AGENTID,DATEDEBUT,DATEFIN,TYPEABSENCE) VALUES('%s','%s	','%s','%s')", $fonctions->my_real_escape_utf8($agentid), $fonctions->my_real_escape_utf8($datedebut), $fonctions->my_real_escape_utf8($datefin), $fonctions->my_real_escape_utf8($typeabsence));
                 
                 mysqli_query($dbcon, $sql);

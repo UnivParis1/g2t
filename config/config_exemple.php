@@ -2,6 +2,7 @@
 
 // URL d'accès aux WS G2T
 define('G2T_WS_URL', "http://host_name:port/webservice_folder");
+define('TYPE_ENVIRONNEMENT', 'test');   // test => environnement de test ou de développement   // prod => environnement de production
 
 // Connexion à la base de données
 define('DB_HOST', 'host_name:port');
