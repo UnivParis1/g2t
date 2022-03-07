@@ -3336,7 +3336,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
         {
             echo " Le solde final est donc : $solde_agent \n";
         }
-        
+/*        
         // On vérifie si une demande de congé bonifié débute dans la période
         $debutperiode = $anneeref . $this->fonctions->debutperiode();
         $finperiode = ($anneeref + 1) . $this->fonctions->finperiode();
@@ -3353,7 +3353,7 @@ document.getElementById('tabledemande_" . $this->harpegeid() . "').querySelector
             $solde_agent = 0;
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent $agentid ($agentinfo) a une demande de congés bonifiés (du " . $resultcongbonif[1] . " au " . $resultcongbonif[2] . ") => Solde à 0 "));
         }
-        
+*/        
         if ($maj_solde == true)
         {
             if ($loginfo == true) {
