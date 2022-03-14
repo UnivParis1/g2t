@@ -2,18 +2,27 @@
 
     require_once ('CAS.php');
     include './includes/casconnection.php';
+    require_once ("./includes/all_g2t_classes.php");
 
+    $userid = null;
     if (isset($_POST["userid"]))
-        $userid = $_POST["userid"];
-    else
-        $userid = null;
+    {
+        // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
+        $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
+        if ($CASuserId!==false)
+        {
+            // On a l'agentid de l'agent => C'est un administrateur donc on peut forcer le userid avec la valeur du POST
+            $userid = $_POST["userid"];
+        }
+    }
+    
+    
     if (is_null($userid) or ($userid == "")) {
         error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
         header('Location: index.php');
         exit();
     }
     
-    require_once ("./includes/all_g2t_classes.php");
 /*
     require_once ("./class/agent.php");    
     require_once ("./class/structure.php");

@@ -1421,6 +1421,38 @@ class fonctions
         return $listestruct;
     }
     
+    public function CASuserisG2TAdmin($CASuid)
+    {
+        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_CODE_AGENT_ATTR = $this->liredbconstante("LDAPATTRIBUTE");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_UID_AGENT_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
+        $filtre = "($LDAP_UID_AGENT_ATTR=$CASuid)";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array(
+            "$LDAP_CODE_AGENT_ATTR"
+        );
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        $user = new agent($this->dbconnect);
+        if (! $user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+        {
+            $errlog = "CASuserisG2TAdmin : L'agent $CASuid (id = " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " ) n'est pas dans la base de données.<br>";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            return false;
+        }
+        if ($user->estadministrateur())
+            return $user->agentid();
+        else
+            return false;
+    }
+    
 }
 
 ?>

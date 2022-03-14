@@ -11,10 +11,29 @@
     
     // On regarde si le fichier des fonctions est present
     $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_fonctions_$date.dat";
+    $tabpoidsfonct = array();
     if (file_exists($filename)) {
         $separateur = '|';
         // On ouvre le fichier des fonctions et on charge le contenu dans un tableau
         $fp = fopen("$filename", "r");
+
+        // Initialisation du LDAP
+        $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAP_FONCTION_SEARCH_BASE");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $dn = $LDAP_SEARCH_BASE;
+        //echo "LDAP_SEARCH_BASE = $LDAP_SEARCH_BASE \n";
+        $LDAP_FONCTION_POIDS_ATTR = $fonctions->liredbconstante("LDAP_FONCTION_POIDS_ATTR");
+        //echo "LDAP_FONCTION_POIDS_ATTR = $LDAP_FONCTION_POIDS_ATTR \n";
+        $restriction = array(
+            "$LDAP_FONCTION_POIDS_ATTR"
+        );
+        
+        
         while (! feof($fp)) {
             $ligne = fgets($fp); // lecture du contenu de la ligne
             if (trim($ligne) != "") {
@@ -36,7 +55,20 @@
                 
                 if ($code_struct != "") {
                     $tabfonctions[$code_struct]["#" . intval("$code_fonction")] = $agentid;
-                }
+                    // Pour chaque fonction dans le tableau des fonctions on va chercher son poids dans LDAP
+                    if (!isset($tabpoidsfonct[intval("$code_fonction")]))
+                    {
+                        $filtre = "supannRefId={SIHAM:FCT}" . $code_fonction;
+                        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                        $info = ldap_get_entries($con_ldap, $sr);
+                        //echo "Info = " . print_r($info,true) . "\n";
+                        
+                        if (isset($info[0]["$LDAP_FONCTION_POIDS_ATTR"][0]))
+                        {
+                            $tabpoidsfonct["#" . intval("$code_fonction")] = $info[0]["$LDAP_FONCTION_POIDS_ATTR"][0];
+                        }
+                    }
+               }
             }
         }
         fclose($fp);
@@ -46,6 +78,7 @@
     }
     
     echo "tabfonctions = " . print_r($tabfonctions, true) . " \n";
+    echo "tabpoidsfonct = " . print_r($tabpoidsfonct, true) . " \n";
     
     // On parcourt le fichier des structures
     // Si la structure n'existe pas
@@ -83,7 +116,7 @@
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = "ou=structures,dc=univ-paris1,dc=fr"; // $fonctions->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAP_STRUCT_SEARCH_BASE");
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
@@ -105,8 +138,8 @@
                 // On interroge LDAP pour récupérer les extra-infos
                 $filtre = "supannRefId={SIHAM.UO}" . $code_struct;
                 $dn = $LDAP_SEARCH_BASE;
-                $LDAP_CODE_STRUCT_ATTR = "supanncodeentite";
-                $LDAP_IS_INCLUDED_ATTR = "up1flags";
+                $LDAP_CODE_STRUCT_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_CODE_ENTITE_ATTR");
+                $LDAP_IS_INCLUDED_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_IS_INCLUDED_ATTR");
                 $restriction = array(
                     "$LDAP_CODE_STRUCT_ATTR", "$LDAP_IS_INCLUDED_ATTR"
                 );
@@ -148,92 +181,126 @@
                 // UFO = Les Unités de formation
                 // UNR = Les Unités de recherche ??
                 $codefonction = "";
-                if (strcasecmp($code_struct,'UP1_1') != 0) {
-	                if (array_key_exists($code_struct, (array) $tabfonctions)) {
-	                    if (array_key_exists("#1087", (array) $tabfonctions[$code_struct]) and in_array($type_struct, $type_struct_RA))
-	                        $codefonction = "1087"; // Responsable Administratif de Composante => Il est prioritaire pour ce type de structure
-	                    elseif (array_key_exists("#1", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1"; // Président d'université
-	                    elseif (array_key_exists("#1447", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1447"; // Directeur général des services
-	                    elseif (array_key_exists("#1044", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1044"; // Agent comptable
-	                    elseif (array_key_exists("#2002", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "2002"; // Responsable
-	                    elseif (array_key_exists("#1521", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1521"; // Chef de service
-                        elseif (array_key_exists("#1522", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1522"; // Directeur(ice)
-	                    elseif (array_key_exists("#1615", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1615"; // Chef de département
-	                    elseif (array_key_exists("#1860", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1860"; // Chef d'atelier
-	                    elseif (array_key_exists("#1087", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1087"; // Responsable Administratif de Composante
-	                    elseif (array_key_exists("#41", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "41"; // Dir. de services communs d'universités
-	                    elseif (array_key_exists("#1016", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1016"; // Dir. éco. Inst. Uni - Hors arrêté 13/9/90
-	                    elseif (array_key_exists("#1529", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1529"; // Directeur(ice) d'institut
-	                    elseif (array_key_exists("#1530", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1530"; // Directeur(ice) d'UMR
-                        elseif (array_key_exists("#1043", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1043"; // Secrétaire général
-                        elseif (array_key_exists("#1532", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1532"; // Directeur(ice) de laboratoire
-	                    elseif (array_key_exists("#2038", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "2038"; // Administrateur
-	                    elseif (array_key_exists("#38", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "38"; // Dir. d'UFR
-	                    elseif (array_key_exists("#1525", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1525"; // Directeur adjoint
-	                    elseif (array_key_exists("#2039", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "2039"; // Adjoint à l'administrateur
-	                    elseif (array_key_exists("#1523", (array) $tabfonctions[$code_struct]))
-	                        $codefonction = "1523"; // Adjoint(e)
-	                    else
-	                        $codefonction = "";
-	                }
-                }
-                if ($codefonction != "") {
-                    echo "On a une fonction $codefonction pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
-                    $resp_struct = $tabfonctions[$code_struct]["#" . intval("$codefonction")];
-                } else {
-                    echo "Pas de fonction pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) dans le fichier des fonctions\n";
-                    echo "On recupere le responsable de la structure s'il est defini dans le fichier des structures\n";
-                    $resp_struct = trim($ligne_element[4]);
-                    // Si pas de responsable défini dans le fichier de structure
-                    if ($resp_struct == "") {
-/*
-                        // On regarde si un responsable de la structure est défini dans la table STRUCTURE
-                        // => Si oui, on ne le change pas.... Soit c'est un ancien responsable, soit il a été forcé à la main
-                        // à partir de l'insterface de gestion des structures
-                        echo "Recherche du responsable dans la table des structures\n";
-                        $sql = "SELECT RESPONSABLEID FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
-                        $query = mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        if ($erreur_requete != "")
-                            echo "SELECT STRUCTURE pour responsable => $erreur_requete \n";
-                        if (mysqli_num_rows($query) > 0) // La structure existe bien déjà dans la base....
+	            $resp_struct = "";
+	            // Si la structure est active on cherche le responsable.
+	            if (strcasecmp($statut_struct, 'ACT') == 0)
+	            {
+    	            if (strcasecmp($code_struct,'UP1_1') != 0) {
+                        if (array_key_exists($code_struct, (array) $tabfonctions))
                         {
-                            $result = mysqli_fetch_row($query);
-                            $resp_struct = trim($result[0]);
+                            if (array_key_exists("#1087", (array) $tabfonctions[$code_struct]) and in_array($type_struct, $type_struct_RA))
+                            {
+                                $resp_struct = $tabfonctions[$code_struct]["#1087"]; // Responsable Administratif de Composante => Il est prioritaire pour ce type de structure
+                                echo "Structure de type RA avec la fonction #1087 definie \n";
+                            }
+                            else
+                            {
+                                // On crée un tableau avec le poids des fonctions fonctions de la structure et on le trie par ordre naturel => Le poids le plus faible est le plus prioritaire
+                                $tabpoids = array();
+                                foreach($tabfonctions[$code_struct] as $key => $agentid)
+                                {
+                                    echo "Code fonction = $key   agentid = $agentid  \n";
+                                    //$key = str_replace('#', '', $key);
+                                    if (isset($tabpoidsfonct[$key]))
+                                    {
+                                        $tabpoids[$tabpoidsfonct[$key]] = $agentid;
+                                    }
+                                    else
+                                    {
+                                        echo "ATTENTION : Le poids de la fonction $key n'est pas defini dans LDAP !!! \n";
+                                    }
+                                }
+                                ksort($tabpoids);
+                                echo "tabpoids (apres tri) = " . print_r($tabpoids,true) . "\n";
+                                if (count($tabpoids)>0)
+                                {
+                                    $fonctionpoids = array_values(array_keys($tabpoids))[0]; // Retourne la première clé du tableau => Le poids le plus faible des fonctions !!
+                                    $resp_struct = array_values($tabpoids)[0]; // Retourne le premier élément du tableau => L'agent de poids de fonction le plus faible !!
+                                    echo "Avec un poids $fonctionpoids c'est l'agent $resp_struct qui est selectionne \n";
+                                }
+                            }
+                            if ($resp_struct == "")
+                            {
+                                echo "On passe dans l'ancienne methode pour trouver le responsable. \n";
+                                if (array_key_exists("#1", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1"]; // Président d'université
+                                elseif (array_key_exists("#1447", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1447"]; // Directeur général des services
+                                elseif (array_key_exists("#1044", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1044"]; // Agent comptable
+                                elseif (array_key_exists("#2002", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#2002"]; // Responsable
+                                elseif (array_key_exists("#1521", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1521"]; // Chef de service
+                                elseif (array_key_exists("#1522", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1522"]; // Directeur(ice)
+                                elseif (array_key_exists("#1615", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1615"]; // Chef de département
+                                elseif (array_key_exists("#1860", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1860"]; // Chef d'atelier
+                                elseif (array_key_exists("#1087", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1087"]; // Responsable Administratif de Composante
+                                elseif (array_key_exists("#41", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#41"]; // Dir. de services communs d'universités
+                                elseif (array_key_exists("#1016", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1016"]; // Dir. éco. Inst. Uni - Hors arrêté 13/9/90
+                                elseif (array_key_exists("#1529", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1529"]; // Directeur(ice) d'institut
+                                elseif (array_key_exists("#1530", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1530"]; // Directeur(ice) d'UMR
+                                elseif (array_key_exists("#1043", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1043"]; // Secrétaire général
+                                elseif (array_key_exists("#1532", (array) $tabfonctions[$code_struct]))
+                                   $resp_struct = $tabfonctions[$code_struct]["#1532"]; // Directeur(ice) de laboratoire
+                                elseif (array_key_exists("#2038", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#2038"]; // Administrateur
+                                elseif (array_key_exists("#38", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#38"]; // Dir. d'UFR
+                                elseif (array_key_exists("#1525", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1525"]; // Directeur adjoint
+                                elseif (array_key_exists("#2039", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#2039"]; // Adjoint à l'administrateur
+                                elseif (array_key_exists("#1523", (array) $tabfonctions[$code_struct]))
+                                    $resp_struct = $tabfonctions[$code_struct]["#1523"]; // Adjoint(e)
+                                else
+                                    $resp_struct = "";
+                            }
                         }
-                        // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
+                    }
+                    if ($resp_struct != "")
+                    {
+                        echo "On a un responsable pour la structure $nom_long_struct / $nom_court_struct ($code_struct) => $resp_struct \n";
+                    } else {
+                        // On récupère le responsable de l'UO (soit grace au poste soit grace directmenet au matricule de l'agent)
+                        echo "Pas de fonction pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) dans le fichier des fonctions\n";
+                        echo "On recupere le responsable de la structure s'il est defini dans le fichier des structures\n";
+                        $resp_struct = trim($ligne_element[4]);
+                        // Si pas de responsable défini dans le fichier de structure
                         if ($resp_struct == "") {
-                            echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
+                            // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
+                            echo "Aucune information recuperee => On fixe le responsable a -1 (CRON G2T) pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
                             $resp_struct = '-1';
                         }
-*/
-                        // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
-                        echo "On fixe le responsable à CRON_G2T pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
-                        $resp_struct = '-1';
+                        else
+                        {
+                            echo "On a trouve le code du responsable dans le fichier des structures => $resp_struct \n";
+                        }
+                    }
+                    $agent = new agent($dbcon);
+                    if (!$agent->load($resp_struct)) // Si erreur au chargement => Agent inexistant dans la base
+                    {
+                        echo "Le code du responsable est : $resp_struct mais il n'est pas encore dans la base G2T. \n";
+                    }
+                    else
+                    {
+                        echo "Le code du responsable est : $resp_struct (" . $agent->identitecomplete() . ") \n";
                     }
                 }
-                echo "Le code du responsable est : $resp_struct \n";
+                else
+                {
+                    echo "La structure $nom_long_struct / $nom_court_struct  ($code_struct) n'est pas active => On ne cherche pas le responsable. \n";
+                }
                 echo "Le code SIHAM du statut de la structure est : $statut_struct \n";
-                
                 // Si la structure est active 'ACT'
                 if (strcasecmp($statut_struct, 'ACT') == 0) {
                     $date_cloture = trim($ligne_element[5]);
@@ -248,10 +315,10 @@
                         echo "SELECT STRUCTURE => $erreur_requete \n";
                     if (mysqli_num_rows($query) == 0) // Structure manquante
                     {
-                        echo "Création d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
+                        echo "Creation d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
                         $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE,TYPESTRUCT,ISINCLUDED) VALUES('%s','%s','%s','%s','%s','%s', '%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $isincluded);
                     } else {
-                        echo "Mise à jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
+                        echo "Mise a jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
                         $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s', TYPESTRUCT='%s', ISINCLUDED='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $isincluded, $fonctions->my_real_escape_utf8($code_struct));
                         // echo $sql."\n";
                     }
@@ -280,7 +347,7 @@
                     // Fin Si (Correspondance existe)
                     
                     if ($oldstructid == $code_struct) {
-                        echo "On détecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
+                        echo "On detecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
                     } else {
                         $oldsql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,
     								           AFFICHEPLANNINGTOUTAGENT,DEST_MAIL_RESPONSABLE,DEST_MAIL_AGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT 
@@ -331,11 +398,11 @@
                                         echo "UPDATE STRUCTURE (cloture) => $erreur_requete \n";
                                         echo "sql = $sql \n";
                                     } else {
-                                        echo "==> Fermeture de l'ancienne structure '$oldstructid' à la date du 31/12/2015\n";
+                                        echo "==> Fermeture de l'ancienne structure '$oldstructid' a la date du 31/12/2015\n";
                                     }
                                 }
                             } else {
-                                echo "L'ancienne structure $oldstructid est déja fermée => Pas de récupération de données \n";
+                                echo "L'ancienne structure $oldstructid est deja fermee => Pas de recuperation de donnees \n";
                             }
                         }
                     }
@@ -355,7 +422,7 @@
                         $date_cloture_g2t = $result[0];
                         // Si la date de cloture dans G2T est postérieure à la date du jour, alors on met la date de la veille en cloture
                         if ($fonctions->formatdatedb($date_cloture_g2t) >= date("Ymd")) {
-                            echo "Mise à jour de la date de cloture d'une structure pour la rendre inactive : $nom_long_struct (Id = $code_struct) \n";
+                            echo "Mise a jour de la date de cloture d'une structure pour la rendre inactive : $nom_long_struct (Id = $code_struct) \n";
                             $date_veille = strftime("%Y-%m-%d", mktime(0, 0, 0, date('m'), date('d') - 1, date('y')));
                             echo "Date de la veille = " . $fonctions->formatdatedb($date_veille) . " \n";
                             $sql = "UPDATE STRUCTURE SET DATECLOTURE='" . $fonctions->formatdatedb($date_veille) . "'  WHERE STRUCTUREID = '$code_struct'";
@@ -394,9 +461,9 @@
             $sql = "SELECT DISTINCT SUBREQ.AGENTID FROM (
                             	SELECT DISTINCT RESPONSABLEID AGENTID, DATECLOTURE FROM STRUCTURE WHERE RESPONSABLEID NOT IN (SELECT AGENTID FROM AGENT)
                             	UNION
-                            	SELECT DISTINCT GESTIONNAIREID AGENTID, DATECLOTURE FROM STRUCTURE WHERE RESPONSABLEID NOT IN (SELECT AGENTID FROM AGENT)
+                            	SELECT DISTINCT GESTIONNAIREID AGENTID, DATECLOTURE FROM STRUCTURE WHERE GESTIONNAIREID NOT IN (SELECT AGENTID FROM AGENT)
                     ) AS SUBREQ
-                    WHERE SUBREQ.DATECLOTURE > '" . $fonctions->formatdatedb(date('d/m/Y')) .  "' AND SUBREQ.AGENTID != ''";
+                    WHERE SUBREQ.DATECLOTURE > '" . $fonctions->formatdatedb(date('d/m/Y')) .  "' AND SUBREQ.AGENTID != '' ";
             //echo "SQL = $sql \n";
             $query = mysqli_query($dbcon, $sql);
             $erreur_requete = mysqli_error($dbcon);
@@ -410,15 +477,16 @@
                 
                 if (is_numeric($agentid))
                 {
-                    // On interroge LDAP pour récupérer le nom, le prénom, l'adrese mai
+                    // On interroge LDAP pour récupérer le nom, le prénom, l'adrese mail
                     $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
                     $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
                     $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
                     $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
                     
-                    $LDAP_AGENT_NOM = 'sn';
-                    $LDAP_AGENT_PRENOM = 'givenname';
-                    $LDAP_AGENT_MAIL = 'mail';
+                    $LDAP_AGENT_NOM = $fonctions->liredbconstante("LDAP_AGENT_NOM_ATTR");
+                    $LDAP_AGENT_PRENOM = $fonctions->liredbconstante("LDAP_AGENT_PRENOM_ATTR");
+                    $LDAP_AGENT_MAIL = $fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+                    $LDAP_AGENT_CIVILITE = $fonctions->liredbconstante("LDAP_AGENT_CIVILITE_ATTR");
                     
                     $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
                     
@@ -427,7 +495,7 @@
                     $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
                     $filtre = "($LDAP_CODE_AGENT_ATTR=" . $agentid . ")";
                     $dn = $LDAP_SEARCH_BASE;
-                    $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL");
+                    $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL", "$LDAP_AGENT_CIVILITE");
                     $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
                     $info = ldap_get_entries($con_ldap, $sr);
                     $nomagent = null;
@@ -442,10 +510,14 @@
                     if (isset($info[0]["$LDAP_AGENT_MAIL"][0])) {
                         $mailagent = $info[0]["$LDAP_AGENT_MAIL"][0];
                     }
+                    $civiliteagent = null;
+                    if (isset($info[0]["$LDAP_AGENT_CIVILITE"][0])) {
+                        $civiliteagent = $info[0]["$LDAP_AGENT_CIVILITE"][0];
+                    }
                     
-                    if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent))
+                    if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent) and !is_null($civiliteagent))
                     {
-                        $sql = "INSERT INTO AGENT(AGENTID, NOM, PRENOM, ADRESSEMAIL, TYPEPOPULATION) VALUES ('$agentid', '" . str_replace("'", "''", $nomagent) . "', '" . str_replace("'", "''", $prenomagent) . "', '$mailagent', '$typepopulation')";
+                        $sql = "INSERT INTO AGENT(AGENTID, CIVILITE, NOM, PRENOM, ADRESSEMAIL, TYPEPOPULATION) VALUES ('$agentid', '" . str_replace("'", "''", $civiliteagent) . "', '" . str_replace("'", "''", $nomagent) . "', '" . str_replace("'", "''", $prenomagent) . "', '$mailagent', '$typepopulation')";
                         mysqli_query($dbcon, $sql);
                         $erreur_requete = mysqli_error($dbcon);
                         if ($erreur_requete != "") {
@@ -454,13 +526,14 @@
                         }
                         else
                         {
-                            echo "L'agent $agentid  ($nomagent $prenomagent) a ete ajoute (mail = $mailagent) \n";
+                            echo "L'agent $agentid ($civiliteagent $nomagent $prenomagent) a ete ajoute (mail = $mailagent) \n";
                         }
                     }
                     else
                     {
-                        echo "Probleme dans recup LDAP => agentid = $agentid  nomagent = $nomagent  prenomagent = $prenomagent  mail = $mailagent \n";
+                        echo "Au moins une information obligatoire manquante dans LDAP => agentid = $agentid  civiliteagent = $civiliteagent  nomagent = $nomagent  prenomagent = $prenomagent  mail = $mailagent \n";
                         echo "infos LDAP = " . print_r($info,true) . " \n";
+                        echo "L'agent $agentid n'est pas ajoute dans la base G2T \n";
                     }
                 }
                 else

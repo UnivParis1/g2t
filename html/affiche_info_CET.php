@@ -48,7 +48,8 @@
     $con_ldap = ldap_connect($LDAP_SERVER);
     ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
     $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-    $filtre = "(uid=$uid)";
+    $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
+    $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
     $dn = $LDAP_SEARCH_BASE;
     $restriction = array(
         "$LDAP_CODE_AGENT_ATTR"

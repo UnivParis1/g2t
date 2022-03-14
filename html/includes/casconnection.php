@@ -18,5 +18,5 @@
         phpCAS::forceAuthentication();
     }
     $uid = phpCAS::getUser();
-    // echo "uid= $uid <br>";
+    // echo "uid = $uid <br>";
 ?>

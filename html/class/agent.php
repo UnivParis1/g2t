@@ -2385,7 +2385,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
     	$LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
     	$LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
-    	$LDAP_POSTAL_ADDRESS_ATTR = 'postaladdress';
+    	$LDAP_POSTAL_ADDRESS_ATTR = $fonctions->liredbconstante("LDAP_AGENT_ADDRESS_ATTR");
     	$retour = array();
     	// Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
     	if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
@@ -2402,7 +2402,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		
     		if (isset($info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]))
     		{
-    			$retour['postaladdress'] = str_replace('$', ' ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
+    			$retour["postaladdress"] = str_replace('$', ' ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
     		}
     		else
     		{
@@ -3426,7 +3426,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             echo " Le solde final est donc : $solde_agent \n";
         }
-        
+/*        
         // On vérifie si une demande de congé bonifié débute dans la période
         $debutperiode = $anneeref . $this->fonctions->debutperiode();
         $finperiode = ($anneeref + 1) . $this->fonctions->finperiode();
@@ -3443,7 +3443,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             $solde_agent = 0;
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent $agentid ($agentinfo) a une demande de congés bonifiés (du " . $resultcongbonif[1] . " au " . $resultcongbonif[2] . ") => Solde à 0 "));
         }
-        
+*/        
         if ($maj_solde == true)
         {
             if ($loginfo == true) {

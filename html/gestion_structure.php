@@ -1,19 +1,28 @@
 <?php
     require_once ('CAS.php');
     include './includes/casconnection.php';
+    require_once ("./includes/all_g2t_classes.php");
 
     // Initialisation de l'utilisateur
+    $userid = null;
     if (isset($_POST["userid"]))
-        $userid = $_POST["userid"];
-    else
-        $userid = null;
+    {
+        // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
+        $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
+        if ($CASuserId!==false)
+        {
+            // On a l'agentid de l'agent => C'est un administrateur donc on peut forcer le userid avec la valeur du POST
+            $userid = $_POST["userid"];
+        }
+    }
+    
+        
     if (is_null($userid) or ($userid == "")) {
         error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
         header('Location: index.php');
         exit();
     }
 
-    require_once ("./includes/all_g2t_classes.php");
 /*
     require_once ("./class/agent.php");
     require_once ("./class/structure.php");
@@ -120,7 +129,8 @@
             $structure->agent_envoyer_a($_POST["agent_mail"][$structid], true);
 
             // On va chercher dans le LDAP la correspondance UID => AGENTID
-            $filtre = "(uid=" . $responsableliste[$structid] . ")";
+            $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
+            $filtre = "($LDAP_UID_AGENT_ATTR=" . $responsableliste[$structid] . ")";
             $dn = $LDAP_SEARCH_BASE;
             $restriction = array(
                 "$LDAP_CODE_AGENT_ATTR"
@@ -143,7 +153,8 @@
                 $structure->gestionnaire("");
             } else {
                 // On va chercher dans le LDAP la correspondance UID => AGENTID
-                $filtre = "(uid=" . $gestionnaireid . ")";
+                $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
+                $filtre = "($LDAP_UID_AGENT_ATTR=$gestionnaireid)";
                 $dn = $LDAP_SEARCH_BASE;
                 $restriction = array(
                     "$LDAP_CODE_AGENT_ATTR"

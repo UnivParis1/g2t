@@ -24,7 +24,15 @@
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
-        $userid = $_POST["userid"];
+    {
+        // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
+        $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
+        if ($CASuserId!==false)
+        {
+            // On a l'agentid de l'agent => C'est un administrateur donc on peut forcer le userid avec la valeur du POST
+            $userid = $_POST["userid"];
+        }
+    }
     $user = new agent($dbcon);
 
     if (is_null($userid) or $userid == "") {
@@ -37,7 +45,8 @@
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $filtre = "(uid=$uid)";
+        $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
+        $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
         $dn = $LDAP_SEARCH_BASE;
         $restriction = array(
             "$LDAP_CODE_AGENT_ATTR"
@@ -80,6 +89,17 @@
     //echo "<br><br>" . $errlog . "<br><br>";
     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
 
+/*    
+    echo "POST => " . print_r($_POST,true) . "<br>";
+    if (isset($_SESSION['g2t']))
+    {
+        echo "SESSION['g2t'] => " . print_r($_SESSION['g2t'],true) . "<br>";
+    }
+    else
+    {
+        echo "SESSION['g2t'] => non défini <br>";
+    }
+*/
     // echo '<html><body class="bodyhtml">';
 
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
