@@ -188,8 +188,8 @@
     var_dump($_SERVER);
     echo "<br><br>";
 */
-    $id_model = $fonctions->getidmodelalimcet();
-    $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+    $id_model = trim($fonctions->getidmodelalimcet());
+    $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
     
@@ -211,7 +211,7 @@
     $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
     $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
 */
-    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/alimentationWS.php";
+    $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/alimentationWS.php";
 ?>
     <script type="text/javascript">
           //window.addEventListener("load", function(event) {
@@ -578,7 +578,7 @@
 		            //echo "<br>Output = " . $params_string . '<br><br>';
 		            
 		            $opts = [
-		                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
+		                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
 		                CURLOPT_POST => true,
 		                CURLOPT_POSTFIELDS => $params_string,
 		                CURLOPT_RETURNTRANSFER => true,

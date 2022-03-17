@@ -160,10 +160,10 @@
         
     require ("includes/menu.php");
 
-    $id_model = $fonctions->liredbconstante("IDMODELOPTIONCET");  //    "251701";
-    $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL");  //   "https://esignature-test.univ-paris1.fr";
+    $id_model = trim($fonctions->liredbconstante("IDMODELOPTIONCET"));  //    "251701";
+    $eSignature_url = trim($fonctions->liredbconstante("ESIGNATUREURL"));  //   "https://esignature-test.univ-paris1.fr";
 
-    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/optionWS.php";
+    $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/optionWS.php";
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
     
@@ -382,7 +382,7 @@
 	            //echo "<br>Output = " . $params_string . '<br><br>';
 	            
 	            $opts = [
-	                CURLOPT_URL => $eSignature_url . '/ws/forms/' . $id_model  . '/new',
+	                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
 	                CURLOPT_POST => true,
 	                CURLOPT_POSTFIELDS => $params_string,
 	                CURLOPT_RETURNTRANSFER => true,
