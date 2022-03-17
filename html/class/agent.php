@@ -63,9 +63,11 @@ class agent
                 return false;
             }
             
-            $sql = sprintf("SELECT AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION, STRUCTUREID FROM AGENT WHERE AGENTID='%s'", $this->fonctions->my_real_escape_utf8($agentid));
+            $sql = "SELECT AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION, STRUCTUREID FROM AGENT WHERE AGENTID= ? ";
+            $params = array($this->fonctions->my_real_escape_utf8($agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
+            
             // echo "sql = " . $sql . "<br>";
-            $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Agent->Load (AGENT) : " . $erreur;
@@ -94,9 +96,10 @@ class agent
     
     function existe($agentid)
     {
-        $sql = sprintf("SELECT AGENTID FROM AGENT WHERE AGENTID='%s'", $this->fonctions->my_real_escape_utf8($agentid));
+        $sql = "SELECT AGENTID FROM AGENT WHERE AGENTID= ? ";
+        $params = array($this->fonctions->my_real_escape_utf8($agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->existe (AGENT) : " . $erreur;
@@ -255,9 +258,10 @@ class agent
     {
         
         // On regarde si l'agent est un vrai responsable
-        $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID='%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->agentid));
+        $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID= ? AND DATECLOTURE>=DATE(NOW())";
+        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estresponsable (AGENT) : " . $erreur;
@@ -284,9 +288,10 @@ class agent
      */
     function estdelegue()
     {
-        $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG='%s' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG", $this->fonctions->my_real_escape_utf8($this->agentid));
+        $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG= ? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG";
+        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estdelegue : " . $erreur;
@@ -304,9 +309,10 @@ class agent
      */
     function estgestionnaire()
     {
-        $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID='%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->agentid));
+        $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID= ? AND DATECLOTURE>=DATE(NOW())";
+        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estgestionnaire (AGENT) : " . $erreur;
@@ -324,9 +330,10 @@ class agent
      */
     function estadministrateur()
     {
-        $sql = sprintf("SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID='%s' AND COMPLEMENTID='ESTADMIN'", $this->fonctions->my_real_escape_utf8($this->agentid));
+        $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID='ESTADMIN'";
+        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estadministrateur (AGENT) : " . $erreur;
@@ -348,7 +355,7 @@ class agent
      */
     function estprofilrh($typeprofil = null)
     {
-        $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID='%s' AND COMPLEMENTID IN (";
+        $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID IN (";
         if (is_null($typeprofil)) {
             $sql = $sql . "'RHCET', 'RHCONGE'";
         } elseif ($typeprofil == 1) {
@@ -362,9 +369,9 @@ class agent
             return FALSE;
         }
         $sql = $sql . ")";
-        $sql = sprintf($sql, $this->fonctions->my_real_escape_utf8($this->agentid));
+        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->estprofilrh (AGENT) : " . $erreur;
@@ -412,16 +419,18 @@ class agent
     {
         $sql = "SELECT SUM(DEMANDE.NBREJRSDEMANDE) 
                 FROM DEMANDE
-                WHERE DEMANDE.AGENTID='" . $this->agentid . "'
+                WHERE DEMANDE.AGENTID= ?
                 AND DEMANDE.TYPEABSENCEID='enmal'
-                AND DEMANDE.DATEDEBUT>='" . $this->fonctions->formatdatedb($debut_interval) . "'
-                AND DEMANDE.DATEFIN<='" . $this->fonctions->formatdatedb($fin_interval) . "'
+                AND DEMANDE.DATEDEBUT>= ?
+                AND DEMANDE.DATEFIN<= ?
                 AND DEMANDE.STATUT='" . demande::DEMANDE_VALIDE . "'";
+        
+        $params = array($this->agentid,$this->fonctions->formatdatedb($debut_interval),$this->fonctions->formatdatedb($fin_interval));
+        $query = $this->fonctions->prepared_select($sql, $params);
         
         // $this->fonctions->anneeref() . $this->fonctions->debutperiode()
         // ($this->fonctions->anneeref() +1) . $this->fonctions->finperiode()
         // echo "SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->nbjrsenfantmaladeutilise (AGENT) : " . $erreur;
@@ -718,20 +727,28 @@ class agent
      */
     function affectationliste($datedebut, $datefin, $ignoremissingstruct  = false)
     {
+        $datedebut = $this->fonctions->formatdatedb($datedebut);
+        $datefin = $this->fonctions->formatdatedb($datefin);
         
         $ignoremissingstruct  = true;
         $affectationliste = null;
-        $sql = "SELECT SUBREQ.AFFECTATIONID FROM ((SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,AGENTID FROM AFFECTATION WHERE AGENTID = '" . $this->agentid . "' AND DATEDEBUT<='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN OR DATEFIN='0000-00-00'))";
+        $sql = "SELECT SUBREQ.AFFECTATIONID FROM ((SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,AGENTID FROM AFFECTATION WHERE AGENTID = ? AND DATEDEBUT<= ? AND (? <=DATEFIN OR DATEFIN='0000-00-00'))";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,AGENTID FROM AFFECTATION WHERE AGENTID='" . $this->agentid . "' AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
+        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,AGENTID FROM AFFECTATION WHERE AGENTID= ? AND DATEDEBUT>= ? AND ? >=DATEDEBUT)";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,AGENTID FROM AFFECTATION WHERE AGENTID='" . $this->agentid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND ('" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
+        $sql = $sql . "(SELECT AFFECTATIONID,DATEDEBUT,OBSOLETE,AGENTID FROM AFFECTATION WHERE AGENTID= ? AND DATEFIN>= ? AND (? >=DATEFIN OR DATEFIN='0000-00-00'))) AS SUBREQ";
         $sql = $sql . ", AGENT ";
         $sql = $sql . " WHERE SUBREQ.OBSOLETE = 'N' ";
         $sql = $sql . "   AND AGENT.AGENTID = SUBREQ.AGENTID ";
         $sql = $sql . " ORDER BY SUBREQ.DATEDEBUT";
+        
+        
+        $params = array($this->agentid,$datedebut, $datefin,
+            $this->agentid,$datedebut, $datefin,
+            $this->agentid,$datedebut, $datefin);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        
         //echo "sql = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->affectationliste : " . $erreur;
@@ -794,9 +811,10 @@ class agent
         $structliste = null;
         if ($this->estresponsable()) {
             // echo "Je suis responsable...<br>";
-            $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = '%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->agentid));
+            $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE RESPONSABLEID = ? AND DATECLOTURE>=DATE(NOW())";
+            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
             // echo "sql = " . $sql . "<br>";
-            $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Agent->structrespliste (RESPONSABLE) : " . $erreur;
@@ -812,9 +830,10 @@ class agent
             }
             
             if ($includedeleg) {
-                $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG='%s' AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG", $this->fonctions->my_real_escape_utf8($this->agentid));
+                $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE IDDELEG= ? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG";
+                $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+                $query = $this->fonctions->prepared_select($sql, $params);
                 // echo "sql = " . $sql . "<br>";
-                $query = mysqli_query($this->dbconnect, $sql);
                 $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Agent->structrespliste (DELEGUE) : " . $erreur;
@@ -844,9 +863,10 @@ class agent
         $structliste = null;
         if ($this->estgestionnaire()) {
             // echo "Je suis gestionnaire...<br>";
-            $sql = sprintf("SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = '%s' AND DATECLOTURE>=DATE(NOW())", $this->fonctions->my_real_escape_utf8($this->agentid));
+            $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE GESTIONNAIREID = ? AND DATECLOTURE>=DATE(NOW())";
+            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
             // echo "sql = " . $sql . "<br>";
-            $query = mysqli_query($this->dbconnect, $sql);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Agent->structgestliste : " . $erreur;
@@ -949,15 +969,23 @@ class agent
         else
             $reportactif = FALSE;
         
-        if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT")) && $reportactif) {
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND (ANNEEREF= '" . $anneeref . "' OR ANNEEREF= '" . ($anneeref - 1) . "'))";
-        } else {
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND ANNEEREF= '" . $anneeref . "')";
+        $subparams = array();
+        if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT")) && $reportactif) 
+        {
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND (ANNEEREF= ? OR ANNEEREF= ?))";
+            $subparams = array($anneeref,($anneeref - 1));
+        } 
+        else 
+        {
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND ANNEEREF= ?)";
+            $subparams = array($anneeref);
         }
         
-        $sql = "SELECT SOLDE.TYPEABSENCEID FROM SOLDE,TYPEABSENCE WHERE AGENTID='" . $this->agentid . "' AND SOLDE.TYPEABSENCEID=TYPEABSENCE.TYPEABSENCEID  AND " . $requ_sel_typ_conge;
+        $sql = "SELECT SOLDE.TYPEABSENCEID FROM SOLDE,TYPEABSENCE WHERE AGENTID= ? AND SOLDE.TYPEABSENCEID=TYPEABSENCE.TYPEABSENCEID  AND " . $requ_sel_typ_conge;
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array_merge(array($this->agentid),$subparams);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->soldecongesliste : " . $erreur;
@@ -1260,14 +1288,15 @@ class agent
         
         $sql = "SELECT DISTINCT DEMANDE.DEMANDEID, DEMANDE.DATEDEBUT
 				FROM DEMANDE 
-				WHERE DEMANDE.AGENTID = '" . $this->agentid() . "'
-			       AND ((DEMANDE.DATEDEBUT <= '" . $debut_interval . "' AND DEMANDE.DATEFIN >='" . $debut_interval . "')
-						OR (DEMANDE.DATEFIN >= '" . $fin_interval . "' AND DEMANDE.DATEDEBUT <='" . $fin_interval . "')
-						OR (DEMANDE.DATEDEBUT >= '" . $debut_interval . "' AND DEMANDE.DATEFIN <= '" . $fin_interval . "'))
+				WHERE DEMANDE.AGENTID = ?
+			       AND ((DEMANDE.DATEDEBUT <= ? AND DEMANDE.DATEFIN >= ? )
+						OR (DEMANDE.DATEFIN >= ? AND DEMANDE.DATEDEBUT <= ? )
+						OR (DEMANDE.DATEDEBUT >= ? AND DEMANDE.DATEFIN <= ? ))
 				ORDER BY DEMANDE.DATEDEBUT";
-        
+
+        $params = array($this->agentid,$debut_interval,$debut_interval,$fin_interval,$fin_interval,$debut_interval,$fin_interval);
+        $query = $this->fonctions->prepared_select($sql, $params);
         // echo "Agent->demandesliste SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->demandesliste : " . $erreur;
@@ -2041,7 +2070,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID 
     FROM COMMENTAIRECONGE,TYPEABSENCE 
-    WHERE AGENTID='" . $this->agentid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
+    WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID='cet') 
                                                AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
@@ -2050,14 +2079,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID
     FROM COMMENTAIRECONGE,TYPEABSENCE
-    WHERE AGENTID='" . $this->agentid . "' AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
+    WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID='cet')
                                                AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
             
         }
+        $params = array($this->agentid);
+        $query = $this->fonctions->prepared_select($sql, $params);
         //echo "SQL = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             echo "Agent->affichecommentairecongehtml : " . $erreur . "<br>";
@@ -2104,8 +2134,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
         $date = date("d/m/Y");
         $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
-		        VALUES ('" . $this->agentid . "','" . $typeconge . "','" . $this->fonctions->formatdatedb($date) . "','" . str_replace("'", "''", $commentaire) . "','" . $nbrejours . "')";
-        $query = mysqli_query($this->dbconnect, $sql);
+		        VALUES (?,?,?,?,?)";
+
+        $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),str_replace("'", "''", $commentaire),$nbrejours);
+        $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $message = "$erreur";
@@ -2119,8 +2151,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $debutperiode = $this->fonctions->formatdatedb($anneeref . $this->fonctions->debutperiode());
         $finperiode = $this->fonctions->formatdatedb(($anneeref + 1) . $this->fonctions->finperiode());
         // $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN FROM ABSENCERH WHERE AGENTID='" . $this->agentid ."' AND TYPEABSENCE='CONGE_BONIFIE' AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
-        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN FROM ABSENCERH WHERE AGENTID='" . $this->agentid . "' AND (TYPEABSENCE='CONGE_BONIFIE' OR TYPEABSENCE LIKE 'Cg% Bonifi% (FPS)') AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN FROM ABSENCERH WHERE AGENTID= ? AND (TYPEABSENCE='CONGE_BONIFIE' OR TYPEABSENCE LIKE 'Cg% Bonifi% (FPS)') AND DATEDEBUT BETWEEN '$debutperiode' AND '$finperiode'";
+        $params = array($this->agentid);
+        $query = $this->fonctions->prepared_select($sql, $params);
+
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
@@ -2137,8 +2171,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 
     function creertimeline()
     {
-        $sql = "SELECT AGENTID, NUMLIGNE, CODECONTRAT, DATEDEBUT, DATEFIN FROM STATUT WHERE AGENTID = '" . $this->agentid . "' ORDER BY DATEDEBUT";
-        $querystatut = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID, NUMLIGNE, CODECONTRAT, DATEDEBUT, DATEFIN FROM STATUT WHERE AGENTID = ? ORDER BY DATEDEBUT";
+        $params = array($this->agentid);
+        $querystatut = $this->fonctions->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
         {
@@ -2150,8 +2185,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             return "<br>Pas de statut pour cet agent " . $this->agentid . "!!!<br>";
         }
         
-        $sql = "SELECT AGENTID, NUMLIGNE, QUOTITE, DATEDEBUT, DATEFIN FROM QUOTITE WHERE AGENTID = '" . $this->agentid . "' ORDER BY DATEDEBUT";
-        $queryquotite = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID, NUMLIGNE, QUOTITE, DATEDEBUT, DATEFIN FROM QUOTITE WHERE AGENTID = ? ORDER BY DATEDEBUT";
+        $params = array($this->agentid);
+        $queryquotite = $this->fonctions->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
         {
@@ -2163,8 +2199,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             return "<br>Pas de quotité pour cet agent " . $this->agentid . "!!!<br>";
         }
         
-        $sql = "SELECT AGENTID, NUMLIGNE, POSITIONADMIN, DATEDEBUT, DATEFIN FROM SITUATIONADMIN WHERE AGENTID = '" . $this->agentid . "' ORDER BY DATEDEBUT";
-        $querysituation = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID, NUMLIGNE, POSITIONADMIN, DATEDEBUT, DATEFIN FROM SITUATIONADMIN WHERE AGENTID = ? ORDER BY DATEDEBUT";
+        $params = array($this->agentid);
+        $querysituation = $this->fonctions->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
         {
@@ -2299,12 +2336,13 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
         $sql = "SELECT DISTINCT DEMANDEID ,DATEDEBUT,DATESTATUT
 				FROM DEMANDE 
-				WHERE AGENTID = '" . $this->agentid() . "' 
+				WHERE AGENTID = ? 
 				  AND TYPEABSENCEID = 'cet' 
-				  AND (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "'
-				    OR DATESTATUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' )
+				  AND (DATEDEBUT >= ?
+				    OR DATESTATUT >= ? )
 			    ORDER BY DATEDEBUT,DATESTATUT";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array($this->agentid,$this->fonctions->formatdatedb($datedebut),$this->fonctions->formatdatedb($datedebut));
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
@@ -2631,7 +2669,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
     	$listdemandes = array();
     	$statuts = '';
-    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE AGENTID = '".$this->agentid()."' ";
+    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE AGENTID = ? ";
     	if ($typeconge != '') 
     	{
     		$sql .= " AND TYPECONGES = '$typeconge' " ;
@@ -2641,7 +2679,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		$statuts = $this->fonctions->formatlistedb($listStatuts);
     		$sql .=  " AND STATUT IN $statuts";
     	}
-    	$query = mysqli_query($this->dbconnect, $sql);
+    	$params = array($this->agentid);
+    	$query = $this->fonctions->prepared_select($sql, $params);
+
     	$erreur = mysqli_error($this->dbconnect);
     	if ($erreur != "")
     	{
@@ -2891,16 +2931,17 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
         $listdemandes = array();
         $optionCET = new optionCET($this->dbconnect);
-        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE AGENTID = '" .  $this->agentid() . "'";
+        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE AGENTID = ? ";
 
         if ($anneeref != '')
             $sql .= " AND ANNEEREF = '$anneeref' " ;
         if (sizeof($listStatuts) != 0)
         {
             $statuts = $this->fonctions->formatlistedb($listStatuts);
-            $sql .=  "AND STATUT IN $statuts";
+            $sql .=  " AND STATUT IN $statuts";
         }
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array($this->agentid);
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -2929,12 +2970,13 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     function synchroCET($typeconge = '', $anneeref = '')
     {
     	// Synchronisation des demande d'alimentation
-    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE AGENTID = '".$this->agentid()."' ";
+    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE AGENTID = ? ";
     	if ($typeconge != '')
     	{
     		$sql .= " AND TYPECONGES = '$typeconge' " ;
     	}
-    	$query = mysqli_query($this->dbconnect, $sql);
+    	$params = array($this->agentid);
+    	$query = $this->fonctions->prepared_select($sql, $params);
     	$erreur = mysqli_error($this->dbconnect);
     	if ($erreur != "")
     	{
@@ -2957,13 +2999,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	}
     	
     	// Synchronisation des demandes d'option
-    	$sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE AGENTID = '" .  $this->agentid() . "'";
+    	$sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE AGENTID = ? ";
     	
     	if ($anneeref != '')
     	{
     		$sql .= " AND ANNEEREF = '$anneeref' " ;
     	}
-    	$query = mysqli_query($this->dbconnect, $sql);
+    	$params = array($this->agentid);
+    	$query = $this->fonctions->prepared_select($sql, $params);
     	$erreur = mysqli_error($this->dbconnect);
     	if ($erreur != "")
    		{
@@ -3042,8 +3085,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         
         // On prend toutes les affectations actives d'un agent, dont la date de début est inférieur à la fin de la période
         // Les affectations futures ne sont pas prises en compte dans le calcul du solde
-        $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AGENTID = '$agentid' AND OBSOLETE='N' AND DATEDEBUT < " . ($anneeref + 1) . $this->fonctions->finperiode() . " ORDER BY DATEDEBUT";
-        $query_aff = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AGENTID = ? AND OBSOLETE='N' AND DATEDEBUT < ? ORDER BY DATEDEBUT";
+        $params = array($this->agentid,($anneeref + 1) . $this->fonctions->finperiode());
+        $query_aff = $this->fonctions->prepared_select($sql, $params);
+
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
         {
@@ -3450,8 +3495,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On met à jour le solde de l'agent dans la base de données"));
             }
             $typeabsenceid = "ann" . substr($anneeref, 2, 2);
-            $sql = "SELECT AGENTID,TYPEABSENCEID FROM SOLDE WHERE AGENTID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $sql = "SELECT AGENTID,TYPEABSENCEID FROM SOLDE WHERE AGENTID= ? AND TYPEABSENCEID= ? ";
+            $params = array($this->agentid,$typeabsenceid);
+            $query = $this->fonctions->prepared_select($sql, $params);
             $erreur_requete = mysqli_error($this->dbconnect);
             if ($erreur_requete != "")
             {
@@ -3459,13 +3505,16 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             }
             if (mysqli_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
             {
-                $sql = "UPDATE SOLDE SET DROITAQUIS='$solde_agent' WHERE AGENTID='$agentid' AND TYPEABSENCEID='$typeabsenceid'";
+                $sql = "UPDATE SOLDE SET DROITAQUIS= ? WHERE AGENTID= ? AND TYPEABSENCEID= ?";
+                $params = array($solde_agent, $this->agentid, $typeabsenceid);
             }
             else
             {
-                $sql = "INSERT INTO SOLDE(AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES('" . $agentid . "','" . $typeabsenceid . "','$solde_agent','0')";
+                $sql = "INSERT INTO SOLDE(AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES(?,?,?,'0')";
+                $params = array($this->agentid,$typeabsenceid,$solde_agent);
+
             }
-            mysqli_query($this->dbconnect, $sql);
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur_requete = mysqli_error($this->dbconnect);
             if ($erreur_requete != "")
             {
@@ -3484,14 +3533,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $listteletravail = array();
         $sql = "SELECT TELETRAVAILID 
                 FROM TELETRAVAIL 
-                WHERE AGENTID = '" .  $this->agentid() . "' 
-                  AND ((DATEDEBUT <= '" . $datedebut . "' AND DATEFIN >='" . $datedebut . "')
-                    OR (DATEFIN >= '" . $datefin . "' AND DATEDEBUT <='" . $datefin . "')
-                    OR (DATEDEBUT >= '" . $datedebut . "' AND DATEFIN <= '" . $datefin . "'))
+                WHERE AGENTID = ? 
+                  AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
+                    OR (DATEFIN >= ? AND DATEDEBUT <= ? )
+                    OR (DATEDEBUT >= ? AND DATEFIN <= ? ))
                 ORDER BY DATEDEBUT,DATEFIN";
         
+        $params = array($this->agentid,$datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
+        $query = $this->fonctions->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -3550,14 +3600,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $listteletravail = array();
         $sql = "SELECT VALEUR
                 FROM COMPLEMENT
-                WHERE AGENTID = '" .  $this->agentid() . "'
+                WHERE AGENTID = ?
                   AND COMPLEMENTID LIKE 'TT_EXCLU_%'
-                  AND VALEUR >= '" . $datedebut . "' 
-                  AND VALEUR <='" . $datefin . "'
+                  AND VALEUR >= ? 
+                  AND VALEUR <= ?
                 ORDER BY VALEUR";
         
+        $params = array($this->agentid,$datedebut,$datefin);
+        $query = $this->fonctions->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -3587,11 +3638,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $errlog = '';
         $sql = "DELETE 
                 FROM COMPLEMENT
-                WHERE AGENTID = '" .  $this->agentid() . "'
+                WHERE AGENTID = ?
                   AND COMPLEMENTID = 'TT_EXCLU_" . $date . "'";
         
+        $params = array($this->agentid());
+        $query = $this->fonctions->prepared_query($sql, $params);
         //echo "<br>SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {

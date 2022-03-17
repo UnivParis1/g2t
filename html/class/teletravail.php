@@ -48,8 +48,9 @@ class teletravail
     {
         $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT 
                 FROM TELETRAVAIL
-                WHERE TELETRAVAILID = '" . $teletravailid  . "' ";
-        $query = mysqli_query($this->dbconnect, $sql);
+                WHERE TELETRAVAILID = ? ";
+        $params = array($teletravailid);
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Teletravail->Load (TELETRAVAIL) : " . $erreur;
@@ -205,7 +206,8 @@ class teletravail
                            '" . $this->tabteletravail  ."',
                            '" . $this->statut . "')";
             //echo "SQL teletravail->Store (NEW) : $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "teletravail->Store (INSERT) : " . $erreur;
@@ -229,7 +231,8 @@ class teletravail
                         STATUT = '" . $this->statut . "'
                     WHERE TELETRAVAILID = '" . $this->teletravailid . "'";
             //echo "SQL teletravail->Store (UPDATE) : $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "teletravail->Store (UPDATE) : " . $erreur;

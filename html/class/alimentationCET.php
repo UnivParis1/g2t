@@ -370,14 +370,17 @@ class alimentationCET
     function load($esignatureid = null, $alimentationid = null )
     {
         $errlog = '';
+        $params = array();
         $sql = "SELECT ALIMENTATIONID,AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF FROM ALIMENTATIONCET WHERE ";
         if (!is_null($esignatureid))
         {
-            $sql = $sql . "ESIGNATUREID = '" . str_replace("'","''",$esignatureid) . "'";
+            $sql = $sql . "ESIGNATUREID = ? ";
+            $params = array(str_replace("'","''",$esignatureid));
         }
         elseif (!is_null($alimentationid))
         {
-            $sql = $sql . "ALIMENTATIONID = '$alimentationid'";
+            $sql = $sql . "ALIMENTATIONID = ? ";
+            $params = array($alimentationid);
         }
         else
         {
@@ -385,8 +388,8 @@ class alimentationCET
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog;
         }
-        
-        $query = mysqli_query($this->dbconnect, $sql);
+        $query = $this->fonctions->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -480,7 +483,9 @@ class alimentationCET
                            '" . $this->datestatut . "',
                            '" . str_replace("'","''",$this->motif) . "')";
             //echo "SQL = " . $sql . "<br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
+
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "alimentationCET->Store (INSERT) : " . $erreur;
@@ -506,7 +511,8 @@ class alimentationCET
                         MOTIF = '" . str_replace("'", "''", $this->motif) . "'
                     WHERE ALIMENTATIONID = '" . $this->alimentationid . "'";
             //echo "SQL alimentationCET->Store : $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "alimentationCET->Store (UPDATE) : " . $erreur;

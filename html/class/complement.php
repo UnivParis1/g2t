@@ -55,8 +55,9 @@ class complement
      */
     function load($agentid, $complementid)
     {
-        $sql = "SELECT AGENTID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE AGENTID='$agentid' AND COMPLEMENTID='$complementid'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID,COMPLEMENTID,VALEUR FROM COMPLEMENT WHERE AGENTID=? AND COMPLEMENTID=?";
+        $params = array($agentid,$complementid);
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Complement->Load : " . $erreur;
@@ -89,18 +90,21 @@ class complement
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return;
         }
-        $sql = "DELETE FROM COMPLEMENT WHERE AGENTID='" . $this->agentid . "' AND COMPLEMENTID='" . $this->complementid . "'";
-        // echo "SQL Complement->Store : $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "DELETE FROM COMPLEMENT WHERE AGENTID=? AND COMPLEMENTID=?";
+        $params = array($this->agentid,$this->complementid);
+        $query = $this->fonctions->prepared_query($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Complement->Store (DELETE) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        $sql = "INSERT INTO COMPLEMENT(AGENTID,COMPLEMENTID,VALEUR) VALUES('" . $this->agentid . "','" . $this->complementid . "','" . str_replace("'", "''", $this->valeur) . "')";
+        $sql = "INSERT INTO COMPLEMENT(AGENTID,COMPLEMENTID,VALEUR) VALUES(?,?,?)";
+        $params = array($this->agentid,$this->complementid,str_replace("'", "''", $this->valeur));
+        $query = $this->fonctions->prepared_query($sql, $params);
         // echo "SQL Complement->Store : $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Complement->Store (INSERT) : " . $erreur;

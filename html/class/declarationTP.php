@@ -56,9 +56,11 @@ class declarationTP
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
             $sql = "SELECT DECLARATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT,AGENTID
-FROM DECLARATIONTP
-WHERE DECLARATIONID=" . $id;
-            $query = mysqli_query($this->dbconnect, $sql);
+                    FROM DECLARATIONTP
+                    WHERE DECLARATIONID=?";
+            $params = array($id);
+            $query = $this->fonctions->prepared_select($sql, $params);
+
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "DeclarationTP->Load : " . $erreur;
@@ -361,7 +363,9 @@ WHERE DECLARATIONID=" . $id;
             $sql = $sql . " VALUES ('" . $this->agentid . "','" . $this->numlignequotite . "','" . $this->tabtpspartiel . "',";
             $sql = $sql . "'" . $this->datedemande . "','" . $this->fonctions->formatdatedb($this->datedebut) . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande . "','" . $this->statut . "')";
             // echo "SQL = $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
+
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "")
             {
@@ -392,7 +396,8 @@ WHERE DECLARATIONID=" . $id;
             $sql = $sql . " STATUT='" . $this->statut . "', DATEDEBUT='" . $this->datedebut . "', DATEFIN='" . $this->datefin . "', DATESTATUT='" . $this->datestatut . "', TABTPSPARTIEL = '" . $this->tabtpspartiel . "' ";
             $sql = $sql . "WHERE DECLARATIONID='" . $this->declarationid . "'";
             // echo "SQL = $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "DeclarationTP->store (update) : " . $erreur;

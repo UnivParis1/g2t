@@ -145,8 +145,9 @@ class planningelement
             if ($noiretblanc == true)
                 return self::COULEUR_NOIRE;
         }
-        $sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+        $params = array($this->typeelement);
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "PlanningElement->couleur : " . $erreur;
@@ -175,8 +176,9 @@ class planningelement
             $this->statut = $statut;
             if (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0) {
                 $this->type("atten");
-                $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $this->typeelement . "'";
-                $query = mysqli_query($this->dbconnect, $sql);
+                $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+                $params = array($this->typeelement);
+                $query = $this->fonctions->prepared_select($sql, $params);
                 $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "PlanningElement->statut : " . $erreur;

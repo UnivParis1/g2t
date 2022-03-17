@@ -215,8 +215,9 @@ class cet
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
         // On charge le cumul annuel => tous les 'cet%' mais pas 'cet'
-        $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE AGENTID = '" . $agentid . "' AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE AGENTID = ? AND TYPEABSENCEID LIKE 'cet%' AND TYPEABSENCEID != 'cet'";
+        $params = array($agentid);
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Cet->Load (cet%): " . $erreur;
@@ -238,8 +239,9 @@ class cet
         }
         
         // On charge le solde du CET
-        $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE AGENTID = '" . $agentid . "' AND TYPEABSENCEID ='cet'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS FROM SOLDE WHERE AGENTID = ? AND TYPEABSENCEID ='cet'";
+        $params = array($agentid);
+        $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "(cet): " . $erreur;

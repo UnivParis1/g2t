@@ -105,7 +105,8 @@ class fonctions
     {
         // Chargement des jours fériés
         $sql = "SELECT NOM,VALEUR FROM CONSTANTES WHERE NOM LIKE 'FERIE%'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->jourferier : " . $erreur;
@@ -202,11 +203,16 @@ class fonctions
     public function listeabsence($categorie = null)
     {
         if (is_null($categorie))
+        {
             $sql = "SELECT TA.TYPEABSENCEID,TA.LIBELLE FROM TYPEABSENCE TA, TYPEABSENCE TA2 WHERE TA2.ABSENCEIDPARENT='abs' AND TA.ABSENCEIDPARENT=TA2.TYPEABSENCEID ORDER BY TA.ABSENCEIDPARENT";
+            $params = array();
+        }
         else
-            $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ABSENCEIDPARENT='" . $categorie . "' ORDER BY LIBELLE";
-        
-        $query = mysqli_query($this->dbconnect, $sql);
+        {
+            $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ABSENCEIDPARENT= ? ORDER BY LIBELLE";
+            $params = array($categorie);
+        }
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->listeabsence : " . $erreur;
@@ -235,7 +241,8 @@ class fonctions
     public function listecategorieabsence()
     {
         $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT='abs'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->listecategorieabsence : " . $erreur;
@@ -286,7 +293,8 @@ class fonctions
     public function debutperiode()
     {
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->debutperiode : " . $erreur;
@@ -312,7 +320,8 @@ class fonctions
     public function finperiode()
     {
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->finperiode : " . $erreur;
@@ -380,8 +389,9 @@ class fonctions
         if (strcasecmp($typeconge, "nondec") == 0)
             return false;
         // echo "Fonction->estunconge : typeconge = $typeconge <br>";
-        $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $typeconge . "'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+        $params = array($typeconge);
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->estunconge : " . $erreur;
@@ -413,8 +423,10 @@ class fonctions
      */
     public function congesanneeref($typeconge)
     {
-        $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" . $typeconge . "'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+        $params = array($typeconge);
+        $query = $this->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->anneeref : " . $erreur;
@@ -442,8 +454,10 @@ class fonctions
      */
     public function liredbconstante($constante)
     {
-        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = '" . $constante . "'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";
+        $params = array($constante);
+        $query = $this->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->liredbconstante : " . $erreur;
@@ -552,7 +566,7 @@ class fonctions
  				ORDER BY LIBELLE";
 */
         $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
- 				WHERE (ANNEEREF=" . $anneeref . " OR ANNEEREF=" . ($anneeref - 1) . ")
+ 				WHERE (ANNEEREF= ? OR ANNEEREF= ?)
  				   OR ANNEEREF IS NULL ";
         if ($includeteletravail)
         {
@@ -560,8 +574,9 @@ class fonctions
         }
  		$sql = $sql . "		ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
-        
-        $query = mysqli_query($this->dbconnect, $sql);
+ 		$params = array($anneeref,($anneeref - 1));
+ 		$query = $this->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonction->legende : " . $erreur;
@@ -839,7 +854,8 @@ class fonctions
         }
         $sql = $sql . ") AND UPPER(VALEUR) = 'O'";
         // echo "sql = " . $sql . "<br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->listeprofilrh (AGENT) : " . $erreur;
@@ -865,8 +881,9 @@ class fonctions
      */
     public function labo2ufr($structid)
     {
-        $sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = '" . $structid . "'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = ?";
+        $params = array($structid);
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "labo2ufr : " . $erreur;
@@ -888,10 +905,11 @@ class fonctions
         $sql = "SELECT DISTINCT DEMANDEID,AGENTID, DATEDEBUT,DATESTATUT
     				FROM DEMANDE
     				WHERE TYPEABSENCEID = 'cet'
-    				  AND (DATEDEBUT >= '" . $this->formatdatedb($datedebut) . "'
-    				    OR DATESTATUT >= '" . $this->formatdatedb($datedebut) . "' )
+    				  AND (DATEDEBUT >= ?
+    				    OR DATESTATUT >= ? )
     			    ORDER BY AGENTID, DATEDEBUT,DATESTATUT";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array($this->formatdatedb($datedebut),$this->formatdatedb($datedebut));
+        $query = $this->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
             error_log(basename(__FILE__) . " " . $erreur_requete);
@@ -940,11 +958,13 @@ class fonctions
     {
     	if (!is_null($date))
     	{
-    		$update = "UPDATE CONSTANTES SET VALEUR = '$date' WHERE NOM = 'DEBUTALIMCET'";
-    		$query = mysqli_query($this->dbconnect, $update);
+    		$update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTALIMCET'";
+    		$params = array($this->formatdatedb($date));
+    		$query = $this->prepared_query($update, $params);
     	}
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTALIMCET' AND VALEUR <> ''";
-    	$query = mysqli_query($this->dbconnect, $sql);
+    	$params = array();
+    	$query = $this->prepared_select($sql, $params);
     	$erreur = mysqli_error($this->dbconnect);
     	if ($erreur != "") {
     		$errlog = "Fonctions->debutalimcet : " . $erreur;
@@ -971,11 +991,13 @@ class fonctions
     {
     	if (!is_null($date))
     	{
-    		$update = "UPDATE CONSTANTES SET VALEUR = '$date' WHERE NOM = 'FINALIMCET'";
-    		$query = mysqli_query($this->dbconnect, $update);
+    		$update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'FINALIMCET'";
+    		$params = array($this->formatdatedb($date));
+    		$query = $this->prepared_query($update, $params);
     	}
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINALIMCET'";
-    	$query = mysqli_query($this->dbconnect, $sql);
+    	$params = array();
+    	$query = $this->prepared_select($sql, $params);
     	$erreur = mysqli_error($this->dbconnect);
     	if ($erreur != "") {
     		$errlog = "Fonctions->finalimcet : " . $erreur;
@@ -1002,11 +1024,13 @@ class fonctions
     {
         if (!is_null($date))
         {
-            $update = "UPDATE CONSTANTES SET VALEUR = '" . $this->formatdatedb($date) . "' WHERE NOM = 'DEBUTOPTIONCET'";
-            $query = mysqli_query($this->dbconnect, $update);
+            $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTOPTIONCET'";
+            $params = array($this->formatdatedb($date));
+            $query = $this->prepared_query($update, $params);
         }
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTOPTIONCET' AND VALEUR <> ''";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->debutoptioncet : " . $erreur;
@@ -1033,11 +1057,13 @@ class fonctions
     {
         if (!is_null($date))
         {
-            $update = "UPDATE CONSTANTES SET VALEUR = '" . $this->formatdatedb($date) . "' WHERE NOM = 'FINOPTIONCET'";
-            $query = mysqli_query($this->dbconnect, $update);
+            $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'FINOPTIONCET'";
+            $params = array($this->formatdatedb($date));
+            $query = $this->prepared_query($update, $params);
         }
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINOPTIONCET'";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->finoptioncet : " . $erreur;
@@ -1059,7 +1085,8 @@ class fonctions
     public function getidmodelalimcet()
     {
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'IDMODELALIMCET'";
-    	$query = mysqli_query($this->dbconnect, $sql);
+    	$params = array();
+    	$query = $this->prepared_select($sql, $params);
     	$erreur = mysqli_error($this->dbconnect);
     	if ($erreur != "") {
     		$errlog = "Fonctions->getidmodelalimcet : " . $erreur;
@@ -1234,14 +1261,14 @@ class fonctions
     public function get_alimCET_liste($typeconges, $listStatuts = array()) // $typeconges de la forme annYY
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
-        $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = '" . $typeconges . "'";
+        $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = ? ";
         if (sizeof($listStatuts) != 0)
         {
             $statuts = $this->formatlistedb($listStatuts);
             $sql .=  "AND STATUT IN $statuts";
         }
-        
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array($typeconges);
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->get_alimCET_liste : " . $erreur;
@@ -1264,14 +1291,15 @@ class fonctions
     public function get_optionCET_liste($anneeref, $listStatuts = array()) 
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
-        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = '" . $anneeref . "'";
+        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = ? ";
         if (sizeof($listStatuts) != 0)
         {
             $statuts = $this->formatlistedb($listStatuts);
             $sql .=  "AND STATUT IN $statuts";
         }
-        
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array($anneeref);
+        $query = $this->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonctions->get_optionCET_liste : " . $erreur;
@@ -1344,12 +1372,13 @@ class fonctions
         $sql = "SELECT DISTINCT AGENTID
                 FROM TELETRAVAIL
                 WHERE STATUT = '" . teletravail::STATUT_ACTIVE  . "'
-                  AND ((DATEDEBUT <= '" . $datedebut . "' AND DATEFIN >='" . $datedebut . "')
-                    OR (DATEFIN >= '" . $datefin . "' AND DATEDEBUT <='" . $datefin . "')
-                    OR (DATEDEBUT >= '" . $datedebut . "' AND DATEFIN <= '" . $datefin . "'))";
+                  AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
+                    OR (DATEFIN >= ? AND DATEDEBUT <= ? )
+                    OR (DATEDEBUT >= ? AND DATEFIN <= ? ))";
         
         //echo "<br>SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array($datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -1400,7 +1429,8 @@ class fonctions
                   AND ISINCLUDED = 0";
         
         //echo "<br>SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -1451,6 +1481,23 @@ class fonctions
             return $user->agentid();
         else
             return false;
+    }
+    
+    public function prepared_query($sql, $params, $types = "")
+    {
+        $stmt = $this->dbconnect->prepare($sql);
+        if (count($params) > 0)
+        {
+            $types = $types ?: str_repeat("s", count($params));
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+        return $stmt;
+    }
+    
+    public function prepared_select($sql, $params = [], $types = "")
+    {
+        return $this->prepared_query($sql, $params, $types)->get_result();
     }
     
 }

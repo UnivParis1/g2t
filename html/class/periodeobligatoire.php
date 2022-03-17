@@ -29,9 +29,11 @@ class periodeobligatoire
         if (! isset($this->$anneeref))
         {
             $this->anneeref = $anneeref;
-            $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'PERIODE_" . $anneeref . "'";
+            $constname  = "PERIODE_" . $anneeref;
+            $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";
             // echo "PeriodeObligatoire load sql = $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array($constname);
+            $query = $this->fonctions->prepared_select($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") 
             {
@@ -91,25 +93,29 @@ class periodeobligatoire
             $valeur = $valeur . $periode["datedebut"] . '-' . $periode["datefin"] . '|';
         }
         // Si on est en train de créer cette période <=> soit on ne l'a pas trouvé lors du chargement précédent
+        $constname  = "PERIODE_" . $anneeref;
         if ($this->pastrouve)
         {
             //echo "PeriodeObligatoire->Store : Pas trouve <br>";
-            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('PERIODE_" . $this->anneeref . "','" . $valeur . "')";
+            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
+            $params = array($constname,$valeur);    
         }
         // Sinon si l'anneeref interne est null
         elseif (is_null($this->anneeref))
         {
             //echo "PeriodeObligatoire->Store : Dans le insert sql <br>";
-            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('PERIODE_" . $anneeref . "','" . $valeur . "')";
+            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
+            $params = array($constname,$valeur);
             $this->anneeref = $anneeref;
         }
         else
         {
             //echo "PeriodeObligatoire->Store : Dans le update sql <br>";
-            $sql = "UPDATE CONSTANTES SET VALEUR = '$valeur' WHERE NOM = 'PERIODE_" . $this->anneeref . "'";
+            $sql = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = ?";
+            $params = array($valeur,$constname);
         }
         //echo "SQL Complement->Store : $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "PeriodeObligatoire->Store (INSERT/UPDATE) : " . $erreur;

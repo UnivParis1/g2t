@@ -59,9 +59,11 @@ class demande
         // if (is_null($this->$demandeid))
         if (! isset($this->$demandeid)) {
             $sql = "SELECT DEMANDEID,AGENTID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE)
-FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
+FROM DEMANDE WHERE DEMANDEID= ?";
             // echo "Demande load sql = $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array($demandeid);
+            $query = $this->fonctions->prepared_select($sql, $params);
+            
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->Load : " . $erreur;
@@ -118,8 +120,9 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
-            $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID='" . $this->typeabsenceid . "'";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID=?";
+            $params = array($this->typeabsenceid);
+            $query = $this->fonctions->prepared_select($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->typdemande : " . $erreur;
@@ -389,8 +392,10 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
     function agent()
     {
         if (is_null($this->agent)) {
-            $sql = "SELECT AGENTID FROM DEMANDE WHERE DEMANDEID='" . $this->demandeid . "'";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $sql = "SELECT AGENTID FROM DEMANDE WHERE DEMANDEID=?";
+            $params = array($this->demandeid);
+            $query = $this->fonctions->prepared_select($sql, $params);
+
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Demande->agent : " . $erreur;
@@ -505,7 +510,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
                 $sql = $sql . "'" . $this->commentaire . "',";
                 $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '','" . demande::DEMANDE_ATTENTE . "','')";
                 // echo "SQL = " . $sql . "<br>";
-                $query = mysqli_query($this->dbconnect, $sql);
+                $params = array();
+                $query = $this->fonctions->prepared_query($sql, $params);
                 $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Demande->store : " . $erreur;
@@ -532,7 +538,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 					  		 SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
 							 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
                     // echo "SQL = $sql <br>";
-                    $query = mysqli_query($this->dbconnect, $sql);
+                    $params = array();
+                    $query = $this->fonctions->prepared_query($sql, $params);
                     $erreur = mysqli_error($this->dbconnect);
                     if ($erreur != "") {
                         $errlog = "Demande->store (SOLDE) : " . $erreur;
@@ -561,7 +568,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 						  , STATUT='" . $this->statut . "', MOTIFREFUS='" . $this->motifrefus . "'
 						 WHERE DEMANDEID=" . $this->demandeid;
                 // echo "SQL = $sql <br>";
-                $query = mysqli_query($this->dbconnect, $sql);
+                $params = array();
+                $query = $this->fonctions->prepared_query($sql, $params);
                 $erreur = mysqli_error($this->dbconnect);
                 if ($erreur != "") {
                     $errlog = "Demande->store : " . $erreur;
@@ -583,7 +591,8 @@ FROM DEMANDE WHERE DEMANDEID= '" . $demandeid . "'";
 							  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
 									 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
                         // echo "SQL = $sql <br>";
-                        $query = mysqli_query($this->dbconnect, $sql);
+                        $params = array();
+                        $query = $this->fonctions->prepared_query($sql, $params);
                         $erreur = mysqli_error($this->dbconnect);
                         if ($erreur != "") {
                             $errlog = "Demande->store (Modif SOLDE_CMPTE) : " . $erreur;

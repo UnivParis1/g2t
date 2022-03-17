@@ -70,9 +70,10 @@ class affectation
             return false;
         } else {
             $sql = "SELECT AFFECTATIONID,AGENTID,DATEDEBUT,DATEFIN,DATEMODIFICATION,NUMQUOTITE,DENOMQUOTITE,OBSOLETE, NUMCONTRAT
-FROM AFFECTATION
-WHERE AFFECTATIONID='" . $idaffectation . "'";
-            $query = mysqli_query($this->dbconnect, $sql);
+                    FROM AFFECTATION
+                    WHERE AFFECTATIONID=?";
+            $params = array($idaffectation);
+            $query = $this->fonctions->prepared_select($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Affectation->Load : " . $erreur;
@@ -141,8 +142,9 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return false;
         } else {
-            $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= '" . $date . "' AND ('" . $date . "' <= DATEFIN OR DATEFIN = '0000-00-00')) AND AGENTID ='" . $agentid . "' AND OBSOLETE='N'";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $sql = "SELECT AFFECTATIONID FROM AFFECTATION WHERE (DATEDEBUT <= ? AND (? <= DATEFIN OR DATEFIN = '0000-00-00')) AND AGENTID = ? AND OBSOLETE='N'";
+            $params = array($date,$date,$agentid);
+            $query = $this->fonctions->prepared_select($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Affectation->Loadbydate : " . $erreur;
@@ -356,14 +358,16 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
         
         $affectationidelement = explode('_',$this->affectationid()); 
         $quotitenumligne = $affectationidelement[2];
+        $datedebut = $this->fonctions->formatdatedb($datedebut);
+        $datefin = $this->fonctions->formatdatedb($datefin);
         
         //$sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  ";
  
-        $sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  AND DATEDEBUT<'" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'<=DATEFIN)";
+        $sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEDEBUT<? AND ?<=DATEFIN)";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  AND DATEDEBUT>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEDEBUT)";
+        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEDEBUT>=? AND ?>=DATEDEBUT)";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)) AS SUBQUERY";
+        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEFIN>=? AND ?>=DATEFIN)) AS SUBQUERY";
         $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
 
         $declarationliste = null;
@@ -376,7 +380,10 @@ WHERE AFFECTATIONID='" . $idaffectation . "'";
         $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
 */        
         // echo "affectation->declarationTPliste SQL = $sql <br>";
-        $query = mysqli_query($this->dbconnect, $sql);
+        
+        $params = array($this->agentid(),$quotitenumligne,$datedebut,$datefin,$this->agentid(),$quotitenumligne,$datedebut,$datefin,$this->agentid(),$quotitenumligne,$datedebut,$datefin);
+        $query = $this->fonctions->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Agent->declarationTPliste : " . $erreur;

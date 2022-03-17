@@ -397,11 +397,13 @@ class optionCET
         $sql = "SELECT OPTIONID,AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,ANNEEREF,VALEUR_A,VALEUR_G,VALEUR_H,VALEUR_I,VALEUR_J,VALEUR_K,VALEUR_L,STATUT,DATESTATUT,MOTIF FROM OPTIONCET WHERE ";
         if (!is_null($esignatureid))
         {
-            $sql = $sql . "ESIGNATUREID = '" . str_replace("'","''",$esignatureid) . "'";
+            $sql = $sql . "ESIGNATUREID = ? ";
+            $params = array(str_replace("'","''",$esignatureid));
         }
         elseif (!is_null($optionid))
         {
-            $sql = $sql . "OPTIONID = '$optionid'";
+            $sql = $sql . "OPTIONID = ? ";
+            $params = array($optionid);
         }
         else
         {
@@ -409,8 +411,8 @@ class optionCET
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog;
         }
-        
-        $query = mysqli_query($this->dbconnect, $sql);
+        $query = $this->fonctions->prepared_select($sql, $params);
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -503,7 +505,8 @@ class optionCET
                            '" . $this->datestatut . "',
                            '" . str_replace("'","''",$this->motif) . "')";
             //echo "SQL = " . $sql . "<br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "optionCET->Store (INSERT) : " . $erreur;
@@ -529,7 +532,8 @@ class optionCET
                         MOTIF = '" . str_replace("'", "''", $this->motif) . "'
                     WHERE OPTIONID = '" . $this->optionid . "'";
             //echo "SQL optionCET->Store : $sql <br>";
-            $query = mysqli_query($this->dbconnect, $sql);
+            $params = array();
+            $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "optionCET->Store (UPDATE) : " . $erreur;
