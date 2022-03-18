@@ -80,7 +80,7 @@
         if ($erreur != "") {
             $errlog = "Erreur activation/desactivation mode maintenance : " . $erreur;
             echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
     }
 
@@ -88,6 +88,8 @@
     // echo '<html><body class="bodyhtml">';
 
     // echo "POST = "; print_r($_POST); echo "<br>";
+    $etat = $fonctions->liredbconstante("MAINTENANCE");
+    
 
 ?>
 
@@ -96,11 +98,11 @@ Gestion du mode maintenance...
 <br>
 <br>
 <form name='maintenance_mode' method='post'>
-<?php echo "<input type='hidden' name='userid' value='" . $user->agentid() ."'>";  ?>
-<INPUT type="radio" name="maintenance" value="on"> Activer le mode
-	maintenance <br> <INPUT type="radio" name="maintenance" value="off">
-	Désactiver le mode maintenance <br> <br> <input type='submit'
-		value='Soumettre'>
+    <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
+    <INPUT type="radio" name="maintenance" value="on" <?php if (strcasecmp($etat,'n')==0) echo 'checked ' ?>> Activer le mode maintenance <br> 
+    <INPUT type="radio" name="maintenance" value="off" <?php if (strcasecmp($etat,'o')==0) echo 'checked ' ?>> Désactiver le mode maintenance <br> 
+    <br> 
+    <input type='submit' value='Soumettre'>
 </form>
 
 </body>
