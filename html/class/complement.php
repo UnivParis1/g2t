@@ -101,7 +101,7 @@ class complement
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         $sql = "INSERT INTO COMPLEMENT(AGENTID,COMPLEMENTID,VALEUR) VALUES(?,?,?)";
-        $params = array($this->agentid,$this->complementid,str_replace("'", "''", $this->valeur));
+        $params = array($this->agentid,$this->complementid,$this->valeur);
         $query = $this->fonctions->prepared_query($sql, $params);
         // echo "SQL Complement->Store : $sql <br>";
 

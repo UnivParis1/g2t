@@ -816,7 +816,7 @@ class planning
         
         $pdf->Ln(8);
         ob_end_clean();
-        $pdf->Output();
+        $pdf->Output("","planning_agent.pdf");
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
     }
     

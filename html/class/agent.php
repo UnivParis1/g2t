@@ -1186,7 +1186,7 @@ class agent
         $pdf->Ln(8);
         // ob_end_clean();
         if ($closeafter == TRUE)
-            $pdf->Output();
+            $pdf->Output("","solde_congés.pdf");
     }
 
     /**
@@ -1715,7 +1715,7 @@ class agent
         // ob_end_clean();
         if ($closeafter == TRUE) {
             ob_end_clean();
-            $pdf->Output();
+            $pdf->Output("","liste_demandes.pdf");
         }
     }
 
@@ -2136,7 +2136,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
 		        VALUES (?,?,?,?,?)";
 
-        $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),str_replace("'", "''", $commentaire),$nbrejours);
+        $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),$commentaire,$nbrejours);
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {

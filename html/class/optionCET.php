@@ -398,7 +398,7 @@ class optionCET
         if (!is_null($esignatureid))
         {
             $sql = $sql . "ESIGNATUREID = ? ";
-            $params = array(str_replace("'","''",$esignatureid));
+            $params = array($esignatureid);
         }
         elseif (!is_null($optionid))
         {
@@ -489,23 +489,11 @@ class optionCET
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
             $sql = "INSERT INTO OPTIONCET(AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,ANNEEREF,VALEUR_A,VALEUR_G,VALEUR_H,VALEUR_I,VALEUR_J,VALEUR_K,VALEUR_L,STATUT,DATESTATUT,MOTIF)
-                    VALUES('". $this->agentid . "',
-                           now(),
-                           '" . str_replace("'","''",$this->esignatureid) . "',
-                           '" . str_replace("'","''",$this->esignatureurl) . "',
-                           '" . $this->anneeref . "',
-                           '" . $this->valeur_a . "',
-                           '" . $this->valeur_g . "',
-                           '" . $this->valeur_h . "',
-                           '" . $this->valeur_i . "',
-                           '" . $this->valeur_j . "',
-                           '" . $this->valeur_k . "',
-                           '" . $this->valeur_l . "',
-                           '" . str_replace("'","''",$this->statut) . "',
-                           '" . $this->datestatut . "',
-                           '" . str_replace("'","''",$this->motif) . "')";
+                    VALUES(?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?)";
             //echo "SQL = " . $sql . "<br>";
-            $params = array();
+            $params = array($this->agentid, $this->esignatureid, $this->esignatureurl, $this->anneeref, 
+                            $this->valeur_a, $this->valeur_g, $this->valeur_h, $this->valeur_i, $this->valeur_j,
+                            $this->valeur_k, $this->valeur_l, $this->statut, $this->datestatut, $this->motif);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -525,14 +513,14 @@ class optionCET
         {
             //echo "optionCET->Store : Mise à jour d'une option CET <br>";
             $sql = "UPDATE OPTIONCET
-                    SET ESIGNATUREID = '" . str_replace("'","''",$this->esignatureid) . "',
-                        ESIGNATUREURL = '" . str_replace("'","''",$this->esignatureurl) . "',
-                        STATUT = '" . str_replace("'","''",$this->statut) . "',
-                        DATESTATUT = '" . $this->datestatut . "',
-                        MOTIF = '" . str_replace("'", "''", $this->motif) . "'
-                    WHERE OPTIONID = '" . $this->optionid . "'";
+                    SET ESIGNATUREID = ?,
+                        ESIGNATUREURL = ?,
+                        STATUT = ?,
+                        DATESTATUT = ?,
+                        MOTIF = ?
+                    WHERE OPTIONID = ?";
             //echo "SQL optionCET->Store : $sql <br>";
-            $params = array();
+            $params = array($this->esignatureid, $this->esignatureurl, $this->statut, $this->datestatut, $this->motif, $this->optionid);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {

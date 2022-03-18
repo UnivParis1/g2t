@@ -4,7 +4,6 @@
     
     
     header('Content-type: application/pdf; charset=utf-8');
-    header('Content-Disposition: attachment; filename="downloaded.pdf"');
 
     // header('Content-type: application/pdf');
     // header('Content-Type=application/octet-stream;charset=UTF-8');
@@ -39,6 +38,7 @@
         $typepdf = $_POST["typepdf"];
 
     if ($typepdf == 'listedemande') {
+        header('Content-Disposition: attachment; filename="liste_demandes.pdf"');
         if ($listeagent != "") {
             // echo "Avant le split <br>";
             $tablisteagent = preg_split("/,/", $listeagent);
@@ -67,7 +67,7 @@
                 }
             }
             ob_end_clean();
-            $pdf->Output();
+            $pdf->Output("","liste_demandes.pdf");
         } else {
             // echo "Dans liste demande <br>";
             $agentid = $_POST["agentid"];
@@ -80,6 +80,7 @@
     }
 
     if (isset($_POST["userpdf"])) {
+        header('Content-Disposition: attachment; filename="planning_agent.pdf"');
         if (strcasecmp($_POST["userpdf"], "yes") == 0) {
             $agentid = $_POST["agentid"];
             $includeteletravail = $_POST["includeteletravail"];
@@ -97,6 +98,7 @@
     }
 
     if (isset($_POST["structpdf"])) {
+        header('Content-Disposition: attachment; filename="planning_structure.pdf"');
         if (strcasecmp($_POST["structpdf"], "yes") == 0) {
             $structid = $_POST["structid"];
             $mois_annee = $_POST["mois_annee"];
@@ -129,6 +131,7 @@
 
      if (isset($_POST["teletravailPDF"]))
      {
+         header('Content-Disposition: attachment; filename="agent_télétravail.pdf"');
          // On va éditer le document PDF de télétravail
          
          $structureid = null;

@@ -375,7 +375,7 @@ class alimentationCET
         if (!is_null($esignatureid))
         {
             $sql = $sql . "ESIGNATUREID = ? ";
-            $params = array(str_replace("'","''",$esignatureid));
+            $params = array($esignatureid);
         }
         elseif (!is_null($alimentationid))
         {
@@ -466,24 +466,13 @@ class alimentationCET
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO ALIMENTATIONCET(AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF) 
-                    VALUES('". $this->agentid . "',
-                           now(),
-                           '" . str_replace("'","''",$this->esignatureid) . "',
-                           '" . str_replace("'","''",$this->esignatureurl) . "',
-                           '" . $this->typeconges . "',
-                           '" . $this->valeur_a . "',
-                           '" . $this->valeur_b . "',
-                           '" . $this->valeur_c . "',
-                           '" . $this->valeur_d . "',
-                           '" . $this->valeur_e . "',
-                           '" . $this->valeur_f . "',
-                           '" . $this->valeur_g . "',
-                           '" . str_replace("'","''",$this->statut) . "',
-                           '" . $this->datestatut . "',
-                           '" . str_replace("'","''",$this->motif) . "')";
+            $sql = "INSERT INTO ALIMENTATIONCET(AGENTID,DATECREATION,ESIGNATUREID,ESIGNATUREURL,TYPECONGES,VALEUR_A,VALEUR_B,VALEUR_C,VALEUR_D,VALEUR_E,VALEUR_F,VALEUR_G,STATUT,DATESTATUT,MOTIF)
+                    VALUES(?,now(),?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
             //echo "SQL = " . $sql . "<br>";
-            $params = array();
+            $params = array($this->agentid, $this->esignatureid, $this->esignatureurl, $this->typeconges, 
+                            $this->valeur_a, $this->valeur_b, $this->valeur_c, $this->valeur_d, $this->valeur_e, 
+                            $this->valeur_f, $this->valeur_g, $this->statut, $this->datestatut, $this->motif);
             $query = $this->fonctions->prepared_query($sql, $params);
 
             $erreur = mysqli_error($this->dbconnect);
@@ -504,14 +493,14 @@ class alimentationCET
         {
             //echo "alimentationCET->Store : Mise à jour d'une nouvelle alimentation <br>";
             $sql = "UPDATE ALIMENTATIONCET 
-                    SET ESIGNATUREID = '" . str_replace("'","''",$this->esignatureid) . "',
-                        ESIGNATUREURL = '" . str_replace("'","''",$this->esignatureurl) . "',
-                        STATUT = '" . str_replace("'","''",$this->statut) . "',
-                        DATESTATUT = '" . $this->datestatut . "',
-                        MOTIF = '" . str_replace("'", "''", $this->motif) . "'
-                    WHERE ALIMENTATIONID = '" . $this->alimentationid . "'";
+                    SET ESIGNATUREID = ?,
+                        ESIGNATUREURL = ?,
+                        STATUT = ?,
+                        DATESTATUT = ?,
+                        MOTIF = ?
+                    WHERE ALIMENTATIONID = ?";
             //echo "SQL alimentationCET->Store : $sql <br>";
-            $params = array();
+            $params = array($this->esignatureid, $this->esignatureurl, $this->statut, $this->datestatut, $this->motif, $this->alimentationid);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {

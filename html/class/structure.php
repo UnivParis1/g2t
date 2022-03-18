@@ -1034,7 +1034,7 @@ class structure
         
         $pdf->Ln(8);
         ob_end_clean();
-        $pdf->Output();
+        $pdf->Output("","planning_structure.pdf");
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
     }
 
@@ -1208,7 +1208,7 @@ class structure
         
         $pdf->Ln(8);
         ob_end_clean();
-        $pdf->Output();
+        $pdf->Output("","agent_teletravail.pdf");
     }
     
     function structureenglobante()
