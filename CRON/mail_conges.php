@@ -45,6 +45,7 @@
 
         // On récupère le demandeur
         $demandeur = $demande->agent();
+        echo "Le demandeur de la demande " . $demande->id() . " est " . $demandeur->identitecomplete() . " (Agentid = " . $demandeur->agentid() . ")\n";
         // On récupère la liste des affectation du demandeur à la date du jour
         $affliste = $demandeur->affectationliste($fonctions->formatdatedb($date), $fonctions->formatdatedb($date));
 
@@ -56,43 +57,70 @@
 
         if (is_null($affliste) or count($affliste) == 0) {
             // Si le demandeur n'est plus affecté ==> On ne traite pas sa demande
+            echo "L'agent " . $demandeur->identitecomplete() . " n'a pas (ou plus) d'affectation => On ignore \n";
             continue;
         }
         // On conserve la première affectation (et sans doute la seule)
         $affectation = current($affliste);
 
-        // echo "l'affectation de l'agent " . $demandeur->identitecomplete() . " est : " . print_r($affectation,true) . "\n";
-
+        echo "l'affectation de l'agent " . $demandeur->identitecomplete() . " est : " . $affectation->structureid() . "\n";
+        
+        if ($affectation->structureid() . "" == "") 
+        {
+            // Si la structure du demandeur n'est plus définie ==> On ne traite pas sa demande
+            echo "La structure d'affectation de l'agent " . $demandeur->identitecomplete() . " n'a pas définie => On ignore \n";
+            continue;
+        }
+        
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
 
         // Si ce n'est pas le responsable de la structure qui a fait la demande
         // => C'est un agent
         // On regarde à qui on doit envoyer la demande de congés pour sa structure
-        if (is_null($structure->responsable()))
-            echo "Pas de responsable de structure(id : " . $affectation->structureid() . "), pas d'envoi de mail. \n";
+        $responsable = $structure->responsable();
+        if (is_null($responsable))
+            // S'il n'y a pas de responsable => 
+            //  - Dans le cas d'un agent on ne peut pas prévenir le responsable
+            //  - Dans le cas du responsable, on est incapable de déterminer que c'est lui le responsable
+            // En théorie ça ne se produit jamais car il y a tjrs un responsable (au pire G2T CRON)
+            echo "Pas de responsable de structure (id : " . $affectation->structureid() . "), pas d'envoi de mail. \n";
         else {
             // Si l'affectation correspondant à la demande est commencée => Sinon on ne dit rien !!!
-            if ($fonctions->formatdatedb($affectation->datedebut()) <= $fonctions->formatdatedb($date)) {
-                if ($affectation->agentid() != $structure->responsable()->agentid()) {
+            if ($fonctions->formatdatedb($affectation->datedebut()) <= $fonctions->formatdatedb($date)) 
+            {
+                if ($affectation->agentid() != $responsable->agentid()) 
+                {
+                    // On est dans le cas d'une demande d'un agent
                     $destinatairemail = $structure->agent_envoyer_a($codeinterne);
-                    if ($codeinterne == 2) // Gestionnaire service courant
+                    if (! is_null($destinatairemail))
                     {
-                        if (isset($mail_gest[$destinatairemail->agentid()]))
-                            $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
-                        else
-                            $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
-                    } else // Responsable service courant
-                    {
-                        if (isset($mail_resp[$destinatairemail->agentid()]))
-                            $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
-                        else
-                            $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
+                        if ($codeinterne == 2) // On envoie le mail au gestionnaire service courant
+                        {
+                            if (isset($mail_gest[$destinatairemail->agentid()]))
+                                $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
+                            else
+                                $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
+                        } 
+                        else // On envoie le mail au responsable service courant
+                        {
+                            if (isset($mail_resp[$destinatairemail->agentid()]))
+                                $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
+                            else
+                                $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
+                        }
                     }
-                }            // C'est le responsable de la structure qui a fait la demande
-                else {
+                    else
+                    {
+                        echo "Impossible de trouver le destinataire du mail d'une demande agent \n";
+                    }
+                }
+                else 
+                {
+                    // On est dans le cas d'une demande d'un responsable de la structure
                     $destinatairemail = $structure->resp_envoyer_a($codeinterne);
-                    if (! is_null($destinatairemail)) {
+                    if (! is_null($destinatairemail)) 
+                    {
                         // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
                         if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                         {
@@ -100,13 +128,18 @@
                                 $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',';
                             else
                                 $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
-                        } else // Responsable service parent
+                        } 
+                        else // Responsable service parent
                         {
                             if (isset($mail_resp[$destinatairemail->agentid()]))
                                 $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
                             else
                                 $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
                         }
+                    }
+                    else
+                    {
+                        echo "Impossible de trouver le destinataire du mail d'une demande responsable \n";
                     }
                 }
             }

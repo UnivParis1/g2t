@@ -383,15 +383,34 @@ class structure
             $result = mysqli_fetch_row($query);
             $codeinterne = $result[0];
             //echo "codeinterne = $codeinterne <br>";
-            error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne <br>");
+            error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne ");
+            $agent = new agent($this->dbconnect);
             switch ($codeinterne) {
                 case 2: // Envoi au gestionnaire du service parent
                     $parentstruct = $this->parentstructure();
                     if (! is_null($parentstruct))
-                        return $parentstruct->gestionnaire();
+                    {
+                        //if ($parentstruct->gestionnaireid . "" != "")
+                        if ($agent->existe($parentstruct->gestionnaireid))
+                        {
+                            return $parentstruct->gestionnaire();
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
                     break;
                 case 3: // Envoi au gestionnaire du service courant
-                    return $this->gestionnaire();
+                    //if ($this->gestionnaireid . "" != "")
+                    if ($agent->existe($this->gestionnaireid))
+                    {
+                        return $this->gestionnaire();
+                    }
+                    else
+                    {
+                        return null;
+                    }
                     break;
                 default: // $codeinterne = 1 ou $codeinterne non initialisé
                     $codeinterne = 1; // Envoi au responsable du service parent
@@ -399,7 +418,17 @@ class structure
                     error_log(basename(__FILE__) . " " . $this->nomlong);
                     error_log(basename(__FILE__) . " " . $parentstruct->nomlong);
                     if (! is_null($parentstruct))
-                        return $parentstruct->responsable();
+                    {
+                        //if ($parentstruct->responsableid . "" != "")
+                        if ($agent->existe($parentstruct->responsableid))
+                        {
+                            return $parentstruct->responsable();
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
             }
         }
     }
@@ -438,13 +467,31 @@ class structure
             }
             $result = mysqli_fetch_row($query);
             $codeinterne = $result[0];
-            switch ($codeinterne) {
+            $agent = new agent($this->dbconnect);
+            switch ($codeinterne) 
+            {
                 case 2: // Envoi au gestionnaire du service courant
-                    return $this->gestionnaire();
+                    //if ($this->gestionnaireid . "" != "")
+                    if ($agent->existe($this->gestionnaireid))
+                    {
+                        return $this->gestionnaire();
+                    }
+                    else
+                    {
+                        return null;
+                    }
                     break;
                 default: // $codeinterne = 1 ou $codeinterne non initialisé
                     $codeinterne = 1; // Envoi au responsable du service courant
-                    return $this->responsable();
+                    //if ($this->responsableid . "" != "")
+                    if ($agent->existe($this->responsableid))
+                    {
+                        return $this->responsable();
+                    }
+                    else
+                    {
+                        return null;
+                    }
             }
         }
     }
