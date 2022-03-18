@@ -14,6 +14,14 @@
             // On a l'agentid de l'agent => C'est un administrateur donc on peut forcer le userid avec la valeur du POST
             $userid = $_POST["userid"];
         }
+        else
+        {
+            $userid = $fonctions->useridfromCAS($uid);
+            if ($userid === false)
+            {
+                $userid = null;
+            }
+        }
     }
         
         

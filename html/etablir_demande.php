@@ -14,6 +14,14 @@
             // On a l'agentid de l'agent => C'est un administrateur donc on peut forcer le userid avec la valeur du POST
             $userid = $_POST["userid"];
         }
+        else
+        {
+            $userid = $fonctions->useridfromCAS($uid);
+            if ($userid === false)
+            {
+                $userid = null;
+            }
+        }
     }
     
         
@@ -512,9 +520,9 @@
             echo "<P style='color: red'><B><FONT SIZE='5pt'>";
             if ($msg_erreur != "" and isset($_POST["valider"])) {
                 echo "Votre demande n'a pas été enregistrée... <BR>";
+                error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
             }
             echo $msg_erreur . " </B></FONT></P>";
-            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
             // echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider <br>";
         } elseif (! $datefausse) {
             

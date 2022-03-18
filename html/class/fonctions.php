@@ -1453,6 +1453,33 @@ class fonctions
     
     public function CASuserisG2TAdmin($CASuid)
     {
+        //error_log(basename(__FILE__) . $this->stripAccents(" CASuid = $CASuid"));
+        $userid = $this->useridfromCAS($CASuid);
+        if ($userid !== false)
+        {
+            $user = new agent($this->dbconnect);
+            $user->load($userid);
+            if ($user->estadministrateur())
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" L'utilisateur $userid (Casid = $CASuid) est un administrateur"));
+                return $user->agentid();
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" L'utilisateur $userid (Casid = $CASuid) n'est pas un administrateur"));
+                return false;
+            }
+         }
+         else
+         {
+             return false;
+         }
+    }
+    
+    public function useridfromCAS($CASuid)
+    {
+        //error_log(basename(__FILE__) . $this->stripAccents(" CASuid = $CASuid"));
+        
         $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
@@ -1469,18 +1496,16 @@ class fonctions
         );
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
-        // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
         $user = new agent($this->dbconnect);
         if (! $user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
         {
-            $errlog = "CASuserisG2TAdmin : L'agent $CASuid (id = " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " ) n'est pas dans la base de données.<br>";
-            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            $errlog = "useridfromCAS : L'agent $CASuid (id = " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " ) n'est pas dans la base de données.";
+            // error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             return false;
         }
-        if ($user->estadministrateur())
-            return $user->agentid();
-        else
-            return false;
+        // error_log(basename(__FILE__) . $this->stripAccents(" L'agentid correspondant à $CASuid est " . $user->agentid()));
+        return $user->agentid();
     }
     
     public function prepared_query($sql, $params, $types = "")
