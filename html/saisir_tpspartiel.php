@@ -77,7 +77,9 @@
     if (isset($_POST["affectationid"])) {
         $affectationid = $_POST["affectationid"];
         $affectation = new affectation($dbcon);
-        $affectation->load($affectationid);
+        //echo "Avant le load de l'affectation <br>";
+        $affectation->load($affectationid,true);
+        //echo "Après le load de l'affectation <br>";
     } else
         $affectationid = null;
 
