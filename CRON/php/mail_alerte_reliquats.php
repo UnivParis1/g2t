@@ -1,23 +1,6 @@
 <?php
-    //require_once ("../html/class/fonctions.php");
-    require_once ('../html/includes/dbconnection.php');
-    //require_once ('../html/includes/g2t_ws_url.php');
-    require_once ('../html/includes/all_g2t_classes.php');
-/*
-    require_once ("../html/class/agent.php");
-    require_once ("../html/class/structure.php");
-    require_once ("../html/class/solde.php");
-    require_once ("../html/class/demande.php");
-    require_once ("../html/class/planning.php");
-    require_once ("../html/class/planningelement.php");
-    require_once ("../html/class/declarationTP.php");
-    // require_once("./class/autodeclaration.php");
-    // require_once("./class/dossier.php");
-    require_once ("../html/class/fpdf/fpdf.php");
-    require_once ("../html/class/cet.php");
-    require_once ("../html/class/affectation.php");
-    require_once ("../html/class/complement.php");
-*/
+    require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
+    require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
     
     $fonctions = new fonctions($dbcon);
 

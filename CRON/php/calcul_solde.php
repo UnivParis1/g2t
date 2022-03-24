@@ -1,9 +1,6 @@
 <?php
-    //require_once ("../html/class/fonctions.php");
-    require_once ('../html/includes/dbconnection.php');
-    //require_once ('../html/class/agent.php');
-    //require_once ('../html/includes/g2t_ws_url.php');
-    require_once ('../html/includes/all_g2t_classes.php');
+    require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
+    require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
     
     $fonctions = new fonctions($dbcon);
     
