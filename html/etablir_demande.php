@@ -162,8 +162,6 @@
     else
         $agent = null;
 
-    //echo "<br>"; print_r($_POST); echo "<br>";
-
     $datefausse = FALSE;
     $masquerboutonvalider = FALSE;
     $msg_erreur = "";
@@ -171,6 +169,7 @@
     
 
     // Récupération de la date de début
+    $deb_mataprem = null;
     if (isset($_POST["date_debut"])) {
         $date_debut = $_POST["date_debut"];
         // echo "date_debut = $date_debut <br>";
@@ -206,6 +205,7 @@
     }
 
     // Récupération de la date de fin
+    $fin_mataprem = null;
     if (isset($_POST["date_fin"])) {
         // echo "date_fin = $date_fin <br>";
         // echo "fonctions->verifiedate(date_fin) = " . $fonctions->verifiedate($date_fin) . "<br>";
@@ -312,6 +312,9 @@
     }
 
     require ("includes/menu.php");
+    
+    //echo "<br>"; print_r($_POST); echo "<br>";
+    
     ?>
     <script type="text/javascript">
     	// fonction pour le click gauche
@@ -644,6 +647,15 @@
                 }
                 echo "<P style='color: green'>" . $msgstore . " sous réserve du respect des règles de gestion.</P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
+                
+                // On réinitialise les variables qui servent à l'affichage en cas d'erreur
+                $deb_mataprem = null;
+                $fin_mataprem = null;
+                $date_debut = null;
+                $date_fin = null;
+                $listetype = null;
+                $commentaire = "";
+                
             } else {
                 $msgstore = "Votre demande n'a pas été enregistrée... ==> MOTIF : " . $resultat;
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
@@ -759,21 +771,23 @@
         
         ?>
     			<br>
-    			<td width=1px><input class="calendrier" type=text name=date_debut
-    				id=<?php echo $calendrierid_deb ?> size=10
-    				minperiode='<?php echo "$minperiode_debut"; ?>'
-    				maxperiode='<?php echo "$maxperiode_debut"; ?>'></td>
-    			<td align="left"><input type='radio' name='deb_mataprem' value='m'
-    				checked>Matin <input type='radio' name='deb_mataprem' value='a'>Après-midi</td>
+    			<td width=1px>
+    				<input class="calendrier" type=text name=date_debut id=<?php echo $calendrierid_deb ?> size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
+    			</td>
+    			<td align="left">
+    				<input type='radio' name='deb_mataprem' value='m' <?php if (($deb_mataprem == 'm') or ($deb_mataprem . "" == '')) echo " checked "; ?>>Matin 
+    				<input type='radio' name='deb_mataprem' value='a' <?php if ($deb_mataprem == 'a') echo " checked "; ?>>Après-midi
+    			</td>
     		</tr>
     		<tr>
     			<td>Date de fin de la demande :</td>
-    			<td width=1px><input class="calendrier" type=text name=date_fin
-    				id=<?php echo $calendrierid_fin ?> size=10
-    				minperiode='<?php echo "$minperiode_fin"; ?>'
-    				maxperiode='<?php echo "$maxperiode_fin"; ?>'></td>
-    			<td align="left"><input type='radio' name='fin_mataprem' value='m'>Matin
-    				<input type='radio' name='fin_mataprem' value='a' checked>Après-midi</td>
+    			<td width=1px>
+    				<input class="calendrier" type=text name=date_fin id=<?php echo $calendrierid_fin ?> size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
+    			</td>
+    			<td align="left">
+    				<input type='radio' name='fin_mataprem' value='m' <?php if ($fin_mataprem == 'm') echo " checked "; ?>>Matin
+    				<input type='radio' name='fin_mataprem' value='a' <?php if (($fin_mataprem == 'a') or ($fin_mataprem . "" == '')) echo " checked "; ?>>Après-midi
+    			</td>
     		</tr>
     		<tr>
     			<td>Type de congé :</td>
@@ -820,7 +834,12 @@
                             		}
                             		else 
                             		{
-                            			echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                            			echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                            			if ($keysolde == $listetype)
+                            			{
+                            			    echo " selected ";
+                            			}
+                            			echo " >" . $solde->typelibelle() . "</OPTION>";
                             			$nbretype = $nbretype + 1;
                             		}
                             	}
@@ -836,13 +855,23 @@
                             		}
                             		else
                             		{
-                            			echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                            			echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                            			if ($keysolde == $listetype)
+                            			{
+                            			    echo " selected ";
+                            			}
+                            			echo " >" . $solde->typelibelle() . "</OPTION>";
                             			$nbretype = $nbretype + 1;
                             		}
                             	}
                             	else 
                             	{
-                            		echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
+                            		echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                            		if ($keysolde == $listetype)
+                            		{
+                            		    echo " selected ";
+                            		}
+                            		echo " >" . $solde->typelibelle() . "</OPTION>";
                                 	$nbretype = $nbretype + 1;
                             	}
                             }
@@ -863,7 +892,14 @@
                 echo "<optgroup label='" . str_replace("_", " ", $nomcateg) . "'>";
                 $listeabs = $fonctions->listeabsence($keycateg);
                 foreach ($listeabs as $keyabs => $nomabs)
-                    echo "<OPTION value='" . $keyabs . "'>" . $nomabs . "</OPTION>";
+                {
+                    echo "<OPTION value='" . $keyabs . "' ";
+                    if ($keyabs == $listetype)
+                    {
+                        echo " selected ";
+                    }
+                    echo ">" . $nomabs . "</OPTION>";
+                }
                 echo "</optgroup>";
             }
             echo "</SELECT>";
@@ -885,7 +921,7 @@
             echo "<br>";
         } elseif (strcasecmp($typedemande, "conges") != 0) {
             echo "Commentaire (obligatoire pour les 'Absences autorisées par l'établissement', sinon facultatif) : <br>";
-            echo "<textarea rows='4' cols='60' name='commentaire'></textarea> <br>";
+            echo "<textarea rows='4' cols='60' name='commentaire'>$commentaire</textarea> <br>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";
         }
