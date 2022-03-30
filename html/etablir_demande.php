@@ -512,7 +512,12 @@
             // Echo "Avant le est present .... <br>";
             $present = $planning->agentpresent($agent->agentid(), $date_debut, $deb_mataprem, $date_fin, $fin_mataprem, $ignoreabsenceautodecla);
             if (! $present)
-                $msg_erreur = $msg_erreur . $agent->prenom() . "  " . $agent->nom() . " n'est pas présent durant la période du $date_debut au $date_fin......!!! <br>";
+            {
+                if (strtoupper($agent->civilite()) == "MME")
+                    $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présente durant la période du $date_debut au $date_fin......!!! <br>";
+                else
+                    $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présent durant la période du $date_debut au $date_fin......!!! <br>";
+            }
         }
 
         // echo "Date fausse (2) = " . $datefausse . "<br>";
@@ -643,7 +648,10 @@
                         $msgstore .= $demande->nbrejrsdemande() . " jour vous sera decompté (" . $demande->typelibelle() . ")";
                     }
                 } else {
-                    $msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s)";
+                    if (strtoupper($agent->civilite()) == 'MME')
+                        $msgstore .= "Vous serez absente durant " . $demande->nbrejrsdemande() . " jour(s)";
+                    else
+                        $msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s)";
                 }
                 echo "<P style='color: green'>" . $msgstore . " sous réserve du respect des règles de gestion.</P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));

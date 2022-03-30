@@ -1130,7 +1130,7 @@ class agent
         } else
             $pdf->Cell(215, 5, utf8_decode("Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom()), 1, 0, 'C');
         $pdf->Ln(5);
-        $pdf->Cell(75, 5, utf8_decode("Type congé"), 1, 0, 'C');
+        $pdf->Cell(75, 5, utf8_decode("Type de demande"), 1, 0, 'C');
         $pdf->Cell(30, 5, utf8_decode("Droits acquis"), 1, 0, 'C');
         $pdf->Cell(30, 5, utf8_decode("Droit pris"), 1, 0, 'C');
         $pdf->Cell(30, 5, utf8_decode("Solde actuel"), 1, 0, 'C');
@@ -1209,7 +1209,7 @@ class agent
         else
             $htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
         
-        $htmltext = $htmltext . "         <tr class='entete'><td>Type congé</td><td>Droits acquis</td><td>Droit pris</td><td>Solde actuel</td><td>Demandes en attente</td></tr>";
+        $htmltext = $htmltext . "         <tr class='entete'><td>Type de demande</td><td>Droits acquis</td><td>Droit pris</td><td>Solde actuel</td><td>Demandes en attente</td></tr>";
         $totaldroitaquis = 0;
         $totaldroitpris = 0;
         $totaldroitrestant = 0;
@@ -1382,7 +1382,7 @@ class agent
             $htmltext = $htmltext . "   <tr class='titre'><td>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
         else {
             $htmltext = $htmltext . "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
-            $htmltext = $htmltext . "   <tr class='entete'><td>Type de congé</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Etat de la demande</td><td>Motif (obligatoire si le congé est annulé)</td></tr>";
+            $htmltext = $htmltext . "   <tr class='entete'><td>Type de demande</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Etat de la demande</td><td>Motif (obligatoire si le congé est annulé)</td></tr>";
             foreach ($demandeliste as $key => $demande) {
                 //if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) {
                 if ($demande->motifrefus() != "" or (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)) {
@@ -1476,7 +1476,7 @@ class agent
             $htmltext = $htmltext . "<div id='demandeliste'>";
             $htmltext = $htmltext . "<center><table class='tableau' >";
             $htmltext = $htmltext . "   <tr class='titre'><td colspan=2>Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin) . "</td></tr>";
-            $htmltext = $htmltext . "   <tr class='entete'><td>Type de congé</td><td>Droit pris</td></tr>";
+            $htmltext = $htmltext . "   <tr class='entete'><td>Type de demande</td><td>Droit pris</td></tr>";
             ksort($synthesetab);
             foreach ($synthesetab as $key => $nbrejrs) {
                 $htmltext = $htmltext . "<tr class='element'>";
@@ -1642,7 +1642,7 @@ class agent
         if (count($demandeliste) == 0)
             $pdf->Cell(275, 5, utf8_decode("L'agent n'a aucun congé posé pour la période de référence en cours."), 1, 0, 'C');
         else {
-            $pdf->Cell(60, 5, utf8_decode("Type de congé"), 1, 0, 'C');
+            $pdf->Cell(60, 5, utf8_decode("Type de demande"), 1, 0, 'C');
             $pdf->Cell(25, 5, utf8_decode("Date de dépot"), 1, 0, 'C');
             $pdf->Cell(30, 5, utf8_decode("Date de début"), 1, 0, 'C');
             $pdf->Cell(30, 5, utf8_decode("Date de fin"), 1, 0, 'C');
@@ -1695,7 +1695,7 @@ class agent
                 $headertext = $headertext . date("d/m/Y");
             $pdf->Cell(100, 5, utf8_decode($headertext), 1, 0, 'C');
             $pdf->Ln(5);
-            $pdf->Cell(80, 5, utf8_decode("Type de congé"), 1, 0, 'C');
+            $pdf->Cell(80, 5, utf8_decode("Type de demande"), 1, 0, 'C');
             $pdf->Cell(20, 5, utf8_decode("Droit pris"), 1, 0, 'C');
             $pdf->ln(5);
             ksort($synthesetab);
@@ -1800,7 +1800,7 @@ class agent
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=7 align=center ><font color=#BF3021>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</font></td></tr>";
 /*
-                        $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td>";
+                        $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Commentaire</td>";
                         $htmltext = $htmltext . "<td class='cellulesimple'>Annuler</td>";
@@ -1808,7 +1808,7 @@ class agent
                             $htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
                         $htmltext = $htmltext . "</tr>";
 */                                
-                        $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de début <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de fin <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Type congé <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours <font></font></th>";
+                        $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de début <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de fin <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Type de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours <font></font></th>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
@@ -1999,7 +1999,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         if ($premieredemande) {
                             $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
                             $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center ><font color=#BF3021>Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</font></td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Etat de la demande</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
+                            $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Etat de la demande</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
                             $premieredemande = FALSE;
                         }
                         
@@ -2100,7 +2100,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             if (($showonlycomplement and (strcasecmp(substr($result[5], 0, 3), "sup")) == 0) or ($showonlycomplement == false)) {
                 if ($premiercomment) {
                     $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
-                    $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type congé</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
+                    $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
                     $premiercomment = FALSE;
                 }
                 
@@ -2478,7 +2478,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 	    	$htmltext = $htmltext . "<center>";
 	    	$htmltext = $htmltext . "<table class='tableausimple'>";
 	    	$htmltext = $htmltext . "<tr class='titresimple'><td colspan=8>Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "</td></tr>";
-	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
 	    	$htmltext = $htmltext . "</tr>";
 	    	foreach ($listid as $id)
 	    	{
@@ -2846,7 +2846,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
     	$type_conge = 'ann'.substr($anneeref,2, 2);
     	$planning = $this->planning($this->fonctions->formatdate($datedeb), $this->fonctions->formatdate($datefin));
-    	$errlog = "type congé $type_conge. date planning debut : ".$this->fonctions->formatdate($datedeb)." fin : ".$this->fonctions->formatdate($datefin);
+    	$errlog = "Type de demande $type_conge. date planning debut : ".$this->fonctions->formatdate($datedeb)." fin : ".$this->fonctions->formatdate($datefin);
     	//echo "<br><br>" . print_r($planning,true) . "<br><br>";
     	
     	$nbjours = 0;

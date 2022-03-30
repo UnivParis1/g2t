@@ -426,7 +426,10 @@
                     echo "</table>";
                     $nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
                     // echo "nbredemiTP = " . $nbredemiTP . "<br>";
-                    echo "<br>Veuillez cocher les demi-journées où vous êtes absent au titre du temps partiel.";
+                    if (strtoupper($agent->civilite()) == 'MME')
+                        echo "<br>Veuillez cocher les demi-journées où vous êtes absente au titre du temps partiel.";
+                    else    
+                        echo "<br>Veuillez cocher les demi-journées où vous êtes absent au titre du temps partiel.";
                     echo "<br> Validez votre saisie en cliquant sur le bouton 'Soumettre'.";
                     echo "<br>Au regard de votre quotité de travail, vous devez cocher $nbredemiTP demi-journée(s) par semaine<br><br>";
 

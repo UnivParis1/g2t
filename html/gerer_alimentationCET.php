@@ -762,7 +762,7 @@
 	        echo "Informations sur les demandes d'alimentation de CET pour " . $agent->identitecomplete() . "<br>";
 	        echo "<div id='demandes_alim_cet'>";
 	        echo "<table class='tableausimple'>";
-	        echo "<tr><td class='titresimple'>Date création</td><td class='titresimple'>type congé</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+	        echo "<tr><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
 	        echo "</tr>";
 	        while ($result = mysqli_fetch_row($query))
 	        {
