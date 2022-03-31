@@ -383,7 +383,7 @@ class structure
             $result = mysqli_fetch_row($query);
             $codeinterne = $result[0];
             //echo "codeinterne = $codeinterne <br>";
-            error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne ");
+            //error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne ");
             $agent = new agent($this->dbconnect);
             switch ($codeinterne) {
                 case 2: // Envoi au gestionnaire du service parent
@@ -415,8 +415,8 @@ class structure
                 default: // $codeinterne = 1 ou $codeinterne non initialisé
                     $codeinterne = 1; // Envoi au responsable du service parent
                     $parentstruct = $this->parentstructure();
-                    error_log(basename(__FILE__) . " " . $this->nomlong);
-                    error_log(basename(__FILE__) . " " . $parentstruct->nomlong);
+                    // error_log(basename(__FILE__) . " " . $this->nomlong);
+                    // error_log(basename(__FILE__) . " " . $parentstruct->nomlong);
                     if (! is_null($parentstruct))
                     {
                         //if ($parentstruct->responsableid . "" != "")
@@ -550,7 +550,7 @@ class structure
                 if (! is_null($this->delegueid) and ($this->delegueid != "")) {
                     if ($responsable->load("$this->delegueid")) 
                     {
-                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" La délégation est active => L'agent délégué est " . $responsable->identitecomplete()));
+                        // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" La délégation est active => L'agent délégué est " . $responsable->identitecomplete()));
                         return $responsable;
                     } else {
                         $responsable->civilite('');
@@ -561,7 +561,7 @@ class structure
                     }
                 }                // Sinon c'est le responsable SIHAM qu'il faut retourner
                 else {
-                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" Le responsable de " . $this->nomlong . " est " . $this->responsablesiham()->identitecomplete()));
+                    // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" Le responsable de " . $this->nomlong . " est " . $this->responsablesiham()->identitecomplete()));
                     return $this->responsablesiham();
                 }
             }
