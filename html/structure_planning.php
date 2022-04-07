@@ -102,7 +102,19 @@
     $action = '';
     if (isset($_POST['action']))
         $action = $_POST['action'];
-        
+    
+    $rootstruct = '';
+    if (isset($_POST['rootid']))
+        $rootstruct = $_POST['rootid'];
+    
+    $check_showroot = 'off';
+    if (isset($_POST['check_showroot']))
+        $check_showroot = $_POST['check_showroot'];
+    
+    $structureid = '';
+    if (isset($_POST['structureid']))
+        $structureid = $_POST['structureid'];
+            
         
     if ($date_selected != "" and $moment_selected != "" and $agentid_selected != "")
     {
@@ -237,122 +249,122 @@
     echo "<input type='hidden' name='action' id='action' value='' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
-    if (strcasecmp($mode, "resp") == 0) {
+    if (strcasecmp($mode, "resp") == 0) 
+    {
         $structureliste = $user->structrespliste();
-        foreach ($structureliste as $structkey => $structure) {
-            // Si la structure est ouverte => On la garde
-            if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                if (strcasecmp($structure->sousstructure(), "o") == 0) {
-                    $sousstructliste = $structure->structurefille();
-                    foreach ((array) $sousstructliste as $key => $struct) {
-                        // Si la structure est fermée.... On la supprime de la liste
-                        if ($fonctions->formatdatedb($struct->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-                            // echo "Index = " . array_search($struct, $sousstructliste) . " Key = " . $key . "<br>";
-                            // echo "<br>sousstructliste AVANT = "; print_r($sousstructliste); echo "<br>";
-                            unset($sousstructliste["$key"]);
-                            // echo "<br>sousstructliste APRES = "; print_r($sousstructliste); echo "<br>";
-                        }
-                    }
-                    // echo "<br>sousstructliste = "; print_r($sousstructliste); echo "<br>";
-                    $structureliste = array_merge($structureliste, (array) $sousstructliste);
-                    // Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+        foreach ($structureliste as $structkey => $structure) 
+        {
+            if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+            {
+                // echo "structureid = $structureid    structure->id() = " . $structure->id() . "   rootstruct = $rootstruct <br>";
+                if ($structureid == $structure->id() and $rootstruct <> '')
+                {
+                    unset($structureliste["$structkey"]);
+                    $structure = $structure->structureenglobante();
                 }
-            } else // La strcuture est fermée... Donc on la supprime de la liste.
+                $structureliste = array_merge($structureliste, array($structure->id() => $structure));
+                // Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+            } 
+            else // La strcuture est fermée... Donc on la supprime de la liste.
             {
                 // echo " structkey = " . $structkey . "<br>";
                 unset($structureliste["$structkey"]);
             }
         }
         // echo "<br>StructureListe = "; print_r($structureliste); echo "<br>";
-        foreach ($structureliste as $structkey => $structure) {
-            echo "<br>";
-            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true,true);
-/*
-            echo "<br><br><br>";
-            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true,true,false);
-            echo "<br>";
-*/
-/*            
-            $agent = new agent($dbcon);
-            $agent->load('9328');
-            // On charge le plannig de l'agent AVEC les congés
-            $planning = $agent->planning('01/02/2022', '28/02/2022',true,true);
-            //var_dump($planning);
-            $nbjrsteletravail = 0;
-            foreach ($planning->planning() as $element)
-            {
-                echo "<br>Le type est : " . $element->type();
-                if (in_array($element->type(),array('teletrav', 'teleetab', 'telegouv', 'telesante'))) // Si c'est un télétravail => On compte +0.5 (car un element pour matin et un element pour apres-midi)
-                {
-                    $nbjrsteletravail = $nbjrsteletravail + 0.5;
-                }
-            }
-            echo "<br>Avec les congés (donc pratique), le nombre de jours de télétravail pour " . $agent->identitecomplete()  ." est : $nbjrsteletravail <br><br>";
-            // On charge le plannig de l'agent SANS les congés
-            $planning = $agent->planning('01/02/2022', '28/02/2022',true,false);
-            //var_dump($planning);
-            $nbjrsteletravail = 0;
-            foreach ($planning->planning() as $element)
-            {
-                echo "<br>Le type est : " . $element->type();
-                if (in_array($element->type(),array('teletrav', 'teleetab', 'telegouv', 'telesante'))) // Si c'est un télétravail => On compte +0.5 (car un element pour matin et un element pour apres-midi)
-                {
-                    $nbjrsteletravail = $nbjrsteletravail + 0.5;
-                }
-            }
-            echo "<br>Sans les congés (donc théorique), le nombre de jours de télétravail pour " . $agent->identitecomplete()  ." est : $nbjrsteletravail <br><br>";
-*/            
-            if ($structure->responsable()->agentid() == $user->agentid() and !$structure->isincluded())
+        foreach ($structureliste as $structkey => $structure) 
+        {
+            // Vérification que la structure n'est pas fermée => En théorie c'est déjà fait avant donc ne sert à rien
+            if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
             {
                 echo "<br>";
-                echo "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
-                echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
-                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
-                echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-                echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
-                echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
-                
-                $currentyrear = date('Y');
-                $currentmonth = date('m');
-                if ($currentmonth >= 10)
-                    $currentmonth = 7;
-                elseif ($currentmonth >= 7)
-                    $currentmonth = 4;
-                elseif ($currentmonth >= 4)
-                    $currentmonth = 1;
+                //echo "Le code de la structure : " . $structure->id() . "<br>";
+                if ($structure->responsable()->agentid() == $user->agentid())
+                {
+                    $planninggris = false;
+                }
                 else
                 {
-                    $currentmonth = 10;
-                    $currentyrear = $currentyrear - 1;
+                    $planninggris = true;
                 }
-                $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
-                $datedebut = $currentyrear . $currentmonth . '01';
+                $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'o',$planninggris,true,true);
+                echo $planninghtml;
+                $structparent = $structure->structureenglobante();
                 
-                
-                $currentyrear = date('Y');
-                $currentmonth = date('m');
-                if ($currentmonth >= 10)
-                    $currentmonth = 9;
-                elseif ($currentmonth >= 7)
-                    $currentmonth = 6;
-                elseif ($currentmonth >= 4)
-                    $currentmonth = 3;
-                else
+/*
+                if (trim($planninghtml) != "" and $structkey <> $structparent->id())
                 {
-                    $currentmonth = 12;
-                    $currentyrear = $currentyrear - 1;
+                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
+                    echo "<br>";
+                    echo "<form name='form_showroot' id='form_showroot' method='post'>";
+                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                    echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
+                    echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
+                    
+                    echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
+                    if ($check_showroot == 'on' and $structureid == $structkey)
+                        echo " checked ";
+                    echo "/>";
+                    echo "Voir le planning de la structure \"racine\" => " . $structparent->nomcourt();
+                    echo "</form>";
                 }
-                $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
-                $datefin = $currentyrear . $currentmonth . $fonctions->nbr_jours_dans_mois($currentmonth, $currentyrear);
-                        
+*/                
                 
-                echo "<input type='hidden' name='datedebut' value='" . $datedebut . "' />";
-                echo "<input type='hidden' name='datefin' value='" . $datefin .  "' />";
-                
-                //echo "Générer le document 'télétravail' du trimestre précédent pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
-                echo "Générer le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
-                echo "<input type='submit' name='teletravailPDF' />";
-                echo "</form>";
+                if ($structure->responsable()->agentid() == $user->agentid() and !$structure->isincluded() and trim($planninghtml) != "")
+                {
+                    echo "<br>";
+                    echo "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
+                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                    echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
+                    
+                    $currentyrear = date('Y');
+                    $currentmonth = date('m');
+                    if ($currentmonth >= 10)
+                        $currentmonth = 7;
+                    elseif ($currentmonth >= 7)
+                        $currentmonth = 4;
+                    elseif ($currentmonth >= 4)
+                        $currentmonth = 1;
+                    else
+                    {
+                        $currentmonth = 10;
+                        $currentyrear = $currentyrear - 1;
+                    }
+                    $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
+                    $datedebut = $currentyrear . $currentmonth . '01';
+                    
+                    
+                    $currentyrear = date('Y');
+                    $currentmonth = date('m');
+                    if ($currentmonth >= 10)
+                        $currentmonth = 9;
+                    elseif ($currentmonth >= 7)
+                        $currentmonth = 6;
+                    elseif ($currentmonth >= 4)
+                        $currentmonth = 3;
+                    else
+                    {
+                        $currentmonth = 12;
+                        $currentyrear = $currentyrear - 1;
+                    }
+                    $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
+                    $datefin = $currentyrear . $currentmonth . $fonctions->nbr_jours_dans_mois($currentmonth, $currentyrear);
+                            
+                    
+                    echo "<input type='hidden' name='datedebut' value='" . $datedebut . "' />";
+                    echo "<input type='hidden' name='datefin' value='" . $datefin .  "' />";
+                    
+                    //echo "Générer le document 'télétravail' du trimestre précédent pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
+                    echo "Générer le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
+                    echo "<input type='submit' name='teletravailPDF' />";
+                    echo "</form>";
+                }
             }
         }
 /*
@@ -361,15 +373,75 @@
         var_dump($structincluelist);
         echo "<br>";
 */
-        $structureliste = $user->structrespliste();
-        foreach ($structureliste as $structkey => $structure) {
-            if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
-                echo "<br>";
-                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true,false);
-            }
-        }
     } elseif (strcasecmp($mode, "gestion") == 0) {
         $structureliste = $user->structgestliste();
+        foreach ($structureliste as $structkey => $structure)
+        {
+            if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
+            {
+                //echo "structureid = $structureid    structure->id() = " . $structure->id() . "   rootstruct = $rootstruct <br>";
+                if ($structureid == $structure->id() and $rootstruct <> '')
+                {
+                    unset($structureliste["$structkey"]);
+                    $structure = $structure->structureenglobante();
+                }
+                $structureliste = array_merge($structureliste, array($structure->id() => $structure));
+                // Remarque : Le tableau ne contiendra pas de doublon, car la clé est le code de la structure !!!
+            }
+            else // La strcuture est fermée... Donc on la supprime de la liste.
+            {
+                // echo " structkey = " . $structkey . "<br>";
+                unset($structureliste["$structkey"]);
+            }
+        }
+        // echo "<br>StructureListe = "; print_r($structureliste); echo "<br>";
+        foreach ($structureliste as $structkey => $structure)
+        {
+            // Vérification que la structure n'est pas fermée => En théorie c'est déjà fait avant donc ne sert à rien
+            if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))
+            {
+                echo "<br>";
+                //echo "Le code de la structure : " . $structure->id() . "<br>";
+                if ($structure->gestionnaire()->agentid() == $user->agentid())
+                {
+                    $planninggris = false;
+                }
+                else
+                {
+                    $planninggris = true;
+                }
+                $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'o',$planninggris,true,true);
+                echo $planninghtml;
+                $structparent = $structure->structureenglobante();
+
+/*                
+                if (trim($planninghtml) != "" and $structkey <> $structparent->id())
+                {
+                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
+                    echo "<br>";
+                    echo "<form name='form_showroot' id='form_showroot' method='post'>";
+                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                    echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
+                    echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
+                    
+                    echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
+                    if ($check_showroot == 'on' and $structureid == $structkey)
+                        echo " checked ";
+                    echo "/>";
+                    echo "Voir le planning de la structure \"racine\" => " . $structparent->nomcourt();
+                    echo "</form>";
+                }
+*/
+            }
+        }
+            
+/*        
+        
+        
+        
         foreach ($structureliste as $structkey => $structure) {
             // Si la structure est ouverte => On la garde
             if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
@@ -406,23 +478,63 @@
                 echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true);
             }
         }
-    } else {
-        $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
-        /*
-         * if ($annee. $indexmois <= date('Ym'))
-         * {
-         * echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Des données ont été masquées en raison de restrictions d'accès....</font></B><br>";
-         * echo "<font color=#FF0000>Les informations antérieures à la date du jour, ont été masquées.</font><br>";
-         * }
-         */
-        foreach ($affectationliste as $affectkey => $affectation) {
-            $structureid = $affectation->structureid();
+*/
+    } 
+    else 
+    {
+/*       
+
+        $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));        
+        foreach ($affectationliste as $affectkey => $affectation) 
+        {
+*/            
+        $affstructureid = $user->structureid();
+        if ($affstructureid . "" != "")
+        {
             $structure = new structure($dbcon);
-            $structure->load($structureid);
-            if (strcasecmp($structure->affichetoutagent(), "o") == 0) {
+            $structure->load($affstructureid);
+            $showsousstruct = 'n';
+            if (strcasecmp($structure->affichetoutagent(), "o") == 0)
+            {
+                // Rappel : 
+                //      structureid => Id de la structure d'affectation de l'agent (récupéré du POST)
+                //      affstructureid => Id de la structure d'affectation de l'agent
+                //      rootstruct => Id de la strucuture racine
+                //echo "structureid = $structureid    affstructureid = $affstructureid   rootstruct = $rootstruct <br>";
+                // Si on a coché la case 'voir la structure root  et si rootstruct <> '' ==> On veut afficher la structure Root
+                if ($rootstruct <> '' and $check_showroot == 'on')
+                {
+                    unset($structure);
+                    $structure = new structure($dbcon);
+                    $structure->load($rootstruct);
+                    $showsousstruct = 'o';
+                }
+                
                 echo "<br>";
                 // echo "Planning de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
-                echo $structure->planninghtml($indexmois . "/" . $annee, 'n', true,false); // 'n' car l'agent ne doit pas voir les conges des sous-structures (si autorisé) + Pas de télétravail sinon visuellement c'est trompeur
+                $planninghtml =  $structure->planninghtml($indexmois . "/" . $annee, $showsousstruct, true,false); // 'n' => l'agent ne doit pas voir les conges des sous-structures (si autorisé) + Pas de télétravail sinon visuellement c'est trompeur
+                echo $planninghtml;
+                $structparent = $structure->structureenglobante();
+                
+                if (trim($planninghtml) != "") // and $structure->id() <> $rootstruct)
+                {
+                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
+                    echo "<br>";
+                    echo "<form name='form_showroot' id='form_showroot' method='post'>";
+                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                    echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
+                    echo "<input type='hidden' name='structureid' value='" . $affstructureid .  "' />";
+                    
+                    echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
+                    if ($check_showroot == 'on')
+                        echo " checked ";
+                    echo "/>";
+                    echo "Voir l'intégralité du planning de la structure \"racine\" => " . $structparent->nomcourt();
+                    echo "</form>";
+                }
             }
         }
     }

@@ -198,6 +198,7 @@ class planningelement
 
     function html($clickable = FALSE, $checkboxname = null, $noiretblanc = false, $dbclickable = FALSE)
     {
+        //$this->fonctions->time_elapsed("Début de la fonction html",0,true);
         $htmltext = "";
         // $htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" ></td>";
         
@@ -231,9 +232,16 @@ class planningelement
         }
         else
         {
+            //$this->fonctions->time_elapsed("Avant le load agent - bloc complet (" . $this->agentid() . ")",1,true);
+            //$this->fonctions->time_elapsed("Avant le load agent (" . $this->agentid() . ")",2,true);
+          
+/*            
             $agent = new agent($this->dbconnect);
             $agent->load($this->agentid());
             $listeexclusion = $agent->listejoursteletravailexclus($this->date(), $this->date());
+*/
+            //$this->fonctions->time_elapsed("Après le load agent (" . $this->agentid() . ")",2);
+/*            
             if (array_search($this->fonctions->formatdatedb($this->date()),(array)$listeexclusion)===false)
             {   // On n'a pas trouvé la date dans la liste 
                 $exclusion = false;
@@ -242,6 +250,10 @@ class planningelement
             {   // La date est dans liste des exclusions
                 $exclusion = true;
             }
+*/
+            $exclusion = $this->fonctions->estjourteletravailexclu($this->agentid(), $this->date());
+            
+            //$this->fonctions->time_elapsed("Après le load agent - bloc complet (" . $this->agentid() . ")",1);
         }
         if (($this->type() == 'teletrav' or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
@@ -310,7 +322,8 @@ class planningelement
          * $htmltext = $htmltext ."</a>";
          * $htmltext = $htmltext . "</form>";
          */
-        return $htmltext;
+         //$this->fonctions->time_elapsed("Fin de la fonction html",0);
+         return $htmltext;
     }
 }
 

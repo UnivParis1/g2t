@@ -1525,6 +1525,64 @@ class fonctions
         return $this->prepared_query($sql, $params, $types)->get_result();
     }
     
+    public function time_elapsed($text = "Durée", $numcpt = 0, $reset = false)
+    {
+        static $last = array();
+        
+        if (!isset($last[$numcpt]))
+        {
+            $last[$numcpt] = null;
+            $reset = false;
+        }
+            
+        if ($reset)
+        {
+            $last[$numcpt] = null;
+        }
+        
+        $now = microtime(true);
+        
+        if ($last[$numcpt] != null) 
+        {
+            echo "$text : " . round($now - $last[$numcpt],5) . " secondes (cpt $numcpt) <br>";
+        }
+        else
+        {
+            echo "$text : init -> compteur $numcpt <br>";
+        }
+        
+        $last[$numcpt] = $now;
+    }
+    
+    public function estjourteletravailexclu($agentid, $date)
+    {
+        $date = $this->formatdatedb($date);
+        
+        $sql = "SELECT VALEUR
+                FROM COMPLEMENT
+                WHERE AGENTID = ?
+                  AND COMPLEMENTID = 'TT_EXCLU_" . $date . "'
+                  AND VALEUR = ?";
+        
+        $params = array($agentid,$date);
+        $query = $this->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "estjourteletravailexclu => Problème SQL dans le chargement des complement TT_EXCLU : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    
 }
 
 ?>

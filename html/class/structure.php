@@ -281,7 +281,8 @@ class structure
     {
         $agentliste = null;
         if ((strcasecmp($this->affichesousstruct, 'o') == 0 and strcasecmp($sousstrucuture, 'n') != 0) or (strcasecmp($sousstrucuture, 'o') == 0)) {
-            $structliste = $this->structurefille();
+            //$structliste = $this->structurefille();
+            $structliste = $this->structureinclue();
             if (! is_null($structliste)) {
                 foreach ($structliste as $key => $structure) {
                     if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
@@ -634,7 +635,9 @@ class structure
             // echo "<font color=#FF0000></font><br>";
         }
         
+//        $this->fonctions->time_elapsed("Avant le this->planning",0,true);
         $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail,$includecongeabsence);
+//        $this->fonctions->time_elapsed("Après le this->planning",0);
         
         if (! is_array($planningservice)) {
             return ""; // Si aucun élément du planning => On retourne vide
@@ -645,7 +648,9 @@ class structure
         $htmltext = $htmltext . "<table class='tableau' id='struct_plan_" . $this->id() . "'>";
         
         $titre_a_ajouter = TRUE;
+//        $this->fonctions->time_elapsed("Avant le foreach agentid => planning",1,true);
         foreach ($planningservice as $agentid => $planning) {
+//            $this->fonctions->time_elapsed("Debut du foreach agentid => planning ($agentid)",2,true);
             if ($titre_a_ajouter) {
                 $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) . " align=center ><font color=#BF3021>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
@@ -678,13 +683,17 @@ class structure
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";
+            //$this->fonctions->time_elapsed("Avant le foreach keyelement => element ($agentid)",3,true);
             foreach ($listeelement as $keyelement => $element) {
                 // echo "Boucle sur l'element <br>";
                 $htmltext = $htmltext . $element->html(false, null, $noiretblanc, $dbclickable);
             }
+            //$this->fonctions->time_elapsed("Après le foreach keyelement => element ($agentid)",3);
             // echo "Fin boucle sur les elements <br>";
             $htmltext = $htmltext . "</tr>";
+//            $this->fonctions->time_elapsed("Fin du foreach agentid => planning ($agentid)",2);
         }
+//        $this->fonctions->time_elapsed("Apres le foreach agentid => planning",1);
         $htmltext = $htmltext . "</table>";
         $htmltext = $htmltext . "</div>";
         
@@ -1298,6 +1307,8 @@ class structure
                 $structure = new structure($this->dbconnect);
                 $structure->load("$result[0]");
                 $structureliste[$structure->id()] = $structure;
+                // On fait le parcours récursif pour remonter toutes les structures filles 
+                $structureliste = array_merge($structureliste, (array) $structure->structureinclue());
                 unset($structure);
             }
             return $structureliste;
