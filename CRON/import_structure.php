@@ -158,6 +158,10 @@
 	                        $codefonction = "1447"; // Directeur général des services
 	                    elseif (array_key_exists("#1044", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "1044"; // Agent comptable
+	                    elseif (array_key_exists("#2005", (array) $tabfonctions[$code_struct]))
+	                        $codefonction = "2005"; // Directeur de Cabinet
+	                    elseif (array_key_exists("#2006", (array) $tabfonctions[$code_struct]))
+	                        $codefonction = "2006"; // Chef du Cabinet
 	                    elseif (array_key_exists("#2002", (array) $tabfonctions[$code_struct]))
 	                        $codefonction = "2002"; // Responsable
 	                    elseif (array_key_exists("#1521", (array) $tabfonctions[$code_struct]))
