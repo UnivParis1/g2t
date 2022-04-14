@@ -26,8 +26,12 @@ class planning
 
     function load($agentid, $datedebut, $datefin, $includeteletravail = false, $includecongeabsence = true)
     {
+        //$this->fonctions->time_elapsed("Planning : Début de la fonction load", 10, true);
+
+        //$this->fonctions->time_elapsed("Planning : Avant le load agent", 11, true);
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
+        //$this->fonctions->time_elapsed("Planning : Après le load agent", 11);
         
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
@@ -57,10 +61,12 @@ class planning
         //}
         $affectationliste = $agent->affectationliste($datedebut, $datefin, $ignoremissinggstructure);
         
+        //$this->fonctions->time_elapsed("Planning : Avant le foreach affectationliste", 11, true);
         foreach ((array) $affectationliste as $affectation) {
             $declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
             $fulldeclarationTPliste[$affectation->affectationid()] = $declarationTPliste;
         }
+        //$this->fonctions->time_elapsed("Planning : Après le foreach affectationliste", 11);
         if (is_array($affectationliste))
             $affectation = reset($affectationliste); // On récupère la première affectation
         
@@ -69,6 +75,7 @@ class planning
          * echo "----------------------------------------------------------------------------------<br>";
          * echo "fulldeclarationTPliste = " . print_r($fulldeclarationTPliste,true) . "<br>";
          */
+        //$this->fonctions->time_elapsed("Planning : Avant le for index=0", 11, true);
         for ($index = 0; $index <= $nbre_jour - 1; $index ++) {
             // echo "datetemp= $datetemp <br>";
             
@@ -128,124 +135,7 @@ class planning
                     }
                 }
             }
-            
-            /*
-             * // Si la declaration de TP existe et que la date de fin est avant la date en cours
-             * // (donc on se moque de cette declaration de TP) => On dit qu'on en n'a pas !!!
-             * if (!is_null($declarationTP))
-             * {
-             * if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
-             * {
-             * $declarationTP = null;
-             * $declarationTPliste = null;
-             * //echo "La declarationTP n'est plus bonne => Je la reset et la liste des DeclarationTP aussi <br>";
-             * }
-             * }
-             * if (!is_null($affectation))
-             * {
-             * //echo "Affectation non null <br>";
-             * //echo "datetemp = " . $this->fonctions->formatdatedb($datetemp) . " Datefin affectation = " . $this->fonctions->formatdatedb($affectation->datefin()) . "<br>";
-             * if (($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($affectation->datefin())) and ($this->fonctions->formatdatedb($affectation->datefin()) != "00000000"))
-             * {
-             * //echo "Je recherche une nouvelle liste d'affectation car hors période <br>";
-             * echo "Je recherche une nouvelle liste d'affectation car hors période : " . date("d/m/Y H:i:s") . "<br>";
-             * $affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
-             * $declarationTPliste = null;
-             * $affectation = null;
-             * }
-             * else
-             * {
-             * //echo "L'affectation que j'ai est toujours valide !!! <br>";
-             * }
-             * }
-             * else
-             * {
-             * $affectationliste = $agent->affectationliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
-             * //echo "J'ai rechargé les affectations pour la date $datetemp <br>";
-             * echo "J'ai rechargé les affectations pour la date $datetemp : " . date("d/m/Y H:i:s") . "<br>";
-             * $declarationTPliste = null;
-             * }
-             *
-             * if (!is_null($affectationliste))
-             * {
-             * // On a une affectation a la date courante ($datetemp)
-             * //echo "affectationliste n'est pas null <br>";
-             * if (is_null($affectation))
-             * {
-             * $affectation = new affectation($this->dbconnect);
-             * $affectation = reset($affectationliste);
-             * //echo "Planning->Load : Je reset declarationTPliste et declarationTP <br>";
-             * $declarationTPliste = null;
-             * $declarationTP = null;
-             * //$affectation = $affectationliste[0];
-             * //echo "affectationliste = "; print_r($affectationliste); echo "<br>";
-             * //echo "Avant chargement declarationTPliste <br>";
-             * //echo "Affection = "; print_r($affectation); echo "<br>";
-             * //echo "Affectionid = " . $affectation->affectationid() . "<br>";
-             * //echo "datetemp= $datetemp <br>";
-             * }
-             * //echo "Planning->Load : declarationTP = "; if (is_null($declarationTP)) echo "null<br>"; else echo "PAS null<br>";
-             * if (!is_null($declarationTP))
-             * {
-             * // Si on a deja une declaration de TP on vérifie si on peut la garder ou pas (si elle est tjrs dans la période)
-             * //echo "Date courante = $datetemp declarationTP->datefin = " . $this->fonctions->formatdatedb($declarationTP->datefin()) . "<br>";
-             * if ($this->fonctions->formatdatedb($datetemp) > $this->fonctions->formatdatedb($declarationTP->datefin()))
-             * {
-             * //echo "Planning->Load : La date de l'element planning > declarationTP->datefin ==> On doit recharger tout <br>";
-             * $declarationTPliste = null;
-             * $declarationTP = null;
-             * }
-             * }
-             * //echo "Planning->Load : declarationTPliste = "; if (is_null($declarationTPliste)) echo "null<br>"; else echo "PAS null<br>";
-             * if (is_null($declarationTPliste))
-             * {
-             * //echo "On recherche les declarations pour cette affectation !!! " . $this->fonctions->formatdate($datetemp) . "<br>";
-             * echo "On recherche les declarations pour cette affectation !!! " . $this->fonctions->formatdate($datetemp) . " : " . date("d/m/Y H:i:s") . "<br>";
-             * $declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datetemp),$this->fonctions->formatdate($datetemp));
-             * //echo "apres la recherche des declaration pour l'affectation en cours !!! Count = " . count($declarationTPliste) . "<br>";
-             * }
-             * //echo "ApreS.... <br>";
-             * if (!is_null($declarationTPliste))
-             * {
-             * //echo "declarationTPListe n'est pas null <br>";
-             * //echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
-             * // On parcours toutes les déclarations de TP pour trouver celle qui est validée (si elle existe)
-             * for($indexdecla = 0, $nbdecla = count($declarationTPliste); $indexdecla < $nbdecla; $indexdecla++)
-             * {
-             * //echo "indexdecla = $indexdecla nbdecla = $nbdecla <br>";
-             * $declarationTP = $declarationTPliste[$indexdecla];
-             * //echo "Apres le declarationTP = declarationTPliste <br>";
-             * //echo "declarationTP->statut() = " . $declarationTP->statut() . "<br>";
-             * // Si la déclaration de TP n'est pas validée alors c'est comme si on avait rien
-             * if ((strcasecmp($declarationTP->statut(),declarationTP::DECLARATIONTP_VALIDE)==0) and ($this->fonctions->formatdatedb($datetemp) <= $this->fonctions->formatdatedb($declarationTP->datefin())))
-             * {
-             * // Si on a trouvée une declatation de TP validée on sort
-             * //echo "Je break... <br>";
-             * $fulldeclarationTPliste[$declarationTP->declarationTPid()] = $declarationTP;
-             * break;
-             * }
-             * else
-             * {
-             * $declarationTP = null;
-             * //echo "Je ne met pas cette declaration de TP <br>";
-             * }
-             * }
-             * //echo "j'ai fini le for... <br>";
-             * }
-             *
-             * }
-             * else
-             * {
-             * //echo "affectationliste EST NULL <br>";
-             * }
-             *
-             */
-            
-            // echo "Apres le for...<br>";
-            // echo "fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
-            // if (is_null($affectation)) echo "affectation est NULL <br>"; else echo "affectation = " . $affectation->affectationid() . "<br>";
-            // if (is_null($declarationTP)) echo "declarationTP est NULL <br>"; else echo "declarationTP = " . $declarationTP->declarationTPid() . "<br>";
-            
+                        
             // Le matin du jour en cours de traitement
             $element = new planningelement($this->dbconnect);
             $element->date($this->fonctions->formatdate($datetemp));
@@ -313,6 +203,7 @@ class planning
             $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
                                                                            // echo "On passe à la date : " .$datetemp . "( " . strtotime($datetemp) . ") <br>";
         }
+        //$this->fonctions->time_elapsed("Planning : Après le for index=0", 11);
         
         // echo "Nbre d'élément = " . count($this->listeelement);
         // echo " " . date("H:i:s") . "<br>";
@@ -320,9 +211,13 @@ class planning
         
         if ($includecongeabsence)
         {
+            //$this->fonctions->time_elapsed("Planning : Avant le agent->demandeliste", 11, true);
             $demandeliste = $agent->demandesliste($datedebut, $datefin);
+            //$this->fonctions->time_elapsed("Planning : Après le agent->demandeliste", 11);
             $demande = new demande($this->dbconnect);
-            foreach ((array) $demandeliste as $demandeid => $demande) {
+            //$this->fonctions->time_elapsed("Planning : Avant le foreach demandeliste", 11, true);
+            foreach ((array) $demandeliste as $demandeid => $demande) 
+            {
                 if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
                     $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
                     $demandedatefin = $this->fonctions->formatdate($demande->datefin());
@@ -409,6 +304,7 @@ class planning
                     }
                 }
             }
+            //$this->fonctions->time_elapsed("Planning : Après le foreach demandeliste", 11);
         }
                 
         // echo "<br><br>fin 1er while => "; print_r ($this->listeelement); echo "<br>";
@@ -433,6 +329,7 @@ class planning
             // echo "Planning->load (ABSENCERH) : Pas de congé pour cette agent dans la période demandée <br>";
         }
         // echo "Avant le while 2 <br>";
+        //$this->fonctions->time_elapsed("Planning : Avant le while sur AbsenceRH", 11, true);
         while ($result = mysqli_fetch_row($query)) {
             $demandedatedeb = $this->fonctions->formatdate($result[1]);
             $demandedatefin = $this->fonctions->formatdate($result[2]);
@@ -484,9 +381,38 @@ class planning
                 $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
             }
         }
+        //$this->fonctions->time_elapsed("Planning : Après le while sur AbsenceRH", 11);
         
         if ($includeteletravail)
         {
+            //$this->fonctions->time_elapsed("Planning : Avant le foreach télétravail", 11, true);
+            $datedebutdb = $this->fonctions->formatdatedb($datedebut);
+            $datefindb = $this->fonctions->formatdatedb($datefin);
+            $teletravailliste = $agent->teletravailliste($datedebutdb,$datefindb);
+            $fulldatetheorique = array();
+            foreach ((array)$teletravailliste as $teletravailid)
+            {
+                $teletravail = new teletravail($this->dbconnect);
+                $teletravail->load($teletravailid);
+                if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+                {
+                    $fulldatetheorique = array_merge($fulldatetheorique,$teletravail->datetheorique($datedebutdb,$datefindb));
+                }
+            }
+            foreach ($fulldatetheorique as $arraydate)
+            {
+                $element = $this->getelement($arraydate[0], $arraydate[1]);
+                if (!is_null($element) and $element->type() == '')
+                {
+                    if (!$this->fonctions->estjourteletravailexclu($agentid,$arraydate[0]))
+                    {
+                        $element->type('teletrav');
+                        $element->info('Télétravail');
+                    }
+                }
+            }
+            
+/*            
             foreach ((array)$this->listeelement as $element)
             {
                 if ($element->type() == '')
@@ -499,6 +425,8 @@ class planning
                 }
                 
             }
+*/
+            //$this->fonctions->time_elapsed("Planning : Après le foreach télétravail", 11);
         }
         
         
@@ -506,6 +434,7 @@ class planning
         // echo "Fin de la procédure Load <br>";
         
         // echo "<br>Liste des éléments = " . print_r($this->listeelement,true) . "<br>";
+        //$this->fonctions->time_elapsed("Planning : Fin de la fonction load", 10);
         
         return $this->listeelement;
     }
@@ -530,15 +459,40 @@ class planning
             return $this->listeelement;
     }
 
+    function getelement($date, $moment)
+    {
+        $element = null;
+        if (is_null($this->listeelement))
+        {
+            $errlog = "Planning->getelement : Pas de planning défini !!!!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        else
+        {
+            $date = $this->fonctions->formatdatedb($date);
+            if (isset($this->listeelement[$date . $moment]))
+            {
+                $element = $this->listeelement[$date . $moment];
+            }
+        }
+        return $element;
+    }
+    
+    
     function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE, $includeteletravail = FALSE)
     {
+        //$this->fonctions->time_elapsed("Planning : Début de la fonction planninghtml",1,true);
         // echo "datedebut = $datedebut datefin = $datefin <br>";
         // $this->listeelement = null;
+        //$this->fonctions->time_elapsed("Planning : Avant le planning->load",2,true);
         if (is_null($this->listeelement)) {
             // echo "Début chargement : " . date("d/m/Y H:i:s") . "<br>";
             $this->load($agentid, $datedebut, $datefin, $includeteletravail);
             // echo "Fin chargement : " . date("d/m/Y H:i:s") . "<br>";
         }
+        //$this->fonctions->time_elapsed("Planning : Après le planning->load",2);
+        
         
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
@@ -552,6 +506,7 @@ class planning
         }
         $htmltext = $htmltext . "</tr>";
         
+        //$this->fonctions->time_elapsed("Planning : Avant le foreach listeelement => Nombre élement = " . count($this->listeelement),2,true);
         foreach ($this->listeelement as $key => $planningelement) {
             $month = date("m", strtotime($this->fonctions->formatdatedb($planningelement->date())));
             
@@ -568,6 +523,7 @@ class planning
             }
             $htmltext = $htmltext . $planningelement->html($clickable, null, $noiretblanc);
         }
+        //$this->fonctions->time_elapsed("Planning : Après le foreach listeelement",2);
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</table>";
         $htmltext = $htmltext . "</div>";
@@ -577,9 +533,11 @@ class planning
         $tempannee = substr($tempdate, 0, 4);
         
         // echo "Avant affichage legende <br>";
+        //$this->fonctions->time_elapsed("Planning : Avant l'affichage de la légende",2,true);
         if ($noiretblanc == false) {
             $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail);
         }
+        //$this->fonctions->time_elapsed("Planning : Après l'affichage de la légende",2);
         // echo "Apres affichage legende <br>";
         $htmltext = $htmltext . "<br>";
         
@@ -618,6 +576,7 @@ class planning
             $htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (année précédente)</a>";
         }
         
+        //$this->fonctions->time_elapsed("Planning : Fin de la fonction planninghtml",1);
         return $htmltext;
     }
 
@@ -833,6 +792,7 @@ class planning
         }
         return $nbjoursteletravail;
     }
+    
 }
 
 ?>

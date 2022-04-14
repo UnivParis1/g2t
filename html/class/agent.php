@@ -686,30 +686,38 @@ class agent
 	        }
 	        $msg .= "--$boundary--\r\n\r\n";
 	        
-	        // ini_set(sendmail_from,$this->adressemail);
-	        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
-	        ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
-	        // $objet .=" G2T";
-	        /*
-	        $errorlog = "sendmail ok : Destinataire = ".$destinataire->identitecomplete()." (mail = " . $destinataire->mail() . ")\n";
-	        $errorlog .= "Expéditeur : " . $this->identitecomplete() .  " (mail = "   . $this->mail() . ") \n";
-	        $errorlog .= "objet du mail : ".$objet."\n";
-	        $errorlog .= "contenu du mail : ".$message."\n";
-	        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errorlog));
-	        */
-	        
-	        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
-	//        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
-	        // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
-	        ini_restore('sendmail_from');
-	        // On fait une pause de 1 sec pour eviter de se faire jeter par le serveur SMTP
-	        if (defined('TYPE_ENVIRONNEMENT'))
+	        if (strcasecmp($this->fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) 
+	        {   // On est en mode maintenance ==> Pas d'envoi de mail
+	            $errlog = "Le mode MAINTENANCE est activé. Il n'y a pas d'envoi de mail";
+	            echo "$errlog <br>";
+	            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog) . "\n");
+	        }
+	        else
 	        {
-	            if (strtolower(TYPE_ENVIRONNEMENT) == 'test')
-	            {
-	                // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Environnement de test/dev => On sleep après l'envoi du mail \n"));
-        	        sleep(2);
-	            }
+    	        // ini_set(sendmail_from,$this->adressemail);
+    	        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
+    	        ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
+    	        // $objet .=" G2T";
+    	        /*
+    	        $errorlog = "sendmail ok : Destinataire = ".$destinataire->identitecomplete()." (mail = " . $destinataire->mail() . ")\n";
+    	        $errorlog .= "Expéditeur : " . $this->identitecomplete() .  " (mail = "   . $this->mail() . ") \n";
+    	        $errorlog .= "objet du mail : ".$objet."\n";
+    	        $errorlog .= "contenu du mail : ".$message."\n";
+    	        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errorlog));
+    	        */
+	            mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
+	            //  mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
+	            // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
+    	        ini_restore('sendmail_from');
+    	        // On fait une pause de 1 sec pour eviter de se faire jeter par le serveur SMTP
+    	        if (defined('TYPE_ENVIRONNEMENT'))
+    	        {
+    	            if (strtolower(TYPE_ENVIRONNEMENT) == 'test')
+    	            {
+    	                // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Environnement de test/dev => On sleep après l'envoi du mail \n"));
+            	        sleep(2);
+    	            }
+    	        }
 	        }
     	}
 
@@ -3565,12 +3573,24 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return $listteletravail;    
     }
     
-    function estenteletravail($date, $moment = null)
+    function estenteletravail($date, $moment = null, $teletravailliste = null)
     {
+        //$this->fonctions->time_elapsed("Début de la fonction estenteletravail",20,true);
         $date = $this->fonctions->formatdatedb($date);
-        $liste = $this->teletravailliste($date, $date);
+        if (is_null($teletravailliste))
+        {
+            //$this->fonctions->time_elapsed("Avant récup liste télétravail",21,true);
+            $liste = $this->teletravailliste($date, $date);
+            //$this->fonctions->time_elapsed("Fin récup liste télétravail",21);
+        }
+        else
+        {
+            $liste = $teletravailliste;
+        }
         $reponse = false;
+        //$this->fonctions->time_elapsed("Avant récup liste jours exclus",21,true);
         $listeexclusion  = $this->listejoursteletravailexclus($date, $date);
+        //$this->fonctions->time_elapsed("Après récup liste jours exclus",21);
         foreach ($liste as $teletravailid)
         {
             $teletravail = new teletravail($this->dbconnect);
@@ -3583,6 +3603,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 }
             }
         }
+        //$this->fonctions->time_elapsed("Fin de la fonction estenteletravail",20);
         return $reponse;
     }
     

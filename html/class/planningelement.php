@@ -145,22 +145,40 @@ class planningelement
             if ($noiretblanc == true)
                 return self::COULEUR_NOIRE;
         }
-        $sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
-        $params = array($this->typeelement);
-        $query = $this->fonctions->prepared_select($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "PlanningElement->couleur : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        if (is_null($this->couleur))
+        {
+            // Si le tableau des couleurs des elements du planning est défini et que le type de l'élément existe
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]))
+            {
+                // On prend la couleur définie dans le tableau TABCOULEURPLANNINGELEMENT
+                $this->couleur = TABCOULEURPLANNINGELEMENT[$this->typeelement]['couleur'];
+            }
+            else   // On n'a pas trouvé la couleur de l'élément dans le tableu => Donc on la charge depuis la base de données
+            {   
+                //echo "<br>Couleur de l'element est NULL !! <br>";
+                $sql = "SELECT TYPEABSENCEID,COULEUR FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+                $params = array($this->typeelement);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    $errlog = "PlanningElement->couleur : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                if (mysqli_num_rows($query) == 0) {
+                    $errlog = "PlanningElement->couleur : La couleur pour le type de congé " . $this->typeelement . " non trouvée";
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                $result = mysqli_fetch_row($query);
+                $this->couleur = $result[1];
+            }
         }
-        if (mysqli_num_rows($query) == 0) {
-            $errlog = "PlanningElement->couleur : La couleur pour le type de congé " . $this->typeelement . " non trouvée";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        else
+        {
+            //echo "<br>Couleur de l'element n'est pas NULL !! <br>";
         }
-        $result = mysqli_fetch_row($query);
-        return $result[1];
+        return $this->couleur;
     }
 
     function statut($statut = null)
@@ -198,7 +216,7 @@ class planningelement
 
     function html($clickable = FALSE, $checkboxname = null, $noiretblanc = false, $dbclickable = FALSE)
     {
-        //$this->fonctions->time_elapsed("Début de la fonction html",0,true);
+        //$this->fonctions->time_elapsed("Element : Début de la fonction html (" . $this->date() . " " . $this->moment() . ")",30,true);
         $htmltext = "";
         // $htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" ></td>";
         
@@ -232,15 +250,15 @@ class planningelement
         }
         else
         {
-            //$this->fonctions->time_elapsed("Avant le load agent - bloc complet (" . $this->agentid() . ")",1,true);
-            //$this->fonctions->time_elapsed("Avant le load agent (" . $this->agentid() . ")",2,true);
+            //$this->fonctions->time_elapsed("Element : Avant le estjourteletravailexclu (" . $this->agentid() . ")",31,true);
+            //$this->fonctions->time_elapsed("Avant le load agent (" . $this->agentid() . ")",32,true);
           
 /*            
             $agent = new agent($this->dbconnect);
             $agent->load($this->agentid());
             $listeexclusion = $agent->listejoursteletravailexclus($this->date(), $this->date());
 */
-            //$this->fonctions->time_elapsed("Après le load agent (" . $this->agentid() . ")",2);
+            //$this->fonctions->time_elapsed("Après le load agent (" . $this->agentid() . ")",32);
 /*            
             if (array_search($this->fonctions->formatdatedb($this->date()),(array)$listeexclusion)===false)
             {   // On n'a pas trouvé la date dans la liste 
@@ -253,11 +271,16 @@ class planningelement
 */
             $exclusion = $this->fonctions->estjourteletravailexclu($this->agentid(), $this->date());
             
-            //$this->fonctions->time_elapsed("Après le load agent - bloc complet (" . $this->agentid() . ")",1);
+            //$this->fonctions->time_elapsed("Element : Après le estjourteletravailexclu (" . $this->agentid() . ")",31);
         }
+        //$this->fonctions->time_elapsed("Element : Avant le type = teletravail (" . $this->agentid() . ")",31,true);
         if (($this->type() == 'teletrav' or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
-            $extraclass = ' teletravail '; 
+            $extraclass = ' teletravail ';
+            if ($exclusion)
+            {
+                $extraclass = $extraclass . ' exclusion ';
+            }
             if ($dbclickable)
                 $clickabletext = $clickabletext . " id='" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "' ondblclick=\"dbclick_element('" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "','" . $this->agentid()  . "','" . $this->date() . "','" . $this->moment() . "');\" ";
             else
@@ -267,31 +290,50 @@ class planningelement
         {
             $extraclass = '';
         }
+        //$this->fonctions->time_elapsed("Element : Après le type = teletravail (" . $this->agentid() . ")",31);
         
         if ($this->moment == 'm') {
+            //$this->fonctions->time_elapsed("Element : Début du matin (" . $this->agentid() . ")",31,true);
             // $htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
+            //$this->fonctions->time_elapsed("Element : Avant le if date (" . $this->agentid() . ")",32,true);
             if ($this->date == date("Ymd")) {
                 // echo "Le matin du jour " . $this->date . " <br>";
                 $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
             } else {
+                //$this->fonctions->time_elapsed("Element : Avant le htmlbackcolor = this->couleur (" . $this->agentid() . ")",33,true);
                 $htmlbackcolor = $this->couleur($noiretblanc);
-                if ($htmlbackcolor == self::COULEUR_HACHURE) {
+                //$this->fonctions->time_elapsed("Element : Après le htmlbackcolor = this->couleur (" . $this->agentid() . ")",33);
+                if ($htmlbackcolor == self::COULEUR_HACHURE) 
+                {
                     $htmltext = $htmltext . "<td class='planningelement_matin rayureplanning' " . $clickabletext . " >";
-                } else {
+                } 
+                else 
+                {
+                    //$this->fonctions->time_elapsed("Element : Avant le td planningelement_matin (" . $this->agentid() . ")",33,true);
                     $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . "  bgcolor='" . $htmlbackcolor . "' >";
+                    //$this->fonctions->time_elapsed("Element : Après le td planningelement_matin (" . $this->agentid() . ")",33);
                 }
             }
+            //$this->fonctions->time_elapsed("Element : Après le if date (" . $this->agentid() . ")",32);
+            //$this->fonctions->time_elapsed("Element : Avant le 1er strlen de info (" . $this->agentid() . ")",32,true);
             if (strlen($this->info()) != 0 and $noiretblanc == false) {
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) . ">";
             }
+            //$this->fonctions->time_elapsed("Element : Après le 1er strlen de info (" . $this->agentid() . ")",32);
+            //$this->fonctions->time_elapsed("Element : Avant le strlen de checkbox (" . $this->agentid() . ")",32,true);
             if (strlen($checkboxtext) != 0)
                 $htmltext = $htmltext . $checkboxtext;
             else
                 $htmltext = $htmltext . "&nbsp;";
-            if (strlen($this->info()) != 0) {
+            //$this->fonctions->time_elapsed("Element : Après le strlen de checkbox (" . $this->agentid() . ")",32);
+            //$this->fonctions->time_elapsed("Element : Avant le 2e strlen de info (" . $this->agentid() . ")",32,true);
+            if (strlen($this->info()) != 0 and $noiretblanc == false) 
+            {
                 $htmltext = $htmltext . "</span>";
             }
+            //$this->fonctions->time_elapsed("Element : Après le 2e strlen de info (" . $this->agentid() . ")",32);
             $htmltext = $htmltext . "</td>";
+            //$this->fonctions->time_elapsed("Element : Fin du matin (" . $this->agentid() . ")",31);
         } else {
             // $htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
             if ($this->date == date("Ymd")) {
@@ -312,7 +354,8 @@ class planningelement
                 $htmltext = $htmltext . $checkboxtext;
             else
                 $htmltext = $htmltext . "&nbsp;";
-            if (strlen($this->info()) != 0) {
+            if (strlen($this->info()) != 0 and $noiretblanc == false)
+            {
                 $htmltext = $htmltext . "</span>";
             }
             $htmltext = $htmltext . "</td>";
@@ -322,7 +365,7 @@ class planningelement
          * $htmltext = $htmltext ."</a>";
          * $htmltext = $htmltext . "</form>";
          */
-         //$this->fonctions->time_elapsed("Fin de la fonction html",0);
+         //$this->fonctions->time_elapsed("Element : Fin de la fonction html (" . $this->date() . " " . $this->moment() . ")",30);
          return $htmltext;
     }
 }

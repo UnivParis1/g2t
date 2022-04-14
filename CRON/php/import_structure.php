@@ -170,7 +170,8 @@
                     'DPT',
                     'SCO',
                     'UFO',
-                    'UNR'
+                    'UNR',
+                    'INT'
                 );
                 
                 // UFR = Les UFR
@@ -178,6 +179,7 @@
                 // SCO = Service commun
                 // UFO = Les Unités de formation
                 // UNR = Les Unités de recherche ??
+                // INT = Les instituts
                 $codefonction = "";
 	            $resp_struct = "";
 	            // Si la structure est active on cherche le responsable.

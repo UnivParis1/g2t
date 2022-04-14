@@ -140,10 +140,10 @@
 		{
             //alert(indexcellule);
             var currenttd = tableau.querySelectorAll('.teletravail')[indexcellule];
-            if (checkboxvalue)
+            if (checkboxvalue || currenttd.classList.contains('exclusion'))  // Soit on a demander à le masquer, soit c'est une date exclue (<=> classe exclusion)
             {
                 //alert('Suppression de la couleur');
-                // C'est du télétravail et on doit le masquer
+                // C'est du télétravail et on doit le masquer ou la date est exclue
                 currenttd.bgColor = '<?php echo planningelement::COULEUR_VIDE ?>';
             }
             else
@@ -331,6 +331,18 @@
     unset($arraystructpartielle);
     unset($affectationarray);
     unset($affectation);
+    
+    // On va charger le tableau des couleurs de chaque élément du planning => Optimisation du tps
+    // Voir la classe planningelement->couleur()
+    $tabcouleurelement = $fonctions->typeabsencelistecomplete();
+/*    
+    $tabcouleurelement = $fonctions->legende($fonctions->anneeref()-1,true);
+    $tabcouleurelement = array_merge((array)$tabcouleurelement, $fonctions->legende($fonctions->anneeref(),true));
+    $tabcouleurelement = array_merge((array)$tabcouleurelement, $fonctions->legende($fonctions->anneeref()+1,true));
+*/
+    define('TABCOULEURPLANNINGELEMENT', $tabcouleurelement);
+    //var_dump(TABCOULEURPLANNINGELEMENT);
+    
 ?>
 
 

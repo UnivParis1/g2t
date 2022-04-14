@@ -63,8 +63,11 @@
     } else {
         $datefin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
     }
+    //$fonctions->time_elapsed("Avant l'affichage du planning", 0 , true);
     echo $user->planninghtml($datedebut, $datefin,false,true,true);
-
+    echo "<br>";
+    //$fonctions->time_elapsed("Après l'affichage du planning", 0);
+    
     echo "<br>";
 
 ?>

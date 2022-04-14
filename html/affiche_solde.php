@@ -150,13 +150,20 @@
         echo "<br>";
 
     }
-    elseif (strcasecmp($mode, "resp") == 0) {
+    elseif (strcasecmp($mode, "resp") == 0) 
+    {
+        //$fonctions->time_elapsed("Avant le  structrespliste", 0, true);
         $structureliste = $user->structrespliste();
-        foreach ($structureliste as $structkey => $structure) {
+        //$fonctions->time_elapsed("Apres le  structrespliste", 0);
+        foreach ($structureliste as $structkey => $structure) 
+        {
             echo "<br>";
+            //$fonctions->time_elapsed("Début affichage structure " . $structure->nomcourt(), 0, true);
             echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
             $annerecherche = ($fonctions->anneeref() - $previous);
+            //$fonctions->time_elapsed("Avant le agentlist", 1, true);
             $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+            //$fonctions->time_elapsed("Après le agentlist", 1);
             // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
 
             echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
@@ -165,10 +172,14 @@
             echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
             $listeagent = "";
             // echo "Avant le foreach <br>";
-            if (is_array($agentliste)) {
-                foreach ($agentliste as $agentkey => $agent) {
+            if (is_array($agentliste)) 
+            {
+                //$fonctions->time_elapsed("Avant le foreach agentliste as agentkey", 1, true);
+                foreach ($agentliste as $agentkey => $agent) 
+                {
                     $listeagent = $listeagent . "," . $agent->agentid();
                 }
+                //$fonctions->time_elapsed("Après le foreach agentliste as agentkey", 1);
             }
             // echo "listeagent = $listeagent <br>";
             echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
@@ -177,24 +188,37 @@
             echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
             echo "<br>";
 
-            if (is_array($agentliste)) {
-                foreach ($agentliste as $agentkey => $agent) {
+            if (is_array($agentliste)) 
+            {
+                //$fonctions->time_elapsed("Avant le foreach agentliste as agentkey - pour affichage", 1, true);
+                foreach ($agentliste as $agentkey => $agent) 
+                {
+                    //$fonctions->time_elapsed("Avant l'affichage de l'agent " . $agent->identitecomplete(), 3, true);
                     // echo "Annee ref = " . $fonctions->anneeref();
                     // echo " debut = " . $fonctions->debutperiode();
                     // echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
                     // echo " Fin = " . $fonctions->finperiode();
                     // echo "Previous = " . $previous ;
+                    //$fonctions->time_elapsed("Avant l'affichage du solde " . $agent->identitecomplete(), 2, true);
                     echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
+                    //$fonctions->time_elapsed("Après l'affichage du solde " . $agent->identitecomplete(), 2);
                     if ($previous == 0)
                         echo $agent->affichecommentairecongehtml(true);
+                    //$fonctions->time_elapsed("Avant l'affichage des demandes " . $agent->identitecomplete(), 2, true);
                     echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
+                    //$fonctions->time_elapsed("Après l'affichage des demandes " . $agent->identitecomplete(), 2);
+                    //$fonctions->time_elapsed("Avant l'affichage du planning " . $agent->identitecomplete(), 2, true);
                     echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
-
+                    //$fonctions->time_elapsed("Après l'affichage du planning " . $agent->identitecomplete(), 2);
+                    
+                    //$fonctions->time_elapsed("Après l'affichage de l'agent " . $agent->identitecomplete(), 3);
                     // Ligne de sÃ©paration entre les agents
                     echo "<hr>";
                 }
+                //$fonctions->time_elapsed("Après le foreach agentliste as agentkey - pour affichage", 1);
             }
-            echo "<br>";
+            echo "<br>"; 
+            //$fonctions->time_elapsed("Fin affichage structure " . $structure->nomcourt(), 0);
         }
     } else {
         $structureliste = $user->structgestliste();

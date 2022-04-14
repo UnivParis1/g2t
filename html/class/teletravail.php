@@ -283,7 +283,29 @@ class teletravail
         }
     }
     
-    
+     function datetheorique($datedebut, $datefin)
+     {
+         $datetheorique = array();
+
+         $date = $this->fonctions->formatdatedb($datedebut);
+         $datefin = $this->fonctions->formatdatedb($datefin);
+         while ($date<$datefin)
+         {
+             $moment = 'm';
+             if ($this->estteletravaille($date,"$moment"))
+             {
+                 $datetheorique[$date . $moment] = array($date, $moment);
+             }
+             $moment = 'a';
+             if ($this->estteletravaille($date,"$moment"))
+             {
+                 $datetheorique[$date . $moment] = array($date, $moment);
+             }
+             $timestamp = strtotime($date);
+             $date = date("Ymd", strtotime("+1 day", $timestamp)); // On passe au lendemain
+         }
+         return $datetheorique;
+     }
 }
 
 ?>

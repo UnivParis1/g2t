@@ -565,7 +565,7 @@ class fonctions
  				   OR ANNEEREF IS NULL
  				ORDER BY LIBELLE";
 */
-        $sql = "SELECT DISTINCT LIBELLE,COULEUR FROM TYPEABSENCE
+        $sql = "SELECT DISTINCT LIBELLE,COULEUR,TYPEABSENCEID FROM TYPEABSENCE
  				WHERE (ANNEEREF= ? OR ANNEEREF= ?)
  				   OR ANNEEREF IS NULL ";
         if ($includeteletravail)
@@ -583,11 +583,12 @@ class fonctions
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
+        $tablegende = array();
         while ($result = mysqli_fetch_row($query)) {
             $libelle = "$result[0]";
             $couleur = "$result[1]";
             // $code_legende = "$result[2]";
-            $tablegende[] = array(
+            $tablegende["$result[2]"] = array(
                 "libelle" => $libelle,
                 "couleur" => $couleur
             );
@@ -609,10 +610,15 @@ class fonctions
         $htmltext = "";
         $htmltext = $htmltext . "<table>";
         $htmltext = $htmltext . "<tr>";
-        foreach ($tablegende as $key => $legende) {
-            if (($key % 5) == 0)
+        $index=0;
+        foreach ($tablegende as $key => $legende) 
+        {
+            if (($index % 5) == 0)
+            {
                 $htmltext = $htmltext . "</tr><tr>";
+            }
             $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . $legende["couleur"] . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>" . $legende["libelle"] . "</td>";
+            $index++;
         }
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</table>";
@@ -635,11 +641,13 @@ class fonctions
                 $long_chps = $pdf->GetStringWidth($legende["libelle"]);
         }
         $long_chps = $long_chps + 6;
-        
-        foreach ($tablegende as $key => $legende) {
-            if (($key % 5) == 0)
+        $index=0;
+        foreach ($tablegende as $key => $legende) 
+        {
+            if (($index % 5) == 0)
+            {
                 $pdf->Ln(10);
-            
+            }
             // $LL_TYPE_CONGE = "$result[LL_TYPE_CONGE]";
             list ($col_leg1, $col_leg2, $col_leg3) = $this->html2rgb($legende["couleur"]);
             
@@ -648,6 +656,7 @@ class fonctions
             $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
             $pdf->Cell(4, 5, utf8_decode(""), 1, 0, 'C', 1);
             $pdf->Cell($long_chps, 4, utf8_decode($legende["libelle"]), 0, 0, 'L');
+            $index++;
         }
     }
 
@@ -1528,6 +1537,7 @@ class fonctions
     public function time_elapsed($text = "Durée", $numcpt = 0, $reset = false)
     {
         static $last = array();
+        $chiffresignificatif = 5;
         
         if (!isset($last[$numcpt]))
         {
@@ -1544,7 +1554,7 @@ class fonctions
         
         if ($last[$numcpt] != null) 
         {
-            echo "$text : " . round($now - $last[$numcpt],5) . " secondes (cpt $numcpt) <br>";
+            echo "$text : " .  number_format($now - $last[$numcpt],$chiffresignificatif, '.', '') . " secondes (cpt $numcpt) <br>";
         }
         else
         {
@@ -1581,6 +1591,35 @@ class fonctions
         {
             return true;
         }
+    }
+    
+    public function typeabsencelistecomplete()
+    {
+        $sql = "SELECT LIBELLE,COULEUR,TYPEABSENCEID FROM TYPEABSENCE";
+        // echo "sql = " . $sql . " <br>";
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
+        
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonction->typeabsenceliste : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        $tableabsence = array();
+        while ($result = mysqli_fetch_row($query)) {
+            $libelle = "$result[0]";
+            $couleur = "$result[1]";
+            // $code_legende = "$result[2]";
+            $tableabsence["$result[2]"] = array(
+                "libelle" => $libelle,
+                "couleur" => $couleur
+            );
+        }
+        
+        // print_r($tablegende); echo "<br>";
+        return $tableabsence;
+        
     }
     
 }
