@@ -3575,22 +3575,17 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     
     function estenteletravail($date, $moment = null, $teletravailliste = null)
     {
-        //$this->fonctions->time_elapsed("Début de la fonction estenteletravail",20,true);
         $date = $this->fonctions->formatdatedb($date);
         if (is_null($teletravailliste))
         {
-            //$this->fonctions->time_elapsed("Avant récup liste télétravail",21,true);
             $liste = $this->teletravailliste($date, $date);
-            //$this->fonctions->time_elapsed("Fin récup liste télétravail",21);
         }
         else
         {
             $liste = $teletravailliste;
         }
         $reponse = false;
-        //$this->fonctions->time_elapsed("Avant récup liste jours exclus",21,true);
         $listeexclusion  = $this->listejoursteletravailexclus($date, $date);
-        //$this->fonctions->time_elapsed("Après récup liste jours exclus",21);
         foreach ($liste as $teletravailid)
         {
             $teletravail = new teletravail($this->dbconnect);
@@ -3603,7 +3598,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 }
             }
         }
-        //$this->fonctions->time_elapsed("Fin de la fonction estenteletravail",20);
         return $reponse;
     }
     

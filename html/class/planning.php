@@ -26,12 +26,9 @@ class planning
 
     function load($agentid, $datedebut, $datefin, $includeteletravail = false, $includecongeabsence = true)
     {
-        //$this->fonctions->time_elapsed("Planning : Début de la fonction load", 10, true);
 
-        //$this->fonctions->time_elapsed("Planning : Avant le load agent", 11, true);
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
-        //$this->fonctions->time_elapsed("Planning : Après le load agent", 11);
         
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
@@ -61,12 +58,10 @@ class planning
         //}
         $affectationliste = $agent->affectationliste($datedebut, $datefin, $ignoremissinggstructure);
         
-        //$this->fonctions->time_elapsed("Planning : Avant le foreach affectationliste", 11, true);
         foreach ((array) $affectationliste as $affectation) {
             $declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
             $fulldeclarationTPliste[$affectation->affectationid()] = $declarationTPliste;
         }
-        //$this->fonctions->time_elapsed("Planning : Après le foreach affectationliste", 11);
         if (is_array($affectationliste))
             $affectation = reset($affectationliste); // On récupère la première affectation
         
@@ -75,7 +70,6 @@ class planning
          * echo "----------------------------------------------------------------------------------<br>";
          * echo "fulldeclarationTPliste = " . print_r($fulldeclarationTPliste,true) . "<br>";
          */
-        //$this->fonctions->time_elapsed("Planning : Avant le for index=0", 11, true);
         for ($index = 0; $index <= $nbre_jour - 1; $index ++) {
             // echo "datetemp= $datetemp <br>";
             
@@ -203,7 +197,6 @@ class planning
             $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
                                                                            // echo "On passe à la date : " .$datetemp . "( " . strtotime($datetemp) . ") <br>";
         }
-        //$this->fonctions->time_elapsed("Planning : Après le for index=0", 11);
         
         // echo "Nbre d'élément = " . count($this->listeelement);
         // echo " " . date("H:i:s") . "<br>";
@@ -211,11 +204,8 @@ class planning
         
         if ($includecongeabsence)
         {
-            //$this->fonctions->time_elapsed("Planning : Avant le agent->demandeliste", 11, true);
             $demandeliste = $agent->demandesliste($datedebut, $datefin);
-            //$this->fonctions->time_elapsed("Planning : Après le agent->demandeliste", 11);
             $demande = new demande($this->dbconnect);
-            //$this->fonctions->time_elapsed("Planning : Avant le foreach demandeliste", 11, true);
             foreach ((array) $demandeliste as $demandeid => $demande) 
             {
                 if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
@@ -304,7 +294,6 @@ class planning
                     }
                 }
             }
-            //$this->fonctions->time_elapsed("Planning : Après le foreach demandeliste", 11);
         }
                 
         // echo "<br><br>fin 1er while => "; print_r ($this->listeelement); echo "<br>";
@@ -329,7 +318,6 @@ class planning
             // echo "Planning->load (ABSENCERH) : Pas de congé pour cette agent dans la période demandée <br>";
         }
         // echo "Avant le while 2 <br>";
-        //$this->fonctions->time_elapsed("Planning : Avant le while sur AbsenceRH", 11, true);
         while ($result = mysqli_fetch_row($query)) {
             $demandedatedeb = $this->fonctions->formatdate($result[1]);
             $demandedatefin = $this->fonctions->formatdate($result[2]);
@@ -381,11 +369,9 @@ class planning
                 $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
             }
         }
-        //$this->fonctions->time_elapsed("Planning : Après le while sur AbsenceRH", 11);
         
         if ($includeteletravail)
         {
-            //$this->fonctions->time_elapsed("Planning : Avant le foreach télétravail", 11, true);
             $datedebutdb = $this->fonctions->formatdatedb($datedebut);
             $datefindb = $this->fonctions->formatdatedb($datefin);
             $teletravailliste = $agent->teletravailliste($datedebutdb,$datefindb);
@@ -426,7 +412,6 @@ class planning
                 
             }
 */
-            //$this->fonctions->time_elapsed("Planning : Après le foreach télétravail", 11);
         }
         
         
@@ -434,7 +419,6 @@ class planning
         // echo "Fin de la procédure Load <br>";
         
         // echo "<br>Liste des éléments = " . print_r($this->listeelement,true) . "<br>";
-        //$this->fonctions->time_elapsed("Planning : Fin de la fonction load", 10);
         
         return $this->listeelement;
     }
@@ -482,16 +466,14 @@ class planning
     
     function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE, $includeteletravail = FALSE)
     {
-        //$this->fonctions->time_elapsed("Planning : Début de la fonction planninghtml",1,true);
+        //$this->fonctions->time_elapsed("Début de la fonction planninghtml", __METHOD__, true);
         // echo "datedebut = $datedebut datefin = $datefin <br>";
         // $this->listeelement = null;
-        //$this->fonctions->time_elapsed("Planning : Avant le planning->load",2,true);
         if (is_null($this->listeelement)) {
             // echo "Début chargement : " . date("d/m/Y H:i:s") . "<br>";
             $this->load($agentid, $datedebut, $datefin, $includeteletravail);
             // echo "Fin chargement : " . date("d/m/Y H:i:s") . "<br>";
         }
-        //$this->fonctions->time_elapsed("Planning : Après le planning->load",2);
         
         
         $htmltext = "";
@@ -506,7 +488,6 @@ class planning
         }
         $htmltext = $htmltext . "</tr>";
         
-        //$this->fonctions->time_elapsed("Planning : Avant le foreach listeelement => Nombre élement = " . count($this->listeelement),2,true);
         foreach ($this->listeelement as $key => $planningelement) {
             $month = date("m", strtotime($this->fonctions->formatdatedb($planningelement->date())));
             
@@ -523,7 +504,6 @@ class planning
             }
             $htmltext = $htmltext . $planningelement->html($clickable, null, $noiretblanc);
         }
-        //$this->fonctions->time_elapsed("Planning : Après le foreach listeelement",2);
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</table>";
         $htmltext = $htmltext . "</div>";
@@ -533,11 +513,9 @@ class planning
         $tempannee = substr($tempdate, 0, 4);
         
         // echo "Avant affichage legende <br>";
-        //$this->fonctions->time_elapsed("Planning : Avant l'affichage de la légende",2,true);
         if ($noiretblanc == false) {
             $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail);
         }
-        //$this->fonctions->time_elapsed("Planning : Après l'affichage de la légende",2);
         // echo "Apres affichage legende <br>";
         $htmltext = $htmltext . "<br>";
         
@@ -576,7 +554,7 @@ class planning
             $htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (année précédente)</a>";
         }
         
-        //$this->fonctions->time_elapsed("Planning : Fin de la fonction planninghtml",1);
+        //$this->fonctions->time_elapsed("Fin de la fonction planninghtml", __METHOD__);
         return $htmltext;
     }
 

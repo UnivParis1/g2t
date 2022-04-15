@@ -1534,34 +1534,33 @@ class fonctions
         return $this->prepared_query($sql, $params, $types)->get_result();
     }
     
-    public function time_elapsed($text = "Durée", $numcpt = 0, $reset = false)
+    public function time_elapsed($text = "Durée", $appelant, $reset = false)
     {
         static $last = array();
         $chiffresignificatif = 5;
-        
-        if (!isset($last[$numcpt]))
+        $indentation = 20;
+        $numcpt = count($last);
+        $now = microtime(true);
+        if ($appelant == '')
         {
-            $last[$numcpt] = null;
-            $reset = false;
+            $appelant = 'Appelant inconnu';
         }
-            
+        
         if ($reset)
         {
-            $last[$numcpt] = null;
+            $last[$numcpt] = $now;
+            echo "<b style='margin-left:" . ($indentation*$numcpt) . "px'>$appelant : $text : init (cpt $numcpt) </b><br>";
         }
-        
-        $now = microtime(true);
-        
-        if ($last[$numcpt] != null) 
+        elseif (isset($last[$numcpt-1]))
         {
-            echo "$text : " .  number_format($now - $last[$numcpt],$chiffresignificatif, '.', '') . " secondes (cpt $numcpt) <br>";
+            $numcpt--;
+            echo "<b style='margin-left:" . ($indentation*($numcpt)) . "px'>$appelant : $text => " .  number_format($now - $last[$numcpt],$chiffresignificatif, '.', '') . " secondes (cpt $numcpt) </b><br>";
+            unset ($last[$numcpt]);
         }
         else
         {
-            echo "$text : init -> compteur $numcpt <br>";
+            echo "<b style='color: red;' >ERROR time_elapsed : On demande à afficher un compteur qui n'existe pas (cpt $numcpt) </b><br>";
         }
-        
-        $last[$numcpt] = $now;
     }
     
     public function estjourteletravailexclu($agentid, $date)
