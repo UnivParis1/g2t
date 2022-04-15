@@ -190,9 +190,12 @@ class agent
      * @param
      * @return string the full name of the current agent (civility + firstname + name)
      */
-    function identitecomplete()
+    function identitecomplete($namefirst = false)
     {
-        return $this->civilite() . " " . $this->prenom() . " " . $this->nom();
+        if ($namefirst)
+            return $this->civilite() . " " . $this->nom() . " " . $this->prenom();
+        else
+            return $this->civilite() . " " . $this->prenom() . " " . $this->nom();
     }
 
     /**

@@ -83,7 +83,7 @@
     }
 
 
-    //print_r ($_POST); echo "<br>";
+    //echo "<br>" . print_r($_POST,true) . "<br>";
 
     ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
     $mode = $_POST["mode"];
@@ -102,6 +102,10 @@
         $previous = 1;
     else
         $previous = 0;
+    
+    $agentselect = '';
+    if (isset($_POST["agentselect"]))
+        $agentselect = $_POST["agentselect"];
 
     if ($mode == 'rh')
     {
@@ -152,102 +156,230 @@
     }
     elseif (strcasecmp($mode, "resp") == 0) 
     {
+        echo "Veuillez selectionner un agent :<br>";
+        echo "<form name='formselect'  method='post'>";
+        echo "<select id='agentselect' name='agentselect'>";
+        echo "<option value=''>Tous les agents</option>";
         $structureliste = $user->structrespliste();
-        foreach ($structureliste as $structkey => $structure) 
+        foreach ($structureliste as $structkey => $structure)
         {
-            echo "<br>";
-            //$fonctions->time_elapsed("Début affichage structure " . $structure->nomcourt(), __METHOD__, true);
-            echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
             $annerecherche = ($fonctions->anneeref() - $previous);
             $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
-            // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
-
-            echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
-            echo "<input type='hidden' name='userpdf' value='no'>";
-            // $htmltext = $htmltext . "<input type='hidden' name='previous' value='" . $_POST["previous"] . "'>";
-            echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
-            $listeagent = "";
-            // echo "Avant le foreach <br>";
-            if (is_array($agentliste)) 
+            if (is_array($agentliste))
             {
-                foreach ($agentliste as $agentkey => $agent) 
+                echo "<optgroup label='". $structure->nomcourt() ."'>";
+                foreach ($agentliste as $agentkey => $agent)
                 {
-                    $listeagent = $listeagent . "," . $agent->agentid();
+                    echo "<option value='" . $agent->agentid() . "'";
+                    if ($agentselect == $agent->agentid())
+                        echo " selected ";
+                    echo ">" . $agent->identitecomplete(true) . "</option>";
+                }
+                echo "</optgroup>";
+            }
+        }
+        echo "</select>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' name='previous' value='";
+        if ($previous==1)
+            echo 'yes';
+        else
+            echo 'no';
+        echo "'>";
+        echo "<br>";
+        echo "<input type='submit' name= 'valid_agent' value='Soumettre' >";
+        echo "</form>";
+        // Ligne de séparation
+        echo "<hr>";
+        
+        if (isset($_POST['valid_agent']))
+        {
+            if ($agentselect == '')
+            {
+                $structureliste = $user->structrespliste();
+                foreach ($structureliste as $structkey => $structure) 
+                {
+                    echo "<br>";
+                    //$fonctions->time_elapsed("Début affichage structure " . $structure->nomcourt(), __METHOD__, true);
+                    echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
+                    $annerecherche = ($fonctions->anneeref() - $previous);
+                    $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+                    // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
+        
+                    echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+                    echo "<input type='hidden' name='userpdf' value='no'>";
+                    // $htmltext = $htmltext . "<input type='hidden' name='previous' value='" . $_POST["previous"] . "'>";
+                    echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
+                    $listeagent = "";
+                    // echo "Avant le foreach <br>";
+                    if (is_array($agentliste)) 
+                    {
+                        foreach ($agentliste as $agentkey => $agent) 
+                        {
+                            $listeagent = $listeagent . "," . $agent->agentid();
+                        }
+                    }
+                    // echo "listeagent = $listeagent <br>";
+                    echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
+                    echo "<input type='hidden' name='typepdf' value='listedemande'>";
+                    echo "</form>";
+                    echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
+                    echo "<br>";
+        
+                    if (is_array($agentliste)) 
+                    {
+                        foreach ($agentliste as $agentkey => $agent) 
+                        {
+                            //$fonctions->time_elapsed("Avant l'affichage de l'agent " . $agent->identitecomplete(), __METHOD__, true);
+                            // echo "Annee ref = " . $fonctions->anneeref();
+                            // echo " debut = " . $fonctions->debutperiode();
+                            // echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
+                            // echo " Fin = " . $fonctions->finperiode();
+                            // echo "Previous = " . $previous ;
+                            echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
+                            if ($previous == 0)
+                                echo $agent->affichecommentairecongehtml(true);
+                            echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
+                            echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+                            
+                            //$fonctions->time_elapsed("Après l'affichage de l'agent " . $agent->identitecomplete(),__METHOD__);
+                            // Ligne de sÃ©paration entre les agents
+                            echo "<hr>";
+                        }
+                    }
                 }
             }
-            // echo "listeagent = $listeagent <br>";
-            echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
-            echo "<input type='hidden' name='typepdf' value='listedemande'>";
-            echo "</form>";
-            echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
-            echo "<br>";
-
-            if (is_array($agentliste)) 
+            else
             {
-                foreach ($agentliste as $agentkey => $agent) 
-                {
-                    //$fonctions->time_elapsed("Avant l'affichage de l'agent " . $agent->identitecomplete(), __METHOD__, true);
-                    // echo "Annee ref = " . $fonctions->anneeref();
-                    // echo " debut = " . $fonctions->debutperiode();
-                    // echo " Annee ref +1 = " . ($fonctions->anneeref()+1);
-                    // echo " Fin = " . $fonctions->finperiode();
-                    // echo "Previous = " . $previous ;
-                    echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
-                    if ($previous == 0)
-                        echo $agent->affichecommentairecongehtml(true);
-                    echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
-                    echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
-                    
-                    //$fonctions->time_elapsed("Après l'affichage de l'agent " . $agent->identitecomplete(),__METHOD__);
-                    // Ligne de sÃ©paration entre les agents
-                    echo "<hr>";
-                }
+                $agent = new agent($dbcon);
+                $agent->load($agentselect);
+                echo "<br>";
+                echo "Solde de l'agent " . $agent->identitecomplete() . " : <br>";
+                echo "<form name='listedemandepdf_" . $agent->agentid() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+                echo "<input type='hidden' name='userpdf' value='no'>";
+                echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
+                echo "<input type='hidden' name='listeagent' value='" . $agent->agentid() . "'>";
+                echo "<input type='hidden' name='typepdf' value='listedemande'>";
+                echo "</form>";
+                echo "<a href='javascript:document.listedemandepdf_" . $agent->agentid() . ".submit();'>Liste des demandes en PDF</a>";
+                echo "<br>";
+                echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
+                if ($previous == 0)
+                    echo $agent->affichecommentairecongehtml(true);
+                echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
+                echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
             }
             echo "<br>"; 
-            //$fonctions->time_elapsed("Fin affichage structure " . $structure->nomcourt(), __METHOD__);
         }
-    } else {
+    } 
+    else 
+    {
+        echo "Veuillez selectionner un agent :<br>";
+        echo "<form name='formselect'  method='post'>";
+        echo "<select id='agentselect' name='agentselect'>";
+        echo "<option value=''>Tous les agents</option>";
         $structureliste = $user->structgestliste();
-        foreach ($structureliste as $structkey => $structure) {
-            echo "<br>";
-            echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
+        foreach ($structureliste as $structkey => $structure)
+        {
             $annerecherche = ($fonctions->anneeref() - $previous);
-            $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
-            // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
-            // $agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
-
-            // echo "agentliste="; print_r($agentliste); echo "<br>";
-            echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
-            echo "<input type='hidden' name='userpdf' value='no'>";
-            // $htmltext = $htmltext . "<input type='hidden' name='previous' value='" . $_POST["previous"] . "'>";
-            echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
-            $listeagent = "";
-            // echo "Avant le foreach <br>";
-            if (is_array($agentliste)) {
-                foreach ($agentliste as $agentkey => $agent) {
-                    $listeagent = $listeagent . "," . $agent->agentid();
+            $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+            if (is_array($agentliste))
+            {
+                echo "<optgroup label='". $structure->nomcourt() ."'>";
+                foreach ($agentliste as $agentkey => $agent)
+                {
+                    echo "<option value='" . $agent->agentid() . "'";
+                    if ($agentselect == $agent->agentid())
+                        echo " selected ";
+                    echo ">" . $agent->identitecomplete(true) . "</option>";
+                }
+                echo "</optgroup>";
+            }
+        }
+        echo "</select>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' name='previous' value='";
+        if ($previous==1)
+            echo 'yes';
+        else
+            echo 'no';
+        echo "'>";
+        echo "<br>";
+        echo "<input type='submit' name= 'valid_agent' value='Soumettre' >";
+        echo "</form>";
+        // Ligne de séparation
+        echo "<hr>";
+                
+        if (isset($_POST['valid_agent']))
+        {
+            if ($agentselect == '')
+            {
+                $structureliste = $user->structgestliste();
+                foreach ($structureliste as $structkey => $structure) {
+                    echo "<br>";
+                    echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
+                    $annerecherche = ($fonctions->anneeref() - $previous);
+                    $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+                    // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
+                    // $agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
+        
+                    // echo "agentliste="; print_r($agentliste); echo "<br>";
+                    echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+                    echo "<input type='hidden' name='userpdf' value='no'>";
+                    // $htmltext = $htmltext . "<input type='hidden' name='previous' value='" . $_POST["previous"] . "'>";
+                    echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
+                    $listeagent = "";
+                    // echo "Avant le foreach <br>";
+                    if (is_array($agentliste)) {
+                        foreach ($agentliste as $agentkey => $agent) {
+                            $listeagent = $listeagent . "," . $agent->agentid();
+                        }
+                    }
+                    // echo "listeagent = $listeagent <br>";
+                    // echo "agentliste Apres ="; print_r($agentliste); echo "<br>";
+        
+                    echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
+                    echo "<input type='hidden' name='typepdf' value='listedemande'>";
+                    echo "</form>";
+                    echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
+                    echo "<br>";
+        
+                    if (is_array($agentliste)) {
+                        foreach ($agentliste as $agentkey => $agent) {
+                            // echo "NOM de l'agent = " . $agent->nom() . "<br>";
+                            echo $agent->soldecongeshtml($fonctions->anneeref() - $previous, TRUE);
+                            if ($previous == 0)
+                                echo $agent->affichecommentairecongehtml(true);
+                            // echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
+                            echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
+                            echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+                            echo "<hr>";
+                        }
+                    }
+                    echo "<br>";
                 }
             }
-            // echo "listeagent = $listeagent <br>";
-            // echo "agentliste Apres ="; print_r($agentliste); echo "<br>";
-
-            echo "<input type='hidden' name='listeagent' value='" . $listeagent . "'>";
-            echo "<input type='hidden' name='typepdf' value='listedemande'>";
-            echo "</form>";
-            echo "<a href='javascript:document.listedemandepdf_" . $structure->id() . ".submit();'>Liste des demandes en PDF</a>";
-            echo "<br>";
-
-            if (is_array($agentliste)) {
-                foreach ($agentliste as $agentkey => $agent) {
-                    // echo "NOM de l'agent = " . $agent->nom() . "<br>";
-                    echo $agent->soldecongeshtml($fonctions->anneeref() - $previous, TRUE);
-                    if ($previous == 0)
-                        echo $agent->affichecommentairecongehtml(true);
-                    // echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
+            else
+            {
+                $agent = new agent($dbcon);
+                $agent->load($agentselect);
+                echo "<br>";
+                echo "Solde de l'agent " . $agent->identitecomplete() . " : <br>";
+                echo "<form name='listedemandepdf_" . $agent->agentid() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+                echo "<input type='hidden' name='userpdf' value='no'>";
+                echo "<input type='hidden' name='anneeref' value='" . $annerecherche . "'>";
+                echo "<input type='hidden' name='listeagent' value='" . $agent->agentid() . "'>";
+                echo "<input type='hidden' name='typepdf' value='listedemande'>";
+                echo "</form>";
+                echo "<a href='javascript:document.listedemandepdf_" . $agent->agentid() . ".submit();'>Liste des demandes en PDF</a>";
+                echo "<br>";
+                echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
+                if ($previous == 0)
+                    echo $agent->affichecommentairecongehtml(true);
                     echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
                     echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
-                    echo "<hr>";
-                }
             }
             echo "<br>";
         }
