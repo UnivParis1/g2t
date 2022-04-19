@@ -395,7 +395,7 @@
             else
                 echo $structure->dossierhtml(($action == 'modif'));
 
-            echo "Autoriser l'affichage du planning tous les agents des sous-structures (responsable/gestionnaire) : ";
+            echo "Autoriser l'affichage du planning à tous les agents des sous-structures (responsable/gestionnaire) : ";
             if ($action == 'modif') {
                 echo "<select name=displaysousstruct['" . $structure->id() . "']>";
                 echo "<option value='o'";
