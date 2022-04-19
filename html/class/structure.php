@@ -646,6 +646,7 @@ class structure
         $htmltext = $htmltext . "<table class='tableau' id='struct_plan_" . $this->id() . "'>";
         
         $titre_a_ajouter = TRUE;
+        $elementlegende = array();
         foreach ($planningservice as $agentid => $planning) {
             if ($titre_a_ajouter) {
                 $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) . " align=center ><font color=#BF3021>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
@@ -682,13 +683,19 @@ class structure
             foreach ($listeelement as $keyelement => $element) {
                 // echo "Boucle sur l'element <br>";
                 $htmltext = $htmltext . $element->html(false, null, $noiretblanc, $dbclickable);
+                
+//                if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+//                {
+//                    $elementlegende[$element->type()] = $element->type();
+//                }
+
             }
             // echo "Fin boucle sur les elements <br>";
             $htmltext = $htmltext . "</tr>";
         }
         $htmltext = $htmltext . "</table>";
         $htmltext = $htmltext . "</div>";
-        
+        //var_dump($elementlegende);
         if ($noiretblanc == false) {
             $mois_finperiode = substr($this->fonctions->finperiode(),0,2);
             $mois_debutperiode = substr($this->fonctions->debutperiode(),0,2);
@@ -697,7 +704,7 @@ class structure
                 // Si on est entre janvier et la fin de période 
                 $annee = $annee - 1;
             }
-            $htmltext = $htmltext . $this->fonctions->legendehtml($annee,$includeteletravail);
+            $htmltext = $htmltext . $this->fonctions->legendehtml($annee,$includeteletravail,$elementlegende);
         }
         
         $htmltext = $htmltext . "<br>";

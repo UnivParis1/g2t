@@ -406,7 +406,7 @@ LI.plus::after {
    FONT-WEIGHT: normal ;
 }
 #structplanning table.tableau {
-   border-collapse : collapse;
+   //border-collapse : collapse;
    border-spacing : 0px; 
 }
 #structplanning TR.entete TD {
@@ -451,42 +451,42 @@ LI.plus::after {
 }
 #structplanning TR.ligneplanning TD.planningelement_matin {
    cursor:pointer; 
-   border-left:2px solid black; 
-   border-top:2px solid black; 
+   border-left:1px solid black; 
+   border-top:1px solid black; 
    border-right:0px solid black; 
-   border-bottom:2px solid black; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
+   border-bottom:1px solid black; 
+   padding-right: 1px; 
+   padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning TD.planningelement_jour_matin {
    cursor:pointer; 
-   border-left:2px solid black; 
-   border-top:2px solid black; 
+   border-left:3px solid #3FC6FF; 
+   border-top:1px solid black; 
    border-right:0px solid black; 
-   border-bottom:2px solid black; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
+   border-bottom:1px solid black; 
+   padding-right: 1px; 
+   padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning TD.planningelement_aprem {
    cursor:pointer; 
    border-left:0px solid black; 
-   border-top:2px solid black; 
-   border-right:2px solid black; 
-   border-bottom:2px solid black; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
+   border-top:1px solid black; 
+   border-right:1px solid black; 
+   border-bottom:1px solid black; 
+   padding-right: 1px; 
+   padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning TD.planningelement_jour_aprem {
    cursor:pointer; 
    border-left:0px solid black; 
-   border-top:2px solid black; 
-   border-right:2px solid black; 
-   border-bottom:2px solid black; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
+   border-top:1px solid black; 
+   border-right:3px solid #3FC6FF; 
+   border-bottom:1px solid black; 
+   padding-right: 1px; 
+   padding-left: 1px;
 }
 
 .rayureplanning {

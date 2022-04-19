@@ -512,7 +512,7 @@
                 
                 echo "<br>";
                 // echo "Planning de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
-                $planninghtml =  $structure->planninghtml($indexmois . "/" . $annee, $showsousstruct, true,false); // 'n' => l'agent ne doit pas voir les conges des sous-structures (si autorisé) + Pas de télétravail sinon visuellement c'est trompeur
+                $planninghtml =  $structure->planninghtml($indexmois . "/" . $annee, $showsousstruct, true,true); // 'n' => l'agent ne doit pas voir les conges des sous-structures (si autorisé) + Pas de télétravail sinon visuellement c'est trompeur
                 echo $planninghtml;
                 $structparent = $structure->structureenglobante();
                 

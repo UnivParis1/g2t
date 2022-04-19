@@ -604,7 +604,7 @@ class fonctions
      *  anneeref : Année de référence de la légende
      * @return string html text representing the list of caption
      */
-    public function legendehtml($anneeref, $includeteletravail = FALSE)
+    public function legendehtml($anneeref, $includeteletravail = FALSE, $listelegende = array())
     {
         $tablegende = $this->legende($anneeref,$includeteletravail);
         $htmltext = "";
@@ -613,11 +613,23 @@ class fonctions
         $index=0;
         foreach ($tablegende as $key => $legende) 
         {
+            if (count($listelegende)==0 or in_array($key, $listelegende))
+            {
+                if (($index % 5) == 0)
+                {
+                    $htmltext = $htmltext . "</tr><tr>";
+                }
+                $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . $legende["couleur"] . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>" . $legende["libelle"] . "</td>";
+                $index++;
+            }
+        }
+        if (!in_array('nondec', $listelegende))  // Si la légende "nondec" n'est pas déjà dans le tableau on l'ajoute dans la légende
+        {
             if (($index % 5) == 0)
             {
                 $htmltext = $htmltext . "</tr><tr>";
             }
-            $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . $legende["couleur"] . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>" . $legende["libelle"] . "</td>";
+            $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . planningelement::COULEUR_NON_DECL . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>Période non déclarée</td>";
             $index++;
         }
         $htmltext = $htmltext . "</tr>";
