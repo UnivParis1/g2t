@@ -769,7 +769,28 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             // Pas de mise à jour de l'agenda ==> Pas de création d'un ICS
             return null;
         }
-            
+        
+        $absenceidparent = '';
+        $libelleabsence = "";
+        $libelleabsenceparent = "";
+        
+        //$sql = 'SELECT ABSENCEIDPARENT,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = ?';
+        // On récupère le libellé de l'absence parent pour le mettre dans l'ics sur c'est du télétravail hors convention
+        $sql = 'SELECT T1.ABSENCEIDPARENT, T1.LIBELLE, T2.LIBELLE FROM TYPEABSENCE T1 LEFT JOIN TYPEABSENCE T2 ON T1.ABSENCEIDPARENT  = T2.TYPEABSENCEID WHERE T1.TYPEABSENCEID = ?';
+        $params = array($this->typeabsenceid);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Demande->ics (recup absenceparentid) : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        if (mysqli_num_rows($query) != 0) {
+            $result = mysqli_fetch_row($query);
+            $absenceidparent = $result[0];
+            $libelleabsenceparent = $result[2];
+        }
         
         $dtstart = str_replace('-', '', $this->datedebut) . 'T';
         if ($this->moment_debut() == 'm') {
@@ -789,6 +810,9 @@ FROM DEMANDE WHERE DEMANDEID= ?";
         if ($this->fonctions->estunconge($this->typeabsenceid)) {
             $meeting_description = 'Congé';
             $subject = 'Congé';
+        } elseif (strcasecmp($absenceidparent,'teletravHC') == 0) {
+            $meeting_description = $libelleabsenceparent;
+            $subject = $libelleabsenceparent;
         } else {
             $meeting_description = 'Absence';
             $subject = 'Absence';
