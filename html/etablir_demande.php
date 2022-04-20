@@ -798,7 +798,7 @@
     			</td>
     		</tr>
     		<tr>
-    			<td>Type de congé :</td>
+    			<td>Type de demande :</td>
     			<td colspan="2">
     <?php
         if (strcasecmp($typedemande, "conges") == 0) {

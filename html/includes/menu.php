@@ -401,7 +401,7 @@
 							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="typedemande" value="conges">
 						</form> 
-						<a href="javascript:document.dem_conge.submit();">Etablir une demande de congé</a>
+						<a href="javascript:document.dem_conge.submit();">Saisir une demande de congé</a>
 					</li>
 					<li onclick='document.dem_absence.submit();'>
 						<form name='dem_absence' method='post' action="etablir_demande.php">
@@ -409,7 +409,7 @@
 							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="typedemande" value="absence">
 						</form>
-						<a href="javascript:document.dem_absence.submit();">Etablir une demande d'autorisation d'absence</a>
+						<a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence ou de télétravail</a>
 					</li>
 					<li onclick='document.agent_tpspartiel.submit();'>
 						<form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
@@ -491,7 +491,7 @@
 									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="conges">
 									<input type="hidden" name="previous" value="no">
-								</form> <a href="javascript:document.resp_conge.submit();">Etablir une demande de congé pour un agent</a>
+								</form> <a href="javascript:document.resp_conge.submit();">Saisir une demande de congé pour un agent</a>
 							</li>
 							<li onclick='document.resp_absence.submit();'>
 								<form name='resp_absence' method='post' action="etablir_demande.php">
@@ -499,7 +499,7 @@
 									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="absence"> 
 									<input type="hidden" name="previous" value="no">
-								</form> <a href="javascript:document.resp_absence.submit();">Etablir une demande d'absence pour un agent</a>
+								</form> <a href="javascript:document.resp_absence.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
 							</li>
 							<li onclick='document.resp_valid_conge.submit();'>
 								<form name='resp_valid_conge' method='post' action="valider_demande.php">
@@ -566,7 +566,7 @@
 									<input type="hidden" name="typedemande" value="conges"> 
 									<input type="hidden" name="congeanticipe" value="yes">
 								</form> 
-								<a href="javascript:document.resp_conge_anticipe.submit();">Etablir une demande de congé par anticipation pour un agent</a>
+								<a href="javascript:document.resp_conge_anticipe.submit();">Saisir une demande de congé par anticipation pour un agent</a>
 							</li>
 <?php
     }
@@ -591,7 +591,7 @@
 									<input type="hidden" name="typedemande" value="conges"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
-								<a href="javascript:document.resp_conge_previous.submit();">Etablir une demande de congé pour un agent</a>
+								<a href="javascript:document.resp_conge_previous.submit();">Saisir une demande de congé pour un agent</a>
 							</li>
 							<li onclick='document.resp_absence_previous.submit();'>
 								<form name='resp_absence_previous' method='post' action="etablir_demande.php">
@@ -600,7 +600,7 @@
 									<input type="hidden" name="typedemande" value="absence"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
-								<a href="javascript:document.resp_absence_previous.submit();">Etablir une demande d'absence pour un agent</a>
+								<a href="javascript:document.resp_absence_previous.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
 							</li>
 							<li onclick='document.resp_valid_conge_previous.submit();'>
 								<form name='resp_valid_conge_previous' method='post' action="valider_demande.php">
