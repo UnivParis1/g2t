@@ -623,6 +623,7 @@ class fonctions
                 $index++;
             }
         }
+/*        
         if (!in_array('nondec', $listelegende))  // Si la légende "nondec" n'est pas déjà dans le tableau on l'ajoute dans la légende
         {
             if (($index % 5) == 0)
@@ -632,6 +633,7 @@ class fonctions
             $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . planningelement::COULEUR_NON_DECL . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>Période non déclarée</td>";
             $index++;
         }
+*/
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</table>";
         

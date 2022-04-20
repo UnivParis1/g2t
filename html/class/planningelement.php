@@ -7,7 +7,7 @@ class planningelement
 
     const COULEUR_WE = '#999999';
 
-    const COULEUR_NON_DECL = '#775420';
+//    const COULEUR_NON_DECL = '#775420';
 
     const COULEUR_NOIRE = '#424242';
  // /'#000000';
@@ -136,11 +136,12 @@ class planningelement
         }
         if ($this->typeelement == "")
             return self::COULEUR_VIDE;
-        elseif (strcasecmp($this->typeelement, "nondec") == 0)
-            return self::COULEUR_NON_DECL;
+//        elseif (strcasecmp($this->typeelement, "nondec") == 0)
+//            return self::COULEUR_NON_DECL;
         elseif (strcasecmp($this->typeelement, "WE") == 0)
             return self::COULEUR_WE;
-        if ($this->typeelement != 'ferie' and $this->typeelement != 'teletrav')  // and $this->typeelement != 'tppar')
+        // if ($this->typeelement != 'ferie' and $this->typeelement != 'teletrav' )  // and $this->typeelement != 'tppar')
+        if (strcasecmp($this->typeelement, "ferie") != 0 and strcasecmp($this->typeelement, "teletrav") != 0 and strcasecmp($this->typeelement, "nondec") != 0)
         {
             if ($noiretblanc == true)
                 return self::COULEUR_NOIRE;
