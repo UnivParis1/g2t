@@ -472,6 +472,14 @@
 		<ul class="niveau1">
 			<li onclick="">MENU RESPONSABLE
 				<ul class="niveau2">
+					<li onclick='document.resp_parametre.submit();'>
+						<form name='resp_parametre' method='post' action="gestion_dossier.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="action" value="modif"> 
+							<input type="hidden" name="mode" value="resp">
+						</form> 
+						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
+					</li>	
 					<li class="plus"><a>Gestion de l'année en cours</a>
 						<ul class="niveau3">
 							<li onclick='document.resp_gest_conge.submit();'>
@@ -630,14 +638,6 @@
     // if ($user->estresponsable(false))
     // {
 ?> 
-					<li onclick='document.resp_parametre.submit();'>
-						<form name='resp_parametre' method='post' action="gestion_dossier.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="action" value="modif"> 
-							<input type="hidden" name="mode" value="resp">
-						</form> 
-						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
-					</li>	
 <?php
     // }
 ?>
