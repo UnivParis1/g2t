@@ -1608,7 +1608,7 @@ class fonctions
     
     public function typeabsencelistecomplete()
     {
-        $sql = "SELECT LIBELLE,COULEUR,TYPEABSENCEID FROM TYPEABSENCE";
+        $sql = "SELECT LIBELLE,COULEUR,TYPEABSENCEID,ABSENCEIDPARENT FROM TYPEABSENCE";
         // echo "sql = " . $sql . " <br>";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -1623,10 +1623,11 @@ class fonctions
         while ($result = mysqli_fetch_row($query)) {
             $libelle = "$result[0]";
             $couleur = "$result[1]";
-            // $code_legende = "$result[2]";
+            $parentid = "$result[3]";
             $tableabsence["$result[2]"] = array(
                 "libelle" => $libelle,
-                "couleur" => $couleur
+                "couleur" => $couleur,
+                "parentid" => $parentid
             );
         }
         

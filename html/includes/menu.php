@@ -331,18 +331,15 @@
     unset($arraystructpartielle);
     unset($affectationarray);
     unset($affectation);
-    
+
+/*   
+    // La déclaration du tableau est déplacée dans le all_g2t_classes.php pour être pris en compte également dans les fichiers CRON
     // On va charger le tableau des couleurs de chaque élément du planning => Optimisation du tps
     // Voir la classe planningelement->couleur()
     $tabcouleurelement = $fonctions->typeabsencelistecomplete();
-/*    
-    $tabcouleurelement = $fonctions->legende($fonctions->anneeref()-1,true);
-    $tabcouleurelement = array_merge((array)$tabcouleurelement, $fonctions->legende($fonctions->anneeref(),true));
-    $tabcouleurelement = array_merge((array)$tabcouleurelement, $fonctions->legende($fonctions->anneeref()+1,true));
-*/
     define('TABCOULEURPLANNINGELEMENT', $tabcouleurelement);
     //var_dump(TABCOULEURPLANNINGELEMENT);
-    
+*/    
 ?>
 
 

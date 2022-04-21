@@ -135,14 +135,29 @@ class planningelement
             }
         }
         if ($this->typeelement == "")
+        {
             return self::COULEUR_VIDE;
+        }
 //        elseif (strcasecmp($this->typeelement, "nondec") == 0)
+//        {
 //            return self::COULEUR_NON_DECL;
+//        }
         elseif (strcasecmp($this->typeelement, "WE") == 0)
+        {
             return self::COULEUR_WE;
+        }
         // if ($this->typeelement != 'ferie' and $this->typeelement != 'teletrav' )  // and $this->typeelement != 'tppar')
         if (strcasecmp($this->typeelement, "ferie") != 0 and strcasecmp($this->typeelement, "teletrav") != 0 and strcasecmp($this->typeelement, "nondec") != 0)
         {
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']))
+            {
+                if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC')
+                {
+                    // Même si on doit afficher l'élément en N&B, les élémenet dont le parent est 'teletravHC' doivent être affiché en couleur
+                    $noiretblanc = false;
+                }
+            }
+            
             if ($noiretblanc == true)
                 return self::COULEUR_NOIRE;
         }
@@ -304,10 +319,19 @@ class planningelement
                 }
             }
             $spanactive = false;
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']) and strlen($this->info()) != 0 )
+            {
+                if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC' and $noiretblanc)
+                {
+                    //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . "<br>";
+                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . chr(34) . ">";
+                    $spanactive = true;
+                }
+            }
             if (strlen($this->info()) != 0 
                 and $noiretblanc == false 
                 or ($noiretblanc == true 
-                    and !in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))
+                    and !in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE)) and !$spanactive
                    )
                ) 
             {
@@ -337,10 +361,19 @@ class planningelement
                 }
             }
             $spanactive = false;
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']) and strlen($this->info()) != 0 )
+            {
+                if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC' and $noiretblanc)
+                {
+                    //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . "<br>";
+                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . chr(34) . ">";
+                    $spanactive = true;
+                }
+            }
             if (strlen($this->info()) != 0
                 and $noiretblanc == false
                 or ($noiretblanc == true
-                    and !in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))
+                    and !in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE)) and !$spanactive
                     )
                 )
             {
