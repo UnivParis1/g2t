@@ -361,10 +361,13 @@ LI.plus::after {
 #planning {
    FONT-WEIGHT: normal ;
 }
+
 #planning table.tableau {
    border-collapse : collapse; 
    border-spacing : 0px; 
+   cursor:pointer; 
 }
+
 #planning TR.entete TD {
    color: black; 
    BORDER-RIGHT: black 1px solid; 
@@ -378,6 +381,11 @@ LI.plus::after {
    BORDER-BOTTOM: black 1px solid;  
    text-align : center; 
 }
+
+#planning TR.ligneplanning {
+/*	cursor:pointer; */
+}
+
 #planning TR.ligneplanning TD {
    color: black;
    BORDER-RIGHT: black 1px solid; 
@@ -392,6 +400,7 @@ LI.plus::after {
    text-align : left; 
    height:15px;
 }
+
 #planning TR.ligneplanning TD.planningelement_matin {
    cursor:pointer; 
    border-left:2px solid black; 
@@ -402,6 +411,7 @@ LI.plus::after {
    PADDING-LEFT: 1px;
 /*	width:250px; */   
 }
+
 #planning TR.ligneplanning TD.planningelement_aprem {
    cursor:pointer; 
    border-left:0px solid black; 
@@ -412,6 +422,7 @@ LI.plus::after {
    PADDING-LEFT: 1px;
 /*	width:250px; */   
 }
+
 #planning TR.ligneplanning TD.planningelement_jour_matin {
    cursor:pointer; 
    border-left:3px solid red; 
@@ -421,6 +432,7 @@ LI.plus::after {
    PADDING-RIGHT: 1px; 
    PADDING-LEFT: 1px;
 }
+
 #planning TR.ligneplanning TD.planningelement_jour_aprem {
    cursor:pointer; 
    border-left:0px solid red; 
