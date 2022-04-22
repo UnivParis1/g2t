@@ -145,12 +145,16 @@
                 //alert('Suppression de la couleur');
                 // C'est du télétravail et on doit le masquer ou la date est exclue
                 currenttd.bgColor = '<?php echo planningelement::COULEUR_VIDE ?>';
+                // On ajoute la classe hidde_tip afin de masquer la bulle d'information => voir CSS
+                currenttd.classList.add('hidde_tip');
             }
             else
             {
                 //alert('On remet la couleur');
                 // C'est du télétravail et on doit le montrer
                 currenttd.bgColor = '<?php echo "$couleur"  ?>';
+                // On supprime la classe hidde_tip afin d'autoriser l'affichage de la bulle d'information => voir CSS
+                currenttd.classList.remove('hidde_tip');
             }    
         }
         if (id_hidden_input != "")

@@ -430,6 +430,11 @@ LI.plus::after {
    PADDING-RIGHT: 1px; 
    PADDING-LEFT: 1px;
 }
+
+#planning TR.ligneplanning TD.hidde_tip
+{
+	pointer-events: none;
+}
 /****************************************************
 / PLANNING D'UNE STRUCTURE
 /****************************************************/
