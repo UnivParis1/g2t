@@ -2434,7 +2434,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
     	$LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
     	$LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
-    	$LDAP_POSTAL_ADDRESS_ATTR = $fonctions->liredbconstante("LDAP_AGENT_ADDRESS_ATTR");
+    	$LDAP_POSTAL_ADDRESS_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_ADDRESS_ATTR");
     	$retour = array();
     	// Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
     	if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {

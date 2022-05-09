@@ -17,6 +17,7 @@
     require_once (dirname(__FILE__,2) . "/class/teletravail.php");
     
     //echo "Le chemin parent = " . dirname(__FILE__,2) . "<br><br>"
+    $fonctions = new fonctions($dbcon);
     
     // On va charger le tableau des couleurs de chaque élément du planning => Optimisation du tps
     // Voir la classe planningelement->couleur()

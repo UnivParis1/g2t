@@ -153,6 +153,21 @@ Merci de contrôler le dossier RH du responsable.\n");
                     $destinatairemail = $structure->resp_envoyer_a($codeinterne);
                     if (! is_null($destinatairemail)) 
                     {
+                        switch ($codeinterne)
+                        {
+                            case 1:
+                                $typesignataire = 'responsable';
+                                $structureparent = $structure->parentstructure();
+                                break;
+                            case 2:
+                                $typesignataire = 'gestionnaire';
+                                $structureparent = $structure->parentstructure();
+                                break;
+                            case 3:
+                                $typesignataire = 'gestionnaire';
+                                $structureparent = $structure;
+                                break;
+                        }
                         // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
                         if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                         {
@@ -171,11 +186,18 @@ Merci de contrôler le dossier RH du responsable.\n");
                         if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
                         {
                             if (!in_array($structure->id(), $arraystruct))
-                            {
+                            {                                
                                 echo "CRON G2T envoie le mail a la DRH pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
-                                $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
+                                $corpsmail = "Le responsable de la structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") a une demande à valider. Le signataire doit être le $typesignataire de la structure " . $structureparent->nomlong() . " (" . $structureparent->nomcourt()  . "). Cependant celui-ci n'est pas défini.
 Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
-Merci de contrôler le dossier RH du responsable.\n");
+Dans le cas d'un gestionnaire, il faut que le responsable de la structure modifie le paramétrage de la structure dans G2T (Menu responsable/Paramétrage des dossiers et des structures).
+Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G2T.\n";
+                                /*
+                                $corpsmail = "La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
+Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+Merci de contrôler le dossier RH du responsable.\n";
+                                */
+                                $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure",$corpsmail);
                                 $arraystruct[] = $structure->id();
                             }
                         }
