@@ -203,8 +203,13 @@
         }
         else // Tout est ok => on va récupérer les données du workflow
         {
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"]));
             echo "<br><br>Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"] . "<br>";
-            echo "Date de création : " . date("d/m/Y H:i:s", substr($response["parentSignBook"]["createDate"],0,strlen($response["parentSignBook"]["createDate"])-3)) . "<br>";
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Date de création : " . $response["parentSignBook"]["createDate"]));
+            //echo "Date de création : " . date("d/m/Y H:i:s", substr($response["parentSignBook"]["createDate"],0,strlen($response["parentSignBook"]["createDate"])-3)) . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
+            $displaydate = date("d/m/Y H:i:s", strtotime($response["parentSignBook"]["createDate"])); // substr($response["parentSignBook"]["createDate"],0,10);
+            echo "Date de création : " . $displaydate . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Statut de la demande : " . $response["parentSignBook"]["status"]));
             echo "Statut de la demande : " . $response["parentSignBook"]["status"] . "<br>";
             echo "<br>";
             $nextstep = null;
