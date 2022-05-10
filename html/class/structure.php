@@ -1077,6 +1077,7 @@ class structure
         
         // echo "Avant legende <br>";
         if ($noiretblanc == false)
+        {
             $mois_finperiode = substr($this->fonctions->finperiode(),0,2);
             $mois_debutperiode = substr($this->fonctions->debutperiode(),0,2);
             if ($indexmois<=$mois_finperiode and $indexmois<$mois_debutperiode)
@@ -1085,6 +1086,7 @@ class structure
                 $annee = $annee - 1;
             }
             $this->fonctions->legendepdf($pdf,$annee,$includeteletravail);
+        }
         // echo "Apres legende <br>";
         
         $pdf->Ln(8);
