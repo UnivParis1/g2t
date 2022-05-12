@@ -30,25 +30,6 @@
         exit();
     }
         
-/*
-    require_once ('./includes/dbconnection.php');
-    require_once ('./class/fonctions.php');
-    require_once ('./class/agent.php');
-    require_once ('./class/structure.php');
-    require_once ("./class/solde.php");
-    require_once ("./class/demande.php");
-    require_once ("./class/planning.php");
-    require_once ("./class/planningelement.php");
-    require_once ("./class/declarationTP.php");
-    require_once ("./class/fpdf/fpdf.php");
-    require_once ("./class/cet.php");
-    require_once ("./class/affectation.php");
-    require_once ("./class/complement.php");
-    require_once ("./class/periodeobligatoire.php");
-    require_once ("./class/alimentationCET.php");
-    require_once ("./class/optionCET.php");
-*/
-    
     $user = new agent($dbcon);
     $user->load($userid);
     $optionCET = new optionCET($dbcon);
