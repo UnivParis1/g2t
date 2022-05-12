@@ -26,14 +26,24 @@
             }
         }
     }
-    
-        
+      
     if (is_null($userid) or ($userid == "")) {
         error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
         header('Location: index.php');
         exit();
     }
         
+    // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
+    $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
+    if ($CASuserId===false)
+    {
+        // Ce n'est pas un administrateur
+        error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
+        echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
+        //        header('Location: index.php');
+        exit();
+    }
+    
     $user = new agent($dbcon);
     $user->load($userid);
 

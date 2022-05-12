@@ -29,32 +29,18 @@
         header('Location: index.php');
         exit();
     }
-
-    $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-    $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-    $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-    $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-    $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-    $con_ldap = ldap_connect($LDAP_SERVER);
-    ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-    $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-    $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
-    $dn = $LDAP_SEARCH_BASE;
-    $restriction = array(
-        "$LDAP_CODE_AGENT_ATTR"
-    );
-    $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-    $info = ldap_get_entries($con_ldap, $sr);
-    // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-    $adminuser = new agent($dbcon);
-    $adminuser->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]);
-    if (! $adminuser->estadministrateur()) {
+    
+    // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
+    $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
+    if ($CASuserId===false)
+    {
+        // Ce n'est pas un administrateur
         error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
-        header('Location: index.php');
+        echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
+        //        header('Location: index.php');
         exit();
     }
-
+    
     $user = new agent($dbcon);
     $user->load($userid);
 
