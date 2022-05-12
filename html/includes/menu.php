@@ -943,7 +943,7 @@
 						<form name='admin_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
-						<a href="javascript:document.admin_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
+						<a href="javascript:document.admin_affiche_info_teletravail.submit();">Nombre théorique de jours de télétravail</a>
 					</li>
 				</ul>
 			</li>
