@@ -31,22 +31,6 @@
         exit();
     }
 
-/*
-    require_once ("./class/agent.php");
-    require_once ("./class/structure.php");
-    require_once ("./class/solde.php");
-    require_once ("./class/demande.php");
-    require_once ("./class/planning.php");
-    require_once ("./class/planningelement.php");
-    require_once ("./class/declarationTP.php");
-    // require_once("./class/autodeclaration.php");
-    // require_once("./class/dossier.php");
-    require_once ("./class/fpdf/fpdf.php");
-    require_once ("./class/cet.php");
-    require_once ("./class/affectation.php");
-    require_once ("./class/complement.php");
-*/
-    
     $user = new agent($dbcon);
     $user->load($userid);
 
@@ -61,13 +45,18 @@
 
     $nbr_jours_conges = null;
     $commentaire_supp = null;
+    $ancienacquis_supp = null;
     if (isset($_POST["nbr_jours_conges"]))
         $nbr_jours_conges = $_POST["nbr_jours_conges"];
     if (isset($_POST["commentaire_supp"]))
         $commentaire_supp = $_POST["commentaire_supp"];
-
+    if (isset($_POST["ancienacquis_supp"]))
+        $ancienacquis_supp = $_POST["ancienacquis_supp"];
+            
     $msg_erreur = "";
-
+    $annee = substr($fonctions->anneeref(), 2, 2);
+    $lib_sup = "sup$annee";
+    
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
@@ -120,8 +109,6 @@
             }
             if ($msg_erreur == "") {
                 $solde = new solde($dbcon);
-                $annee = substr($fonctions->anneeref(), 2, 2);
-                $lib_sup = "sup$annee";
                 // echo "lib_sup = $lib_sup <br>";
                 $erreur = $solde->load($agentid, $lib_sup);
                 // echo "Erreur = $erreur <br>";
@@ -133,11 +120,18 @@
                     $msg_erreur = $msg_erreur . $solde->load($agentid, $lib_sup);
                     // echo "msg_erreur = $msg_erreur <br>";
                 }
-                $commentaire_supp_complet = $commentaire_supp . " (par " . $user->prenom() . " " . $user->nom() . ")";
-                $nouv_solde = ($solde->droitaquis() + $nbr_jours_conges);
-                $solde->droitaquis($nouv_solde);
-                $msg_erreur = $msg_erreur . $solde->store();
-                $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet);
+                if ($ancienacquis_supp == $solde->droitaquis())
+                {
+                    $commentaire_supp_complet = $commentaire_supp . " (par " . $user->prenom() . " " . $user->nom() . ")";
+                    $nouv_solde = ($solde->droitaquis() + $nbr_jours_conges);
+                    $solde->droitaquis($nouv_solde);
+                    $msg_erreur = $msg_erreur . $solde->store();
+                    $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet);
+                }
+                else
+                {
+                    $msg_erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
+                }
                 // echo "msg_erreur = $msg_erreur <br>";
             }
             if ($msg_erreur != "") {
@@ -163,7 +157,30 @@
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
 
+        // On charge le solde de congés complémentaires afin de pouvoir poster le nombre de jours déjà aquis ==> Objectif : Empécher le double post (F5 du navigateur)
+        $solde = new solde($dbcon);
+        // echo "lib_sup = $lib_sup <br>";
+        $erreur = $solde->load($agentid, $lib_sup);
+        // echo "Erreur = $erreur <br>";
+        if ($erreur != "") {
+            unset($solde);
+            $solde = new solde($dbcon);
+            $msg_erreur = $solde->creersolde($lib_sup, $agentid);
+            // echo "msg_erreur = $msg_erreur <br>";
+            $msg_erreur = $msg_erreur . $solde->load($agentid, $lib_sup);
+            // echo "msg_erreur = $msg_erreur <br>";
+            if ($msg_erreur <> "")
+            {
+                $msg_erreur = "Erreur lors du chargement du solde de congés complémentaires $lib_sup : " . $msg_erreur;
+                echo "<P style='color: red'>" . $errlog . "</P><br/>";
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            }
+        }
+        
+        
         echo "Ajout de jours de congés supplémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
+        echo "<br>";
+        echo "Le solde de " . $solde->typelibelle() . " est actuellement de " . ($solde->droitaquis()-$solde->droitpris()) . " jour(s) <br>";
         echo "<form name='frm_ajoutconge'  method='post' >";
         // echo "Sélectionnez l'agent auquel vous voullez ajouter des jours supplémentaires : ";
         // $agentliste=$user->structure()->agentlist();
@@ -183,6 +200,7 @@
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
+        echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     }
