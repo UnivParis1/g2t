@@ -122,6 +122,50 @@ class planningelement
             $this->demandeid = $id;
         }
     }
+    
+    function parenttype()
+    {
+        if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']))
+        {
+            //$errlog = "PlanningElement->parenttype : Le parent pour le type de congé " . $this->typeelement . " est dans le tableau => " . TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'];
+            //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'];
+        }
+        else
+        {
+            return "";
+        }
+
+/*
+            //$errlog = "PlanningElement->parenttype : Le parent pour le type de congé " . $this->typeelement . " n'est pas dans le tableau";
+            //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            $parenttype = "";
+            $sql = "SELECT ABSENCEIDPARENT FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+            // echo "sql = " . $sql . " <br>";
+            $params = array($this->typeelement);
+            $query = $this->fonctions->prepared_select($sql, $params);
+            
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "PlanningElement->parenttype : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            }
+            else if (mysqli_num_rows($query) == 0)
+            {
+                $errlog = "PlanningElement->parenttype : Le parent pour le type de congé " . $this->typeelement . " non trouvé";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+            {
+                $result = mysqli_fetch_row($query);
+                $parenttype = "$result[0]";
+            }
+            return $parenttype;
+        }
+*/                
+    }
 
     function couleur($noiretblanc = false)
     {
@@ -149,13 +193,10 @@ class planningelement
         // if ($this->typeelement != 'ferie' and $this->typeelement != 'teletrav' )  // and $this->typeelement != 'tppar')
         if (strcasecmp($this->typeelement, "ferie") != 0 and strcasecmp($this->typeelement, "teletrav") != 0 and strcasecmp($this->typeelement, "nondec") != 0)
         {
-            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']))
+            if (strcasecmp($this->parenttype(),'teletravHC')==0) // Si le type du parent de l'element est teletravHC
             {
-                if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC')
-                {
-                    // Même si on doit afficher l'élément en N&B, les élémenet dont le parent est 'teletravHC' doivent être affiché en couleur
-                    $noiretblanc = false;
-                }
+                // Même si on doit afficher l'élément en N&B, les élémenet dont le parent est 'teletravHC' doivent être affiché en couleur
+                $noiretblanc = false; 
             }
             
             if ($noiretblanc == true)
@@ -164,7 +205,7 @@ class planningelement
         if (is_null($this->couleur))
         {
             // Si le tableau des couleurs des elements du planning est défini et que le type de l'élément existe
-            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]))
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['couleur']))
             {
                 // On prend la couleur définie dans le tableau TABCOULEURPLANNINGELEMENT
                 $this->couleur = TABCOULEURPLANNINGELEMENT[$this->typeelement]['couleur'];
@@ -284,7 +325,8 @@ class planningelement
             $exclusion = $this->fonctions->estjourteletravailexclu($this->agentid(), $this->date());
             
         }
-        if (($this->type() == 'teletrav' or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
+        
+        if ((strcasecmp($this->type(),'teletrav')==0 or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
             $extraclass = ' teletravail ';
             if ($exclusion)
@@ -319,6 +361,7 @@ class planningelement
                 }
             }
             $spanactive = false;
+/*
             if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']) and strlen($this->info()) != 0 )
             {
                 if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC' and $noiretblanc)
@@ -328,6 +371,17 @@ class planningelement
                     $spanactive = true;
                 }
             }
+*/
+            // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
+            // ==> On affiche le type du parent 'Teletravail hors convention'
+            if (strlen($this->info()) != 0 and strcasecmp($this->parenttype(),'teletravHC')==0 and $noiretblanc) 
+            {
+                //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                $spanactive = true;
+            }
+            
+            
             if (strlen($this->info()) != 0 
                 and $noiretblanc == false 
                 or ($noiretblanc == true 
@@ -361,6 +415,7 @@ class planningelement
                 }
             }
             $spanactive = false;
+/*            
             if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']) and strlen($this->info()) != 0 )
             {
                 if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC' and $noiretblanc)
@@ -370,6 +425,16 @@ class planningelement
                     $spanactive = true;
                 }
             }
+*/
+            // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
+            // ==> On affiche le type du parent 'Teletravail hors convention'
+            if (strlen($this->info()) != 0 and strcasecmp($this->parenttype(),'teletravHC')==0 and $noiretblanc)
+            {
+                //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                $spanactive = true;
+            }
+            
             if (strlen($this->info()) != 0
                 and $noiretblanc == false
                 or ($noiretblanc == true

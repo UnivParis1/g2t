@@ -25,7 +25,7 @@
     {
         $tabcouleurelement = $fonctions->typeabsencelistecomplete();
         define('TABCOULEURPLANNINGELEMENT', $tabcouleurelement);
+        //var_dump(TABCOULEURPLANNINGELEMENT);
     }
-    //var_dump(TABCOULEURPLANNINGELEMENT);
     
 ?>

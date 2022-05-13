@@ -1253,6 +1253,42 @@ class structure
                 }
                 $agenttrouve = true;
             }
+            else
+            {
+                // On va regarder dans le cas d'un agent hors convention
+                $nombrejoursteletravail = array();
+                $nombrejoursteletravailcumul = 0;
+                foreach ($tableaudate as $tabdebutfin)
+                {
+                    //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("debut = " . $tabdebutfin[0] . " fin = " . $tabdebutfin[1]));
+                    $nombrejrs = $agent->nbjoursteletravail($tabdebutfin[0], $tabdebutfin[1]);
+                    $nombrejoursteletravail[] = $nombrejrs;
+                    $nombrejoursteletravailcumul = $nombrejoursteletravailcumul + $nombrejrs;
+                }
+                if ($nombrejoursteletravailcumul > 0)
+                {
+                    if (!$agenttrouve)
+                    {
+                        // C'est le premier agent qu'on trouve ==> On crée l'entête
+                        $pdf->Cell(60, 5, utf8_decode("Nom de l'agent"), 1, 0, 'C');
+                        foreach ($tableaudate as $tabdebutfin)
+                        {
+                            $pdf->cell(40, 5, utf8_decode("$tabdebutfin[2]"), 1, 0, 'C');
+                        }
+                    }
+                    // L'agent est dans la structure et est en télétravail durant la période
+                    $pdf->Ln(5);
+                    $pdf->Cell(60, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
+                    foreach ($nombrejoursteletravail as $nombrejrs)
+                    {
+                        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("debut = " . $tabdebutfin[0] . " fin = " . $tabdebutfin[1]));
+                        $pdf->cell(40, 5, utf8_decode($nombrejrs), 1, 0, 'C');
+                    }
+                    $agenttrouve = true;
+                    
+                }
+            }
+            
         }
         if (!$agenttrouve)
         {

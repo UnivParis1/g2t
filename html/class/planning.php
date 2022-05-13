@@ -763,7 +763,8 @@ class planning
         $nbjoursteletravail = 0;
         foreach ($elementliste as $element)
         {
-            if ($element->type() == 'teletrav')
+            //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Le type parent de l'élément est " . $element->parenttype()));
+            if (strcasecmp($element->type(), "teletrav")==0 or strcasecmp($element->parenttype(), "teletravHC")==0 )
             {
                 $nbjoursteletravail = $nbjoursteletravail + 0.5;
             }
