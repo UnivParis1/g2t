@@ -34,6 +34,7 @@
     $user = new agent($dbcon);
     $user->load($userid);
 
+/*    
     if (isset($_POST["agentid"])) {
         $agentid = $_POST["agentid"];
         $agent = new agent($dbcon);
@@ -42,17 +43,45 @@
         $agentid = null;
         $agent = null;
     }
+*/
 
+    if (isset($_POST["agentid"])) {
+        $agentid = $_POST["agentid"];
+        if (! is_numeric($agentid)) 
+        {
+            $agentid = $fonctions->useridfromCAS($agentid);
+            if ($agentid === false)
+            {
+                $agentid = null;
+            }
+        }
+        if (! is_numeric($agentid)) {
+            $agentid = null;
+            $agent = null;
+        } else {
+            $agent = new agent($dbcon);
+            $agent->load($agentid);
+        }
+    } else {
+        $agentid = null;
+        $agent = null;
+    }
+    
+    
     $nbr_jours_conges = null;
     $commentaire_supp = null;
     $ancienacquis_supp = null;
+    $mode = 'resp';
     if (isset($_POST["nbr_jours_conges"]))
         $nbr_jours_conges = $_POST["nbr_jours_conges"];
     if (isset($_POST["commentaire_supp"]))
         $commentaire_supp = $_POST["commentaire_supp"];
     if (isset($_POST["ancienacquis_supp"]))
         $ancienacquis_supp = $_POST["ancienacquis_supp"];
+    if (isset($_POST["mode"]))
+        $mode = $_POST["mode"];
             
+    
     $msg_erreur = "";
     $annee = substr($fonctions->anneeref(), 2, 2);
     $lib_sup = "sup$annee";
@@ -61,9 +90,28 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-    if ($agentid == "") {
+    if ($agentid == "" and strcasecmp($mode, "gestrh") == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
+    {
         echo "<form name='selectagentcongessupp'  method='post' >";
 
+        echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='' size=40 />";
+        echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
+?>
+        <script>
+                $("#agent").autocompleteUser(
+                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
+  	    </script>
+<?php
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<input type='submit' value='Soumettre' >";
+        echo "</form>";
+    }
+    elseif ($agentid == "") // On est pas en mode rh ==> Donc on est en mode "resp"
+    {
+        echo "<form name='selectagentcongessupp'  method='post' >";
+        
         $structureliste = $user->structrespliste();
         // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
         $agentlistefull = array();
@@ -90,10 +138,11 @@
         }
         echo "</SELECT>";
         echo "<br>";
-
+        
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
-        echo "</form>";
+        echo "</form>"; 
     } else {
         if (! is_null($nbr_jours_conges)) {
             // On a cliqué sur le bouton validé ==> On va vérifier la saisie

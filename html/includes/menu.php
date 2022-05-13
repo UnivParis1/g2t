@@ -542,6 +542,7 @@
 							<li onclick='document.resp_ajout_conge.submit();'>
 								<form name='resp_ajout_conge' method='post' action="ajouter_conges.php">
 									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+									<input type="hidden" name="mode" value="resp"> 
 								</form> 
 								<a href="javascript:document.resp_ajout_conge.submit();">Ajout de jours supplémentaires pour un agent</a>
 							</li>
@@ -870,6 +871,13 @@
         							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
         						</form> 
         						<a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
+        					</li>
+        					<li onclick='document.rh_ajout_conge.submit();'>
+        						<form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                					<input type="hidden" name="mode" value="gestrh">
+        						</form> 
+        						<a href="javascript:document.rh_ajout_conge.submit();">Ajout de jours supplémentaires pour un agent</a>
         					</li>
         					<li onclick='document.rh_aff_solde.submit();'>
         						<form name='rh_aff_solde' method='post' action="affiche_solde.php">
