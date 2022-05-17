@@ -219,6 +219,66 @@ class agent
 
     /**
      *
+     * @param 
+     * @return string eppn of the current agent 
+     */
+    function eppn()
+    {
+        $agent_eppn = "";
+        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_EPPN_ATTR");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
+        $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
+        //echo "Filtre = $filtre <br>";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array(
+            "$LDAP_CODE_AGENT_ATTR"
+        );
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        //echo "Info = " . print_r($info,true) . "<br>";
+        //echo "L'EPPN de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+            $agent_eppn = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+            //echo "Agent EPPN = $agent_eppn <br>";
+        }
+        return $agent_eppn;
+    }
+    
+    function ldapmail()
+    {
+        $agent_mail = '';
+        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
+        $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array("$LDAP_CODE_AGENT_ATTR");
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        //echo "Info = " . print_r($info,true) . "<br>";
+        //echo "L'email de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+            $agent_mail = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+            // echo "Agent eMail = $agent_mail <br>";
+        }
+        return $agent_mail;
+    }
+    
+    /**
+     *
      * @param string $type
      *            optional the type of the current agent
      * @return string type of the current agent if $type parameter not set. No return otherwise
@@ -2416,7 +2476,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		}
     		else
     		{
-    			$errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") ne fait parti d'aucun groupe LDAP....";
+    			$errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") ne fait parti du groupe LDAP : $LDAP_GROUP_NAME";
     			error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
     		}
     	}

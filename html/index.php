@@ -18,47 +18,32 @@
     }
     $user = new agent($dbcon);
 
-    if (is_null($userid) or $userid == "") {
-        // echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
-        $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-        $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array(
-            "$LDAP_CODE_AGENT_ATTR"
-        );
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-        if (! $user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
+    if (is_null($userid) or $userid == "") 
+    {
+        $userid = $fonctions->useridfromCAS($uid);
+        if ($userid === false)
+        {
             echo '<head>';
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
             echo '</head>';
-            $errlog = "L'utilisateur " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " (Informations LDAP : " . $info[0]["dn"] . ") n'est pas référencé dans la base de donnée !!!";
+            $errlog = "L'utilisateur " . $uid . " (AgentId = $userid) n'est pas référencé dans la base de donnée !!!";
             echo "$errlog<br>";
             echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             exit();
         }
-        $_SESSION['phpCAS']['agentid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-        $_SESSION['phpCAS']['dn'] = $info[0]["dn"];
-        // echo "Je viens de set le param - index.php<br>";
-        // echo "Avant le recup user-> id";
-        $userid = $user->agentid();
-        // echo "Apres le recup user-> id";
-    } else {
-        if (! $user->load($userid)) {
+        // Si on est là, on est sûr que l'agent existe
+        $user->load($userid);
+    } 
+    else 
+    {
+        // Si le userid est défini => On essaie de charger l'agent
+        if (! $user->load($userid)) 
+        {
             echo '<head>';
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
             echo '</head>';
-            $errlog = "L'utilisateur " . $userid . " (Informations LDAP : " . $_SESSION['phpCAS']['dn'] . ") n'est pas référencé dans la base de donnée !!!";
+            $errlog = "L'utilisateur " . $userid . " n'est pas référencé dans la base de donnée !!!";
             echo "$errlog<br>";
             echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
@@ -67,6 +52,7 @@
     }
 
     require ("includes/menu.php");
+
     $casversion = phpCAS::getVersion();
     $errlog = "Index.php => Version de CAS.php utilisée  : " . $casversion;
     //echo "<br><br>" . $errlog . "<br><br>";
@@ -74,16 +60,7 @@
 
 /*    
     echo "POST => " . print_r($_POST,true) . "<br>";
-    if (isset($_SESSION['g2t']))
-    {
-        echo "SESSION['g2t'] => " . print_r($_SESSION['g2t'],true) . "<br>";
-    }
-    else
-    {
-        echo "SESSION['g2t'] => non défini <br>";
-    }
 */
-    // echo '<html><body class="bodyhtml">';
 
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
     $affectationliste = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));
@@ -137,34 +114,6 @@
             }
         }
     }
-    /*
-     * $structure = new structure($dbcon);
-     * $structure->load("DGH");
-     * $structure->sousstructure("o");
-     * echo "Liste des agents de la structure " . $structure->nomlong() . " : <br>";
-     * if (!is_null($structure))
-     * {
-     * $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-     * $agent = new agent($dbcon);
-     * foreach ($agentliste as $key => $agent)
-     * {
-     * $affectationliste = $agent->affectationliste(date("d/m/Y"),date("d/m/Y"));
-     * $affectation = reset($affectationliste);
-     * //$affectation = $affectationliste[0];
-     * unset($structure);
-     * $structure = new structure($dbcon);
-     * $structure->load($affectation->structureid());
-     * echo "L'agent " . $agent->identitecomplete() . " est dans la strcuture " . $structure->nomlong() . "<br>";
-     * }
-     * }
-     */
-    /*
-     * $structure = new structure($dbcon);
-     * $structure->load("DGHC");
-     * $structure->sousstructure("o");
-     * echo "<br>Planning de la structure " . $structure->nomlong() . " :<br>";
-     * echo $structure->planninghtml("03/2013");
-     */
 
      $periode = new periodeobligatoire($dbcon);
      $liste = $periode->load($fonctions->anneeref());
@@ -182,18 +131,12 @@
          echo "</font>";
          echo "<br><br>";
      }
-
-/*
-     echo "<font color=#FF0000><center>";
-     echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
-     echo "</center></font>";
-     echo "<br>";
-*/
     echo $user->soldecongeshtml($fonctions->anneeref());
 
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
         
+    
 ?>
 </body>
 </html>

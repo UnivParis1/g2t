@@ -193,40 +193,32 @@
         $arrayinfouser = $_POST["infouser"];
 
     if (is_array($arraygestionnaire)) {
-
-        // Initialisation des infos LDAP
-        $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-
         // ATTENTION : La $valeur est soit le AGENTID soit le UID si on vient de le modifier !!
-        foreach ($arraygestionnaire as $structureid => $valeur) {
+        foreach ($arraygestionnaire as $structureid => $valeur) 
+        {
             // Si on n'a pas de nom dans la zone de saisie du gestionnaire => On doit effacer le gestionnaire
             if (trim($arrayinfouser[$structureid]) == "") {
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
                 $structure->gestionnaire("");
                 $structure->store();
-            } else {
-                // On va chercher dans le LDAP la correspondance UID => AGENTID
-                $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-                $filtre = "($LDAP_UID_AGENT_ATTR=$valeur)";
-                $dn = $LDAP_SEARCH_BASE;
-                $restriction = array(
-                    "$LDAP_CODE_AGENT_ATTR"
-                );
-                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                $info = ldap_get_entries($con_ldap, $sr);
-                // echo "Le numéro AGENT du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-                    $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+            } 
+            else 
+            {
+                //echo "\$valeur est soit un uid soit un numéro agent : $valeur <br>";
+                if (! is_numeric($valeur))
+                {
+                    $agentid = $fonctions->useridfromCAS($valeur);
+                    if ($agentid === false)
+                    {
+                        $agentid = null;
+                    }
+                }
                 else
-                    $agentid = "";
+                {
+                    $agentid = $valeur;
+                }
+                //echo "Agentid pour le gestionnaire vaut : $agentid <br>";
                 // Si le agentid n'est pas vide ou null
                 if ($agentid != '' and (! is_null($agentid))) {
                     // $structureid = str_replace("'", "", $structureid);
@@ -258,18 +250,8 @@
     if (isset($_POST["date_fin"]))
         $arraydatefin = $_POST["date_fin"];
 
-    if (is_array($arraydelegation)) {
-
-        // Initialisation des infos LDAP
-        $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-
+    if (is_array($arraydelegation)) 
+    {
         // ATTENTION : La $valeur est soit le AGENTID soit le UID si on vient de le modifier !!
         foreach ($arraydelegation as $structureid => $valeur) {
             $resp_est_delegue = false;
@@ -282,22 +264,21 @@
                 $structure->setdelegation("", "", "", $userid);
             } else {
                 // echo "Dans le else avant le filtre LDAP <br>";
-                // On va chercher dans le LDAP la correspondance UID => AGENTID
-                $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-                $filtre = "($LDAP_UID_AGENT_ATTR=$valeur)";
-                $dn = $LDAP_SEARCH_BASE;
-                $restriction = array(
-                    "$LDAP_CODE_AGENT_ATTR"
-                );
-                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                $info = ldap_get_entries($con_ldap, $sr);
-                // echo "Le numéro AGENT du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-                    $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-                } else {
+                //echo "\$valeur est soit un uid soit un numéro agent : $valeur <br>";
+                if (! is_numeric($valeur))
+                {
+                    // On va chercher dans le LDAP la correspondance UID => AGENTID
+                    $agentid = $fonctions->useridfromCAS($valeur);
+                    if ($agentid === false)
+                    {
+                        $agentid = null;
+                    }
+                }
+                else
+                {
                     $agentid = $valeur;
                 }
-                // echo "agentid = $agentid <br>";
+                //echo "agentid = $agentid <br>";
                 // Si le agentid n'est pas vide ou null
                 if ($agentid != '' and (! is_null($agentid))) {
                     // $structureid = str_replace("'", "", $structureid);
@@ -324,10 +305,21 @@
                         if (isset($arraydatefin[$structure->id()]))
                             $datefindeleg = $arraydatefin[$structure->id()];
 
+                        $structure->getdelegation($delegationuserid, $datedebutdelegbd, $datefindelegbd);
                         // echo "datedebutdeleg = $datedebutdeleg datefindeleg = $datefindeleg <br>";
                         if ($datedebutdeleg == "" or $datefindeleg == "") {
                             echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
-                        } else {
+                        } 
+                        elseif (($delegationuserid == $agentid)
+                            and ($fonctions->formatdate($datedebutdelegbd) == $fonctions->formatdate($datedebutdeleg))
+                            and $fonctions->formatdate($datefindelegbd) == $fonctions->formatdate($datefindeleg))
+                        {
+                            // On a donné les mêmes paramétres que ceux de la base de données => On ne fait rien
+                            $errlog = "Pas d'enregistrement de la délégation car les données sont identiques à celles en base de données pour " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
+                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                        }
+                        else 
+                        {
                             // echo "On enregistre la delegation.... <br>";
                         	$structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid);
                             $errlog = $user->identitecomplete() . " : Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";

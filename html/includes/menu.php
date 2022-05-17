@@ -194,33 +194,46 @@
 <body class="bodyhtml"> 
 
 <?php
-    // On vérifie que la personne connectée (la vraie personne avec le compte LDAP) est administrateur de l'appli
-    // On n'utilise pas la variable $user car dans le cas de la subtitution (se faire passer pour...) on ne serait plus admin
-    $adminuser = new agent($dbcon);
-    if (! isset($_SESSION['phpCAS']['agentid'])) {
-        $uid = phpCAS::getUser();
-        $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-        $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array(
-            "$LDAP_CODE_AGENT_ATTR"
-        );
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        $_SESSION['phpCAS']['agentid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-        // echo "Je viens de set le param - menu.php<br>";
+    // On chrge le "vrai" utilisateur de l'application (Celui du ticket CAS)
+    $realuser = new agent($dbcon);
+    $realuserid = $fonctions->useridfromCAS($uid);
+    if ($realuserid !== false)
+    {
+        $realuser->load($realuserid);
     }
-    $adminuser->load($_SESSION['phpCAS']['agentid']);
-    // echo "Le numéro Agent de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
+        
+    // On verifie que la personne est dans le groupe G2T du LDAP
+    if (!$realuser->isG2tUser())
+    {
+        $LDAP_GROUP_NAME = $fonctions->liredbconstante("LDAPGROUPNAME");
+        $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ") !!!";
+        echo "$errlog<br>";
+        echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
+        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+        exit();
+        
+    }
+    
+    // Si on est en mode "MAINTENANCE"
+    if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) {
+        if ($realuser->estadministrateur()) // Si un administrateur est connecté
+        {
+            echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE !!!</B></U></FONT></CENTER></P><BR>";
+        }
+        else // C'est un utilisateur simple => Affichage de la page de maintenance
+        {
+            echo "<img width=144 height=79 src='https://ent-data.univ-paris1.fr/esup/canal/maintenance/maintenance.gif' align=left hspace=12>";
+            echo "L'application de gestion des congés est en maintenance, elle sera bientôt à nouveau en ligne.<br>Veuillez nous excuser pour la gêne occasionnée.";
+            echo "</body></html>";
+            exit();
+        }
+    }
 
+    if (($user->agentid() != $realuser->agentid()) and $realuser->estadministrateur())
+    {
+        echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER></P><BR>";
+    }
+    
     $arraystructpartielle = array();
     // $arraystructpartielle = array_merge($arraystructpartielle,array('SC4_3','IU1_3','IU4_3','IU21_4','IU22_4','IU24_4','IU25_4','IU23_4','IU2C_4','IU2D_4'));
     
@@ -235,7 +248,7 @@
     // $arraystructpartielle = array_merge($arraystructpartielle,array('DGHA_4'));
     $arraystructpartielle = array_map('strtoupper', $arraystructpartielle);
     
-    $affectationarray = $adminuser->affectationliste(date("d/m/Y"), date("d/m/Y"));
+    $affectationarray = $realuser->affectationliste(date("d/m/Y"), date("d/m/Y"));
     $hidemenu = '';
     $structurepartielle = false;
     if (is_array($affectationarray))
@@ -250,100 +263,15 @@
             $hidemenu = ' style="display:none;" ';
         }
     } 
-    
-
-    // On verifie que la personne est dans le groupe G2T du LDAP
-    $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-    $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-    $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-    $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-    $LDAP_MEMBER_ATTR = $fonctions->liredbconstante("LDAPMEMBERATTR");
-    $LDAP_GROUP_NAME = $fonctions->liredbconstante("LDAPGROUPNAME");
-    // Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
-    // Si l'utilisateur est dans une strucuture a accès partiel ==> On ne vérifie pas s'il est membre du groupe LDAP
-    if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "") and ($structurepartielle == false)) {
-        $uid = phpCAS::getUser();
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-        $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array(
-            "$LDAP_MEMBER_ATTR"
-        );
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        
-        // echo "<br>Info = " . print_r($info,true) . "<br>";
-        // Si l'utilisateur est au moins dans un groupe
-        if (isset($info[0][$restriction[0]])) {
-            if (in_array("$LDAP_GROUP_NAME", $info[0][$restriction[0]])) {
-                // L'utilisateur est dans le groupe recherché, on peut continuer
-                // echo "Yes !! Il est dedans !!! <br>";
-            } else {
-                $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->agentid() . ") !!!";
-                echo "$errlog<br>";
-                echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
-                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                exit();
-            }
-        }    // Pas de groupe pour cet utilisateur => On doit s'arréter
-        else {
-            $errlog = "L'utilisateur " . $adminuser->identitecomplete() . " (identifiant = " . $adminuser->agentid() . ") ne fait parti d'aucun groupe LDAP....";
-            echo "$errlog <br>";
-            echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-            exit();
-        }
-    }
-    // Si on est en mode "MAINTENANCE"
-    if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) {
-        if ($adminuser->estadministrateur()) // Si un administrateur est connecté
-        {
-            echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIVE -- APPLICATION EN MAINTENANCE !!!</B></U></FONT></CENTER></P><BR>";
-        } else // C'est un utilisateur simple => Affichage de la page de maintenance
-        {
-            echo "<img width=144 height=79 src='https://ent-data.univ-paris1.fr/esup/canal/maintenance/maintenance.gif' align=left hspace=12>";
-            echo "L'application de gestion des congés est en maintenance, elle sera bientôt à nouveau en ligne.<br>Veuillez nous excuser pour la gêne occasionnée.";
-            echo "</body></html>";
-            exit();
-        }
-    }
-    
-    if ($user->agentid() != $_SESSION['phpCAS']['agentid'])
-        echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER></P><BR>";
-            
     if ($structurepartielle == true)
     {
         //echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : Vous avez un accès partiel à l'application G2T !!!</B></U></FONT><BR></CENTER></P><BR>";
     }
     
-//     $affectationarray = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));
-//     if (is_array($affectationarray)) 
-//     { // S'il y a une affectation
-//         $affectation = current($affectationarray);    
-        
-//         //echo "Code structure = " . $affectation->structureid() . "    Liste structure : " . print_r($arraystructpartielle,true) . "<br><br>";
-        
-//         if (in_array(strtoupper($affectation->structureid()), $arraystructpartielle))
-//         {
-//             $hidemenu = ' style="display:none;" ';
-//         }
-//     }
-    
     unset($arraystructpartielle);
     unset($affectationarray);
     unset($affectation);
 
-/*   
-    // La déclaration du tableau est déplacée dans le all_g2t_classes.php pour être pris en compte également dans les fichiers CRON
-    // On va charger le tableau des couleurs de chaque élément du planning => Optimisation du tps
-    // Voir la classe planningelement->couleur()
-    $tabcouleurelement = $fonctions->typeabsencelistecomplete();
-    define('TABCOULEURPLANNINGELEMENT', $tabcouleurelement);
-    //var_dump(TABCOULEURPLANNINGELEMENT);
-*/    
 ?>
 
 
@@ -898,7 +826,7 @@
 		</ul>
 <?php
     }
-    if ($adminuser->estadministrateur()) {
+    if ($realuser->estadministrateur()) {
 ?>
 		<ul class="niveau1">
 			<li onclick="">MENU ADMINISTRATEUR

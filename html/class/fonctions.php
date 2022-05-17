@@ -1521,14 +1521,21 @@ class fonctions
         $info = ldap_get_entries($con_ldap, $sr);
         // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
         $user = new agent($this->dbconnect);
-        if (! $user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+        if (!isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
         {
-            $errlog = "useridfromCAS : L'agent $CASuid (id = " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " ) n'est pas dans la base de données.";
-            // error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            $errlog = "useridfromCAS : L'agent $CASuid n'a pas pu être identifié dans LDAP.";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            return false;
+        }
+        $userid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+        if (! $user->existe($userid))
+        {
+            $errlog = "useridfromCAS : L'agent $CASuid (id = " . $userid . " ) n'est pas dans la base de données.";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             return false;
         }
         // error_log(basename(__FILE__) . $this->stripAccents(" L'agentid correspondant à $CASuid est " . $user->agentid()));
-        return $user->agentid();
+        return $userid;
     }
     
     public function prepared_query($sql, $params, $types = "")

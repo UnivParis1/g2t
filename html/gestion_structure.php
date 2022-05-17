@@ -108,22 +108,12 @@
     if (! is_null($structureid)) {
 
         // echo "Super on check !!!!<br>";
-        // Initialisation des infos LDAP
-        $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        // echo "Connexion au LDAP => Ok ??<br>";
+ 
         // On parcours touts les gestionnaires - mais on pourrait prendre les responsables
         // ATTENTION : $gestionnaireid contient UID de l'agent et non son numéro AGENT si celui ci est modifié !!!
         foreach ($gestionnaireliste as $structid => $gestionnaireid) {
             // echo "On boucle sur les gestionnaires....<br>";
             $structure = new structure($dbcon);
-            // echo "Avant le load <br>";
             $structure->load($structid);
 
             // On modifie les codes des envois de mail pour les agents et les responsables
@@ -131,22 +121,26 @@
             $structure->agent_envoyer_a($_POST["agent_mail"][$structid], true);
 
             // On va chercher dans le LDAP la correspondance UID => AGENTID
-            $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-            $filtre = "($LDAP_UID_AGENT_ATTR=" . $responsableliste[$structid] . ")";
-            $dn = $LDAP_SEARCH_BASE;
-            $restriction = array(
-                "$LDAP_CODE_AGENT_ATTR"
-            );
-            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-            $info = ldap_get_entries($con_ldap, $sr);
-            // echo "Le numéro AGENT du responsable est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-            if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-                $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+            //echo "\$responsableliste[$structid] est soit un uid soit un numéro agent : ". $responsableliste[$structid] . " <br>";
+            if (! is_numeric($responsableliste[$structid]))
+            {
+                // On va chercher dans le LDAP la correspondance UID => AGENTID
+                $agentid = $fonctions->useridfromCAS($responsableliste[$structid]);
+                if ($agentid === false)
+                {
+                    $agentid = null;
+                }
+            }
             else
-                $agentid = '';
+            {
+                $agentid = $responsableliste[$structid];
+            }
+                        
             // Si le agentid n'est pas vide ou null
             if ($agentid != '' and (! is_null($agentid))) {
                 // echo "On fixe le responsable !!!!<br>";
+                $errlog = "On fixe le responsable de la structure " . $structure->nomcourt() . " à $agentid";
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 $structure->responsable($agentid);
             }
 
@@ -155,22 +149,28 @@
                 $structure->gestionnaire("");
             } else {
                 // On va chercher dans le LDAP la correspondance UID => AGENTID
-                $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-                $filtre = "($LDAP_UID_AGENT_ATTR=$gestionnaireid)";
-                $dn = $LDAP_SEARCH_BASE;
-                $restriction = array(
-                    "$LDAP_CODE_AGENT_ATTR"
-                );
-                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                $info = ldap_get_entries($con_ldap, $sr);
-                // echo "Le numéro AGENT du gestionnaire est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " pour la structure " . $structure->nomlong() . "<br>";
-                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
-                    $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+                
+                //echo "\$gestionnaireid est soit un uid soit un numéro agent : ". $gestionnaireid . " <br>";
+                if (! is_numeric($gestionnaireid))
+                {
+                    // On va chercher dans le LDAP la correspondance UID => AGENTID
+                    $agentid = $fonctions->useridfromCAS($gestionnaireid);
+                    if ($agentid === false)
+                    {
+                        $agentid = null;
+                    }
+                }
                 else
-                    $agentid = '';
+                {
+                    $agentid = $gestionnaireid;
+                }
+                
                 // Si le agentid n'est pas vide ou null
-                if ($agentid != '' and (! is_null($agentid))) {
+                if ($agentid != '' and (! is_null($agentid))) 
+                {
                     // echo "On fixe le gestionnaire !!!!<br>";
+                    $errlog = "On fixe le gestionnaire de la structure " . $structure->nomcourt() . " à $agentid";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     $structure->gestionnaire($agentid);
                 }
             }

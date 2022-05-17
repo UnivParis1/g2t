@@ -373,44 +373,10 @@
                 // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
                 $agent = new agent($dbcon);
                 $agent->load($agentid);
-                $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-                $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-                $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-                $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-                $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_EPPN_ATTR");
-                $con_ldap = ldap_connect($LDAP_SERVER);
-                ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-                $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-                $LDAP_SUPANNEMPID_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-                $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $agentid . ")";
-                //echo "Filtre = $filtre <br>";
-                $dn = $LDAP_SEARCH_BASE;
-                $restriction = array(
-                    "$LDAP_CODE_AGENT_ATTR"
-                );
-                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                $info = ldap_get_entries($con_ldap, $sr);
-                //echo "Info = " . print_r($info,true) . "<br>";
-                //echo "L'EPPN de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-                    $agent_eppn = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-                    //echo "Agent EPPN = $agent_eppn <br>";
-                }
-                
+                $agent_eppn = $agent->eppn();
                 
                 // On récupère le mail de l'agent en cours
-                $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
-                $restriction = array(
-                    "$LDAP_CODE_AGENT_ATTR"
-                );
-                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                $info = ldap_get_entries($con_ldap, $sr);
-                //echo "Info = " . print_r($info,true) . "<br>";
-                //echo "L'email de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-                if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-                    $agent_mail = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-                    // echo "Agent eMail = $agent_mail <br>";
-                }
+                $agent_mail = $agent->ldapmail();
             }
             
             if ((sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) == 0)

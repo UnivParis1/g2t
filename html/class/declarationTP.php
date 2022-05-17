@@ -383,13 +383,6 @@ class declarationTP
             $sql = "SET AUTOCOMMIT = 1";
             mysqli_query($this->dbconnect, $sql);
         } else {
-/*            
-            $user = new agent($this->dbconnect);
-            if (isset($_SESSION['phpCAS']['agentid']))
-                $user->load($_SESSION['phpCAS']['agentid']);
-            else
-                $user->load("-1"); // L'utilisateur -1 est l'utilisateur CRON
-*/
             $this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
             // c'est une modification ...
             $sql = "UPDATE DECLARATIONTP SET ";

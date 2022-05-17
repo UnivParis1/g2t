@@ -16,53 +16,20 @@
     //echo "<p style='font-family: Verdana; font-size: 8pt; text-align: left; color: #616162; background: inherit; border-width: 0;'>";
     echo "<p class='siham_css'>";
 
-
-
     //echo "L'agent connecté est : " . $uid . "<br>";
 
-
     $user = new agent($dbcon);
-    $userid = null;
-
-    // echo "L'agent n'est pas passé en paramètre.... Récupération de l'agent à partir du ticket CAS <br>";
-    $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-    $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-    $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-    $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-    $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-    $con_ldap = ldap_connect($LDAP_SERVER);
-    ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-    $LDAP_UID_AGENT_ATTR = $fonctions->liredbconstante("LDAP_AGENT_UID_ATTR");
-    $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
-    $dn = $LDAP_SEARCH_BASE;
-    $restriction = array(
-        "$LDAP_CODE_AGENT_ATTR"
-    );
-    $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-    $info = ldap_get_entries($con_ldap, $sr);
-    // echo "Le numéro AGENT de l'utilisateur est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-    if (! $user->load($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-        echo '<head>';
-        echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-        echo '</head>';
-        $errlog = "L'utilisateur " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . " (Informations LDAP : " . $info[0]["dn"] . ") n'est pas référencé dans la base de donnée !!!";
-        echo "$errlog<br>";
-        echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
-        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+    $userid = $fonctions->useridfromCAS($uid);
+    if ($userid === false)
+    {
+        // Soit il n'est pas possible de récupérer les infos du LDAP
+        // Soit l'utilisateur n'est pas dans la base G2T
+        echo "Vous n'avez pas de CET";
+        echo "</p>";
         exit();
     }
-    $_SESSION['phpCAS']['agentid'] = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-    $_SESSION['phpCAS']['dn'] = $info[0]["dn"];
-    // echo "Je viens de set le param - index.php<br>";
-    // echo "Avant le recup user-> id";
-    $userid = $user->agentid();
-    // echo "Apres le recup user-> id";
-
-//    $userid = "7546";
-
-
-    //echo "Le numéro SIHAM de l'agent connecté est : " . $userid . "<br>";
+    // $userid = "7546";
+    // echo "Le numéro SIHAM de l'agent connecté est : " . $userid . "<br>";
 
     $solde = new solde($dbcon);
     if ($solde->load($userid, 'cet') <> "")
