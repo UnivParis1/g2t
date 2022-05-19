@@ -86,10 +86,10 @@
                         $msg_erreur = $msg_erreur . "$statut n'est pas un statut valide. ";
 
                     if ($msg_erreur == "") {
-                        echo "Demande de congés pour " . $agent->identitecomplete() . " du " . $date_debut . " au " . $date_fin . " : ";
+                        // echo "Demande de congés pour " . $agent->identitecomplete() . " du " . $date_debut . " au " . $date_fin . " : <br>";
                         // On recherche les declarations de TP relatives à cette demande
                         $affectationliste = $agent->affectationliste($date_debut, $date_fin, true);
-                        //echo "affectationliste = "; print_r($affectationliste); echo "<br>";
+                        // echo "affectationliste = "; print_r($affectationliste); echo "<br>";
                         $declarationTPliste = array();
                         if (! is_null($affectationliste)) {
                             foreach ((array)$affectationliste as $affectation) {
@@ -97,16 +97,16 @@
                                 // $affectation = new affectation($dbcon);
                                 // $affectation = reset($affectationliste);
                                 // echo "Datedebut = $date_debut, Date fin = $date_fin <br>";
-                                //echo "Import_Congés : On va rechercher les declarationTPliste liées à l'affectation <br>";
+                                // echo "Import_Congés : On va rechercher les declarationTPliste liées à l'affectation <br>";
                                 $declarationTPliste = array_merge((array) $declarationTPliste, (array) $affectation->declarationTPliste($date_debut, $date_fin));
                             }
-                            //echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
+                            // echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
                         }
 
                         // echo "Je vais sauver la demande <br>";
                         unset($demande);
                         $demande = new demande($dbcon);
-                        // $demande->agent($agent->agentid());
+                        $demande->agentid($agent->agentid());
                         // $demande->structure($agent->structure()->id());
                         $demande->type($listetype);
                         $demande->datedebut($date_debut);
@@ -117,9 +117,9 @@
                         $ignoreabsenceautodecla = true;
                         $ignoresoldeinsuffisant = false;
                         // echo "demande->nbredemijrs_demande() AVANT = " . $demande->nbredemijrs_demande() . "<br>";
-                        //echo "Import_Congés : Avant le store de la demande....<br>";
+                        // echo "Import_Congés : Avant le store de la demande....<br>";
                         $resultat = $demande->store($declarationTPliste, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
-                        //echo "Import_Congés : Apres le store de la demande....<br>";
+                        // echo "Import_Congés : Apres le store de la demande....<br>";
                         
                         // echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
                         if ($resultat == "") {

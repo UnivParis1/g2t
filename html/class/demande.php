@@ -39,6 +39,7 @@ class demande
     // Utilisé lors de la sauvegarde !!
     private $ancienstatut = null;
 
+    private $agentid = null;
     private $agent = null;
 
     private $fonctions = null;
@@ -391,26 +392,37 @@ FROM DEMANDE WHERE DEMANDEID= ?";
 
     function agent()
     {
-        if (is_null($this->agent)) {
-            $sql = "SELECT AGENTID FROM DEMANDE WHERE DEMANDEID=?";
-            $params = array($this->demandeid);
-            $query = $this->fonctions->prepared_select($sql, $params);
-
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                $errlog = "Demande->agent : " . $erreur;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        if (is_null($this->agent)) 
+        {
+            if (!is_null($this->agentid))
+            {
+                $agent = new agent($this->dbconnect);
+                $agent->load($this->agentid);
+                $this->agent = $agent;
             }
-            if (mysqli_num_rows($query) == 0) {
-                $errlog = "Demande->agent : Pas d'agent trouvé pour la demande " . $this->demandeid;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            else
+            {
+                $sql = "SELECT AGENTID FROM DEMANDE WHERE DEMANDEID=?";
+                $params = array($this->demandeid);
+                $query = $this->fonctions->prepared_select($sql, $params);
+    
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    $errlog = "Demande->agent : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                if (mysqli_num_rows($query) == 0) {
+                    $errlog = "Demande->agent : Pas d'agent trouvé pour la demande " . $this->demandeid;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                $result = mysqli_fetch_row($query);
+                $agent = new agent($this->dbconnect);
+                $agent->load("$result[0]");
+                $this->agent = $agent;
+                $this->agentid = $agent->agentid();
             }
-            $result = mysqli_fetch_row($query);
-            $agent = new agent($this->dbconnect);
-            $agent->load("$result[0]");
-            $this->agent = $agent;
         }
         return $this->agent;
     }
