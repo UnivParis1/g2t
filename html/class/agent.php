@@ -2134,12 +2134,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      * @param
      * @return string the html text of the array
      */
-    function affichecommentairecongehtml($showonlycomplement = false, $anneeref = null)
+    function affichecommentairecongehtml($showonlycomplement = false, $anneeref = null, $allowremove = false)
     {
         //echo "<br>anneeref = XXX" . $anneeref  . "XXX<br>";
         if (is_null($anneeref))
         {
-            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID 
+            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGEID
     FROM COMMENTAIRECONGE,TYPEABSENCE 
     WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
@@ -2148,7 +2148,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         else
         {
-            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID
+            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGEID
     FROM COMMENTAIRECONGE,TYPEABSENCE
     WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
@@ -2166,12 +2166,27 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         $htmltext = "";
         $premiercomment = TRUE;
-        $htmltext = $htmltext . "<center><table class='tableausimple'>";
         while ($result = mysqli_fetch_row($query)) {
             if (($showonlycomplement and (strcasecmp(substr($result[5], 0, 3), "sup")) == 0) or ($showonlycomplement == false)) {
-                if ($premiercomment) {
-                    $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center>Commentaires sur les modifications de congés</td></tr>";
-                    $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td></tr>";
+                if ($premiercomment) 
+                {
+                    if (!$allowremove)
+                    {
+                        $htmltext = $htmltext . "<center>";
+                    }
+                    $htmltext = $htmltext . "<table class='tableausimple'>";
+                    $nbcolonne = 4;
+                    if ($allowremove)
+                    {
+                        $nbcolonne++;
+                    }
+                    $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Commentaires sur les modifications de congés</td></tr>";
+                    $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td>";
+                    if ($allowremove)
+                    {
+                        $htmltext = $htmltext . "<td class='cellulesimple'>Annulation</td>";
+                    }
+                    $htmltext = $htmltext . "</tr>";
                     $premiercomment = FALSE;
                 }
                 
@@ -2183,11 +2198,25 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 else
                     $htmltext = $htmltext . "<td class='cellulesimple'>" . (float) ($result[4]) . "</td>";
                 $htmltext = $htmltext . "<td class='cellulesimple'>" . $result[3] . "</td>";
+                if ($allowremove)
+                {
+                    $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' id='" . $result[6] . "' name='remove_compl_id[" . $result[6] . "]'></td>";
+                }
                 $htmltext = $htmltext . "</tr>";
             }
         }
-        $htmltext = $htmltext . "</table></center>";
-        $htmltext = $htmltext . "<br>";
+        if (!$premiercomment)
+        {
+            $htmltext = $htmltext . "</table>";
+        }
+        if (!$allowremove)
+        {
+            $htmltext = $htmltext . "</center>";
+        }
+        if (!$premiercomment)
+        {
+            $htmltext = $htmltext . "<br>";
+        }
         return $htmltext;
     }
 
@@ -2216,6 +2245,88 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
     }
 
+    /**
+     *
+     * @param string $congessuppid
+     * @param string $demandeur
+     *            object agent representing the applicant
+     * @return string result if errors eccurded. Empty if all ok
+     * 
+     */
+    function supprcongesupplementaire($congessuppid, $demandeur)
+    {
+        $marqueur_suppr = '_del';
+        
+        
+        $sql = "SELECT NBRJRSAJOUTE,TYPEABSENCEID FROM COMMENTAIRECONGE WHERE COMMENTAIRECONGEID = ? AND TYPEABSENCEID NOT LIKE '%$marqueur_suppr'";
+        $params = array($congessuppid);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $message = "$erreur";
+            error_log(basename(__FILE__) . " " . $message);
+            return $message;
+        }
+        if (mysqli_num_rows($query) == 0) 
+        {
+            $message = "Impossible de trouver la demande d'ajout de comgés complémentaires $congessuppid";
+            error_log(basename(__FILE__) . " " . $message);
+            return $message;
+        }
+        $result = mysqli_fetch_row($query);
+        $nbrejoursajoutes = $result[0];
+
+        $solde = new solde($this->dbconnect);
+        $erreur = $solde->load($this->agentid,$result[1]);
+        if ($erreur != "") 
+        {
+            $message = "$erreur";
+            error_log(basename(__FILE__) . " " . $message);
+            return $message;
+        }
+        $solderestant = $solde->droitaquis()-$solde->droitpris();
+        //echo "solderestant = $solderestant   nbrejoursajoutes = $nbrejoursajoutes <br>";
+        if ($solderestant >= $nbrejoursajoutes)
+        {
+            // Il reste suffisament de jours pour annuler les jours complémentaires
+            $acquis = $solde->droitaquis()-$nbrejoursajoutes;
+            $solde->droitaquis($acquis);
+            $erreur = $solde->store();
+            if ($erreur != "")
+            {
+                $message = "$erreur";
+                error_log(basename(__FILE__) . " " . $message);
+                return $message;
+            }
+        }
+        else
+        {
+            $message = "Nombre de jours complémentaires insuffisant pour annuler la demande $congessuppid => Nbre de jours restant = $solderestant / Nbre de jours à annuler : $nbrejoursajoutes";
+            error_log(basename(__FILE__) . " " . $message);
+            return $message;
+        }
+        
+/*
+        $sql = "DELETE FROM COMMENTAIRECONGE WHERE COMMENTAIRECONGEID = ?";
+        $params = array($congessuppid); 
+*/
+        $sql = "UPDATE COMMENTAIRECONGE SET COMMENTAIRE = CONCAT(COMMENTAIRE, ' (Suppr. par " . $demandeur->agentid()  . ")'), TYPEABSENCEID = CONCAT(TYPEABSENCEID,'$marqueur_suppr')  WHERE COMMENTAIRECONGEID = ?";
+        $params = array($congessuppid);
+        // echo "SQL = $sql <br>";
+        $query = $this->fonctions->prepared_query($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") 
+        {
+            $message = "$erreur";
+            error_log(basename(__FILE__) . " " . $message);
+            return $message;
+        }
+        $message = "Suppression de l'ajout de jours complémentaire $congessuppid pour " . $this->agentid . " par " . $demandeur->identitecomplete();
+        error_log(basename(__FILE__) . " " . $message);
+        return "";
+    }
+    
     function aunedemandecongesbonifies($anneeref)
     {
         $demande = null;

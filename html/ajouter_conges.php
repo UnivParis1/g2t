@@ -71,6 +71,7 @@
     $nbr_jours_conges = null;
     $commentaire_supp = null;
     $ancienacquis_supp = null;
+    $remove_array = null;
     $mode = 'resp';
     if (isset($_POST["nbr_jours_conges"]))
         $nbr_jours_conges = $_POST["nbr_jours_conges"];
@@ -80,16 +81,63 @@
         $ancienacquis_supp = $_POST["ancienacquis_supp"];
     if (isset($_POST["mode"]))
         $mode = $_POST["mode"];
-            
+    if (isset($_POST["remove_compl_id"]))
+        $remove_array = $_POST["remove_compl_id"];
     
     $msg_erreur = "";
     $annee = substr($fonctions->anneeref(), 2, 2);
     $lib_sup = "sup$annee";
     
+    
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
+    //echo "POST = " . print_r($_POST,true) . "<br>";
     echo "<br>";
 
+    
+    if (is_array($remove_array))
+    {
+        if (!is_null($agent))
+        {
+            foreach ($remove_array as $id => $value)
+            {
+                //echo "L'id est $id <br>";
+                $solde = new solde($dbcon);
+                $solde->load($agentid,$lib_sup);
+                if ($solde->droitaquis() != $ancienacquis_supp)
+                {
+                    $erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
+                    echo "<P style='color: red'>" . $erreur . "</P>";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                }
+                else
+                {
+                    $erreur = $agent->supprcongesupplementaire($id, $user);
+                    if ($erreur != '')
+                    {
+                        $erreur = "Impossible de supprimer l'ajout de congés supplémentaires (id = $id) : " . $erreur;
+                        echo "<P style='color: red'>" . $erreur . "</P>";
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                    }
+                    else
+                    {
+                        $erreur = "Suppression de l'ajout de congés supplémentaires (id = $id) : Ok";
+                        echo "<P style='color: green'>" . $erreur . "</P>";
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                    }
+                }
+            }
+        }
+        else
+        {
+            //echo "L'agent n'est pas défini ...<br>";
+        }
+    }
+    else
+    {
+        //echo "Ce n'est pas un tableau<br>";
+    }
+    
     if ($agentid == "" and strcasecmp($mode, "gestrh") == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
@@ -199,11 +247,13 @@
                     $user->sendmail($agentrh, "Ajout de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
                 }
             }
-        } else {
+        } 
+        else
+        {
             // On est au premier affichage de l'écran apres la selection de l'agent ==> Pas de control de saisi
-            $errlog = "Le motif de l'ajout est obligatoire";
-            echo "<P style='color: red'>" . $errlog . "</P><br/>";
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            //$errlog = "Le motif de l'ajout est obligatoire";
+            //echo "<P style='color: red'>" . $errlog . "</P><br/>";
+            //error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
 
         // On charge le solde de congés complémentaires afin de pouvoir poster le nombre de jours déjà aquis ==> Objectif : Empécher le double post (F5 du navigateur)
@@ -226,39 +276,45 @@
             }
         }
         
-        
+        echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
         echo "Ajout de jours de congés supplémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         echo "<br>";
         echo "Le solde de " . $solde->typelibelle() . " est actuellement de " . ($solde->droitaquis()-$solde->droitpris()) . " jour(s) <br>";
         echo "<form name='frm_ajoutconge'  method='post' >";
-        // echo "Sélectionnez l'agent auquel vous voullez ajouter des jours supplémentaires : ";
-        // $agentliste=$user->structure()->agentlist();
-        // echo "<SELECT name='agentid'>";
-        // foreach ($agentliste as $keyagent => $membre)
-        // {
-        // echo "<OPTION value='" . $membre->id() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
-        // }
-        // echo "</SELECT>";
-
-        // echo "<br>";
-
+        echo "<br>";
         echo "Nombre de jours supplémentaires à ajouter : <input type=text name=nbr_jours_conges id=nbr_jours_conges size=3 >";
         echo "<br>";
-        echo "Motif (Obligatoire) : <input type=text name=commentaire_supp id=commentaire_supp size=25 >";
+        echo "<b style='color: red'>Motif (Obligatoire) : </b><input type=text name=commentaire_supp id=commentaire_supp size=50 >";
         echo "<br>";
-
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
         echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<br>";
+        echo "<input type='submit' value='Soumettre' name='button_ajout'>";
         echo "</form>";
+        echo "<br>";
+        echo "</span>";
+        echo "<br><br>";
+        $htmlcommentaire = $agent->affichecommentairecongehtml(true,$fonctions->anneeref(),true);
+        if (trim($htmlcommentaire) != "")
+        {
+            echo "<span style='border:solid 1px black; background:lightsteelblue; width:900px; display:block;'>";
+            echo "<form name='frm_supprconge'  method='post' >";
+            echo "Annulation d'un ajout de jours complémentaires :<br><br>";
+            echo $htmlcommentaire;
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
+            echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
+            echo "<input type='submit' value='Supprimer'  name='button_delete'>";
+            echo "</form>";
+            echo "<br>";
+            echo "</span>";
+        }
+        echo "<br>";
     }
 
 ?>
 
-<!--
-<a href=".">Retour à la page d'accueil</a>
- -->
 </body>
 </html>
 
