@@ -99,6 +99,71 @@
 /*******************************************************/
 
 /*******************************************************/
+/* DEFINITION DES MESSAGES D'ALERTE, WARNING ET INFO   */
+/*******************************************************/
+
+.tabmessage {
+	text-align: center;
+	vertical-align: middle;
+	border-collapse: collapse;
+/* 	border-spacing: 1; /* Removes the cell spacing via CSS */
+ 	border: 1px solid white;
+	margin-left : 5px; 	
+	margin-right : 5px; 	
+}
+
+.celerror {
+	font-size : 18px;
+	background-color: #CA433B; /* fond rouge */
+	color : #FFFFFF;			
+}
+
+.imgerror {
+	width:40px;
+	height:40px;
+}
+
+.celwarning {
+	font-size : 18px;
+	background-color: #E9A33C; /* fond orange */
+	color : #FFFFFF;			
+}
+
+.imgwarning {
+	width:40px;
+	height:40px;
+}
+
+.celinfo {
+	font-size : 18px;
+	background-color: #77A248; /* fond vert */
+	color : #FFFFFF;			
+}
+
+.imginfo {
+	width:40px;
+	height:40px;
+}
+
+.celllogo {
+    border-top-left-radius : 50px;
+    border-bottom-left-radius : 50px;
+/*	padding-right : 20px; */
+	padding-left : 20px;
+	display:table-cell;
+	vertical-align: middle;
+}
+
+.cellmsg {
+    border-top-right-radius : 50px;
+    border-bottom-right-radius : 50px;
+	padding-right : 20px;
+	padding-left : 20px;
+	padding-top : 20px;
+	padding-bottom : 20px;
+}
+
+/*******************************************************/
 /* DEFINITION DU BODY (Police, taille, couleur, ...)   */
 /*******************************************************/
 .bodyhtml {

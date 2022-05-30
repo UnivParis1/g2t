@@ -57,7 +57,8 @@
         $erreur = mysqli_error($dbcon);
         if ($erreur != "") {
             $errlog = "Erreur activation/desactivation mode maintenance : " . $erreur;
-            echo $errlog . "<br/>";
+            echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+//            echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
     }

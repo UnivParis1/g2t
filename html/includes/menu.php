@@ -206,9 +206,18 @@
     if (!$realuser->isG2tUser())
     {
         $LDAP_GROUP_NAME = $fonctions->liredbconstante("LDAPGROUPNAME");
-        $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ") !!!";
+        
+        $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ") !";
+        $errlog = $errlog . "<br>";
+        $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
+        echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
+        
+/*        
+        $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ") !";
         echo "$errlog<br>";
         echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
+ */       
+        
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         exit();
         

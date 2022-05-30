@@ -150,7 +150,8 @@
                     // echo "Apres le load cet (1) <br>";
                     if ($msg_erreur != "") {
                         $msg_erreur = "Création d'un nouveau CET pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom();
-                        echo "<p style='color: green'>" . $msg_erreur . "</p>";
+                        echo $fonctions->showmessage(fonctions::MSGINFO, $msg_erreur);
+                        //echo "<p style='color: green'>" . $msg_erreur . "</p>";
                         error_log(basename(__FILE__) . " uid : " . $agentid . " " . $msg_erreur);
                         // On force $msg_erreur à "" car on se moque de savoir quelle est l'erreur
                         $msg_erreur = "";

@@ -3,7 +3,7 @@
 /**
  * Fonctions
  * Library of usefull functions
- * 
+ *
  * @package     G2T
  * @category    classes
  * @author     Pascal COMTE
@@ -11,6 +11,10 @@
  */
 class fonctions
 {
+
+    const MSGERROR = 'error';
+    const MSGWARNING = 'warning';
+    const MSGINFO = 'info';
 
     private $dbconnect = null;
 
@@ -122,7 +126,7 @@ class fonctions
         while ($result = mysqli_fetch_row($query)) {
             $jrs_feries = $jrs_feries . $result[1] . ";";
         }
-        
+
         // echo "Jours fériés = " . $jrs_feries . "<br>";
         return $jrs_feries;
     }
@@ -185,7 +189,7 @@ class fonctions
                 setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
                                                       // Le 01/01/2012 est un dimanche
             $dayname = strftime("%A", strtotime("20120101" + $index));
-            
+
             if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
                 return ucfirst($dayname);
             } else {
@@ -228,7 +232,7 @@ class fonctions
             if ($result[1] . "" != "")
                 $listeabs[$result[0]] = $result[1];
         }
-        
+
         // print_r ($listeabs) ; echo "<br>";
         return $listeabs;
     }
@@ -271,7 +275,7 @@ class fonctions
     {
         if (is_null($date))
             return FALSE;
-        
+
         // On vérifie avec une REGExp si le format de la date est valide DD/MM/YYYY
         // if (!ereg("^([0-9]{2})/([0-9]{2})/([0-9]{4})",$date))
         if (! preg_match("`^([0-9]{2})\/([0-9]{2})\/([0-9]{4})`", $date))
@@ -378,7 +382,7 @@ class fonctions
      */
     public function estunconge($typeconge)
     {
-        
+
         // Cas particulier du CET ==> Il n'est pas annuel mais on doit gérer le compteur de jours restant...
         if (strcasecmp($typeconge, 'cet') == 0)
             return TRUE;
@@ -547,7 +551,7 @@ class fonctions
         $nbr_jrs_mois = $this->nbr_jours_dans_mois($mois_dep, $annee);
         // nbr de jour ds le mois depuis le jour de début de l'affectation
         $nbr_jour_travail = ($nbr_jrs_mois + 1) - $jour_dep;
-        
+
         return $nbr_jour_travail;
     }
 
@@ -593,7 +597,7 @@ class fonctions
                 "couleur" => $couleur
             );
         }
-        
+
         // print_r($tablegende); echo "<br>";
         return $tablegende;
     }
@@ -611,7 +615,7 @@ class fonctions
         $htmltext = $htmltext . "<table>";
         $htmltext = $htmltext . "<tr>";
         $index=0;
-        foreach ($tablegende as $key => $legende) 
+        foreach ($tablegende as $key => $legende)
         {
             if (count($listelegende)==0 or in_array($key, $listelegende))
             {
@@ -623,7 +627,7 @@ class fonctions
                 $index++;
             }
         }
-/*        
+/*
         if (!in_array('nondec', $listelegende))  // Si la légende "nondec" n'est pas déjà dans le tableau on l'ajoute dans la légende
         {
             if (($index % 5) == 0)
@@ -636,7 +640,7 @@ class fonctions
 */
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</table>";
-        
+
         return $htmltext;
     }
 
@@ -656,7 +660,7 @@ class fonctions
         }
         $long_chps = $long_chps + 6;
         $index=0;
-        foreach ($tablegende as $key => $legende) 
+        foreach ($tablegende as $key => $legende)
         {
             if (($index % 5) == 0)
             {
@@ -664,7 +668,7 @@ class fonctions
             }
             // $LL_TYPE_CONGE = "$result[LL_TYPE_CONGE]";
             list ($col_leg1, $col_leg2, $col_leg3) = $this->html2rgb($legende["couleur"]);
-            
+
             // $long_chps=strlen($legende["type_conge"])+10;
             // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
             $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
@@ -685,7 +689,7 @@ class fonctions
         // gestion du #...
         if (substr($color, 0, 1) == "#")
             $color = substr($color, 1, 6);
-        
+
         $col1 = hexdec(substr($color, 0, 2));
         $col2 = hexdec(substr($color, 2, 2));
         $col3 = hexdec(substr($color, 4, 2));
@@ -945,10 +949,10 @@ class fonctions
             $demandeid = $result[0];
             $demande = new demande($this->dbconnect);
             $demande->load($demandeid);
-            
+
             $complement = new complement($this->dbconnect);
             $complement->load($result[1], 'DEM_CET_' . $demandeid);
-            
+
             if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->agentid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
             {
                 $demandeliste[] = $demande;
@@ -960,7 +964,7 @@ class fonctions
         }
         return $demandeliste;
     }
-    
+
     public function savepdf($pdf, $filename)
     {
         $path = dirname("$filename");
@@ -971,11 +975,11 @@ class fonctions
         }
         $pdf->Output($filename, 'F');
     }
-    
+
     /**
      *
      * @param string YYYYMMDD the beginning date to set
-     * @return string the beginning of the cet alimentation period in format YYYYMMDD 
+     * @return string the beginning of the cet alimentation period in format YYYYMMDD
      */
     public function debutalimcet($date=NULL)
     {
@@ -1004,11 +1008,11 @@ class fonctions
     	// echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
     	return "$result[0]";
     }
-    
+
     /**
      *
      * @param string YYYYMMDD the beginning date to set
-     * @return string the end of the cet alimentation period in format YYYYMMDD 
+     * @return string the end of the cet alimentation period in format YYYYMMDD
      */
     public function finalimcet($date=NULL)
     {
@@ -1070,7 +1074,7 @@ class fonctions
         // echo "Fonctions->debutoptioncet : Debut de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
     }
-    
+
     /**
      *
      * @param string YYYYMMDD the end date to set
@@ -1103,8 +1107,8 @@ class fonctions
         // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
     }
-    
-    
+
+
     public function getidmodelalimcet()
     {
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'IDMODELALIMCET'";
@@ -1127,7 +1131,7 @@ class fonctions
     }
 
     /**
-     * 
+     *
      * @param array $tab
      * @return string the tab in string for IN clause db ('$tab[0]', '$tab[1], ...)
      */
@@ -1150,7 +1154,7 @@ class fonctions
     	}
     	return $chaine;
     }
-    
+
     public function datesconsecutives($date1, $date2)
     {
     	$retour = FALSE;
@@ -1160,7 +1164,7 @@ class fonctions
 //    	echo "date1 + 1 = " . $this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate1)))) . "<br>";
 //    	echo "date2 = $date2 <br>";
 //    	echo "date2 + 1 = " . $this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate2)))) . "<br>";
-    	
+
     	if ($this->formatdatedb(date("Y-m-d", strtotime("+1 day", strtotime($dbdate1)))) == $dbdate2)
     	{
     		return TRUE;
@@ -1204,7 +1208,7 @@ class fonctions
         {
         	return $response['description'];
         }
-        else 
+        else
         {
         	error_log(basename(__FILE__) . $this->stripAccents(" Réponse du webservice G2T non conforme (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . var_export($response, true) ));
         	return "Réponse du webservice G2T non conforme.";
@@ -1216,7 +1220,7 @@ class fonctions
          echo '</pre>';
          */
     }
-    
+
     public function get_g2t_ws_url()
     {
         if (defined('G2T_WS_URL')) /* A partir de la version 6 de G2T, la constante est forcément déclarée ==> Donc on devrait passer systématiquement ici */
@@ -1234,8 +1238,8 @@ class fonctions
             error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T va être calculée" ));
             // On récuère le nom du serveur G2T
             $servername = $_SERVER['SERVER_NAME'];
-            
-            
+
+
             // Si on passe par un proxy ==> HTTP_X_FORWARDED_PROTO est défini dans le header (protocole utilisé entre le client et le proxy)
             if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
             {
@@ -1251,7 +1255,7 @@ class fonctions
             {
                 $serverprotocol = "http";
             }
-            
+
             //Si on passe par un proxy => HTTP_X_FORWARDED_PORT est défini dans le header (port utilisé entre le client et le proxy)
             if (isset($_SERVER['HTTP_X_FORWARDED_PORT']))
             {
@@ -1273,14 +1277,14 @@ class fonctions
             {
                 $serverport = "80";
             }
-            
+
             //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
             $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport.'/ws';
             error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est => $g2t_ws_url" ));
         }
         return $g2t_ws_url;
     }
-    
+
     public function get_alimCET_liste($typeconges, $listStatuts = array()) // $typeconges de la forme annYY
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
@@ -1311,7 +1315,7 @@ class fonctions
         return $alimCETliste;
     }
 
-    public function get_optionCET_liste($anneeref, $listStatuts = array()) 
+    public function get_optionCET_liste($anneeref, $listStatuts = array())
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
         $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = ? ";
@@ -1341,7 +1345,7 @@ class fonctions
         }
         return $optionCETliste;
     }
-    
+
     public function g2tbasepath()
     {
         //echo "<br>File = " .  __FILE__  . " <br>Basename = " . basename(__FILE__) . "  <br>Path name = " .  dirname(__FILE__)  . "<br>";
@@ -1352,45 +1356,45 @@ class fonctions
         // ==> La fonction retourne donc le dossier <racine>
         return str_replace("\\", '/', dirname(__FILE__,3)) . "/";
     }
-    
+
     public function imagepath()
     {
         $basepath = $this->g2tbasepath();
         //return $basepath . '/html/images/';
         return $basepath . '/images/';
     }
-    
+
     public function pdfpath()
     {
         $basepath = $this->g2tbasepath();
         //return $basepath . '/html/pdf/';
         return $basepath . '/pdf/';
     }
-    
+
     public function documentpath()
     {
         $basepath = $this->g2tbasepath();
         //return $basepath . '/html/documents/';
         return $basepath . '/documents/';
     }
-    
-    
+
+
     public function synchroGlobaleCETeSignature($typeconge, $anneeref)
     {
     	$this->get_alimCET_liste($typeconge);
     	$this->get_optionCET_liste($anneeref);
     }
-    
+
     public function typeCongeAlimCET()
     {
     	return 'ann'.substr($this->anneeref() - 1,2, 2);
     }
-    
+
     public function listeagentteletravail($datedebut,$datefin)
     {
         $datedebut = $this->formatdatedb($datedebut);
         $datefin = $this->formatdatedb($datefin);
-        
+
         $listeagentteletravail = array();
         $sql = "SELECT DISTINCT AGENTID
                 FROM TELETRAVAIL
@@ -1398,7 +1402,7 @@ class fonctions
                   AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
                     OR (DATEFIN >= ? AND DATEDEBUT <= ? )
                     OR (DATEDEBUT >= ? AND DATEFIN <= ? ))";
-        
+
         //echo "<br>SQL = $sql <br>";
         $params = array($datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
         $query = $this->prepared_select($sql, $params);
@@ -1423,9 +1427,9 @@ class fonctions
             }
         }
         return $listeagentteletravail;
-    
+
     }
-    
+
     public function enlevemois($date, $nbremois)
     {
         $date = $this->formatdatedb($date);
@@ -1440,9 +1444,9 @@ class fonctions
         }
         $mois = str_pad($mois, 2, '0',STR_PAD_LEFT);
         return array($annee,$mois);
-        
+
     }
-    
+
     public function listestructurenoninclue()
     {
         $listestruct = array();
@@ -1450,7 +1454,7 @@ class fonctions
                 FROM STRUCTURE
                 WHERE DATECLOTURE > NOW()
                   AND ISINCLUDED = 0";
-        
+
         //echo "<br>SQL = $sql <br>";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -1473,7 +1477,7 @@ class fonctions
         }
         return $listestruct;
     }
-    
+
     public function CASuserisG2TAdmin($CASuid)
     {
         //error_log(basename(__FILE__) . $this->stripAccents(" CASuid = $CASuid"));
@@ -1498,11 +1502,11 @@ class fonctions
              return false;
          }
     }
-    
+
     public function useridfromCAS($CASuid)
     {
         //error_log(basename(__FILE__) . $this->stripAccents(" CASuid = $CASuid"));
-        
+
         $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
@@ -1537,7 +1541,7 @@ class fonctions
         // error_log(basename(__FILE__) . $this->stripAccents(" L'agentid correspondant à $CASuid est " . $user->agentid()));
         return $userid;
     }
-    
+
     public function prepared_query($sql, $params, $types = "")
     {
         $stmt = $this->dbconnect->prepare($sql);
@@ -1549,12 +1553,12 @@ class fonctions
         $stmt->execute();
         return $stmt;
     }
-    
+
     public function prepared_select($sql, $params = [], $types = "")
     {
         return $this->prepared_query($sql, $params, $types)->get_result();
     }
-    
+
     public function time_elapsed($text = "Durée", $appelant, $reset = false)
     {
         static $last = array();
@@ -1566,7 +1570,7 @@ class fonctions
         {
             $appelant = 'Appelant inconnu';
         }
-        
+
         if ($reset)
         {
             $last[$numcpt] = $now;
@@ -1583,17 +1587,17 @@ class fonctions
             echo "<b style='color: red;' >ERROR time_elapsed : On demande à afficher un compteur qui n'existe pas (cpt $numcpt) </b><br>";
         }
     }
-    
+
     public function estjourteletravailexclu($agentid, $date)
     {
         $date = $this->formatdatedb($date);
-        
+
         $sql = "SELECT VALEUR
                 FROM COMPLEMENT
                 WHERE AGENTID = ?
                   AND COMPLEMENTID = 'TT_EXCLU_" . $date . "'
                   AND VALEUR = ?";
-        
+
         $params = array($agentid,$date);
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
@@ -1612,14 +1616,14 @@ class fonctions
             return true;
         }
     }
-    
+
     public function typeabsencelistecomplete()
     {
         $sql = "SELECT LIBELLE,COULEUR,TYPEABSENCEID,ABSENCEIDPARENT FROM TYPEABSENCE";
         // echo "sql = " . $sql . " <br>";
         $params = array();
         $query = $this->prepared_select($sql, $params);
-        
+
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
             $errlog = "Fonction->typeabsenceliste : " . $erreur;
@@ -1637,12 +1641,59 @@ class fonctions
                 "parentid" => $parentid
             );
         }
-        
+
         // print_r($tablegende); echo "<br>";
         return $tableabsence;
-        
+
     }
-    
+
+    public function showmessage($type, $message)
+    {
+        //var_dump($message);
+        $message = preg_replace('/\s\s+/', ' ', $message);
+        //var_dump($message);
+        $message = preg_replace('/<br>\s*/i','<br>', $message);
+        //var_dump($message);
+        $oldmessage = "";
+        while ($oldmessage != $message and $message != '')
+        {
+            $oldmessage = $message;
+            $message = preg_replace('/<br><br>*/i','<br>', $message);
+        }
+        //var_dump($message);
+        $message = preg_replace('/^<br>/i','', $message);
+        $message = preg_replace('/<br>$/i','', $message);
+        //var_dump($message);
+        if (trim(str_ireplace('<br>', '', $message)) == '')
+        {
+       	    $message = '';
+        }
+        //var_dump($message);
+
+        $html = '';
+        if  ($message == '')
+        {
+            return $html;
+        }
+        $html = $html . "<p>";
+        $html = $html . "<table class='tabmessage'><tbody>";
+        $html = $html . "<tr>";
+        $html = $html . "<td class='cel" . $type  . " celllogo'>";
+        $path = $this->imagepath() . "/" . $type  . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        $html = $html . "<img class='img". $type ."' src='" . $base64 . "'>";  //"' style='width:100px;height:100px;'>";
+        $html = $html . "</td>";
+        $html = $html . "<td class='cel" . $type  . " cellmsg'>";
+        $html = $html . "$message";
+        $html = $html . "</td>";
+        $html = $html . "</tr>";
+        $html = $html . "</tbody></table>";
+        $html = $html . "</p>";
+        return $html;
+    }
+
 }
 
 ?>

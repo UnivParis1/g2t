@@ -3,7 +3,7 @@
     include './includes/casconnection.php';
 
     require_once ("./includes/all_g2t_classes.php");
- 
+
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
@@ -17,35 +17,38 @@
         }
     }
     $user = new agent($dbcon);
-
-    if (is_null($userid) or $userid == "") 
+    if (is_null($userid) or $userid == "")
     {
         $userid = $fonctions->useridfromCAS($uid);
         if ($userid === false)
         {
             echo '<head>';
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+            echo '<link rel="stylesheet" type="text/css" href="style/style.css?' . filemtime('style/style.css') .'" media="screen"></link>';
             echo '</head>';
-            $errlog = "L'utilisateur " . $uid . " (AgentId = $userid) n'est pas référencé dans la base de donnée !!!";
-            echo "$errlog<br>";
-            echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
+            $errlog = "L'utilisateur " . $uid . " (AgentId = $userid) n'est pas référencé dans la base de donnée !";
+            $errlog = $errlog . "<br>";
+            $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
+            echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             exit();
         }
         // Si on est là, on est sûr que l'agent existe
         $user->load($userid);
-    } 
-    else 
+    }
+    else
     {
         // Si le userid est défini => On essaie de charger l'agent
-        if (! $user->load($userid)) 
+        if (! $user->load($userid))
         {
             echo '<head>';
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+            echo '<link rel="stylesheet" type="text/css" href="style/style.css?' . filemtime('style/style.css') .'" media="screen"></link>';
             echo '</head>';
-            $errlog = "L'utilisateur " . $userid . " n'est pas référencé dans la base de donnée !!!";
-            echo "$errlog<br>";
-            echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
+            $errlog = "L'utilisateur " . $uid . " (AgentId = $userid) n'est pas référencé dans la base de donnée !";
+            $errlog = $errlog . "<br>";
+            $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
+            echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             exit();
         }
@@ -58,7 +61,7 @@
     //echo "<br><br>" . $errlog . "<br><br>";
     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
 
-/*    
+/*
     echo "POST => " . print_r($_POST,true) . "<br>";
 */
 
@@ -105,11 +108,19 @@
                 // On verifie que sur l'affectation en cours, il n'y a pas de période non déclaré.
                 if (!$user->dossiercomplet($datedebut,$datefin))
                 {
+                    $msgerror = "";
+                    $msgerror = $msgerror . "Il existe au moins une affection à temps partiel pour laquelle vous n'avez pas de déclaration validée.<br>";
+                    $msgerror = $msgerror . "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.<br>";
+                    $msgerror = $msgerror . "Votre planning contiendra donc des cases \"Période non déclarée\" lors de son affichage.<br>";
+                    echo $fonctions->showmessage(fonctions::MSGWARNING, $msgerror);
+
+/*
                     echo "<font color=#FF0000>";
                     echo "<b>ATTENTION : </b>Il existe au moins une affection à temps partiel pour laquelle vous n'avez pas de déclaration validée.<br>";
                     echo "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.<br>";
                     echo "Votre planning contiendra donc des cases \"Période non déclarée\" lors de son affichage.<br>";
                     echo "</font>";
+*/
                 }
             }
         }
@@ -120,7 +131,7 @@
      if (count($liste) > 0)
      {
          echo "<font color=#FF0000><center>";
-         echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";   
+         echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
          foreach ($liste as $element)
          {
              echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
@@ -135,8 +146,15 @@
 
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
-        
-    
-?>
+
+/*
+    echo $fonctions->showmessage(fonctions::MSGERROR,"Ceci est un message d'erreur et il doit être affiché avec un fond rouge foncé et le texte en blanc");
+    echo $fonctions->showmessage(fonctions::MSGWARNING,"Ceci est un message d'alerte et il doit être affiché avec un fond jaune/orange et le texte en blanc");
+    echo $fonctions->showmessage(fonctions::MSGINFO,"<br> <br>Ceci est un message de type information et il doit être affiché avec un fond vert clair et le texte en blanc<br><BR>   <bR>ceci est une ligne complémentaire<br>et j'en rajoute une 3e au cas où...<br>et si j'en met une 4e ca marche ?<br> <br>et la 5e mais ca commence à faire bcp donc je ne pense pas<br><bR>");
+    echo $fonctions->showmessage(fonctions::MSGINFO,"     <br> <br><br><BR><Br>   <Br>  <br>     <br><bR>");
+*/
+
+
+    ?>
 </body>
 </html>

@@ -292,7 +292,9 @@
         else {
             $errlog = "La déclaration de temps partiel est bien enregistrée.";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-            echo "<font color='green'>" . $errlog . "</font><br/><br/>";
+            echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
+            
+            //echo "<font color='green'>" . $errlog . "</font><br/><br/>";
         }
     }
 

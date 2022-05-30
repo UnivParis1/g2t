@@ -561,7 +561,7 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 }
                 $this->ancienstatut = demande::DEMANDE_ATTENTE;
             } else {
-                $errlog = "Nombre de jours insuffisants ==> Demande = " . ($this->nbrejrsdemande) . " Solde restant : " . ($nbjrrestant) . " !!!";
+                $errlog = "Nombre de jours insuffisants (demandé : " . ($this->nbrejrsdemande) . " solde restant : " . ($nbjrrestant) . ").";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return $errlog . "<br/>";
             }
@@ -569,7 +569,7 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             // Si le statut de la demande était déja annulé/refusé => On ne fait rien
             //if (strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) == 0) {
             if ((strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->ancienstatut, demande::DEMANDE_ANNULE) == 0)) {
-                $errlog = "Impossible de changer le statut d'une demande 'refusee' !!!";
+                $errlog = "Impossible de changer le statut d'une demande 'refusée'.";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return $errlog . "<br/>";
                 ;

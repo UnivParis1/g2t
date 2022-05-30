@@ -107,7 +107,9 @@
                 if ($solde->droitaquis() != $ancienacquis_supp)
                 {
                     $erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
-                    echo "<P style='color: red'>" . $erreur . "</P>";
+                    echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
+                    
+//                    echo "<P style='color: red'>" . $erreur . "</P>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                 }
                 else
@@ -116,13 +118,15 @@
                     if ($erreur != '')
                     {
                         $erreur = "Impossible de supprimer l'ajout de congés supplémentaires (id = $id) : " . $erreur;
-                        echo "<P style='color: red'>" . $erreur . "</P>";
+                        echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
+//                        echo "<P style='color: red'>" . $erreur . "</P>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                     }
                     else
                     {
                         $erreur = "Suppression de l'ajout de congés supplémentaires (id = $id) : Ok";
-                        echo "<P style='color: green'>" . $erreur . "</P>";
+                        echo $fonctions->showmessage(fonctions::MSGINFO, $erreur);
+//                        echo "<P style='color: green'>" . $erreur . "</P>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                     }
                 }
@@ -233,11 +237,13 @@
             }
             if ($msg_erreur != "") {
                 $errlog = "Les jours supplémentaires n'ont pas été enregistrés... ==> MOTIF : " . $msg_erreur;
-                echo "<P style='color: red'>" . $errlog . "</P>";
+                echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+//                echo "<P style='color: red'>" . $errlog . "</P>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } elseif (! is_null($solde)) {
                 $errlog = "Les jours supplémentaires ont été enregistrés... Nouveau solde = " . ($solde->droitaquis() - $solde->droitpris());
-                echo "<P style='color: green'>" . $errlog . "</P>";
+                echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
+//                echo "<P style='color: green'>" . $errlog . "</P>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 $agentrhlist = $fonctions->listeprofilrh("2"); // Le profil 2 est le profil de gestion des congés
                 foreach ($agentrhlist as $agentrh) {
@@ -271,7 +277,8 @@
             if ($msg_erreur <> "")
             {
                 $msg_erreur = "Erreur lors du chargement du solde de congés complémentaires $lib_sup : " . $msg_erreur;
-                echo "<P style='color: red'>" . $errlog . "</P><br/>";
+                echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+//                echo "<P style='color: red'>" . $errlog . "</P><br/>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             }
         }

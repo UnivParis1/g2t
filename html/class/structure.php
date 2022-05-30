@@ -630,8 +630,10 @@ class structure
         // echo "Je debute planninghtml <br>";
         //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
         list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
-        if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
-            echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Les informations antérieures à la date du jour ont été masquées.</font></B><br>";
+        if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) 
+        {
+            echo $this->fonctions->showmessage(fonctions::MSGWARNING, "Les informations antérieures à la date du jour ont été masquées.");
+//            echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Les informations antérieures à la date du jour ont été masquées.</font></B><br>";
             // echo "<font color=#FF0000></font><br>";
         }
         

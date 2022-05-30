@@ -95,7 +95,8 @@
             $return = $teletravail->load($cancelteletravailid);
             if (!$return)
             {
-                $erreur = $erreur . "<br>Erreur dans le chargement de la convention $cancelteletravailid pour annulation : " . $return;
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "Erreur dans le chargement de la convention $cancelteletravailid pour annulation : " . $return;
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
             }
             else
@@ -107,12 +108,13 @@
                 $erreur = $teletravail->store();
                 if ($erreur != "")
                 {
-                    $erreur = $erreur . "<br>Erreur dans la sauvegarde du changement de statut de la convention $cancelteletravailid : " . $erreur;
+                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                    $erreur = $erreur . "Erreur dans la sauvegarde du changement de statut de la convention $cancelteletravailid : " . $erreur;
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                 }
                 else
                 {
-                    $info = $info . "<br>La suppression de la convention $cancelteletravailid a été enregistrée.";
+                    $info = $info . "La suppression de la convention $cancelteletravailid a été enregistrée.";
                 }
             }
         }
@@ -122,12 +124,14 @@
             $datefin = $datefinconv[$idconv];
             if (!$fonctions->verifiedate($datedebut) or !$fonctions->verifiedate($datefin))
             {
-                $erreur = $erreur . "<br>La date de début ou de fin de la convention $idconv n'est pas correcte.";
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "La date de début ou de fin de la convention $idconv n'est pas correcte.";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
             }
             elseif ($fonctions->formatdatedb($datedebut)>$fonctions->formatdatedb($datefin))
             {
-                $erreur = $erreur . "<br>La date de début est supérieure à la date de fin de la convention $idconv.";
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "La date de début est supérieure à la date de fin de la convention $idconv.";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
             }
             else
@@ -137,7 +141,8 @@
                 $return = $teletravail->load($idconv);
                 if (!$return)
                 {
-                    $erreur = $erreur . "<br>Erreur dans le chargement de la convention $idconv pour modification : " . $return;
+                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                    $erreur = $erreur . "Erreur dans le chargement de la convention $idconv pour modification : " . $return;
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                 }
                 elseif ($teletravail->statut() == teletravail::STATUT_ACTIVE)
@@ -151,7 +156,8 @@
                             $teletravailverif->load($conventionid);
                             if ($teletravailverif->statut() == $teletravailverif::STATUT_ACTIVE and $conventionid != $idconv)
                             {
-                                $erreur = $erreur . "<br>Erreur : La date de début ou de fin de la convention de télétravail $idconv chevauche une convention existante (id = $conventionid).";
+                                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                                $erreur = $erreur . "Erreur : La date de début ou de fin de la convention de télétravail $idconv chevauche une convention existante (id = $conventionid).";
                                 break;  // On a trouver au moins une convention active qui chevauge !
                             }
                         }
@@ -162,12 +168,13 @@
                             $erreur = $teletravail->store();
                             if ($erreur != "")
                             {
-                                $erreur = $erreur . "<br>Erreur dans la sauvegarde du changement de date de la convention $idconv : " . $erreur;
+                                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                                $erreur = $erreur . "Erreur dans la sauvegarde du changement de date de la convention $idconv : " . $erreur;
                                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                             }
                             else
                             {
-                                $info = $info . "<br>La modification de la convention $idconv a été enregistrée.";
+                                $info = $info . "La modification de la convention $idconv a été enregistrée.";
                             }
                         }
                     }
@@ -222,24 +229,28 @@
         $dateok = true;
         if (!$fonctions->verifiedate($datedebutteletravail))
         {
-            $erreur = $erreur . "<br>Erreur : La date de début de la convention n'est pas correcte ou définie.";
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "La date de début de la convention n'est pas correcte ou définie.";
             $dateok = false;
         }
         if (!$fonctions->verifiedate($datefinteletravail))
         {
-            $erreur = $erreur . "<br>Erreur : La date de fin de la convention n'est pas correcte ou définie.";
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "La date de fin de la convention n'est pas correcte ou définie.";
             $dateok = false;
         }
         if ($dateok and $fonctions->formatdatedb($datedebutteletravail)>$fonctions->formatdatedb($datefinteletravail))
         {
-            $erreur = $erreur . "<br>Erreur : La date de début est supérieure à la date de fin de la convention.";
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "La date de début est supérieure à la date de fin de la convention.";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
             $dateok = false;
         }
         
         if (str_pad('',14,'0') == $tabteletravail)
         {
-            $erreur = $erreur . "<br>Erreur : Aucun jour de télétravail sélectionné.";
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "Aucun jour de télétravail sélectionné.";
         }
         if ($dateok)
         {
@@ -250,7 +261,8 @@
                 $teletravail->load($conventionid);
                 if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
                 {
-                    $erreur = $erreur . "<br>Erreur : La nouvelle convention de télétravail chevauche une convention existante (id = $conventionid).";
+                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                    $erreur = $erreur . "La nouvelle convention de télétravail chevauche une convention existante (id = $conventionid).";
                     break;  // On a trouver au moins une convention active qui chevauge !
                 }
             }
@@ -265,7 +277,7 @@
             $erreur = $teletravail->store();
             if ($erreur != "")
             {
-                $erreur = "Erreur dans la sauvegarde dans la création de la convention : " . $erreur;
+                $erreur = "Erreur dans la sauvegarde dans la création de la convention : <br>" . $erreur;
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
             }
             else
@@ -277,9 +289,17 @@
     }
     
     if ($erreur != "")
-        echo "<b><font color='red'><br>$erreur<br>La convention de télétravail n'a pas pu être enregistrée.</font></b>";
+    {
+        $erreur = $erreur . "<br>La convention de télétravail n'a pas pu être enregistrée.";
+        echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
+        
+//        echo "<b><font color='red'><br>$erreur</font></b>";
+    }
     if ($info != "")
-        echo "<b><font color='green'><br>$info</font></b>";
+    {
+        echo $fonctions->showmessage(fonctions::MSGINFO, $info);
+//        echo "<b><font color='green'><br>$info</font></b>";
+    }
     echo "<br><br>";
 
     if (is_null($agentid))

@@ -114,8 +114,11 @@
                         }
                     }
                     
-                    if ($resp_est_delegue) {
-                        echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Vous ne pouvez pas saisir le responsable (" . $resp->identitecomplete() . ") de la structure '" . $structure->nomlong() . "' comme délégué.</B><br>La délégation n'est pas enregistrée.</FONT><br>";
+                    if ($resp_est_delegue) 
+                    {
+                        $error = "Vous ne pouvez pas saisir le responsable (" . $resp->identitecomplete() . ") de la structure '" . $structure->nomlong() . "' comme délégué.<br>La délégation n'est pas enregistrée.";
+                        echo $fonctions->showmessage(fonctions::MSGERROR, $error);
+//                        echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Vous ne pouvez pas saisir le responsable (" . $resp->identitecomplete() . ") de la structure '" . $structure->nomlong() . "' comme délégué.</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                     } else {
                         $datedebutdeleg = "";
                         if (isset($arraydatedebut[$structure->id()]))
@@ -125,12 +128,17 @@
                             $datefindeleg = $arraydatefin[$structure->id()];
                                 
                         // echo "datedebutdeleg = $datedebutdeleg datefindeleg = $datefindeleg <br>";
-                        if ($datedebutdeleg == "" or $datefindeleg == "") {
-                            echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
+                        if ($datedebutdeleg == "" or $datefindeleg == "") 
+                        {
+                            $error = "Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide.<br>La délégation n'est pas enregistrée.";
+                            echo $fonctions->showmessage(fonctions::MSGERROR, $error);
+//                            echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                         } else {
                             // echo "On enregistre la delegation.... <br>";
                             $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid);
-                            $errlog = $resp->identitecomplete() . " : Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
+                            $errlog = "Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
+                            echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
+                            $errlog = $resp->identitecomplete() . " : " . $errlog;
                             // echo $errlog."<br/>";
                             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                         }
@@ -209,7 +217,12 @@
         $delegationuser = null;
         if ($delegationuserid != "") {
             $delegationuser = new agent($dbcon);
-            $delegationuser->load($delegationuserid);
+            if (! $delegationuser->load($delegationuserid))
+            {
+                $erreur = "Impossible de charger la personne déléguée.";
+                echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
+                $delegationuser = null;
+            }
         }
         echo "<form name='frm_dossier'  method='post' >";
         echo "Délégation de responsabilité à ";

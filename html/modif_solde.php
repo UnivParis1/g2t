@@ -173,9 +173,11 @@
         $info = "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
     }
     
+    echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+    echo $fonctions->showmessage(fonctions::MSGINFO, $info);
     
-    echo "<P style='color: red'>" . $msg_erreur . "</P>";
-    echo "<P style='color: green'>" . $info . "</P>";
+    //echo "<P style='color: red'>" . $msg_erreur . "</P>";
+    //echo "<P style='color: green'>" . $info . "</P>";
     
     //print_r($_POST); echo "<br>";
 

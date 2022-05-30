@@ -364,7 +364,9 @@
 
         if (((float)$valeur_f+0)==0)
         {
-            echo "<br><br><font color='red'><B>La valeur de la case F est vide ou égale à 0... On ne peut pas sauvegarder la demande d'alimentation.</B></font><br>";
+            $error = "La valeur de la case F est vide ou égale à 0... On ne peut pas sauvegarder la demande d'alimentation.";
+            echo $fonctions->showmessage(fonctions::MSGERROR, $error);
+//            echo "<br><br><font color='red'><B>$error</B></font><br>";
         }
         else
         {

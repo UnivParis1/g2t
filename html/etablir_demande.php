@@ -141,8 +141,8 @@
         if ($date_debut == "" or ! $fonctions->verifiedate($date_debut)) // is_null($date_debut) or
         {
             // Echo "La date est fausse !!!! <br>";
-            $errlog = "La date de début n'est pas initialisée ou est incorrecte !!! <br/>";
-            $msg_erreur .= $errlog;
+            $errlog = "La date de début n'est pas initialisée ou est incorrecte.";
+            $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             $datefausse = TRUE;
         } else {
@@ -152,13 +152,13 @@
             else
                 $deb_mataprem = null;
             if (is_null($deb_mataprem) or $deb_mataprem == "") {
-                $errlog = "Le moment de début n'est pas initialisé !!! ";
+                $errlog = "Le moment de début n'est pas initialisé.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             }
             // date de début antérieure à la période
             if ($fonctions->formatdatedb($date_debut) < ($fonctions->anneeref() - $previous) . $fonctions->debutperiode()) {
-                $errlog = "La date de début ne doit pas être antérieure au début de la période !!!";
+                $errlog = "La date de début ne doit pas être antérieure au début de la période.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             }
@@ -176,7 +176,7 @@
         $date_fin = $_POST["date_fin"];
         if ($date_fin == "" or ! $fonctions->verifiedate($date_fin)) // is_null($date_fin) or
         {
-            $errlog = "La date de fin n'est pas initialisée ou est incorrecte !!! ";
+            $errlog = "La date de fin n'est pas initialisée ou est incorrecte.";
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             $datefausse = TRUE;
@@ -187,7 +187,7 @@
             else
                 $fin_mataprem = null;
             if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem, "m") != 0 and strcasecmp($fin_mataprem, "a") != 0)) {
-                $errlog = "Le moment de fin n'est pas initialisé !!!";
+                $errlog = "Le moment de fin n'est pas initialisé.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             }
@@ -201,7 +201,7 @@
         $datedebutdb = $fonctions->formatdatedb($date_debut);
         $datefindb = $fonctions->formatdatedb($date_fin);
         if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == 'a' and $fin_mataprem == 'm')) {
-            $errlog = "Il y a une incohérence entre la date de début et la date de fin !!! ";
+            $errlog = "Il y a une incohérence entre la date de début et la date de fin.";
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             $datefausse = true;
@@ -230,7 +230,7 @@
             // if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4)))
             // ------------------------------------------------------------------------------------
             {
-                $errlog = "Le type de congés utilisé n'est pas valide pour la période demandée ! ";
+                $errlog = "Le type de congés utilisé n'est pas valide pour la période demandée.";
                 $msg_erreur .= $errlog . "<br/>";
             }
         }
@@ -238,21 +238,32 @@
         $listetype = null;
     if ((is_null($listetype) or $listetype == "") and ($msg_erreur == "" and ! $datefausse)) {
         // echo "Le type de demande n'est pas initialisé !!! <br>";
-        $errlog = "Le type de demande n'est pas initialisé ! ";
+        $errlog = "Le type de demande n'est pas initialisé.";
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
 
     // # Récupération du commentaire (s'il existe)
+    $warningcommentaire = "";
     $commentaire = "";
     if (isset($_POST["commentaire"]))
         $commentaire = trim($_POST["commentaire"]);
-    if (! is_null($responsable) and $commentaire == "") {
-        $errlog = "Le commentaire dans la saisie est obligatoire !!! ";
-        $msg_erreur .= $errlog . "<br/>";
-        error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-    } elseif ($commentaire == "" and $listetype == 'spec') {
-        $errlog = "Le commentaire dans la saisie est obligatoire pour ce type d'absence ($listetype)!!! ";
+    if (! is_null($responsable) and $commentaire == "") 
+    {
+        if (isset($_POST["valider"]))
+        {
+            $errlog = "Le commentaire dans la saisie est obligatoire.";
+            $msg_erreur .= $errlog . "<br/>";
+            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
+        }
+        else
+        {
+            $warningcommentaire = "Le commentaire dans la saisie est obligatoire.";
+        }
+    } 
+    elseif ($commentaire == "" and $listetype == 'spec') 
+    {
+        $errlog = "Le commentaire dans la saisie est obligatoire pour ce type d'absence ($listetype).";
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
@@ -268,7 +279,7 @@
     // # On regarde si le dossier est complet pour la période demandée ==> Si pas !! Pas de saisie possible
     if (! is_null($agent) and ! $datefausse) {
         if (! $agent->dossiercomplet($date_debut, $date_fin)) {
-            $errlog = "Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande !!! ";
+            $errlog = "Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande.";
             $msg_erreur .= "<b>" . $errlog . "</b><br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             // $masquerboutonvalider = TRUE;
@@ -441,7 +452,8 @@
         // echo "Date fausse (1) = " . $datefausse . "<br>";
 
         //echo "msg_erreur 2 = " .$msg_erreur ." <br>";
-
+        echo $fonctions->showmessage(fonctions::MSGWARNING, $warningcommentaire);
+        
         if (! $datefausse) {
             $planning = new planning($dbcon);
             // echo "Date fin = " . $date_fin . "<br>";
@@ -478,9 +490,9 @@
             if (! $present)
             {
                 if (strtoupper($agent->civilite()) == "MME")
-                    $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présente durant la période du $date_debut au $date_fin......!!! <br>";
+                    $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présente durant la période du $date_debut au $date_fin.<br>";
                 else
-                    $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présent durant la période du $date_debut au $date_fin......!!! <br>";
+                    $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présent durant la période du $date_debut au $date_fin.<br>";
             }
         }
 
@@ -488,13 +500,20 @@
         //echo "msg_erreur 3 = " .$msg_erreur. " <br>";
 
         if ($msg_erreur != "" or $datefausse) {
-
+            
+            if ($msg_erreur != "" and isset($_POST["valider"])) {
+                error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
+                $msg_erreur = "Votre demande n'a pas été enregistrée.<br>" . $msg_erreur;
+            }
+            echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+/*            
             echo "<P style='color: red'><B><FONT SIZE='5pt'>";
             if ($msg_erreur != "" and isset($_POST["valider"])) {
                 echo "Votre demande n'a pas été enregistrée... <BR>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
             }
             echo $msg_erreur . " </B></FONT></P>";
+*/
             // echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider <br>";
         } elseif (! $datefausse) {
             
@@ -546,7 +565,10 @@
                     $msgerreur = "";
                     $msgerreur = $demande->store();
                     if ($msgerreur != "")
-                        echo "<p style='color: red'>Pas de validation automatique de la demande car " . $msgerreur . "</p><br>";
+                    {
+                        echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de validation automatique de la demande car " . $msgerreur . ".");
+//                        echo "<p style='color: red'>Pas de validation automatique de la demande car " . $msgerreur . "</p><br>";
+                    }
                     else {
                         $ics = null;
                         $pdffilename[0] = $demande->pdf($user->agentid());
@@ -604,7 +626,7 @@
                     $errormsg = $agent->updatecalendar($ics);
                     //echo "errormsg = $errormsg <br>";
                 }
-                $msgstore = "Votre demande a été enregistrée... ==> ";
+                $msgstore = "Votre demande a été enregistrée.<br>";
                 if (strcasecmp($typedemande, "conges") == 0) {
                     if (($demande->nbrejrsdemande()) > 1) {
                         $msgstore .= $demande->nbrejrsdemande() . " jours vous seront decomptés (" . $demande->typelibelle() . ")";
@@ -617,7 +639,8 @@
                     else
                         $msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s)";
                 }
-                echo "<P style='color: green'>" . $msgstore . " sous réserve du respect des règles de gestion.</P>";
+                echo $fonctions->showmessage(fonctions::MSGINFO, $msgstore . " sous réserve du respect des règles de gestion.");
+//                echo "<P style='color: green'>" . $msgstore . " sous réserve du respect des règles de gestion.</P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
                 
                 // On réinitialise les variables qui servent à l'affichage en cas d'erreur
@@ -629,9 +652,10 @@
                 $commentaire = "";
                 
             } else {
-                $msgstore = "Votre demande n'a pas été enregistrée... ==> MOTIF : " . $resultat;
+                $msgstore = "Votre demande n'a pas été enregistrée.<br>" . $resultat;
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
-                echo "<P style='color: red'><B><FONT SIZE='5pt'>" . $msgstore . " </B></FONT></P>";
+                echo $fonctions->showmessage(fonctions::MSGERROR, $msgstore);
+                //echo "<P style='color: red'><B><FONT SIZE='5pt'>" . $msgstore . " </B></FONT></P>";
             }
         }
         $warninginfo  = "ATTENTION : Votre structure n'est pas définie. Vos demandes ne seront pas validées.";
@@ -643,7 +667,8 @@
                 $warninginfo = '';
             }
         }
-        echo "<P style='color: red'><B>$warninginfo</B></P>";
+        echo $fonctions->showmessage(fonctions::MSGWARNING, $warninginfo);
+        //echo "<P style='color: red'><B>$warninginfo</B></P>";
         
         echo "<span style='border:solid 1px black; background:orange; width:600px; display:block;'>";
         echo "<P style='color: black'>";

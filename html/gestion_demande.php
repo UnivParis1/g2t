@@ -178,7 +178,9 @@
 
                     // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                     error_log($fonctions->stripAccents("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut())));
-                    echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
+                    echo $fonctions->showmessage(fonctions::MSGINFO,"Votre demande a bien été annulée.");
+                    
+                    //echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
                 }
             }
         }

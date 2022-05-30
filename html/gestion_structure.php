@@ -369,8 +369,9 @@
                     $struct->getdelegation($delegueid, $datedebutdeleg, $datefindeleg);
                     $delegue = new agent($dbcon);
                     $delegue->load($delegueid);
-
-                    echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg </B></FONT><br>";
+                    $info = "Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg."; 
+                    echo $fonctions->showmessage(fonctions::MSGWARNING, $info);
+//                    echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg </B></FONT><br>";
                     echo "</td>";
                     echo "</tr>";
                 }
