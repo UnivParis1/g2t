@@ -522,7 +522,7 @@ class structure
     function responsablesiham()
     {
         if (is_null($this->responsableid) or ($this->responsableid == '')) {
-            $errlog = "<B><FONT COLOR='#FF0000'>Structure->Responsablesiham : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B>";
+            $errlog = "<B><div style='color:#FF0000'>Structure->Responsablesiham : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
@@ -542,7 +542,7 @@ class structure
     {
         if (is_null($respid)) {
             if (is_null($this->responsableid) or ($this->responsableid == '')) {
-                $errlog = "<B><FONT COLOR='#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B>";
+                $errlog = "<B><div style='color:#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
@@ -574,7 +574,7 @@ class structure
     {
         if (is_null($gestid)) {
             if (is_null($this->gestionnaireid) or ($this->gestionnaireid == '')) {
-                $errlog = "<br><B><FONT COLOR='#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </FONT></B>";
+                $errlog = "<br><B><div style='color:#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
@@ -633,8 +633,6 @@ class structure
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) 
         {
             echo $this->fonctions->showmessage(fonctions::MSGWARNING, "Les informations antérieures à la date du jour ont été masquées.");
-//            echo "<br><B><font SIZE='3pt' color=#FF0000>Attention : Les informations antérieures à la date du jour ont été masquées.</font></B><br>";
-            // echo "<font color=#FF0000></font><br>";
         }
         
         $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail,$includecongeabsence);
@@ -651,7 +649,7 @@ class structure
         $elementlegende = array();
         foreach ($planningservice as $agentid => $planning) {
             if ($titre_a_ajouter) {
-                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) . " align=center ><font color=#BF3021>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
+                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) . " align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                 // echo "Nom du mois = " . $monthname . "<br>";
                 $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + 1) . "'>" . $monthname . "</td></tr>";
@@ -791,7 +789,7 @@ class structure
                  */
                 // echo 'count(planning) = ' .count($planning) . '<br>';
                 if ($titre_a_ajouter) {
-                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planning) + 1) . " align=center ><font color=#BF3021>Planning des responsables des sous-structures " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
+                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planning) + 1) . " align=center ><div style='color:#BF3021'>Planning des responsables des sous-structures " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
                     $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                     // echo "Nom du mois = " . $monthname . "<br>";
                     $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planning) + 1) . "'>" . $monthname . "</td></tr>";
@@ -842,11 +840,7 @@ class structure
         // return null;
         $htmltext = "<br>";
         $htmltext = "<table class='tableausimple'>";
-        // // --- Masquage des infos sur le CET
-        // $htmltext = $htmltext . "<tr><td class='titresimple' colspan=5 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
-        // $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'enfant malade'</td><td class='cellulesimple'>Nbre jours initial CET</td><td class='cellulesimple'>Date de début du CET</td></tr>";
-        // // --- Fin masquage des infos sur le CET
-        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=3 align=center ><font color=#BF3021>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</font></td></tr>";
+        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=3 align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
         $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td></tr>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
@@ -1099,7 +1093,6 @@ class structure
 
     function getdelegation(&$delegationuserid, &$datedebutdeleg, &$datefindeleg)
     {
-        // echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>La récupération de la délégation pour une structure n'est pas implémentée.<BR> Les valeurs retournée sont fixes !!!!</B></FONT> <br>";
         $delegationuserid = "";
         $datedebutdeleg = "";
         $datefindeleg = "";
@@ -1127,7 +1120,6 @@ class structure
 
     function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="")
     {
-        // echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Il manque l'enregistrement de la délégation..... </B></FONT><br> Agent Id = $delegationuserid Début = $datedebutdeleg fin = $datefindeleg <br>";
         if ($datedebutdeleg != "") {
             $datedebutdeleg = $this->fonctions->formatdatedb($datedebutdeleg);
         }

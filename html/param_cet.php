@@ -37,7 +37,8 @@
     
     // PARAMETRAGE DU CALENDRIER D'ALIMENTATION
     
-    echo "<div style='color: red;font-weight: bold; '>";
+    $msgerror = '';
+    //echo "<div style='color: red;font-weight: bold; '>";
 
     //if (isset($_POST['valider_cal_alim']))
     if (isset($_POST['date_debut_alim']) and isset($_POST['date_fin_alim']))
@@ -48,7 +49,8 @@
         	$datefinalim = $fonctions->formatdatedb($_POST['date_fin_alim']);
         	if ($datefinalim < $datedebutalim)
         	{
-        		echo "Incohérence dates (date début > date fin). <br>";
+        		$msgerror = $msgerror . "Incohérence dates (date début > date fin). <br>";
+        		//echo "Incohérence dates (date début > date fin). <br>";
         	}
         	else
         	{
@@ -58,7 +60,8 @@
         }
         else
         {
-            echo "Au moins une des dates de l'intervalle d'alimentation n'est pas valide. <br>";
+            $msgerror = $msgerror . "Au moins une des dates de l'intervalle d'alimentation n'est pas valide. <br>";
+            //echo "Au moins une des dates de l'intervalle d'alimentation n'est pas valide. <br>";
         }
     }
     
@@ -73,7 +76,8 @@
         	$datefinopt = $fonctions->formatdatedb($_POST['date_fin_option']);
         	if ($datefinopt < $datedebutopt)
         	{
-        		echo "Incohérence dates (date début > date fin). <br>";
+        	    $msgerror = $msgerror . "Incohérence dates (date début > date fin). <br>";
+        		//echo "Incohérence dates (date début > date fin). <br>";
         	}
         	else
         	{
@@ -83,7 +87,8 @@
         }
         else
         {
-            echo "Au moins une des dates de l'intervalle d'option n'est pas valide. <br>";
+            $msgerror = $msgerror . "Au moins une des dates de l'intervalle d'option n'est pas valide. <br>";
+            //echo "Au moins une des dates de l'intervalle d'option n'est pas valide. <br>";
         }
     }
     
@@ -92,14 +97,19 @@
     {
     	$plafondcet = $_POST['plafondcet'];
     	if (!is_numeric($plafondcet) || !is_int($plafondcet+0) || $plafondcet < 0)
-    		echo "Le nombre de jours maximum doit être un entier positif. <br>";
+    	{
+    	    $msgerror = $msgerror . "Le nombre de jours maximum doit être un entier positif. <br>";
+    		//echo "Le nombre de jours maximum doit être un entier positif. <br>";
+    	}
     	else 
     	{
     		$update = "UPDATE CONSTANTES SET VALEUR = $plafondcet WHERE NOM = 'PLAFONDCET'";
     		$query = mysqli_query($dbcon, $update);
     	}
     }
-    echo "</div>";
+    //echo "</div>";
+    echo $fonctions->showmessage(fonctions::MSGERROR, $msgerror);
+    $msgerror = '';
     
     $plafondparam = $fonctions->liredbconstante('PLAFONDCET');
     

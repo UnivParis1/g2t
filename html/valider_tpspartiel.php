@@ -54,8 +54,9 @@
                 if ($declaration->statut() == $statut)
                 {
                     // Pas de changement de statut de la demande => On ne sauvegarde rien !!!
-                    $errlog = "Le statut de la demande de TP est inchangé !!!! Donc pas de sauvegarde.";
-                    echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                    $errlog = "Le statut de la demande de temps partiel est inchangé, donc pas de sauvegarde.";
+                    echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+                    //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 }
                 else
@@ -67,7 +68,8 @@
                     // echo "Apres le store <br>";
                     if ($msgerreur != "") {
                         $errlog = "Pas de sauvegarde car " . $msgerreur;
-                        echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                        echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+                        //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     } else {
                         $pdffilename = $declaration->pdf($user->agentid());

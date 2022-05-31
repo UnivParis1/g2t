@@ -689,7 +689,7 @@ class agent
 	            
 	            // if ($errormsg <> "")
 	            // {
-	            $msg .= "<br><br><p><font size=\"2\">La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</font></p>";
+	            $msg .= "<br><br><p style='font-size:15px;'>La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</p>";
 	            $msg .= "\r\n";
 	            $msg .= "--$boundary\r\n";
 	            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
@@ -1335,7 +1335,7 @@ class agent
          * $htmltext = $htmltext . " </tr>";
          */
         $htmltext = $htmltext . "      </table>";
-        $htmltext = $htmltext . "<font color='#EF4001'>Soldes de congés donnés sous réserve du respect des règles de gestion</font>";
+        $htmltext = $htmltext . "<div style='color:#EF4001'>Soldes de congés donnés sous réserve du respect des règles de gestion</div>";
         $htmltext = $htmltext . "      </center>";
         $htmltext = $htmltext . "</div>";
         $htmltext = $htmltext . "<br>";
@@ -1807,54 +1807,45 @@ class agent
     function demandeslistehtmlpourgestion($debut_interval, $fin_interval, $agentid = null, $mode = "agent", $cleelement = null)
     {
         $liste = null;
-        
-        /*
-         * $affectationliste = $this->affectationliste($debut_interval, $fin_interval);
-         * $affectation = new affectation($this->dbconnect);
-         * $declarationTP = new declarationTP($this->dbconnect);
-         * $demande = new demande($this->dbconnect);
-         * if (!is_null($affectationliste))
-         * {
-         * foreach ($affectationliste as $key => $affectation)
-         * {
-         * //echo "<br><br>Affectation (". $affectation->affectationid() .") date debut = " . $affectation->datedebut() . " Date fin = " . $affectation->datefin() . "<br>";
-         * unset($declarationTPliste);
-         * $declarationTPliste = $affectation->declarationTPliste($debut_interval, $fin_interval);
-         * if (!is_null($declarationTPliste))
-         * {
-         * foreach ($declarationTPliste as $key => $declarationTP)
-         * {
-         * //echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ") Debut = " . $declarationTP->datedebut() . " Fin = " . $declarationTP->datefin() . "<br>";
-         * //echo "<br>Liste = "; print_r($declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin())); echo "<br>";
-         * //$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
-         * $liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($debut_interval, $fin_interval));
-         * }
-         * }
-         * }
-         * }
-         * //echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-         * // On enlève les doublons des demandes !!!
-         * $uniquedemandeliste = array();
-         * if (is_array($liste))
-         * {
-         * foreach ($liste as $key => $demande)
-         * {
-         * $uniquedemandeliste[$demande->id()] = $demande;
-         * }
-         * $liste = $uniquedemandeliste;
-         * unset($uniquedemandeliste);
-         * }
-         * //echo "#######demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-         */
-         
-        //echo "<br>debut_interval = $debut_interval <br>fin_interval = $fin_interval<br>agentid = $agentid<br>mode = $mode<br>cleelement = $cleelement<br>";
-        
         $liste = $this->demandesliste($debut_interval, $fin_interval);
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
         $htmltext = "";
-
+        $htmltext = $htmltext . "
+<script>
+const backcolormotif = (checkbox, checkid) =>
+{
+    const motifinput = document.getElementById('motif[' +  checkid + ']');
+    modifymotif(motifinput,checkid);
+}
+            
+const modifymotif = (motif, motifid) =>
+{
+    const checkbox = document.getElementById('cancel[' +  motifid + ']');
+    //alert(checkbox.id);
+    if (checkbox.checked)
+    {
+        motif.disabled = false;
+        //alert ('checked');
+        if (motif.value == '')
+        {
+            motif.style.backgroundColor = '#f5b7b1';
+        }
+        else
+        {
+            motif.style.backgroundColor = '';
+        }
+    }
+    else
+    {
+        motif.disabled = true;
+        //alert ('no checked');
+        motif.style.backgroundColor = '';
+    }
+}
+</script>";
+        
         // $htmltext = "<br>";
         if (count($liste) == 0) {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
@@ -1869,7 +1860,7 @@ class agent
                     if ($premieredemande) {
                         $htmltext = $htmltext . "<table id='tabledemande_" . $this->agentid() . "' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=7 align=center ><font color=#BF3021>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</font></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=7 align=center ><div style='color:#BF3021'>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
 /*
                         $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
@@ -1879,12 +1870,16 @@ class agent
                             $htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
                         $htmltext = $htmltext . "</tr>";
 */                                
-                        $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de début <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Date de fin <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Type de demande <font></font></th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours <font></font></th>";
+                        $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande</th><th class='cellulesimple' style='cursor: pointer;'>Date de début</th><th class='cellulesimple' style='cursor: pointer;'>Date de fin</th><th class='cellulesimple' style='cursor: pointer;'>Type de demande</th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours</th>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
+                        {
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
+                        }
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
+                        {
                             $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé)</th>";
+                        }
                         $htmltext = $htmltext . "</tr>";
                         $htmltext = $htmltext . "</thead>";
                         $htmltext = $htmltext . "<tbody>";
@@ -1901,10 +1896,32 @@ class agent
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
+                        {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
-                        $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] value='yes' /></td>";
+                        }
+                        $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] value='yes' ";
+                        $arraycancel = null;
+                        if (isset($_POST["cancel"]))
+                        {
+                            $arraycancel = $_POST["cancel"];
+                            if (isset($arraycancel[$demande->id()]))
+                            {
+                                $htmltext = $htmltext . " checked='' ";
+                            }
+                        }
+                        $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' /></td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
-                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "'  size=40></td>";
+                        {
+                            $backgroudtext = '';
+                            $disabletext = " disabled ";
+                            if (isset($arraycancel[$demande->id()]))
+                            {
+                                $backgroudtext = " style='background-color : #f5b7b1;' ";
+                                $disabletext = "";
+                            }
+                            
+                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroudtext size=40 oninput='modifymotif(this," . $demande->id() . ");' $disabletext></td>";
+                        }
                         $htmltext = $htmltext . "</tr>";
                     }
                 }
@@ -2000,44 +2017,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     function demandeslistehtmlpourvalidation($debut_interval, $fin_interval, $agentid = null, $structureid = null, $cleelement = null)
     {
         $liste = null;
-        /*
-         * $affectationliste = $this->affectationliste($debut_interval, $fin_interval);
-         * $affectation = new affectation($this->dbconnect);
-         * $declarationTP = new declarationTP($this->dbconnect);
-         * $demande = new demande($this->dbconnect);
-         * if (!is_null($affectationliste))
-         * {
-         * foreach ($affectationliste as $key => $affectation)
-         * {
-         * //echo "<br><br>Affectation (". $affectation->affectationid() .") date debut = " . $affectation->datedebut() . " Date fin = " . $affectation->datefin() . "<br>";
-         * unset($declarationTPliste);
-         * $declarationTPliste = $affectation->declarationTPliste($debut_interval, $fin_interval);
-         * if (!is_null($declarationTPliste))
-         * {
-         * foreach ($declarationTPliste as $key => $declarationTP)
-         * {
-         * //echo "<br>DeclarationTP (" . $declarationTP->declarationTPid() . ") Debut = " . $declarationTP->datedebut() . " Fin = " . $declarationTP->datefin() . "<br>";
-         * //echo "<br>Liste = "; print_r($declarationTP->demandesliste($debut_interval, $fin_interval)); echo "<br>";
-         * //$liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($declarationTP->datedebut(), $declarationTP->datefin()));
-         * $liste = array_merge((array)$liste,(array)$declarationTP->demandesliste($debut_interval, $fin_interval));
-         * }
-         * }
-         * }
-         * }
-         * //echo "####### demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-         * // On enlève les doublons des demandes !!!
-         * $uniquedemandeliste = array();
-         * if (is_array($liste))
-         * {
-         * foreach ($liste as $key => $demande)
-         * {
-         * $uniquedemandeliste[$demande->id()] = $demande;
-         * }
-         * $liste = $uniquedemandeliste;
-         * unset($uniquedemandeliste);
-         * }
-         * //echo "#######demandeliste (Count=" . count($demandeliste) .") = "; print_r($demandeliste); echo "<br>";
-         */
         $liste = $this->demandesliste($debut_interval, $fin_interval);
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
@@ -2069,8 +2048,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     if ($todisplay) {
                         if ($premieredemande) {
                             $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
-                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center ><font color=#BF3021>Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</font></td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Etat de la demande</td><td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td></tr>";
+                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center ><div style='color:#BF3021'>Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
+                            $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Etat de la demande</td><td class='cellulesimple'>Motif (obligatoire si le congé est refusé)</td></tr>";
                             $premieredemande = FALSE;
                         }
                         

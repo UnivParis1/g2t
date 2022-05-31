@@ -212,12 +212,6 @@
         $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
         echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
         
-/*        
-        $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ") !";
-        echo "$errlog<br>";
-        echo "<br><font color=#FF0000>Vous n'êtes pas autorisé à vous connecter à cette application...</font>";
- */       
-        
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         exit();
         
@@ -227,7 +221,7 @@
     if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) {
         if ($realuser->estadministrateur()) // Si un administrateur est connecté
         {
-            echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE !!!</B></U></FONT></CENTER></P><BR>";
+            echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
         }
         else // C'est un utilisateur simple => Affichage de la page de maintenance
         {
@@ -240,7 +234,7 @@
 
     if (($user->agentid() != $realuser->agentid()) and $realuser->estadministrateur())
     {
-        echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : VOUS VOUS ETES SUBSTITUE A UNE AUTRE PERSONNE !!!</B></U></FONT><BR>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER></P><BR>";
+        echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></div>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER><BR>";
     }
     
     $arraystructpartielle = array();
@@ -274,7 +268,7 @@
     } 
     if ($structurepartielle == true)
     {
-        //echo "<P><CENTER><FONT SIZE='5pt' COLOR='#FF0000'><B><U>ATTENTION : Vous avez un accès partiel à l'application G2T !!!</B></U></FONT><BR></CENTER></P><BR>";
+        //echo "<P><CENTER><div style='color:#FF0000'><B><U>ATTENTION : Vous avez un accès partiel à l'application G2T !!!</U></B></div></CENTER></P><BR><BR>";
     }
     
     unset($arraystructpartielle);

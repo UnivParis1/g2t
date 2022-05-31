@@ -121,8 +121,10 @@
                 $msg_erreur = $msg_erreur . $complement->store();
                 // echo "Apres store complement.... <br>";
             }
-            if ($msg_erreur != "") {
-                echo "<p style='color: red'>Agent = $agentid ==> Demande = " . $demande->id() . " : " . $msg_erreur . "</p><br>";
+            if ($msg_erreur != "") 
+            {
+                echo $fonctions->showmessage(fonctions::MSGERROR, "Agent = $agentid ==> Demande = " . $demande->id() . " : " . $msg_erreur);
+                //echo "<p style='color: red'>Agent = $agentid ==> Demande = " . $demande->id() . " : " . $msg_erreur . "</p><br>";
                 error_log(basename(__FILE__) . " " . $msg_erreur);
                 $msg_erreur = "";
             } else {

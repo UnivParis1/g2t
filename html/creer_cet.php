@@ -159,9 +159,11 @@
         echo "<br>";
     }
 
-    if ($msg_erreur != "" or $msg_bloquant != "") {
+    if ($msg_erreur != "" or $msg_bloquant != "") 
+    {
         $display = $msg_bloquant . "  " . $msg_erreur;
-        echo "<p style='color: red'>$display</p>";
+        echo $fonctions->showmessage(fonctions::MSGERROR, $display);
+        //echo "<p style='color: red'>$display</p>";
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($display));
     }
 
@@ -176,7 +178,8 @@
         if ($msg_erreur == "") // Le CET existe déja
         {
             $msg_bloquant = "Le CET de l'agent " . $agent->identitecomplete() . " existe déjà... Impossible d'en créer un nouveau.";
-            echo "<p style='color: red'>" . $msg_bloquant . "</p>";
+            echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_bloquant");
+            //echo "<p style='color: red'>" . $msg_bloquant . "</p>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msg_bloquant));
         } else {
             echo "Date d'ouverture du CET pour l'agent " . $agent->identitecomplete() . " : <input type=text name=date_ouv_cet id=date_ouv_cet size=12 placeholder='JJ/MM/AAAA'>";

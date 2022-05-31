@@ -366,7 +366,6 @@
         {
             $error = "La valeur de la case F est vide ou égale à 0... On ne peut pas sauvegarder la demande d'alimentation.";
             echo $fonctions->showmessage(fonctions::MSGERROR, $error);
-//            echo "<br><br><font color='red'><B>$error</B></font><br>";
         }
         else
         {
@@ -587,7 +586,7 @@
             	}
             	else // Le responsable est g2t cron
             	{
-            		echo "<font color='#EF4001'>Votre responsable n'est pas renseigné, veuillez contacter la DRH.</font><br><br>";
+            		echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre responsable n'est pas renseigné, veuillez contacter la DRH.");
             	}
 	        }
         }
@@ -856,15 +855,13 @@
 	echo "Alimentation du CET pour " . $agent->identitecomplete() . "<br><br>";
 	if ($today < $fonctions->debutalimcet() || $today > $fonctions->finalimcet())
 	{
-		echo "<font color='#EF4001'>La campagne d'alimentation du CET est fermée actuellement. </font><br>";
-		echo "<br>";
+        echo $fonctions->showmessage(fonctions::MSGWARNING, "La campagne d'alimentation du CET est fermée actuellement.");
 	}
 	else 
 	{
 		if (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
 		{
-			echo "<font color='#EF4001'>Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée. </font><br>";
-			echo "<br>";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
 			/*echo "Souhaitez-vous annuler la demande ? <br>";
 			echo "<form name='annuler_alimentation'  method='post' >";
 			echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -875,20 +872,17 @@
 		}
 		elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
 		{
-			echo "<font color='#EF4001'> Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée. </font><br>";
-			echo "<br>";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée.");
 			$hasOption = TRUE;
 		}
 		elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_VALIDE))) != 0)
 		{
-			echo "<font color='#EF4001'>Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année. </font><br>";
-			echo "<br>";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année.");
 			$hasOption = TRUE;
 		}
 		elseif ($hasInterruptionAff && $valeur_a == 0)
 		{
-			echo "<font color='#EF4001'>Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise). </font><br>";
-			echo "<br>";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise).");
 		}
 		else 
 		{
@@ -925,8 +919,7 @@
 			}
 			if ($valeur_c < $nbjoursobli)
 			{
-			    echo "<font color='#EF4001'> Vous n'avez pas posé les $nbjoursobli jours de congés obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET. </font><br>";
-				echo "<br>";
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
 				$nbjoursmax = 0;
 			}
 			else {
@@ -1062,9 +1055,7 @@
 						echo "</form>";
 						if (isset($error_suppr))
 						{
-						    echo "<div style='color: red;font-weight: bold; '>";
-						    echo "$error_suppr";
-						    echo "</div>";
+                            echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
 						}
 						echo "<br>";
 					}
@@ -1080,8 +1071,7 @@
 	}
 	else 
 	{
-		echo "<font color='#EF4001'>Annulation de demande d'alimentation impossible car une demande de droit d'option est en cours ou validée. </font><br>";
-		echo "<br>";
+        echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car une demande de droit d'option est en cours ou validée.");
 	}
 	echo $agent->afficheAlimCetHtml();
 	echo $agent->soldecongeshtml($anneeref + 1);

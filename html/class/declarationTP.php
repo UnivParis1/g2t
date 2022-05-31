@@ -418,7 +418,7 @@ class declarationTP
         if ($this->fonctions->formatdatedb($this->datefin()) >= date("Ymd")) // Si la date de fin est postérieur à aujourd'hui
             $htmltext = $htmltext . $this->datefin();
         else // Si la date est inférieur à aujourd'hui, on modifie la tipographie (couleur, gras....)
-            $htmltext = $htmltext . "<B><FONT COLOR='#FF0000'>" . $this->datefin() . "</FONT></B>";
+            $htmltext = $htmltext . "<B><div style='COLOR:#FF0000'>" . $this->datefin() . "</div></B>";
         $htmltext = $htmltext . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >";
         if ($pourmodif and strcasecmp($this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) {

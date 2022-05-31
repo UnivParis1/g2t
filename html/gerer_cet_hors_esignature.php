@@ -247,8 +247,10 @@
         }
     }
 
-    if ($msg_erreur != "") {
-        echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
+    if ($msg_erreur != "") 
+    {
+        echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_erreur");
+        //echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
         error_log(basename(__FILE__) . " " . $msg_erreur);
         $msg_erreur = "";
     }
@@ -279,14 +281,20 @@
             // echo "Date du début du CET : ". $cet->datedebut() . "<br>";
             // echo "Sur l'année " . ($fonctions->anneeref()-1) . "/" . $fonctions->anneeref() . ", " . $agent->identitecomplete() . " a cumulé " . ($cet->cumulannuel($fonctions->anneeref())) . " jour(s) <br>";
             echo "Le solde du CET de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est de " . (($cet->cumultotal() - $cet->jrspris())) . " jour(s)";
-        } elseif ($msg_erreur_load != "") {
+        } 
+        elseif ($msg_erreur_load != "") 
+        {
             // Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
             $cet = null;
-            echo "<p style='color: red'>" . $msg_erreur . "</p>";
+            echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_erreur");
+            //echo "<p style='color: red'>" . $msg_erreur . "</p>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msg_erreur));
-        } elseif ($msg_bloquant != "") {
+        } 
+        elseif ($msg_bloquant != "") 
+        {
             $errlog = "Impossible de saisir un CET pour cet agent.";
-            echo $errlog . "<br/>";
+            echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+            //echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $errlog);
         }
 

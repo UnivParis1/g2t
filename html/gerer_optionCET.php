@@ -373,7 +373,8 @@
 	                {
 	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
 	                }
-	                echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
+	                echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur (création) = $erreur");
+	                //echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
 	            }
 	            else
 	            {
@@ -384,12 +385,13 @@
             }
             else // Le responsable est g2t cron
             {
-            	echo "<font color='#EF4001'>Votre responsable n'est pas renseigné, veuillez contacter la DRH.</font><br><br>";
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre responsable n'est pas renseigné, veuillez contacter la DRH.");
             }
         }
         else // Il y a une demande d'alim ou d'option en cours
         {
-            echo "Vous avez une demande d'alimentation ou de droit d'option sur CET en cours. Il n'est pas possible d'en avoir plusieurs en même temps.<br><br>";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation ou de droit d'option sur CET en cours. Il n'est pas possible d'en avoir plusieurs en même temps.");
+            //echo "Vous avez une demande d'alimentation ou de droit d'option sur CET en cours. Il n'est pas possible d'en avoir plusieurs en même temps.<br><br>";
         }
     }
     
@@ -854,12 +856,10 @@
             $errorcontroltxt = $errorcontroltxt . "Le solde de CET est insuffisant pour pouvoir exercer un droit d'option.<br>Il n'est donc pas possible d'établir une demande de droit d'option.<br>";
             $controleok = false;
         }
-        
-        // Si on a rencontré une anomalie dans les contrôles => On affiche le message d'alerte
-        echo "<div style='color: red;font-weight: bold; font-size: 20px'>";
-        echo "$errorcontroltxt";
-        echo "</div>";
 
+        // Si on a rencontré une anomalie dans les contrôles => On affiche le message d'alerte
+        echo $fonctions->showmessage(fonctions::MSGERROR, $errorcontroltxt);
+        
         $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_INCONNU));
         if (count($listid)>0)
         {
@@ -885,9 +885,7 @@
             echo "</form>";
             if (isset($error_suppr))
             {
-            	echo "<div style='color: red;font-weight: bold; '>";
-            	echo "$error_suppr";
-            	echo "</div>";
+                echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
             }
         }
                

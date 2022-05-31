@@ -75,23 +75,29 @@
                 if ($demande->statut() == $statut)
                 {
                     // Pas de changement de statut de la demande => On ne sauvegarde rien !!!
-                    $errlog = "Le statut de la demande est inchangé !!!! Donc pas de sauvegarde.";
-                    echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                    $errlog = "Le statut de la demande est inchangé, donc pas de sauvegarde.";
+                    echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+                    //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 }
                 else
                 {
                     $demande->statut($statut);
     //                if (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 and $motif == "") {
-                    if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "") {
-                        $errlog = "Le motif du refus est obligatoire !!!!";
-                        echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                    if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "") 
+                    {
+                        $errlog = "Le motif du refus est obligatoire.";
+                        echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+                        //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     } else {
                         $msgerreur = "";
                         $msgerreur = $demande->store();
                         if ($msgerreur != "")
-                            echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
+                        {
+                            echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de sauvegarde car " . $msgerreur);
+                            //echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
+                        }
                         else {
                             $ics = null;
                             $pdffilename[0] = $demande->pdf($user->agentid());

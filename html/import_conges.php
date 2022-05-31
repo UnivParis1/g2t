@@ -130,17 +130,17 @@
                             $demande->statut($statut);
                             $resultat = $demande->store();
                             if ($resultat == "")
-                                echo "<font color='green'>Ok</font><br>";
+                                echo "<span style='color:green'>Ok</span><br>";
                             else
-                                echo "<font color='red'>Echec (Chgmt statut) => $resultat</font><br>";
+                                echo "<span style='color:red'>Echec (Chgmt statut) => $resultat</span><br>";
                         } else {
-                            echo "<font color='red'>Echec (ligne " . ($index + 1) . ") => $resultat</font><br>";
+                            echo "<span style='color:red'>Echec (ligne " . ($index + 1) . ") => $resultat</span><br>";
                         }
                     } else {
-                        echo "<font color='red'>Erreur(s) détectée(s) dans la ligne " . ($index + 1) . " : $msg_erreur </font><br>";
+                        echo "<span style='color:red'>Erreur(s) détectée(s) dans la ligne " . ($index + 1) . " : $msg_erreur </span><br>";
                     }
                 } else {
-                    echo "<font color='red'>Mauvaise structure dans la ligne " . ($index + 1) . " </font><br>";
+                    echo "<span style='color:red'>Mauvaise structure dans la ligne " . ($index + 1) . " </span><br>";
                 }
             }
         }

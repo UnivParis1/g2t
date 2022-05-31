@@ -292,13 +292,10 @@
     {
         $erreur = $erreur . "<br>La convention de télétravail n'a pas pu être enregistrée.";
         echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
-        
-//        echo "<b><font color='red'><br>$erreur</font></b>";
     }
     if ($info != "")
     {
         echo $fonctions->showmessage(fonctions::MSGINFO, $info);
-//        echo "<b><font color='green'><br>$info</font></b>";
     }
     echo "<br><br>";
 

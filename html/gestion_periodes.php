@@ -130,12 +130,12 @@
                     if ($agentnonconforme)
                     {
                         fwrite($handle,mb_convert_encoding($idagent . ";" . $identite . ";" . "KO" . "\r\n","CP1252"));
-                        echo "<B><font color='red'>KO sur la période du " . $fonctions->formatdate($element['datedebut']) . " au " . $fonctions->formatdate($element['datefin']) . "</font></B><br>";
+                        echo "<B><span style='color:red'>KO sur la période du " . $fonctions->formatdate($element['datedebut']) . " au " . $fonctions->formatdate($element['datefin']) . "</span></B><br>";
                     }
                     else
                     {
                         fwrite($handle,mb_convert_encoding($idagent . ";" . $identite . ";" . "OK". "\r\n","CP1252"));
-                        echo "<B><font color='green'>OK sur la période du " . $fonctions->formatdate($element['datedebut']) . " au " . $fonctions->formatdate($element['datefin']) . "</font></B><br>";
+                        echo "<B><span style='color:green'>OK sur la période du " . $fonctions->formatdate($element['datedebut']) . " au " . $fonctions->formatdate($element['datefin']) . "</span></B><br>";
                     }
                     unset($listeelement);
                     unset($planning);

@@ -123,8 +123,9 @@
             $demande->load($demandeid);
             $demande->motifrefus($motif);
             if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and $motif == "") {
-                $errlog = "Le motif du refus est obligatoire !!!!";
-                echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                $errlog = "Le motif de l'annulation est obligatoire.";
+                echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+                //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } else {
                 $demande->statut(demande::DEMANDE_ANNULE);
@@ -132,7 +133,8 @@
                 $msgerreur = $demande->store();
                 if ($msgerreur != "") {
                     $errlog = "Pas de sauvegarde car " . $msgerreur;
-                    echo "<p style='color: red'>" . $errlog . "</p><br/>";
+                    echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+                    //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 } else {
                     unset($demande);

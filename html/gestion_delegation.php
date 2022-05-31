@@ -118,7 +118,6 @@
                     {
                         $error = "Vous ne pouvez pas saisir le responsable (" . $resp->identitecomplete() . ") de la structure '" . $structure->nomlong() . "' comme délégué.<br>La délégation n'est pas enregistrée.";
                         echo $fonctions->showmessage(fonctions::MSGERROR, $error);
-//                        echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Vous ne pouvez pas saisir le responsable (" . $resp->identitecomplete() . ") de la structure '" . $structure->nomlong() . "' comme délégué.</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                     } else {
                         $datedebutdeleg = "";
                         if (isset($arraydatedebut[$structure->id()]))
@@ -132,7 +131,6 @@
                         {
                             $error = "Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide.<br>La délégation n'est pas enregistrée.";
                             echo $fonctions->showmessage(fonctions::MSGERROR, $error);
-//                            echo "<FONT SIZE='5pt' COLOR='#FF0000'><B>Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide !!!</B><br>La délégation n'est pas enregistrée.</FONT><br>";
                         } else {
                             // echo "On enregistre la delegation.... <br>";
                             $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid);
@@ -235,7 +233,7 @@
             if (!$delegationuser->isG2tUser())
             {
                 $style = " style='background-color : #f5b7b1 ;' ";
-                $extrainfo = "<b><font color = 'red'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</font></b>";
+                $extrainfo = "<b><span style='color:red'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
             }
         }
         echo "' size=40 $style/>$extrainfo";

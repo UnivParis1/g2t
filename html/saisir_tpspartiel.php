@@ -293,8 +293,6 @@
             $errlog = "La déclaration de temps partiel est bien enregistrée.";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
-            
-            //echo "<font color='green'>" . $errlog . "</font><br/><br/>";
         }
     }
 
@@ -356,8 +354,10 @@
             // echo "<b><br>C'est moche => Présentation à revoir !!! </b><br><br>";
 
             echo "<br/>";
-            if ($msg_erreur != "") {
-                echo "<P style='color: red'>" . $msg_erreur . " </P>";
+            if ($msg_erreur != "") 
+            {
+                echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+                //echo "<P style='color: red'>" . $msg_erreur . " </P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $msg_erreur);
             }
             echo "<br/>";
@@ -432,7 +432,7 @@
                         echo "<br>";
                         echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel. <br>";
                         echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
-                        echo "<font color='red'><b>ATTENTION : </font></b>Cette fonction est à utiliser avec prudence. Il convient de vérifier manuellement que la répartion est correcte.<br>";
+                        echo "<b style='color:red'>ATTENTION : </b>Cette fonction est à utiliser avec prudence. Il convient de vérifier manuellement que la répartion est correcte.<br>";
                     }
                     echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP . "'>";
                     echo "<input type='hidden' name='userid' value='" . $userid . "'>";

@@ -180,7 +180,8 @@
 
             if ($msgerreur != "") {
                 $errlog = "Pas de sauvegarde car " . $msgerreur;
-                echo "<p style='color: red'>" . $errlog . "</p><br>";
+                echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+                //echo "<p style='color: red'>" . $errlog . "</p><br>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } else {
                 // Tout s'est bien passé
@@ -299,7 +300,7 @@
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable : " . $struct->responsablesiham()->identitecomplete() . " ";
-                echo "<font size='3'>&nbsp;$sign</font>";
+                echo "<b style='font-size:18px;'>&nbsp;$sign</b>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
                     echo "(Date fermeture : " . $struct->datecloture() . ") ";
@@ -371,7 +372,6 @@
                     $delegue->load($delegueid);
                     $info = "Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg."; 
                     echo $fonctions->showmessage(fonctions::MSGWARNING, $info);
-//                    echo "<FONT SIZE='2pt' COLOR='#FF0000'><B>Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg </B></FONT><br>";
                     echo "</td>";
                     echo "</tr>";
                 }
@@ -418,7 +418,7 @@
                 echo "</tr>";
                 if ($infoagent != "")
                 {
-                    echo "<tr><td><b><font color=' #6c3483 '>$infoagent</font></b></td></tr>";
+                    echo "<tr><td><b><div style='color:#6c3483'>$infoagent</div></b></td></tr>";
                 }
                 echo "<tr><td height=15></td></tr>";
             }

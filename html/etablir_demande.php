@@ -130,7 +130,7 @@
     $masquerboutonvalider = FALSE;
     $msg_erreur = "";
     $erreurCET = '';
-    
+    $disabledbutton = '';
 
     // Récupération de la date de début
     $deb_mataprem = null;
@@ -289,7 +289,6 @@
     require ("includes/menu.php");
     
     //echo "<br>"; print_r($_POST); echo "<br>";
-    
     ?>
     <script type="text/javascript">
     	// fonction pour le click gauche
@@ -394,8 +393,8 @@
             $liste = $periode->load($fonctions->anneeref());
             if (count($liste) > 0)
             {
-                echo "<font color=#FF0000><center>";
-                echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+                echo "<center>";
+                echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;color: #FF0000;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
                 foreach ($liste as $element)
                 {
                     echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
@@ -403,16 +402,8 @@
                 echo "</ul>";
                 echo "Veuillez penser à poser vos congés en conséquence.";
                 echo "</div></center>";
-                echo "</font>";
                 echo "<br><br>";
             }
-
-/*
-            echo "<font color=#FF0000><center>";
-            echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ; text-align: center;background: #E5EAE9;'><b>IMPORTANT : </b>Veuillez noter que l'utilisation des reliquats 2019-2020 a été prolongée exceptionnellement jusqu'au 30 juin 2021, en raison de la crise sanitaire, et non jusqu'au 31 mars 2021.<br></div>";
-            echo "</center></font>";
-            echo "<br>";
-*/
 
             echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
             $solde = new solde($dbcon);
@@ -506,14 +497,6 @@
                 $msg_erreur = "Votre demande n'a pas été enregistrée.<br>" . $msg_erreur;
             }
             echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
-/*            
-            echo "<P style='color: red'><B><FONT SIZE='5pt'>";
-            if ($msg_erreur != "" and isset($_POST["valider"])) {
-                echo "Votre demande n'a pas été enregistrée... <BR>";
-                error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
-            }
-            echo $msg_erreur . " </B></FONT></P>";
-*/
             // echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider <br>";
         } elseif (! $datefausse) {
             
@@ -655,7 +638,6 @@
                 $msgstore = "Votre demande n'a pas été enregistrée.<br>" . $resultat;
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
                 echo $fonctions->showmessage(fonctions::MSGERROR, $msgstore);
-                //echo "<P style='color: red'><B><FONT SIZE='5pt'>" . $msgstore . " </B></FONT></P>";
             }
         }
         $warninginfo  = "ATTENTION : Votre structure n'est pas définie. Vos demandes ne seront pas validées.";
@@ -911,9 +893,29 @@
     <?php
         echo "<br>";
         if (! is_null($responsable)) {
-            echo "Commentaire (obligatoire) : <br>";
+            echo "<B style='color: red'>Commentaire (obligatoire) : </B><br>";
             echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
-            echo "<textarea rows='4' cols='60' name='commentaire'></textarea> <br>";
+            echo "<textarea rows='4' cols='60' name='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
+            if ($commentaire == '')
+            {
+                $disabledbutton = ' disabled ';
+            }
+            echo "<script>";
+            echo "
+const modifycomment = (comment) =>
+{
+    const buttonvalid = document.getElementById('valider');
+    if (comment.value != '')
+    {
+        buttonvalid.disabled = false;
+    }
+    else
+    {
+        buttonvalid.disabled = true;
+    }
+}
+            ";
+            echo "</script>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";
         } elseif (strcasecmp($typedemande, "conges") != 0) {
@@ -932,7 +934,7 @@
         	echo $erreurCET."<br>";
         }
         if (! $masquerboutonvalider)
-            echo "<input type='submit' name='valider' id='valider' value='Soumettre' />";
+            echo "<input type='submit' name='valider' id='valider' value='Soumettre' $disabledbutton />";
         echo "<br><br>";
         ?>
     	</form>

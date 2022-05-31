@@ -74,7 +74,6 @@
     //echo "<br>" . print_r($_POST,true) . "<br>";
 
     echo $fonctions->showmessage(fonctions::MSGERROR, $error);
-    //echo "<B><FONT color='red'>$error</FONT></B>";
     echo "<form name='demandeesignatureid'  method='post' action='affiche_demandeCET.php' >";
     echo "Numéro eSignature à afficher : <br>";    
     echo "<select size='1' name='esignatureid' id='esignatureid'>";
@@ -233,13 +232,13 @@
                 {
                     if ($esignatureuser["signed"])
                     {
-                        echo " <FONT color='green'>";
+                        echo " <span style='color:green'>";
                         $signedstep = true;
                     }
                     echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ")<br>";
                     if ($esignatureuser["signed"])
                     {
-                        echo " </FONT>";
+                        echo " </span>";
                     }
                 }
                 if ($signedstep==false and is_null($nextstep))

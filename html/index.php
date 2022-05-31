@@ -113,14 +113,6 @@
                     $msgerror = $msgerror . "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.<br>";
                     $msgerror = $msgerror . "Votre planning contiendra donc des cases \"Période non déclarée\" lors de son affichage.<br>";
                     echo $fonctions->showmessage(fonctions::MSGWARNING, $msgerror);
-
-/*
-                    echo "<font color=#FF0000>";
-                    echo "<b>ATTENTION : </b>Il existe au moins une affection à temps partiel pour laquelle vous n'avez pas de déclaration validée.<br>";
-                    echo "Vos déclarations de temps partiel doivent obligatoirement être validées afin de pouvoir poser des congés durant la  période correspondante.<br>";
-                    echo "Votre planning contiendra donc des cases \"Période non déclarée\" lors de son affichage.<br>";
-                    echo "</font>";
-*/
                 }
             }
         }
@@ -130,8 +122,8 @@
      $liste = $periode->load($fonctions->anneeref());
      if (count($liste) > 0)
      {
-         echo "<font color=#FF0000><center>";
-         echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+         echo "<center>";
+         echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;color: #FF0000;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
          foreach ($liste as $element)
          {
              echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
@@ -139,7 +131,6 @@
          echo "</ul>";
          echo "Veuillez penser à poser vos congés en conséquence.";
          echo "</div></center>";
-         echo "</font>";
          echo "<br><br>";
      }
     echo $user->soldecongeshtml($fonctions->anneeref());
