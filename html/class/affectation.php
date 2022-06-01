@@ -441,8 +441,8 @@ class affectation
                 foreach ($declarationliste as $key => $declaration) {
                     // Si on est en mode "resp" (responsable de service) on affiche toutes les déclarations de TP
                     // qui sont liés à cette affectation
-                    if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp($mode, "resp") == 0) {
-                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
+                    if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp((string)$mode, "resp") == 0) {
+                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                             if ($premiereligne) {
                                 $htmltext = $htmltext . "Tableau des temps partiels déclarés dans G2T pour " . $agent->identitecomplete() . "<br>";
                                 $htmltext = $htmltext . "<table class='tableausimple'>";
@@ -465,7 +465,7 @@ class affectation
             }
             if ($premiereligne) // Si on a affiché aucune ligne de déclaration de TP
             {
-                if (strcasecmp($mode, "resp") == 0) // Si on est en mode responsable
+                if (strcasecmp((string)$mode, "resp") == 0) // Si on est en mode responsable
                     $htmltext = $htmltext . "<B>" . $agent->identitecomplete() . " n'a aucune déclaration de temps partiel saisie dans G2T.</B><br>";
                 else
                     $htmltext = $htmltext . "<B>" . $agent->identitecomplete() . " n'a aucune déclaration de temps partiel active dans G2T.</B><br>";

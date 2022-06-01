@@ -81,7 +81,7 @@
                     $complement = new complement($dbcon);
                     $complement->load($agent->agentid(), "REPORTACTIF");
                     // Si le complement n'est pas initialisé (NULL ou "") alors on active le report
-                    if (strcasecmp($complement->valeur(), "O") == 0) // or strlen($complement->valeur()) == 0)
+                    if (strcasecmp((string)$complement->valeur(), "O") == 0) // or strlen($complement->valeur()) == 0)
                         $reportactif = true;
                     else
                         $reportactif = FALSE;

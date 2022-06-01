@@ -92,9 +92,9 @@ class planningelement
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->info;
-        } elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) != 0)
+        } elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) != 0)
             $this->info = $info;
-        elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0)
+            elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0)
             $this->info = $this->info . "  " . $info;
         else {
             // echo "PlanningElement->info : Le statut est '" . demande::DEMANDE_ATTENTE . "' ==> On ne modifie pas l'info <br>";

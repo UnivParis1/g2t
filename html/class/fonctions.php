@@ -1559,13 +1559,18 @@ class fonctions
         return $this->prepared_query($sql, $params, $types)->get_result();
     }
 
-    public function time_elapsed($text = "Durée", $appelant, $reset = false)
+    public function time_elapsed($text, $appelant, $reset = false)
     {
         static $last = array();
         $chiffresignificatif = 5;
         $indentation = 20;
         $numcpt = count($last);
         $now = microtime(true);
+        if ($text == '')
+        {
+            $text = "Durée";
+        }
+        
         if ($appelant == '')
         {
             $appelant = 'Appelant inconnu';
