@@ -385,6 +385,7 @@ class planning
                     $fulldatetheorique = array_merge($fulldatetheorique,$teletravail->datetheorique($datedebutdb,$datefindb));
                 }
             }
+            //var_dump($fulldatetheorique);
             foreach ($fulldatetheorique as $arraydate)
             {
                 $element = $this->getelement($arraydate[0], $arraydate[1]);

@@ -256,6 +256,11 @@ class teletravail
         else
         {
             $date = $this->fonctions->formatdatedb($date);
+            // Si la date est en dehors de la période télétravaillée => on retourne false
+            if ($date < $this->fonctions->formatdatedb($this->datedebut()) or $date > $this->fonctions->formatdatedb($this->datefin()))
+            {
+                return false;
+            }
             $numerojour = date("w", strtotime("$date"));
             if ($numerojour == 0)   // Lundi = 1, Mardi = 2, ..... Dimanche = 0
                 $numerojour = 6;
