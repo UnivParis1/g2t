@@ -113,7 +113,7 @@
 }
 
 .celerror {
-	font-size : 18px;
+	font-size : 15px;
 	background-color: #CA433B; /* fond rouge */
 	color : #FFFFFF;			
 }
@@ -124,7 +124,7 @@
 }
 
 .celwarning {
-	font-size : 18px;
+	font-size : 15px;
 	background-color: #E9A33C; /* fond orange */
 	color : #FFFFFF;			
 }
@@ -135,7 +135,7 @@
 }
 
 .celinfo {
-	font-size : 18px;
+	font-size : 15px;
 	background-color: #77A248; /* fond vert */
 	color : #FFFFFF;			
 }
