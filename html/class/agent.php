@@ -1850,6 +1850,7 @@ const modifymotif = (motif, motifid) =>
         if (count($liste) == 0) {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
             $htmltext = "";
+            return $htmltext;
         } else {
             $premieredemande = TRUE;
             foreach ($liste as $key => $demande) 
@@ -1912,15 +1913,15 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' /></td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                         {
-                            $backgroudtext = '';
+                            $backgroundtext = '';
                             $disabletext = " disabled ";
                             if (isset($arraycancel[$demande->id()]))
                             {
-                                $backgroudtext = " style='background-color : #f5b7b1;' ";
+                                $backgroundtext = " style='background-color : #f5b7b1;' ";
                                 $disabletext = "";
                             }
                             
-                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroudtext size=40 oninput='modifymotif(this," . $demande->id() . ");' $disabletext></td>";
+                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroundtext size=40 oninput='modifymotif(this," . $demande->id() . ");' $disabletext></td>";
                         }
                         $htmltext = $htmltext . "</tr>";
                     }
@@ -1997,6 +1998,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 </script>";
             }
         }
+        if ($premieredemande)
+        {
+            $htmltext = '';
+        }
         return $htmltext;
     }
 
@@ -2031,6 +2036,13 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         
         // echo "#######liste (Count=" . count($liste) .") = "; print_r($liste); echo "<br>";
         
+        $statutliste = array();
+        if (isset($_POST["statut"]))
+        {
+           $statutliste = $_POST['statut'];
+        }
+        
+        
         $htmltext = "";
         // $htmltext = "<br>";
         if (count($liste) == 0) {
@@ -2038,7 +2050,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         } else {
             $premieredemande = TRUE;
             foreach ($liste as $key => $demande) {
-                if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0) {
+                if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0) 
+                {
                     $todisplay = true;
                     // On n'affiche pas les demandes du responsable !!!!
                     if ($agentid == $this->agentid) {
@@ -2080,23 +2093,50 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         }
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>";
-                        $htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]'>";
+                        $htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]' id='statut[" . $demande->id() . "]' onchange='demandestatutchange(this," . $demande->id() . ");'>";
                         $htmltext = $htmltext . "         <option ";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0)
+                        if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_VALIDE)
+                        {
                             $htmltext = $htmltext . " selected ";
+                        }
+                        elseif (!isset($statutliste[$demande->id()]) and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0)
+                        {
+                            $htmltext = $htmltext . " selected ";
+                        }
                         $htmltext = $htmltext . " value='" . demande::DEMANDE_VALIDE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_VALIDE) . "</option>";
                         $htmltext = $htmltext . "         <option ";
                         //if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) == 0)
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) == 0 or strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) == 0)
+                        if (isset($statutliste[$demande->id()]) and ($statutliste[$demande->id()] == demande::DEMANDE_REFUSE or $statutliste[$demande->id()] == demande::DEMANDE_ANNULE))
+                        {
                             $htmltext = $htmltext . " selected ";
+                        }
+                        elseif (!isset($statutliste[$demande->id()]) and (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) == 0 or strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) == 0))
+                        {
+                            $htmltext = $htmltext . " selected ";
+                        }
                         $htmltext = $htmltext . " value='" . demande::DEMANDE_REFUSE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_REFUSE) . "</option>";
                         $htmltext = $htmltext . "         <option ";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0)
+                        if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_ATTENTE)
+                        {
                             $htmltext = $htmltext . " selected ";
+                        }
+                        elseif (!isset($statutliste[$demande->id()]) and strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0)
+                        {
+                            $htmltext = $htmltext . " selected ";
+                        }
                         $htmltext = $htmltext . " value='" . demande::DEMANDE_ATTENTE ."'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_ATTENTE) . "</option>";
                         $htmltext = $htmltext . "      <select>";
                         $htmltext = $htmltext . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' size=40 ></td>";
+                        
+                        $backgroundtext = '';
+                        $disabletext = " disabled ";
+                        if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_REFUSE)
+                        {
+                            $backgroundtext = " style='background-color : #f5b7b1;' ";
+                            $disabletext = "";
+                        }
+                        
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' $backgroundtext size=40 oninput='validdemandemotif(this," . $demande->id() . ");' $disabletext></td>";
                         $htmltext = $htmltext . "</tr>";
                     }
                 }

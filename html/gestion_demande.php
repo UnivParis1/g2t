@@ -201,15 +201,21 @@
     // echo "structure->id() = " . $structure->id() . "<br>";
 
     //echo "noresponsableset = $noresponsableset <br> mode = $mode <br>";
+    $displaysubmit = true;
     echo "<form name='frm_gest_demande'  method='post' >";
     if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
         //echo "Pas de responsable.... C'est un agent qui veut gérer ses demandes<br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "agent", null);
         if ($htmltext != "")
+        {
             echo $htmltext;
+        }
         else
+        {
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
+            $displaysubmit = false;
+        }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
     } elseif ($noagentset) {
 
@@ -289,9 +295,14 @@
         //echo "Avant le mode responsable <br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "resp", null);
         if ($htmltext != "")
+        {
             echo $htmltext;
+        }
         else
+        {
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
+            $displaysubmit = false;
+        }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
     }
     else
@@ -302,9 +313,14 @@
         $debut = $fonctions->formatdate(($fonctions->anneeref() - 2) . $fonctions->debutperiode());
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "resp", 'cet');
         if ($htmltext != "")
+        {
             echo $htmltext;
+        }
         else
+        {
             echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</center><br>";
+            $displaysubmit = false;
+        }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
 
     }
@@ -319,8 +335,10 @@
     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-    echo "<input type='submit' value='Soumettre' />";
-
+    if ($displaysubmit)
+    {
+        echo "<input type='submit' value='Soumettre' />";
+    }
     echo "</form>"
 
 ?>

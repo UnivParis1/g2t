@@ -179,6 +179,40 @@
         }
 	};
 
+    var demandestatutchange = function (select, index)
+    {
+    	//alert('Index = ' + index);
+        const motifinput = document.getElementById('motif[' +  index + ']');
+        //alert('Motif id = ' + motifinput.id);
+        validdemandemotif(motifinput,index);
+	}
+	
+	var validdemandemotif = function (motif, index)
+	{
+        const select = document.getElementById('statut[' +  index + ']');
+		//alert ('Select id = ' + select.id);
+    	if (select.value == '<?php echo demande::DEMANDE_REFUSE; ?>')
+    	{
+    		//alert ('Select value = ' + select.value);
+            motif.disabled = false;
+            //alert ('checked');
+            if (motif.value == '')
+            {
+                motif.style.backgroundColor = '#f5b7b1';
+            }
+            else
+            {
+                motif.style.backgroundColor = '';
+            }
+        }
+        else
+        {
+            motif.disabled = true;
+            //alert ('no checked');
+            motif.style.backgroundColor = '';
+        }
+	}
+
 
 </script>
 

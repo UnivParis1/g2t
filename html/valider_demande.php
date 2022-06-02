@@ -51,7 +51,7 @@
         $mode = "resp";
         echo "Le mode n'est pas précisé ==> on met le mode responsable <br>";
     }
-    // echo "_POST = "; print_r($_POST); echo "<br>";
+    
     $statutliste = null;
     $motifliste = null;
     if (isset($_POST['statut'])) {
@@ -60,11 +60,26 @@
     if (isset($_POST['motif'])) {
         $motifliste = $_POST['motif'];
     }
-
-    if (is_array($statutliste) and is_array($motifliste)) {
-        foreach ($statutliste as $demandeid => $statut) {
-            if (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0) {
-                $motif = $motifliste["$demandeid"];
+    
+/*    
+     echo "_POST = "; print_r($_POST); echo "<br>";
+     var_dump($statutliste);
+     var_dump($motifliste);
+*/     
+ 
+    if (is_array($statutliste)) 
+    {
+        foreach ($statutliste as $demandeid => $statut) 
+        {
+            //echo "Le statut est $statut <br>";
+            if (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0) 
+            {
+                //echo "On est après le test statut <br>";
+                $motif = '';
+                if (isset($motifliste["$demandeid"]))
+                {
+                    $motif = $motifliste["$demandeid"];
+                }
                 $demande = new demande($dbcon);
                 // echo "cleelement = $cleelement demandeid = $demandeid <br>";
                 $demande->load($demandeid);

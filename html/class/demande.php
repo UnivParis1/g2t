@@ -333,7 +333,7 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 $this->statut = $statut;
             } else {
                 $errlog = "Le statut actuel est : " . $this->statut . " ===> Impossible de le passer au statut : " . $statut;
-                echo $errlog . "<br/>";
+                //echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
         }
