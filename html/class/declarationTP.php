@@ -36,6 +36,8 @@ class declarationTP
     private $ancienfin = null;
 
     private $anciendebut = null;
+    
+    private $forcee = null;
 
     function __construct($db)
     {
@@ -55,7 +57,7 @@ class declarationTP
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
-            $sql = "SELECT DECLARATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT,AGENTID
+            $sql = "SELECT DECLARATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT,AGENTID,FORCEE
                     FROM DECLARATIONTP
                     WHERE DECLARATIONID=?";
             $params = array($id);
@@ -82,6 +84,11 @@ class declarationTP
             $this->datestatut = "$result[5]";
             $this->statut = "$result[6]";
             $this->agentid = "$result[7]";
+            $this->forcee = "$result[8]";
+            if ($this->forcee == '')
+            {
+                $this->forcee = 'N';
+            }
             //echo "this->agentid = " . $this->agentid . " \n";
         }
     }
@@ -268,6 +275,36 @@ class declarationTP
         }
         return $htmltext;
     }
+    
+    function forcee($forced = null)
+    {
+        if (is_null($forced))
+        {
+            if (!is_null($this->forcee))
+            {
+                return $this->forcee;
+            }
+            else
+            {
+                $errlog = "DeclarationTP->forcee : Le forçage de la déclaration n'est pas défini (NULL) !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+        }
+        else
+        {
+            if (strcasecmp($forced, 'N')==0 or strcasecmp($forced, 'O')==0) //Si c'est O ou N (case insensitive)
+            {
+                $this->forcee = strtoupper($forced);
+            }
+            else
+            {
+                $errlog = "DeclarationTP->forcee : La valeur passée pour le forçage est inconnue => $forced !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+        }
+    }
 
     function enTP($date = null, $moment = null)
     {
@@ -350,6 +387,10 @@ class declarationTP
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog . "<br/>";
         }
+        if (is_null($this->forcee))
+        {
+            $this->forcee = 'N';
+        }
         
         // echo "id est null ==> " . $this->id . "<br>";
         if (is_null($this->declarationid)) {
@@ -359,9 +400,9 @@ class declarationTP
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO DECLARATIONTP (AGENTID,NUMLIGNEQUOTITE,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT) ";
+            $sql = "INSERT INTO DECLARATIONTP (AGENTID,NUMLIGNEQUOTITE,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT,FORCEE) ";
             $sql = $sql . " VALUES ('" . $this->agentid . "','" . $this->numlignequotite . "','" . $this->tabtpspartiel . "',";
-            $sql = $sql . "'" . $this->datedemande . "','" . $this->fonctions->formatdatedb($this->datedebut) . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande . "','" . $this->statut . "')";
+            $sql = $sql . "'" . $this->datedemande . "','" . $this->fonctions->formatdatedb($this->datedebut) . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->datedemande . "','" . $this->statut . "','" . $this->forcee . "')";
             // echo "SQL = $sql <br>";
             $params = array();
             $query = $this->fonctions->prepared_query($sql, $params);

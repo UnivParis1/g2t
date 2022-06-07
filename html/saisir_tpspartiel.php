@@ -169,8 +169,8 @@
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             }
         } else {
-            $errlog = "La fonction 'Pas de contrôle de la quotité' est activée... Aucun contrôle n'est réalisé.";
-            echo $errlog . "<br/>";
+            $errlog = "La fonction 'Pas de contrôle de la quotité' est activée. Aucun contrôle n'est réalisé.";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, $errlog);
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
         }
     }
@@ -281,7 +281,16 @@
         // echo "Avant le initTP <br>";
         $declaration->tabtpspartiel(implode($tabTP));
         $declaration->statut(declarationTP::DECLARATIONTP_ATTENTE);
-
+        if ($nocheckquotite == 'yes') // Si on demande à ne pas vérifier la répartition de la quotité => on force 
+        {
+            $declaration->forcee('O');
+        }
+        else
+        {
+            $declaration->forcee('N');
+        }
+            
+        
 /*
         echo "declaration avant l'enregistrement : ";
         var_dump($declaration);

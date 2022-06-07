@@ -281,9 +281,13 @@
                                 //echo "On va charger la déclarationTP id = $declarationid \n";
                                 $declarationTP->load($declarationid);
                                 echo "L'ancienne quotité (dans le tableau) = " . $declarationTP->tabtptoquotite() . " et la nouvelle = $numquotite \n";
-                                if ($declarationTP->tabtptoquotite() == $numquotite)
+                                if ($declarationTP->tabtptoquotite() == $numquotite or strcasecmp($declarationTP->forcee(),'O')==0)
                                 {
-                                    // La nouvelle quotité est la même que l'ancienne => On ne touche rien
+                                    // La nouvelle quotité est la même que l'ancienne ou la répartition de la quotitié est forcée => On ne touche rien
+                                    if (strcasecmp($declarationTP->forcee(),'O')==0)
+                                    {
+                                        echo "La déclaration de TP est forcée ==> On considère que c'est ok.\n";
+                                    }
                                 }
                                 else 
                                 {
