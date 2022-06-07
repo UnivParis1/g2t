@@ -26,7 +26,8 @@
         
     if (is_null($userid) or ($userid == "")) {
         error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
-        header('Location: index.php');
+        echo "<script>alert('Votre session a expirée.\\nAucune donnée n\'est modifiée.\\nVous allez être redirigé vers l\'accueil de l\'application.'); window.location.replace('index.php');</script>";
+        //header('Location: index.php');
         exit();
     }
         
