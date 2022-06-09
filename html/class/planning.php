@@ -30,6 +30,21 @@ class planning
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
         
+        // Par défaut, un agent ne travaille pas le samedi
+        $travailsamedi = false;
+        if (method_exists($agent,'travailsamedi'))
+        {
+            // Si la méthode existe, alors on regarde quelle est sa valeur
+            $travailsamedi = $agent->travailsamedi();
+        }
+        // Par défaut, un agent ne travaille pas le dimanche
+        $travaildimanche = false;
+        if (method_exists($agent,'travaildimanche'))
+        {
+            // Si la méthode existe, alors on regarde quelle est sa valeur
+            $travaildimanche = $agent->travaildimanche();
+        }
+        
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
         
@@ -139,21 +154,34 @@ class planning
                 // echo "C'est un jour férié = $datetemp <br>";
                 $element->type("ferie");
                 $element->info("jour férié");
-            } elseif ((date("w", strtotime($datetemp)) == 0) or (date("w", strtotime($datetemp)) == 6)) {
+            } 
+            elseif (date("w", strtotime($datetemp)) == 0 and !$travaildimanche)  /* dimanche */
+            {
+                $element->type("WE");
+                $element->info("week-end");
+            }
+            elseif (date("w", strtotime($datetemp)) == 6 and !$travailsamedi) /* Samedi */
+            {
                 $element->type("WE");
                 $element->info("week-end");
             }            // On est dans le cas ou aucune déclaration de TP n'est faite
-            elseif (is_null($declarationTP)) {
+            elseif (is_null($declarationTP)) 
+            {
                 $element->type("nondec");
                 $element->info("Période non déclarée");
             }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) {
+            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) 
+            {
                 $element->type("nondec");
                 $element->info("Période non déclarée");
-            } elseif ($declarationTP->enTP($element->date(), $element->moment())) {
+            } 
+            elseif ($declarationTP->enTP($element->date(), $element->moment())) 
+            {
                 $element->type("tppar");
                 $element->info("Temps partiel");
-            } else {
+            } 
+            else 
+            {
                 // Ici c'est une case blanche vide !! Il ne se passe rien
                 $element->type("");
                 $element->info("");
@@ -166,24 +194,39 @@ class planning
             $element = new planningelement($this->dbconnect);
             $element->date($this->fonctions->formatdate($datetemp));
             $element->moment("a");
-            if (strpos($jrs_feries, ";" . $datetemp . ";")) {
+            if (strpos($jrs_feries, ";" . $datetemp . ";")) 
+            {
                 // echo "C'est un jour férié = $datetemp <br>";
                 $element->type("ferie");
                 $element->info("jour férié");
-            } elseif ((date("w", strtotime($datetemp)) == 0) or (date("w", strtotime($datetemp)) == 6)) {
+            } 
+            elseif (date("w", strtotime($datetemp)) == 0 and !$travaildimanche)   /* dimanche */
+            {
                 $element->type("WE");
                 $element->info("week-end");
-            } elseif (is_null($declarationTP)) {
+            }
+            elseif (date("w", strtotime($datetemp)) == 6 and !$travailsamedi)  /* Samedi */
+            {
+                $element->type("WE");
+                $element->info("week-end");
+            } 
+            elseif (is_null($declarationTP)) 
+            {
                 $element->type("nondec");
                 $element->info("Période non déclarée");
             }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) {
+            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) 
+            {
                 $element->type("nondec");
                 $element->info("Période non déclarée");
-            } elseif ($declarationTP->enTP($element->date(), $element->moment())) {
+            } 
+            elseif ($declarationTP->enTP($element->date(), $element->moment())) 
+            {
                 $element->type("tppar");
                 $element->info("Temps partiel");
-            } else {
+            } 
+            else 
+            {
                 // Ici c'est une case blanche vide !! Il ne se passe rien
                 $element->type("");
                 $element->info("");
@@ -476,6 +519,14 @@ class planning
             // echo "Fin chargement : " . date("d/m/Y H:i:s") . "<br>";
         }
         
+        // On charge toutes les absences dans un tableau
+        $listecateg = $this->fonctions->listecategorieabsence();
+        $listeabs = array();
+        foreach ($listecateg as $keycateg => $nomcateg)
+        {
+            $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
+        }
+        //var_dump($listeabs);
         
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
@@ -489,6 +540,7 @@ class planning
         }
         $htmltext = $htmltext . "</tr>";
         
+        $elementlegende = array();
         foreach ($this->listeelement as $key => $planningelement) {
             $month = date("m", strtotime($this->fonctions->formatdatedb($planningelement->date())));
             
@@ -504,6 +556,27 @@ class planning
                 $currentmonth = $month;
             }
             $htmltext = $htmltext . $planningelement->html($clickable, null, $noiretblanc);
+
+            if (!in_array($planningelement->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+            {
+                if (array_key_exists($planningelement->type(),$listeabs))
+                {
+                    // Si c'est une absence dans la catégorie "télétravail hors convention"
+                    if (strcmp($planningelement->parenttype(),'teletravHC')==0)
+                    {
+                        $elementlegende[$planningelement->parenttype()] = $planningelement->parenttype();
+                    }
+                    else // C'est une absence d'un autre type => Donc de type absence
+                    {
+                        //echo "Le type de l'élément = " . $planningelement->type() . "<br>";
+                        $elementlegende['abs'] = 'abs';
+                    }
+                }
+                else
+                {
+                    $elementlegende[$planningelement->type()] = $planningelement->type();
+                }
+            }
         }
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</table>";
@@ -513,9 +586,11 @@ class planning
         $tempdate = $this->fonctions->formatdatedb($datedebut);
         $tempannee = substr($tempdate, 0, 4);
         
+        //var_dump($elementlegende);
+        
         // echo "Avant affichage legende <br>";
         if ($noiretblanc == false) {
-            $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail);
+            $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail,$elementlegende);
         }
         // echo "Apres affichage legende <br>";
         $htmltext = $htmltext . "<br>";
@@ -708,11 +783,21 @@ class planning
             $pdf->Cell(8, 5, utf8_decode($index), 1, 0, 'C');
         }
         $pdf->Ln(5);
+
+        // On charge toutes les absences dans un tableau
+        $listecateg = $this->fonctions->listecategorieabsence();
+        $listeabs = array();
+        foreach ($listecateg as $keycateg => $nomcateg)
+        {
+            $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
+        }
+        
         
         // echo "Avant le tableau <br>";
         // //boucle sur chaque mois du tableau
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
+        $elementlegende = array();
         foreach ($this->listeelement as $key => $planningelement) {
             // echo "avant le month = <br>";
             $month = date("m", strtotime($this->fonctions->formatdatedb($planningelement->date())));
@@ -738,6 +823,27 @@ class planning
             else
                 $pdf->Cell(4, 5, utf8_decode(""), 'TBL', 0, 'C', 1);
             // echo "Apres les demies-cellules <br>";
+
+            if (!in_array($planningelement->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+            {
+                if (array_key_exists($planningelement->type(),$listeabs))
+                {
+                    // Si c'est une absence dans la catégorie "télétravail hors convention"
+                    if (strcmp($planningelement->parenttype(),'teletravHC')==0)
+                    {
+                        $elementlegende[$planningelement->parenttype()] = $planningelement->parenttype();
+                    }
+                    else // C'est une absence d'un autre type => Donc de type absence
+                    {
+                        //echo "Le type de l'élément = " . $planningelement->type() . "<br>";
+                        $elementlegende['abs'] = 'abs';
+                    }
+                }
+                else
+                {
+                    $elementlegende[$planningelement->type()] = $planningelement->type();
+                }
+            }
         }
         
         // ///MISE EN PLACE DES LEGENDES DU PLANNING
@@ -749,7 +855,7 @@ class planning
         
         // echo "Avant legende <br>";
         $anneeref = date("Y", strtotime($this->fonctions->formatdatedb($datedebut)));
-        $this->fonctions->legendepdf($pdf,$anneeref,$includeteletravail);
+        $this->fonctions->legendepdf($pdf,$anneeref,$includeteletravail,$elementlegende);
         // echo "Apres legende <br>";
         
         $pdf->Ln(8);

@@ -29,6 +29,10 @@ class agent
     private $structureid = null;
 
     private $fonctions = null;
+    
+    private $travailsamedi = null;
+    
+    private $travaildimanche = null;
 
     /**
      *
@@ -310,7 +314,63 @@ class agent
     	} else
     		return $this->structureid;
     }
+    
+    function travailsamedi()
+    {
+        if (is_null($this->travailsamedi))
+        {
+            $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID='TRAVAILSAMEDI'";
+            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
+            // echo "sql = " . $sql . "<br>";
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Agent->travailsamedi (AGENT) : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return FALSE;
+            }
+            if (mysqli_num_rows($query) == 0)
+            {
+                $this->travailsamedi = false;
+            }
+            else
+            {
+                $result = mysqli_fetch_row($query);
+                $this->travailsamedi = (strcasecmp($result[0], "O") == 0);
+            }
+        }
+        return $this->travailsamedi;
+    }
 
+    function travaildimanche()
+    {
+        if (is_null($this->travaildimanche))
+        {
+            $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID='TRAVAILDIMANCHE'";
+            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
+            // echo "sql = " . $sql . "<br>";
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Agent->travaildimanche (AGENT) : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return FALSE;
+            }
+            if (mysqli_num_rows($query) == 0)
+            {
+                $this->travaildimanche = false;
+            }
+            else
+            {
+                $result = mysqli_fetch_row($query);
+                $this->travaildimanche = (strcasecmp($result[0], "O") == 0);
+            }
+        }
+        return $this->travaildimanche;
+    }
+    
     /**
      *
      * @param boolean $includedeleg

@@ -640,6 +640,16 @@ class structure
         if (! is_array($planningservice)) {
             return ""; // Si aucun élément du planning => On retourne vide
         }
+        
+        // On charge toutes les absences dans un tableau
+        $listecateg = $this->fonctions->listecategorieabsence();
+        $listeabs = array();
+        foreach ($listecateg as $keycateg => $nomcateg) 
+        {
+            $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
+        }
+        //var_dump($listeabs); 
+        
         // echo "Apres le chargement du planning du service <br>";
         $htmltext = "";
         $htmltext = $htmltext . "<div id='structplanning'>";
@@ -647,7 +657,8 @@ class structure
         
         $titre_a_ajouter = TRUE;
         $elementlegende = array();
-        foreach ($planningservice as $agentid => $planning) {
+        foreach ($planningservice as $agentid => $planning) 
+        {
             if ($titre_a_ajouter) {
                 $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) . " align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
@@ -684,11 +695,27 @@ class structure
                 // echo "Boucle sur l'element <br>";
                 $htmltext = $htmltext . $element->html(false, null, $noiretblanc, $dbclickable);
                 
-//                if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
-//                {
-//                    $elementlegende[$element->type()] = $element->type();
-//                }
-
+                if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+                {
+                    if (array_key_exists($element->type(),$listeabs))
+                    {
+                        // Si c'est une absence dans la catégorie "télétravail hors convention"
+                        if (strcmp($element->parenttype(),'teletravHC')==0)
+                        {
+                            $elementlegende[$element->parenttype()] = $element->parenttype();
+                        }
+                        else // C'est une absence d'un autre type => Donc de type absence
+                        {
+                            //echo "Le type de l'élément = " . $element->type() . "<br>";
+                            $elementlegende['abs'] = 'abs';
+                        }
+                    }
+                    else
+                    {
+                        $elementlegende[$element->type()] = $element->type();
+                    }
+                }
+                //var_dump($elementlegende);
             }
             // echo "Fin boucle sur les elements <br>";
             $htmltext = $htmltext . "</tr>";
@@ -766,6 +793,17 @@ class structure
         if (! is_array($structfilleliste)) { // Si pas de strcuture fille => On sort
             return "";
         }
+        
+        // On charge toutes les absences dans un tableau
+        $listecateg = $this->fonctions->listecategorieabsence();
+        $listeabs = array();
+        foreach ($listecateg as $keycateg => $nomcateg)
+        {
+            $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
+        }
+        //var_dump($listeabs);
+        
+        
         foreach ($structfilleliste as $structkey => $structure) {
             // Si la structure n'est pas fermée on cherche le responsable
             if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
@@ -779,8 +817,11 @@ class structure
             $htmltext = $htmltext . "<div id='structplanning'>";
             $htmltext = $htmltext . "<table class='tableau'>";
             
+            $elementlegende = array();
             $titre_a_ajouter = TRUE;
-            foreach ($resplist as $agentid => $responsable) {
+            foreach ($resplist as $agentid => $responsable) 
+            {
+                $elementlegende = array();
                 $planning = $responsable->planning($fulldatedebut, $fulldatefin,$includeteletravail)->planning();
                 /*
                  * echo "Planning = ";
@@ -810,9 +851,30 @@ class structure
                 // echo "Avant chargement des elements <br>";
                 $listeelement = $responsable->planning($fulldatedebut, $fulldatefin, $includeteletravail)->planning();
                 // echo "Apres chargement des elements <br>";
-                foreach ($listeelement as $keyelement => $element) {
+                foreach ($listeelement as $keyelement => $element) 
+                {
                     // echo "Boucle sur l'element <br>";
                     $htmltext = $htmltext . $element->html(false, null, false, $dbclickable);
+                    if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+                    {
+                        if (array_key_exists($element->type(),$listeabs))
+                        {
+                            // Si c'est une absence dans la catégorie "télétravail hors convention"
+                            if (strcmp($element->parenttype(),'teletravHC')==0)
+                            {
+                                $elementlegende[$element->parenttype()] = $element->parenttype();
+                            }
+                            else // C'est une absence d'un autre type => Donc de type absence
+                            {
+                                //echo "Le type de l'élément = " . $element->type() . "<br>";
+                                $elementlegende['abs'] = 'abs';
+                            }
+                        }
+                        else
+                        {
+                            $elementlegende[$element->type()] = $element->type();
+                        }
+                    }
                 }
                 // echo "Fin boucle sur les elements <br>";
                 $htmltext = $htmltext . "</tr>";
@@ -827,7 +889,7 @@ class structure
                 // Si on est entre janvier et la fin de période
                 $annee = $annee - 1;
             }
-            $htmltext = $htmltext . $this->fonctions->legendehtml($annee, $includeteletravail);
+            $htmltext = $htmltext . $this->fonctions->legendehtml($annee, $includeteletravail,$elementlegende);
             $htmltext = $htmltext . "<br>";
         }
         return $htmltext;
@@ -1025,12 +1087,22 @@ class structure
             $pdf->SetTextColor(0, 0, 0);
             $pdf->Ln(10);
         }
+
+        // On charge toutes les absences dans un tableau
+        $listecateg = $this->fonctions->listecategorieabsence();
+        $listeabs = array();
+        foreach ($listecateg as $keycateg => $nomcateg)
+        {
+            $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
+        }
         
         // ///création du planning suivant le tableau généré
         // /Création des entetes de colones contenant les 31 jours/////
         $titre_a_ajouter = TRUE;
+        $elementlegende = array();
         foreach ($planningservice as $agentid => $planning) {
-            if ($titre_a_ajouter) {
+            if ($titre_a_ajouter) 
+            {
                 $pdf->SetFont('helvetica', 'B', 8, '', true);
                 $pdf->Cell(60, 5, utf8_decode(""), 1, 0, 'C');
                 for ($index = 1; $index <= count($planningservice[$agentid]->planning()) / 2; $index ++) {
@@ -1055,13 +1127,35 @@ class structure
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";
-            foreach ($listeelement as $keyelement => $element) {
+            foreach ($listeelement as $keyelement => $element) 
+            {
                 list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($element->couleur($noiretblanc));
                 $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
                 if (strcasecmp($element->moment(), "m") != 0)
                     $pdf->Cell(3, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
                 else
                     $pdf->Cell(3, 5, utf8_decode(""), 'TBL', 0, 'C', 1);
+
+                if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+                {
+                    if (array_key_exists($element->type(),$listeabs))
+                    {
+                        // Si c'est une absence dans la catégorie "télétravail hors convention"
+                        if (strcmp($element->parenttype(),'teletravHC')==0)
+                        {
+                            $elementlegende[$element->parenttype()] = $element->parenttype();
+                        }
+                        else // C'est une absence d'un autre type => Donc de type absence
+                        {
+                            //echo "Le type de l'élément = " . $element->type() . "<br>";
+                            $elementlegende['abs'] = 'abs';
+                        }
+                    }
+                    else
+                    {
+                        $elementlegende[$element->type()] = $element->type();
+                    }
+                }
             }
         }
         
@@ -1081,7 +1175,7 @@ class structure
                 // Si on est entre janvier et la fin de période
                 $annee = $annee - 1;
             }
-            $this->fonctions->legendepdf($pdf,$annee,$includeteletravail);
+            $this->fonctions->legendepdf($pdf,$annee,$includeteletravail,$elementlegende);
         }
         // echo "Apres legende <br>";
         

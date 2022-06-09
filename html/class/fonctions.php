@@ -392,7 +392,11 @@ class fonctions
         // Cas particulier de la période 'non déclarée' ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
         if (strcasecmp($typeconge, "nondec") == 0)
             return false;
-        // echo "Fonction->estunconge : typeconge = $typeconge <br>";
+        if (strcasecmp($typeconge, "ferie") == 0)
+            return false;
+        if (strcasecmp($typeconge, "teletrav") == 0)
+            return false;
+                // echo "Fonction->estunconge : typeconge = $typeconge <br>";
         $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
         $params = array($typeconge);
         $query = $this->prepared_select($sql, $params);
@@ -576,6 +580,7 @@ class fonctions
         {
             $sql = $sql . " OR TYPEABSENCEID = 'teletrav' ";
         }
+        $sql = $sql . " OR TYPEABSENCEID = 'teletravHC' ";
  		$sql = $sql . "		ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
  		$params = array($anneeref,($anneeref - 1));
@@ -612,35 +617,58 @@ class fonctions
     {
         $tablegende = $this->legende($anneeref,$includeteletravail);
         $htmltext = "";
-        $htmltext = $htmltext . "<table>";
+        $idlegende = "legendehtml_" . rand(1,10000);
+        $htmltext = $htmltext . "<table id='$idlegende' style='border-collapse : collapse; border-spacing : 0; border-width : 0;'><tbody>";
         $htmltext = $htmltext . "<tr>";
         $index=0;
         foreach ($tablegende as $key => $legende)
         {
             if (count($listelegende)==0 or in_array($key, $listelegende))
             {
-                if (($index % 5) == 0)
+                if (($index % 5) == 0 and $index>0)
                 {
                     $htmltext = $htmltext . "</tr><tr>";
                 }
-                $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . $legende["couleur"] . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>" . $legende["libelle"] . "</td>";
+                $htmltext = $htmltext . "<td class='maincell'><table></tbody><tr><td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black; height:30px; width:12px'  bgcolor=" . $legende["couleur"] . "></td><td style='padding-left:2px'>" . $legende["libelle"] . "</td></tr></tbody></table></td>";
                 $index++;
             }
         }
-/*
-        if (!in_array('nondec', $listelegende))  // Si la légende "nondec" n'est pas déjà dans le tableau on l'ajoute dans la légende
-        {
-            if (($index % 5) == 0)
-            {
-                $htmltext = $htmltext . "</tr><tr>";
-            }
-            $htmltext = $htmltext . "<td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black;'  bgcolor=" . planningelement::COULEUR_NON_DECL . ">&nbsp;&nbsp;&nbsp;</td><td>&nbsp;</td><td align=left>Période non déclarée</td>";
-            $index++;
-        }
-*/
-        $htmltext = $htmltext . "</tr>";
+        $htmltext = $htmltext . "</tr></tbody>";
         $htmltext = $htmltext . "</table>";
-
+        $htmltext = $htmltext . "
+<script>
+    var currentlegende = document.getElementById('" . $idlegende .  "');
+    if (currentlegende) 
+    { 
+        var div = currentlegende.previousSibling;
+        //alert ('Le nom de la balise est : ' + div.tagName);
+        if (div && div.tagName.toLowerCase()==='div')
+        {
+            var tableau = div.firstElementChild;
+            if (tableau && tableau.tagName.toLowerCase()==='table')
+            {
+                var largeur = tableau.offsetWidth;
+                var row = currentlegende.getElementsByTagName('tr');
+                //alert ('row = ' + row.length);
+                if (row && row.length>0)
+                {
+                    var legendemaincell = currentlegende.getElementsByClassName('maincell')
+                    // On regarde combien il y a de cellule dans la 1ere ligne du tableau
+                    var cellcount = row[0].getElementsByClassName('maincell').length;
+                    //alert ('cellcount = ' + cellcount);
+                    var cellwidth = Math.floor(largeur/cellcount);
+                    for (var i = 0 ; i < legendemaincell.length ; i++)
+                    {
+                        legendemaincell[i].width = cellwidth;
+                        //alert('Dans la case ' + i + '  width = ' + cellwidth);
+                    }
+                }
+            }
+        }
+    }
+</script>
+";
+        
         return $htmltext;
     }
 
@@ -650,11 +678,12 @@ class fonctions
      *  anneeref : Année de référence de la légende
      * @return
      */
-    public function legendepdf($pdf, $anneeref, $includeteletravail = FALSE)
+    public function legendepdf($pdf, $anneeref, $includeteletravail = FALSE,$listelegende = array())
     {
         $tablegende = $this->legende($anneeref,$includeteletravail);
         $long_chps = 0;
-        foreach ($tablegende as $key => $legende) {
+        foreach ($tablegende as $key => $legende) 
+        {
             if ($pdf->GetStringWidth($legende["libelle"]) > $long_chps)
                 $long_chps = $pdf->GetStringWidth($legende["libelle"]);
         }
@@ -662,19 +691,22 @@ class fonctions
         $index=0;
         foreach ($tablegende as $key => $legende)
         {
-            if (($index % 5) == 0)
+            if (count($listelegende)==0 or in_array($key, $listelegende))
             {
-                $pdf->Ln(10);
+                if (($index % 5) == 0)
+                {
+                    $pdf->Ln(10);
+                }
+                // $LL_TYPE_CONGE = "$result[LL_TYPE_CONGE]";
+                list ($col_leg1, $col_leg2, $col_leg3) = $this->html2rgb($legende["couleur"]);
+    
+                // $long_chps=strlen($legende["type_conge"])+10;
+                // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
+                $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
+                $pdf->Cell(4, 5, utf8_decode(""), 1, 0, 'C', 1);
+                $pdf->Cell($long_chps, 4, utf8_decode($legende["libelle"]), 0, 0, 'L');
+                $index++;
             }
-            // $LL_TYPE_CONGE = "$result[LL_TYPE_CONGE]";
-            list ($col_leg1, $col_leg2, $col_leg3) = $this->html2rgb($legende["couleur"]);
-
-            // $long_chps=strlen($legende["type_conge"])+10;
-            // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
-            $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
-            $pdf->Cell(4, 5, utf8_decode(""), 1, 0, 'C', 1);
-            $pdf->Cell($long_chps, 4, utf8_decode($legende["libelle"]), 0, 0, 'L');
-            $index++;
         }
     }
 
