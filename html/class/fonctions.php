@@ -618,8 +618,7 @@ class fonctions
         $tablegende = $this->legende($anneeref,$includeteletravail);
         $htmltext = "";
         $idlegende = "legendehtml_" . rand(1,10000);
-        $htmltext = $htmltext . "<table id='$idlegende' style='border-collapse : collapse; border-spacing : 0; border-width : 0;'><tbody>";
-        $htmltext = $htmltext . "<tr>";
+        $htmltext = $htmltext . "<table id='$idlegende' class='legendetableau' ><tbody><tr>";   //  style='height: 12px;'
         $index=0;
         foreach ($tablegende as $key => $legende)
         {
@@ -627,9 +626,11 @@ class fonctions
             {
                 if (($index % 5) == 0 and $index>0)
                 {
-                    $htmltext = $htmltext . "</tr><tr>";
+                    $htmltext = $htmltext . "</tr><tr>";  //  style='height: 12px;'
                 }
-                $htmltext = $htmltext . "<td class='maincell'><table></tbody><tr><td style='cursor:pointer; border-left:1px solid black;border-top:1px solid black;border-right:1px solid black; border-bottom:1px solid black; height:30px; width:12px'  bgcolor=" . $legende["couleur"] . "></td><td style='padding-left:2px'>" . $legende["libelle"] . "</td></tr></tbody></table></td>";
+                $htmltext = $htmltext . "<td class='maincell'><table class='elementlegende'><tbody><tr><td><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span></td><td class='legendetexte' >" . $legende["libelle"] . "</td></tr></tbody></table></td>";
+                //$htmltext = $htmltext . "<td class='maincell'><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span><span class='legendetexte' >" . $legende["libelle"] . "</span></td>";
+                //$htmltext = $htmltext . "<td class='maincell'><div class='legendecouleur' style='background-color:" . $legende["couleur"] . "; float:left;' bgcolor=" . $legende["couleur"] . "></div><div class='legendetexte' style='float:left;'>" . $legende["libelle"] . "</div></td>";
                 $index++;
             }
         }

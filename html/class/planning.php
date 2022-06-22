@@ -595,7 +595,7 @@ class planning
         // echo "Apres affichage legende <br>";
         $htmltext = $htmltext . "<br>";
         
-        $htmltext = $htmltext . "<br>";
+        //$htmltext = $htmltext . "<br>";
         $htmltext = $htmltext . "<form name='userplanningpdf_" . $agentid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
         if ($includeteletravail and !$noiretblanc)
         {

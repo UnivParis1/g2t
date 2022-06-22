@@ -101,7 +101,6 @@
 /*******************************************************/
 /* DEFINITION DES MESSAGES D'ALERTE, WARNING ET INFO   */
 /*******************************************************/
-
 .tabmessage {
 	text-align: center;
 	vertical-align: middle;
@@ -173,6 +172,42 @@
 	background-color: white;
 	margin-left:10px;
 	margin-right:10px;
+}
+
+/*******************************************************/
+/* DEFINITION DES LEGENDES DE PLANNING                 */
+/*******************************************************/
+.legendetableau
+{
+	border-collapse : collapse; 
+	border-spacing : 0; 
+	border-width : 0;
+ 	margin:0;
+ 	padding:0;
+}
+
+.legendecouleur
+{
+	cursor:pointer; 
+	border-left:1px solid black;
+	border-top:1px solid black;
+	border-right:1px solid black; 
+	border-bottom:1px solid black; 
+	height:14px; 
+	width:14px;
+	border-radius: 7px;
+	display:inline-block;
+}
+
+.legendetexte
+{
+	padding-left:6px;	
+	height:12px; 
+}
+
+.elementlegende
+{
+	height:12px; 
 }
 
 /*******************************************************/
