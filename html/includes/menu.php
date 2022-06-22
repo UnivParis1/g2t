@@ -326,7 +326,23 @@
 						<form name='planning' method='post' action="affiche_planning.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form>
-						<a href="javascript:document.planning.submit();">Planning</a>
+						<a href="javascript:document.planning.submit();">Planning de l'agent</a>
+					</li>
+				   <li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
+						<form name='dem_conge' method='post' action="etablir_demande.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="typedemande" value="conges">
+						</form> 
+						<a href="javascript:document.dem_conge.submit();">Saisir une demande de congé</a>
+					</li>
+					<li onclick='document.dem_absence.submit();'>
+						<form name='dem_absence' method='post' action="etablir_demande.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="typedemande" value="absence">
+						</form>
+						<a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence ou de télétravail</a>
 					</li>
 					<li onclick='document.agentannulation.submit();'>
 						<form name='agentannulation' method='post' action="gestion_demande.php">
@@ -335,6 +351,14 @@
 						</form>
 						<a href="javascript:document.agentannulation.submit();">Annulation de demandes</a>
 					</li>				
+					<li onclick='document.agent_tpspartiel.submit();'>
+						<form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+							<input type="hidden" name="mode" value="agent">
+						</form>
+						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
+					</li>
 <?php
     $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
     $structure = new structure($dbcon);
@@ -361,30 +385,6 @@
 <?php
     }
 ?>	
-				   <li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
-						<form name='dem_conge' method='post' action="etablir_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="typedemande" value="conges">
-						</form> 
-						<a href="javascript:document.dem_conge.submit();">Saisir une demande de congé</a>
-					</li>
-					<li onclick='document.dem_absence.submit();'>
-						<form name='dem_absence' method='post' action="etablir_demande.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="typedemande" value="absence">
-						</form>
-						<a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence ou de télétravail</a>
-					</li>
-					<li onclick='document.agent_tpspartiel.submit();'>
-						<form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="mode" value="agent">
-						</form>
-						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
-					</li>
 <?php
     // Si la date limite d'utilisation des reliquats est dépassée on n'affiche pas l'alimentation et le droit d'option sur CET
 	$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
