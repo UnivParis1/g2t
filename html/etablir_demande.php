@@ -579,8 +579,9 @@
                             }
                         }
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
-
-                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                        
+                        // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                        if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) 
                         {
                             $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
@@ -594,6 +595,22 @@
                                 $user->sendmail($gestrh, "Changement de statut d'une demande de congés sur CET", $corpmail);
                             }
                         }
+                        // Si c'est une demande de type télétravail HC raison médical  et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                        elseif (strcasecmp($demande->type(), "telesante") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) 
+                        {
+                            $arrayagentrh = $fonctions->listeprofilrh("2"); // Profil = 2 ==> GESTIONNAIRE RH CONGE
+                            foreach ($arrayagentrh as $gestrh) {
+                                $corpmail = "Une demande d'absence de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".\n";
+                                $corpmail = $corpmail . "\n";
+                                $corpmail = $corpmail . "Détail de la demande :\n";
+                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
+                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
+                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
+                                // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
+                                $user->sendmail($gestrh, "Changement de statut d'une demande de 'Télétravail pour raison de santé'", $corpmail);
+                            }
+                        }
+                        
                     }
                 }
                 else
@@ -797,7 +814,10 @@
                     $nbretype = 0;
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
+                            ///////////////////////////////////////////////////////////////
                             if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet')
+                            // if (false)  // Si on met cette ligne à la place de celle au dessus, la DRH peut poser des congés pour un agent en plus du CET
+                            //////////////////////////////////////////////////////////////
                             {
                                 // On n'affiche pas le solde de congés car on est en mode RH et seul le CET est affiché
                             }

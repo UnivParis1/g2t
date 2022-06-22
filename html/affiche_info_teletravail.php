@@ -30,7 +30,8 @@
         //header('Location: index.php');
         exit();
     }
-    
+
+/*    
     // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
     $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
     if ($CASuserId===false)
@@ -41,6 +42,7 @@
         //        header('Location: index.php');
         exit();
     }
+*/
     
     $user = new agent($dbcon);
     $user->load($userid);
@@ -168,7 +170,7 @@
         /////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////
         echo "<table class='tableausimple' id='table_teletravail'>";
-        echo "<tr><td class='titresimple'>Numéro siham</td><td class='titresimple'>Nom agent</td><td class='titresimple'>Prénom agent</td><td class='titresimple'>Nombre de jours théorique</td><td class='titresimple'>Calcul du montant</td><td class='titresimple'>Montant à payer</td></tr>";
+        echo "<tr><td class='titresimple'>Numéro siham</td><td class='titresimple'>Nom agent</td><td class='titresimple'>Prénom agent</td><td class='titresimple'>Structure</td><td class='titresimple'>Nombre de jours théorique</td><td class='titresimple'>Calcul du montant</td><td class='titresimple'>Montant à payer</td></tr>";
         foreach ((array)$agentlist as $agentid)
         {
             $agent = new agent($dbcon);
@@ -189,8 +191,14 @@
                         $nbjrsteletravail = $nbjrsteletravail + 0.5;
                     }
                 }
+                $agentstruct = new structure($dbcon);
+                $nomstruct = "Non définie";
+                if ($agentstruct->load($agent->structureid()))
+                {
+                    $nomstruct = $agentstruct->nomcourt();
+                }
                 
-                echo "<tr><td class='cellulesimple'>" . $agent->sihamid()  . "</td><td class='cellulesimple'>" . $agent->nom() . "</td><td class='cellulesimple'>" . $agent->prenom() . "</td><td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td><td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " ."</center></td><td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td></tr>";
+                echo "<tr><td class='cellulesimple'>" . $agent->sihamid()  . "</td><td class='cellulesimple'>" . $agent->nom() . "</td><td class='cellulesimple'>" . $agent->prenom() . "</td><td class='cellulesimple'>" . $nomstruct . "</td><td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td><td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " ."</center></td><td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td></tr>";
             }
         }
         echo "</table>";
