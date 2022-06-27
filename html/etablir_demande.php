@@ -239,7 +239,7 @@
         $listetype = null;
     if ((is_null($listetype) or $listetype == "") and ($msg_erreur == "" and ! $datefausse)) {
         // echo "Le type de demande n'est pas initialisé !!! <br>";
-        $errlog = "Le type de demande n'est pas initialisé.";
+        $errlog = "Le type de demande n'est pas défini.";
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
@@ -600,7 +600,7 @@
                         {
                             $arrayagentrh = $fonctions->listeprofilrh("2"); // Profil = 2 ==> GESTIONNAIRE RH CONGE
                             foreach ($arrayagentrh as $gestrh) {
-                                $corpmail = "Une demande d'absence de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".\n";
+                                $corpmail = "Une demande de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".\n";
                                 $corpmail = $corpmail . "\n";
                                 $corpmail = $corpmail . "Détail de la demande :\n";
                                 $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
@@ -634,11 +634,28 @@
                     } else {
                         $msgstore .= $demande->nbrejrsdemande() . " jour vous sera decompté (" . $demande->typelibelle() . ")";
                     }
-                } else {
-                    if (strtoupper($agent->civilite()) == 'MME')
-                        $msgstore .= "Vous serez absente durant " . $demande->nbrejrsdemande() . " jour(s)";
+                } else 
+                {
+                    $parenttype = '';
+                    if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid']))
+                    {
+                        //$errlog = "PlanningElement->parenttype : Le parent pour le type de congé " . $this->typeelement . " est dans le tableau => " . TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'];
+                        //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                        $parenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
+                    }
+                    if (strcasecmp($parenttype,'teletravHC')==0)
+                    {
+                        $absentlibele = 'en télétravail hors convention';
+                    }
+                    elseif (strtoupper($agent->civilite()) == 'MME')
+                    {
+                        $absentlibele = 'absente';
+                    }
                     else
-                        $msgstore .= "Vous serez absent durant " . $demande->nbrejrsdemande() . " jour(s)";
+                    {
+                        $absentlibele = 'absent';
+                    }
+                    $msgstore .= "Vous serez $absentlibele durant " . $demande->nbrejrsdemande() . " jour(s)";
                 }
                 echo $fonctions->showmessage(fonctions::MSGINFO, $msgstore . " sous réserve du respect des règles de gestion.");
 //                echo "<P style='color: green'>" . $msgstore . " sous réserve du respect des règles de gestion.</P>";

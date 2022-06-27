@@ -431,19 +431,24 @@ class fonctions
      */
     public function congesanneeref($typeconge)
     {
+        if ($typeconge=='' or is_null($typeconge))
+        {
+            return "";
+        }
+        
         $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
         $params = array($typeconge);
         $query = $this->prepared_select($sql, $params);
 
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
-            $errlog = "Fonctions->anneeref : " . $erreur;
+            $errlog = "Fonctions->congesanneeref : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
         if (mysqli_num_rows($query) == 0) {
-            $errlog = "Fonctions->anneeref : Le type '" . $typeconge . "' n'est pas défini dans la base.";
-            echo $errlog . "<br/>";
+            $errlog = "Fonctions->congesanneeref : Le type '" . $typeconge . "' n'est pas défini dans la base.";
+            //echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
         $result = mysqli_fetch_row($query);
