@@ -294,7 +294,7 @@ class teletravail
 
          $date = $this->fonctions->formatdatedb($datedebut);
          $datefin = $this->fonctions->formatdatedb($datefin);
-         while ($date<$datefin)
+         while ($date<=$datefin)
          {
              $moment = 'm';
              if ($this->estteletravaille($date,"$moment"))
