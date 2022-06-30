@@ -832,16 +832,26 @@ FROM DEMANDE WHERE DEMANDEID= ?";
         
         //echo "<br>Le statut de la demande est : " . $this->statut . " <br>";
         
+        $disponibilite = 'OPAQUE';
         //if (strcasecmp($this->statut, 'v') == 0) 
         if (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0)
         // La demande est validée
         {
-            $ics_status = 'CONFIRMED';
+            if (strcasecmp($absenceidparent,'teletravHC') == 0)  // Si c'est un télétravail HC => Le statut est FREE
+            {
+                $ics_status = 'FREE';
+                $disponibilite = 'TRANSPARENT';
+            }
+            else
+            {
+                $ics_status = 'CONFIRMED';
+            }
         //} elseif (strcasecmp($this->statut, 'R') == 0) 
         } elseif (strcmp($this->statut, demande::DEMANDE_ANNULE) == 0 or strcmp($this->statut, demande::DEMANDE_REFUSE) == 0) 
         // La demande est refusée ou annulée
         {
             $ics_status = 'CANCELLED';
+            $disponibilite = 'TRANSPARENT';
         //} elseif (strcasecmp($this->statut, 'a') == 0)
         } elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0) 
         // La demande est en attente
@@ -857,7 +867,7 @@ BEGIN:VEVENT
 UID:$cal_uid
 DTSTART:$dtstart
 DTEND:$dtend
-TRANSP:OPAQUE
+TRANSP:$disponibilite
 SEQUENCE:0
 ATTENDEE:
 STATUS:$ics_status
