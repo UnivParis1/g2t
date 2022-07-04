@@ -73,6 +73,20 @@
     {
         $previous = $rh_annee_previous;
     }
+    
+    $show_cet = '';
+    if (isset($_POST["show_cet"]))
+    {
+        if ($_POST["show_cet"]=='yes')
+        {
+            $show_cet = 'yes';
+        }
+        elseif ($_POST["show_cet"]=='no')
+        {
+            $show_cet = 'no';
+        }
+    }
+    
 
     if (isset($_POST["previous"]))
         $previoustxt = $_POST["previous"];
@@ -385,6 +399,7 @@
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
+        echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     } else {
@@ -832,11 +847,15 @@
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
                             ///////////////////////////////////////////////////////////////
-                            if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet')
+                            if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet' and $show_cet == 'yes')
                             // if (false)  // Si on met cette ligne à la place de celle au dessus, la DRH peut poser des congés pour un agent en plus du CET
                             //////////////////////////////////////////////////////////////
                             {
                                 // On n'affiche pas le solde de congés car on est en mode RH et seul le CET est affiché
+                            }
+                            elseif ($rh_mode == 'yes' and $solde->typeabsenceid() == 'cet' and $show_cet == 'no')
+                            {
+                                // On n'affiche pas le solde du CET car on est en mode RH et le CET ne doit pas est affiché
                             }
                             else
                             {
@@ -967,6 +986,7 @@ const modifycomment = (comment) =>
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
+        echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
         if ($erreurCET != '')
         {
         	echo $erreurCET."<br>";
@@ -988,6 +1008,7 @@ const modifycomment = (comment) =>
             for ($index=$rh_annee_previous; $index>=0; $index--)
             {
                 echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE,false);
+                echo $agent->soldecongeshtml($fonctions->anneeref() - $index);
                 echo "<br>";
             }
 
@@ -999,10 +1020,13 @@ const modifycomment = (comment) =>
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("-1days", $timestamp)); // On passe à la veille
             echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE,true,false);
-        } else
+            echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
+        } 
+        else
+        {
             echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode()), TRUE,true, false);
-
-        echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
+            echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
+        }
         echo $agent->affichecommentairecongehtml();
         echo "<br>";
     }

@@ -824,8 +824,20 @@
         							<input type="hidden" name="typedemande" value="conges"> 
         							<input type="hidden" name="previous" value="no">
         							<input type="hidden" name="rh_mode" value="yes">
+        							<input type="hidden" name="show_cet" value="no">
         						</form> 
-        						<a href="javascript:document.rh_conge.submit();">Demande de congés imputés sur le CET</a>
+        						<a href="javascript:document.rh_conge.submit();">Saisir une demande de congés (hors CET)</a>
+        					</li>
+        					<li onclick='document.rh_conge_cet.submit();'>
+        						<form name='rh_conge_cet' method='post' action="etablir_demande.php">
+        							<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+        							<input type="hidden" name="typedemande" value="conges"> 
+        							<input type="hidden" name="previous" value="no">
+        							<input type="hidden" name="rh_mode" value="yes">
+        							<input type="hidden" name="show_cet" value="yes">
+        						</form> 
+        						<a href="javascript:document.rh_conge_cet.submit();">Saisir une demande de congés sur CET</a>
         					</li>
         					<li onclick='document.rh_gest_conge.submit();'>
         						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
