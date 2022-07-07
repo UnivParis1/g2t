@@ -930,8 +930,14 @@ class fonctions
         }
         while ($result = mysqli_fetch_row($query)) {
             $agentrh = new agent($this->dbconnect);
-            if ($agentrh->load("$result[0]")) {
-                $agentarray[$agentrh->agentid()] = $agentrh;
+            if ($agentrh->load("$result[0]")) 
+            {
+                $datecourante = date('d/m/Y');
+                // Un agent sans affectation ne peut pas être agent RH sauf si son id < 0 (<=> utilisateurs spécifiques) (ticket GLPI 131031)
+                if (count((array)$agentrh->affectationliste($datecourante, $datecourante))>0 or $agentrh->agentid()<0)
+                {
+                    $agentarray[$agentrh->agentid()] = $agentrh;
+                }
             }
             unset($agentrh);
         }
