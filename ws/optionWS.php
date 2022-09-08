@@ -149,6 +149,34 @@
                      if (array_key_exists("reason",$_GET))
                      $reason = $_GET["reason"];
                     */
+                     
+                    $curl = curl_init();
+                    $params_string = "";
+                    $opts = [
+                        CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_SSL_VERIFYPEER => false,
+                        CURLOPT_PROXY => ''
+                    ];
+                    curl_setopt_array($curl, $opts);
+                    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    $json = curl_exec($curl);
+                    
+                    $error = curl_error ($curl);
+                    curl_close($curl);
+                    if ($error != "")
+                    {
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
+                    }
+                    //echo "<br>" . print_r($json,true) . "<br>";
+                    
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests en json"));
+                    error_log(basename(__FILE__) . " " . var_export($json,true));
+                    $response3 = json_decode($json, true);
+                    
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests"));
+                    error_log(basename(__FILE__) . " " . var_export($response3,true));
+ 
                     // On appelle le WS eSignature pour récupérer les infos du document
                     $curl = curl_init();
                     $params_string = "";
@@ -192,13 +220,13 @@
 	                        }
 	                        else // Tout semble ok !
 	                        {
-	                            if (isset($response['form_current_status']))
+	                            if (isset($response3["parentSignBook"]["status"]))
 	                            {
-	                               $current_status = $response['form_current_status'];
+	                                $current_status = $response3["parentSignBook"]["status"];
 	                            }
 	                            else
 	                            {
-	                               $current_status = '';
+	                                $current_status = '';
 	                            }
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status'"));
 	                            $optionCET = new optionCET($dbcon);
@@ -318,6 +346,7 @@
 	                                //if ($status == mb_strtolower($optionCET::STATUT_VALIDE, 'UTF-8'))
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" status = $status"));
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" optionCET->statut() = " . $optionCET->statut()));
+
 	                                if (($status == $optionCET::STATUT_VALIDE) and ($optionCET->statut() == $optionCET::STATUT_EN_COURS or $optionCET->statut() == $optionCET::STATUT_PREPARE))
 	                                {
 	                                    $agent = new agent($dbcon);
@@ -376,6 +405,7 @@
 	                                {
 	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $optionCET->agentid()));
 	                                }
+
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour du droit d'option $esignatureid de l'agent " . $optionCET->agentid()));
 	                                $optionCET->statut($status);
 	                                if ($status <> optionCET::STATUT_ABANDONNE)

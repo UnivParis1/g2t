@@ -164,6 +164,34 @@
                     if (array_key_exists("reason",$_GET))
                         $reason = $_GET["reason"];
 */
+                    
+                    $curl = curl_init();
+                    $params_string = "";
+                    $opts = [
+                        CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_SSL_VERIFYPEER => false,
+                        CURLOPT_PROXY => ''
+                    ];
+                    curl_setopt_array($curl, $opts);
+                    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    $json = curl_exec($curl);
+                    
+                    $error = curl_error ($curl);
+                    curl_close($curl);
+                    if ($error != "")
+                    {
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
+                    }
+                    //echo "<br>" . print_r($json,true) . "<br>";
+                    
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests en json"));
+                    error_log(basename(__FILE__) . " " . var_export($json,true));
+                    $response3 = json_decode($json, true);
+                    
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests"));
+                    error_log(basename(__FILE__) . " " . var_export($response3,true));
+                    
                     // On appelle le WS eSignature pour récupérer les infos du document
                     $curl = curl_init();
                     $params_string = "";
@@ -196,9 +224,9 @@
                     {
 	                    if (! isset($response['error']))
 	                    {                    
-	                        if (isset($response['form_current_status']))
+	                        if (isset($response3["parentSignBook"]["status"]))
 	                        {
-	                            $current_status = $response['form_current_status'];
+	                            $current_status = $response3["parentSignBook"]["status"];
 	                        }
 	                        else
 	                        {
@@ -312,6 +340,8 @@
 	                            //if ($status == mb_strtolower($alimentationCET::STATUT_VALIDE, 'UTF-8'))
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" status = $status"));
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" alimentationCET->statut() = " . $alimentationCET->statut()));
+	                            
+	                            
 	                            if (($status == $alimentationCET::STATUT_VALIDE) and ($alimentationCET->statut() == $alimentationCET::STATUT_EN_COURS or $alimentationCET->statut() == $alimentationCET::STATUT_PREPARE))
 	                            {
 	                                $agent = new agent($dbcon);
@@ -365,6 +395,9 @@
 	                            {
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $alimentationCET->agentid()));
 	                            }
+
+	                            
+	                            
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour de la demande d'alimentation du CET $esignatureid de l'agent " . $alimentationCET->agentid()));
 	                            $alimentationCET->statut($status);
 	                            if ($status <> alimentationCET::STATUT_ABANDONNE)
@@ -372,7 +405,6 @@
 	                            	$alimentationCET->motif($reason);
 	                            } 
 	                            $erreur = $alimentationCET->store();
-	        
 	                            if ($erreur != "")
 	                            {
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de l'enregistrement de la demande " . $esignatureid . " => Erreur = " . $erreur));
