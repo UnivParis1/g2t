@@ -230,7 +230,7 @@
 	                            }
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status'"));
 	                            $optionCET = new optionCET($dbcon);
-	                            $validation = $optionCET::STATUT_INCONNU;
+	                            $validation = optionCET::STATUT_INCONNU;
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
 	                            foreach((array)$response as $key => $value)
 	                            {
@@ -240,24 +240,24 @@
 	                                    if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
 	                                    {
 	                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut YES."));
-	                                        $validation = $optionCET::STATUT_VALIDE;
+	                                        $validation = optionCET::STATUT_VALIDE;
 	                                        break;
 	                                    }
 	                                    elseif (strcasecmp($value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
 	                                    {
 	                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut NO."));
-	                                        $validation = $optionCET::STATUT_REFUSE;
+	                                        $validation = optionCET::STATUT_REFUSE;
 	                                        break;
 	                                    }
 	                                    else
 	                                    {
 	                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key est vide."));
-	                                        $validation = $optionCET::STATUT_INCONNU;
+	                                        $validation = optionCET::STATUT_INCONNU;
 	                                    }
 	                                }
 	                            }
 	                             
-	                            if ($validation == $optionCET::STATUT_REFUSE)
+	                            if ($validation == optionCET::STATUT_REFUSE)
 	                            {
 	                                foreach((array)$response as $key => $value)
 	                                {
@@ -279,10 +279,10 @@
 	                                case 'pending' :
 	                                case 'signed' :
 	                                case 'checked' :
-	                                    $status = $optionCET::STATUT_EN_COURS;
+	                                    $status = optionCET::STATUT_EN_COURS;
 	                                    break;
 	                                case 'refused':
-	                                    $status = $optionCET::STATUT_REFUSE;
+	                                    $status = optionCET::STATUT_REFUSE;
 	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
 	                                    // On interroge le WS eSignature /ws/signrequests/{id}
 	                                    $curl = curl_init();
@@ -317,20 +317,20 @@
 	                                case 'exported' :
 	                                case 'archived' :
 	                                case 'cleaned' :
-	                                    if ($validation == $optionCET::STATUT_VALIDE)
-	                                        $status = $optionCET::STATUT_VALIDE;
-	                                    elseif ($validation == $optionCET::STATUT_REFUSE)
-	                                       $status = $optionCET::STATUT_REFUSE;
+	                                    if ($validation == optionCET::STATUT_VALIDE)
+	                                        $status = optionCET::STATUT_VALIDE;
+	                                    elseif ($validation == optionCET::STATUT_REFUSE)
+	                                       $status = optionCET::STATUT_REFUSE;
 	                                    else
-	                                       $status = $optionCET::STATUT_INCONNU;
+	                                       $status = optionCET::STATUT_INCONNU;
 	                                    break;
 	                                case 'deleted' :
 	                                case 'canceled' :
 	                                case '' :
-	                                    $status = $optionCET::STATUT_ABANDONNE;
+	                                    $status = optionCET::STATUT_ABANDONNE;
 	                                    break;
 	                                default :
-	                                    $status = $optionCET::STATUT_INCONNU;
+	                                    $status = optionCET::STATUT_INCONNU;
 	                            }
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Le status du droit d'option $esignatureid est : $status car la validation est : $validation "));
 	                            //$status = mb_strtolower("$status", 'UTF-8');
@@ -343,86 +343,104 @@
 	                            }
 	                            else
 	                            {
-	                                //if ($status == mb_strtolower($optionCET::STATUT_VALIDE, 'UTF-8'))
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" status = $status"));
 	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" optionCET->statut() = " . $optionCET->statut()));
-
-	                                if (($status == $optionCET::STATUT_VALIDE) and ($optionCET->statut() == $optionCET::STATUT_EN_COURS or $optionCET->statut() == $optionCET::STATUT_PREPARE))
-	                                {
-	                                    $agent = new agent($dbcon);
-	                                    $agentid = $optionCET->agentid();
-	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent id =  " . $agentid ));
-	                                    $agent->load($agentid);
-	                                    $cet = new cet($dbcon);
-	                                    $erreur = $cet->load($agentid);
-	                                    if ($erreur <> '')
-	                                    {
-	                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Pas de CET pour cet agent : " . $agent->identitecomplete() ." ! Ce n'est pas possible. "));
-	                                        $result_json = array('status' => 'Error', 'description' => 'Pas de CET pour cet agent :' . $erreur);
-	                                        unset($cet);
-	                                    }
-	                                    else
-	                                    {
-	                                       error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET est avant enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
-	                                       // On ajuste le solde du CET et on marque dans l'historique 
-	                                       // On retranche le nombre de jours pour la RAFP
-	                                       if ($optionCET->valeur_i() > 0)
-	                                       {
-	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent : " . $agent->identitecomplete() ." met " . $optionCET->valeur_i() . " jours en RAFP. "));
-	                                           $cet->jrspris( $cet->jrspris() + $optionCET->valeur_i() ) ;
-	                                           // Ajouter dans la table des commentaires la trace de l'opération
-	                                           $agent->ajoutecommentaireconge('cet',($optionCET->valeur_i()*-1),"Prise en compte au titre de la RAFP");
-	                                       }
-	                                       
-	                                       // On retranche le nombre de jours pour l'indemnisation
-	                                       if ($optionCET->valeur_j() > 0)
-	                                       {
-	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent : " . $agent->identitecomplete() ." met " . $optionCET->valeur_j() . " jours en indemnisation. "));
-	                                           $cet->jrspris( $cet->jrspris() + $optionCET->valeur_j() ) ;
-	                                           // Ajouter dans la table des commentaires la trace de l'opération
-	                                           $agent->ajoutecommentaireconge('cet',($optionCET->valeur_j()*-1),"Prise en compte au titre de l'indemnistation");
-	                                       }
-	                                       
-	                                       // Nombre de jours à conserver dans le CET -- Juste pour info car cela ne modifie pas le solde du CET
-	                                       if ($optionCET->valeur_k() > 0)
-	                                       {
-	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent : " . $agent->identitecomplete() ." conserve " . $optionCET->valeur_k() . " jours dans son CET. "));
-	                                       }
-	                                       
-	                                       error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
-	                                       $cet->store();
-	                                       
-	                                       $erreur = $optionCET->storepdf();
-	                                       if ($erreur != '')
-	                                       {
-	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
-	                                           $result_json = array('status' => 'Error', 'description' => $erreur);
-	                                       }
-	                                                                    
-	                                    }
-	                                }
-	                                else  // Le statut du droit d'option n'est pas validée
-	                                {
-	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $optionCET->agentid()));
-	                                }
-
-	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour du droit d'option $esignatureid de l'agent " . $optionCET->agentid()));
-	                                $optionCET->statut($status);
-	                                if ($status <> optionCET::STATUT_ABANDONNE)
-	                                {
-	                                   $optionCET->motif($reason);
-	                                }
-	                                $erreur = $optionCET->store();
 	                                
-	                                if ($erreur != "")
+	                                // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
+	                                if ($status == $optionCET->statut())
 	                                {
-	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de l'enregistrement du droit d'option " . $esignatureid . " => Erreur = " . $erreur));
-	                                    $result_json = array('status' => 'Error', 'description' => $erreur);
+	                                    $erreur = '';
+	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La demande a déjà un statut $status. On ne fait rien => Pas d'erreur"));
+	                                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+	                                }
+	                                // Ajout d'un contrôle qui interdit de modifier le statut de la demande, les informations de solde si la demande est déjà VALIDE, ABANDONNE ou REFUSE
+	                                elseif ($optionCET->statut() <> optionCET::STATUT_VALIDE
+	                                    and $optionCET->statut() <> optionCET::STATUT_ABANDONNE
+	                                    and $optionCET->statut() <> optionCET::STATUT_REFUSE)
+	                                {
+	                                    if (($status == optionCET::STATUT_VALIDE) and ($optionCET->statut() == optionCET::STATUT_EN_COURS or $optionCET->statut() == optionCET::STATUT_PREPARE))
+    	                                {
+    	                                    $agent = new agent($dbcon);
+    	                                    $agentid = $optionCET->agentid();
+    	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent id =  " . $agentid ));
+    	                                    $agent->load($agentid);
+    	                                    $cet = new cet($dbcon);
+    	                                    $erreur = $cet->load($agentid);
+    	                                    if ($erreur <> '')
+    	                                    {
+    	                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Pas de CET pour cet agent : " . $agent->identitecomplete() ." ! Ce n'est pas possible. "));
+    	                                        $result_json = array('status' => 'Error', 'description' => 'Pas de CET pour cet agent :' . $erreur);
+    	                                        unset($cet);
+    	                                    }
+    	                                    else
+    	                                    {
+    	                                       error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET est avant enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
+    	                                       // On ajuste le solde du CET et on marque dans l'historique 
+    	                                       // On retranche le nombre de jours pour la RAFP
+    	                                       if ($optionCET->valeur_i() > 0)
+    	                                       {
+    	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent : " . $agent->identitecomplete() ." met " . $optionCET->valeur_i() . " jours en RAFP. "));
+    	                                           $cet->jrspris( $cet->jrspris() + $optionCET->valeur_i() ) ;
+    	                                           // Ajouter dans la table des commentaires la trace de l'opération
+    	                                           $agent->ajoutecommentaireconge('cet',($optionCET->valeur_i()*-1),"Prise en compte au titre de la RAFP");
+    	                                       }
+    	                                       
+    	                                       // On retranche le nombre de jours pour l'indemnisation
+    	                                       if ($optionCET->valeur_j() > 0)
+    	                                       {
+    	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent : " . $agent->identitecomplete() ." met " . $optionCET->valeur_j() . " jours en indemnisation. "));
+    	                                           $cet->jrspris( $cet->jrspris() + $optionCET->valeur_j() ) ;
+    	                                           // Ajouter dans la table des commentaires la trace de l'opération
+    	                                           $agent->ajoutecommentaireconge('cet',($optionCET->valeur_j()*-1),"Prise en compte au titre de l'indemnistation");
+    	                                       }
+    	                                       
+    	                                       // Nombre de jours à conserver dans le CET -- Juste pour info car cela ne modifie pas le solde du CET
+    	                                       if ($optionCET->valeur_k() > 0)
+    	                                       {
+    	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" L'agent : " . $agent->identitecomplete() ." conserve " . $optionCET->valeur_k() . " jours dans son CET. "));
+    	                                       }
+    	                                       
+    	                                       error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde du CET sera après enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
+    	                                       $cet->store();
+    	                                       
+    	                                       $erreur = $optionCET->storepdf();
+    	                                       if ($erreur != '')
+    	                                       {
+    	                                           error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
+    	                                           $result_json = array('status' => 'Error', 'description' => $erreur);
+    	                                       }
+    	                                                                    
+    	                                    }
+    	                                }
+    	                                else  // Le statut du droit d'option n'est pas validée
+    	                                {
+    	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $optionCET->agentid()));
+    	                                }
+    
+    	                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Mise à jour du droit d'option $esignatureid de l'agent " . $optionCET->agentid()));
+    	                                $optionCET->statut($status);
+    	                                if ($status <> optionCET::STATUT_ABANDONNE)
+    	                                {
+    	                                   $optionCET->motif($reason);
+    	                                }
+    	                                $erreur = $optionCET->store();
+    	                                
+    	                                if ($erreur != "")
+    	                                {
+    	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de l'enregistrement du droit d'option " . $esignatureid . " => Erreur = " . $erreur));
+    	                                    $result_json = array('status' => 'Error', 'description' => $erreur);
+    	                                }
+    	                                else
+    	                                {
+    	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Traitement OK du droit d'option " . $esignatureid . " => Pas d'erreur"));
+    	                                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+    	                                }
 	                                }
 	                                else
 	                                {
-	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Traitement OK du droit d'option " . $esignatureid . " => Pas d'erreur"));
-	                                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+	                                    $erreur = "Incohérence lors de la modification du statut de la demande : La demande est " . $optionCET->statut() . " et on veut la passer $status";
+	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
+	                                    $result_json = array('status' => 'Error', 'description' => $erreur);
 	                                }
 	                            }
 	                        }
