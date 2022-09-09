@@ -66,6 +66,12 @@
             $error = "Impossible de déterminer si c'est une option ou une alimentation.<br><br>";
         }
     }
+    
+    $anneecampagne = $fonctions->anneeref();
+    if (isset($_POST["anneecampagne"]))
+    {
+        $anneecampagne = $_POST["anneecampagne"];
+    }
         
     $user = new agent($dbcon);
     $user->load($userid);
@@ -76,11 +82,27 @@
 
     echo $fonctions->showmessage(fonctions::MSGERROR, $error);
     echo "<form name='demandeesignatureid'  method='post' action='affiche_demandeCET.php' >";
+    echo "Période de la campagne CET : <br>";
+    $anneeref = $fonctions->anneeref();
+    echo "<select size='1' name='anneecampagne' id='anneecampagne'>";
+    for ($annee = $anneeref-3 ; $annee <= $anneeref ; $annee++ )
+    {
+        echo "<option value='" . $annee . "' ";
+        if ($anneecampagne == $annee)
+        {
+            echo " selected='selected' ";
+        }
+        echo ">" . $annee . "/" . ($annee+1) . "</option>";
+    }
+    echo "</select>";
+    echo "<br>";
+    
+    
     echo "Numéro eSignature à afficher : <br>";    
     echo "<select size='1' name='esignatureid' id='esignatureid'>";
     echo "<optgroup label='Demandes d&apos;alimentation'>";
 //    echo "<option value='Demande alimentation' disabled>Demande d'alimentation</option>";
-    $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));
+    $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($anneecampagne-1,2,2));
     //echo "On a récup <br>";
     foreach ($alimCETliste as $alimid)
     {
@@ -97,7 +119,7 @@
         $demandeur->load($alimCET->agentid());
         echo ">" . $alimCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $alimCET->statut()  . ")</option>";
     }
-    $optionCETliste = $fonctions->get_optionCET_liste($fonctions->anneeref());
+    $optionCETliste = $fonctions->get_optionCET_liste($anneecampagne);
     echo "<optgroup label='Demandes d&apos;option'>";
 //    echo "<option value='Demande option' disabled>Demande d'option</option>";
     foreach ($optionCETliste as $optionid)
