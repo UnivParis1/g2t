@@ -359,6 +359,13 @@
 						</form>
 						<a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
 					</li>
+					<li onclick='document.agent_gest_teletravail.submit();'>
+						<form name='agent_gest_teletravail' method='post' action="gestion_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="">
+						</form>
+						<a href="javascript:document.agent_gest_teletravail.submit();">Affichage des conventions de télétravail</a>
+					</li>
 <?php
     $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
     $structure = new structure($dbcon);
@@ -745,6 +752,7 @@
 					<li onclick='document.rh_gest_teletravail.submit();'>
 						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="gestrh">
 						</form>
 						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>

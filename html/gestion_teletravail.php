@@ -35,25 +35,37 @@
     $user = new agent($dbcon);
     $user->load($userid);
     
-    if (isset($_POST["agentid"]))
+    $mode='';
+    if (isset($_POST["mode"]))
     {
-        $agentid = $_POST["agentid"];
-        if (! is_numeric($agentid)) {
-            $agentid = $fonctions->useridfromCAS($agentid);
-            if ($agentid === false)
-            {
+       $mode = $_POST["mode"];
+    }
+    
+    if ($mode=='')
+    {
+        $agentid = $userid;
+    }
+    elseif ($mode=='gestrh')
+    {
+        if (isset($_POST["agentid"]))
+        {
+            $agentid = $_POST["agentid"];
+            if (! is_numeric($agentid)) {
+                $agentid = $fonctions->useridfromCAS($agentid);
+                if ($agentid === false)
+                {
+                    $agentid = null;
+                }
+            }
+            
+            if (! is_numeric($agentid)) {
                 $agentid = null;
+                $agent = null;
             }
         }
-        
-        if (! is_numeric($agentid)) {
+        else
             $agentid = null;
-            $agent = null;
-        }
     }
-    else
-        $agentid = null;
-        
         
     require ("includes/menu.php");
     
@@ -320,6 +332,7 @@
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     }
@@ -336,9 +349,12 @@
                       <td class='titresimple'>Date début</td>
                       <td class='titresimple'>Date fin</td>
                       <td class='titresimple' id ='convstatut'>Statut</td>
-                      <td class='titresimple'>Répartition du télétravail</td>
-                      <td class='titresimple'>Annuler</td>
-                  </center></tr>";
+                      <td class='titresimple'>Répartition du télétravail</td>";
+    	    if ($mode=='gestrh')
+    	    {
+                echo "<td class='titresimple'>Annuler</td>";
+    	    }
+            echo "</center></tr>";
     	    foreach($teletravailliste as $teletravailid)
     	    {
     	        $teletravail = new teletravail($dbcon);
@@ -374,7 +390,7 @@
     </script>
 <?php     	        
     	        echo "    <td class='cellulesimple'><center>";
-    	        if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+    	        if ($teletravail->statut() == teletravail::STATUT_ACTIVE and $mode=='gestrh')
     	        {
 ?>
         <input class="calendrier" type=text
@@ -391,7 +407,7 @@
     	        }
     	        echo "</center></td>";
     	        echo "    <td class='cellulesimple'><center>";
-    	        if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+    	        if ($teletravail->statut() == teletravail::STATUT_ACTIVE and $mode=='gestrh')
     	        {
 ?>
         <input class="calendrier" type=text
@@ -443,13 +459,20 @@
     	        }
     	        echo substr($htmltext, 0, strlen($htmltext)-2);
     	        echo "    </center></td>";
-                echo "    <td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid()  .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' " . (($teletravail->statut() == teletravail::STATUT_INACTIVE) ? "disabled='disabled' ":" ") . ">" . "</center></td>
-                      </tr>";
+    	        if ($mode=='gestrh')
+    	        {
+    	            echo "    <td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid()  .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' " . (($teletravail->statut() == teletravail::STATUT_INACTIVE or $mode == '') ? "disabled='disabled' ":" ") . ">" . "</center></td>";
+    	        }
+                echo "</tr>";
     	    }
             echo "</table>";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
-    	    echo "<input type='submit' value='Soumettre' name='modification'/>";
+    	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
+    	    if ($mode == 'gestrh')
+    	    {
+    	       echo "<input type='submit' value='Soumettre' name='modification'/>";
+    	    }
     	    echo "</form>";
             echo "<br>";
             echo "<input type='checkbox' id='hide' name='hide' onclick='hide_inactive();'>Masquer les conventions inactives</input><br>";
@@ -488,7 +511,13 @@
 		}
 		//document.getElementById('hide').click();
 	</script>
-<?php 
+<?php
+            echo "<br>";
+            echo "<b><u>Explications complémentaires :</u></b>";
+            echo "<ul>";
+            echo "<li>Une convention <b>active</b> sera affichée dans le planning et sera prise en compte dans le calcul de l'indemnité télétravail, durant toute la durée de sa validité (date de début / date de fin).</li>";
+            echo "<li>Une convention <b>inactive</b> est une convention qui est totalement annulée. Elle ne sera donc pas prise en compte dans le planning ou dans le calcul de l'indemnité télétravail quelles que soient ses dates de validité (date de début / date de fin).</li>";
+            echo "</ul><br>";
     	}
     	else
     	{
@@ -522,51 +551,55 @@
     </script>
 <?php
     	echo "<br><br>";
-    	echo "Création d'une nouvelle convention de télétravail pour : " . $agent->identitecomplete()  . " <br>";
-    	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' >";
-    	echo "Date de début de la convention télétravail : ";
-    	if ($fonctions->verifiedate($datedebutteletravail)) {
-    	    $datefindeleg = $fonctions->formatdate($datedebutteletravail);
+    	if ($mode == 'gestrh')
+    	{
+        	echo "Création d'une nouvelle convention de télétravail pour : " . $agent->identitecomplete()  . " <br>";
+        	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' >";
+        	echo "Date de début de la convention télétravail : ";
+        	if ($fonctions->verifiedate($datedebutteletravail)) {
+        	    $datefindeleg = $fonctions->formatdate($datedebutteletravail);
+        	}
+    ?>
+            <input class="calendrier" type=text
+            	name=<?php echo $calendrierid_deb . '[' . $agent->agentid() . ']'?>
+            	id=<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?> size=10
+            	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
+            	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
+            	value='<?php echo $datedebutteletravail ?>'>
+    <?php
+        	echo "<br>";
+        	echo "Date de fin de la convention télétravail : ";
+            if ($fonctions->verifiedate($datefinteletravail)) {
+                $datefinteletravail = $fonctions->formatdate($datefinteletravail);
+            }      
+    ?>
+            <input class="calendrier" type=text
+            	name=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
+            	id=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
+            	size=10
+            	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
+            	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+4 . $fonctions->finperiode()); ?>'
+            	value='<?php echo $datefinteletravail ?>'>
+    <?php
+    
+        	echo "<br>";
+        	echo "Jours de télétravail : ";
+        	echo "<table class='tableausimple'>";
+    	    echo "<tr><center>
+                      <td class='cellulesimple'><input type='checkbox' value='1' id='creation_1' name='jours[]'>Lundi</input></td>
+                      <td class='cellulesimple'><input type='checkbox' value='2' id='creation_2' name='jours[]'>Mardi</input></td>
+                      <td class='cellulesimple'><input type='checkbox' value='3' id='creation_3' name='jours[]'>Mercredi</input></td>
+                      <td class='cellulesimple'><input type='checkbox' value='4' id='creation_4' name='jours[]'>Jeudi</input></td>
+                      <td class='cellulesimple'><input type='checkbox' value='5' id='creation_5' name='jours[]'>Vendredi</input></td>
+                  </center></tr>";
+            echo "</table>";
+    	    echo "<br>";
+    	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
+    	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
+    	    echo "<input type='submit' value='Soumettre'  name='creation'/>";
+    	    echo "</form>";
     	}
-?>
-        <input class="calendrier" type=text
-        	name=<?php echo $calendrierid_deb . '[' . $agent->agentid() . ']'?>
-        	id=<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?> size=10
-        	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
-        	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
-        	value='<?php echo $datedebutteletravail ?>'>
-<?php
-    	echo "<br>";
-    	echo "Date de fin de la convention télétravail : ";
-        if ($fonctions->verifiedate($datefinteletravail)) {
-            $datefinteletravail = $fonctions->formatdate($datefinteletravail);
-        }      
-?>
-        <input class="calendrier" type=text
-        	name=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
-        	id=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
-        	size=10
-        	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
-        	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+4 . $fonctions->finperiode()); ?>'
-        	value='<?php echo $datefinteletravail ?>'>
-<?php
-
-    	echo "<br>";
-    	echo "Jours de télétravail : ";
-    	echo "<table class='tableausimple'>";
-	    echo "<tr><center>
-                  <td class='cellulesimple'><input type='checkbox' value='1' id='creation_1' name='jours[]'>Lundi</input></td>
-                  <td class='cellulesimple'><input type='checkbox' value='2' id='creation_2' name='jours[]'>Mardi</input></td>
-                  <td class='cellulesimple'><input type='checkbox' value='3' id='creation_3' name='jours[]'>Mercredi</input></td>
-                  <td class='cellulesimple'><input type='checkbox' value='4' id='creation_4' name='jours[]'>Jeudi</input></td>
-                  <td class='cellulesimple'><input type='checkbox' value='5' id='creation_5' name='jours[]'>Vendredi</input></td>
-              </center></tr>";
-        echo "</table>";
-	    echo "<br>";
-	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
-	    echo "<input type='submit' value='Soumettre'  name='creation'/>";
-	    echo "</form>";
     }
     
 
