@@ -93,7 +93,14 @@ class periodeobligatoire
             $valeur = $valeur . $periode["datedebut"] . '-' . $periode["datefin"] . '|';
         }
         // Si on est en train de créer cette période <=> soit on ne l'a pas trouvé lors du chargement précédent
-        $constname  = "PERIODE_" . $anneeref;
+        if (!is_null($this->anneeref))
+        {
+            $constname  = "PERIODE_" . $this->anneeref;
+        }
+        else
+        {
+            $constname  = "PERIODE_" . $anneeref;
+        }
         if ($this->pastrouve)
         {
             //echo "PeriodeObligatoire->Store : Pas trouve <br>";
