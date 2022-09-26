@@ -373,7 +373,27 @@
     }
     // echo "Structure liste = "; print_r($structliste); echo "<br>";
     foreach ($structliste as $key => $structure) {
-        if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n'))) {
+        
+        $responsableliste = array();
+        // On ajoute les responsables de structures filles
+        if ($mode == 'resp')
+        {
+            $structurefilleliste = $structure->structurefille();
+            if (is_array($structurefilleliste)) {
+                foreach ($structurefilleliste as $key => $structurefille) {
+                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
+                        $respstructfille = $structurefille->responsable();
+                        if ($respstructfille->agentid() != '-1') {
+                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                            $responsableliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                            // /$responsableliste[$responsable->agentid()] = $responsable;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n')) or count($responsableliste)>0) {
             if ($mode == 'resp')
                 echo $structure->dossierhtml(($action == 'modif'), $userid);
             else
