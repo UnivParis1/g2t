@@ -871,12 +871,12 @@
 			echo "</form>";*/
 			
 		}
-		elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
+		elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
 		{
             echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée.");
 			$hasOption = TRUE;
 		}
-		elseif (sizeof($agent->getDemandesOption('', array($optionCET::STATUT_VALIDE))) != 0)
+		elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_VALIDE))) != 0)
 		{
             echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année.");
 			$hasOption = TRUE;
@@ -1034,7 +1034,7 @@
 				{
 					//$agent->afficheAlimCetHtmlPourSuppr('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE), $mode, $userid);
 					$alimcet = new alimentationCET($dbcon);
-					$listid = $agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE));
+					$listid = $agent->getDemandesAlim("ann" . substr(($fonctions->anneeref()-1),2,2), array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_VALIDE));
 					$htmltext = '';
 					if (sizeof($listid) != 0)
 					{
@@ -1045,8 +1045,12 @@
 						echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
 						foreach ($listid as $id)
 						{
-							$alimcet->load($id);
-							echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+    				        $alimcet->load($id);
+//    				        echo "alimcet->typeconges() => " . $alimcet->typeconges() . "  AnneeRef = " . substr($fonctions->anneeref(),2,2) . "<br>";
+//    				        if ($alimcet->typeconges() == "ann" . substr(($fonctions->anneeref()-1),2,2))
+//				            {
+    				            echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+//                          }
 						}
 						
 						echo "</select>";

@@ -983,7 +983,7 @@
             echo "</form>";
         }
         echo "<br><br>";
-        echo $agent->afficheOptionCetHtml($fonctions->anneeref());
+        echo $agent->afficheOptionCetHtml(); //$fonctions->anneeref());
         
         
         echo "<br>";
