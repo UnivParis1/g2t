@@ -423,7 +423,8 @@
                         // Si la date de cloture dans G2T est postérieure à la date du jour, alors on met la date de la veille en cloture
                         if ($fonctions->formatdatedb($date_cloture_g2t) >= date("Ymd")) {
                             echo "Mise a jour de la date de cloture d'une structure pour la rendre inactive : $nom_long_struct (Id = $code_struct) \n";
-                            $date_veille = strftime("%Y-%m-%d", mktime(0, 0, 0, date('m'), date('d') - 1, date('y')));
+                            //$date_veille = strftime("%Y-%m-%d", mktime(0, 0, 0, date('m'), date('d') - 1, date('y')));
+                            $date_veille = date("Y-m-d", mktime(0, 0, 0, date('m'), date('d') - 1, date('y')));
                             echo "Date de la veille = " . $fonctions->formatdatedb($date_veille) . " \n";
                             $sql = "UPDATE STRUCTURE SET DATECLOTURE='" . $fonctions->formatdatedb($date_veille) . "'  WHERE STRUCTUREID = '$code_struct'";
                             mysqli_query($dbcon, $sql);

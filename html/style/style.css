@@ -486,6 +486,7 @@ LI.plus::after {
 /*	cursor:pointer; */
 }
 
+
 #planning TR.ligneplanning TD {
    color: black;
    BORDER-RIGHT: black 1px solid; 
@@ -635,6 +636,13 @@ LI.plus::after {
    border-bottom:1px solid black; 
    padding-right: 1px; 
    padding-left: 1px;
+}
+
+#structplanning TR.ligneplanning:hover td {
+   /* BORDER-RIGHT: red 1px solid !important; */
+   /* BORDER-LEFT: red 1px solid !important; */
+   BORDER-TOP: #00ff00 2px solid; /* !important; /* #b1f5b9 */
+   BORDER-BOTTOM: #00ff00 2px solid; /* !important;  /* #b1f5b9 */
 }
 
 .rayureplanning {

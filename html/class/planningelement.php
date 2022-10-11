@@ -274,6 +274,11 @@ class planningelement
     function html($clickable = FALSE, $checkboxname = null, $noiretblanc = false, $dbclickable = FALSE)
     {
         $htmltext = "";
+        $datetext = "";
+        if (!is_null($this->date) or strlen($this->date)>6)
+        {
+            $datetext = $this->fonctions->nomjour($this->date) . " " . $this->fonctions->formatdate($this->date) . " : ";
+        }
         // $htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" ></td>";
         
         /*
@@ -377,10 +382,9 @@ class planningelement
             if (strlen($this->info()) != 0 and strcasecmp($this->parenttype(),'teletravHC')==0 and $noiretblanc) 
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
                 $spanactive = true;
             }
-            
             
             if (strlen($this->info()) != 0 
                 and $noiretblanc == false 
@@ -389,13 +393,21 @@ class planningelement
                    )
                ) 
             {
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) . ">";
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
+
+            if ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
+            {
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
+                $spanactive = true;
+            }
+            
             if (strlen($checkboxtext) != 0)
                 $htmltext = $htmltext . $checkboxtext;
             else
                 $htmltext = $htmltext . "&nbsp;";
+            
             if ($spanactive) 
             {
                 $htmltext = $htmltext . "</span>";
@@ -431,7 +443,7 @@ class planningelement
             if (strlen($this->info()) != 0 and strcasecmp($this->parenttype(),'teletravHC')==0 and $noiretblanc)
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
                 $spanactive = true;
             }
             
@@ -442,9 +454,16 @@ class planningelement
                     )
                 )
             {
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $this->info() . chr(34) . ">";
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
+            
+            if ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
+            {
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
+                $spanactive = true;
+            }
+            
             if (strlen($checkboxtext) != 0)
                 $htmltext = $htmltext . $checkboxtext;
             else

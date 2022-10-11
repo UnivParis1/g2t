@@ -141,9 +141,51 @@ class fonctions
     {
         if (is_null($date))
             $date = date("d/m/Y");
-        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
-        $monthname = strftime("%B", strtotime($this->formatdatedb($date)));
+//        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
+//            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
+//        $monthname = strftime("%B", strtotime($this->formatdatedb($date)));
+
+        $nummonth = date("n", strtotime($this->formatdatedb($date)));
+        switch ($nummonth)
+        {
+            case 1:
+                $monthname = "janvier";
+                break;
+            case 2:
+                $monthname = "février";
+                break;
+            case 3:
+                $monthname = "mars";
+                break;
+            case 4:
+                $monthname = "avril";
+                break;
+            case 5:
+                $monthname = "mai";
+                break;
+            case 6:
+                $monthname = "juin";
+                break;
+            case 7:
+                $monthname = "juillet";
+                break;
+            case 8:
+                $monthname = "août";
+                break;
+            case 9:
+                $monthname = "septembre";
+                break;
+            case 10:
+                $monthname = "octobre";
+                break;
+            case 11:
+                $monthname = "novembre";
+                break;
+            case 12:
+                $monthname = "décembre";
+                break;
+        }
+        
         if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
             return ucfirst($monthname);
         } else {
@@ -161,9 +203,37 @@ class fonctions
     {
         if (is_null($date))
             $date = date("d/m/Y");
-        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
-        $dayname = strftime("%A", strtotime($this->formatdatedb($date)));
+        
+//        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
+//            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
+//        $dayname = strftime("%A", strtotime($this->formatdatedb($date)));
+
+        $numday = date("w", strtotime($this->formatdatedb($date)));
+        switch ($numday)
+        {
+            case 0:
+                $dayname = "Dimanche";
+                break;
+            case 1:
+                $dayname = "lundi";
+                break;
+            case 2:
+                $dayname = "mardi";
+                break;
+            case 3:
+                $dayname = "mercredi";
+                break;
+            case 4:
+                $dayname = "jeudi";
+                break;
+            case 5:
+                $dayname = "vendredi";
+                break;
+            case 6:
+                $dayname = "samedi";
+                break;
+        }
+            
         if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
             return ucfirst($dayname);
         } else {
@@ -185,10 +255,13 @@ class fonctions
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         } else {
             $index = $index % 7;
-            if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-                setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
+//            if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
+//                setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
                                                       // Le 01/01/2012 est un dimanche
-            $dayname = strftime("%A", strtotime("20120101" + $index));
+//            $dayname = strftime("%A", strtotime("20120101" + $index));
+
+            // Le 01/01/2012 est un dimanche
+            $dayname = $this->nomjour("20120101" + $index);
 
             if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
                 return ucfirst($dayname);
