@@ -128,6 +128,17 @@
     $planningelement->type('teletrav');
     $couleur = $planningelement->couleur();
     //echo "couleur = $couleur <br>";
+    
+    // On récupère le libellé du télétravail
+    $libelleteletrav = 'Télétravail';
+    if (defined('TABCOULEURPLANNINGELEMENT'))
+    {
+        if (isset(TABCOULEURPLANNINGELEMENT['teletrav']['libelle']))
+        {
+            $libelleteletrav = TABCOULEURPLANNINGELEMENT['teletrav']['libelle'];
+            //echo "<br>libelleteletrav est dans le tableau <br>";
+        }
+    }
 ?>
 
     var hide_teletravail = function (nomtableau, id_hidden_input ="")
@@ -146,7 +157,16 @@
                 // C'est du télétravail et on doit le masquer ou la date est exclue
                 currenttd.bgColor = '<?php echo planningelement::COULEUR_VIDE ?>';
                 // On ajoute la classe hidde_tip afin de masquer la bulle d'information => voir CSS
-                currenttd.classList.add('hidde_tip');
+                //currenttd.classList.add('hidde_tip');
+                if (currenttd.getElementsByTagName('span').length>0)
+                { 
+	                var currentspan = currenttd.getElementsByTagName('span')[0];
+	                currentspan.classList.add('remove-teletravail');
+	                var datatip = currentspan.getAttribute('data-tip');
+	                datatip = datatip.split(':')[0].trim();
+	                // alert ('Span data-tip = ' + currentspan.getAttribute('data-tip'));
+	                currentspan.setAttribute('data-tip',datatip)
+	            }
             }
             else
             {
@@ -154,7 +174,18 @@
                 // C'est du télétravail et on doit le montrer
                 currenttd.bgColor = '<?php echo "$couleur"  ?>';
                 // On supprime la classe hidde_tip afin d'autoriser l'affichage de la bulle d'information => voir CSS
-                currenttd.classList.remove('hidde_tip');
+                //currenttd.classList.remove('hidde_tip');
+                if (currenttd.getElementsByTagName('span').length>0)
+                { 
+	                var currentspan = currenttd.getElementsByTagName('span')[0];
+	                currentspan.classList.remove('remove-teletravail');
+	                //alert ('Span HTML = ' + currentspan.data-tip);
+	                var datatip = currentspan.getAttribute('data-tip');
+	                datatip = datatip.split(':')[0].trim();
+	                datatip = datatip.concat(' : <?php echo "$libelleteletrav";  ?>'); 
+	                // alert ('Span data-tip = ' + currentspan.getAttribute('data-tip'));
+	                currentspan.setAttribute('data-tip',datatip)
+	            }
             }    
         }
         if (id_hidden_input != "")
