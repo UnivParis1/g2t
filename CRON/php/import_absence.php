@@ -51,13 +51,21 @@
                 $datedebut = trim($ligne_element[1]);
                 $datefin = trim($ligne_element[2]);
                 $typeabsence = trim($ligne_element[3]);
-                echo "agentid = $agentid   datedebut=$datedebut   datefin=$datefin   typeabsence=$typeabsence   \n";
+                $datedebutformate = $fonctions->formatdatedb(str_replace('/','-',$datedebut));
+                echo "agentid = $agentid   datedebut=$datedebut   datefin=$datefin   typeabsence=$typeabsence  datedebutformate = $datedebutformate \n";
                 
                 $agent = new agent($dbcon);
                 if (!$agent->existe($agentid))
                 {
                     // L'agent n'est pas dans la base => On n'intègre pas ses absences
                     echo "L'agent $agentid n'existe pas dans la base. On ne charge pas ses absences \n";
+                    continue;
+                }
+                
+                // Si c'est un congés bonifié et que la date de début est supérieure au 19/11/2021 ==> On ignore les congés bonifiés car "nouvelle version" (ticket GLPI 135729)
+                if (stripos($fonctions->my_real_escape_utf8($typeabsence)," Bonifié ")!==false and ($datedebutformate >= "20211119"))
+                {
+                    echo "La demande de $typeabsence pour l'agent $agentid est un conge bonifie 'nouvelle version'. On ne charge pas cette absence \n";
                     continue;
                 }
                 
