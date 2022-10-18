@@ -7,7 +7,7 @@ mkdir %LOG_PATH%
 del %LOG_PATH%\trace_cron.log
 del %LOG_PATH%\trace_cron_error.log
 
-for /f "delims=" %%a in (' powershell "Split-Path -Path (Get-Item C:\wamp64\bin\apache\apache2.4.46\bin\php.ini).Target" ') do set "PHPDIR=%%a"
+for /f "delims=" %%a in (' powershell "Split-Path -Path (Get-Item C:\wamp64\bin\apache\apache2.4.51\bin\php.ini).Target" ') do set "PHPDIR=%%a"
 @ECHO PHPDIR = %PHPDIR% >>%LOG_PATH%\trace_cron.log
 
 if not defined PHPDIR (
