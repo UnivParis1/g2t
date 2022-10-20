@@ -26,11 +26,31 @@
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
             echo '<link rel="stylesheet" type="text/css" href="style/style.css?' . filemtime('style/style.css') .'" media="screen"></link>';
             echo '</head>';
-            $errlog = "L'utilisateur " . $uid . " (AgentId = $userid) n'est pas référencé dans la base de donnée !";
+
+            $errlog = "<body class='bodyhtml'>Vous n'êtes pas autorisé à vous connecter à cette application.";
             $errlog = $errlog . "<br>";
-            $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
+            $errlog = $errlog . "Veuillez vous rapprocher de votre gestionnaire RH ou de la DIRVAL";
+            
             echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($errlog)));
+            
+            $techlog = "Informations techniques :";
+            $techlog = $techlog . "<br><ul>";
+            $techlog = $techlog . "<li>Identité de l'utilisateur : " . $uid . " (identifiant = " . $userid . ")</li>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($techlog)));
+            
+            $errlog = "<h3>Plusieurs raisons peuvent être à l'origine de cette limitation d'accès :";
+            $errlog = $errlog . "<br><ul>";
+            $errlog = $errlog . "<li>Vous êtes affecté à une structure qui n'est pas encore paramétrée pour utiliser G2T.</li>";
+            $errlog = $errlog . "<li>Vous êtes un agent BIATSS qui n'a pas/plus d'affectation fonctionnelle dans SIHAM.</li>";
+            $errlog = $errlog . "<li>Vous êtes un agent contractuel dont le contrat n'est pas saisi ou renouvelé dans SIHAM.</li>";
+            $errlog = $errlog . "<li>Vous êtes un agent hébergé et votre situation administrative n'est plus valide dans SIHAM.</li>";
+            $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbone.</li>";
+            $errlog = $errlog . "</ul></h3><br>";
+            $errlog = $errlog . "<hr>";
+            echo $errlog;
+            echo $techlog;
+            echo "</body>";
             exit();
         }
         // Si on est là, on est sûr que l'agent existe
@@ -45,12 +65,33 @@
             echo '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
             echo '<link rel="stylesheet" type="text/css" href="style/style.css?' . filemtime('style/style.css') .'" media="screen"></link>';
             echo '</head>';
-            $errlog = "L'utilisateur " . $uid . " (AgentId = $userid) n'est pas référencé dans la base de donnée !";
+
+            $errlog = "<body class='bodyhtml'>Vous n'êtes pas autorisé à vous connecter à cette application.";
             $errlog = $errlog . "<br>";
-            $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
+            $errlog = $errlog . "Veuillez vous rapprocher de votre gestionnaire RH ou de la DIRVAL";
+            
             echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($errlog)));
+            
+            $techlog = "Informations techniques :";
+            $techlog = $techlog . "<br><ul>";
+            $techlog = $techlog . "<li>Identité de l'utilisateur : " . $uid . " (identifiant = " . $userid . ")</li>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($techlog)));
+            
+            $errlog = "<h3>Plusieurs raisons peuvent être à l'origine de cette limitation d'accès :";
+            $errlog = $errlog . "<br><ul>";
+            $errlog = $errlog . "<li>Vous êtes affecté à une structure qui n'est pas encore paramétrée pour utiliser G2T.</li>";
+            $errlog = $errlog . "<li>Vous êtes un agent BIATSS qui n'a pas/plus d'affectation fonctionnelle dans SIHAM.</li>";
+            $errlog = $errlog . "<li>Vous êtes un agent contractuel dont le contrat n'est pas saisi ou renouvelé dans SIHAM.</li>";
+            $errlog = $errlog . "<li>Vous êtes un agent hébergé et votre situation administrative n'est plus valide dans SIHAM.</li>";
+            $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbone.</li>";
+            $errlog = $errlog . "</ul></h3><br>";
+            $errlog = $errlog . "<hr>";
+            echo $errlog;
+            echo $techlog;
+            echo "</body>";
             exit();
+            
         }
     }
 

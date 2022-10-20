@@ -650,6 +650,18 @@ class structure
         }
         //var_dump($listeabs); 
         
+        $showstructcolonne = false;
+        $searchstruct = $this->id();
+        foreach ($planningservice as $agentid => $planning)
+        {
+            if ($planning->agent()->structureid()<>$searchstruct) // Si il y a des agents affecté dans une autre structure que celle courante
+            {
+                $showstructcolonne = true;
+                break;
+            }
+        }
+        
+        
         // echo "Apres le chargement du planning du service <br>";
         $htmltext = "";
         $htmltext = $htmltext . "<div id='structplanning'>";
@@ -657,37 +669,69 @@ class structure
         
         $titre_a_ajouter = TRUE;
         $elementlegende = array();
+        $tabstruct = array();
         foreach ($planningservice as $agentid => $planning) 
         {
-            if ($titre_a_ajouter) {
-                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + 1) . " align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
+            if ($titre_a_ajouter) 
+            {
+                if ($showstructcolonne)
+                {
+                    $nbcolonneaajouter = 2;
+                }
+                else
+                {
+                    $nbcolonneaajouter = 1;
+                }
+                $htmltext = $htmltext . "<thead>";
+                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                 // echo "Nom du mois = " . $monthname . "<br>";
-                $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + 1) . "'>" . $monthname . "</td></tr>";
+                $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . "'>" . $monthname . "</td></tr>";
                 // echo "Nbre de jour = " . count($planningservice[$agentid]->planning()) . "<br>";
-                $htmltext = $htmltext . "<tr class='entete'><td>Agent</td>";
+                $htmltext = $htmltext . "<tr class='entete'><th class='cellulesimple' style='cursor: pointer;'>Agent<span class='sortindicator'> </span></th>";
+                if ($showstructcolonne)
+                {
+                    $htmltext = $htmltext . "<th class='cellulesimple' style='cursor: pointer;'>Structure<span class='sortindicator'> </span></th>";
+                }
                 for ($indexjrs = 0; $indexjrs < (count($planningservice[$agentid]->planning()) / 2); $indexjrs ++) {
                     // echo "indexjrs = $indexjrs <br>";
                     $nomjour = $this->fonctions->nomjour(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut);
                     $titre = $nomjour . " " . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . " " . $monthname;
-                    $htmltext = $htmltext . "<td colspan='2' title='" . $titre . "'";
+                    $htmltext = $htmltext . "<th class='cellulesimple' colspan='2' title='" . $titre . "'";
                     // echo "Date case = " . $this->fonctions->formatdatedb(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut) . " Date jour = " . date("Ymd") . "<br>";
                     if ($this->fonctions->formatdatedb(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut) == date("Ymd")) {
                         $htmltext = $htmltext . " bgcolor='#3FC6FF'";
                     }
-                    $htmltext = $htmltext . ">" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</td>";
+                    $htmltext = $htmltext . ">" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</th>";
                 }
                 $htmltext = $htmltext . "</tr>";
+                $htmltext = $htmltext . "</thead>";
+                $htmltext = $htmltext . "<tbody>";
                 $titre_a_ajouter = FALSE;
             }
             
             // echo "Je charge l'agent $agentid <br>";
-            $agent = new agent($this->dbconnect);
-            $agent->load($agentid);
+            //$agent = new agent($this->dbconnect);
+            //$agent->load($agentid);
+            $agent = $planning->agent();
             // echo "l'agent $agentid est chargé ... <br>";
             $htmltext = $htmltext . "<tr class='ligneplanning'>";
 //            $htmltext = $htmltext . "<td>" . $agent->nom() . " " . $agent->prenom() . "</td>";
-            $htmltext = $htmltext . "<td>" . $agent->identitecomplete() . "</td>";
+            $htmltext = $htmltext . "<td>" . $agent->civilite() . " <span class='agentidentite'>" . $agent->nom() . " " . $agent->prenom() . "</span></td>"; //$agent->identitecomplete(true)
+            if ($showstructcolonne)
+            {
+                if (!isset($tabstruct[$agent->structureid()]))
+                {
+                    $struct = new structure($this->dbconnect);
+                    $struct->load($agent->structureid());
+                    $tabstruct[$agent->structureid()] = $struct;
+                }
+                else
+                {
+                    $struct = $tabstruct[$agent->structureid()];
+                }
+                $htmltext = $htmltext . "<td>" . $struct->nomcourt() . "</td>";
+            }
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";
@@ -720,7 +764,101 @@ class structure
             // echo "Fin boucle sur les elements <br>";
             $htmltext = $htmltext . "</tr>";
         }
+        $htmltext = $htmltext . "</tbody>";
         $htmltext = $htmltext . "</table>";
+
+        $htmltext = $htmltext . "
+<script>
+/*******************************************
+******* Déclarations déplacées dans menu.php
+const getCellValue = (tr, idx) =>
+{
+    if (tr.children[idx].querySelector('time')!==null) // Si on a un time dans le td, alors on trie sur l'attribut datetime
+    {
+        return tr.children[idx].querySelector('time').getAttribute('datetime');
+    }
+    else if (tr.children[idx].querySelector('span')!==null) // Si on a un span dans le td, alors on trie sur l'attribut span
+    {
+        //alert ('InnerText = ' + tr.children[idx].querySelector('span').innerText);
+        return tr.children[idx].querySelector('span').innerText;
+    }
+    else
+    {
+        return tr.children[idx].innerText || tr.children[idx].textContent;
+    }
+}
+            
+const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+    v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+*******************************************
+*/
+ 
+         
+// do the work...
+document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+    const currentsortindicator = th.querySelector('.sortindicator')
+
+    if (currentsortindicator!==null)
+    {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+
+        if (currentsortindicator.innerText.trim().length>0)
+        {
+            th.asc = !th.asc
+        }
+
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+        
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));
+        
+        for (var thindex = 0 ; thindex < document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
+            {
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+            }
+        }
+    }
+})));
+
+document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th')[0].click(); // On simule le clic sur la 1e colonne pour faire afficher la flêche
+    
+    
+</script>";
+        
+        
+        
+        
         $htmltext = $htmltext . "</div>";
         //var_dump($elementlegende);
         if ($noiretblanc == false) {

@@ -244,6 +244,39 @@
         }
 	}
 
+    const getCellValue = (tr, idx) =>
+    {
+        // Si on a un time dans le td, alors on trie sur l'attribut datetime
+        // ==> utilisé dans le tri des demandes dans l'écran d'annulation d'une demande
+        if (tr.children[idx].querySelector('time')!==null) 
+        {
+            return tr.children[idx].querySelector('time').getAttribute('datetime');
+        }
+        // Si on a un element de class 'agentidentite' dans le td, alors on trie sur l'attribut 'agentidentite'
+        // ==> utilisé dans le tri des agents dans le planning d'une strucuture
+        else if (tr.children[idx].querySelector('.agentidentite')!==null) 
+        {
+            //alert ('InnerText = ' + tr.children[idx].querySelector('.agentidentite').innerText);
+            return tr.children[idx].querySelector('.agentidentite').innerText;
+        }
+/*
+        // Si on a un span dans le td, alors on trie sur l'attribut span
+        // ==> Non utilisé pour le moment mais conservé comme exemple
+        else if (tr.children[idx].querySelector('span')!==null) 
+        {
+            //alert ('InnerText = ' + tr.children[idx].querySelector('span').innerText);
+            return tr.children[idx].querySelector('span').innerText;
+        }
+*/
+        else
+        {
+            return tr.children[idx].innerText || tr.children[idx].textContent;
+        }
+    }
+                
+    const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
+        v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
+        )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
 
 </script>
 
@@ -272,12 +305,30 @@
     {
         $LDAP_GROUP_NAME = $fonctions->liredbconstante("LDAPGROUPNAME");
         
-        $errlog = "Le groupe $LDAP_GROUP_NAME n'est pas défini pour l'utilisateur " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ") !";
+        $errlog = "Vous n'êtes pas autorisé à vous connecter à cette application.";
         $errlog = $errlog . "<br>";
-        $errlog = $errlog . "Vous n'êtes pas autorisé à vous connecter à cette application.";
-        echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
+        $errlog = $errlog . "Veuillez vous rapprocher de votre gestionnaire RH ou de la DIRVAL";
         
-        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+        echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
+        error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($errlog)));
+
+        $techlog = "Informations techniques :";
+        $techlog = $techlog . "<br><ul>";
+        $techlog = $techlog . "<li>Identité de l'utilisateur : " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ")</li>";
+        $techlog = $techlog . "<li>Groupe LDAP recherché : $LDAP_GROUP_NAME </li>";
+        error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($techlog)));
+        
+        $errlog = "<h3>Plusieurs raisons peuvent être à l'origine de cette limitation d'accès :";
+        $errlog = $errlog . "<br><ul>";
+        $errlog = $errlog . "<li>Vous êtes affecté à une structure qui n'est pas encore paramétrée pour utiliser G2T.</li>";
+        $errlog = $errlog . "<li>Vous êtes un agent BIATSS qui n'a pas/plus d'affectation fonctionnelle dans SIHAM.</li>";
+        $errlog = $errlog . "<li>Vous êtes un agent contractuel dont le contrat n'est pas saisi ou renouvelé dans SIHAM.</li>";
+        $errlog = $errlog . "<li>Vous êtes un agent hébergé et votre situation administrative n'est plus valide dans SIHAM.</li>";
+        $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbone.</li>";
+        $errlog = $errlog . "</ul></h3><br>";
+        $errlog = $errlog . "<hr>";
+        echo $errlog;
+        echo $techlog;
         exit();
         
     }

@@ -10,6 +10,8 @@ class planning
     private $datedebut = null;
 
     private $datefin = null;
+    
+    private $agent = null;
 
     private $fonctions = null;
 
@@ -29,6 +31,8 @@ class planning
 
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
+        
+        $this->agent = $agent;
         
         // Par défaut, un agent ne travaille pas le samedi
         $travailsamedi = false;
@@ -475,6 +479,11 @@ class planning
     function datefin()
     {
         return $this->datefin;
+    }
+    
+    function agent()
+    {
+        return $this->agent;
     }
 
     function planning()

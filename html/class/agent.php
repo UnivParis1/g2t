@@ -1931,7 +1931,12 @@ const modifymotif = (motif, motifid) =>
                             $htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
                         $htmltext = $htmltext . "</tr>";
 */                                
-                        $htmltext = $htmltext . "   <tr align=center><th class='cellulesimple' style='cursor: pointer;'>Date de demande</th><th class='cellulesimple' style='cursor: pointer;'>Date de début</th><th class='cellulesimple' style='cursor: pointer;'>Date de fin</th><th class='cellulesimple' style='cursor: pointer;'>Type de demande</th><th class='cellulesimple' style='cursor: pointer;'>Nbre jours</th>";
+                        $htmltext = $htmltext . "   <tr align=center>
+                                                      <th class='cellulesimple' style='cursor: pointer;'>Date de demande <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' style='cursor: pointer;'>Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' style='cursor: pointer;'>Date de fin <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' style='cursor: pointer;'>Type de demande <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' style='cursor: pointer;'>Nbre jours <span class='sortindicator'> </span></th>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
                         {
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
@@ -1995,6 +2000,8 @@ const modifymotif = (motif, motifid) =>
                 $htmltext = $htmltext . "</table>";
                 $htmltext = $htmltext . "
 <script>
+/*******************************************
+******* Déclarations déplacées dans menu.php
 const getCellValue = (tr, idx) => 
 {
     if (tr.children[idx].querySelector('time')!==null) // Si on a un time dans le td, alors on trie sur l'attribut datetime
@@ -2010,50 +2017,67 @@ const getCellValue = (tr, idx) =>
 const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
     v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
     )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
+*******************************************
+*/
+
                     
 // do the work...
 document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-    const table = th.closest('table');
-    const tbody = table.querySelector('tbody');
-    //alert (table.id);
-    Array.from(tbody.querySelectorAll('tr'))
-        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), this.asc = !this.asc))
-        .forEach(tr => tbody.appendChild(tr) );
-    theader = table.querySelector('theader');
 
-    //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    const currentsortindicator = th.querySelector('.sortindicator')
 
-//    for (var thindex in document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th'))
-    for (var thindex = 0 ; thindex < document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').length; thindex++)
+    if (currentsortindicator!==null)
     {
-        //alert (thindex);
-        if (th.parentNode.children[thindex]!==null)
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+    
+        if (currentsortindicator.innerText.trim().length>0)
         {
-            //alert (th.parentNode.children[thindex].innerHTML);
-            if (th.parentNode.children[thindex].querySelector('font')!==null)
+            th.asc = !th.asc
+        }
+    
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+    
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    
+        for (var thindex = 0 ; thindex < document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
             {
-                //alert (th.parentNode.children[thindex].querySelector('font').innerText);
-                th.parentNode.children[thindex].querySelector('font').innerText = ' ';
-                //alert (th.parentNode.children[thindex].querySelector('font').innerText);
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
             }
         }
     }
-
-    if (this.asc)
-    {
-        //alert ('plouf');
-        th.querySelector('font').innerHTML = '&darr;'; // flêhe qui descend
-    }
-    else
-    {
-        //alert ('ploc');
-        th.querySelector('font').innerHTML = '&uarr;'; // flêche qui monte
-    }
-        
 })));
 
-document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche et initialiser le asc
-
+document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
             }
