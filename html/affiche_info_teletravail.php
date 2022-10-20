@@ -191,12 +191,44 @@
                         $nbjrsteletravail = $nbjrsteletravail + 0.5;
                     }
                 }
-                $agentstruct = new structure($dbcon);
                 $nomstruct = "Non définie";
+/*                 
+                $agentstruct = new structure($dbcon);
                 if ($agentstruct->load($agent->structureid()))
                 {
                     $nomstruct = $agentstruct->nomcourt();
                 }
+                else
+                {
+                    $historique = $agent->historiqueaffectation($datedebut, $datefin);
+                    // On récupère la dernière affectation de l'agent comprise dans les dates
+                    if (count($historique) > 0)
+                    {
+                        $structid = $historique[count($historique)-1]['structureid'];
+                        $agentstruct = new structure($dbcon);
+                        if ($agentstruct->load($structid))
+                        {
+                            $nomstruct = $agentstruct->nomcourt();
+                        }
+                    }
+                }
+*/                
+                $historique = $agent->historiqueaffectation($datedebut, $datefin);
+                // On récupère la dernière affectation de l'agent comprise dans les dates
+                if (count($historique) > 0)
+                {
+                    $structid = $historique[count($historique)-1]['structureid'];
+                    $agentstruct = new structure($dbcon);
+                    if ($agentstruct->load($structid))
+                    {
+                        $nomstruct = $agentstruct->nomcourt();
+                    }
+                    else
+                    {
+                        $nomstruct = "Inconnue (id=$structid)";
+                    }
+                }
+                
                 
                 echo "<tr><td class='cellulesimple'>" . $agent->sihamid()  . "</td><td class='cellulesimple'>" . $agent->nom() . "</td><td class='cellulesimple'>" . $agent->prenom() . "</td><td class='cellulesimple'>" . $nomstruct . "</td><td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td><td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " ."</center></td><td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td></tr>";
             }

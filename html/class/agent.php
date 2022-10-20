@@ -3950,6 +3950,50 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         return $errlog;
     }
+    
+    function historiqueaffectation($datedebut,$datefin)
+    {
+        $datedebut = $this->fonctions->formatdatedb($datedebut);
+        $datefin = $this->fonctions->formatdatedb($datefin);
+        
+        $listhistorique = array();
+        $sql = "SELECT STRUCTUREID,DATEDEBUT,DATEFIN
+                FROM HISTORIQUEAFFECTATION
+                WHERE AGENTID = ?
+                  AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
+                    OR (DATEFIN >= ? AND DATEDEBUT <= ? )
+                    OR (DATEDEBUT >= ? AND DATEFIN <= ? ))
+                ORDER BY DATEDEBUT,DATEFIN";
+        
+        $params = array($this->agentid,$datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement de l'historique d'affectation : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>historiqueaffectation => pas de ligne dans la base de données<br>";
+            //$errlog = "Aucun historique d'affectation n'existe pour l'agent " . $this->identitecomplete() . " dans la période $datedebut -> $datefin <br>";
+            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $histo = array();
+                $histo['structureid'] = $result[0];
+                $histo['datedebut'] = $result[1];
+                $histo['datefin'] = $result[2];
+                $listhistorique[] = $histo;
+            }
+        }
+        return $listhistorique;
+    }
         
 }
 

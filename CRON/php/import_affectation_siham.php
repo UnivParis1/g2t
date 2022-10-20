@@ -457,6 +457,13 @@
             echo "Le fichier $structurefile n'existe pas !!! \n";
         } else {
             $fp = fopen("$structurefile", "r");
+            $sql = "DELETE FROM HISTORIQUEAFFECTATION";
+            mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
+            if ($erreur_requete != "")
+            {
+                echo "Error : DELETE HISTORIQUEAFFECTATION => $erreur_requete \n";
+            }
             while (! feof($fp)) {
                 $ligne = fgets($fp); // lecture du contenu de la ligne
                 if (trim($ligne) != "") {
@@ -472,22 +479,54 @@
                         echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
                     }
                     
-                    $agent = new agent($dbcon);
-                    if (!$agent->load($agentid))
+                    /*
+                     * CREATE TABLE `HISTORIQUEAFFECTATION` (
+                     *   `AGENTID` VARCHAR(10) NOT NULL,
+                     *   `NUMLIGNE` VARCHAR(10) NOT NULL,
+                     *   `STRUCTUREID` VARCHAR(10) NULL,
+                     *   `DATEDEBUT` DATE NULL,
+                     *   `DATEFIN` DATE NULL,
+                     *   PRIMARY KEY (`AGENTID`, `NUMLIGNE`));
+                     * 
+                     */
+                    
+                    // On va conserver l'historique des affectations
+                    $sql = sprintf("INSERT INTO HISTORIQUEAFFECTATION(AGENTID,NUMLIGNE,STRUCTUREID,DATEDEBUT,DATEFIN)
+        	  		VALUES('%s','%s','%s','%s','%s')", 
+                        $fonctions->my_real_escape_utf8($agentid), 
+                        $fonctions->my_real_escape_utf8($numligne), 
+                        $fonctions->my_real_escape_utf8($idstruct), 
+                        $fonctions->my_real_escape_utf8($datedebut), 
+                        $fonctions->my_real_escape_utf8($datefin));
+                    mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
+                    if ($erreur_requete != "")
                     {
-                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa structure d'affectation  \n";
-                        continue;
+                        echo "Error : INSERT HISTORIQUEAFFECTATION => $erreur_requete \n";
                     }
+                    
                     
                     if ($fonctions->formatdatedb($datedebut) <= date('Ymd') and $fonctions->formatdatedb($datefin) >= date('Ymd'))
                     {
-                        $sql = sprintf("UPDATE AGENT SET STRUCTUREID = '%s' WHERE AGENTID = '%s'", $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($agentid));
-                        mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        if ($erreur_requete != "") {
-                            echo "Error : UPDATE STRUCTUREID dans AGENT=> $erreur_requete \n";
-                            echo "sql = $sql \n";
+                        $agent = new agent($dbcon);
+                        if (!$agent->existe($agentid))
+                        {
+                            echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa structure d'affectation  \n";
                         }
+                        else
+                        {
+                            $sql = sprintf("UPDATE AGENT SET STRUCTUREID = '%s' WHERE AGENTID = '%s'", $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($agentid));
+                            mysqli_query($dbcon, $sql);
+                            $erreur_requete = mysqli_error($dbcon);
+                            if ($erreur_requete != "") {
+                                echo "Error : UPDATE STRUCTUREID dans AGENT=> $erreur_requete \n";
+                                echo "sql = $sql \n";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        echo "La date du jour n'est pas dans la période $datedebut ==> $datefin : On ignore la ligne. \n";
                     }
                 }
             }
