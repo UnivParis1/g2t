@@ -1513,12 +1513,14 @@ class fonctions
         $datefin = $this->formatdatedb($datefin);
 
         $listeagentteletravail = array();
-        $sql = "SELECT DISTINCT AGENTID
-                FROM TELETRAVAIL
-                WHERE STATUT = '" . teletravail::STATUT_ACTIVE  . "'
+        $sql = "SELECT DISTINCT TELETRAVAIL.AGENTID, AGENT.NOM, AGENT.PRENOM 
+                FROM TELETRAVAIL, AGENT
+                WHERE AGENT.AGENTID = TELETRAVAIL.AGENTID
+                  AND STATUT = '" . teletravail::STATUT_ACTIVE  . "'
                   AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
                     OR (DATEFIN >= ? AND DATEDEBUT <= ? )
-                    OR (DATEDEBUT >= ? AND DATEFIN <= ? ))";
+                    OR (DATEDEBUT >= ? AND DATEFIN <= ? ))
+                ORDER BY AGENT.NOM, AGENT.PRENOM ";
 
         //echo "<br>SQL = $sql <br>";
         $params = array($datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);

@@ -66,36 +66,52 @@
     }
     else
         $agentid = null;
-            
-    require ("includes/menu.php");
-
     
-    //var_dump($_POST);
-    
-    echo "<form name='form_teletravail_interval' id='form_teletravail_interval' method='post' >";
-    echo "Sélectionnez la période souhaitée : ";
     $mois = date('m');
-    $annee = date('Y');
-    if ($mois<=3)
+    if (isset($_POST["trimestre"]))
     {
-        // 1er trimestre
-        $trimestre = 1;
-    }
-    elseif ($mois<=6)
-    {
-        // 2e trimestre
-        $trimestre = 2;
-    }
-    elseif ($mois<=9)
-    {
-        // 3e trimestre
-        $trimestre = 3;
+        $trimestre = $_POST["trimestre"];
     }
     else
     {
-        // 4e trimestre
-        $trimestre = 4;
+        if ($mois<=3)
+        {
+            // 1er trimestre
+            $trimestre = 1;
+        }
+        elseif ($mois<=6)
+        {
+            // 2e trimestre
+            $trimestre = 2;
+        }
+        elseif ($mois<=9)
+        {
+            // 3e trimestre
+            $trimestre = 3;
+        }
+        else
+        {
+            // 4e trimestre
+            $trimestre = 4;
+        }
     }
+    
+    if (isset($_POST["annee"]))
+    {
+        $annee = $_POST["annee"];
+    }
+    else
+    {
+        $annee = date('Y');
+    }
+    
+    require ("includes/menu.php");
+
+//    var_dump($_POST);
+    
+    echo "<form name='form_teletravail_interval' id='form_teletravail_interval' method='post' >";
+    echo "Sélectionnez la période souhaitée : ";
+    
     echo "<div>";
     echo "<select name='trimestre' id='trimestre'>";
     echo "<option value='1'";
@@ -114,7 +130,8 @@
     
     echo "&nbsp;&nbsp;";
     echo "<select name='annee' id='annee'>";
-    for ($index = 2022 ; $index <= $annee+1; $index++)
+    $anneebase = 2022;
+    for ($index = $anneebase ; $index <= $anneebase+1; $index++)
     {
         echo "<option value='$index'";
         if ($index==$annee) echo " selected "; else echo " ";
@@ -162,7 +179,7 @@
         {
             $montant_teletravail = '2.50';
         }
-        echo "<br>Synthèse du nombre de jours de congés théorique pour les agents ayant une convention de télétravail au <label id='id_trimestre'>$libelle $annee</label><br>"; 
+        echo "<br>Synthèse du nombre de jours de congés pour les agents ayant une convention de télétravail au <label id='id_trimestre'>$libelle $annee</label><br>"; 
         $agentlist = $fonctions->listeagentteletravail($datedebut, $datefin);
         /////////////////////////////////////////////////////////////////
         /////////// LIGNE DE TEST ///////////////////////////////////////
@@ -170,7 +187,18 @@
         /////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////
         echo "<table class='tableausimple' id='table_teletravail'>";
-        echo "<tr><td class='titresimple'>Numéro siham</td><td class='titresimple'>Nom agent</td><td class='titresimple'>Prénom agent</td><td class='titresimple'>Structure</td><td class='titresimple'>Nombre de jours théorique</td><td class='titresimple'>Calcul du montant</td><td class='titresimple'>Montant à payer</td></tr>";
+        echo "<tr>
+                 <td class='titresimple'>Numéro siham</td>
+                 <td class='titresimple'>Nom agent</td>
+                 <td class='titresimple'>Prénom agent</td>
+                 <td class='titresimple'>Structure</td>
+                 <td class='titresimple'>Direction</td>
+                 <td class='titresimple'>Nombre de jours</td>
+                 <td class='titresimple'>Répartition</td>";
+//                 <td class='titresimple'>Nombre de jours annuels</td>
+        echo "   <td class='titresimple'>Calcul du montant</td>
+                 <td class='titresimple'>Montant à payer</td>
+              </tr>";
         foreach ((array)$agentlist as $agentid)
         {
             $agent = new agent($dbcon);
@@ -180,6 +208,39 @@
             }
             else
             {
+                
+                // On regarde si dans la période l'agent a une position administrative ==> Il est en activité
+                // Ca permet d'exclure les agents qui ne sont plus "agent de l'établissement" dans le trimestre édité
+                $historique = $agent->historiquesituationadmin($datedebut, $datefin);
+                // Soit il n'y en pas ou il n'y en a qu'un et c'est la fin d'activité 'FINAC' ou détachement 'DET01'
+                if (count($historique)==0 or (count($historique)==1 and in_array($historique[0]['positionadmin'],array('FINAC','DET01'))==true))
+                {
+                    // On ne traite pas l'agent car il n'était pas en activité durant le trimestre .
+                    continue;
+                }
+                
+                $tabrepartition = array();
+                $planning = new planning($dbcon);
+                $nbjrsteletravail = $planning->nbjoursteletravail($agent->agentid(), $datedebut, $datefin,false,$tabrepartition);
+                unset($planning);
+                
+                foreach ($tabrepartition as $key => $value)
+                {
+                    $newkey = html_entity_decode(TABCOULEURPLANNINGELEMENT[$key]["libelle"]);
+                    $tabrepartition["$newkey"]=$value;
+                    unset($tabrepartition[$key]);
+                }
+//                $repartitionteletravail = implode(" / ", $tabrepartition);
+                $repartitionteletravail = http_build_query($tabrepartition, '', '<br>');
+                $repartitionteletravail = urldecode($repartitionteletravail);
+                
+                $nbjrsteletravailannuel = 0;
+                //$planning = new planning($dbcon);
+                //$nbjrsteletravailannuel = $planning->nbjoursteletravail($agent->agentid(), "01/01/$annee", $datefin,false,$tabrepartition);
+                //unset($planning);
+                
+                //var_dump($tabrepartition);
+ /*               
                 $planning = $agent->planning($datedebut, $datefin,true,false);
                 //var_dump($planning);
                 $nbjrsteletravail = 0;
@@ -191,7 +252,10 @@
                         $nbjrsteletravail = $nbjrsteletravail + 0.5;
                     }
                 }
+*/                
+                
                 $nomstruct = "Non définie";
+                $nomdirection = "Non définie";
 /*                 
                 $agentstruct = new structure($dbcon);
                 if ($agentstruct->load($agent->structureid()))
@@ -222,15 +286,28 @@
                     if ($agentstruct->load($structid))
                     {
                         $nomstruct = $agentstruct->nomcourt();
+                        $nomdirection = $agentstruct->structureenglobante()->nomcourt();
                     }
                     else
                     {
                         $nomstruct = "Inconnue (id=$structid)";
+                        $nomdirection = "Inconnue";
                     }
                 }
                 
                 
-                echo "<tr><td class='cellulesimple'>" . $agent->sihamid()  . "</td><td class='cellulesimple'>" . $agent->nom() . "</td><td class='cellulesimple'>" . $agent->prenom() . "</td><td class='cellulesimple'>" . $nomstruct . "</td><td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td><td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " ."</center></td><td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td></tr>";
+                echo "<tr>
+                          <td class='cellulesimple'>" . $agent->sihamid()  . "</td>
+                          <td class='cellulesimple'>" . $agent->nom() . "</td>
+                          <td class='cellulesimple'>" . $agent->prenom() . "</td>
+                          <td class='cellulesimple'>" . $nomstruct . "</td>
+                          <td class='cellulesimple'>" . $nomdirection . "</td>
+                          <td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td>
+                          <td class='cellulesimple'><center>" . str_replace('.', ',', $repartitionteletravail) . "</center></td>";
+//                          <td class='cellulesimple'><center>" . str_replace('.', ',', $nbjrsteletravailannuel) . "</center></td>
+                echo "    <td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " . "</center></td>
+                          <td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td>
+                      </tr>";
             }
         }
         echo "</table>";
@@ -248,9 +325,12 @@
 	    	for (let numcellule = 0 ; numcellule < ligne.cells.length ; numcellule++)
 	    	{
 	    		var cellule = ligne.cells[numcellule];
+	    		cellulevalue = cellule.innerText.replaceAll('€','').normalize("NFD").replace(/[\u0300-\u036f]/g, "") + ';';
+	   			cellulevalue = cellulevalue.replace(/[\n\r]/g, ' / ');
 				//lignefichier = lignefichier + cellule.innerText.replaceAll('€','').replaceAll('é','e').replaceAll('à','a') + ';';
 				// On enlèves les caractères accentués
-				lignefichier = lignefichier + cellule.innerText.replaceAll('€','').normalize("NFD").replace(/[\u0300-\u036f]/g, "") + ';';
+				//lignefichier = lignefichier + cellule.innerText.replaceAll('€','').normalize("NFD").replace(/[\u0300-\u036f]/g, "") + ';';
+				lignefichier = lignefichier + cellulevalue;
 	    	}
 	    	fichiercontenu = fichiercontenu + lignefichier + '\n';
 	    }
@@ -259,7 +339,7 @@
         var a = document.createElement('a');
         a.href = 'data:attachment/text,' + encodeURIComponent(fichiercontenu);
         a.target = '_blank';
-        a.download = 'Télétravail_théorique_' + trimestre + '.csv';
+        a.download = 'Télétravail_' + trimestre + '.csv';
         document.body.appendChild(a);
         a.click();
 

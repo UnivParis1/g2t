@@ -26,7 +26,7 @@ class planning
         $this->fonctions = new fonctions($db);
     }
 
-    function load($agentid, $datedebut, $datefin, $includeteletravail = false, $includecongeabsence = true)
+    function load($agentid, $datedebut, $datefin, $includeteletravail = false, $includecongeabsence = true, $includeabsenceteletravail = false)
     {
 
         $agent = new agent($this->dbconnect);
@@ -249,12 +249,22 @@ class planning
         // echo " " . date("H:i:s") . "<br>";
         // echo "Planning->Load : fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
         
-        if ($includecongeabsence)
+        if ($includecongeabsence or $includeabsenceteletravail)
         {
             $demandeliste = $agent->demandesliste($datedebut, $datefin);
             $demande = new demande($this->dbconnect);
             foreach ((array) $demandeliste as $demandeid => $demande) 
             {
+                // Si on ne demande que les absences de type télétravail
+                if (!$includecongeabsence and $includeabsenceteletravail)
+                {
+                    // Si le parent de l'absence n'est pas de type 'teletravHC' => On ne le traite pas
+                    if (TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'] != 'teletravHC')
+                    {
+                        continue;
+                    }
+                }
+                
                 if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
                     $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
                     $demandedatefin = $this->fonctions->formatdate($demande->datefin());
@@ -873,18 +883,32 @@ class planning
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
     }
     
-    function nbjoursteletravail($agentid, $datedebut, $datefin)
+    function nbjoursteletravail($agentid, $datedebut, $datefin, $reel = true, &$tabrepartition = array())
     {
-        $elementliste = $this->load($agentid, $datedebut, $datefin, true);
+        $elementliste = $this->load($agentid, $datedebut, $datefin, true, $reel, true);
         $nbjoursteletravail = 0;
+        
+        // On initialise le tableau avec les éléments de télétravail 
+        $tabrepartition["teletrav"] = 0;
+        foreach (TABCOULEURPLANNINGELEMENT as $id => $element)
+        {
+            if ($element['parentid'] == 'teletravHC') 
+            {
+                $tabrepartition[$id] = 0;
+            }
+        }
+        
         foreach ($elementliste as $element)
         {
             //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Le type parent de l'élément est " . $element->parenttype()));
             if (strcasecmp($element->type(), "teletrav")==0 or strcasecmp($element->parenttype(), "teletravHC")==0 )
             {
                 $nbjoursteletravail = $nbjoursteletravail + 0.5;
+                $tabrepartition[$element->type()] = $tabrepartition[$element->type()] + 0.5;
             }
         }
+        
+        //var_dump($tabrepartition);
         return $nbjoursteletravail;
     }
     
