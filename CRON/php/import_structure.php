@@ -171,7 +171,8 @@
                     'SCO',
                     'UFO',
                     'UNR',
-                    'INT'
+                    'INT',
+                    'SEG'
                 );
                 
                 // UFR = Les UFR
@@ -180,6 +181,7 @@
                 // UFO = Les Unités de formation
                 // UNR = Les Unités de recherche ??
                 // INT = Les instituts
+                // SEG = Les services généraux
                 $codefonction = "";
 	            $resp_struct = "";
 	            // Si la structure est active on cherche le responsable.
