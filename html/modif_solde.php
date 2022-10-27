@@ -155,13 +155,13 @@
                     $solde->store();
                     if (floatval($ancienacquis) <> floatval($newacquis))
                     {
-                        $agent->ajoutecommentaireconge($typeconges, '0', "Modification du droit aquis par " . $user->identitecomplete() . " (Ancien droit acquis = $ancienacquis / Nouveau droit acquis = " . $solde->droitaquis() .")");
+                        $agent->ajoutecommentaireconge($typeconges, '0', "Modification du droit acquis par " . $user->identitecomplete() . " (Ancien droit acquis = $ancienacquis / Nouveau droit acquis = " . $solde->droitaquis() .")");
                     }
                     if (floatval($ancienpris) <> floatval($newpris))
                     {
                         $agent->ajoutecommentaireconge($typeconges, '0', "Modification du droit pris par " . $user->identitecomplete() . " (Ancien droit pris = $ancienpris / Nouveau droit pris = " . $solde->droitpris() .")");
                     }
-                    $info = "La modification du droit aquis et/ou droit pris est bien prise en compte.";
+                    $info = "La modification du droit acquis et/ou droit pris est bien prise en compte.";
                 }
             }
             

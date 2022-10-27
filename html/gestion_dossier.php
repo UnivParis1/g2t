@@ -399,7 +399,7 @@
             else
                 echo $structure->dossierhtml(($action == 'modif'));
 
-            echo "Autoriser l'affichage du planning à tous les agents des sous-structures (responsable/gestionnaire) : ";
+            echo "Autoriser l'affichage du planning à tous les agents des sous-structures (responsable G2T/gestionnaire G2T) : ";
             if ($action == 'modif') {
                 echo "<select name=displaysousstruct['" . $structure->id() . "']>";
                 echo "<option value='o'";
@@ -415,7 +415,7 @@
                 echo $fonctions->ouinonlibelle($structure->sousstructure());
 
             echo "<br>";
-            echo "Autoriser l'affichage uniquement du planning des responsables des sous-structures (responsable/gestionnaire) : ";
+            echo "Autoriser l'affichage uniquement du planning des responsables G2T des sous-structures (responsable G2T/gestionnaire G2T) : ";
             if ($action == 'modif') {
                 echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
                 echo "<option value='o'";
@@ -447,7 +447,7 @@
                 echo $fonctions->ouinonlibelle($structure->affichetoutagent());
 
             echo "<br>";
-            echo "Autoriser la validation des demandes d'une sous-structure par le responsable de la structure parente : ";
+            echo "Autoriser la validation des demandes d'une sous-structure par le responsable G2T de la structure parente : ";
             if ($action == 'modif') {
                 echo "<select name=respvalidsousstruct['" . $structure->id() . "']>";
                 echo "<option value='o'";
@@ -464,7 +464,7 @@
 
             if ($mode == 'resp') {
                 echo "<br>";
-                echo "Autoriser la validation des demandes des agents par le gestionnaire : ";
+                echo "Autoriser la validation des demandes des agents par le gestionnaire G2T : ";
                 if ($action == 'modif') {
                     echo "<select name=gestvalidagent['" . $structure->id() . "']>";
                     echo "<option value='o'";
@@ -489,11 +489,11 @@
                 echo "<OPTION value=1";
                 if ($codeinterne == 1)
                     echo " selected='selected' ";
-                echo ">Responsable du service " . $structure->nomcourt() . "</OPTION>";
+                echo ">Responsable G2T du service " . $structure->nomcourt() . "</OPTION>";
                 echo "<OPTION value=2";
                 if ($codeinterne == 2)
                     echo " selected='selected' ";
-                echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
+                echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
@@ -503,28 +503,28 @@
                 $structure->resp_envoyer_a($codeinterne);
                 echo "<tr>";
                 echo "<td>";
-                echo "Envoyer les demandes de congés du responsable au : ";
+                echo "Envoyer les demandes de congés du responsable G2T au : ";
                 echo "<SELECT name='resp_mail[" . $structure->id() . "]' size='1'>";
                 if (! is_null($parentstruct)) {
                     echo "<OPTION value=1";
                     if ($codeinterne == 1)
                         echo " selected='selected' ";
-                    echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+                    echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
                     echo "<OPTION value=2";
                     if ($codeinterne == 2)
                         echo " selected='selected' ";
-                    echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+                    echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
                 }
                 echo "<OPTION value=3";
                 if ($codeinterne == 3)
                     echo " selected='selected' ";
-                echo ">Gestionnaire du service " . $structure->nomcourt() . "</OPTION>";
+                echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
                 $gestionnaire = $structure->gestionnaire();
                 echo "\n<tr>";
-                echo "<td>Nom du gestionnaire : ";
+                echo "<td>Nom du gestionnaire G2T : ";
                 echo "<input id='infouser[" . $structure->id() . "]' name='infouser[" . $structure->id() . "]' placeholder='Nom et/ou prenom' value='";
                 $style = '';
                 $extrainfo = '';

@@ -300,7 +300,7 @@
                 
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
-                echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable : " . $struct->responsablesiham()->identitecomplete() . " ";
+                echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
                 echo "<b style='font-size:18px;'>&nbsp;$sign</b>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
@@ -311,7 +311,7 @@
                 echo "</td>";
                 echo "</tr>";
                 echo "<tr>";
-                echo "<td align=center>Gestionnaire : ";
+                echo "<td align=center>Gestionnaire G2T : ";
                 echo "<input id='infouser[" . $struct->id() . "]' name='infouser[" . $struct->id() . "]' placeholder='Nom et/ou prenom' value='";
                 $style = '';
                 if (! is_null($gestionnaire))
@@ -339,7 +339,7 @@
                 // echo "Avant recup du responsable <br>";
                 $responsable = $struct->responsablesiham();
                 // echo "Apres recup du responsable <br>";
-                echo " &nbsp; Direction : ";
+                echo " &nbsp; Responsable G2T : ";
                 echo "<input id='responsableinfo[" . $struct->id() . "]' name='responsableinfo[" . $struct->id() . "]' placeholder='Nom et/ou prenom' value='" . $responsable->identitecomplete() . "' ";
                 $style = '';
                 if (!$responsable->isG2tUser())
@@ -384,11 +384,11 @@
                 echo "<OPTION value=1";
                 if ($codeinterne == 1)
                     echo " selected='selected' ";
-                echo ">Responsable du service " . $struct->nomcourt() . "</OPTION>";
+                echo ">Responsable G2T du service " . $struct->nomcourt() . "</OPTION>";
                 echo "<OPTION value=2";
                 if ($codeinterne == 2)
                     echo " selected='selected' ";
-                echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
+                echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
@@ -397,23 +397,23 @@
                 $parentstruct = $struct->parentstructure();
                 echo "<tr>";
                 echo "<td>";
-                echo "Envoyer les demandes de congés du responsable au : ";
+                echo "Envoyer les demandes de congés du responsable G2T au : ";
                 echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
                 if (! is_null($parentstruct)) {
                     $struct->resp_envoyer_a($codeinterne);
                     echo "<OPTION value=1";
                     if ($codeinterne == 1)
                         echo " selected='selected' ";
-                    echo ">Responsable du service " . $parentstruct->nomcourt() . "</OPTION>";
+                    echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
                     echo "<OPTION value=2";
                     if ($codeinterne == 2)
                         echo " selected='selected' ";
-                    echo ">Gestionnaire du service " . $parentstruct->nomcourt() . "</OPTION>";
+                    echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
                 }
                 echo "<OPTION value=3";
                 if ($codeinterne == 3)
                     echo " selected='selected' ";
-                echo ">Gestionnaire du service " . $struct->nomcourt() . "</OPTION>";
+                echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
                 echo "</td>";
                 echo "</tr>";
