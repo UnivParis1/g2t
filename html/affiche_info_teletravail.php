@@ -130,8 +130,8 @@
     
     echo "&nbsp;&nbsp;";
     echo "<select name='annee' id='annee'>";
-    $anneebase = 2022;
-    for ($index = $anneebase ; $index <= $anneebase+1; $index++)
+    $anneebase = date('Y');
+    for ($index = $anneebase-1 ; $index <= $anneebase+1; $index++)
     {
         echo "<option value='$index'";
         if ($index==$annee) echo " selected "; else echo " ";
@@ -221,7 +221,7 @@
                 
                 $tabrepartition = array();
                 $planning = new planning($dbcon);
-                $nbjrsteletravail = $planning->nbjoursteletravail($agent->agentid(), $datedebut, $datefin,false,$tabrepartition);
+                $nbjrsteletravail = $planning->nbjoursteletravail($agent->agentid(), $datedebut, $datefin,true,$tabrepartition);
                 unset($planning);
                 
                 foreach ($tabrepartition as $key => $value)
@@ -234,7 +234,7 @@
                 $repartitionteletravail = http_build_query($tabrepartition, '', '<br>');
                 $repartitionteletravail = urldecode($repartitionteletravail);
                 
-                $nbjrsteletravailannuel = 0;
+                //$nbjrsteletravailannuel = 0;
                 //$planning = new planning($dbcon);
                 //$nbjrsteletravailannuel = $planning->nbjoursteletravail($agent->agentid(), "01/01/$annee", $datefin,false,$tabrepartition);
                 //unset($planning);
