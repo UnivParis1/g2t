@@ -173,14 +173,17 @@
                 break;
         }
         echo "<br><br>";
+        
+/*        
         // On récupère le montant de l'indemnité TELETRAVAIL dans la base
         $montant_teletravail = $fonctions->liredbconstante('MONTANT_TELETRAVAIL');
         if ($montant_teletravail == '')
         {
             $montant_teletravail = '2.50';
         }
+*/        
         echo "<br>Synthèse du nombre de jours de congés pour les agents ayant une convention de télétravail au <label id='id_trimestre'>$libelle $annee</label><br>"; 
-        $agentlist = $fonctions->listeagentteletravail($datedebut, $datefin);
+        $agentlist = $fonctions->listeagentteletravail($datedebut, $datefin,true);
         /////////////////////////////////////////////////////////////////
         /////////// LIGNE DE TEST ///////////////////////////////////////
         //$agentlist = array('975');
@@ -220,8 +223,9 @@
                 }
                 
                 $tabrepartition = array();
+                $infoindemnite = array();
                 $planning = new planning($dbcon);
-                $nbjrsteletravail = $planning->nbjoursteletravail($agent->agentid(), $datedebut, $datefin,true,$tabrepartition);
+                $nbjrsteletravail = $planning->nbjoursteletravail($agent->agentid(), $datedebut, $datefin,true,$tabrepartition,$infoindemnite);
                 unset($planning);
                 
                 foreach ($tabrepartition as $key => $value)
@@ -305,8 +309,22 @@
                           <td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td>
                           <td class='cellulesimple'><center>" . str_replace('.', ',', $repartitionteletravail) . "</center></td>";
 //                          <td class='cellulesimple'><center>" . str_replace('.', ',', $nbjrsteletravailannuel) . "</center></td>
-                echo "    <td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " . "</center></td>
-                          <td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td>
+//                echo "    <td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " . "</center></td>
+//                          <td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td>
+                $infodisplay = "";
+                $montantdisplay = 0;
+                                
+                foreach ($infoindemnite as $montant => $nbjrs)
+                {
+                    if ($infodisplay != "")
+                    {
+                        $infodisplay = $infodisplay . " + ";
+                    }
+                    $infodisplay =  $infodisplay . "$nbjrs x $montant €";
+                    $montantdisplay = $montantdisplay + (round($nbjrs,0,PHP_ROUND_HALF_DOWN)*$montant);
+                }
+                echo "    <td class='cellulesimple'><center>" . str_replace('.', ',', $infodisplay) . "</center></td>
+                          <td class='cellulesimple'>" . str_replace('.', ',', $montantdisplay) . " €</td>
                       </tr>";
             }
         }

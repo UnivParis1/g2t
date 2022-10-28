@@ -883,7 +883,7 @@ class planning
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
     }
     
-    function nbjoursteletravail($agentid, $datedebut, $datefin, $reel = true, &$tabrepartition = array())
+    function nbjoursteletravail($agentid, $datedebut, $datefin, $reel = true, &$tabrepartition = array(), &$tabinfoindemnite = array())
     {
         $elementliste = $this->load($agentid, $datedebut, $datefin, true, $reel, true);
         $nbjoursteletravail = 0;
@@ -898,6 +898,14 @@ class planning
             }
         }
         
+        $tabindem = $this->fonctions->listeindemniteteletravail($datedebut, $datefin);
+        $indextabindem = 0;
+/*        
+        if ($agentid == '9328')
+        {
+            var_dump($tabindem);
+        }
+*/        
         foreach ($elementliste as $element)
         {
             //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Le type parent de l'élément est " . $element->parenttype()));
@@ -905,7 +913,51 @@ class planning
             {
                 $nbjoursteletravail = $nbjoursteletravail + 0.5;
                 $tabrepartition[$element->type()] = $tabrepartition[$element->type()] + 0.5;
+                
+                $elementdate = $this->fonctions->formatdatedb($element->date());
+                $montant = '0';
+                $logtext = "";
+                if ($tabindem[$indextabindem]["datefin"]<$elementdate)
+                {
+                    if (count($tabindem)>($indextabindem+1))
+                    {
+//                        $logtext = $logtext . " Cas 3";
+                        $indextabindem ++;
+                    }
+                    else
+                    {
+//                        $logtext = $logtext . " Cas 2";
+                        $montant = '0';
+                    }
+                }
+                if ($tabindem[$indextabindem]["datedebut"]>$elementdate)
+                {
+//                    $logtext = $logtext . " Cas 1";
+                    $montant = '0';
+                }
+                elseif (($tabindem[$indextabindem]["datedebut"]<=$elementdate) and ($tabindem[$indextabindem]["datefin"]>=$elementdate))
+                {
+//                    $logtext = $logtext . " Cas recup montant";
+                    $montant = str_replace(',','.',$tabindem[$indextabindem]["montant"]);
+                }
+/*                
+                if ($agentid == '9328')
+                {
+                    var_dump($logtext);
+                    var_dump($elementdate);
+                    var_dump($indextabindem);
+                    var_dump($tabindem[$indextabindem]["datedebut"]);
+                    var_dump($tabindem[$indextabindem]["datefin"]);
+                    var_dump($montant);
+                }
+*/                
+                if (!isset($tabinfoindemnite["$montant"]))
+                {
+                    $tabinfoindemnite["$montant"] = 0;
+                }
+                $tabinfoindemnite["$montant"] = $tabinfoindemnite["$montant"] + 0.5; // On a une 1/2 journée de plus au montant indiqué
             }
+            
         }
         
         //var_dump($tabrepartition);

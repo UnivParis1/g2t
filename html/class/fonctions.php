@@ -1507,23 +1507,53 @@ class fonctions
     	return 'ann'.substr($this->anneeref() - 1,2, 2);
     }
 
-    public function listeagentteletravail($datedebut,$datefin)
+    public function listeagentteletravail($datedebut,$datefin, $inclusansconvention = false)
     {
         $datedebut = $this->formatdatedb($datedebut);
         $datefin = $this->formatdatedb($datefin);
 
         $listeagentteletravail = array();
-        $sql = "SELECT DISTINCT TELETRAVAIL.AGENTID, AGENT.NOM, AGENT.PRENOM 
+        $sql = "";
+        if ($inclusansconvention)
+        {
+            $sql = $sql . "SELECT DISTINCT AGENTID, NOM, PRENOM FROM (";
+        }
+        
+        $sql = $sql . "SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM 
                 FROM TELETRAVAIL, AGENT
                 WHERE AGENT.AGENTID = TELETRAVAIL.AGENTID
-                  AND STATUT = '" . teletravail::STATUT_ACTIVE  . "'
-                  AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
-                    OR (DATEFIN >= ? AND DATEDEBUT <= ? )
-                    OR (DATEDEBUT >= ? AND DATEFIN <= ? ))
-                ORDER BY AGENT.NOM, AGENT.PRENOM ";
+                  AND TELETRAVAIL.STATUT = '" . teletravail::STATUT_ACTIVE  . "'
+                  AND ((TELETRAVAIL.DATEDEBUT <= ? AND TELETRAVAIL.DATEFIN >= ? )
+                    OR (TELETRAVAIL.DATEFIN >= ? AND TELETRAVAIL.DATEDEBUT <= ? )
+                    OR (TELETRAVAIL.DATEDEBUT >= ? AND TELETRAVAIL.DATEFIN <= ? ))";
+
+        // Si on inclu les demandes de télétravail HC on doit les extraires à partir des demandes de télétravail
+        if ($inclusansconvention)
+        {
+            $sql = $sql . "UNION
+                SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM 
+                FROM DEMANDE, AGENT
+                WHERE AGENT.AGENTID = DEMANDE.AGENTID
+                  AND DEMANDE.STATUT = '" . demande::DEMANDE_VALIDE  .  "'
+                  AND DEMANDE.TYPEABSENCEID IN (SELECT TYPEABSENCEID FROM TYPEABSENCE WHERE ABSENCEIDPARENT = 'teletravHC')
+                  AND ((DEMANDE.DATEDEBUT <= ? AND DEMANDE.DATEFIN >= ? )
+                    OR (DEMANDE.DATEFIN >= ? AND DEMANDE.DATEDEBUT <= ? )
+                    OR (DEMANDE.DATEDEBUT >= ? AND DEMANDE.DATEFIN <= ? ))
+) LISTE_COMPLETE";
+        }
+
+        $sql = $sql . " ORDER BY NOM, PRENOM ";
 
         //echo "<br>SQL = $sql <br>";
-        $params = array($datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
+        //var_dump($sql);
+        if (!$inclusansconvention)
+        {
+            $params = array($datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
+        }
+        else
+        {
+            $params = array($datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin,$datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
+        }
         $query = $this->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
@@ -1816,6 +1846,52 @@ class fonctions
         $html = $html . "</tbody></table>";
         $html = $html . "</p>";
         return $html;
+    }
+    
+    public function listeindemniteteletravail($datedebut, $datefin)
+    {
+
+       $datedebut = $this->formatdatedb($datedebut);
+       $datefin = $this->formatdatedb($datefin);
+       
+       $listeindemteletravail = array();
+       $constante = $this->liredbconstante("INDEMNITETELETRAVAIL");
+       // La structure de la constante est : datedebut|datefin|montant;datedebut|datefin|montant;.....
+       // IMPORTANT : Les pérodes doivent être classé par ordre de date croissant
+       if (!is_null($constante))
+       {
+           $tabindem = explode(";",$constante);
+           if (count($tabindem)>0)
+           {
+               foreach ($tabindem as $indemfull)
+               {
+                   $arrayvalue=explode("|",$indemfull);
+                   if (count($arrayvalue)==3)
+                   {
+                       $arrayvalue[0] = $this->formatdatedb($arrayvalue[0]); // On converti la date de début en datedb
+                       $arrayvalue[1] = $this->formatdatedb($arrayvalue[1]); // On converti la date de fin en datedb
+                       // On ne prend que les indemnité qui sont dans l'interval $datedebut -> $datefin
+                       if (($arrayvalue[0] <= $datedebut and $arrayvalue[1] >= $datedebut)
+                           or ($arrayvalue[1] >= $datefin and $arrayvalue[0] <= $datefin)
+                           or ($arrayvalue[0] >= $datedebut and $arrayvalue[1] <= $datefin))
+                       {
+                           $indemnite = array(); 
+                           $indemnite["datedebut"] = $arrayvalue[0];
+                           $indemnite["datefin"] = $arrayvalue[1];
+                           $indemnite["montant"] = str_replace(',','.',$arrayvalue[2]);
+                           $listeindemteletravail[] = $indemnite;
+                       }
+                   }
+               }
+           }
+       }
+//       if (count($listeindemteletravail)==0)
+//       {
+//           $indemnite["datedebut"] = '19000101';
+//           $indemnite["datefin"] = '29991231';
+//           $indemnite["montant"] = '0.0';
+//       }
+       return $listeindemteletravail;
     }
 
 }
