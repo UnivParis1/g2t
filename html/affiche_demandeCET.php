@@ -240,9 +240,27 @@
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"]));
             echo "<br><br>Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"] . "<br>";
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Date de création : " . $response["parentSignBook"]["createDate"]));
+            $displaydate = "";
             //echo "Date de création : " . date("d/m/Y H:i:s", substr($response["parentSignBook"]["createDate"],0,strlen($response["parentSignBook"]["createDate"])-3)) . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
-            $displaydate = date("d/m/Y H:i:s", strtotime($response["parentSignBook"]["createDate"])); // substr($response["parentSignBook"]["createDate"],0,10);
-            echo "Date de création : " . $displaydate . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
+            //$displaydate = $displaydate . " " . date("d/m/Y H:i:s", strtotime($response["parentSignBook"]["createDate"])); // substr($response["parentSignBook"]["createDate"],0,10);
+            $esignaturetimestamp = $response["parentSignBook"]["createDate"];
+            if (!is_int($esignaturetimestamp))
+            {
+                $date = new DateTime($esignaturetimestamp);
+                $displaydate = $date->format("d/m/Y H:i:s");
+            }
+            elseif (strlen($esignaturetimestamp)>10)
+            {
+                $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
+                //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
+                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+            }
+            else // C'est un timestamp sur 10 caractères
+            {
+                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+            }
+            //$displaydate = $displaydate . " " . date("d/m/Y H:i:s", $esignaturetimestamp);
+            echo "Date de création : " . trim($displaydate) . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Statut de la demande : " . $response["parentSignBook"]["status"]));
             echo "Statut de la demande : " . $response["parentSignBook"]["status"] . "<br>";
             echo "<br>";
@@ -332,7 +350,7 @@
             error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));
             echo $error . '<br><br>';
         }
-        if (stristr(substr($pdf,0,10),'PDF') === false)
+        if (stristr(substr($pdf,0,200),'%PDF-') === false)
         {
             $error = "Le WS n'a pas retourné un fichier PDF";
             $error = "Erreur Curl (récup PDF) =>  " . $error;
