@@ -24,6 +24,7 @@ then
    php specific/p1_post_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   php php/synchro_demandes_cet.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 fi
 
 numjour=`date +%d`
@@ -39,6 +40,7 @@ then
    php php/demande_cet.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 fi
 php php/mail_alerte_reliquats.php >>./log/trace_cron_$mydate.log
+php php/mail_alerte_teletravail.php >>./log/trace_cron_$mydate.log
 
 
 echo `date`  fin de traitement >>./log/trace_cron_$mydate.log
