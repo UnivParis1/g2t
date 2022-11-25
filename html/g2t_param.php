@@ -423,6 +423,7 @@
     
     // PARAMETRAGE DU CALENDRIER D'ALIMENTATION
     //if (isset($_POST['valider_cal_alim']))
+    $datecampagnealimupdate = false;
     if (isset($_POST['date_debut_alim']) and isset($_POST['date_fin_alim']))
     {
         if ($fonctions->verifiedate($_POST['date_debut_alim']) and $fonctions->verifiedate($_POST['date_fin_alim']))
@@ -438,6 +439,7 @@
             {
                 $fonctions->debutalimcet($datedebutalim);
                 $fonctions->finalimcet($datefinalim);
+                $datecampagnealimupdate = true;
             }
         }
         else
@@ -449,6 +451,7 @@
 
     // PARAMETRAGE DU CALENDRIER DE DROIT D'OPTION
     //if (isset($_POST['valider_cal_option']))
+    $datecampagneoptionupdate = false;
     if (isset($_POST['date_debut_option']) and isset($_POST['date_fin_option']))
     {
         if ($fonctions->verifiedate($_POST['date_debut_option']) and $fonctions->verifiedate($_POST['date_fin_option']))
@@ -464,6 +467,7 @@
             {
                 $fonctions->debutoptioncet($datedebutopt);
                 $fonctions->finoptioncet($datefinopt);
+                $datecampagneoptionupdate = true;
             }
         }
         else
@@ -474,8 +478,10 @@
     }
 
     //if (isset($_POST['valider_param_plafond']))
+    $plafondupdate = false;
     if (isset($_POST['plafondcet']))
     {
+        $constantename = 'PLAFONDCET';
         $plafondcet = $_POST['plafondcet'];
         if (!is_numeric($plafondcet) || !is_int($plafondcet+0) || $plafondcet < 0)
         {
@@ -484,8 +490,139 @@
         }
         else
         {
-            $update = "UPDATE CONSTANTES SET VALEUR = $plafondcet WHERE NOM = 'PLAFONDCET'";
-            $query = mysqli_query($dbcon, $update);
+            if (!$fonctions->testexistdbconstante($constantename))
+            {
+                $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$plafondcet')";
+            }
+            else
+            {
+                $sql = "UPDATE CONSTANTES SET VALEUR = '$plafondcet' WHERE NOM = '$constantename'";
+                
+            }
+            //var_dump($sql);
+            mysqli_query($dbcon, $sql);
+            $erreur = mysqli_error($dbcon);
+            if (strlen($erreur)>0)
+            {
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $msgerror = $msgerror . $erreur;
+            }
+            else
+            {
+                $plafondupdate = true;
+            }
+        }
+    }
+    
+    $supprok = false;
+    $signataireupdate = false;
+    if (isset($_POST['valider_signataire_cet']))
+    {
+        $msgerror = "";
+        $constantename = 'CETSIGNATAIRE';
+        if (isset($_POST['supprsignataire']))
+        {
+            $tabsuppr = $_POST['supprsignataire'];
+            $signataireliste = '';
+            if ($fonctions->testexistdbconstante($constantename))
+            {
+                $signataireliste = $fonctions->liredbconstante($constantename);
+            }
+            $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+            foreach($tabsuppr as $niveau => $infos)
+            {
+                foreach($infos as $key => $valeur)
+                {
+                    //var_dump($niveau);
+                    //var_dump($key);
+                    unset($tabsignataire[$niveau][$key]);
+                }
+            }
+            $stringsignataire = $fonctions->cetsignatairetostring($tabsignataire);
+            if (!$fonctions->testexistdbconstante($constantename))
+            {
+                $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$stringsignataire')";
+            }
+            else
+            {
+                $sql = "UPDATE CONSTANTES SET VALEUR = '$stringsignataire' WHERE NOM = '$constantename'";
+                
+            }
+            //var_dump($sql);
+            mysqli_query($dbcon, $sql);
+            $erreur = mysqli_error($dbcon);
+            if (strlen($erreur)>0)
+            {
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $msgerror = $msgerror . $erreur;
+            }
+            else
+            {
+                $supprok = true;
+            }
+        }
+        
+        $newlevelsignataire = '';
+        $newtypesignataire = '';
+        $newidsignataire = '';
+        if (isset($_POST['newlevelsignataire']))
+        {
+            $newlevelsignataire = trim($_POST['newlevelsignataire']);
+        }
+        if (isset($_POST['newtypesignataire']))
+        {
+            $newtypesignataire = trim($_POST['newtypesignataire']);
+        }
+        if (isset($_POST['newidsignataire']))
+        {
+            $newidsignataire = trim($_POST['newidsignataire']);
+        }
+        //var_dump($newlevelsignataire);
+        //var_dump($newtypesignataire);
+        //var_dump($newidsignataire);
+        
+        if ($newidsignataire == '' and !isset($_POST['supprsignataire']))
+        {
+            // On n'a pas les infos nécessaires => Error
+            if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+            $msgerror = $msgerror . "L'identifiant du signataire est vide.";
+        }
+        elseif ($newidsignataire != '')
+        {
+            $constantename = 'CETSIGNATAIRE';
+            $signataireliste = '';
+            if ($fonctions->testexistdbconstante($constantename))
+            {
+                $signataireliste = $fonctions->liredbconstante($constantename);
+            }
+            $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+            //var_dump($tabsignataire);
+            $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire);
+            //var_dump($tabsignataire);
+            $stringsignataire = $fonctions->cetsignatairetostring($tabsignataire);
+            //var_dump($stringsignataire);
+            
+            if (!$fonctions->testexistdbconstante($constantename))
+            {
+                $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$stringsignataire')";
+            }
+            else
+            {
+                $sql = "UPDATE CONSTANTES SET VALEUR = '$stringsignataire' WHERE NOM = '$constantename'";
+                
+            }
+            //var_dump($sql);
+            mysqli_query($dbcon, $sql);
+            $erreur = mysqli_error($dbcon);
+            if (strlen($erreur)>0)
+            {
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $msgerror = $msgerror . $erreur;
+            }
+            else
+            {
+                $signataireupdate = true;
+            }
         }
     }
     
@@ -493,14 +630,19 @@
     {
         echo $fonctions->showmessage(fonctions::MSGERROR, $msgerror);
     }
-    elseif (isset($_POST['valider_param_cet']))
+    if ($plafondupdate or $datecampagneoptionupdate or $datecampagnealimupdate or $signataireupdate )
     {
         echo $fonctions->showmessage(fonctions::MSGINFO, "Les données sont enregistrées");
     }
-    
+    if ($supprok)
+    {
+        echo $fonctions->showmessage(fonctions::MSGINFO, "Les données ont été supprimées");
+    }
+
     $msgerror = '';
 
-    $plafondparam = $fonctions->liredbconstante('PLAFONDCET');
+    $plafondparam = 0;
+    if ($fonctions->testexistdbconstante('PLAFONDCET')) $plafondparam = $fonctions->liredbconstante('PLAFONDCET');
 
 ?>
             <form name="frm_param_cet" method="post">
@@ -601,11 +743,61 @@
         	    		</tr>
         	    	</table>
         	 		<br><br>
-                    <input type='hidden' id='current_tab' name='current_tab' value='tab_2'>
-                    <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
             		Nombre de jours maximum sur CET : <input type='text' name='plafondcet' value='<?php echo $plafondparam;?>'>
             		<br><br>
+                    <input type='hidden' id='current_tab' name='current_tab' value='tab_2'>
+                    <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
             		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' />
+            </form>
+            <br><br>
+            <form name="frm_param_cet" method="post">
+            
+            <table class='tableausimple' id='listeindemnite'>
+            	<tr><center>
+            		<td class='titresimple'>Niveau du signataire</td>
+                    <td class='titresimple'>Type de signataire</td>
+                    <td class='titresimple'>Signataire</td>
+                    <td class='titresimple'>Supprimer</td>
+            	</center></tr>
+<?php 
+                $constantename = 'CETSIGNATAIRE';
+                $signataireliste = '';
+                $tabsignataire = array();
+                if ($fonctions->testexistdbconstante($constantename))
+                {
+                    $signataireliste = $fonctions->liredbconstante($constantename);
+                }
+                if (strlen($signataireliste)>0)
+                {
+                    $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                    foreach ($tabsignataire as $niveau => $infosignataires)
+                    {
+                        foreach ($infosignataires as $idsignataire => $infosignataire)
+                        {
+?>            	
+				<tr>
+                    <td class='cellulesimple'><center><?php echo $niveau; ?></center></td>
+                    <td class='cellulesimple'><center><?php echo $infosignataire[0]; ?></center></td>
+                    <td class='cellulesimple'><center><?php echo $infosignataire[1]; ?></center></td>
+                    <td class='cellulesimple'><center><input type='checkbox' id='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+            	</tr>
+<?php
+                        }
+                    }
+                }
+?>
+				<tr>
+                    <td class='cellulesimple'><center><input type='text' id='newlevelsignataire' name='newlevelsignataire' value=''></center></td>
+                    <td class='cellulesimple'><center><input type='text' id='newtypesignataire' name='newtypesignataire' value=''></center></td>
+                    <td class='cellulesimple'><center><input type='text' id='newidsignataire' name='newidsignataire' value=''></center></td>
+                    <td class='cellulesimple'><center></center></td>
+            	</tr>
+            </table>
+    		<br><br>
+            <input type='hidden' id='current_tab' name='current_tab' value='tab_2'>
+            <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
+    		<input type='submit' name='valider_signataire_cet' id='valider_signataire_cet' value='Soumettre' />
+            
             </form>
 
         </div>

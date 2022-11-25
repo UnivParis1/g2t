@@ -1995,7 +1995,75 @@ class fonctions
         }
         return $error;
     }
+    
+    public function cetsignatairetoarray($cetsignatairestring)
+    {
+        $cetsignatairearray = array();
+        $cetsignatairestring = trim($cetsignatairestring);
+        if (is_null($cetsignatairestring) or strlen($cetsignatairestring)==0)
+        {
+            return $cetsignatairearray;
+        }
+        $tabsplit = explode(';', $cetsignatairestring);
+        foreach ($tabsplit as $infosignataire)
+        {
+            //var_dump($infosignataire);
+            if (strlen($infosignataire)>0)
+            {
+                $infotab = explode('|',$infosignataire);
+                // $infotab[0] = niveau du signataire
+                // $infotab[1] = type de signataire
+                // $infotab[2] = identifiant du signataire
+                //var_dump($infotab);
+                if (trim($infotab[0])=='' or trim($infotab[1])=='' or trim($infotab[2])=='')
+                {
+                    // Au moins un des champs est vide ! Donc on ignore
+                }
+                else
+                {
+                    $idsignataire = $infotab[1] . '_' . $infotab[2];
+                    $cetsignatairearray[$infotab[0]][$idsignataire] = array($infotab[1],$infotab[2]);
+                }
+            }
+        }
+        return $cetsignatairearray;
+    }
 
+    public function cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire)
+    {
+        $idsignataire = $newtypesignataire . '_' . $newidsignataire;
+        $tabsignataire[$newlevelsignataire][$idsignataire] = array($newtypesignataire,$newidsignataire);
+        return $tabsignataire;
+    }
+    
+    public function cetsignatairetostring($tabsignataire)
+    {
+        $cetsignatairestring = '';
+        if (!is_array($tabsignataire) or count($tabsignataire)==0)
+        {
+            return $cetsignatairestring;
+        }
+        ksort($tabsignataire);
+        foreach ($tabsignataire as $niveau => $tabinfos)
+        {
+            foreach ($tabinfos as $info)
+            {
+                $typesignataire = $info[0];
+                $idsignataire = $info[1];
+                if (strlen($cetsignatairestring)>0) $cetsignatairestring = $cetsignatairestring . ";";
+                if (trim($niveau)=='' or trim($typesignataire)=='' or trim($idsignataire)=='')
+                {
+                    // Au moins un des champs est vide ! Donc on ignore
+                }
+                else
+                {
+                    $cetsignatairestring = $cetsignatairestring . $niveau . '|' . $typesignataire . '|' . $idsignataire;
+                }
+            }
+        }
+        return $cetsignatairestring;
+    }
+    
 }
 
 ?>

@@ -12,6 +12,11 @@
 class cet
 {
 
+    public const SIGNATAIRE_AGENT = "1";
+    public const SIGNATAIRE_STRUCTURE = "2";
+    public const SIGNATAIRE_RESPONSABLE = "3";
+    
+    
     private $idannuel = null;
 
     private $idtotal = null;
