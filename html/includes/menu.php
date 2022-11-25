@@ -819,12 +819,14 @@
         if ($user->estprofilrh('1')) // PROFIL RH = 1 ==> GESTIONNAIRE RH DE CET
         {
 ?>
+<!--  
 					<li onclick='document.rh_gest_periode.submit();'>
 						<form name='rh_gest_periode' method='post' action="gestion_periodes.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 						</form>
 						<a href="javascript:document.rh_gest_periode.submit();">Gestion des périodes de fermeture</a>
 					</li>
+-->
 					<li onclick='document.rh_gest_deleg.submit();'>
                         <form name='rh_gest_deleg' method='post' action="gestion_delegation.php">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
@@ -844,7 +846,7 @@
 						</form> 
 						<a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
 					</li>
-					<li class="plus"><a>Gestion des CET et paramétrage</a>
+					<li class="plus"><a>Gestion des CET</a>  <!-- Gestion des CET et paramétrage -->
 						<ul class="niveau3">
         					<li onclick='document.gestrh_utilisationcet.submit();'>
         						<form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
@@ -874,12 +876,14 @@
         						</form> 
         						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
         					</li>
+<!--          					
         					<li onclick='document.rh_param_cet.submit();'>
         						<form name='rh_param_cet' method='post' action="param_cet.php">
         							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
         						</form>
         						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
         					</li>
+-->
 <!--                     
         					<li onclick='document.rh_alimentation_cet_test.submit();'>
                                 <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
@@ -966,6 +970,12 @@
         					</li>
     					</ul>
     				</li>
+					<li onclick='document.rh_affiche_g2t_param.submit();'>
+						<form name='rh_affiche_g2t_param' method='post' action="g2t_param.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+						</form> 
+						<a href="javascript:document.rh_affiche_g2t_param.submit();">Paramétrage</a>
+					</li>
 					
 <?php
         }
@@ -1029,6 +1039,12 @@
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_affiche_info_teletravail.submit();">Nombre théorique de jours de télétravail</a>
+					</li>
+					<li onclick='document.admin_affiche_g2t_param.submit();'>
+						<form name='admin_affiche_g2t_param' method='post' action="g2t_param.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+						</form> 
+						<a href="javascript:document.admin_affiche_g2t_param.submit();">Paramétrage</a>
 					</li>
 				</ul>
 			</li>

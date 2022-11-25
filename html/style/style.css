@@ -106,7 +106,7 @@
 	vertical-align: middle;
 	border-collapse: collapse;
 /* 	border-spacing: 1; /* Removes the cell spacing via CSS */
- 	border: 1px solid white;
+/* 	border: 1px solid white; */
 	margin-left : 5px; 	
 	margin-right : 5px; 	
 }
@@ -705,6 +705,61 @@ span[data-tip]{
   top: -10px;
 }
 
+/**************************************************
+/ ONGLETS
+/**************************************************/
+[data-tab-info] {
+    display: none;
+}
+
+.active[data-tab-info] {
+    display: block;
+}
+
+.tab-content {
+    /* font-weight: bold; */
+    /* color: rgb(82, 75, 75); */
+}
+
+.tabs {
+    color: #336699; /* rgb(255, 255, 255); */
+    FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif;
+    FONT-WEIGHT: bold;
+    display: flex;
+    margin: 0;
+}
+
+.tabs span {
+    background: #e6e6e6; /* rgb(28, 145, 38); */
+    padding: 10px;
+    /* border: 1px solid rgb(255, 255, 255); */
+    border:1px solid black;
+    WIDTH: 150px;
+    text-align: center;
+}
+
+.tabs span:hover {
+    /* background: rgb(29, 185, 112);*/
+    cursor: pointer;
+    BACKGROUND: #D6D6D6;
+    /* color: black; */
+}
+
+.tab_active {
+    background: #ffffff !important; /* rgb(255, 0, 0) !important; */
+}
+
+
+.tabs__tab {  /*  formulaire de l'onglet  */
+    /* background-color:#dddddd; */
+    background-color:#F0F0F0;
+    border:1px solid black;
+    margin-top:-1px;
+    padding:5px;
+    display:none;
+}
+
+
 /*************************************************
 / CSS SIHAM pour affichage CET dans module agent de l'ENT
 /*************************************************/
@@ -716,3 +771,4 @@ span[data-tip]{
 	background: inherit; 
 	border-width: 0;
 }
+

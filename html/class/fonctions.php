@@ -560,6 +560,21 @@ class fonctions
         }
     }
 
+    public function testexistdbconstante($constante)
+    {
+        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";
+        $params = array($constante);
+        $query = $this->prepared_select($sql, $params);
+        
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->testexistdbconstante : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        return (mysqli_num_rows($query) != 0);
+    }
+    
     /**
      *
      * @param string $datedebut
@@ -1892,6 +1907,93 @@ class fonctions
 //           $indemnite["montant"] = '0.0';
 //       }
        return $listeindemteletravail;
+    }
+    
+    public function recur_ksort(&$array) {
+        foreach ($array as &$value) {
+            if (is_array($value)) $this->recur_ksort($value);
+        }
+        return ksort($array);
+    }
+    
+    public function synchronisationjoursferies($tabannees,&$tabferies)
+    {
+        $error = "";
+        if (is_null($tabannees) or count($tabannees)==0)
+        {
+            $tabannees = array($this->anneeref());
+        }
+        $tabferies = array();
+
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => 'https://calendrier.api.gouv.fr/jours-feries/metropole.json',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => 'http://proxy.univ-paris1.fr:3128/'
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl =>  " . $error));
+            return $error;
+        }
+        //var_dump($json);
+        $listeferies = json_decode($json, true);
+        //var_dump($listeferies);
+        if (is_null($listeferies))
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl =>  " . $json));
+            return "Une erreur s'est produite lors de la synchronisation => la liste est vide";
+        }
+        $error = "";
+        foreach($listeferies as $date => $nom)
+        {
+            $anneref = $this->anneeref($this->formatdate($date));
+            if (in_array($anneref, $tabannees))
+            {
+                $tabferies[$anneref][$this->formatdatedb($date)] = $this->formatdate($date);
+            }
+        }
+        // Tri récursif du tableau des jours fériés
+        $this->recur_ksort($tabferies);
+        
+        foreach($tabferies as $anneeref => $tabferiesparannee)
+        {
+            $datestring = "";
+            foreach($tabferiesparannee as $datedb => $date)
+            {
+                if (strlen($datestring)>0) $datestring = $datestring . ";";
+                $datestring = $datestring . $datedb;     
+            }
+            //var_dump($datestring);
+            if (strlen($datestring)>0)
+            {
+                $constantename = 'FERIE' . $anneeref;
+                if (!$this->testexistdbconstante($constantename))
+                {
+                    $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$datestring')";
+                }
+                else
+                {
+                    $sql = "UPDATE CONSTANTES SET VALEUR = '$datestring' WHERE NOM = '$constantename'";
+                    
+                }
+                //var_dump($sql);
+                $return = mysqli_query($this->dbconnect, $sql);
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    $error = $error . "  " . $erreur;
+                    error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
+                }                
+            }
+        }
+        return $error;
     }
 
 }

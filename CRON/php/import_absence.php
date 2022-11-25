@@ -82,6 +82,26 @@
         fclose($fp);
     }
     
+    $tabannees = array($fonctions->anneeref(),$fonctions->anneeref()+1);
+    $stringannee = "";
+    $separateur = "";
+    foreach($tabannees as $key => $annee)
+    {
+        if (strlen($stringannee)>0 and $key==count($tabannees)-1) $separateur = ' et '; elseif (strlen($stringannee)>0) $separateur = ', ';
+        $stringannee = $stringannee . $separateur . $annee . '/' . ($annee+1);
+    }
+    $tabferies = array();
+    echo "On importe les jours féries sur " . trim($stringannee) . "\n";
+    $erreur = $fonctions->synchronisationjoursferies($tabannees, $tabferies);
+    if ($erreur!='')
+    {
+        echo "Erreur lors de la synchronisation : $erreur.\n";
+    }
+    else
+    {
+        echo "La synchronisation s'est bien passee sur " . trim($stringannee) . "\n";
+    }
+    
     echo "Fin de l'import des absences de l'application RH " . date("d/m/Y H:i:s") . "\n";
 
 ?>

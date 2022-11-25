@@ -311,6 +311,12 @@
 	            $dgs_agent = $struct->responsable();
 	            $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
 	            
+	            // Ajout de Mme Emilie Ganné
+	            $eganneid=91790;
+	            $eganne = new agent($dbcon);
+	            $eganne->load($eganneid);
+	            $params['recipientEmails'][] = '5*' . $eganne->mail();
+	            
 	            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
 	                    is_array( $item )
 	                    ? array_walk( $item, $walk, $key )

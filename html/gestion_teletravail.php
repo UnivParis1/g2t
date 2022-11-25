@@ -557,7 +557,7 @@
         	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' >";
         	echo "Date de début de la convention télétravail : ";
         	if ($fonctions->verifiedate($datedebutteletravail)) {
-        	    $datefindeleg = $fonctions->formatdate($datedebutteletravail);
+        	    $datedebutteletravail = $fonctions->formatdate($datedebutteletravail);
         	}
     ?>
             <input class="calendrier" type=text

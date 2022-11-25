@@ -477,6 +477,13 @@
 		                $struct->load($dgs_id);
 		                $dgs_agent = $struct->responsable();
 		                $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
+		                
+		                // Ajout de Mme Emilie Ganné
+		                $eganneid=91790;
+		                $eganne = new agent($dbcon);
+		                $eganne->load($eganneid);
+		                $params['recipientEmails'][] = '5*' . $eganne->mail();
+		                
 		           // }
 		    /*        
 		            $params_string = http_build_query($params);
