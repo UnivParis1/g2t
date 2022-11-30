@@ -138,6 +138,7 @@ class periodeobligatoire
         $datefin = $this->fonctions->formatdatedb($datefin);
         $periode = array("datedebut" => $datedebut,"datefin" => $datefin);
         $this->listedate[$datedebut . '-' . $datefin] = $periode;
+        ksort($this->listedate);
         //echo "<br>ajouter => listedate = " . print_r($this->listedate,true)."<br>";
     }
     
