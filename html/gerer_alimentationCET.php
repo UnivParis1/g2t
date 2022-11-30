@@ -927,7 +927,7 @@
 			}
 			if ($valeur_c < $nbjoursobli)
 			{
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés \"" . $solde->typelibelle() . "\" obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
 				$nbjoursmax = 0;
 			}
 			else {
