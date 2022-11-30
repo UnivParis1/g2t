@@ -292,6 +292,38 @@
 <body class="bodyhtml"> 
 
 <?php
+    function affichestructureliste($structure, $niveau = 0)
+    {
+        global $dbcon;
+        global $structureid;
+        global $fonctions;
+        global $showall;
+        // $fonctions = new fonctions($dbcon);
+        if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
+            echo "<option value='" . $structure->id() . "'";
+            if ($structure->id() == $structureid) {
+                echo " selected ";
+            }
+            if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
+                echo " style='color:red;' ";
+            }
+            echo ">";
+            for ($cpt = 0; $cpt < $niveau; $cpt ++) {
+                echo "&nbsp;&nbsp;&nbsp;&nbsp;";
+            }
+            echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
+            echo "</option>";
+            
+            $sousstruclist = $structure->structurefille();
+            foreach ((array) $sousstruclist as $keystruct => $soustruct) {
+                affichestructureliste($soustruct, $niveau + 1);
+            }
+        }
+    }
+
+    
+    
+    
     // On chrge le "vrai" utilisateur de l'application (Celui du ticket CAS)
     $realuser = new agent($dbcon);
     $realuserid = $fonctions->useridfromCAS($uid);

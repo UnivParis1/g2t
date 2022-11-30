@@ -559,7 +559,31 @@ class fonctions
             return $result[0];
         }
     }
-
+    
+    public function enregistredbconstante($constante, $valeur)
+    {
+        if (!$this->testexistdbconstante($constante))
+        {
+            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
+            $params = array($constante,$valeur);
+            $query = $this->prepared_select($sql, $params);
+        }
+        else
+        {
+            $sql = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = ?";
+            $params = array($valeur,$constante);
+            $query = $this->prepared_select($sql, $params);
+        }
+        $erreur = mysqli_error($this->dbconnect);
+        if (strlen($erreur)>0)
+        {
+            $errlog = "Fonctions->enregistredbconstante : La constante '" . $constante . "' n'a pas pu être mise à jour : $erreur.";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            return $errlog;
+        }
+        return '';
+    }
+    
     public function testexistdbconstante($constante)
     {
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";

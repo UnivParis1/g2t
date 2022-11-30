@@ -74,34 +74,6 @@
     }
 
     // print_r ($_POST); echo "<br>";
-    function affichestructureliste($structure, $niveau = 0)
-    {
-        global $dbcon;
-        global $structureid;
-        global $fonctions;
-        global $showall;
-        // $fonctions = new fonctions($dbcon);
-        if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
-            echo "<option value='" . $structure->id() . "'";
-            if ($structure->id() == $structureid) {
-                echo " selected ";
-            }
-            if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-                echo " style='color:red;' ";
-            }
-            echo ">";
-            for ($cpt = 0; $cpt < $niveau; $cpt ++) {
-                echo "&nbsp;&nbsp;&nbsp;&nbsp;";
-            }
-            echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-            echo "</option>";
-
-            $sousstruclist = $structure->structurefille();
-            foreach ((array) $sousstruclist as $keystruct => $soustruct) {
-                affichestructureliste($soustruct, $niveau + 1);
-            }
-        }
-    }
 
     // echo "Responsable Liste = " . print_r($responsableliste,true) . "<br>";
     // echo "Gestionnaire Liste = " . print_r($gestionnaireliste,true) . "<br>";

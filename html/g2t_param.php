@@ -205,6 +205,9 @@
         else
         {
             $constantename = "NBJOURS" . $anneeconge;
+            $msg_erreur = $fonctions->enregistredbconstante($constantename, $nbjoursannuel);
+
+/*            
             if (!$fonctions->testexistdbconstante($constantename))
             {
                 $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$nbjoursannuel')";
@@ -217,6 +220,7 @@
             //var_dump($sql);
             mysqli_query($dbcon, $sql);
             $msg_erreur = mysqli_error($dbcon);
+*/            
        }
     }
     
@@ -490,6 +494,8 @@
         }
         else
         {
+            $erreur = $fonctions->enregistredbconstante($constantename, $plafondcet);
+/*            
             if (!$fonctions->testexistdbconstante($constantename))
             {
                 $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$plafondcet')";
@@ -502,6 +508,7 @@
             //var_dump($sql);
             mysqli_query($dbcon, $sql);
             $erreur = mysqli_error($dbcon);
+*/            
             if (strlen($erreur)>0)
             {
                 if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
@@ -539,6 +546,8 @@
                 }
             }
             $stringsignataire = $fonctions->cetsignatairetostring($tabsignataire);
+            $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+/*            
             if (!$fonctions->testexistdbconstante($constantename))
             {
                 $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$stringsignataire')";
@@ -551,6 +560,7 @@
             //var_dump($sql);
             mysqli_query($dbcon, $sql);
             $erreur = mysqli_error($dbcon);
+*/            
             if (strlen($erreur)>0)
             {
                 if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
@@ -565,6 +575,7 @@
         $newlevelsignataire = '';
         $newtypesignataire = '';
         $newidsignataire = '';
+        $structureid='';
         if (isset($_POST['newlevelsignataire']))
         {
             $newlevelsignataire = trim($_POST['newlevelsignataire']);
@@ -573,21 +584,35 @@
         {
             $newtypesignataire = trim($_POST['newtypesignataire']);
         }
-        if (isset($_POST['newidsignataire']))
+        if (isset($_POST['newidsignataire']) and $newtypesignataire==cet::SIGNATAIRE_AGENT)
         {
             $newidsignataire = trim($_POST['newidsignataire']);
         }
+        if (isset($_POST['structureid']) and ($newtypesignataire==cet::SIGNATAIRE_STRUCTURE or $newtypesignataire==cet::SIGNATAIRE_RESPONSABLE))
+        {
+            $structureid = trim($_POST['structureid']);
+        }
+        
         //var_dump($newlevelsignataire);
         //var_dump($newtypesignataire);
         //var_dump($newidsignataire);
         
-        if ($newidsignataire == '' and !isset($_POST['supprsignataire']))
+        if ($newidsignataire == '' and $structureid == '' and !isset($_POST['supprsignataire']))
         {
             // On n'a pas les infos nécessaires => Error
             if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
-            $msgerror = $msgerror . "L'identifiant du signataire est vide.";
+            $stringerror = "Vous avez sélectionné le type de signataire " . cet::SIGNATAIRE_LIBELLE[$newtypesignataire] . " mais vous n'avez pas saisi ";
+            if ($newtypesignataire==cet::SIGNATAIRE_AGENT)
+            {
+                $stringerror = $stringerror . " d'agent.";
+            }
+            else
+            {
+                $stringerror = $stringerror . "de structure.";
+            }
+            $msgerror = $msgerror . $stringerror;
         }
-        elseif ($newidsignataire != '')
+        elseif ($newidsignataire != '' or $structureid !='')
         {
             $constantename = 'CETSIGNATAIRE';
             $signataireliste = '';
@@ -597,11 +622,20 @@
             }
             $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
             //var_dump($tabsignataire);
-            $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire);
+            if ($newtypesignataire == cet::SIGNATAIRE_AGENT)
+            {
+                $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire);
+            }
+            else
+            {
+                $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$structureid,$tabsignataire);
+            }
             //var_dump($tabsignataire);
             $stringsignataire = $fonctions->cetsignatairetostring($tabsignataire);
             //var_dump($stringsignataire);
-            
+
+            $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+/*            
             if (!$fonctions->testexistdbconstante($constantename))
             {
                 $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$stringsignataire')";
@@ -614,6 +648,7 @@
             //var_dump($sql);
             mysqli_query($dbcon, $sql);
             $erreur = mysqli_error($dbcon);
+*/            
             if (strlen($erreur)>0)
             {
                 if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
@@ -640,9 +675,27 @@
     }
 
     $msgerror = '';
-
+    
+    $constantename = 'CETSIGNATAIRE';
+    $signataireliste = '';
+    $tabsignataire = array();
+    if ($fonctions->testexistdbconstante($constantename))
+    {
+        $signataireliste = $fonctions->liredbconstante($constantename);
+    }
+    $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+    $disablebuttonsubmit = "";
+    if (!isset($tabsignataire[3]) or !isset($tabsignataire[4]) or !isset($tabsignataire[5]))
+    {
+        echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible de modifier les dates de campagnes CET <br> car tous les niveaux du circuit ne sont pas définis.");
+        $disablebuttonsubmit = " disabled ";
+    }
+    
+    
+    
+    $constantename = 'PLAFONDCET';
     $plafondparam = 0;
-    if ($fonctions->testexistdbconstante('PLAFONDCET')) $plafondparam = $fonctions->liredbconstante('PLAFONDCET');
+    if ($fonctions->testexistdbconstante($constantename)) $plafondparam = $fonctions->liredbconstante($constantename);
 
 ?>
             <form name="frm_param_cet" method="post">
@@ -747,7 +800,7 @@
             		<br><br>
                     <input type='hidden' id='current_tab' name='current_tab' value='tab_2'>
                     <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
-            		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' />
+            		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' <?php echo $disablebuttonsubmit;?>/>
             </form>
             <br><br>
             <form name="frm_param_cet" method="post">
@@ -759,6 +812,18 @@
                     <td class='titresimple'>Signataire</td>
                     <td class='titresimple'>Supprimer</td>
             	</center></tr>
+            	<tr><center>
+            		<td class='cellulesimple'><center>Niveau 1</center></td>
+            		<td class='cellulesimple'><center><?php echo cet::SIGNATAIRE_LIBELLE[1]; ?></center></td>
+            		<td class='cellulesimple'><center>Agent demandeur</center></td>
+            		<td class='cellulesimple'><center></center></td>
+            	</center></tr>
+            	<tr><center>
+            		<td class='cellulesimple'><center>Niveau 2</center></td>
+            		<td class='cellulesimple'><center><?php echo cet::SIGNATAIRE_LIBELLE[3]; ?></center></td>
+            		<td class='cellulesimple'><center>Structure de l'agent</center></td>
+            		<td class='cellulesimple'><center></center></td>
+            	</center></tr>
 <?php 
                 $constantename = 'CETSIGNATAIRE';
                 $signataireliste = '';
@@ -767,19 +832,52 @@
                 {
                     $signataireliste = $fonctions->liredbconstante($constantename);
                 }
-                if (strlen($signataireliste)>0)
+
+                $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                if (!isset($tabsignataire['3']['1_-2']))
                 {
+                    $tabsignataire = $fonctions->cetsignataireaddtoarray('3', cet::SIGNATAIRE_AGENT, "-2", $tabsignataire);
+                    $signataireliste = $fonctions->cetsignatairetostring($tabsignataire);
+                    $saveerror = $fonctions->enregistredbconstante($constantename, $signataireliste);
+                    if ($saveerror != '')
+                    {
+                        $fonctions->showmessage(fonctions::MSGERROR,$saveerror);
+                    }
+                    $signataireliste = $fonctions->liredbconstante($constantename);
                     $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                    //var_dump($tabsignataire);
+                }
+
+                if (count($tabsignataire)>0)
+                {
                     foreach ($tabsignataire as $niveau => $infosignataires)
                     {
                         foreach ($infosignataires as $idsignataire => $infosignataire)
                         {
 ?>            	
 				<tr>
-                    <td class='cellulesimple'><center><?php echo $niveau; ?></center></td>
-                    <td class='cellulesimple'><center><?php echo $infosignataire[0]; ?></center></td>
-                    <td class='cellulesimple'><center><?php echo $infosignataire[1]; ?></center></td>
-                    <td class='cellulesimple'><center><input type='checkbox' id='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+                    <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
+                    <td class='cellulesimple'><center><?php echo cet::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+<?php               
+                    if ($infosignataire[0]==cet::SIGNATAIRE_AGENT)
+                    {
+?>                    
+                    <td class='cellulesimple'><center><?php $agent = new agent($dbcon); $agent->load($infosignataire[1]); echo $agent->identitecomplete() ?></center></td>
+<?php 
+                    }
+                    else
+                    {
+?>
+                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+<?php 
+                    }
+                    $disablecheckbox = "";
+                    if ($infosignataire[1]=='-2') // On ne peut pas supprimer "Gestion de Temps"
+                    {
+                        $disablecheckbox = ' disabled ';
+                    }
+?>
+                    <td class='cellulesimple'><center><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
             	</tr>
 <?php
                         }
@@ -787,12 +885,81 @@
                 }
 ?>
 				<tr>
-                    <td class='cellulesimple'><center><input type='text' id='newlevelsignataire' name='newlevelsignataire' value=''></center></td>
-                    <td class='cellulesimple'><center><input type='text' id='newtypesignataire' name='newtypesignataire' value=''></center></td>
-                    <td class='cellulesimple'><center><input type='text' id='newidsignataire' name='newidsignataire' value=''></center></td>
+                    <td class='cellulesimple'><center>
+                        <select name="newlevelsignataire" id="newlevelsignataire">
+                            <option value="3">Niveau 3</option>
+                            <option value="4">Niveau 4</option>
+                            <option value="5">Niveau 5</option>
+                        </select>
+                    </center></td>
+                    <td class='cellulesimple'><center>
+                        <select name="newtypesignataire" id="newtypesignataire">
+                            <option value="<?php echo cet::SIGNATAIRE_AGENT; ?>"><?php echo cet::SIGNATAIRE_LIBELLE[cet::SIGNATAIRE_AGENT]; ?></option>
+                            <option value="<?php echo cet::SIGNATAIRE_STRUCTURE; ?>"><?php echo cet::SIGNATAIRE_LIBELLE[cet::SIGNATAIRE_STRUCTURE]; ?></option>
+                            <option value="<?php echo cet::SIGNATAIRE_RESPONSABLE; ?>"><?php echo cet::SIGNATAIRE_LIBELLE[cet::SIGNATAIRE_RESPONSABLE]; ?></option>
+                        </select>
+                    </center></td>
+                    <td class='cellulesimple'><center>
+                    	<input id="user" name="user" placeholder="Nom et/ou prenom" autofocus/>
+                    	<input type='hidden' id="newidsignataire" name="newidsignataire" class='user' />
+                    	<script>
+                    	    //var input_elt = $( ".token-autocomplete input" );
+                      	    $( "#user" ).autocompleteUser(
+                        	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+                      	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                    	</script>
+<!--                     <input type='text' id='newidsignataire' name='newidsignataire' value=''>   -->
+                    </center>
+                	<div id='div_structureid' hidden>  <!-- style=' width: 300px;' hidden>  -->
+					<select size='1' id='structureid' name='structureid' style=' width: 700px;' value=''>
+					<option value=''>----- Veuillez sélectionner la structure -----</option>
+<?php
+$sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
+//$sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "") {
+            $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+        }
+        $structureid=null;
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $struct = new structure($dbcon);
+            $struct->load($result[0]);
+            affichestructureliste($struct, 0);
+//              echo "<option value='$result[0]'>$result[1] ($result[2])</option>";
+        }
+?>
+					</select>
+                	</div>
+                    </td>
                     <td class='cellulesimple'><center></center></td>
             	</tr>
             </table>
+            <script>
+                var selectElement = document.getElementById('newtypesignataire');
+                //alert('Plouf' + selectElement.value);
+                selectElement.addEventListener('change', (event) => {
+                  var idsignataire = document.getElementById('user');
+                  var td_structureid = document.getElementById('td_structureid');
+                  //alert('valeur de target = ' + event.target.value);
+                  if (event.target.value!=1)
+                  {
+                     //alert ('Différent de 1');
+                     idsignataire.type='hidden';
+                     div_structureid.removeAttribute("hidden");
+                     
+                  }
+                  else
+                  {
+                     //alert ('Egal à 1');
+                     idsignataire.type='text';
+                     div_structureid.setAttribute("hidden", "hidden");
+                  }
+                });   
+            </script>
     		<br><br>
             <input type='hidden' id='current_tab' name='current_tab' value='tab_2'>
             <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>

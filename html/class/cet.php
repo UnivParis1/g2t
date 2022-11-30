@@ -15,6 +15,7 @@ class cet
     public const SIGNATAIRE_AGENT = "1";
     public const SIGNATAIRE_STRUCTURE = "2";
     public const SIGNATAIRE_RESPONSABLE = "3";
+    public const SIGNATAIRE_LIBELLE = array(cet::SIGNATAIRE_AGENT => "AGENT INDIVIDUEL", cet::SIGNATAIRE_STRUCTURE => "TOUS LES AGENTS D'UNE STRUCTURE", cet::SIGNATAIRE_RESPONSABLE => "RESPONSABLE DE STRUCTURE");
     
     
     private $idannuel = null;

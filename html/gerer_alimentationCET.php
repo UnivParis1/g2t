@@ -441,7 +441,68 @@
 		            	    "2*" . $resp->mail()
 		            	);
 		             // }
-		            
+		             
+		            	$constantename = 'CETSIGNATAIRE';
+		            	$signataireliste = '';
+		            	$tabsignataire = array();
+		            	if ($fonctions->testexistdbconstante($constantename))
+		            	{
+		            	    $signataireliste = $fonctions->liredbconstante($constantename);
+		            	}
+		            	if (strlen($signataireliste)>0)
+		            	{
+		            	    $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+		            	    if (!isset($tabsignataire['3']['1_-2'])) // Si gestion de tps n'est pas défini dans le niveau 3
+		            	    {
+		            	        // On ajoute gestion de temps (utilisateur -2) dans le niveau 3
+		            	        $agentsignataire = new agent($dbcon);
+		            	        if ($agentsignataire->load(-2))
+		            	        {
+		            	            $params['recipientEmails'][] = "3*" . $agentsignataire->mail();
+		            	        }
+		            	        unset($agentsignataire);
+		            	    }
+		            	        
+		            	    foreach ($tabsignataire as $niveau => $infosignataires)
+		            	    {
+		            	        foreach ($infosignataires as $idsignataire => $infosignataire)
+		            	        {
+		            	            if ($infosignataire[0]==cet::SIGNATAIRE_AGENT)
+		            	            {
+    		            	            $agentsignataire = new agent($dbcon); 
+    		            	            if ($agentsignataire->load($infosignataire[1]))
+    		            	            {
+    		            	                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+    		            	            }
+		            	            }
+		            	            elseif ($infosignataire[0]==cet::SIGNATAIRE_RESPONSABLE)
+		            	            {
+		            	                $structuresignataire = new structure($dbcon);
+		            	                $structuresignataire->load($infosignataire[1]);
+		            	                $agentsignataire = $structuresignataire->responsable();
+		            	                if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
+		            	                {
+		            	                     $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+		            	                }
+		            	            }
+		            	            elseif ($infosignataire[0]==cet::SIGNATAIRE_STRUCTURE)
+		            	            {
+		            	                $structuresignataire = new structure($dbcon);
+		            	                $structuresignataire->load($infosignataire[1]);
+		            	                $datedujour = date("d/m/Y");
+		            	                foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
+		            	                {
+    		            	                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+		            	                }
+		            	            }
+		            	            else
+		            	            {
+		            	                $fonctions->showmessage("TYPE DE SIGNATAIRE inconnu !",fonctions::MSGERROR);
+		            	            }
+		            	        }
+		            	    }
+		            	}
+/*		            
 		            //if (!is_null($drh_niveau))
 		            //{
 		                //$params['recipientEmails'][] = '3*' . $agent_mail;
@@ -483,7 +544,7 @@
 		                $eganne = new agent($dbcon);
 		                $eganne->load($eganneid);
 		                $params['recipientEmails'][] = '5*' . $eganne->mail();
-		                
+*/		                
 		           // }
 		    /*        
 		            $params_string = http_build_query($params);
