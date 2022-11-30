@@ -52,6 +52,12 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
     
+    $anneeref = $fonctions->anneeref();
+    $annee_courante = substr($anneeref,2,2); // On ne garde que les 2 derniers chiffres de l'année
+    $annee_precedente = $annee_courante - 1;
+    $annee_future = $annee_courante + 1;
+    
+    echo "<br>L'année de référence est : $anneeref.<br>";
     
     //$sql = "SELECT DISTINCT SOLDE.AGENTID, NOM, PRENOM FROM SOLDE, AGENT WHERE TYPEABSENCEID IN ('ann20', 'ann21') AND SOLDE.AGENTID = AGENT.AGENTID";
     //$sql = "SELECT DISTINCT SOLDE.AGENTID, NOM, PRENOM FROM SOLDE, AGENT WHERE TYPEABSENCEID IN ('ann20', 'ann21') AND SOLDE.AGENTID = AGENT.AGENTID AND AGENT.AGENTID IN ('9328','3715','19803', '24606', '13825','90223')";
@@ -59,13 +65,13 @@
     $sql = "SELECT DISTINCT SUB1.AGENTID, NOM, PRENOM
             FROM AGENT,((SELECT AGENTID 
                            FROM SOLDE S1 
-                           WHERE S1.TYPEABSENCEID = 'ann20'
+                           WHERE S1.TYPEABSENCEID = 'ann$annee_precedente'
                              AND S1.DROITAQUIS <> 0
                         )
                         UNION
                         (SELECT AGENTID 
                            FROM SOLDE S2
-                           WHERE S2.TYPEABSENCEID = 'ann21'
+                           WHERE S2.TYPEABSENCEID = 'ann$annee_courante'
                              AND S2.DROITAQUIS <> 0
                         )) SUB1
             WHERE SUB1.AGENTID = AGENT.AGENTID
@@ -95,24 +101,31 @@
 
     $count = 0;
     echo "<table class='tableausimple' >";
-    echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Droit 2020/2021</td><td class='titresimple'>Solde 2020/2021 au 31/08/2021</td><td class='titresimple'>Congés 2020/2021 entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 2021/2022</td><td class='titresimple'>Droit 2021/2022 pris</td></tr>";
+    echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Droit 20$annee_precedente/20$annee_courante</td><td class='titresimple'>Solde 20$annee_precedente/20$annee_courante au 31/08/20$annee_courante</td><td class='titresimple'>Congés 20$annee_precedente/20$annee_courante entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 20$annee_courante/20$annee_future</td><td class='titresimple'>Droit 20$annee_courante/20$annee_future pris</td></tr>";
     ob_flush();
     flush();
+    $htmlstring = "";
     while ($result = mysqli_fetch_row($query)) 
     {
+        
+//        if ($result[0] != '9328')
+//        {
+//            continue;
+//        }
+        
         $count ++;
         $agent = new agent($dbcon);
         $agent->load($result[0]);
         //echo "Identité = " . $agent->identitecomplete() ." <br>";
-        $solde2020 = new solde($dbcon); 
-        $solde2021 = new solde($dbcon);
-        $error = $solde2020->load($agent->agentid(),'ann20');
+        $solde_precedent = new solde($dbcon); 
+        $solde_courant = new solde($dbcon);
+        $error = $solde_precedent->load($agent->agentid(),"ann$annee_precedente");
         //echo "error = XXXX" . $error . "XXXX <br>";
         if ($error != "")
         {
-            $solde2020->droitaquis(0);
+            $solde_precedent->droitaquis(0);
         }
-        $error = $solde2021->load($agent->agentid(),'ann21');
+        $error = $solde_courant->load($agent->agentid(),"ann$annee_courante");
         //echo "error = YYYY" . $error . "YYYY <br>";
         if ( $error != "")
         {
@@ -120,31 +133,38 @@
         }
         
         //echo "Aquis 2020 = " . $solde2020->droitaquis() . "   Aquis 2021 = " . $solde2021->droitaquis() . "<br>";
-        if (floatval($solde2020->droitaquis()) == 0 and floatval($solde2021->droitaquis()) == 0)
+        if (floatval($solde_precedent->droitaquis()) == 0 and floatval($solde_courant->droitaquis()) == 0)
         {
             continue;
         }
         
-        echo "<tr class='element'>";
-        echo "<td class='cellulesimple'>UP1" . str_pad($agent->agentid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde2020->droitaquis()  ."</td>"; 
-        $nbjrsconsommes = $agent->getNbJoursConsommés('2020', '20190901', '20210831');
+        $htmlstring = $htmlstring . "<tr class='element'>";
+        $htmlstring = $htmlstring . "<td class='cellulesimple'>UP1" . str_pad($agent->agentid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde_precedent->droitaquis()  ."</td>"; 
+        $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_precedente", "20" . ($annee_precedente-1) . "0901", "20" . $annee_courante . "0831");
 //        echo "nbjrsconsommes 2020 = $nbjrsconsommes <br>";
-        echo "<td class='cellulesimple'>" . ($solde2020->droitaquis() - $nbjrsconsommes) . "</td>";
-        $nbjrsconsommes = $agent->getNbJoursConsommés('2020', '20210901', '20211231');
+        $htmlstring = $htmlstring . "<td class='cellulesimple'>" . ($solde_precedent->droitaquis() - $nbjrsconsommes) . "</td>";
+        $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_precedente", "20" . $annee_courante . "0901", "20" . $annee_courante . "1231");
 //        echo "nbjrsconsommes 2020 (post 01/09) = $nbjrsconsommes <br>";
-        echo "<td class='cellulesimple'>" . $nbjrsconsommes . "</td>";
-        echo "<td class='cellulesimple'>" . $solde2021->droitaquis() . "</td>";
-        $nbjrsconsommes = $agent->getNbJoursConsommés('2021', '20210101', '20211231');
+        $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $nbjrsconsommes . "</td>";
+        $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $solde_courant->droitaquis() . "</td>";
+        $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_courante", "20" . $annee_courante . "0101", "20" .$annee_courante . "1231");
 //        echo "nbjrsconsommes 2021 = $nbjrsconsommes <br>";
-        echo "<td class='cellulesimple'>" . $nbjrsconsommes . "</td>";
-        echo "</tr>";
-        unset($solde2020);
-        unset($solde2021);
+        $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $nbjrsconsommes . "</td>";
+        $htmlstring = $htmlstring . "</tr>";
+        unset($solde_precedent);
+        unset($solde_courant);
         unset($agent);
-        ob_flush();
-        flush();
+        
+        if (($count % 100)==0)  // Affichage toutes les 50 lignes
+        {
+            echo $htmlstring;
+            ob_flush();
+            flush();
+            $htmlstring = '';
+        }
     }
-    echo "</table>";
+    $htmlstring = $htmlstring . "</table>";
+    echo $htmlstring;
     echo "<br>";
     ob_flush();
     flush();
