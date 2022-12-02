@@ -185,6 +185,7 @@
     	$agent->synchroCET();
     }
     
+    $sauvegardeok = false;
     // Création d'un droit d'option
     if (!is_null($cree_option))
     {
@@ -427,7 +428,8 @@
 	                
 	                $erreur = $optionCET->store();
 	                $agent->synchroCET();
-	
+	                $sauvegardeok = true;
+	                
 	            }
 	            else
 	            {
@@ -927,8 +929,15 @@
             $controleok = false;
         }
 
-        // Si on a rencontré une anomalie dans les contrôles => On affiche le message d'alerte
-        echo $fonctions->showmessage(fonctions::MSGERROR, $errorcontroltxt);
+        if ($sauvegardeok)
+        {
+            echo $fonctions->showmessage(fonctions::MSGINFO, "Votre demande de droit d'option a été correctement enregistrée.");
+        }
+        else
+        {
+            // Si on a rencontré une anomalie dans les contrôles => On affiche le message d'alerte
+            echo $fonctions->showmessage(fonctions::MSGERROR, $errorcontroltxt);
+        }
         
         $listid = $agent->getDemandesOption($fonctions->anneeref(),array(OPTIONCET::STATUT_EN_COURS, OPTIONCET::STATUT_PREPARE, OPTIONCET::STATUT_INCONNU));
         if (count($listid)>0)

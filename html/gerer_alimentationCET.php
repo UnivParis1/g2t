@@ -344,7 +344,8 @@
     }
     
     $anneeref = $fonctions->anneeref()-1;
-
+    $sauvegardeok = false;
+    
 
     // Création d'une alimentation
     if (!is_null($cree_demande))
@@ -643,6 +644,7 @@
 			                    //var_dump($alimentationCET);
 			                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
 			                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+			                    $sauvegardeok = true;
 			                }
 			            }
 			            else
@@ -907,7 +909,7 @@
 	        	valeur_a = document.getElementById("valeur_a").value;
 	        	valeur_d = document.getElementById("valeur_d").value;
 	        	plafond = document.getElementById("plafond").value;
-	        	document.getElementById("valeur_e").value = parseInt(valeur_d,10)-parseInt(valeur_f,10);
+	        	document.getElementById("valeur_e").value = parseFloat(valeur_d,10)-parseInt(valeur_f,10);
 	        	document.getElementById("valeur_g").value = parseFloat(valeur_a,10)+parseInt(valeur_f,10);
 	    		button.disabled = false;
 	        }
@@ -928,7 +930,11 @@
 	}
 	else 
 	{
-		if (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
+	    if ($sauvegardeok)
+	    {
+	        echo $fonctions->showmessage(fonctions::MSGINFO, "Votre demande d'alimentation a été correctement enregistrée.");
+	    }
+		elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
 		{
             echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
 			/*echo "Souhaitez-vous annuler la demande ? <br>";
