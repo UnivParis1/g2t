@@ -1040,8 +1040,8 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // return null;
         $htmltext = "<br>";
         $htmltext = "<table class='tableausimple'>";
-        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=3 align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
-        $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td></tr>";
+        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
+        $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td><td class='cellulesimple'>Convention de télétravail</td></tr>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
         // Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
@@ -1098,10 +1098,75 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     $complement->load($membre->agentid(), "ENFANTMALADE");
                     $htmltext = $htmltext . "<td class='cellulesimple' >";
                     if ($pourmodif)
+                    {
                         $htmltext = $htmltext . "<input type='text' style='text-align:center;' name=enfantmalade[" . $membre->agentid() . "] value='" . intval($complement->valeur()) . "'/>";
+                    }
                     else
+                    {
                         $htmltext = $htmltext . "<center>" . intval($complement->valeur()) . "</center>";
+                    }
                     $htmltext = $htmltext . "</td>";
+                            
+                    // Ajout des conventions "télétravail"
+                    $htmltext = $htmltext . "<td class='cellulesimple' >";
+                    // calcul de la date de début de l'interval qui nous interresse
+                    $dateinferieure = date("Y-m-d");
+                    $dateinferieure = strtotime($dateinferieure."- 6 months");
+                    $dateinferieure = date("d/m/Y",$dateinferieure);
+                    $teletravailliste = $membre->teletravailliste($dateinferieure, "31/12/2099");
+                    $tabconventionactive = array();
+                    foreach ($teletravailliste as $teletravailid) // On ne garde que les conventions actives
+                    {
+                        $teletravail = new teletravail($this->dbconnect);
+                        $teletravail->load($teletravailid);
+                        if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+                        {
+                            $tabconventionactive[] = $teletravail;
+                        }
+                    }
+                    if (count($tabconventionactive)==0)
+                    {
+                        $htmltext = $htmltext . "Aucune convention de télétravail";
+                    }
+                    else
+                    {
+                        $teletravailstring = "";
+                        foreach ($tabconventionactive as $convention)
+                        {
+                            if (strlen($teletravailstring)>0) $teletravailstring = $teletravailstring . "<br>";
+                            
+                            $styletexte = '';
+                            $extrainfo = "";
+                            if (key($tabconventionactive)==(count($tabconventionactive)-1)) // Si on est sur le dernier élément du tableau
+                            {
+                                $datefinalerte = strtotime($this->fonctions->formatdatedb($convention->datefin())."- 1 months");
+                                $datefinalerte = date("Ymd",$datefinalerte);
+                                
+                                $datefinerreur = strtotime($this->fonctions->formatdatedb($convention->datefin())."+ 6 months");
+                                $datefinerreur = date("Ymd",$datefinerreur);
+                                if (($this->fonctions->formatdatedb($convention->datefin()) > date('Ymd')) and ($datefinalerte < date('Ymd')))
+                                {
+                                    // On est à moins d'un mois de la fin de la convention ===> On met un marqueur 
+                                    $styletexte = "style='color:#E9A33C;font-weight: bold;'";
+                                    $extrainfo = "<span data-tip=" . chr(34) . "Cette convention se termine dans moins d'un mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
+                                }
+                                elseif (($this->fonctions->formatdatedb($convention->datefin()) < date('Ymd')) and ($datefinerreur > date('YMd')))
+                                {
+                                    // On est à moins d'un mois de la fin de la convention ===> On met un marqueur
+                                    $styletexte = "style='color:red;font-weight: bold;'";
+                                    $extrainfo = "<span data-tip=" . chr(34) . "Cette convention est terminée depuis moins de six mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
+                                }
+                            }
+                            $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo" . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) . "</span>";
+                            if (strlen($extrainfo)>0)
+                            {
+                                $teletravailstring = $teletravailstring . "</span>";
+                            }
+                        }
+                        $htmltext = $htmltext . $teletravailstring;
+                    }
+                    $htmltext = $htmltext . "</td>";
+                    
                     
                     // // --- Masquage des infos sur le CET
                     // $cet = new cet($this->dbconnect);
