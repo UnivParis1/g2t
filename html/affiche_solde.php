@@ -38,6 +38,7 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
+/*
     function affichestructureliste($structure, $niveau = 0)
     {
         global $dbcon;
@@ -66,7 +67,7 @@
             }
         }
     }
-
+*/
 
     //echo "<br>" . print_r($_POST,true) . "<br>";
 

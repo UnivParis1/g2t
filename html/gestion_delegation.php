@@ -147,7 +147,7 @@
         }
     }
     
-    
+/*    
     function affichestructureliste($structure, $niveau = 0)
     {
         global $dbcon;
@@ -176,7 +176,7 @@
             }
         }
     }
-    
+*/    
     
     $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
     $query = mysqli_query($dbcon, $sql);
