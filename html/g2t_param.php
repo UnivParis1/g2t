@@ -29,7 +29,8 @@
         //header('Location: index.php');
         exit();
     }
-    
+
+/*    
     // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
     $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
     if ($CASuserId===false)
@@ -40,7 +41,8 @@
         //        header('Location: index.php');
         exit();
     }
-    
+*/ 
+
     $user = new agent($dbcon);
     $user->load($userid);
     
@@ -297,7 +299,7 @@
     echo "<form name='selectperiode'  method='post' >";
     echo "<br>Période de fermeture de l'établissement : <br>";
     echo "<table class='tableausimple'>";
-    echo "<tr><td class='titresimple'>Annee référence</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Supprimer</td></tr>";
+    echo "<tr><td class='titresimple'>Année référence</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Supprimer</td></tr>";
     if (count($liste)>0)
     {
         foreach($liste as $key => $dateelement)
@@ -373,10 +375,14 @@
     echo "</table>";
     for ($index=0; $index<$nbanneeaafficher; $index++)
     {
-        if ($fonctions->testexistdbconstante('NBJOURS' . $anneeref+$index))
+        if ($fonctions->testexistdbconstante('NBJOURS' . ($anneeref+$index)))
         {
-            $valeurconstante = $fonctions->liredbconstante('NBJOURS' . $anneeref+$index);
+            $valeurconstante = $fonctions->liredbconstante('NBJOURS' . ($anneeref+$index));
             echo "Le nombre de jours de congés pour " . ($anneeref+$index) . "/" . ($anneeref+$index+1) . " est de : $valeurconstante <br>";
+        }
+        else
+        {
+            echo "Le nombre de jours de congés pour " . ($anneeref+$index) . "/" . ($anneeref+$index+1) . " n'est pas défini<br>";
         }
     }
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
