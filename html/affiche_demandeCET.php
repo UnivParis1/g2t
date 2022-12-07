@@ -52,11 +52,17 @@
         $esignatureid = $valeur[1];
         if (strcasecmp($valeur[0],'opt')==0)  // Si c'est une option
         {
+            $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/optionWS.php";
+            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid);
+
             $currentoption = new optionCET($dbcon);
             $currentoption->load($esignatureid);
         }
         elseif (strcasecmp($valeur[0],'alim')==0) // Si c'est une alimentation
         {
+            $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/alimentationWS.php";
+            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid);
+            
             $currentalim = new alimentationCET($dbcon);
             $currentalim->load($esignatureid);
         }
@@ -102,7 +108,7 @@
     echo "<select size='1' name='esignatureid' id='esignatureid'>";
     echo "<optgroup label='Demandes d&apos;alimentation'>";
 //    echo "<option value='Demande alimentation' disabled>Demande d'alimentation</option>";
-    $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($anneecampagne-1,2,2));
+    $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($anneecampagne-1,2,2),array(),false);
     //echo "On a récup <br>";
     foreach ($alimCETliste as $alimid)
     {
@@ -119,7 +125,7 @@
         $demandeur->load($alimCET->agentid());
         echo ">" . $alimCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $alimCET->statut()  . ")</option>";
     }
-    $optionCETliste = $fonctions->get_optionCET_liste($anneecampagne);
+    $optionCETliste = $fonctions->get_optionCET_liste($anneecampagne,array(),false);
     echo "<optgroup label='Demandes d&apos;option'>";
 //    echo "<option value='Demande option' disabled>Demande d'option</option>";
     foreach ($optionCETliste as $optionid)

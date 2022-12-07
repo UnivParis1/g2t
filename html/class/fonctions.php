@@ -1441,7 +1441,7 @@ class fonctions
         return $g2t_ws_url;
     }
 
-    public function get_alimCET_liste($typeconges, $listStatuts = array()) // $typeconges de la forme annYY
+    public function get_alimCET_liste($typeconges, $listStatuts = array(), $forcesynchro = true) // $typeconges de la forme annYY
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
         $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = ? ";
@@ -1466,12 +1466,15 @@ class fonctions
         while ($result = mysqli_fetch_row($query)) {
             $alimid = $result[0];
             $alimCETliste[] = $alimid;
-            $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+            if ($forcesynchro)
+            {
+                $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+            }
         }
         return $alimCETliste;
     }
 
-    public function get_optionCET_liste($anneeref, $listStatuts = array())
+    public function get_optionCET_liste($anneeref, $listStatuts = array(), $forcesynchro = true)
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
         $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = ? ";
@@ -1497,7 +1500,10 @@ class fonctions
         while ($result = mysqli_fetch_row($query)) {
             $optionid = $result[0];
             $optionCETliste[] = $optionid;
-            $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+            if ($forcesynchro)
+            {
+                $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+            }
         }
         return $optionCETliste;
     }
