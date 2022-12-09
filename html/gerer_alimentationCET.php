@@ -1091,17 +1091,17 @@
 	if (!$hasOption)
 	{
 		// contrôle de la date de fin d'utilisation des reliquats
-		$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
-		$queryreliq = mysqli_query($dbcon, $sqldatereliq);
-		$erreur = mysqli_error($dbcon);
-		if ($erreur != "")
-		{
-			$errlog = "Problème SQL dans le chargement de la date limite d'utilisation du reliquat : " . $erreur;
-			echo $errlog;
-		}
-		elseif ($res = mysqli_fetch_row($queryreliq))
-		{
-			$limitereliq = ($fonctions->anneeref()+1).$res[0];
+        $dbconstante = 'FIN_REPORT';
+        if (!$fonctions->testexistdbconstante($dbconstante))
+        {
+            $erreur = "La date limite du report n'est pas définie.";
+            $errlog = "Problème SQL dans le chargement de la date limite d'utilisation du reliquat : " . $erreur;
+            echo $errlog;   
+        }
+        elseif ($res = $fonctions->liredbconstante($dbconstante))
+        {
+            $limitereliq = ($fonctions->anneeref()+1).$res;
+            //echo "<br>limitereliq = $limitereliq <br>";
 			if ($fonctions->verifiedate($fonctions->formatdate($limitereliq)))
 			{
 				if (date('Ymd') <= $limitereliq)
