@@ -101,10 +101,6 @@
     if (isset($_POST["cree_demande"]))
     	$cree_demande = $_POST["cree_demande"];
     	
-  /*  $annule_demande = null;
-    if (isset($_POST["annule_demande"]))
-    	$annule_demande = $_POST["annule_demande"];*/
-        
     $modif_statut = null;
     if (isset($_POST["modif_statut"]))
         $modif_statut = $_POST["modif_statut"];
@@ -148,45 +144,15 @@
             $no_verify = true;
     }
         
-/*        
-    $send_mail = null;
-    if (isset($_POST["send_mail"]))
-        $send_mail = $_POST["send_mail"];
-*/
-    
-    
-      
     require ("includes/menu.php");
     
-/*
-    echo "<br>Server info = ";
-    var_dump($_SERVER);
-    echo "<br><br>";
-*/
     $id_model = trim($fonctions->getidmodelalimcet());
     $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
     
-    
-/*
-    $servername = $_SERVER['SERVER_NAME'];
-    $serverport = $_SERVER['SERVER_PORT'];
-    if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
-    {
-       $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-       $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
-    }
-    else
-    {
-       $serverprotocol = "http";
-    }
-     
-    //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
-    $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
-    $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
-*/
     $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/alimentationWS.php";
+    $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
 ?>
     <script type="text/javascript">
           //window.addEventListener("load", function(event) {
@@ -212,18 +178,29 @@
 		echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET.php'>";
 		echo "Personne à rechercher : <br>";
 		echo "<form name='selectagentcet'  method='post' >";
-		
+
+        $agentsliste = $fonctions->listeagentsg2t();
+        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+        foreach ($agentsliste as $key => $identite)
+        {
+            echo "<option value='$key'>$identite</option>";
+        }
+        echo "</select>";
+
+/*		
 		echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
 		echo "' size=40 />";
 		echo "<input type='hidden' id='agentid' name='agentid' value='";
 		echo "' class='agent' /> ";
-		?>
+?>
         <script>
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
-    	<?php
+<?php
+*/
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -319,7 +296,7 @@
     		    		
     		    		// alerter la DRH
     		    		
-    		    		$arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+    		    		$arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
     		    		foreach ($arrayagentrh as $gestrh) {
     		    			error_log(basename(__FILE__) . " envoi de mail Annulation d'une demande d'alimentation de CET validée a " . $gestrh->identitecomplete());
     		    			$agent->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$user->identitecomplete()." a demandé l'annulation de la demande d'alimentation de " .$agent->identitecomplete(). " n ". $esignatureid_annule . ".\n");
@@ -408,379 +385,108 @@
 	                'targetUrls' => array("$full_g2t_ws_url"),
     		    	'formDatas' => "{}"
 	            );
-	            /*if ($responsable == 'resp_demo')
-	            {
-	                $params['recipientEmails'] = array
-	                    (
-	                        "2*pascal.comte@univ-paris1.fr",
-	                        "2*elodie.briere@univ-paris1.fr"
-	                    );
-	            }
-	            else // On met le vrai responsable de l'agent
-	            {*/
-	            	// On récupère le responsable de la structure de l'agent - Niveau 2
-	            	$code = null;
-	            	$structid = $agent->structureid();
-	            	$structure = new structure($dbcon);
-	            	$structure->load($structid);
-	            	if ($structure->responsable()->agentid() == $agent->agentid())
-	            	{
-	            		error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
-	            		$resp = $structure->resp_envoyer_a($code);
-	            	}
-	            	else
-	            	{
-	            		error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
-	            		$resp = $structure->agent_envoyer_a($code);
-	            	}
-	            	error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-	            	if ($resp->agentid() != '-1')
-	            	{
-		            	$params['recipientEmails'] = array
-		            	(
-		            	    "1*" . $agent_mail,
-		            	    "2*" . $resp->mail()
-		            	);
-		             // }
-		             
-		            	$constantename = 'CETSIGNATAIRE';
-		            	$signataireliste = '';
-		            	$tabsignataire = array();
-		            	if ($fonctions->testexistdbconstante($constantename))
-		            	{
-		            	    $signataireliste = $fonctions->liredbconstante($constantename);
-		            	}
-		            	if (strlen($signataireliste)>0)
-		            	{
-		            	    $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
-		            	    if (!isset($tabsignataire['3']['1_-2'])) // Si gestion de tps n'est pas défini dans le niveau 3
-		            	    {
-		            	        // On ajoute gestion de temps (utilisateur -2) dans le niveau 3
-		            	        $agentsignataire = new agent($dbcon);
-		            	        if ($agentsignataire->load(-2))
-		            	        {
-		            	            $params['recipientEmails'][] = "3*" . $agentsignataire->mail();
-		            	        }
-		            	        unset($agentsignataire);
-		            	    }
-		            	        
-		            	    foreach ($tabsignataire as $niveau => $infosignataires)
-		            	    {
-		            	        foreach ($infosignataires as $idsignataire => $infosignataire)
-		            	        {
-		            	            if ($infosignataire[0]==cet::SIGNATAIRE_AGENT)
-		            	            {
-    		            	            $agentsignataire = new agent($dbcon); 
-    		            	            if ($agentsignataire->load($infosignataire[1]))
-    		            	            {
-    		            	                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
-    		            	            }
-		            	            }
-		            	            elseif ($infosignataire[0]==cet::SIGNATAIRE_RESPONSABLE)
-		            	            {
-		            	                $structuresignataire = new structure($dbcon);
-		            	                $structuresignataire->load($infosignataire[1]);
-		            	                $agentsignataire = $structuresignataire->responsable();
-		            	                if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
-		            	                {
-		            	                     $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
-		            	                }
-		            	            }
-		            	            elseif ($infosignataire[0]==cet::SIGNATAIRE_STRUCTURE)
-		            	            {
-		            	                $structuresignataire = new structure($dbcon);
-		            	                $structuresignataire->load($infosignataire[1]);
-		            	                $datedujour = date("d/m/Y");
-		            	                foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
-		            	                {
-    		            	                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
-		            	                }
-		            	            }
-		            	            else
-		            	            {
-		            	                $fonctions->showmessage("TYPE DE SIGNATAIRE inconnu !",fonctions::MSGERROR);
-		            	            }
-		            	        }
-		            	    }
-		            	}
-/*		            
-		            //if (!is_null($drh_niveau))
-		            //{
-		                //$params['recipientEmails'][] = '3*' . $agent_mail;
-		                $resp_agent = null;
-		                // On récupère tous les agents avec le profil RHCET - Niveau 3
-		                foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
-		                {
-		                	$params['recipientEmails'][] = '3*' . $qvt_agent->mail();
-		                	if (count((array)$qvt_agent->structrespliste())>0)
-		                	{
-		                		$resp_agent = $qvt_agent;
-		                	}
-		                }
-		                
-		                // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
-		                $qvt_id = 'DGEE_4';  // Id = DGEE_4        Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-		                if (is_null($resp_agent))
-		                {
-		                	$struct = new structure($dbcon);
-		                	$struct->load($qvt_id);
-		                	$resp_agent = $struct->responsable();
-		                }
-		                $params['recipientEmails'][] = '4*' . $resp_agent->mail();
-		                
-		                // On récupère le responsable du service DRH et DGS - Niveau 5
-		                $struct = new structure($dbcon);
-		                $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-		                $struct->load($drh_id);
-		                $drh_agent = $struct->responsable();
-		                $params['recipientEmails'][] = '5*' . $drh_agent->mail();
-		                $struct = new structure($dbcon);
-		                $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-		                $struct->load($dgs_id);
-		                $dgs_agent = $struct->responsable();
-		                $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
-		                
-		                // Ajout de Mme Emilie Ganné
-		                $eganneid=91790;
-		                $eganne = new agent($dbcon);
-		                $eganne->load($eganneid);
-		                $params['recipientEmails'][] = '5*' . $eganne->mail();
-*/		                
-		           // }
-		    /*        
-		            $params_string = http_build_query($params);
-		            echo "<br>Param = " . $params_string . "<br><br>";
-		            
-		            Voir la réponse : https://stackoverflow.com/questions/26563952/php-multidimensional-array-to-query-string/26565074
-		            
-		            $array = array('order_source' => array('google','facebook'),'order_medium' => 'google-text');
-		            
-		            //Array
-		            //(
-		            //    [order_source] => Array
-		            //    (
-		            //        [0] => google
-		            //        [1] => facebook
-		            //    )
-		            //    [order_medium] => google-text
-		            //)
-		            
-		            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-		                is_array( $item ) 
-		                    ? array_walk( $item, $walk, $key ) 
-		                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-		    
-		            };
-		    
-		            array_walk( $array, $walk );
-		    
-		            echo implode( '&', $output );  // order_source=google&order_source=facebook&order_medium=google-text 
-		    
-		            
-		    */      
-		            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+	            	            	
+                $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+
+            	if (count($taberrorcheckmail) > 0)
+            	{
+            	    // var_dump("errorcheckmail = $errorcheckmail");
+            	    $errorcheckmailstr = '';
+            	    foreach ($taberrorcheckmail as $errorcheckmail)
+            	    {
+            	        if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+            	        $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+            	    }
+            	    echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible d'enregistrer la demande d'alimentation CET car <br>$errorcheckmailstr");
+            	}
+            	else
+            	{
+		            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) 
+		            {
 		                is_array( $item )
 		                ? array_walk( $item, $walk, $key )
 		                : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-		                
-		            };
-		            array_walk( $params, $walk );
-		            $params_string = implode( '&', $output );
-		            //echo "<br>Output = " . $params_string . '<br><br>';
-		            
-		            $opts = [
-		                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
-		                CURLOPT_POST => true,
-		                CURLOPT_POSTFIELDS => $params_string,
-		                CURLOPT_RETURNTRANSFER => true,
-		                CURLOPT_SSL_VERIFYPEER => false
-		            ];
-		            curl_setopt_array($curl, $opts);
-		            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
-		            $json = curl_exec($curl);
-		            $error = curl_error ($curl);
-		            curl_close($curl);
-		            if ($error != "")
-		            {
-		                echo "Erreur Curl = " . $error . "<br><br>";
-		            }
-		            //echo "<br>" . print_r($json,true) . "<br>";
-		            //echo "<br>"; var_dump($json); echo "<br>";
-		            $id = json_decode($json, true);
-		            error_log(basename(__FILE__) . " " . var_export($opts, true));
-		            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
-		            //var_dump($id);
-		            if (is_array($id))
-		            {
-		            	$erreur = "La création de la demande d'alimentation dans eSignature a échoué => " . print_r($id,true);
-		            	error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-		            	echo "$erreur <br><br>";
-		            }
-		            else
-		            {
-		                if ("$id" < 0)
-		                {
-		                    $erreur =  "La création de la demande d'alimentation dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde du droit d'option dans G2T.";
-		                    error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-		                    echo "$erreur <br><br>";
-		                }
-		                elseif ("$id" <> "")
-			            {
-		
-		                    //echo "Id de la nouvelle demande = " . $id . "<br>";
-		                    $alimentationCET->esignatureid($id);
-		                    $alimentationCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-		                    $alimentationCET->statut($alimentationCET::STATUT_PREPARE);
-		                    
-		                    $erreur = $alimentationCET->store();
-		                    $agent->synchroCET();
-			                if ($erreur <> "")
-			                {
-			                	echo "Erreur (création) = $erreur <br>";
-			                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
-			                }
-			                else
-			                {
-			                    //var_dump($alimentationCET);
-			                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-			                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
-			                    $sauvegardeok = true;
-			                }
-			            }
-			            else
-			            {
-			                $erreur  = "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
-			                error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-			                echo "$erreur <br><br>";
-			            }
-		            }
-            	}
-            	else // Le responsable est g2t cron
-            	{
-            		echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre responsable n'est pas renseigné, veuillez contacter la DRH.");
+        	        };
+    	            array_walk( $params, $walk );
+    	            $params_string = implode( '&', $output );
+    	            // var_dump ("Output = " . $params_string);
+    	            
+    	            $opts = [
+    	                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
+    	                CURLOPT_POST => true,
+    	                CURLOPT_POSTFIELDS => $params_string,
+    	                CURLOPT_RETURNTRANSFER => true,
+    	                CURLOPT_SSL_VERIFYPEER => false
+    	            ];
+    	            curl_setopt_array($curl, $opts);
+    	            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
+    	            $json = curl_exec($curl);
+    	            $error = curl_error ($curl);
+    	            curl_close($curl);
+    	            if ($error != "")
+    	            {
+    	                echo "Erreur Curl = " . $error . "<br><br>";
+    	            }
+    	            //echo "<br>" . print_r($json,true) . "<br>";
+    	            //echo "<br>"; var_dump($json); echo "<br>";
+    	            $id = json_decode($json, true);
+    	            error_log(basename(__FILE__) . " " . var_export($opts, true));
+    	            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
+    	            //var_dump($id);
+    	            if (is_array($id))
+    	            {
+    	            	$erreur = "La création de la demande d'alimentation dans eSignature a échoué => " . print_r($id,true);
+    	            	error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+    	            	echo "$erreur <br><br>";
+    	            }
+    	            else
+    	            {
+    	                if ("$id" < 0)
+    	                {
+    	                    $erreur =  "La création de la demande d'alimentation dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
+    	                    error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+    	                    echo "$erreur <br><br>";
+    	                }
+    	                elseif ("$id" <> "")
+    		            {
+    	
+    	                    //echo "Id de la nouvelle demande = " . $id . "<br>";
+    	                    $alimentationCET->esignatureid($id);
+    	                    $alimentationCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+    	                    $alimentationCET->statut($alimentationCET::STATUT_PREPARE);
+    	                    
+    	                    $erreur = $alimentationCET->store();
+    	                    $agent->synchroCET();
+    		                if ($erreur <> "")
+    		                {
+    		                	echo "Erreur (création) = $erreur <br>";
+    		                	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
+    		                }
+    		                else
+    		                {
+    		                    //var_dump($alimentationCET);
+    		                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+    		                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+    		                    $sauvegardeok = true;
+    		                }
+    		            }
+    		            else
+    		            {
+    		                $erreur  = "La création de la demande d'alimentation dans eSignature a échoué !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
+    		                error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+    		                echo "$erreur <br><br>";
+    		            }
+    	            }
             	}
 	        }
         }
     }
     
- /*   // annulation de la demande
-    if (!is_null($annule_demande))
-    { 
-    	if (!is_null($agentid))
-    	{
-    		$agent = new agent($dbcon);
-    		$agent->load($agentid);
-    		$alimentationCET = new alimentationCET($dbcon);
-    		$list_alim_en_cours = $agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE));
-    		if (sizeof($list_alim_en_cours) > 0)
-    		{
-    			echo "Une alimentation en cours : $list_alim_en_cours[0] <br>";
-    			$alimentationCET->load($list_alim_en_cours[0]);
-    			$alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
-    			$alimentationCET->store();
-    		}
-    		else
-    		{
-    			echo "Liste d'alimentation en cours est vide <br>";
-    		}
-    	}
-    }*/
-    
-/*    if (!is_null($esignature_info))
-    {
-        // On appelle le WS G2T en GET pour demander à G2T de mettre à jour la demande
-        $alimentationCET = new alimentationCET($dbcon);
-        $erreur = $alimentationCET->load($esignatureid_get_info);
-        if ($erreur != "")
-        {
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid_get_info . " => Erreur = " . $erreur));
-            echo "Erreur lors du chargement de la demande $esignatureid_get_info avant la synchronisation.<br>";
-        }
-        echo "<br><br>Le statut de la demande avant la synchronisation est : " . $alimentationCET->statut() . "<br>";
-        
-        error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_get_info avec eSignature (synchro manuelle)."));
-        $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_get_info);
-        //error_log(basename(__FILE__) . $fonctions->stripAccents(" Après synchronisation de la demande $esignatureid_get_info avec eSignature (synchro manuelle)."));
-  */      
-/*
-        $curl = curl_init();
-        $params_string = "";
-        $opts = [
-            CURLOPT_URL => $full_g2t_ws_url . "?signRequestId=" . $esignatureid_get_info,
-            CURLOPT_HEADER => 0,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 4,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        curl_setopt($curl, CURLOPT_PROXY, '');
-        //echo "<br>CURLOPT_PROXY => " . curl_getinfo($curl,CURLOPT_PROXY) . "<br><br>";
-        $json = curl_exec($curl);
-        $error = curl_error ($curl);
-        curl_close($curl);
-        if ($error != "")
-        {
-            echo "Erreur Curl = " . $error . "<br><br>";
-        }
-        //echo "<br>" . print_r($json,true) . "<br>";
-        $response = json_decode($json, true);
-        echo "<br>";
-        echo '<pre>';
-        var_dump($response);
-        echo '</pre>';
-*/     
-/*        
-        error_log(basename(__FILE__) . $fonctions->stripAccents(" Avant chargement de la demande $esignatureid_get_info."));
-        $alimentationCET = new alimentationCET($dbcon);
-        $erreur = $alimentationCET->load($esignatureid_get_info);
-        if ($erreur != "")
-        {
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid_get_info . " => Erreur = " . $erreur));
-            echo "Erreur lors du chargement de la demande $esignatureid_get_info après la synchronisation.<br>";
-        }
-        else
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Après chargement de la demande $esignatureid_get_info => Erreur est vide."));
-        
-        echo "<br>Le statut de la demande après la synchronisation est : " . $alimentationCET->statut() . "<br>";
-        
-    }*/
     if (! is_null($agentid))
     {
 	    // Affichage des demandes d'alimentation dans la base G2T
 	    $alimentationCET = new alimentationCET($dbcon);
 	    
-	    
-	    // EXEMPLE D'USAGE echo $agent->afficheAlimCetHtml('ann19', array($alimentationCET::STATUT_PREPARE, $alimentationCET::STATUT_EN_COURS));
-	    /*$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE AGENTID = '" .  $agentid . "'";
-	    $query = mysqli_query($dbcon, $sql);
-	    $erreur = mysqli_error($dbcon);
-	    if ($erreur != "")
-	    {
-	        $errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
-	        echo $errlog;
-	    }
-	    else
-	    {
-	        echo "Informations sur les demandes d'alimentation de CET pour " . $agent->identitecomplete() . "<br>";
-	        echo "<div id='demandes_alim_cet'>";
-	        echo "<table class='tableausimple'>";
-	        echo "<tr><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
-	        echo "</tr>";
-	        while ($result = mysqli_fetch_row($query))
-	        {
-	            $alimcet = new alimentationCET($dbcon);
-	            $id = $result[0];
-	            $alimcet->load($id);
-	            echo "<tr><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
-	            unset ($alimcet);
-	        }
-	        echo "</table><br>";
-	        
-	        echo "</div>";
-	    }
-	    */
 	    
 	    // On récupère les soldes de l'agent
 	    $agent = new agent($dbcon);
@@ -900,6 +606,7 @@
 	    	}
 	    	else if ((parseInt(valeur_f) > parseInt(plafond)) && check_plafond)
 	    	{
+	    		//alert('plouf');
 	    		document.getElementById("label_f").innerHTML = "Le nombre de jours doit être inférieur ou égal au dépôt maximum.";
 	    		button.disabled = true;
 	    	}
@@ -997,7 +704,8 @@
                 echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés \"" . $solde->typelibelle() . "\" obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
 				$nbjoursmax = 0;
 			}
-			else {
+			else 
+			{
 				$nbjoursmax = floor($pr - $consodeb);
 				if ($nbjoursmax < 0)
 					$nbjoursmax = 0;
@@ -1018,23 +726,23 @@
 					}
 				}
 			}
-			// echo "Nombre de jours déposables sur le CET : ".$nbjoursmax." <br><br>";
-			/*echo "Nombre de jours à déposer sur le CET <br>";
-			echo "<form name='form_esignature_new_alim'  method='post' >";
-			echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-			echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-			echo "<select name='esignature_nbjour_new_alim' id='esignature_nbjour_new_alim'>";
-			for ($nbjours = 1; $nbjours <= $nbjoursmax; $nbjours++)
+
+			if (is_null($cree_demande))
 			{
-				echo "<option value='" . $nbjours  . "'>" . $nbjours . " jour(s)</option>";
+    			$taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+    			if (count($taberrorcheckmail) > 0)
+    			{
+    			    // var_dump("errorcheckmail = $errorcheckmail");
+    			    $errorcheckmailstr = '';
+    			    foreach ($taberrorcheckmail as $errorcheckmail)
+    			    {
+    			        if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+    			        $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+    			    }
+    			    echo $fonctions->showmessage(fonctions::MSGERROR, "Il n'est pas possible de faire une demande d'alimentation CET car <br>$errorcheckmailstr");
+    			}
 			}
-			echo "</select>";
-			echo "<br><br>";
-			echo "<input type='submit' name='esignature_new_alim' id='esignature_new_alim' value='Déposer les jours'>";
-			echo "</form>";*/
-			
-			//echo "Anneref = $anneeref <br>";
-			
+
 			//echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
 			echo "<form name='creation_alimentation'  method='post' >";
 			echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -1043,7 +751,7 @@
 			echo "<br>";
 			echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond style='color: red;font-weight: bold; margin-left:20px;'></label>";
 			echo "<br>";
-			echo "Combien de jours souhaitez-vous ajouter à votre CET ? <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_f style='color: red;font-weight: bold; margin-left:20px;'></label>";
+			echo "Combien de jours souhaitez-vous ajouter à votre CET ? <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f style='color: red;font-weight: bold; margin-left:20px;'></label>";
 			echo "<br>";
 			echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' > jour(s).";
 			echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
@@ -1052,12 +760,6 @@
 			echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";;
 			echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
 			echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-			// echo "Alimentation du CET (Case F) : <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_f style='color: red;font-weight: bold; margin-left:20px;'></label>";
-			// echo "<br>";
-			// echo "Solde du CET après versement (Case G) : <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-			//echo "<br><br>Choix du responsable :<br>";
-			//echo "<input type='radio' id='resp_demo' name='responsable' value='resp_demo' checked><label for='resp_demo'>Responsable de démo (Pascal+Elodie)</label>";
-			// echo "&nbsp;&nbsp;&nbsp;";
 			$code = null;
 			if ($structure->responsable()->agentid() == $agent->agentid())
 			{
@@ -1077,10 +779,6 @@
 
 <?php 
 			}
-			//echo "Responsable de l'agent (" . $resp->identitecomplete() .  " - " .  $resp->mail() . ")";
-			// echo "<br><br>";
-			//echo "<input type='checkbox' id='drh_niveau' name='drh_niveau' checked><label for='drh_niveau'>Ajouter un 3e niveau dans le circuit de validation (Destinataire : " . $agent->identitecomplete()  .")</label><br>";
-			// echo "<br><br>";
 			echo "<input type='hidden' name='mode' value='" . $mode . "'>";
 			echo "<input type='submit' name='cree_demande' id='cree_demande' value='Soumettre' disabled>";
 			echo "</form>";
@@ -1140,18 +838,26 @@
 					}
 				}
 				else
-					echo "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats est dépassé. (".$fonctions->formatdate($limitereliq).")<br>";
+				{
+				    echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats est dépassé. (".$fonctions->formatdate($limitereliq).")<br>");
+				}
 			}
-			else {
-				echo "Annulation de demande d'alimentation impossible car la date limite d'utilisation des reliquats est invalide. <br>";
+			else 
+			{
+			    echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car la date limite d'utilisation des reliquats est invalide. <br>");
 			}
 		}
-		else echo "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats n'est pas défini.<br>";
+		else
+		{
+		    echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car le délai d'utilisation des reliquats n'est pas défini.<br>");
+		}
 	}
 	else 
 	{
         echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car une demande de droit d'option est en cours ou validée.");
 	}
+	
+	
 	echo $agent->afficheAlimCetHtml();
 	echo $agent->soldecongeshtml($anneeref + 1);
 }

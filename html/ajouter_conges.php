@@ -146,7 +146,17 @@
     if ($agentid == "" and strcasecmp($mode, "gestrh") == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
-
+        
+        $agentsliste = $fonctions->listeagentsg2t();
+        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+        foreach ($agentsliste as $key => $identite)
+        {
+            echo "<option value='$key'>$identite</option>";
+        }
+        echo "</select>";
+        
+/*
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
 ?>
@@ -156,6 +166,8 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
 <?php
+
+*/
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";
@@ -176,7 +188,7 @@
             $structurefille = $structure->structurefille();
             foreach ((array) $structurefille as $structure) {
                 $responsable = $structure->responsable();
-                if ($responsable->agentid() != '-1') {
+                if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
                     $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                 }
             }
@@ -246,7 +258,7 @@
                 echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
 //                echo "<P style='color: green'>" . $errlog . "</P>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                $agentrhlist = $fonctions->listeprofilrh("2"); // Le profil 2 est le profil de gestion des congés
+                $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
                 foreach ($agentrhlist as $agentrh) {
                     $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
                     $corpmail = $corpmail . "Le motif de cet ajout est : " . $commentaire_supp . ".\n";

@@ -2,7 +2,15 @@
 
 // URL d'accès aux WS G2T
 define('G2T_WS_URL', "http://host_name:port/webservice_folder");
+// URL d'accès à G2T
+define('G2T_URL', 'http://host_name:port/appli_folder');
 define('TYPE_ENVIRONNEMENT', 'test');   // test => environnement de test ou de développement   // prod => environnement de production
+
+//------------------------------------------------------
+// Force les adresses mails de agents à la valeur saisie ==> Utilisation recommandée UNIQUEMENT sur environnements de TEST ou de DEVELOPPEMENT
+// Pour désactiver le paramètre => Le mettre en commentaire ou initialiser la valeur à chaine vide (valeur par défaut)
+define('FORCE_AGENT_MAIL', '');
+//define('FORCE_AGENT_MAIL', 'noreply@etab.fr');  // ATTENTION : Tous les agents auront la même adresse mail
 
 // Connexion à la base de données
 define('DB_HOST', 'host_name:port');
@@ -13,7 +21,54 @@ define('DB_NAME', 'g2t_db');
 // Nom du fichier logo établissement (dans le dossier <racine>/images)
 define('LOGO_FILENAME', 'logo_etab.png');
 
-// Nom du fichier à joindre lors de l'utilisaton du CET en congés (dans le dossier <racine>/documents)
+// Nom du fichier à joindre lors de l'utilisation du CET en congés (dans le dossier <racine>/documents)
 define('DOC_USAGE_CET', 'Utilisation_CET_Conges.pdf');
+
+// Nom du serveur SMTP
+define('SMTPSERVER', 'smtp.etab.fr');
+
+// Informations concernant les infos LDAP (serveurs, attributs, ...)
+define('LDAPSERVER', 'ldap://ldap1.etab.fr ldap://ldap2.etab.fr ldap://ldap3.etab.fr');
+define('LDAPLOGIN', 'cn=user_id,ou=admin,dc=etab,dc=fr');
+define('LDAPPASSWD', 'ldap_password');
+define('LDAPSEARCHBASE', 'ou=people,dc=etab,dc=fr');
+define('LDAPATTRIBUTE', 'supannempid');
+define('LDAP_AGENT_CIVILITE_ATTR', 'supanncivilite');
+define('LDAP_AGENT_NOM_ATTR', 'sn');
+define('LDAP_AGENT_PRENOM_ATTR', 'givenname');
+define('LDAP_AGENT_MAIL_ATTR', 'mail');
+define('LDAP_AGENT_ADDRESS_ATTR', 'postaladdress');
+define('LDAP_AGENT_EPPN_ATTR', 'edupersonprincipalname');
+define('LDAP_AGENT_UID_ATTR', 'uid');
+define('LDAPMEMBERATTR', 'memberof');
+define('LDAPGROUPNAME', 'cn=applications.g2t.users,ou=groups,dc=etab,dc=fr');
+define('LDAP_STRUCT_SEARCH_BASE', 'ou=structures,dc=etab,dc=fr');
+define('LDAP_STRUCT_CODE_ENTITE_ATTR', 'supanncodeentite');
+define('LDAP_STRUCT_IS_INCLUDED_ATTR', 'up1flags');
+define('LDAP_FONCTION_SEARCH_BASE', 'ou=supannrolegenerique,ou=tables,dc=etab,dc=fr');
+define('LDAP_FONCTION_POIDS_ATTR', 'up1flags');
+
+// Connexion au serveur CAS
+define('CASSERVER', 'cas.etab.fr');
+define('CASPATH', '/cas');
+
+// URL d'accès au serveur WSGROUPS
+define('WSGROUPURL', 'https://wsgroups.etab.fr/');
+
+// URL d'accès à l'agenda
+define('URLCALENDAR', 'https://courrier-test.etab.fr/kronolith/lib/import-icals.php?');
+
+// URL d'accès au serveur eSignature
+define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
+
+////////////////////////////////////////////////////////////////////////////
+// ATTENTION : LES NOMS DES CONSTANTES DES UTILISATEURS SPECIAUX DOIVENT
+// ----------  OBLIGATOIREMENT COMMENCER PAR 'SPECIAL_USER_' POUR ETRE
+//             TRAITE COMME TEL DANS LA METHODE AGENT->estutilisateurspecial()
+///////////////////////////////////////////////////////////////////////////
+// Identifiant de l'utilisateur CRON de G2T
+define('SPECIAL_USER_IDCRONUSER', '-1');
+// Identifiant de l'utilisateur LISTE-RH / GESTION TEMPS
+define('SPECIAL_USER_IDLISTERHUSER', '-2');
 
 ?>

@@ -30,6 +30,34 @@ class periodeobligatoire
         {
             $this->anneeref = $anneeref;
             $constname  = "PERIODE_" . $anneeref;
+            if ($this->fonctions->testexistdbconstante($constname))
+            {
+                $this->pastrouve = false;
+                $result = $this->fonctions->liredbconstante($constname);
+                $dateliste = explode("|", $result);
+                //echo "<br>dateliste dans load avant for = " . print_r($dateliste,true)."<br>";
+                foreach ((array)$dateliste as $periode)
+                {
+                    //echo "<br>periode dans le load = " . print_r($periode,true)."<br>";
+                    if (strpos($periode,'-')!==false)
+                    {
+                        //echo "<br>J'ai trouvé le - dans periode $periode <br>";
+                        $dateborne = explode("-", $periode);
+                        //echo "<br>Apres le explode....<br>";
+                        $this->ajouterperiode(trim($dateborne[0]),trim($dateborne[1]));
+                        //$periode = array("datedebut" => $dateborne[0],"datefin" => $dateborne[1]);
+                        //$this->listedate[$dateborne[0] . '-' . $dateborne[1]] = $periode;
+                    }
+                }
+            }
+            else
+            {
+                $this->listedate = array();
+                $this->pastrouve = true;
+            }
+            return $this->listedate;
+            
+/*            
             $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";
             // echo "PeriodeObligatoire load sql = $sql <br>";
             $params = array($constname);
@@ -67,6 +95,7 @@ class periodeobligatoire
                 }
             }
             return $this->listedate;
+*/            
         }
     }
     
@@ -100,7 +129,11 @@ class periodeobligatoire
         else
         {
             $constname  = "PERIODE_" . $anneeref;
+            $this->anneeref = $anneeref;
         }
+        $erreur = $this->fonctions->enregistredbconstante($constname, $valeur);
+        
+/*        
         if ($this->pastrouve)
         {
             //echo "PeriodeObligatoire->Store : Pas trouve <br>";
@@ -129,6 +162,7 @@ class periodeobligatoire
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
+*/
         return $erreur;
     }
     

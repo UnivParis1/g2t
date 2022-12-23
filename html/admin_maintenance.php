@@ -46,8 +46,21 @@
     $user = new agent($dbcon);
     $user->load($userid);
 
-    if (isset($_POST["maintenance"])) {
-        if ($_POST["maintenance"] == "on") {
+    if (isset($_POST["maintenance"])) 
+    {
+        $constante = "MAINTENANCE";
+        if ($_POST["maintenance"] == "on")
+        {
+            $valeur = "o";
+        }
+        else
+        {
+            $valeur = "n";
+        }
+        $erreur = $fonctions->enregistredbconstante($constante, $valeur);
+/*
+        if ($_POST["maintenance"] == "on") 
+        {
             // Update Mode maintenance à 'o'
             $sql = "UPDATE CONSTANTES SET VALEUR = 'o' WHERE NOM = 'MAINTENANCE'";
         } else {
@@ -56,7 +69,9 @@
         }
         $query = mysqli_query($dbcon, $sql);
         $erreur = mysqli_error($dbcon);
-        if ($erreur != "") {
+*/
+        if ($erreur != "") 
+        {
             $errlog = "Erreur activation/desactivation mode maintenance : " . $erreur;
             echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
 //            echo $errlog . "<br/>";

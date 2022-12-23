@@ -147,37 +147,6 @@
         }
     }
     
-/*    
-    function affichestructureliste($structure, $niveau = 0)
-    {
-        global $dbcon;
-        global $structureid;
-        global $fonctions;
-        global $showall;
-        // $fonctions = new fonctions($dbcon);
-        if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
-            echo "<option value='" . $structure->id() . "'";
-            if ($structure->id() == $structureid) {
-                echo " selected ";
-            }
-            if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-                echo " style='color:red;' ";
-            }
-            echo ">";
-            for ($cpt = 0; $cpt < $niveau; $cpt ++) {
-                echo "&nbsp;&nbsp;&nbsp;&nbsp;";
-            }
-            echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-            echo "</option>";
-            
-            $sousstruclist = $structure->structurefille();
-            foreach ((array) $sousstruclist as $keystruct => $soustruct) {
-                affichestructureliste($soustruct, $niveau + 1);
-            }
-        }
-    }
-*/    
-    
     $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
     $query = mysqli_query($dbcon, $sql);
     $erreur = mysqli_error($dbcon);
@@ -244,11 +213,11 @@
             echo $delegationuser->agentid();
         echo "' class='infodelegation[" . $structure->id() . "]' /> ";
 ?>
-    <script>
+	    <script>
         	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
       	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
       	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-    </script>
+    	</script>
 <?php
         
         //echo "</td></tr>";

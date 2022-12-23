@@ -143,7 +143,7 @@
                                 // On ajoute le fichier PDF d'utilisation du CET en congés
                                 $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
                                 $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
-                                $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                                $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                                 foreach ($arrayagentrh as $gestrh) {
                                     $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "\n";
                                 }
@@ -153,7 +153,7 @@
                             // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                             if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) 
                             {
-                                $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                                $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                                 foreach ($arrayagentrh as $gestrh) {
                                     $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".\n";
                                     $corpmail = $corpmail . "\n";
@@ -168,7 +168,7 @@
                             // Si c'est une demande de type télétravail HC raison médical  et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                             elseif (strcasecmp($demande->type(), "telesante") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0)
                             {
-                                $arrayagentrh = $fonctions->listeprofilrh("2"); // Profil = 2 ==> GESTIONNAIRE RH CONGE
+                                $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
                                 foreach ($arrayagentrh as $gestrh) {
                                     $corpmail = "Une demande d'absence de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".\n";
                                     $corpmail = $corpmail . "\n";

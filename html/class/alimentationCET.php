@@ -115,8 +115,11 @@ class alimentationCET
                 $errlog = "alimentationCET->esignatureurl : L'URL eSignature n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
-                return $this->esignatureurl;
+            } 
+            else
+            {
+                return preg_replace('/([^:])(\/{2,})/', '$1/', $this->esignatureurl);
+            }
         }
         else
         {
@@ -130,9 +133,9 @@ class alimentationCET
             {
                 // On remplace éventuellement le nom du serveur par celui paramétré
                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Avant transformation l'URL est : " . $esignatureurl));
-                $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
+                $eSignature_url = trim($this->fonctions->liredbconstante('ESIGNATUREURL'));
                 $urlpath = parse_url($esignatureurl,PHP_URL_PATH);
-                $this->esignatureurl = $eSignature_url . $urlpath;
+                $this->esignatureurl = preg_replace('/([^:])(\/{2,})/', '$1/', $eSignature_url . $urlpath);
                 error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Après transformation l'URL est : " . $this->esignatureurl));
                 
                 //$this->esignatureurl = $esignatureurl;

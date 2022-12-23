@@ -351,17 +351,28 @@
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
 
+            $agentsliste = $fonctions->listeagentsg2t();
+            echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+            echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+            foreach ($agentsliste as $key => $identite)
+            {
+                echo "<option value='$key'>$identite</option>";
+            }
+            echo "</select>";
+            
+/*            
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
             echo "' class='agent' /> ";
-            ?>
+?>
         <script>
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
-    	<?php
+<?php
+*/
         }
         else
         {
@@ -376,7 +387,7 @@
                 $structurefille = $structure->structurefille();
                 foreach ((array) $structurefille as $structure) {
                     $responsable = $structure->responsable();
-                    if ($responsable->agentid() != '-1') {
+                    if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
                         $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                     }
                 }
@@ -588,7 +599,7 @@
                             // On ajoute le fichier PDF d'utilisation du CET en congés
                             $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
                             $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
-                            $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                            $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
                                 $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "\n";
                             }
@@ -598,7 +609,7 @@
                         // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) 
                         {
-                            $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                            $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
                                 $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".\n";
                                 $corpmail = $corpmail . "\n";
@@ -613,7 +624,7 @@
                         // Si c'est une demande de type télétravail HC raison médical  et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         elseif (strcasecmp($demande->type(), "telesante") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) 
                         {
-                            $arrayagentrh = $fonctions->listeprofilrh("2"); // Profil = 2 ==> GESTIONNAIRE RH CONGE
+                            $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
                             foreach ($arrayagentrh as $gestrh) {
                                 $corpmail = "Une demande de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".\n";
                                 $corpmail = $corpmail . "\n";
@@ -989,7 +1000,7 @@ const modifycomment = (comment) =>
         echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
         if ($erreurCET != '')
         {
-        	echo $erreurCET."<br>";
+            $fonctions->showmessage(fonctions::MSGWARNING, $erreurCET);
         }
         if (! $masquerboutonvalider)
             echo "<input type='submit' name='valider' id='valider' value='Soumettre' $disabledbutton />";

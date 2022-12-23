@@ -165,7 +165,7 @@
                     {
                         // Si on n'est pas en mode responsable envoi du mail au gestionnaire RH.... (Sinon c'est l'agent qui a annulé sa propre demande => donc pas d'envoi)
                         if (is_null($responsableid) == false) {
-                            $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                            $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
                                 $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".\n";
                                 $corpmail = $corpmail . "\n";
@@ -275,18 +275,29 @@
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
 
+            $agentsliste = $fonctions->listeagentsg2t();
+            echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+            echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+            foreach ($agentsliste as $key => $identite)
+            {
+                echo "<option value='$key'>$identite</option>";
+            }
+            echo "</select>";
+
+/*            
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
             echo "' class='agent' /> ";
-            ?>
+?>
         <script>
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
-    	<?php
+<?php
 
+*/
 
 
 

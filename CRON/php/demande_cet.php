@@ -49,7 +49,7 @@
     } else {
         echo "Génération du PDF pour les demandes de CET \n";
         $cronmail = new agent($dbcon);
-        $cronmail->load("-1");
+        $cronmail->load(SPECIAL_USER_IDCRONUSER);
 
         $pdf = new FPDF();
         //$pdf = new TCPDF();
@@ -145,7 +145,7 @@
         //$pdf->Output($filename, 'F'); // F = file
         $fonctions->savepdf($pdf, $filename);
 
-        $arrayagentrh = $fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+        $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
         foreach ($arrayagentrh as $gestrh) {
             $cronmail->sendmail($gestrh, 'Historique des demandes de congés de CET', "Veuillez trouver ci-joint le récapitulatif des demandes de CET depuis $datedebut à la date du " . date("d/m/Y") . ".\n", $filename);
         }

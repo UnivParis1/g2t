@@ -11,7 +11,12 @@
  */
 class agent
 {
-
+    const PROFIL_RHCET = 'RHCET';
+    const PROFIL_RHCONGE = 'RHCONGE';
+    const PROFIL_RHTELETRAVAIL = 'RHTELETRAVAIL';
+    const PROFIL_RHANOMALIE = 'RHANOMALIE'; // OBSOLETE => NE PLUS UTILISER
+        
+    
     private $agentid = null;
 
     private $nom = null;
@@ -90,7 +95,10 @@ class agent
             $this->civilite = "$result[1]";
             $this->nom = "$result[2]";
             $this->prenom = "$result[3]";
-            $this->adressemail = "$result[4]";
+            
+            // On utilise la fonction "mail" car il y a dedans le test sur l'ID de l'agent pour l'impacter ou pas en fonction de la constante FORCE_AGENT_MAIL
+            $this->mail("$result[4]");
+
             $this->typepopulation = "$result[5]";
             $this->structureid = "$result[6]";
             return true;
@@ -115,6 +123,177 @@ class agent
             return false;
         }
         return true;
+    }
+    
+    function store($agentid)
+    {
+        //////////////////////////////////////////////////////////////////////
+        // Lors de la sauvegarde, on "n'escape pas" le NOM et le PRENOM car //
+        // c'est fait automatiquement lors de la construction de la requète //
+        //////////////////////////////////////////////////////////////////////
+        
+        if ($this->estutilisateurspecial($agentid))
+        {
+            //echo "<br>On set les paramètres avec les valeurs par défaut";
+            if (strlen(trim($this->civilite . ""))==0) $this->civilite('');
+            if (strlen(trim($this->nom . ""))==0) $this->nom('SPECIAL_' . $agentid);
+            if (strlen(trim($this->prenom . ""))==0) $this->prenom('UTILISATEUR_' . $agentid);
+            if (strlen(trim($this->adressemail . ""))==0) $this->mail('noreply@no_domaine.fr');
+            
+            if ($this->existe($agentid))
+            {
+                // Mise à jour de l'agent
+                $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ? WHERE AGENTID = ?";
+                $params = array(
+                    $this->civilite,
+                    $this->nom,
+                    $this->prenom,
+                    $this->adressemail,
+                    $agentid
+                );
+            }
+            else
+            {
+                // Ajout manuel de l'agent
+                $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES(?,?,?,?,?,'')";
+                $params = array(
+                    $agentid,
+                    $this->civilite,
+                    $this->nom,
+                    $this->prenom,
+                    $this->adressemail
+                );
+            }
+        }
+        else
+        {
+            if (strlen(trim($this->civilite . ""))==0 or 
+                strlen(trim($this->nom . ""))==0 or 
+                strlen(trim($this->prenom . ""))==0 or
+                strlen(trim($this->adressemail . ""))==0
+               )
+            {
+                $errlog = "Agent->store (AGENT) : Au moins une des propriétés est vide (civilité, nom, prénom, adresse mail) => Sauvegarde impossible.";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return false;
+            }
+            
+            // Si le type population est vide (null, vide, avec des espaces, ....) on le force à vide
+            if (strlen(trim($this->typepopulation . ""))==0)  $this->typepopulation = "";
+            if (strlen(trim($this->structureid . ""))==0)  $this->structureid = "";
+                        
+            if ($this->existe($agentid))
+            {
+                // Mise à jour de l'agent
+                $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ?, TYPEPOPULATION = ?, STRUCTUREID = ? WHERE AGENTID = ?";
+                $params = array(
+                    $this->civilite,
+                    $this->nom,
+                    $this->prenom,
+                    $this->adressemail,
+                    $this->typepopulation,
+                    $this->structureid,
+                    $agentid
+                );
+            }
+            else
+            {
+                // Ajout manuel de l'agent
+                $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID) VALUES(?,?,?,?,?,?,?)";
+                $params = array(
+                    $agentid,
+                    $this->civilite,
+                    $this->nom,
+                    $this->prenom,
+                    $this->adressemail,
+                    $this->typepopulation,
+                    $this->structureid
+                );
+            }
+        }
+        $query = $this->fonctions->prepared_select($sql, $params);
+        //echo "sql = " . $sql . "<br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Agent->store (AGENT) : Error => " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        $this->agentid = $agentid;
+        return true;
+    }
+
+
+//     /**
+//      *
+//      * @deprecated
+//      */
+//     function storeutilisateurspecial($agentid)
+//     {
+//         trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+//         //echo "<br>Avant le if estutilisateurspecial";
+//         if ($this->estutilisateurspecial($agentid))
+//         {
+//             //echo "<br>On set les paramètres avec les valeurs par défaut";
+//             if (strlen(trim($this->civilite . ""))==0) $this->civilite('');
+//             if (strlen(trim($this->nom . ""))==0) $this->nom('SPECIAL_' . $agentid);
+//             if (strlen(trim($this->prenom . ""))==0) $this->prenom('UTILISATEUR_' . $agentid);
+//             if (strlen(trim($this->adressemail . ""))==0) $this->mail('noreply@no_domaine.fr');
+//             if ($this->existe($agentid))
+//             {
+//                 // Ajout manuel de l'agent
+//                 $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ? WHERE AGENTID = ?";
+//                 $params = array(
+//                     $this->fonctions->my_real_escape_utf8($this->civilite),
+//                     $this->fonctions->my_real_escape_utf8($this->nom),
+//                     $this->fonctions->my_real_escape_utf8($this->prenom),
+//                     $this->fonctions->my_real_escape_utf8($this->adressemail),
+//                     $this->fonctions->my_real_escape_utf8($agentid)
+//                 );
+//             }
+//             else
+//             {
+//                 // Ajout manuel de l'agent
+//                 $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES(?,?,?,?,?,'')";
+//                 $params = array(
+//                     $this->fonctions->my_real_escape_utf8($agentid),
+//                     $this->fonctions->my_real_escape_utf8($this->civilite),
+//                     $this->fonctions->my_real_escape_utf8($this->nom),
+//                     $this->fonctions->my_real_escape_utf8($this->prenom),
+//                     $this->fonctions->my_real_escape_utf8($this->adressemail)
+//                     );
+//             }
+//             $query = $this->fonctions->prepared_select($sql, $params);
+//             //echo "sql = " . $sql . "<br>";
+//             $erreur = mysqli_error($this->dbconnect);
+//             if ($erreur != "") {
+//                 $errlog = "Agent->storeutilisateurspecial (AGENT) : " . $erreur;
+//                 echo $errlog . "<br/>";
+//                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+//                 return false;
+//             }
+//             $this->agentid = $agentid;
+//             return true;
+//         }
+//         else
+//         {
+//             echo "<br> $agentid n'est pas dans la liste des utilisateurs speciaux => Impossible de le sauvegarder<br>";
+//             return false;
+//         }
+//     }
+
+    
+    function estutilisateurspecial($agentid = null)
+    {
+        $tab_special_users = $this->fonctions->listeutilisateursspeciaux();
+        // Si on ne spécifie pas le id de l'agent on prend celui de l'objet courant
+        if (is_null($agentid))
+            return in_array($this->agentid(),$tab_special_users);
+        else
+            return in_array($agentid,$tab_special_users);
     }
 
     /**
@@ -147,8 +326,19 @@ class agent
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->nom;
-        } else
-            $this->nom = $name;
+        } 
+        else
+        {
+//            $this->nom = $name;
+            if (mb_detect_encoding($name, 'UTF-8', true))
+            {
+                $this->nom = $name;
+            }
+            else
+            {
+                $this->nom = utf8_encode($name);
+            }
+        }
     }
 
     /**
@@ -166,8 +356,19 @@ class agent
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->prenom;
-        } else
-            $this->prenom = $firstname;
+        } 
+        else
+        {
+//            $this->prenom = $firstname;
+            if (mb_detect_encoding($firstname, 'UTF-8', true))
+            {
+                $this->prenom = $firstname;
+            }
+            else
+            {
+                $this->prenom = utf8_encode($firstname);
+            }
+        }
     }
 
     /**
@@ -185,8 +386,19 @@ class agent
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->civilite;
-        } else
-            $this->civilite = $civilite;
+        } 
+        else
+        {
+//            $this->civilite = $civilite;
+            if (mb_detect_encoding($civilite, 'UTF-8', true))
+            {
+                $this->civilite = $civilite;
+            }
+            else
+            {
+                $this->civilite = utf8_encode($civilite);
+            }
+        }
     }
 
     /**
@@ -197,9 +409,9 @@ class agent
     function identitecomplete($namefirst = false)
     {
         if ($namefirst)
-            return $this->civilite() . " " . $this->nom() . " " . $this->prenom();
+            return $this->civilite . " " . $this->nom() . " " . $this->prenom();
         else
-            return $this->civilite() . " " . $this->prenom() . " " . $this->nom();
+            return $this->civilite . " " . $this->prenom() . " " . $this->nom();
     }
 
     /**
@@ -210,17 +422,86 @@ class agent
      */
     function mail($mail = null)
     {
-        if (is_null($mail)) {
-            if (is_null($this->adressemail)) {
+        if (is_null($mail)) 
+        {
+            // Si ce n'est pas un utilisateur spécial
+            //var_dump ($this->agentid());
+/*            
+            if (!$this->estutilisateurspecial($this->agentid()))
+            {
+                $dbconstante = "FORCE_AGENT_MAIL";
+                if ($this->fonctions->testexistdbconstante($dbconstante)) 
+                {
+                    $mail = trim($this->fonctions->liredbconstante($dbconstante));
+                    if (strlen($mail)>0) 
+                    {
+                        return $mail;
+                    }
+                }
+            }
+*/
+            $dbconstante = "FORCE_AGENT_MAIL";
+            if ($this->fonctions->testexistdbconstante($dbconstante))
+            {
+                $mail = trim($this->fonctions->liredbconstante($dbconstante));
+                if (strlen($mail)>0)
+                {
+                    return $mail;
+                }
+            }
+            if (is_null($this->adressemail)) 
+            {
                 $errlog = "Agent->mail : Le mail de l'agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->adressemail;
-        } else
-            $this->adressemail = $mail;
+            }
+        } 
+        else
+        {
+//            $this->adressemail = $mail;
+            if (mb_detect_encoding($mail, 'UTF-8', true))
+            {
+                $this->adressemail = $mail;
+            }
+            else
+            {
+                $this->adressemail = utf8_encode($mail);
+            }
+        }
     }
 
+    /**
+     *
+     * @param 
+     * @return string mail from database of the current agent 
+     */
+    function mailforspecialagent()
+    {
+        if ($this->estutilisateurspecial($this->agentid()))
+        {
+            if (is_null($this->adressemail))
+            {
+                $errlog = "Agent->mailforspecialagent : Le mail de l'agent special " . $this-agentid() . " n'est pas défini !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+            {
+                return $this->adressemail;
+            }
+        }
+        else
+        {
+            $errlog = "Agent->mailforspecialagent : L'agent " . $this-agentid() . " n'est pas un utilisateur spécial !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+    }
+    
     /**
      *
      * @param 
@@ -262,20 +543,20 @@ class agent
         $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
         $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+        $LDAP_AGENT_MAIL_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
         $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
         $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
         $dn = $LDAP_SEARCH_BASE;
-        $restriction = array("$LDAP_CODE_AGENT_ATTR");
+        $restriction = array("$LDAP_AGENT_MAIL_ATTR");
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
         //echo "Info = " . print_r($info,true) . "<br>";
         //echo "L'email de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-        if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-            $agent_mail = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
+        if (isset($info[0]["$LDAP_AGENT_MAIL_ATTR"][0])) {
+            $agent_mail = $info[0]["$LDAP_AGENT_MAIL_ATTR"][0];
             // echo "Agent eMail = $agent_mail <br>";
         }
         return $agent_mail;
@@ -296,8 +577,18 @@ class agent
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else
                 return $this->typepopulation;
-        } else
-            $this->codestructure = $type;
+        } 
+        else
+        {
+            if (mb_detect_encoding($type, 'UTF-8', true)) 
+            {
+                $this->typepopulation = $type;
+            }
+            else
+            {
+                $this->typepopulation = utf8_encode($type);
+            }
+        }
     }
     
     /**
@@ -305,14 +596,25 @@ class agent
      * @param
      * @return string the structure identifier for the current agent
      */
-    function structureid()
+    function structureid($structureid = null)
     {
-    	if (is_null($this->structureid)) {
-    		$errlog = "Agent->structureid : L'Id de la structure n'est pas défini !!!";
-    		echo $errlog . "<br/>";
-    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    	} else
-    		return $this->structureid;
+        if (is_null($structureid))
+        {
+        	if (is_null($this->structureid)) 
+        	{
+        		$errlog = "Agent->structureid : L'Id de la structure n'est pas défini !!!";
+        		echo $errlog . "<br/>";
+        		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        	} 
+        	else
+        	{
+        		return $this->structureid;
+        	}
+        }
+        else
+        {
+            $this->structureid = $structureid;
+        }
     }
     
     function travailsamedi()
@@ -480,11 +782,13 @@ class agent
     {
         $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID IN (";
         if (is_null($typeprofil)) {
-            $sql = $sql . "'RHCET', 'RHCONGE'";
-        } elseif ($typeprofil == 1) {
-            $sql = $sql . "'RHCET'";
-        } elseif ($typeprofil == 2) {
-            $sql = $sql . "'RHCONGE'";
+            $sql = $sql . "'" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHTELETRAVAIL . "', '" . agent::PROFIL_RHCONGE . "'";
+        } elseif ($typeprofil == 1 or $typeprofil == agent::PROFIL_RHCET) {
+            $sql = $sql . "'" . agent::PROFIL_RHCET . "'";
+        } elseif ($typeprofil == 2 or $typeprofil == agent::PROFIL_RHCONGE) {
+            $sql = $sql . "'" . agent::PROFIL_RHCONGE . "'";
+        } elseif ($typeprofil == agent::PROFIL_RHTELETRAVAIL) {
+            $sql = $sql . "'" . agent::PROFIL_RHTELETRAVAIL . "'";
         } else {
             $errlog = "Agent->estprofilrh (AGENT) : Type de profil demandé inconnu (typeprofil = $typeprofil)";
             echo $errlog . "<br/>";
@@ -507,6 +811,56 @@ class agent
         $result = mysqli_fetch_row($query);
         return (strcasecmp($result[0], "O") == 0);
     }
+    
+    function enregistreprofilrh($arrayprofil = array())
+    {
+        if (is_array($arrayprofil))
+        {
+            $sql = "DELETE FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID IN ('" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHTELETRAVAIL . "', '" . agent::PROFIL_RHCONGE . "')";
+            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                echo "agent->enregistreprofilrh (DELETE) : " . $erreur . "<br>";
+                error_log(basename(__FILE__) . " " . $erreur);
+            }
+            
+            if (in_array(agent::PROFIL_RHCET,$arrayprofil))
+            {
+                $sql = "INSERT INTO COMPLEMENT(AGENTID, COMPLEMENTID, VALEUR, STATUT, DATEDEBUT, DATEFIN) VALUES(?, ?, 'O', '', '" . $this->fonctions->formatdatedb('01/01/1900') . "', NULL)";
+                $params = array($this->fonctions->my_real_escape_utf8($this->agentid),agent::PROFIL_RHCET);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    echo "agent->enregistreprofilrh (INSERT - " . agent::PROFIL_RHCET . ") : " . $erreur . "<br>";
+                    error_log(basename(__FILE__) . " " . $erreur);
+                }
+            }
+            if (in_array(agent::PROFIL_RHCONGE,$arrayprofil))
+            {
+                $sql = "INSERT INTO COMPLEMENT(AGENTID, COMPLEMENTID, VALEUR, STATUT, DATEDEBUT, DATEFIN) VALUES(?, ?, 'O', '', '" . $this->fonctions->formatdatedb('01/01/1900') . "', NULL)";
+                $params = array($this->fonctions->my_real_escape_utf8($this->agentid),agent::PROFIL_RHCONGE);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    echo "agent->enregistreprofilrh (INSERT - " . agent::PROFIL_RHCONGE . ") : " . $erreur . "<br>";
+                    error_log(basename(__FILE__) . " " . $erreur);
+                }
+            }
+            if (in_array(agent::PROFIL_RHTELETRAVAIL,$arrayprofil))
+            {
+                $sql = "INSERT INTO COMPLEMENT(AGENTID, COMPLEMENTID, VALEUR, STATUT, DATEDEBUT, DATEFIN) VALUES(?, ?, 'O', '', '" . $this->fonctions->formatdatedb('01/01/1900') . "', NULL)";
+                $params = array($this->fonctions->my_real_escape_utf8($this->agentid),agent::PROFIL_RHTELETRAVAIL);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    echo "agent->enregistreprofilrh (INSERT - " . agent::PROFIL_RHTELETRAVAIL . ") : " . $erreur . "<br>";
+                    error_log(basename(__FILE__) . " " . $erreur);
+                }
+            }
+        }
+    }
+    
 
     /**
      *
@@ -736,8 +1090,8 @@ class agent
 	        $msg .= "Content-Transfer-Encoding:8bit\r\n";
 	        $msg .= "\r\n";
 	        $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
-	        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . $this->fonctions->liredbconstante('G2TURL') . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8') . "\r\n";
-	        
+	        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8') . "\r\n";
+
 	        // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 	        $msg .= "\r\n";
 	        
@@ -2768,7 +3122,16 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 	    	foreach ($listid as $id)
 	    	{
 	    		$alimcet->load($id);
-	    		$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td></tr>";
+	    		$htmltext = $htmltext . "<tr>
+                                            <td class='cellulesimple'>" . $id . "</td>
+                                            <td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>
+                                            <td class='cellulesimple'>" . $alimcet->typeconges() . "</td>
+                                            <td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>
+                                            <td class='cellulesimple'>" . $alimcet->statut() . "</td>
+                                            <td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td>
+                                            <td class='cellulesimple'>" . $alimcet->motif() . "</td>
+                                            <td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>
+                                         </tr>";
 	    	}
 	    	$htmltext = $htmltext . "</table><br>";
 	    	$htmltext = $htmltext . "</center>";
@@ -2853,7 +3216,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     			
     			// alerter la DRH
     			
-    			$arrayagentrh = $this->fonctions->listeprofilrh("1"); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+    			$arrayagentrh = $this->fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
     			foreach ($arrayagentrh as $gestrh) {
     				$this->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$this->nom()." ".$this->prenom()." a demandé l'annulation de sa demande d'alimentation n°". $esignatureid_annule . ".\n");
     			}
@@ -2982,6 +3345,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	else 
     	{
     		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/alimentationWS.php";
+    		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query)) 
     		{
     			$listdemandes[] = $result[0];
@@ -3277,6 +3641,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	else
     	{
     		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/alimentationWS.php";
+    		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query))
     		{
     			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
@@ -3308,6 +3673,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	else
     	{
     		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/optionWS.php";
+    		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query))
     		{
     			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);

@@ -162,6 +162,10 @@
 	padding-bottom : 20px;
 }
 
+.resetfont {
+	font-size : unset; 
+}
+
 /*******************************************************/
 /* DEFINITION DU BODY (Police, taille, couleur, ...)   */
 /*******************************************************/

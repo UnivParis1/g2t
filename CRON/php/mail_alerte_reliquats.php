@@ -63,8 +63,8 @@
 
         // Création de l'agent CRON G2T
         $agentcron = new agent($dbcon);
-        // -1 est le code pour l'agent CRON dans G2T
-        $agentcron->load('-1');
+        // le code pour l'agent CRON dans G2T
+        $agentcron->load(SPECIAL_USER_IDCRONUSER);
     
         while ($result = mysqli_fetch_row($query)) {
             $agent = new agent($dbcon);

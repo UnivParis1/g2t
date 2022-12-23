@@ -50,41 +50,26 @@
                 $ligne_element = explode($separateur, $ligne);
                 $agentid = trim($ligne_element[0]);
                 $civilite = trim($ligne_element[1]);
+/*                
                 $nom = str_replace("\'", "'", trim($ligne_element[2]));
                 $prenom = str_replace("\'", "'", trim($ligne_element[3]));
+*/
+                $nom = trim($ligne_element[2]);
+                $prenom = trim($ligne_element[3]);
                 $adressemail = trim($ligne_element[4]);
                 $typepop = trim($ligne_element[5]);
                 echo "agentid = $agentid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
                 
                 $agent = new agent($dbcon);
-                if ($agent->existe($agentid))
+                $agent->civilite($civilite);
+                $agent->nom($nom);
+                $agent->prenom($prenom);
+                $agent->mail($adressemail);
+                $agent->typepopulation($typepop);
+                $agent->structureid(''); // On force sa structure à 'vide' car elle sera initialisée plus tard
+                if (!$agent->store($agentid))
                 {
-                    // ATTENTION : Bien positionner la structure à vide si l'agent est déjà dans la base.
-                    // Sinon il va ressortir comme affecté alors qu'il n'est plus là
-                    $sql = sprintf("UPDATE AGENT SET CIVILITE='%s',NOM='%s',PRENOM='%s',ADRESSEMAIL='%s',TYPEPOPULATION='%s', STRUCTUREID='' WHERE AGENTID='%s'", 
-                        $fonctions->my_real_escape_utf8($civilite), 
-                        $fonctions->my_real_escape_utf8($nom), 
-                        $fonctions->my_real_escape_utf8($prenom), 
-                        $fonctions->my_real_escape_utf8($adressemail), 
-                        $fonctions->my_real_escape_utf8($typepop),
-                        $fonctions->my_real_escape_utf8($agentid));
-                }
-                else
-                {
-                    $sql = sprintf("INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('%s','%s','%s','%s','%s','%s')", 
-                        $fonctions->my_real_escape_utf8($agentid), 
-                        $fonctions->my_real_escape_utf8($civilite), 
-                        $fonctions->my_real_escape_utf8($nom), 
-                        $fonctions->my_real_escape_utf8($prenom), 
-                        $fonctions->my_real_escape_utf8($adressemail), 
-                        $fonctions->my_real_escape_utf8($typepop));
-                }
-
-                mysqli_query($dbcon, $sql);
-                $erreur_requete = mysqli_error($dbcon);
-                if ($erreur_requete != "") {
-                    echo "INSERT/UPDATE AGENT => $erreur_requete \n";
-                    echo "sql = $sql \n";
+                    echo "INSERT/UPDATE AGENT => Une erreur s'est produit dans la mise à jour/l'insertion des agents \n"; 
                 }
             }
         }
@@ -92,24 +77,22 @@
     }
 
     $agent = new agent($dbcon);
-    if (!$agent->existe('-1'))
+    if (!$agent->existe(SPECIAL_USER_IDCRONUSER))
     {
-        // Ajout manuel de l'agent CRON-G2T avec un agentid = -1
-        $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-1','','CRON','G2T','noreply-g2t@univ-paris1.fr','')";
-        mysqli_query($dbcon, $sql);
-        $erreur_requete = mysqli_error($dbcon);
-        if ($erreur_requete != "")
-            echo "INSERT INTO AGENT CRON-G2T => $erreur_requete \n";
+        // Ajout manuel de l'agent CRON-G2T
+        $agent->nom('CRON');
+        $agent->prenom('G2T');
+        $agent->mail('noreply-g2t@univ-paris1.fr');
+        $agent->store(SPECIAL_USER_IDCRONUSER);
     }
     $agent = new agent($dbcon);
-    if (!$agent->existe('-2'))
+    if (!$agent->existe(SPECIAL_USER_IDLISTERHUSER))
     {
-        // Ajout manuel de l'agent GESTION TEMPS avec un agentid = -2
-        $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES('-2','','Gestion','Temps','gestion.temps@univ-paris1.fr','')";
-        mysqli_query($dbcon, $sql);
-        $erreur_requete = mysqli_error($dbcon);
-        if ($erreur_requete != "")
-            echo "INSERT INTO AGENT Gestion Temps => $erreur_requete \n";
+        // Ajout manuel de l'agent GESTION TEMPS
+        $agent->nom('DIFFUSION');
+        $agent->prenom('RH');
+        $agent->mail('noreply@univ-paris1.fr');
+        $agent->store(SPECIAL_USER_IDLISTERHUSER);
     }
 
     echo "Fin de l'import des agents " . date("d/m/Y H:i:s") . "\n";

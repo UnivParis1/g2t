@@ -50,10 +50,20 @@
 
     // echo "POST = "; print_r($_POST); echo "<br>";
 
-?>
+    echo "<br>";
+    echo "<form name='subst_agent' method='post' action='index.php'>";
 
-<br>
-<form name='subst_agent' method='post' action='index.php'>
+    $agentsliste = $fonctions->listeagentsg2t();
+    echo "<select class='listeagentg2t' size='1' id='userid' name='userid'>";
+    echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+    foreach ($agentsliste as $key => $identite)
+    {
+        echo "<option value='$key'>$identite</option>";
+    }
+    echo "</select>";
+?>
+    
+<!-- 
 	<input id="user" name="user" placeholder="Nom et/ou prenom" autofocus/> <input
 		type='hidden' id="userid" name="userid" class='user' />
 
@@ -66,7 +76,7 @@
 
 
 	</script>
-
+ -->
 
 	<br>
 	<!--  <input type='text' name='userid' >

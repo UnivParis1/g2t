@@ -93,6 +93,7 @@
 <script>$(document).ready(function() {
     $('#structureid').select2();
     $('#esignatureid').select2();
+    $('.listeagentg2t').select2();
 });</script>
 <!--   
 	<script>
@@ -508,6 +509,12 @@
 ?>	
 <?php
     // Si la date limite d'utilisation des reliquats est dépassée on n'affiche pas l'alimentation et le droit d'option sur CET
+    $constante = 'FIN_REPORT';
+    if ($fonctions->testexistdbconstante($constante))
+    {
+        $res = $fonctions->liredbconstante($constante);
+        $datereliq = ($fonctions->anneeref()+1).$res;
+/*        
 	$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
 	$queryreliq = mysqli_query($dbcon, $sqldatereliq);
 	$erreur = mysqli_error($dbcon);
@@ -519,7 +526,9 @@
 	elseif ($res = mysqli_fetch_row($queryreliq))
 	{
 		$datereliq = ($fonctions->anneeref()+1).$res[0];
-	    if (date("Ymd") <= $datereliq) {
+*/
+	    if (date("Ymd") <= $datereliq) 
+	    {
 ?>  
 <!--					
                     <li onclick='document.alim_cet_test.submit();'>
@@ -848,8 +857,9 @@
 			<li onclick="">MENU GESTION RH
 				<ul class="niveau2"> 
 <?php
-        if ($user->estprofilrh('1')) // PROFIL RH = 1 ==> GESTIONNAIRE RH DE CET
-        {
+                // PROFIL RH ==> GESTIONNAIRE RH DE CET / GESTIONNAIRE RH DE CONGES / GESTIONNAIRE RH DE TELETRAVAIL
+                if ($user->estprofilrh(agent::PROFIL_RHCET) or $user->estprofilrh(agent::PROFIL_RHCONGE) or $user->estprofilrh(agent::PROFIL_RHTELETRAVAIL)) 
+                {
 ?>
 <!--  
 					<li onclick='document.rh_gest_periode.submit();'>
@@ -865,143 +875,164 @@
                         </form>
                         <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
                     </li>
-					<li onclick='document.rh_gest_teletravail.submit();'>
-						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                            <input type="hidden" name="mode" value="gestrh">
-						</form>
-						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
-					</li>
-					<li onclick='document.rh_affiche_info_teletravail.submit();'>
-						<form name='rh_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-						</form> 
-						<a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
-					</li>
-					<li class="plus"><a>Gestion des CET</a>  <!-- Gestion des CET et paramétrage -->
-						<ul class="niveau3">
-        					<li onclick='document.gestrh_utilisationcet.submit();'>
-        						<form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="mode" value="gestrh">
-        						</form> 
-        						<a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
-        					</li>
-        					<li onclick='document.gestrh_gestcet.submit();'>
-        						<form name='gestrh_gestcet' method='post' action="gerer_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="mode" value="gestrh">
-        						</form> 
-        						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
-        					</li>
-        					<li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
-        						<form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="mode" value="gestrh">
-        						</form> 
-        						<a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
-        					</li>
-        					<li onclick='document.gestrh_creercet.submit();'>
-        						<form name='gestrh_creercet' method='post' action="creer_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="mode" value="gestrh">
-        						</form> 
-        						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
-        					</li>
-<!--          					
-        					<li onclick='document.rh_param_cet.submit();'>
-        						<form name='rh_param_cet' method='post' action="param_cet.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        						</form>
-        						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
-        					</li>
--->
-<!--                     
-        					<li onclick='document.rh_alimentation_cet_test.submit();'>
-                                <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
-                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                    <input type="hidden" name="mode" value="rh">
-                                </form>
-                                <a href="javascript:document.rh_alimentation_cet_test.submit();">Alimentation du CET TEST</a>
-                            </li>   
--->                 
-        					<li onclick='document.rh_alimentation_cet.submit();'>
-                                <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
-                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                    <input type="hidden" name="mode" value="rh">
-                                </form>
-                                <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
-                            </li>          
-        					<li onclick='document.rh_option_cet.submit();'>
-                                <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
-                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                    <input type="hidden" name="mode" value="rh">
-                                </form>
-                                <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
-                            </li>
-        				</ul>
-    				</li>
-					<li class="plus"><a>Gestion des congés</a>
-						<ul class="niveau3">
-        					<li onclick='document.rh_conge.submit();'>
-        						<form name='rh_conge' method='post' action="etablir_demande.php">
-        							<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="typedemande" value="conges"> 
-        							<input type="hidden" name="previous" value="no">
-        							<input type="hidden" name="rh_mode" value="yes">
-        							<input type="hidden" name="show_cet" value="no">
-        						</form> 
-        						<a href="javascript:document.rh_conge.submit();">Saisir une demande de congés (hors CET)</a>
-        					</li>
-        					<li onclick='document.rh_conge_cet.submit();'>
-        						<form name='rh_conge_cet' method='post' action="etablir_demande.php">
-        							<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="typedemande" value="conges"> 
-        							<input type="hidden" name="previous" value="no">
-        							<input type="hidden" name="rh_mode" value="yes">
-        							<input type="hidden" name="show_cet" value="yes">
-        						</form> 
-        						<a href="javascript:document.rh_conge_cet.submit();">Saisir une demande de congés sur CET</a>
-        					</li>
-        					<li onclick='document.rh_gest_conge.submit();'>
-        						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-        							<input type="hidden" name="mode" value="rh"> 
-        							<input type="hidden" name="previous" value="no">
-        						</form> 
-        						<a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
-        					</li>
-        					<li onclick='document.affiche_info_agent.submit();'>
-        						<form name='affiche_info_agent' method='post' action="affiche_info_agent.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
-        						</form> 
-        						<a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
-        					</li>
-        					<li onclick='document.modif_solde.submit();'>
-        						<form name='modif_solde' method='post' action="modif_solde.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
-        						</form> 
-        						<a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
-        					</li>
-        					<li onclick='document.rh_ajout_conge.submit();'>
-        						<form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                					<input type="hidden" name="mode" value="gestrh">
-        						</form> 
-        						<a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
-        					</li>
-        					<li onclick='document.rh_aff_solde.submit();'>
-        						<form name='rh_aff_solde' method='post' action="affiche_solde.php">
-        							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-        							<input type="hidden" name="mode" value="rh"> 
-        							<input type="hidden" name="previous" value="no">
-        						</form>
-        						<a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>
-        					</li>
-    					</ul>
-    				</li>
+<?php 
+                    if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
+                    {
+?>					
+    					<li class="plus"><a>Gestion du télétravail</a>  <!-- Gestion du télétravail et paramétrage -->
+    						<ul class="niveau3">
+            					<li onclick='document.rh_gest_teletravail.submit();'>
+            						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                        <input type="hidden" name="mode" value="gestrh">
+            						</form>
+            						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
+            					</li>
+            					<li onclick='document.rh_affiche_info_teletravail.submit();'>
+            						<form name='rh_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+            						</form> 
+            						<a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
+            					</li>
+            				</ul>
+            			</li>
+<?php 
+                    } // Fin du test si utilisateur est PROFIL_RHTELETRAVAIL
+                    if ($user->estprofilrh(agent::PROFIL_RHCET))
+                    {
+?>					
+    					<li class="plus"><a>Gestion des CET</a>  <!-- Gestion des CET et paramétrage -->
+    						<ul class="niveau3">
+            					<li onclick='document.gestrh_utilisationcet.submit();'>
+            						<form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="mode" value="gestrh">
+            						</form> 
+            						<a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
+            					</li>
+            					<li onclick='document.gestrh_gestcet.submit();'>
+            						<form name='gestrh_gestcet' method='post' action="gerer_cet.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="mode" value="gestrh">
+            						</form> 
+            						<a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
+            					</li>
+            					<li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
+            						<form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="mode" value="gestrh">
+            						</form> 
+            						<a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
+            					</li>
+            					<li onclick='document.gestrh_creercet.submit();'>
+            						<form name='gestrh_creercet' method='post' action="creer_cet.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="mode" value="gestrh">
+            						</form> 
+            						<a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
+            					</li>
+    <!--          					
+            					<li onclick='document.rh_param_cet.submit();'>
+            						<form name='rh_param_cet' method='post' action="param_cet.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            						</form>
+            						<a href="javascript:document.rh_param_cet.submit();">Paramétrage des campagnes CET</a>
+            					</li>
+    -->
+    <!--                     
+            					<li onclick='document.rh_alimentation_cet_test.submit();'>
+                                    <form name='rh_alimentation_cet_test' method='post' action="gerer_alimentationCET_test.php">
+                                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                        <input type="hidden" name="mode" value="rh">
+                                    </form>
+                                    <a href="javascript:document.rh_alimentation_cet_test.submit();">Alimentation du CET TEST</a>
+                                </li>   
+    -->                 
+            					<li onclick='document.rh_alimentation_cet.submit();'>
+                                    <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
+                                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                        <input type="hidden" name="mode" value="rh">
+                                    </form>
+                                    <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
+                                </li>          
+            					<li onclick='document.rh_option_cet.submit();'>
+                                    <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
+                                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                        <input type="hidden" name="mode" value="rh">
+                                    </form>
+                                    <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
+                                </li>
+            				</ul>
+        				</li>
+<?php 
+                    } // Fin du test si utilisateur est PROFIL_RHCET
+                    if ($user->estprofilrh(agent::PROFIL_RHCONGE))
+                    {
+?>
+    					<li class="plus"><a>Gestion des congés</a>
+    						<ul class="niveau3">
+            					<li onclick='document.rh_conge.submit();'>
+            						<form name='rh_conge' method='post' action="etablir_demande.php">
+            							<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="typedemande" value="conges"> 
+            							<input type="hidden" name="previous" value="no">
+            							<input type="hidden" name="rh_mode" value="yes">
+            							<input type="hidden" name="show_cet" value="no">
+            						</form> 
+            						<a href="javascript:document.rh_conge.submit();">Saisir une demande de congés (hors CET)</a>
+            					</li>
+            					<li onclick='document.rh_conge_cet.submit();'>
+            						<form name='rh_conge_cet' method='post' action="etablir_demande.php">
+            							<input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="typedemande" value="conges"> 
+            							<input type="hidden" name="previous" value="no">
+            							<input type="hidden" name="rh_mode" value="yes">
+            							<input type="hidden" name="show_cet" value="yes">
+            						</form> 
+            						<a href="javascript:document.rh_conge_cet.submit();">Saisir une demande de congés sur CET</a>
+            					</li>
+            					<li onclick='document.rh_gest_conge.submit();'>
+            						<form name='rh_gest_conge' method='post' action="gestion_demande.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+            							<input type="hidden" name="mode" value="rh"> 
+            							<input type="hidden" name="previous" value="no">
+            						</form> 
+            						<a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
+            					</li>
+            					<li onclick='document.affiche_info_agent.submit();'>
+            						<form name='affiche_info_agent' method='post' action="affiche_info_agent.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
+            						</form> 
+            						<a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
+            					</li>
+            					<li onclick='document.modif_solde.submit();'>
+            						<form name='modif_solde' method='post' action="modif_solde.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
+            						</form> 
+            						<a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
+            					</li>
+            					<li onclick='document.rh_ajout_conge.submit();'>
+            						<form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    					<input type="hidden" name="mode" value="gestrh">
+            						</form> 
+            						<a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
+            					</li>
+            					<li onclick='document.rh_aff_solde.submit();'>
+            						<form name='rh_aff_solde' method='post' action="affiche_solde.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+            							<input type="hidden" name="mode" value="rh"> 
+            							<input type="hidden" name="previous" value="no">
+            						</form>
+            						<a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>
+            					</li>
+        					</ul>
+        				</li>
+<?php
+                    } // Fin du test si utilisateur est PROFIL_RHCONGE
+?>
 					<li onclick='document.rh_affiche_g2t_param.submit();'>
 						<form name='rh_affiche_g2t_param' method='post' action="g2t_param.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">

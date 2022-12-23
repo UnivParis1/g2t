@@ -95,31 +95,11 @@
     $simul_option = null;
     if (isset($_POST["simul_option"]))
         $simul_option = $_POST["simul_option"];
-    
             
-    // $esignatureid = null;
-        
     $cree_option = null;
     if (isset($_POST["cree_option"]))
         $cree_option = $_POST["cree_option"];
         
-    //$drh_niveau = null;
-    //if (isset($_POST["drh_niveau"]))
-    //    $drh_niveau = $_POST["drh_niveau"];
-        
-    //$responsable = null;
-    //if (isset($_POST["responsable"]))
-    //    $responsable = $_POST["responsable"];
-                                                                                        
-    //$esignatureid_get_info = null;
-    //if (isset($_POST["esignatureid_get_info"]))
-    //    $esignatureid_get_info = $_POST["esignatureid_get_info"];
-    
-    //$esignature_info = null;
-    //if (isset($_POST["esignature_info"]))
-    //    $esignature_info = $_POST["esignature_info"];
-    
-
     $esignature_delete = null;
     if (isset($_POST["esignature_delete"]))
         $esignature_delete = $_POST["esignature_delete"];
@@ -139,13 +119,10 @@
     $eSignature_url = trim($fonctions->liredbconstante("ESIGNATUREURL"));  //   "https://esignature-test.univ-paris1.fr";
 
     $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/optionWS.php";
+    $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
     
-    //echo "<br>sftpurl = $sftpurl <br><br>";
-    
-    //echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . "<br>";
-    //echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
 /*
     echo "<br>" . print_r($_POST,true);
     echo "<br><br><br>";
@@ -158,18 +135,29 @@
         echo "<form name='demandeforagent'  method='post' action='gerer_optionCET.php'>";
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
+
+        $agentsliste = $fonctions->listeagentsg2t();
+        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+        foreach ($agentsliste as $key => $identite)
+        {
+            echo "<option value='$key'>$identite</option>";
+        }
+        echo "</select>";
         
+/*        
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
         echo "' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='";
         echo "' class='agent' /> ";
-        ?>
+?>
         <script>
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
-    	<?php
+<?php
+*/
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -243,144 +231,22 @@
                 'targetUrl' => "$full_g2t_ws_url",
                 'targetUrls' => array("$full_g2t_ws_url"),
                 'formDatas' => "{}" 
-                );
-    
-            // On récupère le responsable de la structure de l'agent - Niveau 2
-            
-            $pasresptrouve = false;
-            $structid = $agent->structureid();
-            $struct = new structure($dbcon);
-            $struct->load($structid);
-            $code = null;
-            if ($struct->responsable()->agentid() == $agent->agentid())
+            );
+	            
+            $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+            if (count($taberrorcheckmail) > 0)
             {
-                $resp = $struct->resp_envoyer_a($code);
+                // var_dump("errorcheckmail = $errorcheckmail");
+                $errorcheckmailstr = '';
+                foreach ($taberrorcheckmail as $errorcheckmail)
+                {
+                    if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                    $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                }
+                echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible d'enregistrer la demande de droit d'option sur CET car <br>$errorcheckmailstr");
             }
             else
             {
-                $resp = $struct->agent_envoyer_a($code);
-            }
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-            if ($resp->agentid() != '-1')
-            {
-	            $params['recipientEmails'] = array
-	            (
-	                "1*" . $agent_mail,
-	                "2*" . $resp->mail()
-	            );
-	    ////////////////////////////////////////////////////////
-	    ////////// ATTENTION : POUR TEST UNIQUEMENT   //////////
-	    ////////////////////////////////////////////////////////
-	    //        $params['recipientEmails'] = array
-	    //        (
-	    //            "1*" . $agent_mail,
-	    //            "2*elodie.briere@univ-paris1.fr"
-	    //        );
-	    ////////////////////////////////////////////////////////
-
-	            $constantename = 'CETSIGNATAIRE';
-	            $signataireliste = '';
-	            $tabsignataire = array();
-	            if ($fonctions->testexistdbconstante($constantename))
-	            {
-	                $signataireliste = $fonctions->liredbconstante($constantename);
-	            }
-	            if (strlen($signataireliste)>0)
-	            {
-	                $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
-	                if (!isset($tabsignataire['3']['1_-2'])) // Si gestion de tps n'est pas défini dans le niveau 3
-	                {
-	                    // On ajoute gestion de temps (utilisateur -2) dans le niveau 3
-	                    $agentsignataire = new agent($dbcon);
-	                    if ($agentsignataire->load(-2))
-	                    {
-	                        $params['recipientEmails'][] = "3*" . $agentsignataire->mail();
-	                    }
-	                    unset($agentsignataire);
-	                }
-	                
-	                foreach ($tabsignataire as $niveau => $infosignataires)
-	                {
-	                    foreach ($infosignataires as $idsignataire => $infosignataire)
-	                    {
-	                        if ($infosignataire[0]==cet::SIGNATAIRE_AGENT)
-	                        {
-	                            $agentsignataire = new agent($dbcon);
-	                            if ($agentsignataire->load($infosignataire[1]))
-	                            {
-	                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
-	                            }
-	                        }
-	                        elseif ($infosignataire[0]==cet::SIGNATAIRE_RESPONSABLE)
-	                        {
-	                            $structuresignataire = new structure($dbcon);
-	                            $structuresignataire->load($infosignataire[1]);
-	                            $agentsignataire = $structuresignataire->responsable();
-	                            if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
-	                            {
-	                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
-	                            }
-	                        }
-	                        elseif ($infosignataire[0]==cet::SIGNATAIRE_STRUCTURE)
-	                        {
-	                            $structuresignataire = new structure($dbcon);
-	                            $structuresignataire->load($infosignataire[1]);
-	                            $datedujour = date("d/m/Y");
-	                            foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
-	                            {
-	                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
-	                            }
-	                        }
-	                        else
-	                        {
-	                            $fonctions->showmessage("TYPE DE SIGNATAIRE inconnu !",fonctions::MSGERROR);
-	                        }
-	                    }
-	                }
-	            }
-	            
-	            
-/*	            
-	            $resp_agent = null;
-	            // On récupère tous les agents avec le profil RHCET - Niveau 3
-	            foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
-	            {
-	                $params['recipientEmails'][] = '3*' . $qvt_agent->mail();
-	                if (count((array)$qvt_agent->structrespliste())>0)
-	                {
-	                    $resp_agent = $qvt_agent;
-	                }
-	            }
-	            
-	            // On récupère le responsable du service QVT (Qualité de vie au travail) si on n'a pas identifié le responsable des agents RHCET - Niveau 4
-	            $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-	            if (is_null($resp_agent))
-	            {
-	                $struct = new structure($dbcon);
-	                $struct->load($qvt_id);
-	                $resp_agent = $struct->responsable();
-	            }
-	            $params['recipientEmails'][] = '4*' . $resp_agent->mail();
-	            
-	            // On récupère le responsable du service DRH et DGS - Niveau 5
-	            $struct = new structure($dbcon);
-	            $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-	            $struct->load($drh_id);
-	            $drh_agent = $struct->responsable();
-	            $params['recipientEmails'][] = '5*' . $drh_agent->mail();
-	            $struct = new structure($dbcon);
-	            $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-	            $struct->load($dgs_id);
-	            $dgs_agent = $struct->responsable();
-	            $params['recipientEmails'][] = '5*' . $dgs_agent->mail();
-	            
-	            // Ajout de Mme Emilie Ganné
-	            $eganneid=91790;
-	            $eganne = new agent($dbcon);
-	            $eganne->load($eganneid);
-	            $params['recipientEmails'][] = '5*' . $eganne->mail();
-*/
-	            
 	            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
 	                    is_array( $item )
 	                    ? array_walk( $item, $walk, $key )
@@ -389,7 +255,7 @@
 	            };
 	            array_walk( $params, $walk );
 	            $params_string = implode( '&', $output );
-	            //echo "<br>Output = " . $params_string . '<br><br>';
+	            //var_dump ("Output = " . $params_string);
 	            
 	            $opts = [
 	                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
@@ -455,10 +321,6 @@
 	                //echo "La sauvegarde (création) s'est bien passée...<br><br>";
 	            }
             }
-            else // Le responsable est g2t cron
-            {
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre responsable n'est pas renseigné, veuillez contacter la DRH.");
-            }
         }
         else // Il y a une demande d'alim ou d'option en cours
         {
@@ -480,10 +342,10 @@
         $optionCET = new optionCET($dbcon);
         $optionCET->load($esignatureid_delete);
         
-        if ($optionCET->statut() == OPTIONCET::STATUT_ABANDONNE or $optionCET->statut() == OPTIONCET::STATUT_VALIDE)
+        if ($optionCET->statut() == optionCET::STATUT_ABANDONNE or $optionCET->statut() == optionCET::STATUT_VALIDE)
         {
             $error = "Le statut de la demande de droit d'option $esignatureid_delete est " . $optionCET->statut() . " ==> impossible de supprimer la demande.";
-            echo "$error <br>";
+            echo $fonctions->showmessage(fonctions::MSGERROR, "$error <br>");
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la suppression d'une demande de droit d'option ==> $error"));
         }
         else
@@ -507,7 +369,7 @@
             curl_close($curl);
             if ($error != "")
             {
-                echo "Erreur Curl = " . $error . "<br><br>";
+                echo $fonctions->showmessage(fonctions::MSGERROR,  "Erreur Curl = " . $error . "<br><br>");
                 $error_suppr = "Erreur Curl = " . $error . "<br><br>";
             }
             //echo "<br>" . print_r($json,true) . "<br>";
@@ -517,7 +379,7 @@
             echo '<pre>';
             var_dump($response);
             echo '</pre>';
-            */
+*/
             if (!is_null($response))
             {
             	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($response, true)));
@@ -735,36 +597,6 @@
         }
     	</script>
 <?php     
-/*        
-        echo "<br><hr size=3 align=center><br>";
-        echo "<form name='simulation_option'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-        echo "<div style='color: red;font-weight: bold;'>ATTENTION : A n'utiliser que pour des tests de vérification des specifications.</div>";
-        
-    
-        echo "Saisir le solde du CET avant alimentation : <input type=text placeholder='Case A' name=simul_a id=simul_a size=3 value='$simul_a'><br>";
-        echo "Saisir le solde du CET après alimentation : <input type=text placeholder='Case G' name=simul_g id=simul_g size=3 value='$simul_g'><br>";
-        echo "Type d'agent : ";
-        echo "<select name='type_agent' id='type_agent'>";
-        echo "  <option value='titu'";
-        if ($typeagent == 'titu')
-            echo " selected ";
-        echo ">Titulaire</option>";
-        echo "  <option value='cont'";
-        if ($typeagent == 'cont')
-            echo " selected ";
-        echo ">Contractuel</option>";
-        echo "</select>";
-        echo "<br><br>";
-        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' name='simul_option' id='simul_option' value='Soumettre' >";
-        echo "</form>";
-        
-        echo "<br><br>";
-        
-        echo "<br><hr size=3 align=center><br>";
-*/
         echo "Création d'une demande d'option sur CET pour " . $agent->identitecomplete() . "<br>";
         //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
         echo "<form name='creation_option'  method='post' >";
@@ -967,8 +799,23 @@
                 echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
             }
         }
-               
-
+        
+        if (is_null($cree_option))
+        {
+            $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+            if (count($taberrorcheckmail) > 0)
+            {
+                // var_dump("errorcheckmail = $errorcheckmail");
+                $errorcheckmailstr = '';
+                foreach ($taberrorcheckmail as $errorcheckmail)
+                {
+                    if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                    $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                }
+                echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible d'enregistrer la demande de droit d'option sur CET car <br>$errorcheckmailstr");
+            }
+        }
+        
         if ($controleok == true)
         {
             echo "<input type=hidden placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
@@ -993,9 +840,9 @@
             {
                 echo "<input type='hidden' name=valeur_i id=valeur_i value='0' >"; //<label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";
             }
-            echo "Nombre de jours à indemniser : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_j style='color: red;font-weight: bold; margin-left:20px;'></label>";   //     <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+            echo "Nombre de jours à indemniser : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_j style='color: red;font-weight: bold; margin-left:20px;'></label>";   //     <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
             echo "<br>";
-            echo "Nombre de jours à maintenir sur le CET sous forme de congés : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' onchange='update_case()' onkeyup='update_case()' ><label id=label_k style='color: red;font-weight: bold; margin-left:20px;'></label>";
+            echo "Nombre de jours à maintenir sur le CET sous forme de congés : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_k style='color: red;font-weight: bold; margin-left:20px;'></label>";
             echo "<br>";
             echo "Solde du CET après option : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' ><label id=label_l style='color: red;font-weight: bold; margin-left:20px;'></label>";
         
@@ -1017,12 +864,13 @@
             }
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
             //echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
-        
+
+/* 
             //echo "<br>------------------------------------------------------------- <br>";
             $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
             $resp_agent = null;
             // On récupère tous les agents avec le profil RHCET
-            foreach ( (array)$fonctions->listeprofilrh("1") as $qvt_agent) // RHCET
+            foreach ( (array)$fonctions->listeprofilrh(agent::PROFIL_RHCET) as $qvt_agent) // RHCET
             {
                 //echo $qvt_agent->identitecomplete() . " (" . $qvt_agent->mail() . ") est gestionnaire CET <br>";
                 if (count((array)$qvt_agent->structrespliste())>0)
@@ -1044,6 +892,7 @@
             
             //echo "<br>------------------------------------------------------------- <br>";
             // On récupère le responsable du service DRH et DGS - Niveau 5
+            
             $struct = new structure($dbcon);
             $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
             $struct->load($drh_id);
@@ -1054,7 +903,7 @@
             $struct->load($dgs_id);
             $dgs_agent = $struct->responsable();
             //echo $dgs_agent->identitecomplete() . " (" . $dgs_agent->mail() . ") est le responsable du service DGS <br>";
-            
+*/            
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             echo "<input type='submit' name='cree_option' id='cree_option' value='Soumettre' disabled>";

@@ -315,20 +315,30 @@
     if (is_null($agentid))
     {
         echo "<form name='demandeforagent'  method='post' action='gestion_teletravail.php'>";
-        echo "Personne à rechercher : <br>";
+        echo "Personne à rechercher (uniquement les agents avec une affectation valide) : <br>";
         echo "<form name='selectagentcet'  method='post' >";
         
-        echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
-        echo "' size=40 />";
-        echo "<input type='hidden' id='agentid' name='agentid' value='";
-        echo "' class='agent' /> ";
-        ?>
+        $agentsliste = $fonctions->listeagentsg2t();
+        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+        foreach ($agentsliste as $key => $identite)
+        {
+            echo "<option value='$key'>$identite</option>";
+        }
+        echo "</select>";
+        
+/*
+        echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='' size=40 />";
+        echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
+?>
         <script>
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
-    	<?php
+ <?php
+ 
+ */       
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";

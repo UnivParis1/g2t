@@ -366,6 +366,8 @@ FROM DEMANDE WHERE DEMANDEID= ?";
      */
     function declarationTPliste()
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
         $sql = "SELECT DECLARATIONID FROM DEMANDEDECLARATIONTP WHERE DEMANDEID= '" . $this->demandeid . "'";
         // echo "Demande declarationTPListe sql = $sql <br>";
         $query = mysqli_query($this->dbconnect, $sql);

@@ -1053,7 +1053,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 foreach ($structureliste as $key => $structure) {
                     if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
                         $responsable = $structure->responsable();
-                        if ($responsable->agentid() != '-1') {
+                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
                             // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
                             $responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                             // /$responsableliste[$responsable->agentid()] = $responsable;

@@ -104,8 +104,13 @@
     	}
     	else 
     	{
-    		$update = "UPDATE CONSTANTES SET VALEUR = $plafondcet WHERE NOM = 'PLAFONDCET'";
+    	    $constante = "PLAFONDCET";
+    	    $fonctions->enregistredbconstante($constante, $plafondcet);
+    	    
+/*
+    	    $update = "UPDATE CONSTANTES SET VALEUR = $plafondcet WHERE NOM = 'PLAFONDCET'";
     		$query = mysqli_query($dbcon, $update);
+*/    		
     	}
     }
     //echo "</div>";

@@ -7,10 +7,11 @@
     echo "Début des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n";
 
     // récupération des gestionnaires RH des anomalies
-    $gestrhanolist = $fonctions->listeprofilrh(3); // 3 = Profil RHANOMALIE
+    //$gestrhanolist = $fonctions->listeprofilrh(agent::PROFIL_RHANOMALIE); // 3 = Profil RHANOMALIE
+    $gestrhanolist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // 3 = Profil RHCONGE
 
     $cron = new agent($dbcon);
-    $cron->load('-1'); // L'utilisateur -1 est l'utilisateur CRON
+    $cron->load(SPECIAL_USER_IDCRONUSER); // L'utilisateur CRON
 
     $tabadministrateur = array();
     $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID = 'ESTADMIN' AND VALEUR = 'O'";

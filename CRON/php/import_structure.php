@@ -187,7 +187,27 @@
 	            // Si la structure est active on cherche le responsable.
 	            if (strcasecmp($statut_struct, 'ACT') == 0)
 	            {
-    	            if (strcasecmp($code_struct,'UP1_1') != 0) {
+    	            if (strcasecmp($code_struct,'UP1_1') == 0)
+    	            {
+/*    	                
+    	                if (array_key_exists($code_struct, (array) $tabfonctions))
+    	                {
+    	                    if (array_key_exists("#1", (array) $tabfonctions[$code_struct]))
+    	                    {
+    	                        $resp_struct = $tabfonctions[$code_struct]["#1"]; // Si le président est défini comme responsable de la structure => C'est cette fonction qu'on choisi
+    	                        echo "On force la fonction #1 (président) pour la structure $code_struct \n";
+    	                    }
+    	                    elseif (array_key_exists("#1447", (array) $tabfonctions[$code_struct]))
+    	                    {
+    	                        $resp_struct = $tabfonctions[$code_struct]["#1447"]; // Si le DGS est défini comme responsable de la structure => C'est cette fonction qu'on choisi
+    	                        echo "On force la fonction #1447 (DGS) pour la structure $code_struct \n";
+    	                    }
+    	                }
+*/
+    	                echo "On ignore les fonctions définies pour la structure $code_struct \n";
+    	            }
+    	            else
+    	            {
                         if (array_key_exists($code_struct, (array) $tabfonctions))
                         {
                             if (array_key_exists("#1087", (array) $tabfonctions[$code_struct]) and in_array($type_struct, $type_struct_RA))
@@ -280,8 +300,8 @@
                         // Si pas de responsable défini dans le fichier de structure
                         if ($resp_struct == "") {
                             // Si on arrive ici, c'est vraiment qu'on n'a aucune information nulle part !!!
-                            echo "Aucune information recuperee => On fixe le responsable a -1 (CRON G2T) pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
-                            $resp_struct = '-1';
+                            echo "Aucune information recuperee => On fixe le responsable a " . constant('SPECIAL_USER_IDCRONUSER')  . " (CRON G2T) pour la structure $nom_long_struct / $nom_court_struct  ($code_struct) \n";
+                            $resp_struct = SPECIAL_USER_IDCRONUSER;
                         }
                         else
                         {
@@ -520,12 +540,16 @@
                     
                     if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent) and !is_null($civiliteagent))
                     {
-                        $sql = "INSERT INTO AGENT(AGENTID, CIVILITE, NOM, PRENOM, ADRESSEMAIL, TYPEPOPULATION) VALUES ('$agentid', '" . str_replace("'", "''", $civiliteagent) . "', '" . str_replace("'", "''", $nomagent) . "', '" . str_replace("'", "''", $prenomagent) . "', '$mailagent', '$typepopulation')";
-                        mysqli_query($dbcon, $sql);
-                        $erreur_requete = mysqli_error($dbcon);
-                        if ($erreur_requete != "") {
-                            echo "Error : INSERT AGENT FROM LDAP => $erreur_requete \n";
-                            echo "sql = $sql \n";
+                        $newagent = new agent($dbcon);
+                        $newagent->civilite($civiliteagent);
+                        $newagent->nom(strtoupper($nomagent));
+                        $newagent->prenom(strtoupper($prenomagent));
+                        $newagent->mail($mailagent);
+                        $newagent->typepopulation($typepopulation);
+                        $newagent->structureid('');  // On force sa structure à 'vide'
+                        if (!$newagent->store($agentid)) 
+                        {
+                            echo "Erreur lors de l'ajout de l'agent $agentid ($civiliteagent $nomagent $prenomagent) => mail = $mailagent \n";
                         }
                         else
                         {

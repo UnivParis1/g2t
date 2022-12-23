@@ -300,14 +300,14 @@
                 if (! is_null($gestionnaire))
                     echo $gestionnaire->agentid();
                 echo "' class='infouser[" . $struct->id() . "]' /> ";
-                ?>
-    <script>
+?>
+			    <script>
     		    	$('[id="<?php echo "infouser[". $struct->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
     		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-    	   </script>
+    	   		</script>
 
-    <?php
+<?php
                 // echo "Avant recup du responsable <br>";
                 $responsable = $struct->responsablesiham();
                 // echo "Apres recup du responsable <br>";
@@ -321,14 +321,14 @@
                 echo " size=40 $style/>";
                 //
                 echo "<input type='hidden' id='resp[" . $struct->id() . "]' name='resp[" . $struct->id() . "]' value='" . $responsable->agentid() . "' class='responsableinfo[" . $struct->id() . "]' /> ";
-                ?>
-    <script>
+?>
+    			<script>
     		    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
     		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-    	   </script>
+    	   		</script>
 
-    <?php
+<?php
                 echo "</td>";
                 echo "</tr>";
 

@@ -103,6 +103,17 @@
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
+
+        $agentsliste = $fonctions->listeagentsg2t();
+        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+        foreach ($agentsliste as $key => $identite)
+        {
+            echo "<option value='$key'>$identite</option>";
+        }
+        echo "</select>";
+        
+/*        
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
         if (isset($_POST["agent"]))
             echo $_POST["agent"];
@@ -113,15 +124,12 @@
         echo "' class='agent' /> ";
         ?>
         <script>
-/*    		    	$("#agent").autocompleteUser(
-    		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-    		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-*/
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
-    	<?php
+<?php
+*/
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";

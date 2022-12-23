@@ -185,8 +185,49 @@
     echo $fonctions->showmessage(fonctions::MSGINFO,"<br> <br>Ceci est un message de type information et il doit être affiché avec un fond vert clair et le texte en blanc<br><BR>   <bR>ceci est une ligne complémentaire<br>et j'en rajoute une 3e au cas où...<br>et si j'en met une 4e ca marche ?<br> <br>et la 5e mais ca commence à faire bcp donc je ne pense pas<br><bR>");
     echo $fonctions->showmessage(fonctions::MSGINFO,"     <br> <br><br><BR><Br>   <Br>  <br>     <br><bR>");
 */
-
-
-    ?>
+/*
+    $testagent = new agent($dbcon);
+    $testagent->load(9328);
+    echo "L'adresse LDAP de " . $testagent->identitecomplete() . " est : " . $testagent->ldapmail() . '<br>';
+    $testagent = new agent($dbcon);
+    $testagent->load(1223455);
+    echo "L'adresse LDAP de " . $testagent->identitecomplete() . " est : " . $testagent->ldapmail() . '<br>';
+    $testagent = new agent($dbcon);
+    $testagent->load(-2);
+    echo "L'adresse LDAP de " . $testagent->identitecomplete() . " est : " . $testagent->ldapmail() . '<br>';
+*/    
+/*
+    echo "<br>";
+    $adressemail = 'pascal.comte@univ-paris1.fr';
+    if ($fonctions->mailexistedansldap($adressemail))
+    {
+        echo "$adressemail trouvée dans LDAP";
+    }
+    else
+    {
+        echo "$adressemail NON trouvée dans LDAP";
+    }
+    echo "<br>";
+    $adressemail = 'plouf.plouf@univ-paris1.fr';
+    if ($fonctions->mailexistedansldap($adressemail))
+    {
+        echo "$adressemail trouvée dans LDAP";
+    }
+    else
+    {
+        echo "$adressemail NON trouvée dans LDAP";
+    }
+    echo "<br>";
+    $adressemail = 'gestion.temps@univ-paris1.fr';
+    if ($fonctions->mailexistedansldap($adressemail))
+    {
+        echo "$adressemail trouvée dans LDAP";
+    }
+    else
+    {
+        echo "$adressemail NON trouvée dans LDAP";
+    }
+*/    
+?>
 </body>
 </html>

@@ -39,7 +39,7 @@
         echo "generer_solde (SELECT) : " . $erreur . "<br>";
     while ($result = mysqli_fetch_row($query)) {
         $cronmail = new agent($dbcon);
-        $cronmail->load("-1");
+        $cronmail->load(SPECIAL_USER_IDCRONUSER);
 
         $struct = new structure($dbcon);
         $struct->load("$result[0]");

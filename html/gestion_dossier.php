@@ -383,7 +383,7 @@
                 foreach ($structurefilleliste as $key => $structurefille) {
                     if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
                         $respstructfille = $structurefille->responsable();
-                        if ($respstructfille->agentid() != '-1') {
+                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
                             // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
                             $responsableliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
                             // /$responsableliste[$responsable->agentid()] = $responsable;
@@ -543,13 +543,13 @@
                 if (! is_null($gestionnaire))
                     echo $gestionnaire->agentid();
                 echo "' class='infouser[" . $structure->id() . "]' /> ";
-                ?>
-    <script>
+?>
+			    <script>
     		    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
     		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-    	   </script>
-    <?php
+    	   		</script>
+<?php
                 echo "</tr>";
 
                 // si la structure est dans la liste des structures ou l'agent est responsable (au sens strict)
@@ -591,13 +591,13 @@
                     if (! is_null($delegationuser))
                         echo $delegationuser->agentid();
                     echo "' class='infodelegation[" . $structure->id() . "]' /> ";
-                    ?>
-    <script>
+?>
+				    <script>
         		    	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
         		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
         		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-        	   </script>
-    <?php
+        	   		</script>
+<?php
 
                     echo "</td></tr>";
                     // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)

@@ -515,12 +515,11 @@
                         }
                         else
                         {
-                            $sql = sprintf("UPDATE AGENT SET STRUCTUREID = '%s' WHERE AGENTID = '%s'", $fonctions->my_real_escape_utf8($idstruct), $fonctions->my_real_escape_utf8($agentid));
-                            mysqli_query($dbcon, $sql);
-                            $erreur_requete = mysqli_error($dbcon);
-                            if ($erreur_requete != "") {
-                                echo "Error : UPDATE STRUCTUREID dans AGENT=> $erreur_requete \n";
-                                echo "sql = $sql \n";
+                            $agent->load($agentid);
+                            $agent->structureid($idstruct);
+                            if (!$agent->store($agentid))
+                            {
+                                echo "Error : UPDATE STRUCTUREID dans AGENT ($agentid) => La mise à jour de la structure d'affectation a échoué. \n";
                             }
                         }
                     }

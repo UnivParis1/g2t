@@ -108,6 +108,26 @@ class fonctions
     public function jourferier()
     {
         // Chargement des jours fériés
+        $dbconstante='FERIE%';
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            $jrs_feries_liste = $this->liredbconstante($dbconstante);
+            //var_dump($jrs_feries_liste);
+            $jrs_feries = ";";
+            foreach ($jrs_feries_liste as $key => $liste)
+            {
+                $jrs_feries = $jrs_feries . $liste . ";";
+            }
+            //var_dump($jrs_feries);
+            return $jrs_feries;
+        }
+        else
+        {
+            return "";
+        }
+        
+
+/*        
         $sql = "SELECT NOM,VALEUR FROM CONSTANTES WHERE NOM LIKE 'FERIE%'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -129,6 +149,7 @@ class fonctions
 
         // echo "Jours fériés = " . $jrs_feries . "<br>";
         return $jrs_feries;
+*/
     }
 
     /**
@@ -193,6 +214,31 @@ class fonctions
         }
     }
 
+    /**
+     *
+     * @param string $index
+     *            index of the day (1=Monday 7=Sunday)
+     * @return string the (french) day name corresponding to the index
+     */
+    public function nommoisparindex($index = null) // 1 = Janvier 12 = Décembre
+    {
+        if (is_null($index)) {
+            $errlog = "Fonctions->nommoisparindex : L'index du mois est NULL";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        } else {
+            $index = $index % 12;
+            if ($index==0) $index = 12;
+            $monthname = $this->nommois("01/" . str_pad($index,  2, "0",  STR_PAD_LEFT) . "/2012");
+            
+            if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
+                return ucfirst($monthname);
+            } else {
+                return utf8_encode(ucfirst($monthname));
+            }
+        }
+    }
+    
     /**
      *
      * @param string $date
@@ -369,6 +415,16 @@ class fonctions
      */
     public function debutperiode()
     {
+        $dbconstante='DEBUTPERIODE';
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return "0901";
+        }
+/*        
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -387,6 +443,7 @@ class fonctions
         $result = mysqli_fetch_row($query);
         // echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
+*/
     }
 
     /**
@@ -396,6 +453,16 @@ class fonctions
      */
     public function finperiode()
     {
+        $dbconstante='FINPERIODE';
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return "0831";
+        }
+/*        
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -414,6 +481,7 @@ class fonctions
         $result = mysqli_fetch_row($query);
         // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
+*/        
     }
 
     /**
@@ -540,63 +608,115 @@ class fonctions
      */
     public function liredbconstante($constante)
     {
-        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";
-        $params = array($constante);
-        $query = $this->prepared_select($sql, $params);
-
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Fonctions->liredbconstante : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        if (defined("$constante")) /* Si la constante est définie */
+        { 
+            return constant($constante);
         }
-        if (mysqli_num_rows($query) == 0) {
-            $errlog = "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas defini dans la base.";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        } else {
-            $result = mysqli_fetch_row($query);
-            return $result[0];
+        else
+        {
+            if (strpos($constante,'%')!==false)
+            {
+                $operateur = 'LIKE';
+            }
+            else
+            {
+                $operateur = '=';
+            }
+            $sql = "SELECT VALEUR,NOM FROM CONSTANTES WHERE NOM $operateur ?";
+            $params = array($constante);
+            $query = $this->prepared_select($sql, $params);
+    
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Fonctions->liredbconstante : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            }
+            if (mysqli_num_rows($query) == 0) {
+                $errlog = "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas defini dans la base.";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            } 
+            elseif (trim($operateur) == '=')
+            {
+                $result = mysqli_fetch_row($query);
+                return $result[0];
+            }
+            else
+            {
+                $tabreturn = array();
+                while ($result = mysqli_fetch_row($query))
+                {
+                    $tabreturn[$result[1]] = $result[0];
+                }
+                return $tabreturn;
+            }
         }
     }
     
     public function enregistredbconstante($constante, $valeur)
     {
-        if (!$this->testexistdbconstante($constante))
+        if (defined("$constante")) /* Si la constante est définie */
         {
-            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
-            $params = array($constante,$valeur);
-            $query = $this->prepared_select($sql, $params);
-        }
-        else
-        {
-            $sql = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = ?";
-            $params = array($valeur,$constante);
-            $query = $this->prepared_select($sql, $params);
-        }
-        $erreur = mysqli_error($this->dbconnect);
-        if (strlen($erreur)>0)
-        {
-            $errlog = "Fonctions->enregistredbconstante : La constante '" . $constante . "' n'a pas pu être mise à jour : $erreur.";
+            $errlog = "Fonctions->enregistredbconstante : La constante '" . $constante . "' n'a pas pu être mise à jour : Elle est définie dans le fichier de configuration PHP.";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             return $errlog;
         }
-        return '';
+        else
+        {
+            if (!$this->testexistdbconstante($constante))
+            {
+                $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
+                $params = array($constante,$valeur);
+                $query = $this->prepared_select($sql, $params);
+            }
+            else
+            {
+                $sql = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = ?";
+                $params = array($valeur,$constante);
+                $query = $this->prepared_select($sql, $params);
+            }
+            $erreur = mysqli_error($this->dbconnect);
+            if (strlen($erreur)>0)
+            {
+                $errlog = "Fonctions->enregistredbconstante : La constante '" . $constante . "' n'a pas pu être mise à jour : $erreur.";
+                error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+                return $errlog;
+            }
+            return '';
+        }
     }
     
     public function testexistdbconstante($constante)
     {
-        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = ?";
-        $params = array($constante);
-        $query = $this->prepared_select($sql, $params);
-        
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Fonctions->testexistdbconstante : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        if (defined("$constante")) /* Si la constante est définie */
+        {
+            return true;
         }
-        return (mysqli_num_rows($query) != 0);
+        else
+        {
+            if (strpos($constante,'%')!==false)
+            {
+                $operateur = 'LIKE';
+            }
+            else
+            {
+                $operateur = '=';
+            }
+            
+            
+            $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM $operateur ?";
+            $params = array($constante);
+            $query = $this->prepared_select($sql, $params);
+            
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Fonctions->testexistdbconstante : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            }
+            return (mysqli_num_rows($query) != 0);
+        }
     }
     
     /**
@@ -647,6 +767,8 @@ class fonctions
      */
     function diff_mois($mois_dep, $mois_arriv)
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
         if ($mois_dep > $mois_arriv) {
             $nbr_mois = (13 - $mois_dep) + $mois_arriv;
         } else {
@@ -668,6 +790,8 @@ class fonctions
      */
     function nbr_jrs_travail_mois_deb($jour_dep, $mois_dep, $annee)
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
         // nbr de jour ds le mois
         $nbr_jrs_mois = $this->nbr_jours_dans_mois($mois_dep, $annee);
         // nbr de jour ds le mois depuis le jour de début de l'affectation
@@ -1016,13 +1140,15 @@ class fonctions
         $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID IN (";
         // $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID='%s' AND COMPLEMENTID IN (";
         if (is_null($typeprofil)) {
-            $sql = $sql . "'RHCET', 'RHCONGE', 'RHANOMALIE'";
-        } elseif ($typeprofil == 1) {
-            $sql = $sql . "'RHCET'";
-        } elseif ($typeprofil == 2) {
-            $sql = $sql . "'RHCONGE'";
-        } elseif ($typeprofil == 3) {
-            $sql = $sql . "'RHANOMALIE'";
+            $sql = $sql . "'" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHCONGE . "', '" . agent::PROFIL_RHANOMALIE . "', '" . agent::PROFIL_RHTELETRAVAIL . "'"; 
+        } elseif ($typeprofil == 1 or $typeprofil == agent::PROFIL_RHCET) {
+            $sql = $sql . "'" . agent::PROFIL_RHCET . "'";
+        } elseif ($typeprofil == 2 or $typeprofil == agent::PROFIL_RHCONGE) {
+            $sql = $sql . "'" . agent::PROFIL_RHCONGE . "'";
+        } elseif ($typeprofil == 3  or $typeprofil == agent::PROFIL_RHANOMALIE) {
+            $sql = $sql . "'" . agent::PROFIL_RHANOMALIE . "'";
+        } elseif ($typeprofil == agent::PROFIL_RHTELETRAVAIL) {
+            $sql = $sql . "'" . agent::PROFIL_RHTELETRAVAIL . "'";
         } else {
             $errlog = "Agent->listeprofilrh (AGENT) : Type de profil demandé inconnu (typeprofil = $typeprofil)";
             echo $errlog . "<br/>";
@@ -1139,9 +1265,25 @@ class fonctions
      */
     public function debutalimcet($date=NULL)
     {
-    	if (!is_null($date))
+        $dbconstante = 'DEBUTALIMCET';
+        if (!is_null($date))
+        {
+            $date = $this->formatdatedb($date);
+            $this->enregistredbconstante($dbconstante, $date);
+        }
+        elseif ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return ($this->anneeref()+1).$this->finperiode();
+        }
+        
+/*        
+        if (!is_null($date))
     	{
-    		$update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTALIMCET'";
+    	    $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTALIMCET'";
     		$params = array($this->formatdatedb($date));
     		$query = $this->prepared_query($update, $params);
     	}
@@ -1163,6 +1305,7 @@ class fonctions
     	$result = mysqli_fetch_row($query);
     	// echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
     	return "$result[0]";
+*/
     }
 
     /**
@@ -1172,7 +1315,23 @@ class fonctions
      */
     public function finalimcet($date=NULL)
     {
-    	if (!is_null($date))
+        $dbconstante = 'FINALIMCET';
+        if (!is_null($date))
+        {
+            $date = $this->formatdatedb($date);
+            $this->enregistredbconstante($dbconstante, $date);
+        }
+        elseif ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return ($this->anneeref()+1).$this->finperiode();
+        }
+        
+/*
+        if (!is_null($date))
     	{
     		$update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'FINALIMCET'";
     		$params = array($this->formatdatedb($date));
@@ -1196,6 +1355,7 @@ class fonctions
     	$result = mysqli_fetch_row($query);
     	// echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
     	return "$result[0]";
+*/
     }
 
     /**
@@ -1205,6 +1365,22 @@ class fonctions
      */
     public function debutoptioncet($date=NULL)
     {
+        $dbconstante = 'DEBUTOPTIONCET';
+        if (!is_null($date))
+        {
+            $date = $this->formatdatedb($date);
+            $this->enregistredbconstante($dbconstante, $date);
+        }
+        elseif ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return ($this->anneeref()+1).'0101';
+        }
+        
+/*        
         if (!is_null($date))
         {
             $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTOPTIONCET'";
@@ -1229,6 +1405,7 @@ class fonctions
         $result = mysqli_fetch_row($query);
         // echo "Fonctions->debutoptioncet : Debut de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
+*/
     }
 
     /**
@@ -1238,6 +1415,22 @@ class fonctions
      */
     public function finoptioncet($date=NULL)
     {
+        $dbconstante = 'FINOPTIONCET';
+        if (!is_null($date))
+        {
+            $date = $this->formatdatedb($date);
+            $this->enregistredbconstante($dbconstante, $date);
+        }
+        elseif ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return ($this->anneeref()+1).'0131';
+        }
+        
+/*        
         if (!is_null($date))
         {
             $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'FINOPTIONCET'";
@@ -1262,11 +1455,23 @@ class fonctions
         $result = mysqli_fetch_row($query);
         // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
+*/
     }
 
 
     public function getidmodelalimcet()
     {
+        $dbconstante='IDMODELALIMCET';
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return "";
+        }
+        
+/*        
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'IDMODELALIMCET'";
     	$params = array();
     	$query = $this->prepared_select($sql, $params);
@@ -1284,6 +1489,7 @@ class fonctions
     	}
     	$result = mysqli_fetch_row($query);
     	return "$result[0]";
+*/    	
     }
 
     /**
@@ -1376,13 +1582,33 @@ class fonctions
          echo '</pre>';
          */
     }
+    
+    public function get_g2t_url()
+    {
+        if (defined('G2T_URL')) /* A partir de la version 7 de G2T, la constante est forcément déclarée ==> Donc on devrait passer systématiquement ici */
+        {
+            $g2t_url = G2T_URL;
+            // error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base de G2T est récupérée de la constante => $g2t_url" ));
+        }
+        elseif ($this->testexistdbconstante('G2T_URL'))
+        {
+            $g2t_url = $this->liredbconstante('G2T_URL');
+            // error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base de G2T est récupérée de la base de données => $g2t_url" ));
+        }
+        else
+        {
+            $g2t_url = '';
+            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base de G2T est inconnue !" ));
+        }
+        return $g2t_url;
+    }
 
     public function get_g2t_ws_url()
     {
         if (defined('G2T_WS_URL')) /* A partir de la version 6 de G2T, la constante est forcément déclarée ==> Donc on devrait passer systématiquement ici */
         {
             $g2t_ws_url = G2T_WS_URL;
-            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est récupérée de la constante => $g2t_ws_url" ));
+            // error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est récupérée de la constante => $g2t_ws_url" ));
         }
         else if (!isset($_SERVER['SERVER_NAME'])) /* Si on passe là, on a un problème car la constante n'est pas défini et on n'a aucun moyen de calculer l'URL du WS!! */
         {
@@ -1444,6 +1670,7 @@ class fonctions
     public function get_alimCET_liste($typeconges, $listStatuts = array(), $forcesynchro = true) // $typeconges de la forme annYY
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
+        $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
         $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = ? ";
         if (sizeof($listStatuts) != 0)
         {
@@ -1477,6 +1704,7 @@ class fonctions
     public function get_optionCET_liste($anneeref, $listStatuts = array(), $forcesynchro = true)
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
+        $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
         $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = ? ";
         if (sizeof($listStatuts) != 0)
         {
@@ -1736,6 +1964,33 @@ class fonctions
         return $userid;
     }
 
+    public function mailexistedansldap($adressemail)
+    {
+        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_SEARCH_BASE = 'dc=univ-paris1,dc=fr';
+        $LDAP_AGENT_UID_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_AGENT_MAIL_ATTR = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+        $filtre = "($LDAP_AGENT_MAIL_ATTR=$adressemail)";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array("$LDAP_AGENT_UID_ATTR");
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
+        if (!isset($info[0]["$LDAP_AGENT_UID_ATTR"][0]))
+        {
+            $errlog = "mailexistedansldap : L'adresse mail $adressemail n'a pas pu être identifié dans LDAP.";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            return false;
+        }
+        return true;
+    }
+    
     public function prepared_query($sql, $params, $types = "")
     {
         $stmt = $this->dbconnect->prepare($sql);
@@ -2005,6 +2260,8 @@ class fonctions
             if (strlen($datestring)>0)
             {
                 $constantename = 'FERIE' . $anneeref;
+                $error = $this->enregistredbconstante($constantename,$datestring);
+/*            
                 if (!$this->testexistdbconstante($constantename))
                 {
                     $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$datestring')";
@@ -2020,7 +2277,8 @@ class fonctions
                 if ($erreur != "") {
                     $error = $error . "  " . $erreur;
                     error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
-                }                
+                } 
+*/                
             }
         }
         return $error;
@@ -2094,6 +2352,204 @@ class fonctions
         return $cetsignatairestring;
     }
     
+    public function listeutilisateursspeciaux()
+    {
+        $tab_special_users = array();
+        foreach(get_defined_constants() as $constname => $constvalue)
+        {
+            if (strpos($constname,'SPECIAL_USER_')===0)  // Si la constante commence par SPECIAL_USER_
+            {
+                $tab_special_users[$constname] = $constvalue; // Id de l'utilisateur special
+            }
+        }
+        return $tab_special_users;
+    }
+    
+    public function ckecksignatairecetliste(&$params, $agent)
+    {
+
+        $structid = $agent->structureid();
+        $struct = new structure($this->dbconnect);
+        $struct->load($structid);
+        $code = null;
+        if ($struct->responsable()->agentid() == $agent->agentid())
+        {
+            $resp = $struct->resp_envoyer_a($code);
+        }
+        else
+        {
+            $resp = $struct->agent_envoyer_a($code);
+        }
+        error_log(basename(__FILE__) . " " . $this->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
+        if ($resp->agentid() == SPECIAL_USER_IDCRONUSER)
+        {
+            $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
+        }
+        else
+        {
+            $params['recipientEmails'] = array
+            (
+                "1*" . $agent->ldapmail(),
+                "2*" . $resp->mail()
+            );
+            
+            $constantename = 'CETSIGNATAIRE';
+            $signataireliste = '';
+            $tabsignataire = array();
+            if ($this->testexistdbconstante($constantename))
+            {
+                $signataireliste = $this->liredbconstante($constantename);
+            }
+            if (strlen($signataireliste)>0)
+            {
+                $tabsignataire = $this->cetsignatairetoarray($signataireliste);
+                $maxniveau = 0;
+                foreach ($tabsignataire as $niveau => $infosignataires)
+                {
+                    if ($maxniveau<$niveau) $maxniveau = $niveau;
+                    
+                    foreach ($infosignataires as $idsignataire => $infosignataire)
+                    {
+                        if ($infosignataire[0]==cet::SIGNATAIRE_AGENT or $infosignataire[0]==cet::SIGNATAIRE_SPECIAL)
+                        {
+                            $agentsignataire = new agent($this->dbconnect);
+                            if ($agentsignataire->load($infosignataire[1]))
+                            {
+                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                            }
+                        }
+                        elseif ($infosignataire[0]==cet::SIGNATAIRE_RESPONSABLE)
+                        {
+                            $structuresignataire = new structure($this->dbconnect);
+                            $structuresignataire->load($infosignataire[1]);
+                            $agentsignataire = $structuresignataire->responsable();
+                            if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
+                            {
+                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                            }
+                        }
+                        elseif ($infosignataire[0]==cet::SIGNATAIRE_STRUCTURE)
+                        {
+                            $structuresignataire = new structure($this->dbconnect);
+                            $structuresignataire->load($infosignataire[1]);
+                            $datedujour = date("d/m/Y");
+                            foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
+                            {
+                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                            }
+                        }
+                        else
+                        {
+                            echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
+                        }
+                        unset($agentsignataire);
+                    }
+                }
+            }
+            
+            $taberrorcheckmail = array();
+            $tabniveauok = array();
+            foreach ($params['recipientEmails'] as $recipient)
+            {
+                $substr = explode('*',$recipient);
+                $mailadress = $substr[1];
+                $niveau = $substr[0];
+                // var_dump("mailadress = $mailadress");
+                if (!$this->mailexistedansldap($mailadress))
+                {
+                    $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                }
+                else
+                {
+                    $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                }
+            }
+            
+            // var_dump($tabniveauok);
+            // var_dump("count(tabniveauok) = " . count($tabniveauok));
+            // var_dump("maxniveau = " . $maxniveau);
+            
+            if (count($tabniveauok)!=$maxniveau)
+            {
+                $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
+            }
+        }
+        if (count($taberrorcheckmail)>0)
+        {
+            $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+        }
+        return $taberrorcheckmail;
+        
+    }
+    
+    public function listeagentsavecaffectation($namefirst = true)
+    {
+        $listeagent = array();
+        $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT WHERE TRIM(STRUCTUREID) <> '' ORDER BY NOM,PRENOM,AGENTID";
+        $query_agent = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "fonctions->listeagentavecaffectation : Erreur SELECT FROM AGENT => $erreur_requete \n";
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query_agent)) 
+            {
+                if ($namefirst)
+                {
+                    $listeagent[$result[0]] = $result[1] . " " . $result[2];
+                }
+                else
+                {
+                    $listeagent[$result[0]] = $result[1] . " " . $result[2];
+                }
+            }
+        }
+        return $listeagent;
+    }
+        
+    public function listeagentsg2t($namefirst = true)
+    {
+        $listeagent = array();
+        $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT ";
+        $listspecialuser = $this->listeutilisateursspeciaux();
+        if (count($listspecialuser)>0)
+        {
+            $sql = $sql . " WHERE AGENTID NOT IN (";
+            $separateur = '';
+            foreach ($listspecialuser as $idspecialuser)
+            {
+                $sql = $sql . $separateur . "'$idspecialuser'";
+                $separateur = ",";
+            }
+            $sql = $sql . ") ";
+            
+        }
+        $sql = $sql . " ORDER BY NOM,PRENOM,AGENTID";
+        //var_dump($sql);
+        $query_agent = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "fonctions->listeagentsg2t : Erreur SELECT FROM AGENT => $erreur_requete \n";
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query_agent)) 
+            {
+                if ($namefirst)
+                {
+                    $listeagent[$result[0]] = $result[1] . " " . $result[2];
+                }
+                else
+                {
+                    $listeagent[$result[0]] = $result[1] . " " . $result[2];
+                }
+            }
+        }
+        return $listeagent;
+    }
 }
 
 ?>

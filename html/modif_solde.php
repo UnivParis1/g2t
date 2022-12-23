@@ -185,6 +185,16 @@
     $msg_erreur = "";
     echo "Personne à rechercher : <br>";
     echo "<form name='selectagent'  method='post' >";
+    
+    $agentsliste = $fonctions->listeagentsg2t();
+    echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+    echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+    foreach ($agentsliste as $key => $identite)
+    {
+        echo "<option value='$key'>$identite</option>";
+    }
+    echo "</select>";
+/*    
     echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
     if (isset($_POST["agent"]))
         echo $_POST["agent"];
@@ -195,16 +205,14 @@
     echo "' class='agent' /> ";
 ?>
 <script>
-/*
-    	$("#agent").autocompleteUser(
-  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-*/
         $("#agent").autocompleteUser(
            '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
         	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
 </script>
 <?php
+
+*/
+    
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br><br>";
     echo "Période d'affichage : ";
@@ -225,7 +233,7 @@
         echo "<br><br>";
         echo "Appuyez sur le bouton ci-dessous pour recalculer les droits acquis $anneeref/" . ($anneeref+1) . " de " . $agent->identitecomplete() . "<br>";
         echo "<form name='submit_calculdroit'  method='post' >";
-        echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
+        // echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
         echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "' class='agent' /> ";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
@@ -257,7 +265,7 @@
             echo $agent->soldecongeshtml("$anneeref");
             echo "<br>";
             echo "<form name='submit_solde'  method='post' >";
-            echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
+            // echo "<input type='hidden' id='agent' name='agent' value='" . $_POST["agent"] . "' class='agent' /> ";
             echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "' class='agent' /> ";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";

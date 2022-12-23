@@ -108,6 +108,8 @@ class declarationTP
      */
     function affectationid($affectationid = null)
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
         if (is_null($affectationid)) {
             if (is_null($this->affectationid)) {
                 $errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas défini !!!";
@@ -612,6 +614,8 @@ class declarationTP
      */
     function demandesliste($debut_interval, $fin_interval)
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
         $agent = new agent($this->dbconnect);
         $agent->load($this->agent);
         $demande_liste = $agent->demandesliste($debut_interval, $fin_interval);

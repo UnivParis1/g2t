@@ -19,7 +19,9 @@
     // echo "Avant Nbre jours periode... \n";
     $nbre_jour_periode = $fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period);
     // echo "Avant Nbre jours offert... \n";
-    $nbr_jrs_offert = $fonctions->liredbconstante("NBJOURS" . substr($date_deb_period, 0, 4));
+    $nbr_jrs_offert = 0;
+    $dbconstante = "NBJOURS" . substr($date_deb_period, 0, 4);
+    if ($fonctions->testexistdbconstante($dbconstante))  $nbr_jrs_offert = $fonctions->liredbconstante($dbconstante);
     
     // echo "Avant le 1er while \n";
     while ($result = mysqli_fetch_row($query_agent)) {

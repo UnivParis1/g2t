@@ -25,13 +25,13 @@
     $codeinterne = null;
     
     $cronuser = new agent($dbcon);
-    if (!$cronuser->load("-1"))   // Utilisateur CRON G2T
+    if (!$cronuser->load(SPECIAL_USER_IDCRONUSER))   // Utilisateur CRON G2T
     {
         echo "Impossible de charger l'utilisateur CRON => Pas d'envoi de mail \n";
         $cronuser = null;
     }
     $drhuser = new agent($dbcon);
-    if (!$drhuser->load("-2"))  // Utilisateur Gestion de temps <=> DRH
+    if (!$drhuser->load(SPECIAL_USER_IDLISTERHUSER))  // Utilisateur Gestion de temps <=> DRH
     {
         echo "Impossible de charger l'utilisateur DRH => Pas d'envoi de mail \n";
         $drhuser = null;
@@ -69,7 +69,7 @@
             echo "La structure d'affectation de l'agent " . $demandeur->identitecomplete() . " n'a pas définie => On ignore \n";
             if (!is_null($cronuser) and !is_null($drhuser))
             {
-                echo "CRON G2T envoie le mail à la DRH pour ajouter l'affectation de l'agent. \n";
+                echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour ajouter l'affectation de l'agent. \n";
                 $cronuser->sendmail($drhuser,"Un agent a une demande de congés/d'absence mais pas d'affectation dans G2T","L'agent " . $demandeur->identitecomplete() . " (" . $demandeur->agentid() . ") a une demande de congés/d'absence mais n'a pas d'affectation à une structure dans G2T.
 Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
 Merci de contrôler son dossier.\n");
@@ -97,7 +97,7 @@ Merci de contrôler son dossier.\n");
                 if (!in_array($demandeur->agentid(), $arraydemandeur))
                 {
                     // CRON G2T envoie le mail à la DRH pour information
-                    echo "CRON G2T envoie le mail à la DRH pour information\n";
+                    echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
                     $cronuser->sendmail($drhuser,"Un agent a une demande de congés/d'absence mais pas de responsable","L'agent " . $demandeur->identitecomplete() . " (" . $demandeur->agentid() . ") a une demande de congés/d'absence mais n'a pas de responsable dans G2T.
 Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
 Merci de contrôler son dossier.\n");
@@ -133,7 +133,7 @@ Merci de contrôler son dossier.\n");
                             {
                                 if (!in_array($structure->id(), $arraystruct))
                                 {
-                                    echo "CRON G2T envoie le mail a la DRH pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+                                    echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
                                     $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
 Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
 Merci de contrôler le dossier RH du responsable.\n");
@@ -187,7 +187,7 @@ Merci de contrôler le dossier RH du responsable.\n");
                         {
                             if (!in_array($structure->id(), $arraystruct))
                             {                                
-                                echo "CRON G2T envoie le mail a la DRH pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+                                echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
                                 $corpsmail = "Le responsable de la structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") a une demande à valider. Le signataire doit être le $typesignataire de la structure " . $structureparent->nomlong() . " (" . $structureparent->nomcourt()  . "). Cependant celui-ci n'est pas défini.
 Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
 Dans le cas d'un gestionnaire, il faut que le responsable de la structure modifie le paramétrage de la structure dans G2T (Menu responsable/Paramétrage des dossiers et des structures).
@@ -225,8 +225,8 @@ Merci de contrôler le dossier RH du responsable.\n";
     echo "\n";
     // Création de l'agent CRON G2T
     $agentcron = new agent($dbcon);
-    // -1 est le code pour l'agent CRON dans G2T
-    $agentcron->load('-1');
+    // le code pour l'agent CRON dans G2T
+    $agentcron->load(SPECIAL_USER_IDCRONUSER);
     foreach ($mail_resp as $agentid => $listedemande) {
         $responsable = new agent($dbcon);
         $responsable->load($agentid);
