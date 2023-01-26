@@ -1,5 +1,4 @@
 <?php
-
     require_once ('CAS.php');
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
@@ -67,8 +66,6 @@
             $agentid = null;
     }
         
-    require ("includes/menu.php");
-    
     $cancelteletravailarray = null;
     if (isset($_POST["cancel"])) // Tableau des id des conventions à désactiver
     {
@@ -86,6 +83,7 @@
         $datefinconv = $_POST["date_fin_conv"];
     }
     
+    require ("includes/menu.php");
     
     //echo "<br>" . print_r($_POST, true) . "<br><br>";
     
@@ -95,11 +93,54 @@
     
     $erreur = '';
     $info = '';
+    $alerte = '';
+    $nbjoursmaxteletravail = 0;
+    $datedebutteletravail = null;
+    $datefinteletravail = null;
+    $typeconv = null;
+    $tabteletravail = str_pad('',14,'0');
+    $disablesubmit = false;
     
-    if (isset($_POST["modification"]))  // On a cliqué sur le bouton "annulation"
+    if ($fonctions->testexistdbconstante('NBJOURSMAXTELETRAVAIL')) $nbjoursmaxteletravail = $fonctions->liredbconstante('NBJOURSMAXTELETRAVAIL');
+    
+    if (!is_null($agentid))
     {
         $agent = new agent($dbcon);
         $agent->load($agentid);
+    }
+
+    // On vérifie que le circuit est correctement paramétré
+    $params = array();
+    $maxniveau = 0;
+    $taberrorcheckmail = $fonctions->ckecksignataireteletravailliste($params,$agent,$maxniveau);
+    if (count($taberrorcheckmail) > 0)
+    {
+        // var_dump("errorcheckmail = $errorcheckmail");
+        $errorcheckmailstr = '';
+        foreach ($taberrorcheckmail as $errorcheckmail)
+        {
+            if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+            $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+        }
+        $erreur = "Impossible de créer une convention de télétravail car <br>$errorcheckmailstr";
+        $disablesubmit = true;
+    }
+    else
+    {
+        $id_model = trim($fonctions->getidmodelteletravail($maxniveau,$agent));
+        //var_dump($id_model);
+        if (trim($id_model) == '')
+        {
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "Le modèle eSignature pour la création d'une convention télétravail n'a pas pu être déterminé.";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+            $disablesubmit = true;
+        }
+        
+    }
+    
+    if (isset($_POST["modification"]))  // On a cliqué sur le bouton "annulation"
+    {
         //echo "On va annuler des conventions de télétravail.<br>";
         foreach ((array)$cancelteletravailarray as $cancelteletravailid)
         {
@@ -114,21 +155,30 @@
             }
             else
             {
-                $teletravail->statut(teletravail::STATUT_INACTIVE);
-                //echo "<br>";
-                //var_dump($teletravail);
-                //echo "<br>";
-                $erreur = $teletravail->store();
-                if ($erreur != "")
+                $return = $fonctions->deleteesignaturedocument($teletravail->esignatureid());
+                if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
                 {
                     if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-                    $erreur = $erreur . "Erreur dans la sauvegarde du changement de statut de la convention $cancelteletravailid : " . $erreur;
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                    $erreur = $erreur . "Impossible d'annuler la convention  télétravail $cancelteletravailid : $return";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
                 }
                 else
                 {
-                    $info = $info . "La suppression de la convention $cancelteletravailid a été enregistrée.";
+                    // Annulation dans G2T
+                    $teletravail->statut(teletravail::TELETRAVAIL_ANNULE);
+                    $return = $teletravail->store();
+                    if ($return != "")
+                    {
+                        if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                        $erreur = $erreur . $return;
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
+                    }
+                    else
+                    {
+                        $info = $info . "L'annulation de la convention " . $teletravail->esignatureid() . " a été enregistrée.";
+                    }
                 }
+                //deleteesignaturedocument($teletravail);
             }
         }
         // On va modifier les dates des conventions de télétravail
@@ -158,7 +208,7 @@
                     $erreur = $erreur . "Erreur dans le chargement de la convention $idconv pour modification : " . $return;
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                 }
-                elseif ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+                elseif ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
                 {
                     if ($fonctions->formatdatedb($teletravail->datedebut()) != $fonctions->formatdatedb($datedebut) or $fonctions->formatdatedb($teletravail->datefin()) != $fonctions->formatdatedb($datefin))
                     {
@@ -167,7 +217,7 @@
                         {
                             $teletravailverif = new teletravail($dbcon);
                             $teletravailverif->load($conventionid);
-                            if ($teletravailverif->statut() == $teletravailverif::STATUT_ACTIVE and $conventionid != $idconv)
+                            if ($teletravailverif->statut() == teletravail::TELETRAVAIL_VALIDE and $conventionid != $idconv)
                             {
                                 if (strlen($erreur)>0) $erreur = $erreur . '<br>';
                                 $erreur = $erreur . "Erreur : La date de début ou de fin de la convention de télétravail $idconv chevauche une convention existante (id = $conventionid).";
@@ -195,7 +245,6 @@
                     {
                         // La date de début et de fin sont les mêmes => On ne fait rien
                     }
-                    
                 }
             }
         }
@@ -204,16 +253,10 @@
 
     if (isset($_POST["creation"]))  // On a cliqué sur le bouton "creation"
     {
-        $agent = new agent($dbcon);
-        $agent->load($agentid);
-        //echo "On va creer une convention de télétravail.<br>";
-        //Array ( [date_debut] => Array ( [9328] => 01/12/2021 ) [date_fin] => Array ( [9328] => 05/12/2021 ) [jours] => Array ( [0] => 2 [1] => 3 ) [userid] => 9328 [agentid] => 9328 [creation] => Soumettre ) 
-        $datedebutteletravail = null;
         if (isset($_POST["date_debut"][$agent->agentid()]))
         {
             $datedebutteletravail = $_POST["date_debut"][$agent->agentid()];
         }
-        $datefinteletravail = null;
         if (isset($_POST["date_fin"][$agent->agentid()]))
         {
             $datefinteletravail = $_POST["date_fin"][$agent->agentid()];
@@ -223,23 +266,60 @@
         {
             $jours = $_POST["jours"];
         }
-        
-        $tabteletravail = str_pad('',14,'0');
-        //echo "tabteletravail = $tabteletravail <br>";
-        foreach((array)$jours as $numjour) // numjour => [1-7] où 1 = lundi
+
+        $demijours = null;
+        if (isset($_POST["demijours"]))
         {
-            $numjour = $numjour - 1;   // $numjour = l'index du talbeau 0 = lundi
-            $numjour = $numjour * 2;
-            $gauche = substr($tabteletravail,0,$numjour);
-            $droite = substr($tabteletravail,$numjour+1);
-            $tabteletravail = $gauche . '1' . $droite;
-            $numjour = $numjour + 1;   
-            $gauche = substr($tabteletravail,0,$numjour);
-            $droite = substr($tabteletravail,$numjour+1);
-            $tabteletravail = $gauche . '1' . $droite;
+            $demijours = $_POST["demijours"];
+        }
+        
+        // Le nombre maximal de jour de télétravail pour un temps complet est dans $nbjoursmaxteletravail
+        $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
+        if (isset($_POST["nbjoursmaxteletravailcalcule"]))
+        {
+            $nbjoursmaxteletravailcalcule = $_POST["nbjoursmaxteletravailcalcule"];
+        }
+        
+        if (isset($_POST["typeconv"]))
+        {
+            $typeconv = $_POST["typeconv"];
         }
         //echo "tabteletravail = $tabteletravail <br>";
+        
+        if (!is_null($jours))
+        {
+            foreach((array)$jours as $numjour) // numjour => [1-7] où 1 = lundi
+            {
+                $numjour = $numjour - 1;   // $numjour = l'index du talbeau 0 = lundi
+                $numjour = $numjour * 2;
+                $gauche = substr($tabteletravail,0,$numjour);
+                $droite = substr($tabteletravail,$numjour+1);
+                $tabteletravail = $gauche . '1' . $droite;
+                $numjour = $numjour + 1;   
+                $gauche = substr($tabteletravail,0,$numjour);
+                $droite = substr($tabteletravail,$numjour+1);
+                $tabteletravail = $gauche . '1' . $droite;
+            }
+        }
+        if (!is_null($demijours))
+        {
+            foreach((array)$demijours as $numdemijour) // numdemijour => [1-10] où 1 = lundi matin, 2 = lundi après-midi, ...
+            {
+                $numdemijour = $numdemijour - 1;   // $numdemijour = l'index du talbeau 0 = lundi matin
+                $tabteletravail = substr_replace($tabteletravail,'1',$numdemijour,1);
+            }
+        }
+        
+        //echo "tabteletravail = $tabteletravail <br>";
         $dateok = true;
+        
+        if ($typeconv . '' == '')
+        {
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "Vous n'avez pas sélectionné le type de convention de télétravail.";
+            $dateok = false;
+        }
+        
         if (!$fonctions->verifiedate($datedebutteletravail))
         {
             if (strlen($erreur)>0) $erreur = $erreur . '<br>';
@@ -265,6 +345,20 @@
             if (strlen($erreur)>0) $erreur = $erreur . '<br>';
             $erreur = $erreur . "Aucun jour de télétravail sélectionné.";
         }
+        // On regarde si le nombre de 1/2 journée selectionné est conforme au temps partiel/temps complet de l'agent
+        else
+        {
+            // On compte le nombre de 1 dans le tableau
+            $nbdemiejournee = substr_count($tabteletravail, '1');
+                        
+            // On divise par 2 le nombre de 1/2 journée pour trouver le nombre de journée
+            if (($nbdemiejournee/2) > $nbjoursmaxteletravailcalcule)
+            {
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "Le nombre de jours de télétravail sélectionné dépasse le maximum autorisé.";
+            }
+        }
+
         if ($dateok)
         {
             $liste = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
@@ -272,14 +366,40 @@
             {
                 $teletravail = new teletravail($dbcon);
                 $teletravail->load($conventionid);
-                if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+                if (in_array($teletravail->statut(),array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
                 {
-                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-                    $erreur = $erreur . "La nouvelle convention de télétravail chevauche une convention existante (id = $conventionid).";
-                    break;  // On a trouver au moins une convention active qui chevauge !
+                    if ($teletravail->datefin()>=$datedebutteletravail)
+                    {                        
+                        $veilledebut = date("d/m/Y", strtotime("-1 day", strtotime($fonctions->formatdatedb($datedebutteletravail))));
+                        //echo "datedebutteletravail = $datedebutteletravail <br>";
+                        //echo "veilledebut = $veilledebut <br>";
+                        $teletravail->datefin($veilledebut);
+                        $teletravail->commentaire("Modification de la date de fin de la convention suite à création d'une nouvelle convention.");
+                        //echo "date debut  = " . $fonctions->formatdatedb($teletravail->datedebut()) . "<br>";
+                        //echo "date fin  = " . $fonctions->formatdatedb($teletravail->datefin()) . "<br>";
+                        if ($fonctions->formatdatedb($teletravail->datefin()) < $fonctions->formatdatedb($teletravail->datedebut()))
+                        {
+                            $return = $fonctions->deleteesignaturedocument($teletravail->esignatureid());
+                            if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
+                            {
+                                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                                $erreur = $erreur . $return;
+                                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
+                            }
+                            //echo "On passe la convetion à ANNULE<br>";
+                            $teletravail->statut(teletravail::TELETRAVAIL_ANNULE);
+                            //deleteesignaturedocument($teletravail);
+                        }
+                        //echo "La convention télétravail " . $teletravail->teletravailid() . " a un statut " . $teletravail->statut() . " ( " . $fonctions->teletravailstatutlibelle($teletravail->statut()) . " ) et une date de fin " . $teletravail->datefin() . "<br>";
+                        $teletravail->store();
+                    }
+                    
+                    if (strlen($alerte)>0) $alerte = $alerte . '<br>';
+                    $alerte = $alerte . "La nouvelle convention de télétravail a modifié une convention existante (id = $conventionid).";
                 }
             }
         }
+
         if ($erreur == '')
         {
             $teletravail = new teletravail($dbcon);
@@ -287,24 +407,156 @@
             $teletravail->datefin($datefinteletravail);
             $teletravail->tabteletravail($tabteletravail);
             $teletravail->agentid($agent->agentid());
-            $erreur = $teletravail->store();
-            if ($erreur != "")
+            $teletravail->typeconvention($typeconv);
+            
+            if (!is_null($agentid))
             {
-                $erreur = "Erreur dans la sauvegarde dans la création de la convention : <br>" . $erreur;
-                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
+                $agent = new agent($dbcon);
+                $agent->load($agentid);
+                $agent_eppn = $agent->eppn();
+                
+                // On récupère le mail de l'agent en cours
+                $agent_mail = $agent->mail(); // $agent->ldapmail();
+            }
+            
+            $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
+            $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/teletravailWS.php";
+            $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
+            
+            $curl = curl_init();
+            // ----------------------------------------------------------------
+            // On force l'EPPN avec le compte système de eSignature
+            $agent_eppn = 'system';
+            //-----------------------------------------------------------------
+                
+            $params = array
+            (
+                'eppn' => "$agent_eppn",
+                'targetEmails' => array
+                (
+                    "$agent_mail"
+                ),
+                'targetUrl' => "$full_g2t_ws_url",
+                'targetUrls' => array("$full_g2t_ws_url"),
+                'formDatas' => "{}"
+            );
+                
+            $taberrorcheckmail = $fonctions->ckecksignataireteletravailliste($params,$agent,$maxniveau);
+            if (count($taberrorcheckmail) > 0)
+            {
+                // var_dump("errorcheckmail = $errorcheckmail");
+                $errorcheckmailstr = '';
+                foreach ($taberrorcheckmail as $errorcheckmail)
+                {
+                    if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                    $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                }
+                $erreur = "Impossible d'enregistrer la convention de télétravail car <br>$errorcheckmailstr";
             }
             else
             {
-                $info = "La création de la convention est réussie.";
-                $erreur = "";
+                $id_model = trim($fonctions->getidmodelteletravail($maxniveau, $agent));
+                if (trim($id_model) == '')
+                {
+                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                    $erreur = $erreur . "Le modèle eSignature pour la création d'une convention télétravail n'a pas pu être déterminé.";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                }
+                else
+                {
+                    $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
+                    {
+                        is_array( $item )
+                        ? array_walk( $item, $walk, $key )
+                        : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                    };
+                    array_walk( $params, $walk );
+                    $params_string = implode( '&', $output );
+                    // var_dump ("Output = " . $params_string);
+                    
+                    $opts = [
+                        CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
+                        CURLOPT_POST => true,
+                        CURLOPT_POSTFIELDS => $params_string,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_SSL_VERIFYPEER => false
+                    ];
+                    curl_setopt_array($curl, $opts);
+                    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    $json = curl_exec($curl);
+                    $error = curl_error ($curl);
+                    curl_close($curl);
+                    if ($error != "")
+                    {
+                        echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur Curl = " . $error);
+                    }
+                    //echo "<br>" . print_r($json,true) . "<br>";
+                    //echo "<br>"; var_dump($json); echo "<br>";
+                    $id = json_decode($json, true);
+                    error_log(basename(__FILE__) . " " . var_export($opts, true));
+                    error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
+                    //var_dump($id);
+                    if (is_array($id))
+                    {
+                        $erreur = "La création de la convention dans eSignature a échoué => " . print_r($id,true);
+                        error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+                    }
+                    elseif ("$id" < 0)
+                    {
+                        $erreur =  "La création de la convention dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
+                        error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+                    }
+                    elseif ("$id" <> "")
+                    {
+                        //echo "Id de la nouvelle demande = " . $id . "<br>";
+                        $teletravail->esignatureid($id);
+                        $teletravail->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+                        $teletravail->statut(teletravail::TELETRAVAIL_ATTENTE);
+                        $erreur = $teletravail->store();
+                        
+                        $agent->synchroteletravail();
+                        if ($erreur <> "")
+                        {
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
+                        }
+                        else
+                        {
+                            $info = "La création de la convention est réussie.";
+                            $erreur = "";
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => eSignatureid = " . $id ));
+                        }
+                    }
+                    else
+                    {
+                        $erreur  = "La création de la convention de télétravail dans eSignature a échoué !!==> Pas de sauvegarde de la conention télétravail dans G2T.";
+                        error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+                    }
+                }
             }
         }
     }
     
+    $inputtypeconv = null;
+    $inputdatedebut = null;
+    $inputdatefin = null;
+    $inputtabteletravail = null;
+    
     if ($erreur != "")
     {
-        $erreur = $erreur . "<br>La convention de télétravail n'a pas pu être enregistrée.";
+        if (isset($teletravail))
+        {
+            $erreur = $erreur . "<br>La convention de télétravail n'a pas pu être enregistrée.";
+        }
         echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
+        $inputtypeconv = $typeconv;
+        $inputdatedebut = $datedebutteletravail;
+        $inputdatefin = $datefinteletravail;
+        $inputtabteletravail = $tabteletravail;
+    }
+    if ($alerte != "")
+    {
+        echo $fonctions->showmessage(fonctions::MSGWARNING, $alerte);
     }
     if ($info != "")
     {
@@ -315,19 +567,8 @@
     if (is_null($agentid))
     {
         echo "<form name='demandeforagent'  method='post' action='gestion_teletravail.php'>";
-        echo "Personne à rechercher (uniquement les agents avec une affectation valide) : <br>";
-        echo "<form name='selectagentcet'  method='post' >";
-        
-        $agentsliste = $fonctions->listeagentsg2t();
-        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
-        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
-        foreach ($agentsliste as $key => $identite)
-        {
-            echo "<option value='$key'>$identite</option>";
-        }
-        echo "</select>";
-        
-/*
+        echo "Personne à rechercher : <br>";
+        echo "<form name='selectagentteletravail'  method='post' >";
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
 ?>
@@ -337,8 +578,6 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
  <?php
- 
- */       
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -348,8 +587,12 @@
     }
     elseif (!is_null($agentid))
     {
-    	$agent = new agent($dbcon);
-    	$agent->load($agentid);
+    	$erreur = $agent->synchroteletravail();
+    	if ($erreur != "")
+    	{
+    	    echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible de synchroniser une ou plusieurs convention : $erreur");
+    	    $disablesubmit = true;
+    	}
     	$teletravailliste = $agent->teletravailliste('01/01/1900', '31/12/2100'); // On va récupérer toutes les demandes de télétravail de l'agent pour les afficher
     	if (count($teletravailliste) > 0)
     	{
@@ -359,11 +602,11 @@
                       <td class='titresimple'>Date début</td>
                       <td class='titresimple'>Date fin</td>
                       <td class='titresimple' id ='convstatut'>Statut</td>
-                      <td class='titresimple'>Répartition du télétravail</td>";
-    	    if ($mode=='gestrh')
-    	    {
-                echo "<td class='titresimple'>Annuler</td>";
-    	    }
+                      <td class='titresimple'>Répartition du télétravail</td>
+                      <td class='titresimple'>Id. externe</td>
+                      <td class='titresimple'>URL eSignature</td>
+                 ";
+            echo "<td class='titresimple'>Annuler</td>";
             echo "</center></tr>";
     	    foreach($teletravailliste as $teletravailid)
     	    {
@@ -373,7 +616,16 @@
     	        $datefinteletravail = $fonctions->formatdate($teletravail->datefin());
     	        $calendrierid_deb = "date_debut_conv";
     	        $calendrierid_fin = "date_fin_conv";
-    	        //echo "<tr><td class='cellulesimple'>" . $teletravail->teletravailid() . "</td><td class='cellulesimple'><input type='text' name='debut[]' value='" . $fonctions->formatdate($teletravail->datedebut()) . "'></td><td class='cellulesimple'><input type='text' name='fin[]' value='" . $fonctions->formatdate($teletravail->datefin()) . "'></td><td class='cellulesimple'>" . $teletravail->statut() . "</td><td class='cellulesimple'><button type='submit' value='" . $teletravail->teletravailid() ."' name='cancel[]' " . (($teletravail->statut() == teletravail::STATUT_INACTIVE) ? "disabled='disabled' ":" ") . ">Annuler</button>" . "</td></tr>";
+    	        
+    	        $openspan = "";
+    	        $closespan = "";
+    	        if (strlen($teletravail->commentaire().'') != 0) 
+    	        {
+                    $openspan = "<span data-tip=" . chr(34) . $teletravail->commentaire() . chr(34) . ">";
+                    $closespan = "</span>";
+    	        }
+    	        
+    	        //echo "<tr><td class='cellulesimple'>" . $teletravail->teletravailid() . "</td><td class='cellulesimple'><input type='text' name='debut[]' value='" . $fonctions->formatdate($teletravail->datedebut()) . "'></td><td class='cellulesimple'><input type='text' name='fin[]' value='" . $fonctions->formatdate($teletravail->datefin()) . "'></td><td class='cellulesimple'>" . $teletravail->statut() . "</td><td class='cellulesimple'><button type='submit' value='" . $teletravail->teletravailid() ."' name='cancel[]' " . (($teletravail->statut() == teletravail::TELETRAVAIL_ANNULE) ? "disabled='disabled' ":" ") . ">Annuler</button>" . "</td></tr>";
     	        echo "<tr><td class='cellulesimple'><center>" . $teletravail->teletravailid() . "</center></td>";
     	        //echo "    <td class='cellulesimple'><center>" . $fonctions->formatdate($teletravail->datedebut()) . "</center></td>";
 ?>
@@ -400,7 +652,7 @@
     </script>
 <?php     	        
     	        echo "    <td class='cellulesimple'><center>";
-    	        if ($teletravail->statut() == teletravail::STATUT_ACTIVE and $mode=='gestrh')
+    	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
     	        {
 ?>
         <input class="calendrier" type=text
@@ -417,7 +669,7 @@
     	        }
     	        echo "</center></td>";
     	        echo "    <td class='cellulesimple'><center>";
-    	        if ($teletravail->statut() == teletravail::STATUT_ACTIVE and $mode=='gestrh')
+    	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
     	        {
 ?>
         <input class="calendrier" type=text
@@ -434,8 +686,7 @@
     	            echo $fonctions->formatdate($teletravail->datefin());
     	        }
                 echo "</center></td>";
-    	        //echo "    <td class='cellulesimple'><center>" . $fonctions->formatdate($teletravail->datefin()) . "</center></td>";
-                echo "    <td class='cellulesimple convstatut'><center>" . $teletravail->statut() . "</center></td>";
+                echo "    <td class='cellulesimple convstatut' ><span class='convstatutvalue' hidden>" .  $teletravail->statut() . "</span><center>$openspan" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . "$closespan</center></td>";
     	        $somme = 0;
     	        $htmltext = "";
     	        echo "    <td class='cellulesimple'><center>";
@@ -454,9 +705,9 @@
     	                if ($somme > 0) // Si pas de télétravail => On affiche rien
     	                {
                             if ($somme == 1)  // Que le matin
-                                $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment("m"); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
+                               $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment(fonctions::MOMENT_MATIN); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
     	                    elseif ($somme == 2) // Que l'après-midi
-    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment("a");
+    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment(fonctions::MOMENT_APRESMIDI);
     	                    elseif ($somme == 3) // Toute la journée
     	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1);
     	                    else // Là, on ne sait pas !!
@@ -469,23 +720,31 @@
     	        }
     	        echo substr($htmltext, 0, strlen($htmltext)-2);
     	        echo "    </center></td>";
-    	        if ($mode=='gestrh')
+    	        echo "<td class='cellulesimple'>" . $teletravail->esignatureid() . "</td>";
+    	        echo "<td class='cellulesimple'><a href='" . $teletravail->esignatureurl() . "' target='_blank'>".(($teletravail->statut() == teletravail::TELETRAVAIL_ANNULE) ? '':$teletravail->esignatureurl())."</a></td>";
+    	        echo "<td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
+    	        if ($mode=='gestrh' and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
     	        {
-    	            echo "    <td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid()  .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' " . (($teletravail->statut() == teletravail::STATUT_INACTIVE or $mode == '') ? "disabled='disabled' ":" ") . ">" . "</center></td>";
+    	            echo " disabled='disabled' ";
     	        }
+    	        elseif ($mode!='gestrh' and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE)))
+    	        {
+    	            echo " disabled='disabled' ";
+    	        }
+    	        echo "></center></td>";
                 echo "</tr>";
     	    }
             echo "</table>";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
     	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
-    	    if ($mode == 'gestrh')
+    	    if (!$disablesubmit)
     	    {
     	       echo "<input type='submit' value='Soumettre' name='modification'/>";
     	    }
     	    echo "</form>";
             echo "<br>";
-            echo "<input type='checkbox' id='hide' name='hide' onclick='hide_inactive();'>Masquer les conventions inactives</input><br>";
+            echo "<input type='checkbox' id='hide' name='hide' onclick='hide_inactive();'>Masquer les conventions non validées</input><br>";
 ?>
 	<script>
 		function hide_inactive()
@@ -500,10 +759,14 @@
 
 		        //alert(currenttr.innerHTML);
 		        var statutcase = currenttr.getElementsByClassName('convstatut')[0]; //getElementById('convstatut');
-
 		        //alert (statutcase.innerHTML);
 		        
-		        if (statutcase.innerText == '<?php echo teletravail::STATUT_INACTIVE ?>')
+		        var spanstatut = statutcase.getElementsByClassName('convstatutvalue')[0];
+		        //alert (spanstatut.innerText);
+		        
+		        var tabstatut = ['<?php echo teletravail::TELETRAVAIL_ANNULE ?>','<?php echo teletravail::TELETRAVAIL_ATTENTE ?>','<?php echo teletravail::TELETRAVAIL_REFUSE ?>'];
+		        if (tabstatut.indexOf(spanstatut.innerText) !== -1) // La valeur existe dans le tableau
+		        //if (statutcase.innerText == '<?php echo teletravail::TELETRAVAIL_ANNULE ?>')
 		        {
     		        var checkboxvalue = document.getElementById('hide').checked;
     		        if (checkboxvalue)
@@ -522,20 +785,12 @@
 		//document.getElementById('hide').click();
 	</script>
 <?php
-            echo "<br>";
-            echo "<b><u>Explications complémentaires :</u></b>";
-            echo "<ul>";
-            echo "<li>Une convention <b>active</b> sera affichée dans le planning et sera prise en compte dans le calcul de l'indemnité télétravail, durant toute la durée de sa validité (date de début / date de fin).</li>";
-            echo "<li>Une convention <b>inactive</b> est une convention qui est totalement annulée. Elle ne sera donc pas prise en compte dans le planning ou dans le calcul de l'indemnité télétravail quelles que soient ses dates de validité (date de début / date de fin).</li>";
-            echo "</ul><br>";
     	}
     	else
     	{
     	    echo "<br>Pas de convention de télétravail saisie dans l'application<br>"; 
     	}
     	
-    	$datedebutteletravail = "";
-    	$datefinteletravail = "";
     	$calendrierid_deb = "date_debut";
     	$calendrierid_fin = "date_fin";
 ?>
@@ -561,58 +816,200 @@
     </script>
 <?php
     	echo "<br><br>";
-    	if ($mode == 'gestrh')
-    	{
-        	echo "Création d'une nouvelle convention de télétravail pour : " . $agent->identitecomplete()  . " <br>";
-        	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' >";
-        	echo "Date de début de la convention télétravail : ";
-        	if ($fonctions->verifiedate($datedebutteletravail)) {
-        	    $datedebutteletravail = $fonctions->formatdate($datedebutteletravail);
-        	}
-    ?>
-            <input class="calendrier" type=text
-            	name=<?php echo $calendrierid_deb . '[' . $agent->agentid() . ']'?>
-            	id=<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?> size=10
-            	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
-            	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
-            	value='<?php echo $datedebutteletravail ?>'>
-    <?php
-        	echo "<br>";
-        	echo "Date de fin de la convention télétravail : ";
-            if ($fonctions->verifiedate($datefinteletravail)) {
-                $datefinteletravail = $fonctions->formatdate($datefinteletravail);
-            }      
-    ?>
-            <input class="calendrier" type=text
-            	name=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
-            	id=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
-            	size=10
-            	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
-            	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+4 . $fonctions->finperiode()); ?>'
-            	value='<?php echo $datefinteletravail ?>'>
-    <?php
-    
-        	echo "<br>";
-        	echo "Jours de télétravail : ";
-        	echo "<table class='tableausimple'>";
-    	    echo "<tr><center>
-                      <td class='cellulesimple'><input type='checkbox' value='1' id='creation_1' name='jours[]'>Lundi</input></td>
-                      <td class='cellulesimple'><input type='checkbox' value='2' id='creation_2' name='jours[]'>Mardi</input></td>
-                      <td class='cellulesimple'><input type='checkbox' value='3' id='creation_3' name='jours[]'>Mercredi</input></td>
-                      <td class='cellulesimple'><input type='checkbox' value='4' id='creation_4' name='jours[]'>Jeudi</input></td>
-                      <td class='cellulesimple'><input type='checkbox' value='5' id='creation_5' name='jours[]'>Vendredi</input></td>
-                  </center></tr>";
-            echo "</table>";
-    	    echo "<br>";
-    	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-    	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
-    	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
-    	    echo "<input type='submit' value='Soumettre'  name='creation'/>";
-    	    echo "</form>";
-    	}
-    }
-    
+        //echo "<br>inputtypeconv = $inputtypeconv <br>";
+    	echo "Création d'une nouvelle convention de télétravail pour : " . $agent->identitecomplete()  . " <br>";
+    	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' >";
+    	
+    	echo "Type de convention télétravail : ";
+    	echo "<select id='typeconv' name='typeconv'>";
+    	echo "<option value=''>---- Sélectionnez le type de convention ----</option>";
 
+    	if (count($teletravailliste)==0)
+    	{
+        	echo "<option value='" . teletravail::TYPE_CONVENTION_INITIALE . "'";
+        	if ($inputtypeconv == teletravail::TYPE_CONVENTION_INITIALE) echo " selected ";
+        	echo ">" . teletravail::TYPE_CONVENTION_INITIALE . "</option>";
+    	}
+    	else
+    	{
+        	echo "<option value='" . teletravail::TYPE_CONVENTION_RENOUVELLEMENT . "'";
+        	if ($inputtypeconv == teletravail::TYPE_CONVENTION_RENOUVELLEMENT) echo " selected ";
+        	echo ">" . teletravail::TYPE_CONVENTION_RENOUVELLEMENT . "</option>";
+    	}
+    	
+    	echo "<option value='" . teletravail::TYPE_CONVENTION_MEDICAL . "'";
+    	if ($inputtypeconv == teletravail::TYPE_CONVENTION_MEDICAL) echo " selected ";
+    	echo ">" . teletravail::TYPE_CONVENTION_MEDICAL . "</option>";
+    	
+    	echo "</select>";
+    	echo "<br>";
+
+    	echo "Date de début de la convention télétravail : ";
+    	if ($fonctions->verifiedate($inputdatedebut)) {
+    	    $inputdatedebut = $fonctions->formatdate($inputdatedebut);
+    	}
+    ?>
+        <input class="calendrier" type=text
+        	name=<?php echo $calendrierid_deb . '[' . $agent->agentid() . ']'?>
+        	id=<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?> size=10
+        	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
+        	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
+        	value='<?php echo $inputdatedebut ?>'>
+    <?php
+    	echo "<br>";
+    	echo "Date de fin de la convention télétravail : ";
+    	if ($fonctions->verifiedate($inputdatefin)) {
+    	    $inputdatefin = $fonctions->formatdate($inputdatefin);
+        }      
+    ?>
+        <input class="calendrier" type=text
+        	name=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
+        	id=<?php echo $calendrierid_fin . '[' . $agent->agentid() . ']' ?>
+        	size=10
+        	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
+        	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+4 . $fonctions->finperiode()); ?>'
+        	value='<?php echo $inputdatefin ?>'>
+    <?php
+        $teletravail = new teletravail($dbcon);
+        if (strlen($inputtabteletravail . "")>0)
+        {
+            $teletravail->statut(teletravail::TELETRAVAIL_VALIDE); // important car sinon le télétravail n'est pas actif et donc c'est jamais télétravaillé
+            $teletravail->tabteletravail($inputtabteletravail);
+        }
+        echo "<br>";
+        
+        $affectation = null;
+        $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y'), true);
+        if (count($affectationliste)==0)
+        {
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas d'affectation actuellement. Impossible de déclarer une convention de télétravail.");
+            $disablesubmit = true;
+        }
+        else
+        {
+            $affectation = current($affectationliste);
+            
+            if ($affectation->quotite()=='100%')
+            {
+                $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
+                echo "Jours de télétravail : ";
+                echo "<table class='tableausimple'>";
+                echo "<tr><center>";
+                
+                for ($cpt=1 ; $cpt<6 ; $cpt++)
+                {
+                    echo "    <td class='cellulesimple'><input type='checkbox' value='$cpt' id='creation_$cpt' name='jours[]'";
+                    if ($teletravail->estjourteletravaille($cpt)) echo " checked ";
+                    echo ">" . $fonctions->nomjourparindex($cpt) . "</input></td>";
+                    
+                }
+                echo "</center></tr>";
+                echo "</table>";
+            }
+            else
+            {
+                $nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
+                $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail-($nbredemiTP*0.5);
+                if ($nbjoursmaxteletravailcalcule<0) $nbjoursmaxteletravailcalcule = 0;
+                
+                if ($nbjoursmaxteletravailcalcule==0)
+                {
+                    $disablesubmit = true;
+                }
+                $declarationliste = $affectation->declarationTPliste(date('d/m/Y'), date('d/m/Y'));
+                $declaration = null;
+                if (! is_null($declarationliste)) 
+                {
+                    foreach ($declarationliste as $declaration)
+                    {
+                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) 
+                        {
+                            // La première déclaration de TP non refusée qu'on trouve est la bonne
+                            break;
+                        }
+                    }
+                }
+                // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
+                if (is_null($declaration))
+                {
+                    echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas de déclaration de temps partiel active.");
+                }
+                    
+                echo "Jours de télétravail : Vous êtes à " . $affectation->quotite() . ". Vous avez jusqu'à " . $nbjoursmaxteletravailcalcule . " jour(s) de télétravail.";
+                echo "<table class='tableausimple'>";
+                echo "<tr><center>";
+                
+                $moment = fonctions::MOMENT_MATIN;
+                for ($cpt=0 ; $cpt<10 ; $cpt ++)
+                {
+                    //var_dump ("cpt = $cpt");
+                    $indexjour = intdiv($cpt,2)+1;
+                    //var_dump ("indexjour = $indexjour");
+                    if ($indexjour >= 6)
+                        break;
+                    $fermeinput = "";
+                    $fermespan = '';
+                    echo "    <td class='cellulesimple' ";
+                    
+                    if (!is_null($declaration))
+                    {
+                        // Si l'agent n'est jamais en TP (semaine paire/impaire et matin/après-midi pour le jour courant)
+                        // On affiche le jour complet pour le télétravail
+                        if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
+                        and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
+                        {
+                            echo "><input type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]'";
+                            if ($teletravail->estjourteletravaille($indexjour)) echo " checked ";
+                            echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></td>";
+                            $cpt++;
+                        }
+                        else
+                        {
+                            if ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false))
+                            {
+                                $fermespan = "</span>";
+                                echo " style='background: " . TABCOULEURPLANNINGELEMENT['tppar']['couleur']  . " ;' >";
+                                echo "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['tppar']['libelle'] . chr(34);
+                            }
+                            else
+                            {
+                                $fermeinput  = "</input>";
+                                echo "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
+                                if ($teletravail->estjourteletravaille($indexjour,$moment)) echo " checked ";
+                            }
+                            echo ">" . $fonctions->nomjourparindex($indexjour) . " " . $fonctions->nommoment($moment) . " $fermeinput $fermespan</td>";
+                        }
+                    }
+                    else  // On est a temps partiel mais on n'a pas de déclaration de TP ==> On affiche la 1/2 journée (matin/après) de la journée
+                    {
+                        echo "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
+                        if ($teletravail->estjourteletravaille($indexjour,$moment)) echo " checked ";
+                        echo ">" . $fonctions->nomjourparindex($indexjour) . " " . $fonctions->nommoment($moment) . " </input></td>";
+                    }
+                    if ($moment == fonctions::MOMENT_MATIN)
+                    {
+                        $moment = fonctions::MOMENT_APRESMIDI;
+                    }
+                    else
+                    {
+                        $moment = fonctions::MOMENT_MATIN;
+                    }
+                }
+                echo "</center></tr>";
+                echo "</table>";
+            }
+        }
+	    echo "<br>";
+	    echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
+	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
+	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
+	    if (!$disablesubmit)
+	    {
+	       echo "<input type='submit' value='Soumettre'  name='creation'/>";
+	    }
+	    echo "</form>";
+    }
 ?>
 </body>
 </html>

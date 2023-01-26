@@ -274,7 +274,7 @@
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
-
+/*
             $agentsliste = $fonctions->listeagentsg2t();
             echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
             echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -283,8 +283,8 @@
                 echo "<option value='$key'>$identite</option>";
             }
             echo "</select>";
-
-/*            
+*/
+            
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -297,7 +297,7 @@
   	    </script>
 <?php
 
-*/
+
 
 
 

@@ -94,6 +94,7 @@
     $('#structureid').select2();
     $('#esignatureid').select2();
     $('.listeagentg2t').select2();
+    $('.selectstructure').select2();
 });</script>
 <!--   
 	<script>
@@ -479,7 +480,7 @@
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="">
 						</form>
-						<a href="javascript:document.agent_gest_teletravail.submit();">Affichage des conventions de télétravail</a>
+						<a href="javascript:document.agent_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
 <?php
     $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));

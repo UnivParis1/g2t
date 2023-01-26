@@ -12,10 +12,21 @@
 class fonctions
 {
 
-    const MSGERROR = 'error';
-    const MSGWARNING = 'warning';
-    const MSGINFO = 'info';
+    public const SIGNATAIRE_AGENT = "1";
+    public const SIGNATAIRE_STRUCTURE = "2";
+    public const SIGNATAIRE_RESPONSABLE = "3";
+    public const SIGNATAIRE_SPECIAL = "4";
+    public const SIGNATAIRE_RESPONSABLE_N2 = "5";
+    public const SIGNATAIRE_LIBELLE = array(fonctions::SIGNATAIRE_AGENT => "AGENT INDIVIDUEL", fonctions::SIGNATAIRE_STRUCTURE => "TOUS LES AGENTS D'UNE STRUCTURE", fonctions::SIGNATAIRE_RESPONSABLE => "RESPONSABLE DE STRUCTURE", fonctions::SIGNATAIRE_SPECIAL => "UTILISATEUR SPECIAL", fonctions::SIGNATAIRE_RESPONSABLE_N2 => "RESPONSABLE N+2");
+    
+    public const MSGERROR = 'error';
+    public const MSGWARNING = 'warning';
+    public const MSGINFO = 'info';
+    
+    public const MOMENT_MATIN = 'm';
+    public const MOMENT_APRESMIDI = 'a';
 
+    
     private $dbconnect = null;
 
     /**
@@ -985,10 +996,10 @@ class fonctions
         if (is_null($codemoment))
             return "Le codemoment $codemoment est inconnu";
         switch ($codemoment) {
-            case "m":
+            case fonctions::MOMENT_MATIN:
                 return "matin";
                 break;
-            case "a":
+            case fonctions::MOMENT_APRESMIDI:
                 return "après-midi";
                 break;
         }
@@ -1022,16 +1033,30 @@ class fonctions
     {
         if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
             return "Validée";
-            elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
+        elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
             return "Refusée";
-            elseif (strcmp($statut, demande::DEMANDE_ANNULE) == 0)
+        elseif (strcmp($statut, demande::DEMANDE_ANNULE) == 0)
             return "Annulée";
-            elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
+        elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
             return "En attente";
         else
             echo "Demandestatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
     }
 
+    public function teletravailstatutlibelle($statut = null)
+    {
+        if (strcasecmp($statut, teletravail::TELETRAVAIL_VALIDE) == 0)
+            return "Validée";
+            elseif (strcmp($statut, teletravail::TELETRAVAIL_REFUSE) == 0)
+            return "Refusée";
+            elseif (strcmp($statut, teletravail::TELETRAVAIL_ANNULE) == 0)
+            return "Annulée";
+            elseif (strcasecmp($statut, teletravail::TELETRAVAIL_ATTENTE) == 0)
+            return "En attente";
+            else
+                echo "teletravailstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+    }
+    
     /**
      *
      * @param string $statut
@@ -1044,7 +1069,7 @@ class fonctions
             return "Validée";
         elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_REFUSE) == 0)
             return "Refusée";
-            elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_ATTENTE) == 0)
+        elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_ATTENTE) == 0)
             return "En attente";
         else
             echo "declarationTPstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
@@ -1492,6 +1517,36 @@ class fonctions
 */    	
     }
 
+    public function getidmodelteletravail($maxniveau, $agent)
+    {
+        // echo "<br>On est dans le cas d'un niveau $maxniveau<br>";
+        $resp_n2 = $agent->getresponsable_niveau2();
+        
+        if ($maxniveau == 4 and $resp_n2===false)
+        {
+            $dbconstante='IDMODELTELETRAVAIL';
+        }
+        elseif ($maxniveau == 5 and $resp_n2!==false)
+        {
+            $dbconstante='IDMODELTELETRAVAIL';
+        }
+        else
+        {
+            echo $this->showmessage(fonctions::MSGERROR, "Incohérence entre le nombre de niveau et la situation de l'agent (nombre de niveau = $maxniveau et l'agent " . (($resp_n2===false)?" n'a pas de ":" a un ")  . "responsable).");
+            return "";
+        }
+        
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            return $this->liredbconstante($dbconstante);
+        }
+        else
+        {
+            return "";
+        }
+    }
+    
+    
     /**
      *
      * @param array $tab
@@ -1560,12 +1615,13 @@ class fonctions
         curl_close($curl);
         if ($error != "")
         {
-            echo "Erreur Curl = " . $error . "<br><br>";
+            echo "Erreur Curl (synchro_g2t_eSignature) = " . $error . "<br><br>";
             error_log(basename(__FILE__) . $this->stripAccents(" Impossible de synchroniser G2T avec eSignature (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . $error ));
             return "Pas de réponse du webservice G2T.";
         }
-        //echo "<br>" . print_r($json,true) . "<br>";
+        //echo "<br>Le json (synchro_g2t_eSignature) " . print_r($json,true) . "<br>";
         $response = json_decode($json, true);
+        //echo "<br>La reponse (synchro_g2t_eSignature) " . print_r($response,true) . "<br>";
         if (isset($response['description']))
         {
         	return $response['description'];
@@ -1795,7 +1851,7 @@ class fonctions
         $sql = $sql . "SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM 
                 FROM TELETRAVAIL, AGENT
                 WHERE AGENT.AGENTID = TELETRAVAIL.AGENTID
-                  AND TELETRAVAIL.STATUT = '" . teletravail::STATUT_ACTIVE  . "'
+                  AND TELETRAVAIL.STATUT = '" . teletravail::TELETRAVAIL_VALIDE  . "'
                   AND ((TELETRAVAIL.DATEDEBUT <= ? AND TELETRAVAIL.DATEFIN >= ? )
                     OR (TELETRAVAIL.DATEFIN >= ? AND TELETRAVAIL.DATEDEBUT <= ? )
                     OR (TELETRAVAIL.DATEDEBUT >= ? AND TELETRAVAIL.DATEFIN <= ? ))";
@@ -1993,7 +2049,12 @@ class fonctions
     
     public function prepared_query($sql, $params, $types = "")
     {
-        $stmt = $this->dbconnect->prepare($sql);
+        //$stmt = $this->dbconnect->prepare($sql);
+        $stmt = mysqli_prepare($this->dbconnect, $sql);
+        if ($stmt === false)
+        {
+            var_dump ("Erreur dans le prepare de la reqête SQL $sql => " . mysqli_error($this->dbconnect));
+        }
         if (count($params) > 0)
         {
             $types = $types ?: str_repeat("s", count($params));
@@ -2284,15 +2345,15 @@ class fonctions
         return $error;
     }
     
-    public function cetsignatairetoarray($cetsignatairestring)
+    public function signatairetoarray($signatairestring)
     {
-        $cetsignatairearray = array();
-        $cetsignatairestring = trim($cetsignatairestring);
-        if (is_null($cetsignatairestring) or strlen($cetsignatairestring)==0)
+        $signatairearray = array();
+        $signatairestring = trim($signatairestring);
+        if (is_null($signatairestring) or strlen($signatairestring)==0)
         {
-            return $cetsignatairearray;
+            return $signatairearray;
         }
-        $tabsplit = explode(';', $cetsignatairestring);
+        $tabsplit = explode(';', $signatairestring);
         foreach ($tabsplit as $infosignataire)
         {
             //var_dump($infosignataire);
@@ -2310,11 +2371,11 @@ class fonctions
                 else
                 {
                     $idsignataire = $infotab[1] . '_' . $infotab[2];
-                    $cetsignatairearray[$infotab[0]][$idsignataire] = array($infotab[1],$infotab[2]);
+                    $signatairearray[$infotab[0]][$idsignataire] = array($infotab[1],$infotab[2]);
                 }
             }
         }
-        return $cetsignatairearray;
+        return $signatairearray;
     }
 
     public function cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire)
@@ -2324,12 +2385,12 @@ class fonctions
         return $tabsignataire;
     }
     
-    public function cetsignatairetostring($tabsignataire)
+    public function signatairetostring($tabsignataire)
     {
-        $cetsignatairestring = '';
+        $signatairestring = '';
         if (!is_array($tabsignataire) or count($tabsignataire)==0)
         {
-            return $cetsignatairestring;
+            return $signatairestring;
         }
         ksort($tabsignataire);
         foreach ($tabsignataire as $niveau => $tabinfos)
@@ -2338,18 +2399,18 @@ class fonctions
             {
                 $typesignataire = $info[0];
                 $idsignataire = $info[1];
-                if (strlen($cetsignatairestring)>0) $cetsignatairestring = $cetsignatairestring . ";";
+                if (strlen($signatairestring)>0) $signatairestring = $signatairestring . ";";
                 if (trim($niveau)=='' or trim($typesignataire)=='' or trim($idsignataire)=='')
                 {
                     // Au moins un des champs est vide ! Donc on ignore
                 }
                 else
                 {
-                    $cetsignatairestring = $cetsignatairestring . $niveau . '|' . $typesignataire . '|' . $idsignataire;
+                    $signatairestring = $signatairestring . $niveau . '|' . $typesignataire . '|' . $idsignataire;
                 }
             }
         }
-        return $cetsignatairestring;
+        return $signatairestring;
     }
     
     public function listeutilisateursspeciaux()
@@ -2368,6 +2429,7 @@ class fonctions
     public function ckecksignatairecetliste(&$params, $agent)
     {
 
+        $maxniveau = 0;
         $structid = $agent->structureid();
         $struct = new structure($this->dbconnect);
         $struct->load($structid);
@@ -2402,15 +2464,14 @@ class fonctions
             }
             if (strlen($signataireliste)>0)
             {
-                $tabsignataire = $this->cetsignatairetoarray($signataireliste);
-                $maxniveau = 0;
+                $tabsignataire = $this->signatairetoarray($signataireliste);
                 foreach ($tabsignataire as $niveau => $infosignataires)
                 {
                     if ($maxniveau<$niveau) $maxniveau = $niveau;
                     
                     foreach ($infosignataires as $idsignataire => $infosignataire)
                     {
-                        if ($infosignataire[0]==cet::SIGNATAIRE_AGENT or $infosignataire[0]==cet::SIGNATAIRE_SPECIAL)
+                        if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                         {
                             $agentsignataire = new agent($this->dbconnect);
                             if ($agentsignataire->load($infosignataire[1]))
@@ -2418,7 +2479,7 @@ class fonctions
                                 $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
-                        elseif ($infosignataire[0]==cet::SIGNATAIRE_RESPONSABLE)
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
                         {
                             $structuresignataire = new structure($this->dbconnect);
                             $structuresignataire->load($infosignataire[1]);
@@ -2428,7 +2489,7 @@ class fonctions
                                 $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
-                        elseif ($infosignataire[0]==cet::SIGNATAIRE_STRUCTURE)
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
                         {
                             $structuresignataire = new structure($this->dbconnect);
                             $structuresignataire->load($infosignataire[1]);
@@ -2481,6 +2542,152 @@ class fonctions
         return $taberrorcheckmail;
         
     }
+
+    public function ckecksignataireteletravailliste(&$params, $agent, &$maxniveau)
+    {
+        
+        $maxniveau = 0;
+        $structid = $agent->structureid();
+        $struct = new structure($this->dbconnect);
+        $struct->load($structid);
+        $code = null;
+        if ($struct->responsable()->agentid() == $agent->agentid())
+        {
+            $resp = $struct->resp_envoyer_a($code);
+        }
+        else
+        {
+            $resp = $struct->agent_envoyer_a($code);
+        }
+        error_log(basename(__FILE__) . " " . $this->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
+        if ($resp->agentid() == SPECIAL_USER_IDCRONUSER)
+        {
+            $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
+        }
+        else
+        {
+            $params['recipientEmails'] = array
+            (
+                "1*" . $agent->ldapmail(),
+                "2*" . $resp->mail()
+            );
+            
+            ////////////////////////////////////////////////////
+            // On cherche le responsable n+2 de l'agent
+            $responsable_n2 = $agent->getresponsable_niveau2();
+            if ($responsable_n2 === false)
+            {
+                // On n'a pas trouvé de responsable n+2
+                $constantename = 'TELETRAVAILSIGNATAIRE';
+            }
+            else
+            {
+                // On n'a pas trouvé de responsable n+2
+                $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
+            }
+            
+            $signataireliste = '';
+            $tabsignataire = array();
+            if ($this->testexistdbconstante($constantename))
+            {
+                $signataireliste = $this->liredbconstante($constantename);
+            }
+            if (strlen($signataireliste)>0)
+            {
+                $tabsignataire = $this->signatairetoarray($signataireliste);
+                foreach ($tabsignataire as $niveau => $infosignataires)
+                {
+                    if ($maxniveau<$niveau) $maxniveau = $niveau;
+                    
+                    foreach ($infosignataires as $idsignataire => $infosignataire)
+                    {
+                        if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
+                        {
+                            $agentsignataire = new agent($this->dbconnect);
+                            if ($agentsignataire->load($infosignataire[1]))
+                            {
+                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                            }
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
+                        {
+                            $structuresignataire = new structure($this->dbconnect);
+                            $structuresignataire->load($infosignataire[1]);
+                            $agentsignataire = $structuresignataire->responsable();
+                            if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
+                            {
+                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                            }
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
+                        {
+                            $structuresignataire = new structure($this->dbconnect);
+                            $structuresignataire->load($infosignataire[1]);
+                            $datedujour = date("d/m/Y");
+                            foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
+                            {
+                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                            }
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
+                        {
+                            ///////////////////////////////////////////////////
+                            // Si il y a un responsable de niveau 2 défini
+                            if ($responsable_n2 === false)
+                            {
+                                //echo "Pas possible de trouver le n+2 de " . $agent->identitecomplete() . "<br><br>";
+                            }
+                            else
+                            {
+                                //echo "Le responsable n+2 de " . $agent->identitecomplete() . " est " . $topresponsable->identitecomplete() . "<br><br>";
+                                $params['recipientEmails'][] = $niveau . "*" . $responsable_n2->mail();
+                            }
+                            ////////////////////////////////////////////////////
+                        }
+                        else
+                        {
+                            echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
+                        }
+                        unset($agentsignataire);
+                    }
+                }
+            }
+            
+            $taberrorcheckmail = array();
+            $tabniveauok = array();
+            foreach ($params['recipientEmails'] as $recipient)
+            {
+                $substr = explode('*',$recipient);
+                $mailadress = $substr[1];
+                $niveau = $substr[0];
+                // var_dump("mailadress = $mailadress");
+                if (!$this->mailexistedansldap($mailadress))
+                {
+                    $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                }
+                else
+                {
+                    $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                }
+            }
+            
+            // var_dump($tabniveauok);
+            // var_dump("count(tabniveauok) = " . count($tabniveauok));
+            // var_dump("maxniveau = " . $maxniveau);
+            
+            if (count($tabniveauok)!=$maxniveau)
+            {
+                $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
+            }
+        }
+        if (count($taberrorcheckmail)>0)
+        {
+            $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+        }
+        return $taberrorcheckmail;
+        
+    }
+    
     
     public function listeagentsavecaffectation($namefirst = true)
     {
@@ -2550,6 +2757,67 @@ class fonctions
         }
         return $listeagent;
     }
+    
+    public function deleteesignaturedocument($esignatureid)
+    {
+        $erreur = '';        
+        
+        if (!preg_match ("/^[0-9]+/", $esignatureid))
+        {
+            //echo "Pas de chiffres<br>";
+            $erreur = "Suppression du document impossible : L'identifiant eSignature n'est pas valide : " . esignatureid;
+            error_log(basename(__FILE__) . " " . $this->stripAccents(" $erreur"));
+            return $erreur;
+        }
+        $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
+        $url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
+/*        
+        $params = array('id' => $teletravail->esignatureid());
+        $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+            is_array( $item )
+            ? array_walk( $item, $walk, $key )
+            : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+            
+        };
+        array_walk( $params, $walk );
+        $json = implode( '&', $output );
+*/        
+        $json = '';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $json = curl_exec($ch);
+        $result = json_decode($json);
+        error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE SUPPRESSION DOCUMENT -- " . var_export($result, true));
+        $error = curl_error ($ch);
+        //var_dump($error);
+        curl_close($ch);
+        if ($error != "")
+        {
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "Erreur dans la suppression du document : Erreur Curl " . $error;
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+        }
+        elseif (!is_null($result))
+        {
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($result, true);
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+        }
+        elseif (stristr(substr($json,0,20),'HTML') !== false) // On a trouvé HTML dans le json
+        {
+            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+            $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($json, true);
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+        }
+        
+        return $erreur;
+    }
+
 }
 
 ?>

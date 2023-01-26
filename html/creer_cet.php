@@ -133,7 +133,7 @@
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
-        
+/*        
         $agentsliste = $fonctions->listeagentsg2t();
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -142,8 +142,8 @@
             echo "<option value='$key'>$identite</option>";
         }
         echo "</select>";
-        
- /*       
+*/        
+       
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
         if (isset($_POST["agent"]))
             echo $_POST["agent"];
@@ -160,7 +160,7 @@
     	</script>
 <?php
 
-*/
+
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' value='Soumettre' >";

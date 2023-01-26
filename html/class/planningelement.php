@@ -348,7 +348,7 @@ class planningelement
             $extraclass = '';
         }
         
-        if ($this->moment == 'm') {
+        if ($this->moment == fonctions::MOMENT_MATIN) {
             //echo "this->date = " . $this->date . "   date du jour : " . date("Ymd") . "<br>";
             // $htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
             if ($this->date == date("Ymd")) {

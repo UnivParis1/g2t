@@ -279,12 +279,32 @@
                 echo "<B>Etape " . ($numstep+1) . " : </B><br>";
                 foreach ($step["recipients"] as $esignatureuser)
                 {
+                    $datesignature = '';
                     if ($esignatureuser["signed"])
                     {
+                        $esignaturetimestamp = $response["auditTrail"]["auditSteps"][$numstep]["timeStampDate"];
+                        if (!is_int($esignaturetimestamp))
+                        {
+                            $date = new DateTime($esignaturetimestamp);
+                            $displaydate = $date->format("d/m/Y H:i:s");
+                        }
+                        elseif (strlen($esignaturetimestamp)>10)
+                        {
+                            $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
+                            //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
+                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+                        }
+                        else // C'est un timestamp sur 10 caractères
+                        {
+                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+                        }
+                        $datesignature = "le $displaydate";
+                        //echo "<br>" . print_r($response, true) . "<br>";
+                        //var_dump($esignatureuser);
                         echo " <span style='color:green'>";
                         $signedstep = true;
                     }
-                    echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ")<br>";
+                    echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature <br>";
                     if ($esignatureuser["signed"])
                     {
                         echo " </span>";

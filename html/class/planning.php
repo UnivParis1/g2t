@@ -152,7 +152,7 @@ class planning
             // Le matin du jour en cours de traitement
             $element = new planningelement($this->dbconnect);
             $element->date($this->fonctions->formatdate($datetemp));
-            $element->moment("m");
+            $element->moment(fonctions::MOMENT_MATIN);
             
             if (strpos($jrs_feries, ";" . $datetemp . ";")) {
                 // echo "C'est un jour férié = $datetemp <br>";
@@ -191,13 +191,13 @@ class planning
                 $element->info("");
             }
             $element->agentid($agentid);
-            $this->listeelement[$datetemp . "m"] = $element;
+            $this->listeelement[$datetemp . fonctions::MOMENT_MATIN] = $element;
             
             // L'apres-midi du jour en cours de traitement
             unset($element);
             $element = new planningelement($this->dbconnect);
             $element->date($this->fonctions->formatdate($datetemp));
-            $element->moment("a");
+            $element->moment(fonctions::MOMENT_APRESMIDI);
             if (strpos($jrs_feries, ";" . $datetemp . ";")) 
             {
                 // echo "C'est un jour férié = $datetemp <br>";
@@ -237,7 +237,7 @@ class planning
             }
             
             $element->agentid($agentid);
-            $this->listeelement[$datetemp . "a"] = $element;
+            $this->listeelement[$datetemp . fonctions::MOMENT_APRESMIDI] = $element;
             unset($element);
             // echo "datetemp = " . strtotime($datetemp) . "<br>";
             $timestamp = strtotime($datetemp);
@@ -282,12 +282,12 @@ class planning
                             if ($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandetempmoment != $demandemomentdebut)
                                 $demandetempmoment = "";
                             // echo "demandetempmoment (apres le if - matin)= " . $demandetempmoment . "<br>";
-                            if ($demandetempmoment == 'm') {
+                            if ($demandetempmoment == fonctions::MOMENT_MATIN) {
                                 // echo "Avant le new planningElement (bloc 'm') <br>";
                                 unset($element);
                                 $element = new planningelement($this->dbconnect);
                                 $element->date($this->fonctions->formatdate($datetemp));
-                                $element->moment("m");
+                                $element->moment(fonctions::MOMENT_MATIN);
                                 $element->type($demande->type());
                                 $element->statut($demande->statut());
                                 $element->info($demande->typelibelle()); // motifrefus()
@@ -308,7 +308,7 @@ class planning
                                     }
                                     $this->listeelement[$datetemp . $demandetempmoment] = $element;
                                 }
-                                $demandetempmoment = 'a';
+                                $demandetempmoment = fonctions::MOMENT_APRESMIDI;
                                 unset($element);
                                 // echo "Fin du traitement du demandetempmoment = 'matin' <br>";
                             }
@@ -316,12 +316,12 @@ class planning
                             if ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandetempmoment != $demandemomentfin)
                                 $demandetempmoment = "";
                             // echo "demandetempmoment (apres le if - apres-midi)= " . $demandetempmoment . "<br>";
-                            if ($demandetempmoment == 'a') {
+                                if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) {
                                 // echo "Avant le new planningElement (bloc 'a') <br>";
                                 unset($element);
                                 $element = new planningelement($this->dbconnect);
                                 $element->date($this->fonctions->formatdate($datetemp));
-                                $element->moment("a");
+                                $element->moment(fonctions::MOMENT_APRESMIDI);
                                 $element->type($demande->type());
                                 $element->statut($demande->statut());
                                 $element->info($demande->typelibelle()); // motifrefus()
@@ -343,7 +343,7 @@ class planning
                                 // echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
                             }
                         }
-                        $demandetempmoment = 'm';
+                        $demandetempmoment = fonctions::MOMENT_MATIN;
                         // echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
                         $timestamp = strtotime($datetemp);
                         $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
@@ -378,15 +378,15 @@ class planning
         while ($result = mysqli_fetch_row($query)) {
             $demandedatedeb = $this->fonctions->formatdate($result[1]);
             $demandedatefin = $this->fonctions->formatdate($result[2]);
-            $demandemomentdebut = 'm';
-            $demandemomentfin = 'a';
+            $demandemomentdebut = fonctions::MOMENT_MATIN;
+            $demandemomentfin = fonctions::MOMENT_APRESMIDI;
             $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
             $demandetempmoment = $demandemomentdebut;
             while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) {
                 // echo "Dans le petit while <br>";
                 if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) {
                     // echo "Avant le if == m... <br>";
-                    if ($demandetempmoment == 'm') {
+                    if ($demandetempmoment == fonctions::MOMENT_MATIN) {
                         $element = new planningelement($this->dbconnect);
                         // echo "avant le element date <br>";
                         $element->date($this->fonctions->formatdate($datetemp));
@@ -401,11 +401,11 @@ class planning
                         elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->fonctions->estunconge($this->listeelement[$datetemp . $demandetempmoment]->type()))
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
                         // echo "apres le if interne <br>";
-                        $demandetempmoment = 'a';
+                        $demandetempmoment = fonctions::MOMENT_APRESMIDI;
                         unset($element);
                     }
                     // echo "Avant le if ==a <br>";
-                    if ($demandetempmoment == 'a') {
+                    if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) {
                         $element = new planningelement($this->dbconnect);
                         $element->date($this->fonctions->formatdate($datetemp));
                         $element->moment($demandetempmoment);
@@ -417,7 +417,7 @@ class planning
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
                         elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->fonctions->estunconge($this->listeelement[$datetemp . $demandetempmoment]->type()))
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                        $demandetempmoment = 'm';
+                        $demandetempmoment = fonctions::MOMENT_MATIN;
                         unset($element);
                     }
                 }
@@ -437,7 +437,7 @@ class planning
             {
                 $teletravail = new teletravail($this->dbconnect);
                 $teletravail->load($teletravailid);
-                if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+                if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
                 {
                     $fulldatetheorique = array_merge($fulldatetheorique,$teletravail->datetheorique($datedebutdb,$datefindb));
                 }
@@ -660,9 +660,9 @@ class planning
         // echo "Apres le load <br>";
         $paslepremier = FALSE;
         $pasledernier = FALSE;
-        if (strcasecmp($momentdebut, "m") != 0)
+        if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0)
             $paslepremier = TRUE;
-        if (strcasecmp($momentfin, "a") != 0)
+            if (strcasecmp($momentfin, fonctions::MOMENT_APRESMIDI) != 0)
             $pasledernier = TRUE;
         $index = 0;
         foreach ($listeelement as $key => $element) {
@@ -692,11 +692,11 @@ class planning
         $listeelement = $this->load($agentid, $datedebut, $datefin);
         $paslepremier = FALSE;
         $pasledernier = FALSE;
-        if (strcasecmp($momentdebut, "m") != 0) {
+        if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0) {
             $paslepremier = TRUE;
             // echo "On fixe paslepremier <br>";
         }
-        if (strcasecmp($momentfin, "a") != 0) {
+        if (strcasecmp($momentfin, fonctions::MOMENT_APRESMIDI) != 0) {
             $pasledernier = TRUE;
             // echo "On fixe pasledernier <br>";
         }
@@ -837,7 +837,7 @@ class planning
             // -------------------------------------------
             list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($planningelement->couleur($noiretblanc));
             $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
-            if (strcasecmp($planningelement->moment(), "m") != 0)
+            if (strcasecmp($planningelement->moment(), fonctions::MOMENT_MATIN) != 0)
                 $pdf->Cell(4, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
             else
                 $pdf->Cell(4, 5, utf8_decode(""), 'TBL', 0, 'C', 1);

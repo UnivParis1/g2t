@@ -36,7 +36,7 @@
 //                    {
 //                        $force = true;
 //                    }
-                    if (($convention->statut()==teletravail::STATUT_ACTIVE and $fonctions->formatdatedb($convention->datefin()) == $fonctions->formatdatedb($datefinconvention)) or $force)
+                    if (($convention->statut()==teletravail::TELETRAVAIL_VALIDE and $fonctions->formatdatedb($convention->datefin()) == $fonctions->formatdatedb($datefinconvention)) or $force)
                     {
                         // On doit envoyer un mail de rappel à l'agent !
                         echo "Id de la convention teletravail = $conventionid  Statut convention = " . $convention->statut() . " Id de l'agent = $agentid : ";

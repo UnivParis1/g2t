@@ -190,11 +190,11 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
-                if ($this->momentdebut == 'm')
-                    return "m";
+                if ($this->momentdebut == fonctions::MOMENT_MATIN)
+                    return fonctions::MOMENT_MATIN;
                 // return "matin";
-                elseif ($this->momentdebut == 'a')
-                    return "a";
+                elseif ($this->momentdebut == fonctions::MOMENT_APRESMIDI)
+                return fonctions::MOMENT_APRESMIDI;
                 // return "après-midi";
                 else {
                     $errlog = "Demande->moment_debut : le moment de début n'est pas connu [momentdebut = " . $this->momentdebut . "] !!!";
@@ -221,11 +221,11 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
-                if ($this->momentfin == 'm')
-                    return "m";
+                if ($this->momentfin == fonctions::MOMENT_MATIN)
+                    return fonctions::MOMENT_MATIN;
                 // return "matin";
-                elseif ($this->momentfin == 'a')
-                    return "a";
+                elseif ($this->momentfin == fonctions::MOMENT_APRESMIDI)
+                return fonctions::MOMENT_APRESMIDI;
                 // return "après-midi";
                 else {
                     $errlog = "Demande->moment_fin : la demie-journée n'est pas connue [momentfin = $this->momentfin] !!!";
@@ -807,13 +807,13 @@ FROM DEMANDE WHERE DEMANDEID= ?";
         }
         
         $dtstart = str_replace('-', '', $this->datedebut) . 'T';
-        if ($this->moment_debut() == 'm') {
+        if ($this->moment_debut() == fonctions::MOMENT_MATIN) {
             $dtstart .= '090000';
         } else {
             $dtstart .= '133000';
         }
         $dtend = str_replace('-', '', $this->datefin) . 'T';
-        if ($this->moment_fin() == 'm') {
+        if ($this->moment_fin() == fonctions::MOMENT_MATIN) {
             $dtend .= '123000';
         } else {
             $dtend .= '170000';

@@ -135,7 +135,7 @@
         echo "<form name='demandeforagent'  method='post' action='gerer_optionCET.php'>";
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
-
+/*
         $agentsliste = $fonctions->listeagentsg2t();
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -144,8 +144,8 @@
             echo "<option value='$key'>$identite</option>";
         }
         echo "</select>";
+*/        
         
-/*        
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
         echo "' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -157,7 +157,7 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
 <?php
-*/
+
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -206,7 +206,7 @@
                 $agent_eppn = $agent->eppn();
                 
                 // On récupère le mail LDAP de l'agent en cours
-                $agent_mail = $agent->ldapmail();
+                $agent_mail = $agent->mail(); // $agent->ldapmail();
             }
 
             // On appelle le WS eSignature pour créer le document
@@ -350,6 +350,24 @@
         }
         else
         {
+
+            $return = $fonctions->deleteesignaturedocument($esignatureid_delete);
+            if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
+            {
+                if (strlen($errlog)>0) $errlog = $errlog . '<br>';
+                $error_suppr = $error_suppr . "Impossible d'annuler la demande d'option $esignatureid_delete : $return";
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
+            }
+            else
+            {
+                $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
+                $optionCET->store();
+                
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_delete après appel du WS eSignature de suppression."));
+                $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_delete);
+            }
+                
+/*            
             $curl = curl_init();
             $params_string = "";
             $opts = [
@@ -375,11 +393,6 @@
             //echo "<br>" . print_r($json,true) . "<br>";
             $response = json_decode($json, true);
             echo "<br>";
-/*          
-            echo '<pre>';
-            var_dump($response);
-            echo '</pre>';
-*/
             if (!is_null($response))
             {
             	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($response, true)));
@@ -401,6 +414,7 @@
             		error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur de connexion à Esignature lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($json, true)));
             	}
             }
+*/
         }
     }
 

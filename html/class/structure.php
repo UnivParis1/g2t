@@ -1119,7 +1119,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     {
                         $teletravail = new teletravail($this->dbconnect);
                         $teletravail->load($teletravailid);
-                        if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+                        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
                         {
                             $tabconventionactive[] = $teletravail;
                         }
@@ -1334,7 +1334,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             {
                 list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($element->couleur($noiretblanc));
                 $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
-                if (strcasecmp($element->moment(), "m") != 0)
+                if (strcasecmp($element->moment(), fonctions::MOMENT_MATIN) != 0)
                     $pdf->Cell(3, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
                 else
                     $pdf->Cell(3, 5, utf8_decode(""), 'TBL', 0, 'C', 1);

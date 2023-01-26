@@ -397,6 +397,31 @@
                     $plafondreferenceupdate = true;
                 }
             }
+
+            $modelealim = trim($_POST['modelealim']);
+            $modeleoption = trim($_POST['modeleoption']);
+            if (!is_numeric($modelealim) || !is_int($modelealim+0) || $modelealim < 0)
+            {
+                $msgerror = $msgerror . "Le modèle eSignature de l'alimentation CET doit être un entier positif.";
+                if (strlen($msgerror)>0) $msgerror = $msgerror . '<br>';
+            }
+            else
+            {
+                $constantename = "IDMODELALIMCET";
+                $msgerror = $msgerror . $fonctions->enregistredbconstante($constantename, $modelealim);
+                if (strlen($msgerror)>0) $msgerror = $msgerror . '<br>';
+            }
+            if (!is_numeric($modeleoption) || !is_int($modeleoption+0) || $modeleoption < 0)
+            {
+                $msgerror = $msgerror . "Le modèle eSignature du droit d'option sur CET doit être un entier positif.";
+                if (strlen($msgerror)>0) $msgerror = $msgerror . '<br>';
+            }
+            else
+            {
+                $constantename = "IDMODELOPTIONCET";
+                $msgerror = $msgerror . $fonctions->enregistredbconstante($constantename, $modeleoption);
+                if (strlen($msgerror)>0) $msgerror = $msgerror . '<br>';
+            }
         }
         
         $supprok = false;
@@ -413,7 +438,7 @@
                 {
                     $signataireliste = $fonctions->liredbconstante($constantename);
                 }
-                $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
                 foreach($tabsuppr as $niveau => $infos)
                 {
                     foreach($infos as $key => $valeur)
@@ -423,7 +448,7 @@
                         unset($tabsignataire[$niveau][$key]);
                     }
                 }
-                $stringsignataire = $fonctions->cetsignatairetostring($tabsignataire);
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
                 $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
                 if (strlen($erreur)>0)
                 {
@@ -448,15 +473,15 @@
             {
                 $newtypesignataire = trim($_POST['newtypesignataire']);
             }
-            if (isset($_POST['newidsignataire']) and $newtypesignataire==cet::SIGNATAIRE_AGENT)
+            if (isset($_POST['newidsignataire']) and $newtypesignataire==fonctions::SIGNATAIRE_AGENT)
             {
                 $newidsignataire = trim($_POST['newidsignataire']);
             }
-            if (isset($_POST['structureid']) and ($newtypesignataire==cet::SIGNATAIRE_STRUCTURE or $newtypesignataire==cet::SIGNATAIRE_RESPONSABLE))
+            if (isset($_POST['structureid']) and ($newtypesignataire==fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire==fonctions::SIGNATAIRE_RESPONSABLE))
             {
                 $structureid = trim($_POST['structureid']);
             }
-            if (isset($_POST['specialuserid']) and $newtypesignataire==cet::SIGNATAIRE_SPECIAL)
+            if (isset($_POST['specialuserid']) and $newtypesignataire==fonctions::SIGNATAIRE_SPECIAL)
             {
                 $newidsignataire = trim($_POST['specialuserid']);
             }
@@ -469,16 +494,16 @@
             {
                 // On n'a pas les infos nécessaires => Error
                 if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
-                $stringerror = "Vous avez sélectionné le type de signataire " . cet::SIGNATAIRE_LIBELLE[$newtypesignataire] . " mais vous n'avez pas renseigné ";
-                if ($newtypesignataire==cet::SIGNATAIRE_AGENT)
+                $stringerror = "Vous avez sélectionné le type de signataire " . fonctions::SIGNATAIRE_LIBELLE[$newtypesignataire] . " mais vous n'avez pas renseigné ";
+                if ($newtypesignataire==fonctions::SIGNATAIRE_AGENT)
                 {
                     $stringerror = $stringerror . " d'agent.";
                 }
-                elseif ($newtypesignataire==cet::SIGNATAIRE_STRUCTURE or $newtypesignataire==cet::SIGNATAIRE_RESPONSABLE)
+                elseif ($newtypesignataire==fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire==fonctions::SIGNATAIRE_RESPONSABLE)
                 {
                     $stringerror = $stringerror . "de structure.";
                 }
-                elseif ($newtypesignataire==cet::SIGNATAIRE_SPECIAL)
+                elseif ($newtypesignataire==fonctions::SIGNATAIRE_SPECIAL)
                 {
                     $stringerror = $stringerror . "d'utilisateur spécial.";
                 }
@@ -493,13 +518,13 @@
                 {
                     $signataireliste = $fonctions->liredbconstante($constantename);
                 }
-                $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
                 //var_dump($tabsignataire);
-                if ($newtypesignataire == cet::SIGNATAIRE_AGENT or $newtypesignataire == cet::SIGNATAIRE_SPECIAL)
+                if ($newtypesignataire == fonctions::SIGNATAIRE_AGENT or $newtypesignataire == fonctions::SIGNATAIRE_SPECIAL)
                 {
                     $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire);
                 }
-                elseif ($newtypesignataire == cet::SIGNATAIRE_STRUCTURE or $newtypesignataire == cet::SIGNATAIRE_RESPONSABLE)
+                elseif ($newtypesignataire == fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire == fonctions::SIGNATAIRE_RESPONSABLE)
                 {
                     $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$structureid,$tabsignataire);
                 }
@@ -509,7 +534,7 @@
                     $msgerror = $msgerror . "Le type de signataire $newtypesignataire n'est pas géré !";
                 }
                 //var_dump($tabsignataire);
-                $stringsignataire = $fonctions->cetsignatairetostring($tabsignataire);
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
                 //var_dump($stringsignataire);
                 
                 $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
@@ -545,6 +570,7 @@
     if ($current_tab == 'tab_teletravail')
     {
         $erreur = "";
+        $msgerror = '';
         if (isset($_POST['modification']))
         {
             $modifdate = false;
@@ -596,10 +622,6 @@
                 }
                 $constante = "INDEMNITETELETRAVAIL";
                 $fonctions->enregistredbconstante($constante, $datastring);
-                /*
-                 $update = "UPDATE CONSTANTES SET VALEUR = '$datastring' WHERE NOM = 'INDEMNITETELETRAVAIL'";
-                 $query = mysqli_query($dbcon, $update);
-                 */
             }
             
             
@@ -639,10 +661,6 @@
                 $constante = "INDEMNITETELETRAVAIL";
                 $fonctions->enregistredbconstante($constante, $datastring);
                 
-                /*
-                 $update = "UPDATE CONSTANTES SET VALEUR = '$datastring' WHERE NOM = 'INDEMNITETELETRAVAIL'";
-                 $query = mysqli_query($dbcon, $update);
-                 */
             }
             elseif (!isset($_POST["cancelindem"]) and !$modifdate and strlen($erreur)==0)
             {
@@ -747,10 +765,6 @@
                 }
                 $constante = "INDEMNITETELETRAVAIL";
                 $fonctions->enregistredbconstante($constante, $datastring);
-                /*
-                 $update = "UPDATE CONSTANTES SET VALEUR = '$datastring' WHERE NOM = 'INDEMNITETELETRAVAIL'";
-                 $query = mysqli_query($dbcon, $update);
-                 */
             }
             
             if ($erreur != '')
@@ -761,6 +775,337 @@
             {
                 echo $fonctions->showmessage(fonctions::MSGINFO, "Les données sont enregistrées");
             }
+        }
+
+        $supprok = false;
+        $signataireupdate = false;
+        $nbjrsteletravailupdate = false;
+        $modelteletravailavanceupdate = false;
+        $modelteletravailsimpleupdate = false;
+        if (isset($_POST['updateinfo_teletravail']))
+        {
+            $nbjrsteletravail = '0';
+            if (isset($_POST['nbjrsteletravail']))
+            {
+                $nbjrsteletravail = $_POST['nbjrsteletravail'];
+            }
+            if (!is_numeric($nbjrsteletravail) || !is_int($nbjrsteletravail+0) || $nbjrsteletravail < 0)
+            {
+                $msgerror = $msgerror . "Le nombre de jours maximum de télétravail doit être un entier positif. <br>";
+                //echo "Le nombre de jours maximum doit être un entier positif. <br>";
+            }
+            else
+            {
+                $constantename = "NBJOURSMAXTELETRAVAIL";
+                $erreur = $fonctions->enregistredbconstante($constantename, $nbjrsteletravail);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $nbjrsteletravailupdate = true;
+                }
+            }
+            // Si l'utilisateur CAS (donc le vrai utilisateur) est un administrateur ==> On affiche les numéros des circuits
+            if ($CASAdminId!==false)
+            {
+                $modelecircuitsimple = '';
+                if (isset($_POST['modelecircuitsimple']))
+                {
+                    $modelecircuitsimple = $_POST['modelecircuitsimple'];
+                }
+                if (!is_numeric($modelecircuitsimple) || !is_int($modelecircuitsimple+0) || $modelecircuitsimple < 0)
+                {
+                    $msgerror = $msgerror . "Le modèle pour le circuit simple de télétravail doit être un entier positif. <br>";
+                }
+                else
+                {
+                    $constantename = "IDMODELTELETRAVAIL";
+                    $erreur = $fonctions->enregistredbconstante($constantename, $modelecircuitsimple);
+                    if (strlen($erreur)>0)
+                    {
+                        if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                        $msgerror = $msgerror . $erreur;
+                    }
+                    else
+                    {
+                        $modelteletravailsimpleupdate = true;
+                    }
+                }
+                $modelecircuitavance = '';
+                if (isset($_POST['modelecircuitavance']))
+                {
+                    $modelecircuitavance = $_POST['modelecircuitavance'];
+                }
+                if (!is_numeric($modelecircuitavance) || !is_int($modelecircuitavance+0) || $modelecircuitavance < 0)
+                {
+                    $msgerror = $msgerror . "Le modèle pour le circuit avancé de télétravail doit être un entier positif. <br>";
+                    //echo "Le nombre de jours maximum doit être un entier positif. <br>";
+                }
+                else
+                {
+                    $constantename = "IDMODELTELETRAVAIL_EVOLUE";
+                    $erreur = $fonctions->enregistredbconstante($constantename, $modelecircuitavance);
+                    if (strlen($erreur)>0)
+                    {
+                        if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                        $msgerror = $msgerror . $erreur;
+                    }
+                    else
+                    {
+                        $modelteletravailavanceupdate = true;
+                    }
+                }
+            }
+            
+        }
+        
+        if (isset($_POST['valider_signataire_teletravail']))
+        {
+            $constantename = 'TELETRAVAILSIGNATAIRE'; 
+            if (isset($_POST['supprsignataire_tele_simple']))
+            {
+                $tabsuppr = $_POST['supprsignataire_tele_simple'];
+                $signataireliste = '';
+                if ($fonctions->testexistdbconstante($constantename))
+                {
+                    $signataireliste = $fonctions->liredbconstante($constantename);
+                }
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+                foreach($tabsuppr as $niveau => $infos)
+                {
+                    foreach($infos as $key => $valeur)
+                    {
+                        //var_dump($niveau);
+                        //var_dump($key);
+                        unset($tabsignataire[$niveau][$key]);
+                    }
+                }
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
+                $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $supprok = true;
+                }
+            }
+            
+            $newlevelsignataire = '';
+            $newtypesignataire = '';
+            $newidsignataire = '';
+            $structureid='';
+            if (isset($_POST['newlevelsignataire_tele_simple']))
+            {
+                $newlevelsignataire = trim($_POST['newlevelsignataire_tele_simple']);
+            }
+            if (isset($_POST['newtypesignataire_tele_simple']))
+            {
+                $newtypesignataire = trim($_POST['newtypesignataire_tele_simple']);
+            }
+            if (isset($_POST['newidsignataire_tele_simple']) and $newtypesignataire==fonctions::SIGNATAIRE_AGENT)
+            {
+                $newidsignataire = trim($_POST['newidsignataire_tele_simple']);
+            }
+            if (isset($_POST['structureid_tele_simple']) and ($newtypesignataire==fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire==fonctions::SIGNATAIRE_RESPONSABLE))
+            {
+                $structureid = trim($_POST['structureid_tele_simple']);
+            }
+            if (isset($_POST['specialuserid_tele_simple']) and $newtypesignataire==fonctions::SIGNATAIRE_SPECIAL)
+            {
+                $newidsignataire = trim($_POST['specialuserid_tele_simple']);
+            }
+            
+            if ($newlevelsignataire!='' and $newtypesignataire != '' and $newidsignataire == '' and $structureid == '' and !isset($_POST['supprsignataire_tele_simple']))
+            {
+                // On n'a pas les infos nécessaires => Error
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $stringerror = "Vous avez sélectionné le type de signataire " . fonctions::SIGNATAIRE_LIBELLE[$newtypesignataire] . " mais vous n'avez pas renseigné ";
+                if ($newtypesignataire==fonctions::SIGNATAIRE_AGENT)
+                {
+                    $stringerror = $stringerror . " d'agent.";
+                }
+                elseif ($newtypesignataire==fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire==fonctions::SIGNATAIRE_RESPONSABLE)
+                {
+                    $stringerror = $stringerror . "de structure.";
+                }
+                elseif ($newtypesignataire==fonctions::SIGNATAIRE_SPECIAL)
+                {
+                    $stringerror = $stringerror . "d'utilisateur spécial.";
+                }
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $msgerror = $msgerror . $stringerror;
+            }
+            elseif ($newidsignataire != '' or $structureid !='')
+            {
+                $signataireliste = '';
+                if ($fonctions->testexistdbconstante($constantename))
+                {
+                    $signataireliste = $fonctions->liredbconstante($constantename);
+                }
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+                //var_dump($tabsignataire);
+                if ($newtypesignataire == fonctions::SIGNATAIRE_AGENT or $newtypesignataire == fonctions::SIGNATAIRE_SPECIAL)
+                {
+                    $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire);
+                }
+                elseif ($newtypesignataire == fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire == fonctions::SIGNATAIRE_RESPONSABLE)
+                {
+                    $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$structureid,$tabsignataire);
+                }
+                else
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . "Le type de signataire $newtypesignataire n'est pas géré !";
+                }
+                //var_dump($tabsignataire);
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
+                //var_dump($stringsignataire);
+                
+                $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $signataireupdate = true;
+                }
+            }
+
+            $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE'; 
+            
+            if (isset($_POST['supprsignataire_tele_avance']))
+            {
+                $tabsuppr = $_POST['supprsignataire_tele_avance'];
+                $signataireliste = '';
+                if ($fonctions->testexistdbconstante($constantename))
+                {
+                    $signataireliste = $fonctions->liredbconstante($constantename);
+                }
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+                foreach($tabsuppr as $niveau => $infos)
+                {
+                    foreach($infos as $key => $valeur)
+                    {
+                        //var_dump($niveau);
+                        //var_dump($key);
+                        unset($tabsignataire[$niveau][$key]);
+                    }
+                }
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
+                $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $supprok = true;
+                }
+            }
+            
+            $newlevelsignataire = '';
+            $newtypesignataire = '';
+            $newidsignataire = '';
+            $structureid='';
+            if (isset($_POST['newlevelsignataire_tele_avance']))
+            {
+                $newlevelsignataire = trim($_POST['newlevelsignataire_tele_avance']);
+            }
+            if (isset($_POST['newtypesignataire_tele_avance']))
+            {
+                $newtypesignataire = trim($_POST['newtypesignataire_tele_avance']);
+            }
+            if (isset($_POST['newidsignataire_tele_avance']) and $newtypesignataire==fonctions::SIGNATAIRE_AGENT)
+            {
+                $newidsignataire = trim($_POST['newidsignataire_tele_avance']);
+            }
+            if (isset($_POST['structureid_tele_avance']) and ($newtypesignataire==fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire==fonctions::SIGNATAIRE_RESPONSABLE))
+            {
+                $structureid = trim($_POST['structureid_tele_avance']);
+            }
+            if (isset($_POST['specialuserid_tele_avance']) and $newtypesignataire==fonctions::SIGNATAIRE_SPECIAL)
+            {
+                $newidsignataire = trim($_POST['specialuserid_tele_avance']);
+            }
+
+            if ($newlevelsignataire != '' and $newtypesignataire != '' and $newidsignataire == '' and $structureid == '' and !isset($_POST['supprsignataire_tele_avance']))
+            {
+                // On n'a pas les infos nécessaires => Error
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $stringerror = "Vous avez sélectionné le type de signataire " . fonctions::SIGNATAIRE_LIBELLE[$newtypesignataire] . " mais vous n'avez pas renseigné ";
+                if ($newtypesignataire==fonctions::SIGNATAIRE_AGENT)
+                {
+                    $stringerror = $stringerror . " d'agent.";
+                }
+                elseif ($newtypesignataire==fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire==fonctions::SIGNATAIRE_RESPONSABLE)
+                {
+                    $stringerror = $stringerror . "de structure.";
+                }
+                elseif ($newtypesignataire==fonctions::SIGNATAIRE_SPECIAL)
+                {
+                    $stringerror = $stringerror . "d'utilisateur spécial.";
+                }
+                if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                $msgerror = $msgerror . $stringerror;
+            }
+            elseif ($newidsignataire != '' or $structureid !='')
+            {
+                $signataireliste = '';
+                if ($fonctions->testexistdbconstante($constantename))
+                {
+                    $signataireliste = $fonctions->liredbconstante($constantename);
+                }
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+                //var_dump($tabsignataire);
+                if ($newtypesignataire == fonctions::SIGNATAIRE_AGENT or $newtypesignataire == fonctions::SIGNATAIRE_SPECIAL)
+                {
+                    $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$newidsignataire,$tabsignataire);
+                }
+                elseif ($newtypesignataire == fonctions::SIGNATAIRE_STRUCTURE or $newtypesignataire == fonctions::SIGNATAIRE_RESPONSABLE)
+                {
+                    $tabsignataire = $fonctions->cetsignataireaddtoarray($newlevelsignataire,$newtypesignataire,$structureid,$tabsignataire);
+                }
+                else
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . "Le type de signataire $newtypesignataire n'est pas géré !";
+                }
+                //var_dump($tabsignataire);
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
+                //var_dump($stringsignataire);
+                
+                $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $signataireupdate = true;
+                }
+            }
+        }
+        if ($msgerror != '')
+        {
+            echo $fonctions->showmessage(fonctions::MSGERROR, $msgerror);
+        }
+        if ($signataireupdate or $nbjrsteletravailupdate or $modelteletravailavanceupdate or $modelteletravailsimpleupdate)
+        {
+            echo $fonctions->showmessage(fonctions::MSGINFO, "Les données sont enregistrées");
+        }
+        if ($supprok)
+        {
+            echo $fonctions->showmessage(fonctions::MSGINFO, "Les données ont été supprimées");
         }
     }
     
@@ -844,6 +1189,7 @@
         // Si on est en train d'enregistrer des modifications
         if (isset($_POST['modif_adminform']))
         {
+/*
             $modelealim = trim($_POST['modelealim']);
             $modeleoption = trim($_POST['modeleoption']);
             if (!is_numeric($modelealim) || !is_int($modelealim+0) || $modelealim < 0)
@@ -868,6 +1214,7 @@
                 $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $modeleoption);
                 if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
             }
+*/
             $jourdebutperiode = trim($_POST['jourdebutperiode']);
             $moisdebutperiode = trim($_POST['moisdebutperiode']);
             $debutperiode = $moisdebutperiode . $jourdebutperiode;
@@ -909,10 +1256,7 @@
         }
     }
     
-    
-    // On initialise l'onglet par défaut si sa valeur n'est pas définie
-    if (trim($current_tab)=='') $current_tab = 'tab_conges';
-    
+        
 ?>
     <form name='form_parametrage' id='form_parametrage' method='post' >
 
@@ -921,6 +1265,8 @@
     // Si l'utilisateur a le profil agent::PROFIL_RHCONGE ==> On affiche l'onglet de gestion des congés
     if ($user->estprofilrh(agent::PROFIL_RHCONGE) or $CASAdminId!==false)
     {
+        // On initialise l'onglet par défaut si sa valeur n'est pas définie
+        if (trim($current_tab)=='') $current_tab = 'tab_conges';
         echo "<span";
         if ($current_tab == 'tab_conges') echo " class='tab_active' ";
         echo " data-tab-value='#tab_conges'>Congés</span>";
@@ -929,19 +1275,29 @@
     // Si l'utilisateur a le profil agent::PROFIL_RHCET ==> On affiche l'onglet de gestion des CET
     if ($user->estprofilrh(agent::PROFIL_RHCET) or $CASAdminId!==false)
     {
+        // On initialise l'onglet par défaut si sa valeur n'est pas définie
+        if (trim($current_tab)=='') $current_tab = 'tab_cet';
         echo "<span";
         if ($current_tab == 'tab_cet') echo " class='tab_active' ";
         echo " data-tab-value='#tab_cet'>CET</span>";
     }
     
-    // On affiche l'onglet de gestion du télétravail
-    echo "<span";
-    if ($current_tab == 'tab_teletravail') echo " class='tab_active' ";
-    echo " data-tab-value='#tab_teletravail'>Télétravail</span>";
+    // Si l'utilisateur a le profil agent::PROFIL_RHCET ==> On affiche l'onglet de gestion des CET
+    if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL) or $CASAdminId!==false)
+    {
+        // On initialise l'onglet par défaut si sa valeur n'est pas définie
+        if (trim($current_tab)=='') $current_tab = 'tab_teletravail';
+        // On affiche l'onglet de gestion du télétravail
+        echo "<span";
+        if ($current_tab == 'tab_teletravail') echo " class='tab_active' ";
+        echo " data-tab-value='#tab_teletravail'>Télétravail</span>";
+    }
     
     // Si l'utilisateur a le profil agent::PROFIL_RHCET ET le profil agent::PROFIL_RHCONGE ET le profil agent::PROFIL_RHTELETRAVAIL ==> On affiche l'onglet de gestion des utilisateurs spséciaux
     if (($user->estprofilrh(agent::PROFIL_RHCONGE) and $user->estprofilrh(agent::PROFIL_RHCET) and $user->estprofilrh(agent::PROFIL_RHTELETRAVAIL)) or $CASAdminId!==false)
     {
+        // On initialise l'onglet par défaut si sa valeur n'est pas définie
+        if (trim($current_tab)=='') $current_tab = 'tab_utilisateurs';
         echo "<span";
         if ($current_tab == 'tab_utilisateurs') echo " class='tab_active' ";
         echo " data-tab-value='#tab_utilisateurs'>Utilisateurs spéciaux</span>";
@@ -950,6 +1306,8 @@
     // Si l'utilisateur CAS (donc le vrai utilisateur) est un administrateur ==> On affiche l'onglet d'administration
     if ($CASAdminId!==false)
     {
+        // On initialise l'onglet par défaut si sa valeur n'est pas définie
+        if (trim($current_tab)=='') $current_tab = 'tab_admin';
         echo "<span";
         if ($current_tab == 'tab_admin') echo " class='tab_active' "; 
         echo " data-tab-value='#tab_admin'>Administration</span>";  
@@ -1163,7 +1521,7 @@
     {
         $signataireliste = $fonctions->liredbconstante($constantename);
     }
-    $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+    $tabsignataire = $fonctions->signatairetoarray($signataireliste);
     $disablebuttonsubmit = "";
     if (!isset($tabsignataire[3]) or !isset($tabsignataire[4]) or !isset($tabsignataire[5]))
     {
@@ -1180,8 +1538,16 @@
     $constantename = 'PLAFONDREFERENCECET';
     $plafondreferencecet = 45;
     if ($fonctions->testexistdbconstante($constantename)) $plafondreferencecet = $fonctions->liredbconstante($constantename);
-    
 
+   
+    $dbconstante = 'IDMODELALIMCET';
+    $modelealim = '';
+    if ($fonctions->testexistdbconstante($dbconstante))  $modelealim = $fonctions->liredbconstante($dbconstante);
+    
+    $dbconstante = 'IDMODELOPTIONCET';
+    $modeleoption = '';
+    if ($fonctions->testexistdbconstante($dbconstante))  $modeleoption = $fonctions->liredbconstante($dbconstante);
+    
 ?>
             <form name="frm_param_cet" method="post">
             
@@ -1285,6 +1651,18 @@
             		<br>
             		Plafond de référence pour alimenter le CET : <input type='text' name=plafondreferencecet value='<?php echo $plafondreferencecet;?>'>
             		<br><br>
+<?php 
+                    $CASAdminId = $fonctions->CASuserisG2TAdmin($uid);
+                    if ($CASAdminId!==false)
+                    {
+?>
+                        Numéro du modèle eSignature pour l'alimentation du CET : <input type='text' name='modelealim' value='<?php echo $modelealim; ?>'>
+                        <br>
+                        Numéro du modèle eSignature pour le droit d'option sur CET : <input type='text' name='modeleoption' value='<?php echo $modeleoption; ?>'>
+                        <br><br>
+<?php 
+                    }
+?>
                     <input type='hidden' id='current_tab' name='current_tab' value='tab_cet'>
                     <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
             		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' <?php echo $disablebuttonsubmit;?>/>
@@ -1301,13 +1679,13 @@
             	</center></tr>
             	<tr><center>
             		<td class='cellulesimple'><center>Niveau 1</center></td>
-            		<td class='cellulesimple'><center><?php echo cet::SIGNATAIRE_LIBELLE[1]; ?></center></td>
+            		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></center></td>
             		<td class='cellulesimple'><center>Agent demandeur</center></td>
             		<td class='cellulesimple'><center></center></td>
             	</center></tr>
             	<tr><center>
             		<td class='cellulesimple'><center>Niveau 2</center></td>
-            		<td class='cellulesimple'><center><?php echo cet::SIGNATAIRE_LIBELLE[3]; ?></center></td>
+            		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></center></td>
             		<td class='cellulesimple'><center>Structure de l'agent</center></td>
             		<td class='cellulesimple'><center></center></td>
             	</center></tr>
@@ -1320,19 +1698,19 @@
                     $signataireliste = $fonctions->liredbconstante($constantename);
                 }
 
-                $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
 /*                
                 if (!isset($tabsignataire['3']['1_' . constant('SPECIAL_USER_IDLISTERHUSER')]))
                 {
-                    $tabsignataire = $fonctions->cetsignataireaddtoarray('3', cet::SIGNATAIRE_AGENT, SPECIAL_USER_IDLISTERHUSER, $tabsignataire);
-                    $signataireliste = $fonctions->cetsignatairetostring($tabsignataire);
+                    $tabsignataire = $fonctions->cetsignataireaddtoarray('3', fonctions::SIGNATAIRE_AGENT, SPECIAL_USER_IDLISTERHUSER, $tabsignataire);
+                    $signataireliste = $fonctions->signatairetostring($tabsignataire);
                     $saveerror = $fonctions->enregistredbconstante($constantename, $signataireliste);
                     if ($saveerror != '')
                     {
                         $fonctions->showmessage(fonctions::MSGERROR,$saveerror);
                     }
                     $signataireliste = $fonctions->liredbconstante($constantename);
-                    $tabsignataire = $fonctions->cetsignatairetoarray($signataireliste);
+                    $tabsignataire = $fonctions->signatairetoarray($signataireliste);
                     //var_dump($tabsignataire);
                 }
 */
@@ -1345,9 +1723,9 @@
 ?>            	
             				<tr>
                                 <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
-                                <td class='cellulesimple'><center><?php echo cet::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+                                <td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
 <?php               
-                            if ($infosignataire[0]==cet::SIGNATAIRE_AGENT or $infosignataire[0]==cet::SIGNATAIRE_SPECIAL)
+                            if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                             {
                                 $spantext = '';
                                 $extrastyle = '';
@@ -1370,7 +1748,7 @@
 			                    <td class='cellulesimple <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><center><?php echo $agent->identitecomplete(); ?></center></td>
 <?php 
                             }
-                            elseif ($infosignataire[0]==cet::SIGNATAIRE_RESPONSABLE)
+                            elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
                             {
                                 $spantext = '';
                                 $extrastyle = '';
@@ -1403,7 +1781,7 @@
 			                    <td class='cellulesimple <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><center><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
 <?php 
                             }
-                            elseif ($infosignataire[0]==cet::SIGNATAIRE_STRUCTURE)
+                            elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
                             {
 ?>
 			                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
@@ -1441,9 +1819,12 @@
                     <td class='cellulesimple'><center>
                         <select name="newtypesignataire" id="newtypesignataire">
 <?php 
-                            foreach (cet::SIGNATAIRE_LIBELLE as $codesignataire => $libellesignataire)
+                            foreach (fonctions::SIGNATAIRE_LIBELLE as $codesignataire => $libellesignataire)
                             {
-                                echo "<option value='$codesignataire'>$libellesignataire</option>";
+                                if ($codesignataire != fonctions::SIGNATAIRE_RESPONSABLE_N2)
+                                {
+                                    echo "<option value='$codesignataire'>$libellesignataire</option>";
+                                }
 
                             }
 ?>
@@ -1512,7 +1893,7 @@
                   // alert('valeur de target = ' + event.target.value);
                   // alert('div_structureid => id  = ' + div_structureid);
                   // alert('div_specialuserid => id  = ' + div_specialuserid);
-                  if (event.target.value==<?php echo cet::SIGNATAIRE_RESPONSABLE; ?> || event.target.value==<?php echo cet::SIGNATAIRE_STRUCTURE; ?>)
+                  if (event.target.value==<?php echo fonctions::SIGNATAIRE_RESPONSABLE; ?> || event.target.value==<?php echo fonctions::SIGNATAIRE_STRUCTURE; ?>)
                   {
                      // alert ('On est dans un choix d\'un responsable de structure ou d\'une structure');
                      idsignataire.type='hidden';
@@ -1520,14 +1901,14 @@
                      div_specialuserid.setAttribute("hidden", "hidden");
                      
                   }
-                  else if (event.target.value==<?php echo cet::SIGNATAIRE_AGENT; ?>)
+                  else if (event.target.value==<?php echo fonctions::SIGNATAIRE_AGENT; ?>)
                   {
                      // alert ('On est dans un choix d\'un agent unitaire');
                      idsignataire.type='text';
                      div_structureid.setAttribute("hidden", "hidden");
 					 div_specialuserid.setAttribute("hidden", "hidden");
                   }
-                  else if (event.target.value==<?php echo cet::SIGNATAIRE_SPECIAL; ?>)
+                  else if (event.target.value==<?php echo fonctions::SIGNATAIRE_SPECIAL; ?>)
                   {
                      // alert ('On est dans un choix d\'un utilisateur spécial');
                      idsignataire.type='hidden';
@@ -1709,8 +2090,556 @@
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
 	    echo "<input type='submit' value='Soumettre'  name='creation_indem'/>";
 	    echo "</form>";
-    
+	    
 ?>            
+        <br><br>
+        <form name="frm_updateinfo_teletravail" method="post">
+
+		Nombre de jours maximum de télétravail :
+<?php 
+        $constantename = 'NBJOURSMAXTELETRAVAIL';
+        $nbjrsteletravail = '0';
+        if ($fonctions->testexistdbconstante($constantename))
+        {
+            $nbjrsteletravail = $fonctions->liredbconstante($constantename);
+        }
+?>
+		<input type='text' name='nbjrsteletravail' id='nbjrsteletravail' value=<?php echo $nbjrsteletravail; ?>></input>
+<?php
+    	echo "<br><br>";
+    	// Si l'utilisateur CAS (donc le vrai utilisateur) est un administrateur ==> On affiche les numéros des circuits
+    	if ($CASAdminId!==false)
+    	{
+    	    echo "Identifiant du modèle pour le circuit simple : ";
+    	    $constantename = 'IDMODELTELETRAVAIL';
+            $modelecircuitsimple = '';
+            if ($fonctions->testexistdbconstante($constantename))
+            {
+                $modelecircuitsimple = $fonctions->liredbconstante($constantename);
+            }
+?>
+    		<input type='text' name='modelecircuitsimple' id='modelecircuitsimple' value=<?php echo $modelecircuitsimple; ?>></input>
+<?php     	    
+            echo "<br><br>";
+            echo "Identifiant du modèle pour le circuit avancé : ";
+            $constantename = 'IDMODELTELETRAVAIL_EVOLUE';
+            $modelecircuitavance = '';
+            if ($fonctions->testexistdbconstante($constantename))
+            {
+                $modelecircuitavance = $fonctions->liredbconstante($constantename);
+            }
+?>
+    		<input type='text' name='modelecircuitavance' id='modelecircuitavance' value=<?php echo $modelecircuitavance; ?>></input>
+<?php     	    
+    	}
+    	echo "<br><br>";
+    	echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
+	    echo "<input type='submit' value='Soumettre'  name='updateinfo_teletravail'/>";
+?>        
+        </form>
+        <br><br>
+       
+        
+        
+        <form name="frm_param_teletravail" method="post">
+<!--         
+	    //////////////////////////////////////////////////////////////
+	    //////////////////////////////////////////////////////////////
+	    // GESTION DU CIRCUIT DE TELETRAVAIL SIMPLE
+ -->        
+ 		Liste des signataires dans le circuit simple (sans 'responsable N+2') :<br>
+        <table class='tableausimple' id='param_teletravail_simple'>
+        	<tr><center>
+        		<td class='titresimple'>Niveau du signataire</td>
+                <td class='titresimple'>Type de signataire</td>
+                <td class='titresimple'>Signataire</td>
+                <td class='titresimple'>Supprimer</td>
+        	</center></tr>
+        	<tr><center>
+        		<td class='cellulesimple'><center>Niveau 1</center></td>
+        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></center></td>
+        		<td class='cellulesimple'><center>Agent demandeur</center></td>
+        		<td class='cellulesimple'><center></center></td>
+        	</center></tr>
+        	<tr><center>
+        		<td class='cellulesimple'><center>Niveau 2</center></td>
+        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></center></td>
+        		<td class='cellulesimple'><center>Structure de l'agent</center></td>
+        		<td class='cellulesimple'><center></center></td>
+        	</center></tr>
+<?php 
+            $constantename = 'TELETRAVAILSIGNATAIRE';
+            $signataireliste = '';
+            $tabsignataire = array();
+            if ($fonctions->testexistdbconstante($constantename))
+            {
+                $signataireliste = $fonctions->liredbconstante($constantename);
+            }
+
+            $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+            if (count($tabsignataire)>0)
+            {
+                foreach ($tabsignataire as $niveau => $infosignataires)
+                {
+                    foreach ($infosignataires as $idsignataire => $infosignataire)
+                    {
+?>            	
+        				<tr>
+                            <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
+                            <td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+<?php               
+                        if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
+                        {
+                            $spantext = '';
+                            $extrastyle = '';
+                            $agent = new agent($dbcon); 
+                            if (!$agent->load($infosignataire[1]))
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : L\'agent n\'est pas connu de G2T.">';
+                            }
+                            elseif (!$fonctions->mailexistedansldap($agent->mail()))
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : L\'adresse mail de ' . $agent->identitecomplete() . ' n\'est pas connue de LDAP (' . $agent->mail() . ') => Envoi de mail impossible.">';
+                            }
+                            else
+                            {
+                                $spantext = '<span data-tip="' . $agent->mail()  .'">';
+                            }
+?>                    
+		                    <td class='cellulesimple <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><center><?php echo $agent->identitecomplete(); ?></center></td>
+<?php 
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
+                        {
+                            $spantext = '';
+                            $extrastyle = '';
+                            $struct = new structure($dbcon); 
+                            $struct->load($infosignataire[1]);
+                            $responsable = $struct->responsable();
+                            if (trim($responsable->agentid()) == '')
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : Le responsable de la structure n\'est pas défini ou n\'est pas connu dans G2T.">';
+                            }
+                            elseif (!$fonctions->mailexistedansldap($responsable->mail()))
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : L\'adresse mail du responsable de la structure (' . $responsable->identitecomplete() . ') n\'est pas connue de LDAP (' . $responsable->mail() . ') => Envoi de mail impossible.">';
+                            }
+                            else
+                            {
+                                $spantext = '<span data-tip="Actuellement : ' . $responsable->identitecomplete()  .' (' . $responsable->mail() . ')">';
+                            }
+                            
+?>
+		                    <td class='cellulesimple <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><center><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+<?php 
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
+                        {
+?>
+		                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+<?php 
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
+                        {
+?>
+		                    <td class='cellulesimple'><center>Le responsable N+2 de l'agent</center></td>
+<?php 
+                        }
+                        else
+                        {
+                            ?>
+		                    <td class='cellulesimple'><center>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</center></td>
+<?php 
+                        }
+                        $disablecheckbox = "";
+?>
+		                    <td class='cellulesimple'><center><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire_tele_simple[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire_tele_simple[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+		            	</tr>
+<?php
+                    }
+                }
+            }
+?>
+			<tr>
+                <td class='cellulesimple'><center>
+                    <select name="newlevelsignataire_tele_simple" id="newlevelsignataire_tele_simple">
+                    	<option value="">--- Sélectionnez un niveau ---</option>
+                        <option value="3">Niveau 3</option>
+                        <option value="4">Niveau 4</option>
+                    </select>
+                </center></td>
+                <td class='cellulesimple'><center>
+                    <select name="newtypesignataire_tele_simple" id="newtypesignataire_tele_simple">
+                    	<option value="">--- Sélectionnez un type ---</option>
+<?php 
+                        foreach (fonctions::SIGNATAIRE_LIBELLE as $codesignataire => $libellesignataire)
+                        {
+                            if ($codesignataire != fonctions::SIGNATAIRE_RESPONSABLE_N2)
+                            {
+                                echo "<option value='$codesignataire'>$libellesignataire</option>";
+                            }
+
+                        }
+?>
+                     </select>
+                </center></td>
+                <td class='cellulesimple'><center>
+                	<input id="usersignataire_tele_simple" name="usersignataire_tele_simple" placeholder="Nom et/ou prenom" autofocus/>
+                	<input type='hidden' id="newidsignataire_tele_simple" name="newidsignataire_tele_simple" class='usersignataire_tele_simple' />
+                	<script>
+                	    //var input_elt = $( ".token-autocomplete input" );
+                  	    $( "#usersignataire_tele_simple" ).autocompleteUser(
+                    	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+                  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                	</script>
+                </center>
+            	<div id='div_structureid_tele_simple' hidden>  <!-- style=' width: 300px;' hidden>  -->
+				<select size='1' id='structureid_tele_simple' name='structureid_tele_simple' class='selectstructure' style='width: 700px;' value=''>
+				<option value=''>----- Veuillez sélectionner la structure -----</option>
+<?php
+                $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
+                $query = mysqli_query($dbcon, $sql);
+                $erreur = mysqli_error($dbcon);
+                if ($erreur != "") {
+                    $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                }
+                $structureid=null;
+                while ($result = mysqli_fetch_row($query)) 
+                {
+                    $struct = new structure($dbcon);
+                    $struct->load($result[0]);
+                    affichestructureliste($struct, 0);
+                }
+?>
+				</select>
+            	</div>
+            	<div id='div_specialuserid_tele_simple' hidden>  <!-- style=' width: 300px;' hidden>  -->
+				<select size='1' id='specialuserid_tele_simple' name='specialuserid_tele_simple' value='' > <!--  style='width: 300px;' > -->
+				<option value=''>----- Veuillez sélectionner un utilisateur spécial -----</option>
+<?php 
+                $tab_specialuser = $fonctions->listeutilisateursspeciaux();
+                foreach ($tab_specialuser as $idspecial)
+                {
+                    $specialuser = new agent($dbcon);
+                    if ($specialuser->load($idspecial))
+                    {
+                        echo "<option value='$idspecial'>" . $specialuser->identitecomplete() . "</option>";
+                    }
+                }
+?>					
+				</select>
+				</div>
+                </td>
+                <td class='cellulesimple'><center></center></td>
+            	</tr>
+            </table>
+            <script>
+                var currenttab = document.getElementById('param_teletravail_simple');
+                //alert('Ploc ' + currenttab.id);
+                var selectElement = document.getElementById('newtypesignataire_tele_simple');
+                // alert('Plouf ' + selectElement.value);
+                selectElement.addEventListener('change', (event) => {
+                  // alert('Event déclanché');
+                  var idsignataire = document.getElementById('usersignataire_tele_simple');
+                  //var td_structureid = document.getElementById('td_structureid_tele_simple');
+                  var div_structureid = document.getElementById('div_structureid_tele_simple');
+                  var div_specialuserid = document.getElementById('div_specialuserid_tele_simple');
+                  //alert('valeur de target = ' + event.target.value);
+                  //alert('div_structureid => id  = ' + div_structureid);
+                  //alert('div_specialuserid => id  = ' + div_specialuserid);
+                  if (event.target.value==<?php echo fonctions::SIGNATAIRE_RESPONSABLE; ?> || event.target.value==<?php echo fonctions::SIGNATAIRE_STRUCTURE; ?>)
+                  {
+                     //alert ('On est dans un choix d\'un responsable de structure ou d\'une structure');
+                     idsignataire.type='hidden';
+                     div_structureid.removeAttribute("hidden");
+                     div_specialuserid.setAttribute("hidden", "hidden");
+                     
+                  }
+                  else if (event.target.value==<?php echo fonctions::SIGNATAIRE_AGENT; ?>)
+                  {
+                     //alert ('On est dans un choix d\'un agent unitaire');
+                     idsignataire.type='text';
+                     div_structureid.setAttribute("hidden", "hidden");
+					 div_specialuserid.setAttribute("hidden", "hidden");
+                  }
+                  else if (event.target.value==<?php echo fonctions::SIGNATAIRE_SPECIAL; ?>)
+                  {
+                     //alert ('On est dans un choix d\'un utilisateur spécial');
+                     idsignataire.type='hidden';
+                     div_structureid.setAttribute("hidden", "hidden");
+					 div_specialuserid.removeAttribute("hidden");
+                  }
+                  else
+                  {
+                     alert ('Erreur : Ce choix de type de signataire n\'est pas géré !');
+                  }
+                });   
+            </script>
+    		<br><br>
+    		
+<!--         
+	    //////////////////////////////////////////////////////////////
+	    //////////////////////////////////////////////////////////////
+	    // GESTION DU CIRCUIT DE TELETRAVAIL AVANCE
+ -->        
+ 		Liste des signataires dans le circuit avancé (avec 'responsable N+2') :<br>
+        <table class='tableausimple' id='param_teletravail_avance'>
+        	<tr><center>
+        		<td class='titresimple'>Niveau du signataire</td>
+                <td class='titresimple'>Type de signataire</td>
+                <td class='titresimple'>Signataire</td>
+                <td class='titresimple'>Supprimer</td>
+        	</center></tr>
+        	<tr><center>
+        		<td class='cellulesimple'><center>Niveau 1</center></td>
+        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></center></td>
+        		<td class='cellulesimple'><center>Agent demandeur</center></td>
+        		<td class='cellulesimple'><center></center></td>
+        	</center></tr>
+        	<tr><center>
+        		<td class='cellulesimple'><center>Niveau 2</center></td>
+        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></center></td>
+        		<td class='cellulesimple'><center>Structure de l'agent</center></td>
+        		<td class='cellulesimple'><center></center></td>
+        	</center></tr>
+<?php 
+            $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
+            $signataireliste = '';
+            $tabsignataire = array();
+            if ($fonctions->testexistdbconstante($constantename))
+            {
+                $signataireliste = $fonctions->liredbconstante($constantename);
+            }
+
+            $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+            if (count($tabsignataire)==0)
+            {
+                $tabsignataire = $fonctions->cetsignataireaddtoarray("3",fonctions::SIGNATAIRE_RESPONSABLE_N2,0,$tabsignataire);
+                $stringsignataire = $fonctions->signatairetostring($tabsignataire);
+                $erreur = $fonctions->enregistredbconstante($constantename, $stringsignataire);
+                $signataireliste = $fonctions->liredbconstante($constantename);
+                $tabsignataire = $fonctions->signatairetoarray($signataireliste);
+            }
+            
+            if (count($tabsignataire)>0)
+            {
+                foreach ($tabsignataire as $niveau => $infosignataires)
+                {
+                    foreach ($infosignataires as $idsignataire => $infosignataire)
+                    {
+                        $disablecheckbox = "";
+?>            	
+        				<tr>
+                            <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
+                            <td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+<?php               
+                        if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
+                        {
+                            $spantext = '';
+                            $extrastyle = '';
+                            $agent = new agent($dbcon); 
+                            if (!$agent->load($infosignataire[1]))
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : L\'agent n\'est pas connu de G2T.">';
+                            }
+                            elseif (!$fonctions->mailexistedansldap($agent->mail()))
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : L\'adresse mail de ' . $agent->identitecomplete() . ' n\'est pas connue de LDAP (' . $agent->mail() . ') => Envoi de mail impossible.">';
+                            }
+                            else
+                            {
+                                $spantext = '<span data-tip="' . $agent->mail()  .'">';
+                            }
+?>                    
+		                    <td class='cellulesimple <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><center><?php echo $agent->identitecomplete(); ?></center></td>
+<?php 
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
+                        {
+                            $spantext = '';
+                            $extrastyle = '';
+                            $struct = new structure($dbcon); 
+                            $struct->load($infosignataire[1]);
+                            $responsable = $struct->responsable();
+                            if (trim($responsable->agentid()) == '')
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : Le responsable de la structure n\'est pas défini ou n\'est pas connu dans G2T.">';
+                            }
+                            elseif (!$fonctions->mailexistedansldap($responsable->mail()))
+                            {
+                                $extrastyle = " celerror resetfont ";
+                                $spantext = '<span data-tip="Problème : L\'adresse mail du responsable de la structure (' . $responsable->identitecomplete() . ') n\'est pas connue de LDAP (' . $responsable->mail() . ') => Envoi de mail impossible.">';
+                            }
+                            else
+                            {
+                                $spantext = '<span data-tip="Actuellement : ' . $responsable->identitecomplete()  .' (' . $responsable->mail() . ')">';
+                            }
+                            
+?>
+		                    <td class='cellulesimple <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><center><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+<?php 
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
+                        {
+?>
+		                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+<?php 
+                        }
+                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
+                        {
+                            if ($niveau == 3) $disablecheckbox = ' hidden ';
+?>
+		                    <td class='cellulesimple'><center>Le responsable N+2 de l'agent</center></td>
+<?php 
+                        }
+                        else
+                        {
+?>
+		                    <td class='cellulesimple'><center>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</center></td>
+<?php 
+                        }
+?>
+		                    <td class='cellulesimple'><center><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire_tele_avance[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire_tele_avance[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+		            	</tr>
+<?php
+                    }
+                }
+            }
+?>
+			<tr>
+                <td class='cellulesimple'><center>
+                    <select name="newlevelsignataire_tele_avance" id="newlevelsignataire_tele_avance">
+                    	<option value="">--- Sélectionnez un niveau ---</option>
+                        <option value="4">Niveau 4</option>
+                        <option value="5">Niveau 5</option>
+                    </select>
+                </center></td>
+                <td class='cellulesimple'><center>
+                    <select name="newtypesignataire_tele_avance" id="newtypesignataire_tele_avance">
+                    	<option value="">--- Sélectionnez un type ---</option>
+<?php 
+                        foreach (fonctions::SIGNATAIRE_LIBELLE as $codesignataire => $libellesignataire)
+                        {
+                            if ($codesignataire != fonctions::SIGNATAIRE_RESPONSABLE_N2)
+                            {
+                                echo "<option value='$codesignataire'>$libellesignataire</option>";
+                            }
+
+                        }
+?>
+                     </select>
+                </center></td>
+                <td class='cellulesimple'><center>
+                	<input id="usersignataire_tele_avance" name="usersignataire_tele_avance" placeholder="Nom et/ou prenom" autofocus/>
+                	<input type='hidden' id="newidsignataire_tele_avance" name="newidsignataire_tele_avance" class='usersignataire_tele_avance' />
+                	<script>
+                	    //var input_elt = $( ".token-autocomplete input" );
+                  	    $( "#usersignataire_tele_avance" ).autocompleteUser(
+                    	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
+                  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                	</script>
+                </center>
+            	<div id='div_structureid_tele_avance' hidden>  <!-- style=' width: 300px;' hidden>  -->
+				<select size='1' id='structureid_tele_avance' name='structureid_tele_avance' class='selectstructure' style='width: 700px;' value=''>
+				<option value=''>----- Veuillez sélectionner la structure -----</option>
+<?php
+                $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
+                $query = mysqli_query($dbcon, $sql);
+                $erreur = mysqli_error($dbcon);
+                if ($erreur != "") {
+                    $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                }
+                $structureid=null;
+                while ($result = mysqli_fetch_row($query)) 
+                {
+                    $struct = new structure($dbcon);
+                    $struct->load($result[0]);
+                    affichestructureliste($struct, 0);
+                }
+?>
+				</select>
+            	</div>
+            	<div id='div_specialuserid_tele_avance' hidden>  <!-- style=' width: 300px;' hidden>  -->
+				<select size='1' id='specialuserid_tele_avance' name='specialuserid_tele_avance' value='' > <!--  style='width: 300px;' > -->
+				<option value=''>----- Veuillez sélectionner un utilisateur spécial -----</option>
+<?php 
+                $tab_specialuser = $fonctions->listeutilisateursspeciaux();
+                foreach ($tab_specialuser as $idspecial)
+                {
+                    $specialuser = new agent($dbcon);
+                    if ($specialuser->load($idspecial))
+                    {
+                        echo "<option value='$idspecial'>" . $specialuser->identitecomplete() . "</option>";
+                    }
+                }
+?>					
+				</select>
+				</div>
+                </td>
+                <td class='cellulesimple'><center></center></td>
+            	</tr>
+            </table>
+            <script>
+                var selectElement = document.getElementById('newtypesignataire_tele_avance');
+                // alert('Plouf ' + selectElement.value);
+                selectElement.addEventListener('change', (event) => {
+                  // alert('Event déclanché');
+                  var idsignataire = document.getElementById('usersignataire_tele_avance');
+                  //var td_structureid = document.getElementById('td_structureid_tele_avance');
+                  var div_structureid = document.getElementById('div_structureid_tele_avance');
+                  var div_specialuserid = document.getElementById('div_specialuserid_tele_avance');
+                  //alert('valeur de target = ' + event.target.value);
+                  //alert('div_structureid => id  = ' + div_structureid);
+                  //alert('div_specialuserid => id  = ' + div_specialuserid);
+                  if (event.target.value==<?php echo fonctions::SIGNATAIRE_RESPONSABLE; ?> || event.target.value==<?php echo fonctions::SIGNATAIRE_STRUCTURE; ?>)
+                  {
+                     //alert ('On est dans un choix d\'un responsable de structure ou d\'une structure');
+                     idsignataire.type='hidden';
+                     div_structureid.removeAttribute("hidden");
+                     div_specialuserid.setAttribute("hidden", "hidden");
+                     
+                  }
+                  else if (event.target.value==<?php echo fonctions::SIGNATAIRE_AGENT; ?>)
+                  {
+                     //alert ('On est dans un choix d\'un agent unitaire');
+                     idsignataire.type='text';
+                     div_structureid.setAttribute("hidden", "hidden");
+					 div_specialuserid.setAttribute("hidden", "hidden");
+                  }
+                  else if (event.target.value==<?php echo fonctions::SIGNATAIRE_SPECIAL; ?>)
+                  {
+                     //alert ('On est dans un choix d\'un utilisateur spécial');
+                     idsignataire.type='hidden';
+                     div_structureid.setAttribute("hidden", "hidden");
+					 div_specialuserid.removeAttribute("hidden");
+                  }
+                  else
+                  {
+                     alert ('Erreur : Ce choix de type de signataire n\'est pas géré !');
+                  }
+                });   
+            </script>
+    		<br><br>
+    		
+            <input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>
+            <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
+    		<input type='submit' name='valider_signataire_teletravail' id='valider_signataire_teletravail' value='Soumettre' />
+            
+            </form>
+
+
         </div>
         
 <!--         
@@ -1754,7 +2683,7 @@
             }
             echo "</td>";
             $disabledtext = '';
-            if ($agentrh->agentid()<0) $disabledtext  = " disabled ";
+            if ($agentrh->estutilisateurspecial()) $disabledtext  = " disabled ";
             echo "<td class='cellulesimple'><center><input type='checkbox' name=rhcancel[" . $key . "] value='yes' $disabledtext /></center></td>";
             echo "</tr>";
         }
@@ -1829,13 +2758,11 @@
     		        $spantxt = '<span data-tip="L\'adresse mail utilisée sera : ' . $usermail  .'">';
     		    }
     		}
-
-                
-            ?>
+?>
     			<table class='tableausimple'>
-        			<tr><td class='titresimple'>Utilité</td><td class='titresimple'>Nom</td><td class='titresimple'>Prénom</td><td class='titresimple'>Adresse mail de l'expéditeur</td></tr>
+        			<tr><td class='titresimple'>Fonction/Utilité</td><td class='titresimple'>Nom</td><td class='titresimple'>Prénom</td><td class='titresimple'>Adresse mail de l'expéditeur</td></tr>
                     <tr>
-                    	<td class='cellulesimple'><span data-tip="Utilisateur permettant l'envoi automatique de mails (synchronisation, rappels aux agents, ...) ">Utilisateur G2T</td>
+                    	<td class='cellulesimple'><span data-tip="Utilisateur représentant l'application lors de l'envoi automatique de mails (informations, alertes, rappels aux agents, ...) ">Application G2T</td>
                     	<td class='cellulesimple'><input type='text' name='nomcronuser' value='<?php echo $cronuser->nom() ?>' size=30 ></td>
                     	<td class='cellulesimple'><input type='text' name='prenomcronuser' value='<?php echo $cronuser->prenom() ?>' size=30 ></td>
                     	<td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='mailcronuser' value='<?php echo $cronuser->mailforspecialagent() ?>' size=60 ></td>
@@ -1863,14 +2790,16 @@
 -->        
         <div class="tabs__tab <?php if ($current_tab == 'tab_admin') echo " active "; ?>" id="tab_admin" data-tab-info>
 <?php 
-        
+
+/*
         $dbconstante = 'IDMODELALIMCET';
         $modelealim = '';
         if ($fonctions->testexistdbconstante($dbconstante))  $modelealim = $fonctions->liredbconstante($dbconstante);
         $dbconstante = 'IDMODELOPTIONCET';
         $modeleoption = '';
         if ($fonctions->testexistdbconstante($dbconstante))  $modeleoption = $fonctions->liredbconstante($dbconstante);    
- 
+*/
+
         $dbconstante = 'DEBUTPERIODE';
         $debutperiode = '';
         if ($fonctions->testexistdbconstante($dbconstante))  $debutperiode = $fonctions->liredbconstante($dbconstante);          
@@ -1886,8 +2815,10 @@
       	<br>
         <form name='form_administration' id='form_administration' method='post' >
         <table>
+<!-- 
         <tr><td>Numéro du modèle eSignature pour l'alimentation du CET : <input type='text' name='modelealim' value='<?php echo $modelealim; ?>'></td></tr>
         <tr><td>Numéro du modèle eSignature pour le droit d'option sur CET : <input type='text' name='modeleoption' value='<?php echo $modeleoption; ?>'></td></tr>  
+ -->
 		<tr><td>Début de la période de dépot des congés annuels : 
 <?php 
         $jourdebutperiode = substr($debutperiode,2);
@@ -1991,7 +2922,8 @@
         			if (errormsg.length == 0)
         		    {
             			// alert ("plouf plouf");
-              			message.style.display = "none";
+            			// On cache les messages sauf ceux les msgs d'erreurs
+              			//message.style.display = "none";
           			}
         		}
 			);

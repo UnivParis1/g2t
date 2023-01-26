@@ -10,13 +10,28 @@ CREATE TABLE `TELETRAVAIL` (
   `TABTELETRAVAIL` VARCHAR(14) NOT NULL,
   `STATUT` VARCHAR(10) NOT NULL,
   PRIMARY KEY (`TELETRAVAILID`));
+ALTER TABLE `TELETRAVAIL` 
+  ADD COLUMN `TYPECONVENTION` VARCHAR(45) NOT NULL AFTER `STATUT`,
+  ADD COLUMN `ESIGNATUREID` VARCHAR(30) NULL AFTER `TYPECONVENTION`,
+  ADD COLUMN `ESIGNATUREURL` VARCHAR(200) NULL AFTER `ESIGNATUREID`,
+  ADD COLUMN `COMMENTAIRE` VARCHAR(300) NULL AFTER `ESIGNATUREURL`;
+  
  * 
  */
 
 class teletravail
 {
-    public const STATUT_ACTIVE = "Active";
-    public const STATUT_INACTIVE = "Inactive";
+    public const OLD_STATUT_ACTIVE = "Active";
+    public const OLD_STATUT_INACTIVE = "Inactive";
+    public const TELETRAVAIL_VALIDE = "v";
+    public const TELETRAVAIL_REFUSE = "r";
+    public const TELETRAVAIL_ATTENTE = "a";
+    public const TELETRAVAIL_ANNULE = "x";
+    
+    
+    public const TYPE_CONVENTION_INITIALE = "Demande initiale";
+    public const TYPE_CONVENTION_RENOUVELLEMENT = "Demande de renouvellement";
+    public const TYPE_CONVENTION_MEDICAL = "Demande sur prescription médicale";
     
     private $teletravailid = null;
     private $agentid = null;
@@ -24,6 +39,11 @@ class teletravail
     private $datefin = null;
     private $tabteletravail = null;
     private $statut = null;
+    private $typeconvention = null;
+    private $esignatureid = null;
+    private $esignatureurl = null;
+    private $commentaire = null;
+    
     private $dbconnect = null;
     private $fonctions = null;
     
@@ -46,7 +66,7 @@ class teletravail
     
     function load($teletravailid)
     {
-        $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT 
+        $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT, TYPECONVENTION, ESIGNATUREID, ESIGNATUREURL, COMMENTAIRE
                 FROM TELETRAVAIL
                 WHERE TELETRAVAILID = ? ";
         $params = array($teletravailid);
@@ -60,7 +80,7 @@ class teletravail
         }
         if (mysqli_num_rows($query) == 0) {
             $errlog = "Teletravail->Load (TELETRAVAIL) : Teletravail $teletravailid non trouvé";
-            echo $errlog . "<br/>";
+            //echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return false;
         }
@@ -71,9 +91,37 @@ class teletravail
         $this->datefin = "$result[3]";
         $this->tabteletravail = "$result[4]";
         $this->statut = "$result[5]";
+        $this->typeconvention = $result[6] . '';
+        $this->esignatureid = $result[7] . '';
+        $this->esignatureurl = $result[8] . '';
+        $this->commentaire = $result[9] . '';
         return true;
         
     }
+    
+    function loadbyesignatureid($esignatureid)
+    {
+        $sql = "SELECT TELETRAVAILID FROM TELETRAVAIL WHERE ESIGNATUREID = ? ";
+        $params = array($esignatureid);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Teletravail->loadbyesignatureid (TELETRAVAIL) : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        if (mysqli_num_rows($query) == 0) {
+            $errlog = "Teletravail->loadbyesignatureid (TELETRAVAIL) : Teletravail $esignatureid non trouvé";
+            //echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        $result = mysqli_fetch_row($query);
+        $teletravailid = $result[0];
+        return $this->load($teletravailid);
+    }
+    
 
     function teletravailid()
     {
@@ -135,6 +183,72 @@ class teletravail
         }
     }
     
+    
+    function typeconvention($typeconvention = null)
+    {
+        if (is_null($typeconvention)) {
+            if (is_null($this->typeconvention)) {
+                $errlog = "teletravail->typeconvention : La valeur de typeconvention n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } else
+                return $this->typeconvention;
+        }
+        else
+        {
+            $this->typeconvention = $typeconvention;
+        }
+    }
+    
+    function esignatureid($esignatureid = null)
+    {
+        if (is_null($esignatureid)) {
+            if (is_null($this->esignatureid)) {
+                $errlog = "teletravail->esignatureid : La valeur de esignatureid n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } else
+                return $this->esignatureid;
+        }
+        else
+        {
+            $this->esignatureid = $esignatureid;
+        }
+    }
+    
+    function esignatureurl($esignatureurl = null)
+    {
+        if (is_null($esignatureurl)) {
+            if (is_null($this->esignatureurl)) {
+                $errlog = "teletravail->esignatureurl : La valeur de esignatureurl n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } else
+                return $this->esignatureurl;
+        }
+        else
+        {
+            $this->esignatureurl = $esignatureurl;
+        }
+    }
+    
+    function commentaire($commentaire = null)
+    {
+        if (is_null($commentaire)) {
+            if (is_null($this->esignatureurl)) {
+                $errlog = "teletravail->commentaire : La valeur du commentaire n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } else
+                return $this->commentaire;
+        }
+        else
+        {
+            $this->commentaire = $commentaire;
+        }
+    }
+    
+    
     function tabteletravail($tableau = null)
     {
         if (is_null($tableau)) {
@@ -191,22 +305,39 @@ class teletravail
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return $erreur;
             }
-            
+
             if (is_null($this->statut))
-                $this->statut = teletravail::STATUT_ACTIVE;
+                $this->statut = teletravail::TELETRAVAIL_ATTENTE;
             
             $sql = "LOCK TABLES TELETRAVAIL WRITE";
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO TELETRAVAIL(AGENTID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT)
+            $sql = "INSERT INTO TELETRAVAIL(AGENTID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT,TYPECONVENTION,ESIGNATUREID,ESIGNATUREURL,COMMENTAIRE)
+                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $params = array($this->agentid, 
+                            $this->fonctions->formatdatedb($this->datedebut), 
+                            $this->fonctions->formatdatedb($this->datefin), 
+                            $this->tabteletravail,
+                            $this->statut,
+                            $this->typeconvention,
+                            $this->esignatureid,
+                            $this->esignatureurl,
+                            $this->commentaire);
+
+/*
                     VALUES('" . $this->agentid  ."',
                            '" . $this->fonctions->formatdatedb($this->datedebut)  ."',
                            '" . $this->fonctions->formatdatedb($this->datefin)  ."',
                            '" . $this->tabteletravail  ."',
-                           '" . $this->statut . "')";
-            //echo "SQL teletravail->Store (NEW) : $sql <br>";
+                           '" . $this->statut . "',
+                           '" . $this->typeconvention . "',
+                           '" . $this->esignatureid . "',
+                           '" . $this->esignatureurl . "',
+                           '" . $this->commentaire . "')";
             $params = array();
+*/
+            //echo "SQL teletravail->Store (NEW) : $sql <br>";
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
@@ -225,15 +356,26 @@ class teletravail
         else
         {
             $sql = "UPDATE TELETRAVAIL
-                    SET DATEDEBUT = '" . $this->fonctions->formatdatedb($this->datedebut) . "',
-                        DATEFIN = '" . $this->fonctions->formatdatedb($this->datefin) . "',
-                        TABTELETRAVAIL = '" . $this->tabteletravail . "',
-                        STATUT = '" . $this->statut . "'
-                    WHERE TELETRAVAILID = '" . $this->teletravailid . "'";
+                    SET DATEDEBUT = ?,
+                        DATEFIN = ?,
+                        TABTELETRAVAIL = ?,
+                        STATUT = ?,
+                        ESIGNATUREID = ?,
+                        ESIGNATUREURL = ?,
+                        COMMENTAIRE = ?
+                    WHERE TELETRAVAILID = ?";
             //echo "SQL teletravail->Store (UPDATE) : $sql <br>";
-            $params = array();
+            $params = array($this->fonctions->formatdatedb($this->datedebut), 
+                            $this->fonctions->formatdatedb($this->datefin), 
+                            $this->tabteletravail, 
+                            $this->statut, 
+                            $this->esignatureid,
+                            $this->esignatureurl,
+                            $this->commentaire,
+                            $this->teletravailid);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
+            
             if ($erreur != "") {
                 $errlog = "teletravail->Store (UPDATE) : " . $erreur;
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -242,9 +384,60 @@ class teletravail
         return $erreur;
     }
     
+    
+    /**
+     *
+     * @param int $numerojour numéro du jour (0 = dimanche, 5 = samedi, 6 = dimanche)
+     * @param string $moment optionnel m = matin, a = après-midi
+     * @return bool vrai si le jour/moment est télétravaillé
+     */
+    
+    function estjourteletravaille($numerojour, $moment = null)
+    {
+        if ($this->statut != teletravail::TELETRAVAIL_VALIDE) // Si la convention de teletravail n'est plus active ==> Forcément ce n'est pas télétravaillé
+        {
+            return false;
+        }
+        elseif (is_null($this->tabteletravail)) {
+            $errlog = "teletravail->estjourteletravaille : Le tableau du teletravail n'est pas défini (NULL) !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        else
+        {
+            if ($numerojour == 0)   // Lundi = 1, Mardi = 2, ..... Dimanche = 0
+                $numerojour = 6;
+            else
+                $numerojour = $numerojour - 1;
+            
+            // $numerojour => Représente maintenant le numéro de l'index du jour dans le tableau
+            if (is_null($moment))
+            {
+                return ($this->tabteletravail[($numerojour*2)] + $this->tabteletravail[(($numerojour*2)+1)] == 2);
+            }
+            elseif ($moment == fonctions::MOMENT_MATIN)
+            {
+                return ($this->tabteletravail[($numerojour*2)] == 1);
+            }
+            elseif ($moment == fonctions::MOMENT_APRESMIDI)
+            {
+                return ($this->tabteletravail[(($numerojour*2)+1)] == 1);
+            }
+            else
+            {
+                $errlog = "teletravail->estjourteletravaille : Le moment n'est pas connu (moment = $moment) !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return false;
+            }
+        }
+    }
+    
+    
+    
     function estteletravaille($date, $moment = null)
     {
-        if ($this->statut != teletravail::STATUT_ACTIVE) // Si la convention de teletravail n'est plus active ==> Forcément ce n'est pas télétravaillé
+        if ($this->statut != teletravail::TELETRAVAIL_VALIDE) // Si la convention de teletravail n'est plus active ==> Forcément ce n'est pas télétravaillé
         {
             return false;
         }
@@ -267,24 +460,8 @@ class teletravail
             else
                 $numerojour = $numerojour - 1;
             // $numerojour => Représente maintenant le numéro de l'index du jour dans le tableau
-            if (is_null($moment))
-            {
-                return ($this->tabteletravail[($numerojour*2)] + $this->tabteletravail[(($numerojour*2)+1)] == 2);
-            }
-            elseif ($moment == 'm')
-            {
-                return ($this->tabteletravail[($numerojour*2)] == 1);
-            }
-            elseif ($moment == 'a')
-            {
-                return ($this->tabteletravail[(($numerojour*2)+1)] == 1);
-            }
-            else
-            {
-                $errlog = "teletravail->estteletravaille : Le moment n'est pas connu (moment = $moment) !!!";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            }
+            
+            return $this->estjourteletravaille($numerojour,$moment);
         }
     }
     
@@ -296,12 +473,12 @@ class teletravail
          $datefin = $this->fonctions->formatdatedb($datefin);
          while ($date<=$datefin)
          {
-             $moment = 'm';
+             $moment = fonctions::MOMENT_MATIN;
              if ($this->estteletravaille($date,"$moment"))
              {
                  $datetheorique[$date . $moment] = array($date, $moment);
              }
-             $moment = 'a';
+             $moment = fonctions::MOMENT_APRESMIDI;
              if ($this->estteletravaille($date,"$moment"))
              {
                  $datetheorique[$date . $moment] = array($date, $moment);

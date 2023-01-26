@@ -536,6 +536,60 @@ class agent
         return $agent_eppn;
     }
     
+    function fonctionRIFSEEP()
+    {
+        $agent_fonctionRIFSEEP = '';
+        $agent_codeRIFSEEP = '';
+        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_AGENT_RIFSEEP_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_RIFSEEP_ATTR");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
+        $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array("$LDAP_AGENT_RIFSEEP_ATTR");
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        //echo "Info (code fonction RIFSSEP) = " . print_r($info,true) . "<br>";
+        // ATTENTION :
+        // Le paramètre est multivalué
+        foreach ($info[0]["$LDAP_AGENT_RIFSEEP_ATTR"] as $value)
+        {
+            if (stripos($value,'{REFERENS}')!==FALSE) // On recherche la chaine {REFERENS} ==> Fonction RIFSEEP
+            {
+                $agent_codeRIFSEEP = $value;
+                break;  // On a trouvé le code RIFSEEP de la fonction de l'agent
+            }
+        }
+        if ($agent_codeRIFSEEP != '')
+        {
+            $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+            $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+            $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+            $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAP_RIFSEEP_SEARCH_BASE");
+            $LDAP_RIFSEEP_LIBELLE_ATTR = $this->fonctions->liredbconstante("LDAP_RIFSEEP_LIBELLE_ATTR");
+            $con_ldap = ldap_connect($LDAP_SERVER);
+            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+            $LDAP_RIFSEEP_NAME_ATTR = $this->fonctions->liredbconstante("LDAP_RIFSEEP_NAME_ATTR");
+            $filtre = "($LDAP_RIFSEEP_NAME_ATTR=" . $agent_codeRIFSEEP . ")";
+            $dn = $LDAP_SEARCH_BASE;
+            $restriction = array("$LDAP_RIFSEEP_LIBELLE_ATTR");
+            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+            $info = ldap_get_entries($con_ldap, $sr);
+            //echo "Info (Libellé RIFSEEP) = " . print_r($info,true) . "<br>";
+            if (isset($info[0]["$LDAP_RIFSEEP_LIBELLE_ATTR"][0])) {
+                $agent_fonctionRIFSEEP = $info[0]["$LDAP_RIFSEEP_LIBELLE_ATTR"][0];
+            }
+        }
+        
+        return $agent_fonctionRIFSEEP;
+    }
+    
     function ldapmail()
     {
         $agent_mail = '';
@@ -2311,8 +2365,8 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "<tr align=center >";
                         // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->date_demande()) . "_" . str_replace(':','',$demande->heure_demande()) . "'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datedebut()) . "_" . (($demande->moment_debut()=='m')?'AM':'PM') . "'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()=='m')?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datedebut()) . "_" . (($demande->moment_debut()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
@@ -3079,7 +3133,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		
     		if (isset($info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]))
     		{
-    			$retour["postaladdress"] = str_replace('$', ' ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
+    		    $retour[LDAP_AGENT_ADDRESS_ATTR] = str_replace('$', ' ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
     		}
     		else
     		{
@@ -3088,6 +3142,45 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		}
     	}
     	return $retour;
+    }
+    
+    function getpersonnaladdress()
+    {
+//        $retour[LDAP_AGENT_PERSO_ADDRESS_ATTR] = "Adresse personnelle de test !! Ne pas prendre en compte";
+//        return $retour;
+
+        // adresse postale
+        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
+        $LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
+        $LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
+        $LDAP_AGENT_PERSO_ADDRESS_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_PERSO_ADDRESS_ATTR");
+        $retour = array();
+        // Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
+        if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
+            $con_ldap = ldap_connect($LDAP_SERVER);
+            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+            $filtre = "(".$LDAP_CODE_AGENT_ATTR."=".$this->agentid().")";
+            $dn = $LDAP_SEARCH_BASE;
+            $restriction = array("$LDAP_AGENT_PERSO_ADDRESS_ATTR");
+            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+            $info = ldap_get_entries($con_ldap, $sr);
+            
+            if (isset($info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]))
+            {
+                $retour[LDAP_AGENT_PERSO_ADDRESS_ATTR] = str_replace('$', ' ',$info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]);
+            }
+            else
+            {
+                $errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") n'a pas de personnalpostaladdress....";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+        }
+        return $retour;
     }
     
     function afficheAlimCetHtml($typeconge = '', $statuts = array())
@@ -3680,6 +3773,44 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		}
     	}
     }
+
+    // Synchronisation avec eSignature des conventions de télétravail de l'agent
+    function synchroteletravail()
+    {
+        // Synchronisation des conventions de télétravail /// (sauf ANNULE)
+        $sql = "SELECT ESIGNATUREID FROM TELETRAVAIL WHERE AGENTID = ? AND ESIGNATUREID <> '' AND ESIGNATUREURL <> '' "; // AND STATUT NOT IN ('" . teletravail::TELETRAVAIL_ANNULE . "') " ;
+        $params = array($this->agentid);
+        $query = $this->fonctions->prepared_select($sql, $params, "s");
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement des id eSignature : " . $erreur;
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            $errlog = "Aucune convention de télétravail à synchroniser pour l'agent " . $this->identitecomplete() . ".";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return "";
+        }
+        else
+        {
+            $full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/teletravailWS.php";
+            $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
+            while ($result = mysqli_fetch_row($query))
+            {
+                $erreur = $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+                //echo "<br>synchroteletravail => $erreur <br>";
+                if ($erreur != "")
+                {
+                    return $erreur;
+                }
+            }
+        }
+    }
+    
     
     /**
      *
@@ -4233,7 +4364,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             $teletravail = new teletravail($this->dbconnect);
             $teletravail->load($teletravailid);
-            if ($teletravail->statut() == teletravail::STATUT_ACTIVE)
+            if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
             {
                 if ($teletravail->estteletravaille($date,$moment) and (array_search($date,(array)$listeexclusion)===false))  // Si c'est un jour de télétravail et qu'il n'est pas exclu
                 {
@@ -4404,6 +4535,67 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         return $listhistorique;
     }
+
+    function getresponsable_niveau2()
+    {
+        
+        // echo "L'agent est => " . $this->identitecomplete() . "<br>";
+        $structure = new structure($this->dbconnect);
+        if (!$structure->load($this->structureid()))
+        {
+            //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
+            return false;
+        }
+        $codeinterne = null;
+        if ($this->agentid()==$structure->responsable()->agentid())
+        {
+            $responsable = $structure->resp_envoyer_a($codeinterne,false);
+        }
+        else
+        {
+            $responsable = $structure->agent_envoyer_a($codeinterne,false);
+        }
+        if (is_null($responsable))
+        {
+            //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de responsable.<br>");
+            return false;
+        }
+        // echo "Le responsable de l'agent est : " . $responsable->identitecomplete() . "<br>";
+        $structureresp = new structure($this->dbconnect);
+        if (!$structureresp->load($responsable->structureid()))
+        {
+            //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : Le responsable n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
+            return false;
+        }
+        $codeinterne = null;
+        if ($responsable->agentid()==$structureresp->responsable()->agentid())
+        {
+            $responsable2 = $structureresp->resp_envoyer_a($codeinterne,false);
+        }
+        else
+        {
+            $responsable2 = $structureresp->agent_envoyer_a($codeinterne,false);
+        }
+        // echo "Le n+2 de l'agent est : " . $responsable2->identitecomplete() . "<br>";
+        $structureresp2 = new structure($this->dbconnect);
+        if ($structureresp2->load($responsable2->structureid()))
+        {
+            $tabstructure = $structureresp2->structureinclue();
+            if (!isset($tabstructure[$structureresp->id()]))
+            {
+                //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : Le structure du responsable niveau 2 ne contient pas la structure du responsable.<br>");
+                return false;
+            }
+        }
+        else
+        {
+            //echo $fonctions->showmessage(fonctions::MSGWARNING, "Warning : Le responsable niveau 2 n'a pas de structure d'affectation ou celle-ci est inconnue => Mais c'est pas grave.<br>");
+        }
+        return $responsable2;
+    }
+    
+    
+    
 }
 
 ?> 

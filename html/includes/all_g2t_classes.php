@@ -27,5 +27,45 @@
         define('TABCOULEURPLANNINGELEMENT', $tabcouleurelement);
         //var_dump(TABCOULEURPLANNINGELEMENT);
     }
+
     
+    $sql="SELECT COUNT(*) FROM TELETRAVAIL WHERE STATUT IN ('" . teletravail::OLD_STATUT_ACTIVE . "','" . teletravail::OLD_STATUT_INACTIVE . "')";
+    $query = mysqli_query($dbcon, $sql);
+    $erreur = mysqli_error($dbcon);
+    if ($erreur != "")
+    {
+        $errlog = "Erreur lors de la selection des anciens statuts du télétravail : " . $erreur;
+        echo $errlog . "<br/>";
+        error_log(basename(__FILE__) . " " . $errlog);
+        exit();
+    }
+    $result = mysqli_fetch_row($query);
+    if ($result[0] > 0)
+    {
+//        var_dump('Il y a des statuts de teletravail à modifier.');
+        $sql = "UPDATE TELETRAVAIL SET STATUT = '" . teletravail::TELETRAVAIL_VALIDE . "' WHERE STATUT = '" . teletravail::OLD_STATUT_ACTIVE . "' ";
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "")
+        {
+            $errlog = "Erreur lors du changement de statut du télétravail " . teletravail::OLD_STATUT_ACTIVE . " : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $errlog);
+            exit();
+        }
+        $sql = "UPDATE TELETRAVAIL SET STATUT = '" . teletravail::TELETRAVAIL_ANNULE . "' WHERE STATUT = '" . teletravail::OLD_STATUT_INACTIVE . "' ";
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "")
+        {
+            $errlog = "Erreur lors du changement de statut du télétravail " . teletravail::OLD_STATUT_INACTIVE . " : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $errlog);
+            exit();
+        }
+    }
+    else
+    {
+//        var_dump('Aucun statut de teletravail à modifier.');
+    }
 ?>

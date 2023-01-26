@@ -201,7 +201,7 @@
                 $fin_mataprem = $_POST["fin_mataprem"];
             else
                 $fin_mataprem = null;
-            if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem, "m") != 0 and strcasecmp($fin_mataprem, "a") != 0)) {
+                if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem, fonctions::MOMENT_MATIN) != 0 and strcasecmp($fin_mataprem, fonctions::MOMENT_APRESMIDI) != 0)) {
                 $errlog = "Le moment de fin n'est pas initialisé.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
@@ -215,7 +215,7 @@
     if ($msg_erreur == "" and ! $datefausse) {
         $datedebutdb = $fonctions->formatdatedb($date_debut);
         $datefindb = $fonctions->formatdatedb($date_fin);
-        if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == 'a' and $fin_mataprem == 'm')) {
+        if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == fonctions::MOMENT_APRESMIDI and $fin_mataprem == fonctions::MOMENT_MATIN)) {
             $errlog = "Il y a une incohérence entre la date de début et la date de fin.";
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
@@ -312,7 +312,7 @@
     		//alert("planning_click => " + date + "  "  + moment);
     		document.getElementById("date_debut").value = date;
 
-    		if (moment.toLowerCase() =="m")
+    		if (moment.toLowerCase() == "<?php echo fonctions::MOMENT_MATIN ?>")
     			document.frm_demande_conge["deb_mataprem"][0].checked = true;
     		else
     			document.frm_demande_conge["deb_mataprem"][1].checked = true;
@@ -323,7 +323,7 @@
     		//alert("planning_click => " + date + "  "  + moment);
     		document.getElementById("date_fin").value = date;
 
-    		if (moment.toLowerCase() =="m")
+    		if (moment.toLowerCase() == "<?php echo fonctions::MOMENT_MATIN ?>")
     			document.frm_demande_conge["fin_mataprem"][0].checked = true;
     		else
     			document.frm_demande_conge["fin_mataprem"][1].checked = true;
@@ -350,7 +350,7 @@
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
-
+/*
             $agentsliste = $fonctions->listeagentsg2t();
             echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
             echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -359,8 +359,8 @@
                 echo "<option value='$key'>$identite</option>";
             }
             echo "</select>";
+*/            
             
-/*            
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -372,7 +372,7 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
 <?php
-*/
+
         }
         else
         {
@@ -815,8 +815,8 @@
     				<input class="calendrier" type=text name=date_debut id=<?php echo $calendrierid_deb ?> size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
     			</td>
     			<td align="left">
-    				<input type='radio' name='deb_mataprem' value='m' <?php if (($deb_mataprem == 'm') or ($deb_mataprem . "" == '')) echo " checked "; ?>>Matin 
-    				<input type='radio' name='deb_mataprem' value='a' <?php if ($deb_mataprem == 'a') echo " checked "; ?>>Après-midi
+    				<input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) echo " checked "; ?>>Matin 
+    				<input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if ($deb_mataprem == fonctions::MOMENT_APRESMIDI) echo " checked "; ?>>Après-midi
     			</td>
     		</tr>
     		<tr>
@@ -825,8 +825,8 @@
     				<input class="calendrier" type=text name=date_fin id=<?php echo $calendrierid_fin ?> size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
     			</td>
     			<td align="left">
-    				<input type='radio' name='fin_mataprem' value='m' <?php if ($fin_mataprem == 'm') echo " checked "; ?>>Matin
-    				<input type='radio' name='fin_mataprem' value='a' <?php if (($fin_mataprem == 'a') or ($fin_mataprem . "" == '')) echo " checked "; ?>>Après-midi
+    				<input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) echo " checked "; ?>>Matin
+    				<input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if (($fin_mataprem == fonctions::MOMENT_APRESMIDI) or ($fin_mataprem . "" == '')) echo " checked "; ?>>Après-midi
     			</td>
     		</tr>
     		<tr>

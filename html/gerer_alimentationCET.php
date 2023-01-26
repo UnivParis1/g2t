@@ -178,7 +178,7 @@
 		echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET.php'>";
 		echo "Personne à rechercher : <br>";
 		echo "<form name='selectagentcet'  method='post' >";
-
+/*
         $agentsliste = $fonctions->listeagentsg2t();
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -187,8 +187,8 @@
             echo "<option value='$key'>$identite</option>";
         }
         echo "</select>";
-
-/*		
+*/
+		
 		echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
 		echo "' size=40 />";
 		echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -200,7 +200,7 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
 <?php
-*/
+
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -218,7 +218,8 @@
     
     if (isset($_POST['annuler_demande']))
     {
-    	$esignatureid_annule = $_POST['esignatureid_annule'];
+        $errlog = '';
+        $esignatureid_annule = $_POST['esignatureid_annule'];
     	$alimentationCET = new alimentationCET($dbcon);
     	$alimentationCET->load($esignatureid_annule);
     	// récupérer statut si validée réalimenter le reliquat, déduire du CET et alerter la DRH
@@ -228,8 +229,64 @@
     		$agent = new agent($dbcon);
     		$agent->load($agentid);
     		
-    		// purger esignature
+    		$return = $fonctions->deleteesignaturedocument($esignatureid_annule);
+    		if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
+    		{
+    		    if (strlen($errlog)>0) $errlog = $errlog . '<br>';
+    		    $errlog = $errlog . "Impossible d'annuler la demande d'alimentation $esignatureid_annule : $return";
+    		    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
+    		}
+    		else
+    		{
+    		    // purger esignature
+                if ($statut_actuel == alimentationCET::STATUT_VALIDE)
+                {
+                    // réattribution des reliquats
+                    $solde = new solde($dbcon);
+                    //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
+                    $solde->load($agent->agentid(), $alimentationCET->typeconges());
+                    //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
+                    $new_solde = $solde->droitpris()-$alimentationCET->valeur_f();
+                    $solde->droitpris($new_solde);
+                    //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
+                    $solde->store();
+                    
+                    // Ajouter dans la table des commentaires la trace de l'opération
+                    $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()),"Annulation de demande d'alimentation CET");
+                    
+                    // déduction du CET
+                    
+                    $cet = new cet($dbcon);
+                    $erreur = $cet->load($agent->agentid());
+                    if ($erreur == "") 
+                    {
+                        $cet->cumultotal($cet->cumultotal() - $alimentationCET->valeur_f());
+                        $cumulannuel = $cet->cumulannuel($fonctions->anneeref());
+                        $cumulannuel = $cumulannuel - $alimentationCET->valeur_f();
+                        $cet->cumulannuel($fonctions->anneeref(),$cumulannuel);
+                        $cet->store();
+                    }
+                    
+                    // alerter la DRH
+                    
+                    $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                    foreach ($arrayagentrh as $gestrh) 
+                    {
+                        error_log(basename(__FILE__) . " envoi de mail Annulation d'une demande d'alimentation de CET validée a " . $gestrh->identitecomplete());
+                        $agent->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$user->identitecomplete()." a demandé l'annulation de la demande d'alimentation de " .$agent->identitecomplete(). " n ". $esignatureid_annule . ".\n");
+                    }
+                }
+                
+                // Abandon dans G2T
+                $alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
+                $alimentationCET->motif("Annulation à la demande de ".$user->identitecomplete());
+                $alimentationCET->store();
+                $errlog .= "L'utilisateur " . $user->identitecomplete() . " (identifiant = " . $user->agentid() . ") a supprimé la demande d'alimentation du CET de ".$agent->identitecomplete()." (esignatureid = ".$esignatureid_annule.")";
+    		}
     		
+/*   		
+    		// purger esignature
     		$eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
     		$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
     		$params = array('id' => $esignatureid_annule);
@@ -316,6 +373,7 @@
     		    }
 
     		}
+*/
     		error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     	}
     }
@@ -356,7 +414,7 @@
                 $agent_eppn = $agent->eppn();
                 
                 // On récupère le mail de l'agent en cours
-                $agent_mail = $agent->ldapmail();
+                $agent_mail = $agent->mail(); // $agent->ldapmail();
             }
             
             if ((sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) == 0)

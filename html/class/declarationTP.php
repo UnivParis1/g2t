@@ -256,9 +256,9 @@ class declarationTP
                 unset($element);
                 $element = new planningelement($this->dbconnect);
                 if ($indexelement % 2 == 0)
-                    $element->moment("m");
+                    $element->moment(fonctions::MOMENT_MATIN);
                 else
-                    $element->moment("a");
+                    $element->moment(fonctions::MOMENT_APRESMIDI);
                 if ($pour_modif)
                     $checkboxname = $indexelement + ($semaine * 10); // $this->fonctions->nomjourparindex(((int)($indexelement/2))+1) . "_" . $element->moment() . "_" . $semaine;
                 if (substr($this->tabtpspartiel(), $indexelement + ($semaine * 10), 1) == 1) {
@@ -349,7 +349,7 @@ class declarationTP
             $semaineindex = 1;
         }
         
-        if (strcasecmp($moment, "m") == 0)
+        if (strcasecmp($moment, fonctions::MOMENT_MATIN) == 0)
             $momentindex = 0;
         else
             $momentindex = 1;
@@ -366,6 +366,65 @@ class declarationTP
         }
     }
 
+    function enTPindexjour($indexjour, $moment, $semainepaire = true)
+    {
+        if (is_null($this->tabtpspartiel)) 
+        {
+            $errlog = "DeclarationTP->enTP : Le tableau des TP n'est pas initialisé !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        elseif (strlen($this->tabtpspartiel) < 20) 
+        {
+            $errlog = "DeclarationTP->enTP : Le tableau ne contient pas le nombre d'élément requis !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        
+        // numéro du jour ==> 0 dimanche ... 6 Samedi
+        if ($indexjour == 0) 
+        {
+            // On force le dimanche a 7
+            $indexjour = 7;
+        }
+        // echo "Numero jour = $numerojour <br>";
+        if ($indexjour >= 6) 
+        {
+            // echo "Samedi ou Dimanche => Donc pas de TP <br>";
+            return false;
+        }
+        if ($semainepaire) 
+        {
+            // echo "Semaine paire <br>";
+            $semaineindex = 0;
+        } 
+        else 
+        {
+            // echo "Semaine impaire <br>";
+            $semaineindex = 1;
+        }
+        
+        if (strcasecmp($moment, fonctions::MOMENT_MATIN) == 0)
+            $momentindex = 0;
+        else
+            $momentindex = 1;
+                
+        $index = (($indexjour - 1) * 2) + ($momentindex) + (10 * $semaineindex);
+        // echo "date = $date moment = $moment index = $index this->tabtpspartiel = " . $this->tabtpspartiel . "<br>";
+        // echo "Le caractère= " . substr($this->tabtpspartiel, $index,1) . "<br>";
+        if (substr($this->tabtpspartiel, $index, 1) == "1") 
+        {
+            // echo "Je return TRUE <br>";
+            return true;
+        } 
+        else 
+        {
+            // echo "Je return FALSE <br>";
+            return false;
+        }
+    }
+    
+    
     function agent()
     {
         if (is_null($this->agent))
