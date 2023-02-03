@@ -33,28 +33,31 @@
     $user = new agent($dbcon);
     $user->load($userid);
 
-    require ("includes/menu.php");
-    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
-    
-    // echo '<html><body class="bodyhtml">';
-    echo "<br>";
-
+    $previoustxt = null;
     if (isset($_POST["previous"]))
+    {
         $previoustxt = $_POST["previous"];
-    else
-        $previoustxt = null;
-    if (strcasecmp($previoustxt, "yes") == 0)
-        $previous = 1;
-    else
-        $previous = 0;
+    }
 
-    if (isset($_POST["indexmois"]))
-        $indexmois = $_POST["indexmois"];
+    if (strcasecmp($previoustxt, "yes") == 0)
+    {
+        $previous = 1;
+    }
     else
-        $indexmois = null;
-    // echo "indexmois = $indexmois <br>";
+    {
+        $previous = 0;
+    }
+    
+    $indexmois = null;
+    if (isset($_POST["indexmois"]))
+    {
+        $indexmois = $_POST["indexmois"];
+    }
+
     if (is_null($indexmois) or $indexmois == "")
+    {
         $indexmois = date("m");
+    }
     $indexmois = str_pad($indexmois, 2, "0", STR_PAD_LEFT);
     // echo "indexmois (apres) = $indexmois <br>";
     $annee = $fonctions->anneeref() - $previous;
@@ -63,44 +66,92 @@
     // echo "debut periode = $debutperiode <br>";
     $moisdebutperiode = date("m", strtotime($fonctions->formatdatedb(date("Y") . $debutperiode)));
     // echo "moisdebutperiode = $moisdebutperiode <br>";
+    
     if ($indexmois < $moisdebutperiode)
+    {
         $annee ++;
+    }
     // echo "annee (apres) = $annee <br>";
-
+                                    
+    $mode = "resp";
     if (isset($_POST["mode"]))
+    {
         $mode = $_POST["mode"]; // Mode = resp ou agent
-    else
-        $mode = "resp";
-
+    }
+                                            
     $date_selected = '';
     if (isset($_POST["date_selected"]))
+    {
         $date_selected = $_POST["date_selected"];
-
+    }
+    
     $moment_selected = '';
     if (isset($_POST["moment_selected"]))
+    {
         $moment_selected = $_POST["moment_selected"];
-            
+    }
+    
     $agentid_selected = '';
     if (isset($_POST['agentid_selected']))
+    {
         $agentid_selected = $_POST['agentid_selected'];
-    
+    }
+            
     $action = '';
     if (isset($_POST['action']))
+    {
         $action = $_POST['action'];
-    
+    }
+        
     $rootstruct = '';
     if (isset($_POST['rootid']))
+    {
         $rootstruct = $_POST['rootid'];
-    
+    }
+            
     $check_showroot = 'off';
     if (isset($_POST['check_showroot']))
+    {
         $check_showroot = $_POST['check_showroot'];
-    
+    }
+                
     $structureid = '';
     if (isset($_POST['structureid']))
+    {
         $structureid = $_POST['structureid'];
+    }
+    
+    if (isset($_POST['datedebut']))
+    {
+        $datedebut = $_POST['datedebut'];
+    }
+    
+    if (isset($_POST['datefin']))
+    {
+        $datefin = $_POST['datefin'];
+    }
             
-        
+    require ("includes/menu.php");
+    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
+
+    
+    if (isset($_POST['teletravailmail']))
+    {
+        // On va générer le PDF et l'envoyer par mail au responsable
+        //echo "On génère le PDF par mail.";
+        $structure = new structure($dbcon);
+        $structure->load($structureid);
+        $pdffilename = $structure->teletravailpdf($datedebut,$datefin,true);
+        $cronuser = new agent($dbcon);
+        $cronuser->load(SPECIAL_USER_IDCRONUSER);
+        $cronuser->sendmail($user,'Synthèse annuelle - télétravail pour ' . $structure->nomlong(), "Vous trouverez ci-joint le document de synthèse du télétravail pour les agents de la structure " . $structure->nomlong(),$pdffilename);
+        echo $fonctions->showmessage(fonctions::MSGINFO, "Le document PDF vous a été envoyé.");
+        unset($cronuser);
+        unset($structure);
+    }
+    
+    echo "<br>";
+
     if ($date_selected != "" and $moment_selected != "" and $agentid_selected != "")
     {
         $complement = new complement($dbcon);
@@ -234,6 +285,7 @@
     echo "<input type='hidden' name='action' id='action' value='' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
+    
     if (strcasecmp($mode, "resp") == 0) 
     {
         $structureliste = $user->structrespliste();
@@ -257,6 +309,7 @@
             }
         }
         // echo "<br>StructureListe = "; print_r($structureliste); echo "<br>";
+        
         foreach ($structureliste as $structkey => $structure) 
         {
             // Vérification que la structure n'est pas fermée => En théorie c'est déjà fait avant donc ne sert à rien
@@ -272,86 +325,49 @@
                 {
                     $planninggris = true;
                 }
+                
+                
                 $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'o',$planninggris,true,true);
                 echo $planninghtml;
-                $structparent = $structure->structureenglobante();
                 
-/*
-                if (trim($planninghtml) != "" and $structkey <> $structparent->id())
-                {
-                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
-                    echo "<br>";
-                    echo "<form name='form_showroot' id='form_showroot' method='post'>";
-                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
-                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
-                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
-                    echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
-                    echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
-                    
-                    echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
-                    if ($check_showroot == 'on' and $structureid == $structkey)
-                        echo " checked ";
-                    echo "/>";
-                    echo "Voir le planning de la structure \"racine\" => " . $structparent->nomcourt();
-                    echo "</form>";
-                }
-*/                
-                
+                //$structparent = $structure->structureenglobante();
                 if ($structure->responsable()->agentid() == $user->agentid() and !$structure->isincluded() and trim($planninghtml) != "")
                 {
                     echo "<br>";
+                                        
                     echo "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
                     echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
                     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
                     echo "<input type='hidden' name='mode' value='" . $mode . "' />";
                     echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
                     echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
+                    echo "<input type='hidden' name='datedebut' value='" . (date('Y')-1) . '1001' . "' />"; // Date de début du dernier trimestre de l'année d'avant
+                    echo "<input type='hidden' name='datefin' value='" . (date('Y')-1) . '1231' .  "' />";  // Date de fin du dernier trimestre de l'année d'avant
                     
-                    $currentyrear = date('Y');
-                    $currentmonth = date('m');
-                    if ($currentmonth >= 10)
-                        $currentmonth = 7;
-                    elseif ($currentmonth >= 7)
-                        $currentmonth = 4;
-                    elseif ($currentmonth >= 4)
-                        $currentmonth = 1;
-                    else
-                    {
-                        $currentmonth = 10;
-                        $currentyrear = $currentyrear - 1;
-                    }
-                    $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
-                    $datedebut = $currentyrear . $currentmonth . '01';
+                    //echo "Afficher le document 'télétravail' pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
+                    echo "Afficher le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
+                    echo "<input type='submit' name='teletravailPDF' id='teletravailPDF' value='Afficher un PDF'/>";
+                    echo "</form>";
+
+                    echo "<form name='form_teletravailmail' id='form_teletravailmail' method='post'>";
+                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                    echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
+                    echo "<input type='hidden' name='datedebut' value='" . (date('Y')-1) . '1001' . "' />"; // Date de début du dernier trimestre de l'année d'avant
+                    echo "<input type='hidden' name='datefin' value='" . (date('Y')-1) . '1231' .  "' />";  // Date de fin du dernier trimestre de l'année d'avant
                     
-                    
-                    $currentyrear = date('Y');
-                    $currentmonth = date('m');
-                    if ($currentmonth >= 10)
-                        $currentmonth = 9;
-                    elseif ($currentmonth >= 7)
-                        $currentmonth = 6;
-                    elseif ($currentmonth >= 4)
-                        $currentmonth = 3;
-                    else
-                    {
-                        $currentmonth = 12;
-                        $currentyrear = $currentyrear - 1;
-                    }
-                    $currentmonth = str_pad($currentmonth, 2, '0',STR_PAD_LEFT);
-                    $datefin = $currentyrear . $currentmonth . $fonctions->nbr_jours_dans_mois($currentmonth, $currentyrear);
-                            
-                    
-                    echo "<input type='hidden' name='datedebut' value='" . $datedebut . "' />";
-                    echo "<input type='hidden' name='datefin' value='" . $datefin .  "' />";
-                    
-                    //echo "Générer le document 'télétravail' du trimestre précédent pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
-                    echo "Générer le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
-                    echo "<input type='submit' name='teletravailPDF' />";
+                    //echo "Envoyer par mail le document 'télétravail' pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
+                    echo "Envoyer par mail le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
+                    echo "<input type='submit' name='teletravailmail' id='teletravailmail' value='Envoyer un PDF'/>";
                     echo "</form>";
                 }
             }
         }
+        
+        
+        
 /*
         $structincluelist = $fonctions->listestructurenoninclue();
         echo "Liste des id de structures non inclue :" ;

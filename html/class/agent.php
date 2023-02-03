@@ -3133,7 +3133,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		
     		if (isset($info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]))
     		{
-    		    $retour[LDAP_AGENT_ADDRESS_ATTR] = str_replace('$', ' ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
+    		    $retour[LDAP_AGENT_ADDRESS_ATTR] = str_replace('$', ', ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
     		}
     		else
     		{
@@ -3172,7 +3172,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             
             if (isset($info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]))
             {
-                $retour[LDAP_AGENT_PERSO_ADDRESS_ATTR] = str_replace('$', ' ',$info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]);
+                $retour[LDAP_AGENT_PERSO_ADDRESS_ATTR] = str_replace('$', ', ',$info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]);
             }
             else
             {

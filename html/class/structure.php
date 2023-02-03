@@ -1449,7 +1449,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         return $msgerreur;
     }
         
-    function teletravailpdf($datedebut, $datefin)
+    function teletravailpdf($datedebut, $datefin, $savepdf = false)
     {
         $agenttrouve = false;
         
@@ -1591,8 +1591,18 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         $pdf->Cell(60, 5, utf8_decode("Signature du responsable : " . $responsable->identitecomplete()));
         
         $pdf->Ln(8);
-        ob_end_clean();
-        $pdf->Output("","agent_teletravail.pdf");
+        
+        if ($savepdf==true)
+        {
+            $pdfname = $this->fonctions->pdfpath() . '/teletravail/' . $this->nomcourt() . '_' . date("YmdHis") . '.pdf';
+            $this->fonctions->savepdf($pdf, $pdfname);
+            return $pdfname;
+        }
+        else
+        {
+            ob_end_clean();
+            $pdf->Output("","agent_teletravail.pdf");
+        }
     }
     
     function structureenglobante()

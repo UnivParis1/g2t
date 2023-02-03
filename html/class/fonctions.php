@@ -1528,7 +1528,7 @@ class fonctions
         }
         elseif ($maxniveau == 5 and $resp_n2!==false)
         {
-            $dbconstante='IDMODELTELETRAVAIL';
+            $dbconstante='IDMODELTELETRAVAIL_EVOLUE';
         }
         else
         {
@@ -2765,7 +2765,7 @@ class fonctions
         if (!preg_match ("/^[0-9]+/", $esignatureid))
         {
             //echo "Pas de chiffres<br>";
-            $erreur = "Suppression du document impossible : L'identifiant eSignature n'est pas valide : " . esignatureid;
+            $erreur = "Suppression du document impossible : L'identifiant eSignature n'est pas valide : " . $esignatureid;
             error_log(basename(__FILE__) . " " . $this->stripAccents(" $erreur"));
             return $erreur;
         }
@@ -2800,23 +2800,54 @@ class fonctions
         {
             if (strlen($erreur)>0) $erreur = $erreur . '<br>';
             $erreur = $erreur . "Erreur dans la suppression du document : Erreur Curl " . $error;
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+            error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
         }
         elseif (!is_null($result))
         {
             if (strlen($erreur)>0) $erreur = $erreur . '<br>';
             $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($result, true);
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+            error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
         }
         elseif (stristr(substr($json,0,20),'HTML') !== false) // On a trouvé HTML dans le json
         {
             if (strlen($erreur)>0) $erreur = $erreur . '<br>';
             $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($json, true);
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+            error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
         }
         
         return $erreur;
     }
+    
+    public function listeconventionteletravailavecstatut($statut) 
+    {
+        $tabconvention = array();
+        $sql = "SELECT TELETRAVAILID 
+                FROM TELETRAVAIL
+                WHERE STATUT = ? ";
+        
+        $params = array($statut);
+        $query = $this->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "listeconventionteletravailavecstatut => Problème SQL dans le chargement des conventions télétravail : " . $erreur;
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) > 0)
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $teletravail = new teletravail($this->dbconnect);
+                $teletravail->load($result[0]);
+                $tabconvention[$result[0]] = $teletravail;
+            }
+        }
+        return $tabconvention;
+    }
+    
+    
 
 }
 

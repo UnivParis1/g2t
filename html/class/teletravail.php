@@ -31,7 +31,11 @@ class teletravail
     
     public const TYPE_CONVENTION_INITIALE = "Demande initiale";
     public const TYPE_CONVENTION_RENOUVELLEMENT = "Demande de renouvellement";
-    public const TYPE_CONVENTION_MEDICAL = "Demande sur prescription médicale";
+    public const TYPE_CONVENTION_MEDICAL = "Demande ou renouvellement sur prescription médicale";
+    
+    public const CODE_CONVENTION_INITIALE = "1";
+    public const CODE_CONVENTION_RENOUVELLEMENT = "2";
+    public const CODE_CONVENTION_MEDICAL = "3";
     
     private $teletravailid = null;
     private $agentid = null;
@@ -198,6 +202,33 @@ class teletravail
         {
             $this->typeconvention = $typeconvention;
         }
+    }
+    
+    function libelletypeconvention($codetypeconvention)
+    {
+        if (!preg_match ("/^[0-9]+/", $codetypeconvention))
+        {
+            // Pas de chiffres => On retourne le texte
+            return $codetypeconvention;
+        }
+        
+        $libelleconvention = "";
+        switch ($codetypeconvention)
+        {
+            case teletravail::CODE_CONVENTION_INITIALE :
+                $libelleconvention = teletravail::TYPE_CONVENTION_INITIALE;
+                break;
+            case teletravail::CODE_CONVENTION_RENOUVELLEMENT :
+                $libelleconvention = teletravail::TYPE_CONVENTION_RENOUVELLEMENT;
+                break;
+            case teletravail::CODE_CONVENTION_MEDICAL :
+                $libelleconvention = teletravail::TYPE_CONVENTION_MEDICAL;
+                break;
+            default :
+                $libelleconvention = "Type de convention inconnu";
+                break;
+        }
+        return $libelleconvention;
     }
     
     function esignatureid($esignatureid = null)
