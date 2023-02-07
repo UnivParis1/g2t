@@ -85,7 +85,7 @@
     
     require ("includes/menu.php");
     
-    echo "<br>" . print_r($_POST, true) . "<br><br>";
+    //echo "<br>" . print_r($_POST, true) . "<br><br>";
     
     //echo "$cancelteletravailarray = ";
     //var_export($cancelteletravailarray);
@@ -102,7 +102,10 @@
     $disablesubmit = false;
     $listeconventionchevauche = array();
     
-    if ($fonctions->testexistdbconstante('NBJOURSMAXTELETRAVAIL')) $nbjoursmaxteletravail = $fonctions->liredbconstante('NBJOURSMAXTELETRAVAIL');
+    if ($fonctions->testexistdbconstante('NBJOURSMAXTELETRAVAIL')) 
+    {
+        $nbjoursmaxteletravail = $fonctions->liredbconstante('NBJOURSMAXTELETRAVAIL');
+    }
     
     if (!is_null($agentid))
     {
@@ -258,6 +261,17 @@
                     }
                 }
             }
+        }
+    }
+    
+    if (isset($_POST['genererpdf']))
+    {
+        //genererpdf[" . $teletravail->teletravailid() . "]'
+        foreach ($_POST['genererpdf'] as $teletravailid => $value)
+        {
+            $teletravail = new teletravail($dbcon);
+            $teletravail->load($teletravailid);
+            $teletravail->storepdf();
         }
     }
     
@@ -473,44 +487,6 @@
             {
                 $alerte = $alerte . "Attention : Plusieurs conventions se chevauchent. Elles seront adapatées au moment de la validation par le responsable.";
             }
-/*            
-            foreach ($liste as $conventionid)
-            {
-                $teletravail = new teletravail($dbcon);
-                $teletravail->load($conventionid);
-                if (in_array($teletravail->statut(),array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
-                {
-                    if ($teletravail->datefin()>=$datedebutteletravail)
-                    {                        
-                        $veilledebut = date("d/m/Y", strtotime("-1 day", strtotime($fonctions->formatdatedb($datedebutteletravail))));
-                        //echo "datedebutteletravail = $datedebutteletravail <br>";
-                        //echo "veilledebut = $veilledebut <br>";
-                        $teletravail->datefin($veilledebut);
-                        $teletravail->commentaire("Modification de la date de fin de la convention suite à création d'une nouvelle convention.");
-                        //echo "date debut  = " . $fonctions->formatdatedb($teletravail->datedebut()) . "<br>";
-                        //echo "date fin  = " . $fonctions->formatdatedb($teletravail->datefin()) . "<br>";
-                        if ($fonctions->formatdatedb($teletravail->datefin()) < $fonctions->formatdatedb($teletravail->datedebut()))
-                        {
-                            $return = $fonctions->deleteesignaturedocument($teletravail->esignatureid());
-                            if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
-                            {
-                                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-                                $erreur = $erreur . $return;
-                                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
-                            }
-                            //echo "On passe la convetion à ANNULE<br>";
-                            $teletravail->statut(teletravail::TELETRAVAIL_ANNULE);
-                            //deleteesignaturedocument($teletravail);
-                        }
-                        //echo "La convention télétravail " . $teletravail->teletravailid() . " a un statut " . $teletravail->statut() . " ( " . $fonctions->teletravailstatutlibelle($teletravail->statut()) . " ) et une date de fin " . $teletravail->datefin() . "<br>";
-                        $teletravail->store();
-                    }
-                    
-                    if (strlen($alerte)>0) $alerte = $alerte . '<br>';
-                    $alerte = $alerte . "La nouvelle convention de télétravail a modifié une convention existante (id = $conventionid).";
-                }
-            }
-*/
         }
 
         if ($erreur == '')
@@ -720,7 +696,7 @@
                       <td class='titresimple'>Id. externe</td>
                       <td class='titresimple'>URL eSignature</td>
                  ";
-            echo "<td class='titresimple'>Annuler</td>";
+            echo "<td class='titresimple'>Annuler</td><td class='titresimple'>Générer le PDF</td>";
             echo "</center></tr>";
     	    foreach($teletravailliste as $teletravailid)
     	    {
@@ -866,6 +842,13 @@
     	            echo " disabled='disabled' ";
     	        }
     	        elseif ($mode!='gestrh' and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE)))
+    	        {
+    	            echo " disabled='disabled' ";
+    	        }
+    	        echo "></center></td>";
+
+    	        echo "<td class='cellulesimple'><center><input type='submit' value='Générer le PDF' name='genererpdf[" . $teletravail->teletravailid() . "]' ";
+    	        if (trim($teletravail->esignatureid())=='' or trim($teletravail->esignatureurl())=='' or $teletravail->statut() == teletravail::TELETRAVAIL_ANNULE)
     	        {
     	            echo " disabled='disabled' ";
     	        }

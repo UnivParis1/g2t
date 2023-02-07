@@ -812,7 +812,7 @@
         ?>
     			<br>
     			<td width=1px>
-    				<input class="calendrier" type=text name=date_debut id=<?php echo $calendrierid_deb ?> size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
+    				<input class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
     			</td>
     			<td align="left">
     				<input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) echo " checked "; ?>>Matin 
@@ -822,7 +822,7 @@
     		<tr>
     			<td>Date de fin de la demande :</td>
     			<td width=1px>
-    				<input class="calendrier" type=text name=date_fin id=<?php echo $calendrierid_fin ?> size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
+    				<input class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
     			</td>
     			<td align="left">
     				<input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) echo " checked "; ?>>Matin

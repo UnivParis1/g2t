@@ -12,10 +12,10 @@ if (! $dbcon) {
 ?>
     <div class="WordSection1">
     <p><img src="https://ent-data.univ-paris1.fr/esup/canal/maintenance/maintenance.gif" alt="Maintenance" v:shapes="_x0000_s1026" width="144" hspace="12" height="79" align="left">
-    <span style="font-family:&quot;Calibri&quot;,&quot;sans-serif&quot;;mso-ascii-theme-font:minor-latin;mso-hansi-theme-font:minor-latin">L'application des gestion des congés est momentanément indisponible.<br>
+    <span style="font-family:'Calibri','sans-serif';mso-ascii-theme-font:minor-latin;mso-hansi-theme-font:minor-latin">L'application des gestion des congés est momentanément indisponible.<br>
 En cas d'urgence, merci de contacter le 01 44 07 89 65 ou assistance-dsiun@univ-paris1.fr<br>
 Veuillez nous excuser pour la gene occasionnee.</span></p> <p style:="" '="">
-<span style="font-family:&quot;Calibri&quot;,&quot;sans-serif&quot;;mso-ascii-theme-font:
+<span style="font-family:'Calibri','sans-serif';mso-ascii-theme-font:
 minor-latin;mso-hansi-theme-font:minor-latin">DSIUN Universite Paris 1
 Pantheon-Sorbonne</span></p>
 </div>

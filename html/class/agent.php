@@ -538,56 +538,64 @@ class agent
     
     function fonctionRIFSEEP()
     {
-        $agent_fonctionRIFSEEP = '';
-        $agent_codeRIFSEEP = '';
-        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_AGENT_RIFSEEP_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_RIFSEEP_ATTR");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
-        $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array("$LDAP_AGENT_RIFSEEP_ATTR");
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        //echo "Info (code fonction RIFSSEP) = " . print_r($info,true) . "<br>";
-        // ATTENTION :
-        // Le paramètre est multivalué
-        foreach ($info[0]["$LDAP_AGENT_RIFSEEP_ATTR"] as $value)
-        {
-            if (stripos($value,'{REFERENS}')!==FALSE) // On recherche la chaine {REFERENS} ==> Fonction RIFSEEP
-            {
-                $agent_codeRIFSEEP = $value;
-                break;  // On a trouvé le code RIFSEEP de la fonction de l'agent
-            }
-        }
-        if ($agent_codeRIFSEEP != '')
-        {
-            $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
-            $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
-            $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
-            $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAP_RIFSEEP_SEARCH_BASE");
-            $LDAP_RIFSEEP_LIBELLE_ATTR = $this->fonctions->liredbconstante("LDAP_RIFSEEP_LIBELLE_ATTR");
-            $con_ldap = ldap_connect($LDAP_SERVER);
-            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-            $LDAP_RIFSEEP_NAME_ATTR = $this->fonctions->liredbconstante("LDAP_RIFSEEP_NAME_ATTR");
-            $filtre = "($LDAP_RIFSEEP_NAME_ATTR=" . $agent_codeRIFSEEP . ")";
-            $dn = $LDAP_SEARCH_BASE;
-            $restriction = array("$LDAP_RIFSEEP_LIBELLE_ATTR");
-            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-            $info = ldap_get_entries($con_ldap, $sr);
-            //echo "Info (Libellé RIFSEEP) = " . print_r($info,true) . "<br>";
-            if (isset($info[0]["$LDAP_RIFSEEP_LIBELLE_ATTR"][0])) {
-                $agent_fonctionRIFSEEP = $info[0]["$LDAP_RIFSEEP_LIBELLE_ATTR"][0];
-            }
-        }
         
-        return $agent_fonctionRIFSEEP;
+        $wsgroupURL = $this->fonctions->liredbconstante('WSGROUPURL');
+
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => "$wsgroupURL/searchUserTrusted?token=" . $this->mail(),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Erreur Curl (récup searchUserTrusted agent " . $this->agentid() .  ") =>  " . $error));
+        }
+        $response = json_decode($json, true);
+        // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La réponse (récup searchUserTrusted agent " . $this->agentid() .  ") => " . print_r($response,true)));
+        if (isset($response[0]['supannActivite-all'][0]['name-gender']))
+        {
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La fonction de l'agent (WS searchUserTrusted) est " . $response[0]['supannActivite-all'][0]['name-gender']));
+            return $response[0]['supannActivite-all'][0]['name-gender'];
+        }
+        // On n'a pas trouvé la fonction dans le WS searchUserTrusted => On utilise le WS searchUser
+        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Pas de fonction dans searchUserTrusted pour l'agent " . $this->agentid() . " => On cherche dans searchUser."));
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => "$wsgroupURL/searchUser?token=" . $this->mail(),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Erreur Curl (récup searchUser agent " . $this->agentid() .  ") =>  " . $error));
+        }
+        $response = json_decode($json, true);
+        // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La réponse (récup searchUser agent " . $this->agentid() .  ") => " . print_r($response,true)));
+        if (isset($response[0]['supannActivite-all'][0]['name-gender']))
+        {
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" La fonction de l'agent (WS searchUser) est " . $response[0]['supannActivite-all'][0]['name-gender']));
+            return $response[0]['supannActivite-all'][0]['name-gender'];
+        }
+        else
+        {
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Pas de fonction dans searchUser pour l'agent " . $this->agentid() . " => On retourne vide."));
+            return "";
+        }    
     }
     
     function ldapmail()

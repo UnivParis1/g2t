@@ -2847,6 +2847,263 @@ class fonctions
         return $tabconvention;
     }
     
+    public function synchroniseconventionteletravail($esignatureid)
+    {
+        $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); 
+        
+        $status = "";
+        $reason = "";
+        $datesignatureresponsable = '19000101';
+        
+        error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut de la convention télétravail =>  " . $esignatureid));
+        
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => $eSignature_url . '/ws/signrequests/status/' . $esignatureid,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $json = curl_exec($curl);
+        
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            $erreur_curl = "Erreur dans eSignature (WS g2t) : ".$json;
+            error_log(basename(__FILE__) . $this->stripAccents(" $erreur_curl"));
+            // $result_json = array('status' => 'Error', 'description' => $erreur);
+            $status = teletravail::TELETRAVAIL_ANNULE;
+        }
+        else
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
+            error_log(basename(__FILE__) . " " . var_export($json,true));
+            $current_status = str_replace("'", "", $json);  // json_decode($json, true);
+            
+            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests/status"));
+            error_log(basename(__FILE__) . " " . $current_status); // var_export($current_status,true));
+        
+        switch (strtolower($current_status))
+        {
+            //uploading, draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
+            //           draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned, fully-deleted
+            case 'draft' :
+            case 'pending' :
+            case 'signed' :
+            case 'checked' :
+                // On récupère les niveaux signés et si il y a plus de 2 signataires, on passe le statut à TELETRAVAIL_VALIDE
+                // car la convention commence dès que le responsable a signé.
+                $curl = curl_init();
+                $params_string = "";
+                $opts = [
+                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/audit-trail/' . $esignatureid,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_PROXY => ''
+                ];
+                curl_setopt_array($curl, $opts);
+                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                $json = curl_exec($curl);
+                $error = curl_error ($curl);
+                curl_close($curl);
+                if ($error != "")
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup signataires) =>  " . $error));
+                }
+                $response = json_decode($json, true);
+                error_log(basename(__FILE__) . $this->stripAccents(" La réponse (recup signataires) => " . print_r($response,true)));
+                
+                if (isset($response['auditSteps']) and count($response['auditSteps'])>=2)
+                {
+                    $datesignatureresponsable = $response['auditSteps'][1]['timeStampDate'];
+                    $datesignatureresponsable = date('Ymd', strtotime($datesignatureresponsable));
+                    error_log(basename(__FILE__) . $this->stripAccents(" La date de la signature du responsable est : " .$datesignatureresponsable));
+                    $status = teletravail::TELETRAVAIL_VALIDE;
+                    $identitéresponsable = $response['auditSteps'][1]['firstname'] . " " . $response['auditSteps'][1]['name'];
+                    $reason = "Votre responsable " . $identitéresponsable . " a signé votre convention. Votre convention est active mais le circuit de validation n'est pas terminé.";
+                }
+                else
+                {
+                    $status = teletravail::TELETRAVAIL_ATTENTE;
+                }
+                break;
+            case 'refused':
+                $status = teletravail::TELETRAVAIL_REFUSE;
+                error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
+                // On interroge le WS eSignature /ws/signrequests/{id}
+                $curl = curl_init();
+                $params_string = "";
+                $opts = [
+                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_PROXY => ''
+                ];
+                curl_setopt_array($curl, $opts);
+                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                $json = curl_exec($curl);
+                $error = curl_error ($curl);
+                curl_close($curl);
+                if ($error != "")
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup commentaire) =>  " . $error));
+                }
+                $response = json_decode($json, true);
+                if (isset($response['comments']))
+                {
+                    $reason = '';
+                    foreach ($response['comments'] as $comment)
+                    {
+                        $reason = $reason . " " . $comment['text'];
+                    }
+                    $reason = trim($reason);
+                }
+                break;
+            case 'completed' :
+            case 'exported' :
+            case 'archived' :
+            case 'cleaned' :
+                $status = teletravail::TELETRAVAIL_VALIDE;
+                break;
+            case 'deleted' :
+            case 'canceled' :
+            case 'fully-deleted' :
+            case '' :
+                $status = teletravail::TELETRAVAIL_ANNULE;
+                break;
+            default :
+                $status = "";
+                $erreur = "";
+                $response = json_decode($current_status, true);
+                if (isset($response['error'])) $erreur = $response['error'];
+                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur";
+                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+                
+        }
+        }
+        if ($status <> '')
+        {
+            //$status = mb_strtolower("$status", 'UTF-8');
+            $teletravail = new teletravail($this->dbconnect);
+            $erreur = $teletravail->loadbyesignatureid($esignatureid);
+            if ($erreur === false)
+            {
+                $erreur = "Erreur lors de la lecture des infos de la convention télétravail " . $esignatureid;
+                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" statut de la convention dans eSignature = $status -> " . $this->teletravailstatutlibelle($status)));
+                error_log(basename(__FILE__) . $this->stripAccents(" teletravail->statut() = " . $teletravail->statut() . " -> " . $this->teletravailstatutlibelle($teletravail->statut())));
+                
+                // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
+                if ($status == $teletravail->statut() and $reason==$teletravail->commentaire())
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" La convention a déjà un statut $status (" . $this->teletravailstatutlibelle($status) . "). On ne fait rien => Pas d'erreur"));
+                    $erreur = '';
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                }
+                else // if (in_array($statut, array(teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE))) // Si le statut dans eSignature est REFUSE ou VALIDE
+                {
+                    if ($this->formatdatedb($datesignatureresponsable)>$this->formatdatedb($teletravail->datedebut()))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" On passe la date de début de la convention à $datesignatureresponsable - valeur actuelle : " . $teletravail->datedebut()));
+                        $teletravail->datedebut($datesignatureresponsable);
+                    }
+                    if ($this->formatdatedb($teletravail->datedebut())>$this->formatdatedb($teletravail->datefin()) and $status <> teletravail::TELETRAVAIL_ANNULE )
+                    {
+                        $status = teletravail::TELETRAVAIL_ANNULE;
+                        $reason = "Il y a une incohérence dans les dates de début et de fin => On force l'annulation de la convention.";
+                        error_log(basename(__FILE__) . $this->stripAccents(" $reason"));
+                    }
+                    error_log(basename(__FILE__) . $this->stripAccents(" On passe le statut de la convention " . $esignatureid . " à $status (" . $this->teletravailstatutlibelle($status) . ")"));
+                    $teletravail->statut($status);
+                    $teletravail->commentaire($reason);
+                    $erreur = $teletravail->store();
+                    if ($erreur != "")
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'enregistrement de la convention " . $esignatureid . " => Erreur = " . $erreur));
+                        $result_json = array('status' => 'Error', 'description' => $erreur);
+                    }
+                    else
+                    {
+                        // On va générer le PDF dans le cas ou le statut de la convention est VALIDEE ou REFUSEE
+                        if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE or $teletravail->statut()==teletravail::TELETRAVAIL_REFUSE)
+                        {
+                            $teletravail->storepdf();
+                        }
+                        
+                        // On va regarder si d'autres conventions se chevauchent
+                        $agentid = $teletravail->agentid();
+                        $agent = new agent($this->dbconnect);
+                        $agent->load($agentid);
+                        $currentconventionid=$teletravail->teletravailid();
+                        $datedebutteletravail = $teletravail->datedebut();
+                        $datefinteletravail = $teletravail->datefin();
+                        $liste = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
+                        foreach ($liste as $conventionid)
+                        {
+                            if ($currentconventionid <> $conventionid) // On ignore la convention qu'on vient de traiter
+                            {
+                                $teletravailmodif = new teletravail($this->dbconnect);
+                                $teletravailmodif->load($conventionid);
+                                if (in_array($teletravailmodif->statut(),array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
+                                {
+                                    if ($teletravailmodif->datefin()>=$datedebutteletravail)
+                                    {
+                                        $veilledebut = date("d/m/Y", strtotime("-1 day", strtotime($this->formatdatedb($datedebutteletravail))));
+                                        //echo "datedebutteletravail = $datedebutteletravail <br>";
+                                        //echo "veilledebut = $veilledebut <br>";
+                                        $teletravailmodif->datefin($veilledebut);
+                                        $teletravailmodif->commentaire("Modification de la date de fin de la convention suite à création d'une nouvelle convention.");
+                                        //echo "date debut  = " . $this->formatdatedb($teletravail->datedebut()) . "<br>";
+                                        //echo "date fin  = " . $this->formatdatedb($teletravail->datefin()) . "<br>";
+                                        if ($this->formatdatedb($teletravailmodif->datefin()) < $this->formatdatedb($teletravailmodif->datedebut()))
+                                        {
+                                            $return = $this->deleteesignaturedocument($teletravailmodif->esignatureid());
+                                            if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
+                                            {
+                                                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                                                $erreur = $erreur . $return;
+                                                error_log(basename(__FILE__) . " " . $this->stripAccents($return));
+                                            }
+                                            //echo "On passe la convetion à ANNULE<br>";
+                                            $teletravailmodif->statut(teletravail::TELETRAVAIL_ANNULE);
+                                            //deleteesignaturedocument($teletravail);
+                                        }
+                                        //echo "La convention télétravail " . $teletravail->teletravailid() . " a un statut " . $teletravail->statut() . " ( " . $this->teletravailstatutlibelle($teletravail->statut()) . " ) et une date de fin " . $teletravail->datefin() . "<br>";
+                                        $teletravailmodif->store();
+                                    }
+                                    /*
+                                     if (strlen($alerte)>0) $alerte = $alerte . '<br>';
+                                     $alerte = $alerte . "La nouvelle convention de télétravail a modifié une convention existante (id = $conventionid).";
+                                     */
+                                }
+                            }
+                        }
+                        if ($erreur <> '')
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'adaptation des conventions => Erreur = " . $erreur));
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Traitement ok de la modification du statut de la convention " . $currentconventionid . " => Pas d'erreur"));
+                            $result_json = array('status' => 'Ok', 'description' => $erreur);
+                        }
+                    }
+                }
+            }
+        }
+        return $result_json;
+    }
+    
     
 
 }

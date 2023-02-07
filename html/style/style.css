@@ -559,7 +559,7 @@ LI.plus::after {
    FONT-WEIGHT: normal ;
 }
 #structplanning table.tableau {
-   //border-collapse : collapse;
+   /* border-collapse : collapse; */
    border-spacing : 0px; 
 }
 #structplanning TR.entete TD {
@@ -666,7 +666,7 @@ span[data-tip]{
 /*
   border-bottom: 2px dotted #888; 
 
-  cursor:default; /* help; */
+  cursor:default; 
  */
 }
 

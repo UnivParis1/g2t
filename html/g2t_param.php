@@ -1384,12 +1384,12 @@
         </script>
     ';
 ?>
-    		<td class='cellulesimple'><input class="calendrier" type=text name=date_debut
-    			id=<?php echo $calendrierid_deb ?> size=10
+    		<td class='cellulesimple'><input class="calendrier" type='text' name='date_debut'
+    			id='<?php echo $calendrierid_deb; ?>' size='10'
     			minperiode='<?php echo $fonctions->formatdate(($anneeref-$nbanneeaffichee+1) . $fonctions->debutperiode()); ?>'
     			maxperiode='<?php echo $fonctions->formatdate(($anneeref+1) . $fonctions->finperiode()); ?>'></td>
-    		<td class='cellulesimple'><input class="calendrier" type=text name=date_fin
-    			id=<?php echo $calendrierid_fin ?> size=10
+    		<td class='cellulesimple'><input class="calendrier" type='text' name='date_fin'
+    			id='<?php echo $calendrierid_fin; ?>' size='10'
     			minperiode='<?php echo $fonctions->formatdate(($anneeref-$nbanneeaffichee+1) . $fonctions->debutperiode()); ?>'
     			maxperiode='<?php echo $fonctions->formatdate(($anneeref+1) . $fonctions->finperiode()); ?>'></td>
             
@@ -1588,13 +1588,13 @@
     
 ?>
         	    			<br>
-                			<td width=1px><input class="calendrier" type=text name=date_debut_alim
-                				id=<?php echo $calendrierid_deb_alim ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->debutalimcet()) ?>'></td>
+                			<td width=1px><input class="calendrier" type=text name='date_debut_alim'
+                				id='<?php echo $calendrierid_deb_alim ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->debutalimcet()) ?>'></td>
         	    		</tr>
             			<tr>
             				<td style='padding-left: 30px;'>Date de fermeture de la campagne d'alimentation :</td>
-                			<td width=1px><input class="calendrier" type=text name=date_fin_alim
-                				id=<?php echo $calendrierid_fin_alim ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->finalimcet()) ?>'></td>
+                			<td width=1px><input class="calendrier" type=text name='date_fin_alim'
+                				id='<?php echo $calendrierid_fin_alim ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->finalimcet()) ?>'></td>
         	    		</tr>
             		</table>
 
@@ -1637,13 +1637,13 @@
     
 ?>
                 			<br>
-                			<td width=1px><input class="calendrier" type=text name=date_debut_option
-                				id=<?php echo $calendrierid_deb_option ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->debutoptioncet()) ?>'></td>
+                			<td width=1px><input class="calendrier" type="text" name="date_debut_option"
+                				id='<?php echo $calendrierid_deb_option ?>' size="10" value='<?php echo $fonctions->formatdate($fonctions->debutoptioncet()) ?>'></td>
         	    		</tr>
         	    		<tr>
             				<td style='padding-left: 30px;'>Date de fermeture de la campagne de droit d'option :</td>
-            				<td width=1px><input class="calendrier" type=text name=date_fin_option
-            					id=<?php echo $calendrierid_fin_option ?> size=10 value='<?php echo $fonctions->formatdate($fonctions->finoptioncet()) ?>'></td>
+            				<td width=1px><input class="calendrier" type='text' name='date_fin_option'
+            					id='<?php echo $calendrierid_fin_option ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->finoptioncet()) ?>'></td>
         	    		</tr>
         	    	</table>
         	 		<br><br>

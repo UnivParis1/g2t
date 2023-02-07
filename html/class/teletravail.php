@@ -519,6 +519,73 @@ class teletravail
          }
          return $datetheorique;
      }
+     
+     function storepdf()
+     {
+         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On va demander le PDF à eSignature (convetion = " .  $this->esignatureid .  ")"));
+         
+         $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
+         $error = '';
+         
+         // On appelle le WS eSignature pour récupérer le document final
+         $curl = curl_init();
+         $opts = [
+             CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $this->esignatureid,
+             CURLOPT_RETURNTRANSFER => true,
+             CURLOPT_SSL_VERIFYPEER => false,
+             CURLOPT_PROXY => ''
+         ];
+         curl_setopt_array($curl, $opts);
+         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+         $pdf = curl_exec($curl);
+         $error = curl_error ($curl);
+         curl_close($curl);
+         if ($error != "")
+         {
+             $error = "Erreur Curl (récup PDF) =>  " . $error;
+             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+             return $error;
+             //echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
+         }
+         if (stristr(substr($pdf,0,10),'PDF') === false)
+         {
+             $error = "Erreur Curl (récup PDF) =>  " . $error;
+             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+             return $error;
+         }
+         //echo "<br>" . print_r($json,true) . "<br>";
+         //$response = json_decode($json, true);
+         
+         $agent = new agent($this->dbconnect);
+         $agent->load($this->agentid());
+         $basename = str_replace(' ', '_', "Convention_Teletravail_" . $agent->nom() . "_" . $agent->prenom() . "_num_" . $this->esignatureid . ".pdf");
+         $pdffilename = $this->fonctions->pdfpath() . '/teletravail/' . $basename;
+         //echo "<br>pdffilename = $pdffilename <br><br>";
+         
+         // création du fichier
+         //$pdffilename = '/tmp/mon_fichier_test.pdf';
+         $path = dirname("$pdffilename");
+         if (!file_exists($path))
+         {
+             mkdir("$path");
+             chmod("$path", 0777);
+         }
+         
+         $f = fopen($pdffilename, "w");
+         if ($f === false)
+         {
+             $error = "Erreur enregistrement : Le fichier $pdffilename n'a pas pu être créé.";
+             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+             return $error;
+         }
+         // écriture
+         fputs($f, $pdf );
+         // fermeture
+         fclose($f);
+         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le PDF est ok (demande = " .  $this->esignatureid .  ")"));
+         return '';
+         
+     }
 }
 
 ?>

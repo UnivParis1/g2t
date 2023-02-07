@@ -307,12 +307,12 @@
     </script>
     ';
 ?>
-		<td class='cellulesimple'><input class="calendrier" type=text name=date_debut
-			id=<?php echo $calendrierid_deb ?> size=10
+		<td class='cellulesimple'><input class="calendrier" type='text' name='date_debut'
+			id='<?php echo $calendrierid_deb ?>' size=10
 			minperiode='<?php echo $fonctions->formatdate($periodeid . $fonctions->debutperiode()); ?>'
 			maxperiode='<?php echo $fonctions->formatdate($periodeid+1 . $fonctions->finperiode()); ?>'></td>
-		<td class='cellulesimple'><input class="calendrier" type=text name=date_fin
-			id=<?php echo $calendrierid_fin ?> size=10
+		<td class='cellulesimple'><input class="calendrier" type='text' name='date_fin'
+			id='<?php echo $calendrierid_fin ?>' size=10
 			minperiode='<?php echo $fonctions->formatdate($periodeid . $fonctions->debutperiode()); ?>'
 			maxperiode='<?php echo $fonctions->formatdate($periodeid+1 . $fonctions->finperiode()); ?>'></td>
             
