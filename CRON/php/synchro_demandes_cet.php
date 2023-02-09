@@ -7,8 +7,8 @@
 
     $anneeref = $fonctions->anneeref();
     $typeconge = $fonctions->typeCongeAlimCET();
-	$fonctions->synchroGlobaleCETeSignature($typeconge, $anneeref);
+    $fonctions->synchroGlobaleCETeSignature($typeconge, $anneeref);
 
-	echo "Fin de la synchronisation des demandes Alim + Option CET " . date("d/m/Y H:i:s") . "\n";
+    echo "Fin de la synchronisation des demandes Alim + Option CET " . date("d/m/Y H:i:s") . "\n";
 	
 ?>

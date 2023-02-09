@@ -41,7 +41,6 @@
                 }
                 else
                 {
-                    $indexjour = 0;
                     $somme = 0;
                     $indexjour = 0;
                     $nbjoursdemande = (substr_count($teletravail->tabteletravail(),1)/2);  // On compte le nombre de 1 dans le tableau de télétravail et on divise par 2 (1 = 1/2 journée)
@@ -122,7 +121,6 @@
                         $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
                         if (count(array($affectationliste)) > 0)
                         {
-                            $affectation = new affectation($dbcon);
                             $affectation = current($affectationliste);
                             $infosLdap = $agent->getpersonnaladdress();
                             $nameStructComplete = $structure->nomcompletcet();

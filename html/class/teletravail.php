@@ -559,7 +559,7 @@ class teletravail
          $agent = new agent($this->dbconnect);
          $agent->load($this->agentid());
          $basename = str_replace(' ', '_', "Convention_Teletravail_" . $agent->nom() . "_" . $agent->prenom() . "_num_" . $this->esignatureid . ".pdf");
-         $pdffilename = $this->fonctions->pdfpath() . '/teletravail/' . $basename;
+         $pdffilename = $this->fonctions->pdfpath() . '/teletravail/conventions/' . $basename;
          //echo "<br>pdffilename = $pdffilename <br><br>";
          
          // création du fichier

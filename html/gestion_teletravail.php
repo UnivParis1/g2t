@@ -63,7 +63,9 @@
             }
         }
         else
+        {
             $agentid = null;
+        }
     }
         
     $cancelteletravailarray = null;
@@ -810,23 +812,34 @@
     	            if ($demijrs>0) // Si dans le tableau la valeur est > 0
     	            {
     	                if (($index % 2) == 0)  // Si c'est le matin => On ajoute 1 à la somme
+                        {
     	                    $somme = $somme + 1;
+                        }
     	                elseif (($index % 2) == 1)  // Si c'est l'après-midi => On ajoute 2 à la somme
+                        {
     	                    $somme = $somme + 2;
+                        }
     	            }
     	            if (($index % 2) == 1)
     	            {
     	                if ($somme > 0) // Si pas de télétravail => On affiche rien
     	                {
                             if ($somme == 1)  // Que le matin
+                            {
                                $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment(fonctions::MOMENT_MATIN); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
+                            }
     	                    elseif ($somme == 2) // Que l'après-midi
+                            {
     	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment(fonctions::MOMENT_APRESMIDI);
+                            }
     	                    elseif ($somme == 3) // Toute la journée
+                            {
     	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1);
+                            }
     	                    else // Là, on ne sait pas !!
+                            {
     	                       $htmltext = $htmltext . "Problème => index = $index  demijrs = $demijrs   somme = $somme";
-     	                    
+                            }
     	                    $htmltext = $htmltext . ", ";
    	                    }
      	                $somme = 0;
@@ -1074,7 +1087,9 @@
                     $indexjour = intdiv($cpt,2)+1;
                     //var_dump ("indexjour = $indexjour");
                     if ($indexjour >= 6)
+                    {
                         break;
+                    }
                     $fermeinput = "";
                     $fermespan = '';
                     echo "    <td class='cellulesimple' ";
@@ -1127,22 +1142,22 @@
                 echo "</table>";
             }
         }
-	    echo "<br>";
-	    echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
-	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
-	    echo "<input type='hidden' id='nbrelignetableauconvention' name='nbrelignetableauconvention' value='". $nbrelignetableauconvention . "'>";
-	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
-	    echo "<input type='hidden' id='datedebutminconv' name='datedebutminconv' value='" . $datedebutminconv . "'>";
-	    echo "<input type='hidden' id='datedebutmaxconv' name='datedebutmaxconv' value='" . $datedebutmaxconv . "'>";
-	    echo "<input type='hidden' id='datefinminconv' name='datefinminconv' value='" . $datefinminconv . "'>";
-	    echo "<input type='hidden' id='datefinmaxconv' name='datefinmaxconv' value='" . $datefinmaxconv . "'>";
-	    
-	    if (!$disablesubmit)
-	    {
-	       echo "<input type='submit' value='Soumettre'  name='creation'/>";
-	    }
-	    echo "</form>";
+        echo "<br>";
+        echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
+        echo "<input type='hidden' id='nbrelignetableauconvention' name='nbrelignetableauconvention' value='". $nbrelignetableauconvention . "'>";
+        echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
+        echo "<input type='hidden' id='datedebutminconv' name='datedebutminconv' value='" . $datedebutminconv . "'>";
+        echo "<input type='hidden' id='datedebutmaxconv' name='datedebutmaxconv' value='" . $datedebutmaxconv . "'>";
+        echo "<input type='hidden' id='datefinminconv' name='datefinminconv' value='" . $datefinminconv . "'>";
+        echo "<input type='hidden' id='datefinmaxconv' name='datefinmaxconv' value='" . $datefinmaxconv . "'>";
+
+        if (!$disablesubmit)
+        {
+           echo "<input type='submit' value='Soumettre'  name='creation'/>";
+        }
+        echo "</form>";
     }
 ?>
 </body>

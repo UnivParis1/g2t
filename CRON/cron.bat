@@ -31,6 +31,7 @@ REM REM REM REM %PHPDIR%\php php\import_affectation_siham.php noimport -d error_
 %PHPDIR%\php php\calcul_solde.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 %PHPDIR%\php specific\p1_post_solde.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 REM REM %PHPDIR%\php php\synchro_demandes_cet.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
+%PHPDIR%\php php\synchro_conventions_teletravail.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 
 %PHPDIR%\php php\mail_alerte_reliquats.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 REM REM REM %PHPDIR%\php php\mail_alerte_reliquats.php force -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log

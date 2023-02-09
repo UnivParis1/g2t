@@ -25,6 +25,7 @@ then
    php php/mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/synchro_demandes_cet.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   php php/synchro_conventions_teletravail.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
 fi
 
 numjour=`date +%d`
