@@ -2107,13 +2107,22 @@ class fonctions
     {
         $date = $this->formatdatedb($date);
 
-        $sql = "SELECT VALEUR
-                FROM COMPLEMENT
-                WHERE AGENTID = ?
-                  AND COMPLEMENTID = 'TT_EXCLU_" . $date . "'
-                  AND VALEUR = ?";
+//        $sql = "SELECT VALEUR
+//                FROM COMPLEMENT
+//                WHERE AGENTID = ?
+//                  AND COMPLEMENTID = '" . complement::TT_EXCLU_LABEL . $date . "'
+//                  AND VALEUR = ?";
+//
+//        $params = array($agentid,$date);
+        
+        $sql = "SELECT REPLACE(COMPLEMENTID,'" . complement::TT_EXCLU_LABEL . "',''), VALEUR
+                  FROM COMPLEMENT
+                 WHERE AGENTID = ?
+                   AND COMPLEMENTID = ?
+                 ORDER BY COMPLEMENTID";
+        $params = array($agentid,complement::TT_EXCLU_LABEL . $date);
 
-        $params = array($agentid,$date);
+        
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);

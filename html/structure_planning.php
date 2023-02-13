@@ -162,9 +162,10 @@
             $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
             if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
             {   // On n'a pas trouvé la date dans la liste
-                $complement->complementid('TT_EXCLU_' . $fonctions->formatdatedb($date_selected));
+                $complement->complementid(complement::TT_EXCLU_LABEL . $fonctions->formatdatedb($date_selected));
                 $complement->agentid($agentid_selected);
-                $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
+//                $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
+                $complement->valeur(''); 
                 $complement->store();
             }
             else
@@ -195,59 +196,59 @@
 <script>
 	var dbclick_element = function(elementid, agentid, date,moment)
 	{
-		var element = document.getElementById(elementid);
-		var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
-		var tableau = element.closest("table");
-		if (tableau.classList.contains('teletravail_hidden'))
-		{
-			// Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
-			alert ('L\'affichage du télétravail est désactivé.');
-			return;
-		}
-		//alert ('Active element = ' + document.activeElement.innerHTML + '   elementid = ' + elementid);
-		if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler
-		{
-    		if (confirm ('Supprimer le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
-    		{
-    			//alert('Le télétravail du ' + date + ' est supprimé.');
-    			
-    			var input = document.getElementById('date_selected');
-    			input.value = date;
-    			var input = document.getElementById('moment_selected');
-    			input.value = moment;
-    			var input = document.getElementById('agentid_selected');
-    			input.value = agentid;
-    			var input = document.getElementById('action');
-    			input.value = 'desactive';
-    			var submit_form = document.getElementById('select_mois');
-    			submit_form.submit();
-    
-    		}
-    		else
-    		{
-    			//alert('Le télétravail du ' + date + ' est maintenu.');
-    		}
-    	}
-    	else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé
-    	{
-    		if (confirm ('Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
-    		{
-    			var input = document.getElementById('date_selected');
-    			input.value = date;
-    			var input = document.getElementById('moment_selected');
-    			input.value = moment;
-    			var input = document.getElementById('agentid_selected');
-    			input.value = agentid;
-    			var input = document.getElementById('action');
-    			input.value = 'reactive';
-    			var submit_form = document.getElementById('select_mois');
-    			submit_form.submit();
-    		}
-    		else
-    		{
-    			//alert('Pas de réactivation du télétravail du ' + date + '.');
-    		}
-    	}
+            var element = document.getElementById(elementid);
+            var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
+            var tableau = element.closest("table");
+            if (tableau.classList.contains('teletravail_hidden'))
+            {
+                    // Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
+                    alert ('L\'affichage du télétravail est désactivé.');
+                    return;
+            }
+            //alert ('Active element = ' + document.activeElement.innerHTML + '   elementid = ' + elementid);
+            if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler
+            {
+                if (confirm ('Supprimer le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
+                {
+                        //alert('Le télétravail du ' + date + ' est supprimé.');
+
+                        var input = document.getElementById('date_selected');
+                        input.value = date;
+                        var input = document.getElementById('moment_selected');
+                        input.value = moment;
+                        var input = document.getElementById('agentid_selected');
+                        input.value = agentid;
+                        var input = document.getElementById('action');
+                        input.value = 'desactive';
+                        var submit_form = document.getElementById('select_mois');
+                        submit_form.submit();
+
+                }
+                else
+                {
+                        //alert('Le télétravail du ' + date + ' est maintenu.');
+                }
+            }
+            else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé
+            {
+                    if (confirm ('Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
+                    {
+                            var input = document.getElementById('date_selected');
+                            input.value = date;
+                            var input = document.getElementById('moment_selected');
+                            input.value = moment;
+                            var input = document.getElementById('agentid_selected');
+                            input.value = agentid;
+                            var input = document.getElementById('action');
+                            input.value = 'reactive';
+                            var submit_form = document.getElementById('select_mois');
+                            submit_form.submit();
+                    }
+                    else
+                    {
+                            //alert('Pas de réactivation du télétravail du ' + date + '.');
+                    }
+            }
 	};
 
 

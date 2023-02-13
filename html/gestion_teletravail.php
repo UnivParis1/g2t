@@ -956,7 +956,7 @@
     	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' >";
     	
     	echo "Type de convention télétravail : ";
-    	echo "<select id='typeconv' name='typeconv'>";
+    	echo "<select id='typeconv' name='typeconv' onChange='displayhidewarning(this.value);'>";
     	echo "<option value=''>---- Sélectionnez le type de convention ----</option>";
 
     	if (count($teletravailliste)==0)
@@ -977,6 +977,27 @@
     	echo ">" . teletravail::TYPE_CONVENTION_MEDICAL . "</option>";
     	
     	echo "</select>";
+        echo "<span id='warningmedical' class='celinfo resetfont' hidden='hidden'><br><br>Attention : Des documents complémentaires devront être fournis au moment de la signature de la convention de télétravail.<br></span>";
+?>
+<script>
+    function displayhidewarning(valeur)
+    {
+        const warningtext = document.getElementById('warningmedical');
+        if (warningtext)
+        {
+            if (valeur=='<?php echo teletravail::CODE_CONVENTION_MEDICAL ?>')
+            {
+                warningtext.hidden = false;
+            }
+            else
+            {
+                warningtext.hidden = true;
+            }
+        }
+    }
+
+</script>    
+<?php
     	echo "<br>";
     	
     	$datedebutminconv = date('d/m/Y');
@@ -1049,14 +1070,24 @@
             }
             else
             {
-                $nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
-                $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail-($nbredemiTP*0.5);
-                if ($nbjoursmaxteletravailcalcule<0) $nbjoursmaxteletravailcalcule = 0;
-                
-                if ($nbjoursmaxteletravailcalcule==0)
+                // Si la quotite est de 80% ou 90%, le nombre de jour de télétravail est de 1 jour maximum
+                // Sinon c'est 0 jour de télétravail
+                if ($affectation->quotitevaleur() == 0.8 or $affectation->quotitevaleur() == 0.9)
                 {
+                    $nbjoursmaxteletravailcalcule = 1;
+                }
+                else
+                {
+                    $nbjoursmaxteletravailcalcule = 0;
                     $disablesubmit = true;
                 }
+//                $nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
+//                $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail-($nbredemiTP*0.5);
+//                if ($nbjoursmaxteletravailcalcule<=0)
+//                {
+//                    $nbjoursmaxteletravailcalcule = 0;
+//                    $disablesubmit = true;
+//                }
                 $declarationliste = $affectation->declarationTPliste(date('d/m/Y'), date('d/m/Y'));
                 $declaration = null;
                 if (! is_null($declarationliste)) 

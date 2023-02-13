@@ -4395,15 +4395,23 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $datefin = $this->fonctions->formatdatedb($datefin);
         
         $listteletravail = array();
-        $sql = "SELECT VALEUR
-                FROM COMPLEMENT
-                WHERE AGENTID = ?
-                  AND COMPLEMENTID LIKE 'TT_EXCLU_%'
-                  AND VALEUR >= ? 
-                  AND VALEUR <= ?
-                ORDER BY VALEUR";
+//        $sql = "SELECT VALEUR
+//                FROM COMPLEMENT
+//                WHERE AGENTID = ?
+//                  AND COMPLEMENTID LIKE '" . complement::TT_EXCLU_LABEL . "%'
+//                  AND VALEUR >= ? 
+//                  AND VALEUR <= ?
+//                ORDER BY VALEUR";
+//        $params = array($this->agentid,$datedebut,$datefin);
         
-        $params = array($this->agentid,$datedebut,$datefin);
+        $sql = "SELECT REPLACE(COMPLEMENTID,'" . complement::TT_EXCLU_LABEL  . "',''), VALEUR
+               FROM COMPLEMENT
+               WHERE AGENTID = ?
+                 AND COMPLEMENTID >= ?
+                 AND COMPLEMENTID <= ?
+                 ORDER BY COMPLEMENTID";
+        $params = array($this->agentid,complement::TT_EXCLU_LABEL . $datedebut,complement::TT_EXCLU_LABEL . $datefin);
+          
         $query = $this->fonctions->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);
@@ -4436,7 +4444,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $sql = "DELETE 
                 FROM COMPLEMENT
                 WHERE AGENTID = ?
-                  AND COMPLEMENTID = 'TT_EXCLU_" . $date . "'";
+                  AND COMPLEMENTID = '" . complement::TT_EXCLU_LABEL . $date . "'";
         
         $params = array($this->agentid());
         $query = $this->fonctions->prepared_query($sql, $params);
@@ -4444,7 +4452,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
-            $errlog = "Problème SQL dans la suppression du complement TT_EXCLU_" . $date . " : " . $erreur;
+            $errlog = "Problème SQL dans la suppression du complement " . complement::TT_EXCLU_LABEL . $date . " : " . $erreur;
             echo $errlog;
         }
         elseif (mysqli_affected_rows($this->dbconnect) == 0)
