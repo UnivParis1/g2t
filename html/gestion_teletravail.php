@@ -85,6 +85,13 @@
         $datefinconv = $_POST["date_fin_conv"];
     }
     
+    $motifmedical = array();
+    if (isset($_POST["motifmedical"]))
+    {
+        $motifmedical = $_POST["motifmedical"];
+    }
+    
+    
     require ("includes/menu.php");
     
     //echo "<br>" . print_r($_POST, true) . "<br><br>";
@@ -327,7 +334,6 @@
             $datefinmaxconv = $_POST["datefinmaxconv"];
         }
         
-        
         // Le nombre maximal de jour de télétravail pour un temps complet est dans $nbjoursmaxteletravail
         $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
         if (isset($_POST["nbjoursmaxteletravailcalcule"]))
@@ -339,8 +345,9 @@
         {
             $typeconv = $_POST["typeconv"];
         }
+        
         //echo "tabteletravail = $tabteletravail <br>";
-        if (!is_null($jours))
+        if (!is_null($jours) and ($typeconv==teletravail::CODE_CONVENTION_INITIALE or $typeconv==teletravail::CODE_CONVENTION_RENOUVELLEMENT))
         {
             foreach((array)$jours as $numjour) // numjour => [1-7] où 1 = lundi
             {
@@ -355,7 +362,7 @@
                 $tabteletravail = $gauche . '1' . $droite;
             }
         }
-        if (!is_null($demijours))
+        if (!is_null($demijours) and $typeconv==teletravail::CODE_CONVENTION_MEDICAL)
         {
             foreach((array)$demijours as $numdemijour) // numdemijour => [1-10] où 1 = lundi matin, 2 = lundi après-midi, ...
             {
@@ -364,7 +371,7 @@
             }
         }
         
-        //echo "tabteletravail = $tabteletravail <br>";
+        //var_dump ("tabteletravail = $tabteletravail <br>");
         $dateok = true;
         
         $teletravailliste = $agent->teletravailliste('01/01/1900', '31/12/2100'); // On va récupérer toutes les demandes de télétravail de l'agent
@@ -432,10 +439,10 @@
                     $dureemax = 1;
                     break;
                 case teletravail::CODE_CONVENTION_MEDICAL :
-                    $dureemax = 1;
+                    $dureemax = 5;
                     break;
                 case teletravail::CODE_CONVENTION_RENOUVELLEMENT :
-                    $dureemax = 2;
+                    $dureemax = 1;
                     break;
             }
             $datedebuttimestamp = strtotime($fonctions->formatdatedb($datedebutteletravail));
@@ -451,6 +458,28 @@
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                 $dateok = false;
             }
+        }
+        
+        $fulltabmotifmedical = array('0','0','0','0','0','0','0','0','0','0');
+        if ($typeconv==teletravail::CODE_CONVENTION_MEDICAL)
+        {
+            $motifselected = false;
+            for ($cpt=0; $cpt<count($fulltabmotifmedical) ; $cpt++)
+            {
+                if (isset($motifmedical[$cpt]))
+                {
+                    $fulltabmotifmedical[$cpt] = '1';
+                    $motifselected = true;
+                }
+            }
+            if (!$motifselected)
+            {
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "Aucun motif médical n'est sélectionné.";
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                $dateok = false;
+            }
+            //var_dump($fulltabmotifmedical);
         }
 
         
@@ -499,6 +528,9 @@
             $teletravail->tabteletravail($tabteletravail);
             $teletravail->agentid($agent->agentid());
             $teletravail->typeconvention($typeconv);
+            $teletravail->motifmedicalsante($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_SANTE]);
+            $teletravail->motifmedicalgrossesse($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_GROSSESSE]);
+            $teletravail->motifmedicalaidant($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_AIDANT]);
             
             if (!is_null($agentid))
             {
@@ -632,6 +664,8 @@
     $inputdatedebut = null;
     $inputdatefin = null;
     $inputtabteletravail = null;
+    $inputmotifmedical = null;
+    
     
     if ($erreur != "")
     {
@@ -644,6 +678,7 @@
         $inputdatedebut = $datedebutteletravail;
         $inputdatefin = $datefinteletravail;
         $inputtabteletravail = $tabteletravail;
+        $inputmotifmedical = $motifmedical;
     }
     if ($alerte != "")
     {
@@ -687,6 +722,12 @@
     	$teletravailliste = $agent->teletravailliste('01/01/1900', '31/12/2100'); // On va récupérer toutes les demandes de télétravail de l'agent pour les afficher
     	if (count($teletravailliste) > 0)
     	{
+            $displayPDFbutton = false;
+            if ($mode=='gestrh')
+            {
+                $displayPDFbutton = true;
+            }
+            
     	    $nbrelignetableauconvention=count($teletravailliste);
     	    echo "<form name='form_teletravail_delete' id='form_teletravail_delete' method='post' >";
     	    echo "<table class='tableausimple' id='listeteletravail'>";
@@ -698,7 +739,11 @@
                       <td class='titresimple'>Id. externe</td>
                       <td class='titresimple'>URL eSignature</td>
                  ";
-            echo "<td class='titresimple'>Annuler</td><td class='titresimple'>Générer le PDF</td>";
+            echo "<td class='titresimple'>Annuler</td>";
+            if ($displayPDFbutton)
+            {
+                echo "<td class='titresimple'>Générer le PDF</td>";
+            }
             echo "</center></tr>";
     	    foreach($teletravailliste as $teletravailid)
     	    {
@@ -860,12 +905,15 @@
     	        }
     	        echo "></center></td>";
 
-    	        echo "<td class='cellulesimple'><center><input type='submit' value='Générer le PDF' name='genererpdf[" . $teletravail->teletravailid() . "]' ";
-    	        if (trim($teletravail->esignatureid())=='' or trim($teletravail->esignatureurl())=='' or $teletravail->statut() == teletravail::TELETRAVAIL_ANNULE)
-    	        {
-    	            echo " disabled='disabled' ";
-    	        }
-    	        echo "></center></td>";
+                if ($displayPDFbutton)
+                {
+                    echo "<td class='cellulesimple'><center><input type='submit' value='Générer le PDF' name='genererpdf[" . $teletravail->teletravailid() . "]' ";
+                    if (trim($teletravail->esignatureid())=='' or trim($teletravail->esignatureurl())=='' or $teletravail->statut() == teletravail::TELETRAVAIL_ANNULE)
+                    {
+                        echo " disabled='disabled' ";
+                    }
+                    echo "></center></td>";
+                }
                 echo "</tr>";
     	    }
             echo "</table>";
@@ -977,22 +1025,44 @@
     	echo ">" . teletravail::TYPE_CONVENTION_MEDICAL . "</option>";
     	
     	echo "</select>";
-        echo "<span id='warningmedical' class='celinfo resetfont' hidden='hidden'><br><br>Attention : Des documents complémentaires devront être fournis au moment de la signature de la convention de télétravail.<br></span>";
 ?>
 <script>
     function displayhidewarning(valeur)
     {
+/*
         const warningtext = document.getElementById('warningmedical');
-        if (warningtext)
+        const tabttnormal = document.getElementById('tabttnormal');
+        const tabttmedical = document.getElementById('tabttmedical');
+        const labelmaxjrs = document.getElementById('labelmaxjrs');
+        const labeljrsmedical = document.getElementById('labeljrsmedical');
+ */
+        const divttnormal = document.getElementById('divttnormal');
+        const divttmedical = document.getElementById('divttmedical');
+        
+        if (divttnormal && divttmedical)
         {
             if (valeur=='<?php echo teletravail::CODE_CONVENTION_MEDICAL ?>')
             {
+                divttnormal.hidden = true;
+/*                
                 warningtext.hidden = false;
+                tabttnormal.hidden = true;
+ */
             }
             else
             {
+                divttnormal.hidden = false;
+/*
                 warningtext.hidden = true;
+                tabttnormal.hidden = false;
+ */
             }
+            divttmedical.hidden = !divttnormal.hidden;
+/*
+            tabttmedical.hidden = !tabttnormal.hidden;
+            labelmaxjrs.hidden = tabttnormal.hidden;
+            labeljrsmedical.hidden = tabttmedical.hidden;
+ */
         }
     }
 
@@ -1054,64 +1124,34 @@
             if ($affectation->quotite()=='100%')
             {
                 $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
-                echo "Jours de télétravail : Vous êtes à temps complet. Vous avez jusqu'à " . $nbjoursmaxteletravailcalcule . " jour(s) de télétravail.";
-                echo "<table class='tableausimple'>";
-                echo "<tr><center>";
-                
-                for ($cpt=1 ; $cpt<6 ; $cpt++)
-                {
-                    echo "    <td class='cellulesimple'><input type='checkbox' value='$cpt' id='creation_$cpt' name='jours[]'";
-                    if ($teletravail->estjourteletravaille($cpt)) echo " checked ";
-                    echo ">" . $fonctions->nomjourparindex($cpt) . "</input></td>";
-                    
-                }
-                echo "</center></tr>";
-                echo "</table>";
+            }
+            elseif ($affectation->quotitevaleur() == 0.8 or $affectation->quotitevaleur() == 0.9)
+            {
+                $nbjoursmaxteletravailcalcule = 1;
             }
             else
             {
-                // Si la quotite est de 80% ou 90%, le nombre de jour de télétravail est de 1 jour maximum
-                // Sinon c'est 0 jour de télétravail
-                if ($affectation->quotitevaleur() == 0.8 or $affectation->quotitevaleur() == 0.9)
+                $nbjoursmaxteletravailcalcule = 0;
+                $disablesubmit = true;
+            }
+            
+            $declarationliste = $affectation->declarationTPliste(date('d/m/Y'), date('d/m/Y'));
+            $declaration = null;
+            if (! is_null($declarationliste)) 
+            {
+                foreach ($declarationliste as $declaration)
                 {
-                    $nbjoursmaxteletravailcalcule = 1;
-                }
-                else
-                {
-                    $nbjoursmaxteletravailcalcule = 0;
-                    $disablesubmit = true;
-                }
-//                $nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
-//                $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail-($nbredemiTP*0.5);
-//                if ($nbjoursmaxteletravailcalcule<=0)
-//                {
-//                    $nbjoursmaxteletravailcalcule = 0;
-//                    $disablesubmit = true;
-//                }
-                $declarationliste = $affectation->declarationTPliste(date('d/m/Y'), date('d/m/Y'));
-                $declaration = null;
-                if (! is_null($declarationliste)) 
-                {
-                    foreach ($declarationliste as $declaration)
+                    if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) 
                     {
-                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) 
-                        {
-                            // La première déclaration de TP non refusée qu'on trouve est la bonne
-                            break;
-                        }
+                        // La première déclaration de TP non refusée qu'on trouve est la bonne
+                        break;
                     }
                 }
-                // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
-                if (is_null($declaration))
-                {
-                    echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas de déclaration de temps partiel active.");
-                }
-                    
-                echo "Jours de télétravail : Vous êtes à " . $affectation->quotite() . ". Vous avez jusqu'à " . $nbjoursmaxteletravailcalcule . " jour(s) de télétravail.";
-                echo "<table class='tableausimple'>";
-                echo "<tr><center>";
-                
-                $moment = fonctions::MOMENT_MATIN;
+            }
+            // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
+            if (is_null($declaration))
+            {
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas de déclaration de temps partiel active.");
                 for ($cpt=0 ; $cpt<10 ; $cpt ++)
                 {
                     //var_dump ("cpt = $cpt");
@@ -1124,42 +1164,9 @@
                     $fermeinput = "";
                     $fermespan = '';
                     echo "    <td class='cellulesimple' ";
-                    
-                    if (!is_null($declaration))
-                    {
-                        // Si l'agent n'est jamais en TP (semaine paire/impaire et matin/après-midi pour le jour courant)
-                        // On affiche le jour complet pour le télétravail
-                        if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
-                        and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
-                        {
-                            echo "><input type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]'";
-                            if ($teletravail->estjourteletravaille($indexjour)) echo " checked ";
-                            echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></td>";
-                            $cpt++;
-                        }
-                        else
-                        {
-                            if ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false))
-                            {
-                                $fermespan = "</span>";
-                                echo " style='background: " . TABCOULEURPLANNINGELEMENT['tppar']['couleur']  . " ;' >";
-                                echo "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['tppar']['libelle'] . chr(34);
-                            }
-                            else
-                            {
-                                $fermeinput  = "</input>";
-                                echo "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
-                                if ($teletravail->estjourteletravaille($indexjour,$moment)) echo " checked ";
-                            }
-                            echo ">" . $fonctions->nomjourparindex($indexjour) . " " . $fonctions->nommoment($moment) . " $fermeinput $fermespan</td>";
-                        }
-                    }
-                    else  // On est a temps partiel mais on n'a pas de déclaration de TP ==> On affiche la 1/2 journée (matin/après) de la journée
-                    {
-                        echo "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
-                        if ($teletravail->estjourteletravaille($indexjour,$moment)) echo " checked ";
-                        echo ">" . $fonctions->nomjourparindex($indexjour) . " " . $fonctions->nommoment($moment) . " </input></td>";
-                    }
+                    echo "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
+                    if ($teletravail->estjourteletravaille($indexjour,$moment)) echo " checked ";
+                    echo ">" . $fonctions->nomjourparindex($indexjour) . " " . $fonctions->nommoment($moment) . " </input></td>";
                     if ($moment == fonctions::MOMENT_MATIN)
                     {
                         $moment = fonctions::MOMENT_APRESMIDI;
@@ -1171,6 +1178,141 @@
                 }
                 echo "</center></tr>";
                 echo "</table>";
+            }
+            else
+            {
+                $hidden = '';
+                if ($inputtypeconv == teletravail::CODE_CONVENTION_MEDICAL)
+                {
+                    $hidden = " hidden='hidden' ";
+                }
+                echo "<div id='divttnormal' $hidden>";
+                echo "<br>";
+                // Ci-dessous : Le tableau pour les temps complets et les TP 90% et 80%
+                echo "<label id='labelmaxjrs' >Jours de télétravail : Vous pouvez déclarer jusqu'à " . $nbjoursmaxteletravailcalcule . " jour(s) de télétravail.</label>";
+                echo "<table class='tableausimple' id='tabttnormal' ";
+                echo ">";
+                echo "<tr><center>";
+                for ($cpt=0 ; $cpt<10 ; $cpt ++)
+                {
+                    //var_dump ("cpt = $cpt");
+                    $indexjour = intdiv($cpt,2)+1;
+                    //var_dump ("indexjour = $indexjour");
+                    if ($indexjour >= 6)
+                    {
+                        break;
+                    }
+                    $fermeinput = "";
+                    $fermespan = '';
+                    // Si l'agent n'est jamais en TP (semaine paire/impaire et matin/après-midi pour le jour courant)
+                    // On affiche le jour complet pour le télétravail
+                    echo "<td class='cellulesimple' style='width: 90px;'";
+                    if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
+                    and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
+                    {
+                        echo "><center><input type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]'";
+                        if ($teletravail->estjourteletravaille($indexjour) and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL) echo " checked ";
+                        echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></center></td>";
+                    }
+                    else
+                    {
+                        echo " style='background: " . TABCOULEURPLANNINGELEMENT['tppar']['couleur']  . " ;' >";
+                        echo "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['tppar']['libelle'] . chr(34) . ">";
+                        echo $fonctions->nomjourparindex($indexjour) . "</span></td>";
+                    }
+                    $cpt++;
+                }
+                echo "</center></tr>";
+                echo "</table>";
+                echo "</div>";
+                // Ci-dessous le tableau pour les convention médicales
+                //echo "<br>";
+                //echo "Ci-dessous le tableau pour les convention médicales : <br>";
+                $hidden = '';
+                if ($inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL)
+                {
+                    $hidden = " hidden='hidden' ";
+                }              
+                echo "<div id='divttmedical' $hidden >";
+                echo "<span id='warningmedical' class='celinfo resetfont' ><br>Attention : Des documents complémentaires devront être fournis au moment de la signature de la convention de télétravail.</span><br>";
+                echo "Motif de la demande de télétravail pour raison médicale : <br>";
+                $check = '';
+                if (isset($inputmotifmedical[teletravail::MOTIF_MEDICAL_SANTE]))
+                {
+                    $check = ' checked ';
+                }
+                echo "<input type='checkbox' $check name='motifmedical[" . teletravail::MOTIF_MEDICAL_SANTE . "]'>Raison de santé</input><br>";
+                $check = '';
+                if (isset($inputmotifmedical[teletravail::MOTIF_MEDICAL_GROSSESSE]))
+                {
+                    $check = ' checked ';
+                }
+                echo "<input type='checkbox' $check name='motifmedical[" . teletravail::MOTIF_MEDICAL_GROSSESSE . "]'>Grossesse</input><br>";
+                $check = '';
+                if (isset($inputmotifmedical[teletravail::MOTIF_MEDICAL_AIDANT]))
+                {
+                    $check = ' checked ';
+                }
+                echo "<input type='checkbox' $check name='motifmedical[". teletravail::MOTIF_MEDICAL_AIDANT . "]'>Proche aidant</input><br>";
+                
+                echo "<label id='labeljrsmedical' >Demie-journée de télétravail sur prescription médicale.</label>";
+                $tableau_matin = "";
+                $tableau_apresmidi = "";
+                $moment = fonctions::MOMENT_MATIN;
+                for ($cpt=0 ; $cpt<10 ; $cpt ++)
+                {
+                    $tableau_demiejour = '';
+                    //var_dump ("cpt = $cpt");
+                    $indexjour = intdiv($cpt,2)+1;
+                    //var_dump ("indexjour = $indexjour");
+                    if ($indexjour >= 6)
+                    {
+                        break;
+                    }
+                    $fermeinput = "";
+                    $fermespan = '';
+                    $tableau_demiejour .= "    <td class='cellulesimple' ";
+                    if ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false))
+                    {
+                        $fermespan = "</span>";
+                        $tableau_demiejour .= " style='background: " . TABCOULEURPLANNINGELEMENT['tppar']['couleur']  . " ;' >";
+                        $tableau_demiejour .= "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['tppar']['libelle'] . chr(34);
+                    }
+                    else
+                    {
+                        $fermeinput  = "</input>";
+                        $tableau_demiejour .= "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
+                        if ($teletravail->estjourteletravaille($indexjour,$moment) and $inputtypeconv == teletravail::CODE_CONVENTION_MEDICAL)
+                        {
+                            $tableau_demiejour .= " checked ";
+                        }
+                    }
+//                    $tableau_demiejour .= ">" . $fonctions->nomjourparindex($indexjour) . " " . $fonctions->nommoment($moment) . " $fermeinput $fermespan</td>";
+                    $tableau_demiejour .= ">" . $fonctions->nommoment($moment) . " $fermeinput $fermespan</td>";
+                    if ($moment == fonctions::MOMENT_MATIN)
+                    {
+                        $tableau_matin .= $tableau_demiejour;
+                        $moment = fonctions::MOMENT_APRESMIDI;
+                    }
+                    else
+                    {
+                        $tableau_apresmidi .= $tableau_demiejour;
+                        $moment = fonctions::MOMENT_MATIN;
+                    }
+                }
+                echo "<table class='tableausimple'>";
+                echo "<tr>";
+                for ($cpt=1 ; $cpt <= 5 ; $cpt++)
+                {
+                    echo "<td class='titresimple'>" . $fonctions->nomjourparindex($cpt)  . "</td>";
+                }
+                echo "</tr>";
+                echo "<tr>";
+                echo $tableau_matin;
+                echo "</tr><tr>";
+                echo $tableau_apresmidi;
+                echo "</tr></table>";
+                echo "</div>";
             }
         }
         echo "<br>";

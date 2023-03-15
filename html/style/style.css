@@ -162,6 +162,11 @@
 	padding-bottom : 20px;
 }
 
+.imgquestion {
+	width:40px;
+	height:40px;
+}
+
 .resetfont {
 	font-size : unset; 
 }
@@ -494,7 +499,7 @@ LI.plus::after {
 #planning TR.ligneplanning TD {
    color: black;
    BORDER-RIGHT: black 1px solid; 
-   ADDING-RIGHT: 4px; 
+   PADDING-RIGHT: 4px; 
    BORDER-TOP: black 1px solid; 
    PADDING-LEFT: 4px; 
    PADDING-BOTTOM: 2px; 
@@ -763,6 +768,38 @@ span[data-tip]{
     display:none;
 }
 
+/*************************************************
+/ Affichage de la liste des demandes d'absence
+/*************************************************/
+.abssencecommoblig {
+    color: #e40ccd; 
+    font-weight: normal;  /* bold; */
+}
+.abssencecommfacultatif {
+    color: black;
+    font-weight: normal;
+}
+
+/*************************************************
+/ Fenêtres de dialogue
+/*************************************************/
+.imagedialog {
+    vertical-align:middle; 
+    width:40px;
+    height:40px;    
+}
+
+.warningdialog {
+    border:3px solid #eb984e;
+    background-color: #fef5e7;
+    border-radius: 0.5rem; /* => coins arrondis */
+}
+
+.questiondialog {
+    border:3px solid #2e86c1;
+    background-color: #d6eaf8;
+    border-radius: 0.5rem; /* => coins arrondis */
+}
 
 /*************************************************
 / CSS SIHAM pour affichage CET dans module agent de l'ENT

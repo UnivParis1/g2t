@@ -13,6 +13,14 @@ class planningelement
  // /'#000000';
     const COULEUR_HACHURE = '#1C1C1C';
  // '#2E2E2E';
+    
+    const HTML_CLASS_EXCLUSION = ' exclusion ';
+    const HTML_CLASS_TELETRAVAIL = ' teletravail ';
+    const HTML_CLASS_TELETRAVAIL_HIDDEN = ' teletravail_cache ';
+    const HTML_CLASS_DEPLACE = ' deplace ';
+
+    const JAVA_CLASS_TELETRAVAIL_HIDDEN = 'teletravail_hidden';
+    
     private $date = null;
 
     private $moment = null;
@@ -30,6 +38,10 @@ class planningelement
     private $agentid = null;
 
     private $demandeid = null;
+    
+    private $typeconvention = null;
+    
+    private $htmlextraclass = '';
 
     private $fonctions = null;
 
@@ -120,6 +132,24 @@ class planningelement
             return $this->demandeid;
         } else {
             $this->demandeid = $id;
+        }
+    }
+    
+    function typeconvention($typeconvention = null)
+    {
+        if (is_null($typeconvention)) {
+            return $this->typeconvention;
+        } else {
+            $this->typeconvention = $typeconvention;
+        }
+    }
+    
+    function htmlextraclass($htmlextraclass = null)
+    {
+        if (is_null($htmlextraclass)) {
+            return $this->htmlextraclass;
+        } else {
+            $this->htmlextraclass = $htmlextraclass;
         }
     }
     
@@ -278,21 +308,8 @@ class planningelement
         if (!is_null($this->date) or strlen($this->date)>6)
         {
             $datetext = $this->fonctions->nomjour($this->date) . " " . $this->fonctions->formatdate($this->date) . " : ";
+            $datadatefr = " data-datefr='" .  $this->fonctions->formatdate($this->date) . "' ";
         }
-        // $htmltext = $htmltext ."<td class=celplanning style='border:1px solid black' bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" ></td>";
-        
-        /*
-         * $htmltext = $htmltext . "<form name='frm_" . $this->date . "_" . $this->moment . "' method='post' >";
-         * $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $this->agentid . "'>";
-         * $htmltext = $htmltext . "<input type='hidden' name='date' value='" . $this->date . "'>";
-         * $htmltext = $htmltext . "<input type='hidden' name='moment' value='" . $this->moment . "'>";
-         * foreach ($_POST as $keypost => $valeurpost)
-         * $htmltext = $htmltext . "<input type='hidden' name='" . $keypost ."' value='" . $valeurpost . "'>";
-         * if ($this->typeelement == "atten")
-         * $htmltext = $htmltext ."<a href='javascript:frm_" . $this->date . "_" . $this->moment . ".submit();'>";
-         *
-         * '" . $this->date() . "'
-         */
         if ($clickable)
             $clickabletext = "oncontextmenu=\"planning_rclick('" . $this->date() . "','" . $this->moment() . "');return false;\" onclick=\"planning_lclick('" . $this->date() . "','" . $this->moment() . "')\" ";
         else
@@ -303,49 +320,34 @@ class planningelement
         else
             $checkboxtext = "";
         
-        // ATTENTION : Ce cas arrive lorsque l'on veut déclarer un TP dans l'écran saisir_tpspartiel.php
-        if (is_null($this->agentid))
+        // Si on est en affichage N&B et que c'est une convention médicale alors on modifie l'info à afficher avec juste 'Teletravail'
+        if ($this->typeconvention()===teletravail::CODE_CONVENTION_MEDICAL and $noiretblanc)
         {
-            $listeexclusion = array();
-            $exclusion = false;
-        }
-        else
-        {
-          
-/*            
-            $agent = new agent($this->dbconnect);
-            $agent->load($this->agentid());
-            $listeexclusion = $agent->listejoursteletravailexclus($this->date(), $this->date());
-*/
-/*            
-            if (array_search($this->fonctions->formatdatedb($this->date()),(array)$listeexclusion)===false)
-            {   // On n'a pas trouvé la date dans la liste 
-                $exclusion = false;
+            //$this->info('Télétravail');
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['libelle']))
+            {
+                $this->info(TABCOULEURPLANNINGELEMENT[$this->typeelement]['libelle']);
             }
-            else
-            {   // La date est dans liste des exclusions
-                $exclusion = true;
-            }
-*/
-            $exclusion = $this->fonctions->estjourteletravailexclu($this->agentid(), $this->date());
-            
         }
         
+        //$extraclass = '';        
+        $extraclass = $this->htmlextraclass();
+        $exclusion = (stripos($this->htmlextraclass(), planningelement::HTML_CLASS_EXCLUSION)!==false);
+        $deplace = (stripos($this->htmlextraclass(), planningelement::HTML_CLASS_DEPLACE)!==false);
         if ((strcasecmp($this->type(),'teletrav')==0 or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
-            $extraclass = ' teletravail ';
-            if ($exclusion)
+            
+            // Le fait que se soit une convention 'médicale' est pris en charge par le script de déplacement/annulation
+            // Donc on ne traite pas ici le test " and $this->typeconvention()!==teletravail::CODE_CONVENTION_MEDICAL"
+            // Si l'élément est déplacé on ne permet pas le dbclick 
+            if ($dbclickable and !$deplace)
             {
-                $extraclass = $extraclass . ' exclusion ';
+                $clickabletext = $clickabletext . " id='" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "' ondblclick=\"dbclick_element('" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "','" . $this->agentid()  . "','" . $this->date() . "','" . $this->moment() . "','" . $this->typeconvention() . "');\" ";
             }
-            if ($dbclickable)
-                $clickabletext = $clickabletext . " id='" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "' ondblclick=\"dbclick_element('" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "','" . $this->agentid()  . "','" . $this->date() . "','" . $this->moment() . "');\" ";
             else
+            {
                 $clickabletext = $clickabletext . "";
-        }
-        else
-        {
-            $extraclass = '';
+            }
         }
         
         if ($this->moment == fonctions::MOMENT_MATIN) {
@@ -353,16 +355,16 @@ class planningelement
             // $htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
             if ($this->date == date("Ymd")) {
                 //echo "Le matin du jour " . $this->date . " <br>";
-                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $this->couleur($noiretblanc) . "' >";
             } else {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) 
                 {
-                    $htmltext = $htmltext . "<td class='planningelement_matin rayureplanning' " . $clickabletext . " >";
+                    $htmltext = $htmltext . "<td class='planningelement_matin rayureplanning' " . $clickabletext . " $datadatefr >";
                 } 
                 else 
                 {
-                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . "  bgcolor='" . $htmlbackcolor . "' >";
+                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $htmlbackcolor . "' >";
                 }
             }
             $spanactive = false;
@@ -417,13 +419,13 @@ class planningelement
             // $htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
             if ($this->date == date("Ymd")) {
                 // echo "Le soir du jour " . $this->date . " <br>";
-                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $this->couleur($noiretblanc) . "' >";
             } else {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) {
-                    $htmltext = $htmltext . "<td class='planningelement_aprem rayureplanning' " . $clickabletext . "  >";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem rayureplanning' " . $clickabletext . " $datadatefr >";
                 } else {
-                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . "  bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $this->couleur($noiretblanc) . "' >";
                 }
             }
             $spanactive = false;
@@ -474,11 +476,6 @@ class planningelement
             }
             $htmltext = $htmltext . "</td>";
         }
-        /*
-         * if ($this->typeelement == "atten")
-         * $htmltext = $htmltext ."</a>";
-         * $htmltext = $htmltext . "</form>";
-         */
          return $htmltext;
     }
 }

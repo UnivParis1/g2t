@@ -782,6 +782,8 @@
         $nbjrsteletravailupdate = false;
         $modelteletravailavanceupdate = false;
         $modelteletravailsimpleupdate = false;
+        $reportteletravailupdate = false;
+
         if (isset($_POST['updateinfo_teletravail']))
         {
             $nbjrsteletravail = '0';
@@ -857,6 +859,21 @@
                     {
                         $modelteletravailavanceupdate = true;
                     }
+                }
+            }
+            if (isset($_POST['reportteletravail']))
+            {
+                $reportteletravail = $_POST['reportteletravail'];
+                $constantename = "REPORTTELETRAVAIL";
+                $erreur = $fonctions->enregistredbconstante($constantename, $reportteletravail);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $reportteletravailupdate = true;
                 }
             }
             
@@ -1099,7 +1116,7 @@
         {
             echo $fonctions->showmessage(fonctions::MSGERROR, $msgerror);
         }
-        if ($signataireupdate or $nbjrsteletravailupdate or $modelteletravailavanceupdate or $modelteletravailsimpleupdate)
+        if ($signataireupdate or $nbjrsteletravailupdate or $modelteletravailavanceupdate or $modelteletravailsimpleupdate or $reportteletravailupdate)
         {
             echo $fonctions->showmessage(fonctions::MSGINFO, "Les données sont enregistrées");
         }
@@ -2106,7 +2123,7 @@
 ?>
 		<input type='text' name='nbjrsteletravail' id='nbjrsteletravail' value=<?php echo $nbjrsteletravail; ?>></input>
 <?php
-    	echo "<br><br>";
+    	echo "<br>";
     	// Si l'utilisateur CAS (donc le vrai utilisateur) est un administrateur ==> On affiche les numéros des circuits
     	if ($CASAdminId!==false)
     	{
@@ -2120,7 +2137,7 @@
 ?>
     		<input type='text' name='modelecircuitsimple' id='modelecircuitsimple' value=<?php echo $modelecircuitsimple; ?>></input>
 <?php     	    
-            echo "<br><br>";
+            echo "<br>";
             echo "Identifiant du modèle pour le circuit avancé : ";
             $constantename = 'IDMODELTELETRAVAIL_EVOLUE';
             $modelecircuitavance = '';
@@ -2132,6 +2149,30 @@
     		<input type='text' name='modelecircuitavance' id='modelecircuitavance' value=<?php echo $modelecircuitavance; ?>></input>
 <?php     	    
     	}
+        echo "<br>";
+        echo "Autoriser le report d'une journée de télétravail : ";
+        $constantename = 'REPORTTELETRAVAIL';
+        $reportteletravail = 'n';
+        if ($fonctions->testexistdbconstante($constantename))
+        {
+            $reportteletravail = $fonctions->liredbconstante($constantename);
+        }
+        echo "<select id='reportteletravail' name='reportteletravail'>";
+	echo "<option value='o'";
+        if (strcasecmp($reportteletravail, "o") == 0)
+        {
+            echo " selected ";
+        }
+        echo ">" . $fonctions->ouinonlibelle('o');
+        echo "</option>";
+	echo "<option value='n'";
+        if (strcasecmp($reportteletravail, "n") == 0)
+        {
+            echo " selected ";
+        }
+        echo ">" . $fonctions->ouinonlibelle('n');
+        echo "</option>";
+        echo "</select>";
     	echo "<br><br>";
     	echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
@@ -2892,7 +2933,7 @@
             tab.addEventListener('click', () => {
             	tabs.forEach(onglet => {
 	            	onglet.classList.remove('tab_active')
-	            })
+	            });
                 tab.classList.add('tab_active');
 
                 const target = document
@@ -2900,12 +2941,12 @@
   
                 tabInfos.forEach(tabInfo => {
                     tabInfo.classList.remove('active')
-                })
+                });
                 target.classList.add('active');
                 //const current_tab_input = document.getElementById('current_tab');
                 //current_tab_input.value = target.id;
-            })
-        })
+            });
+        });
     </script>
     
     <script type="text/javascript">

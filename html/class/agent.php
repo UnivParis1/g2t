@@ -1941,7 +1941,7 @@ class agent
                     
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
-                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
                     $htmltext = $htmltext . $libelledemande;
                     if (strlen($demande->commentaire()) != 0) {
@@ -1950,7 +1950,7 @@ class agent
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
-                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
                     $htmltext = $htmltext . $demande->date_demande() . " " . $demande->heure_demande();
                     if (strlen($demande->commentaire()) != 0) {
@@ -1959,7 +1959,7 @@ class agent
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
-                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
                     $htmltext = $htmltext . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut());
                     if (strlen($demande->commentaire()) != 0) {
@@ -1968,7 +1968,7 @@ class agent
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
-                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
                     $htmltext = $htmltext . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin());
                     if (strlen($demande->commentaire()) != 0) {
@@ -1977,7 +1977,7 @@ class agent
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
-                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
                     $htmltext = $htmltext . $demande->nbrejrsdemande();
                     if (strlen($demande->commentaire()) != 0) {
@@ -1986,14 +1986,14 @@ class agent
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
-                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                        $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
                     $htmltext = $htmltext . $this->fonctions->demandestatutlibelle($demande->statut());
                     if (strlen($demande->commentaire()) != 0) {
                         $htmltext = $htmltext . "</span>";
                     }
                     $htmltext = $htmltext . "</td>";
-                    $htmltext = $htmltext . "   <td>" . $demande->motifrefus() . "</td>";
+                    $htmltext = $htmltext . "   <td>" . htmlentities($demande->motifrefus()) . "</td>";
                     $htmltext = $htmltext . "</tr>";
                 }
             }
@@ -2282,6 +2282,8 @@ class agent
      */
     function demandeslistehtmlpourgestion($debut_interval, $fin_interval, $agentid = null, $mode = "agent", $cleelement = null)
     {
+        $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
+
         $liste = null;
         $liste = $this->demandesliste($debut_interval, $fin_interval);
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
@@ -2360,7 +2362,7 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                         {
-                            $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé)</th>";
+                            $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé) - maximum $longueurmaxmotif caractères</th>";
                         }
                         $htmltext = $htmltext . "</tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -2402,7 +2404,7 @@ const modifymotif = (motif, motifid) =>
                                 $disabletext = "";
                             }
                             
-                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroundtext size=40 oninput='modifymotif(this," . $demande->id() . ");' $disabletext></td>";
+                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroundtext size=80 oninput='checktextlength(this,$longueurmaxmotif); modifymotif(this," . $demande->id() . ");' $disabletext></td>";
                         }
                         $htmltext = $htmltext . "</tr>";
                     }
@@ -2521,6 +2523,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      */
     function demandeslistehtmlpourvalidation($debut_interval, $fin_interval, $agentid = null, $structureid = null, $cleelement = null)
     {
+        $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
+
         $liste = null;
         $liste = $this->demandesliste($debut_interval, $fin_interval);
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
@@ -2562,7 +2566,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         if ($premieredemande) {
                             $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
                             $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center ><div style='color:#BF3021'>Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Etat de la demande</td><td class='cellulesimple'>Motif (obligatoire si le congé est refusé)</td></tr>";
+                            $htmltext = $htmltext . "   <tr align=center>
+                                                            <td class='cellulesimple'>Date de demande</td>
+                                                            <td class='cellulesimple'>Date de début</td>
+                                                            <td class='cellulesimple'>Date de fin</td>
+                                                            <td class='cellulesimple'>Type de demande</td>
+                                                            <td class='cellulesimple'>Nbre jours</td>
+                                                            <td class='cellulesimple'>Etat de la demande</td>
+                                                            <td class='cellulesimple'>Motif (obligatoire si le congé est refusé) - maximum $longueurmaxmotif caractères</td>
+                                                        </tr>";
                             $premieredemande = FALSE;
                         }
                         
@@ -2575,15 +2587,16 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         if ($demande->type() == 'enmal') {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ")</td>";
                         }
-                        elseif ($demande->type() == 'spec')
+                        //elseif ($demande->type() == 'spec' or $demande->type() == 'teleetab')
+                        elseif ($this->fonctions->absencecommentaireoblig($demande->type()))
                         {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>";
-                            if (strlen($demande->commentaire()) != 0)
+                            if (strlen(trim($demande->commentaire()."")) != 0)
                             {
-                                $htmltext = $htmltext . " <span data-tip=" . chr(34) . $demande->commentaire() . chr(34) . ">";
+                                $htmltext = $htmltext . " <span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                             }
                             $htmltext = $htmltext. $demande->typelibelle();
-                            if (strlen($demande->commentaire()) != 0)
+                            if (strlen(trim($demande->commentaire()."")) != 0)
                             {
                                 $htmltext = $htmltext . "</span>";
                             }
@@ -2636,7 +2649,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                             $disabletext = "";
                         }
                         
-                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' $backgroundtext size=40 oninput='validdemandemotif(this," . $demande->id() . ");' $disabletext></td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' $backgroundtext size='80' oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext></td>";
                         $htmltext = $htmltext . "</tr>";
                     }
                 }
@@ -2658,7 +2671,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         //echo "<br>anneeref = XXX" . $anneeref  . "XXX<br>";
         if (is_null($anneeref))
         {
-            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGEID
+            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGE.COMMENTAIRECONGEID,COMMENTAIRECONGE.AUTEURID
     FROM COMMENTAIRECONGE,TYPEABSENCE 
     WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
@@ -2667,7 +2680,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         else
         {
-            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGEID
+            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGE.COMMENTAIRECONGEID,COMMENTAIRECONGE.AUTEURID
     FROM COMMENTAIRECONGE,TYPEABSENCE
     WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
                                                  OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
@@ -2700,7 +2713,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         $nbcolonne++;
                     }
                     $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Commentaires sur les modifications de congés</td></tr>";
-                    $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Date modification</td><td class='cellulesimple'>Jours</td><td class='cellulesimple'>Commentaire</td>";
+                    $htmltext = $htmltext . "<tr align=center>"
+                            . "<td class='cellulesimple'>Type de demande</td>"
+                            . "<td class='cellulesimple'>Date modification</td>"
+                            . "<td class='cellulesimple'>Jours</td>"
+                            . "<td class='cellulesimple'>Commentaire</td>";
                     if ($allowremove)
                     {
                         $htmltext = $htmltext . "<td class='cellulesimple'>Annulation</td>";
@@ -2713,10 +2730,24 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1] . "</td>";
                 $htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2]) . "</td>";
                 if ($result[4] > 0)
+                {
                     $htmltext = $htmltext . "<td class='cellulesimple'>+" . (float) ($result[4]) . "</td>";
+                }
                 else
+                {
                     $htmltext = $htmltext . "<td class='cellulesimple'>" . (float) ($result[4]) . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $result[3] . "</td>";
+                }
+                $commentaire = trim($result[3]);
+                if (trim($result[7])=='')
+                {
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $commentaire . "</td>";
+                }
+                else
+                {
+                    $auteur = new agent($this->dbconnect);
+                    $auteur->load(trim($result[7]));
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $commentaire . " (par " .  $auteur->identitecomplete()  .   ")</td>";
+                }
                 if ($allowremove)
                 {
                     $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' id='" . $result[6] . "' name='remove_compl_id[" . $result[6] . "]'></td>";
@@ -2749,13 +2780,34 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      *            optional comment for the vacation. default is null
      * @return
      */
-    function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null)
+    function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null, $auteur = null)
     {
+        $auteurid = null;
+        if (!is_null($auteur))
+        {
+            if (is_object($auteur))
+            {
+                $auteurid = $auteur->agentid();
+            }
+            else
+            {
+                $auteurid = $auteur;
+            }
+        }
+        
         $date = date("d/m/Y");
-        $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
-		        VALUES (?,?,?,?,?)";
-
-        $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),$commentaire,$nbrejours);
+        if (is_null($auteurid))
+        {
+            $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
+                            VALUES (?,?,?,?,?)";
+            $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),$commentaire,$nbrejours);
+        }
+        else
+        {
+            $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,AUTEURID)
+                            VALUES (?,?,?,?,?,?)";
+            $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),$commentaire,$nbrejours,$auteurid);            
+        }
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {
@@ -4367,14 +4419,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             $liste = $teletravailliste;
         }
         $reponse = false;
-        $listeexclusion  = $this->listejoursteletravailexclus($date, $date);
+        $exclusion  = $this->estjourteletravailexclu($date,$moment);  //listejoursteletravailexclus($date, $date);
         foreach ($liste as $teletravailid)
         {
             $teletravail = new teletravail($this->dbconnect);
             $teletravail->load($teletravailid);
             if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
             {
-                if ($teletravail->estteletravaille($date,$moment) and (array_search($date,(array)$listeexclusion)===false))  // Si c'est un jour de télétravail et qu'il n'est pas exclu
+                if ($teletravail->estteletravaille($date,$moment) and  !$exclusion) // (array_search($date,(array)$exclusion)===false))  // Si c'est un jour de télétravail et qu'il n'est pas exclu
                 {
                     $reponse = true;
                 }
@@ -4389,79 +4441,24 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return $planning->nbjoursteletravail($this->agentid, $datedebut, $datefin, $reel);
     }
     
+    function ajoutjoursteletravailexclus($dateorigine, $momentorigine, $dateremplacement = '', $momentremplacement = '')
+    {
+        return $this->fonctions->ajoutjoursteletravailexclus($this->agentid, $dateorigine, $momentorigine, $dateremplacement ,$momentremplacement);
+    }
+    
     function listejoursteletravailexclus($datedebut,$datefin)
     {
-        $datedebut = $this->fonctions->formatdatedb($datedebut);
-        $datefin = $this->fonctions->formatdatedb($datefin);
-        
-        $listteletravail = array();
-//        $sql = "SELECT VALEUR
-//                FROM COMPLEMENT
-//                WHERE AGENTID = ?
-//                  AND COMPLEMENTID LIKE '" . complement::TT_EXCLU_LABEL . "%'
-//                  AND VALEUR >= ? 
-//                  AND VALEUR <= ?
-//                ORDER BY VALEUR";
-//        $params = array($this->agentid,$datedebut,$datefin);
-        
-        $sql = "SELECT REPLACE(COMPLEMENTID,'" . complement::TT_EXCLU_LABEL  . "',''), VALEUR
-               FROM COMPLEMENT
-               WHERE AGENTID = ?
-                 AND COMPLEMENTID >= ?
-                 AND COMPLEMENTID <= ?
-                 ORDER BY COMPLEMENTID";
-        $params = array($this->agentid,complement::TT_EXCLU_LABEL . $datedebut,complement::TT_EXCLU_LABEL . $datefin);
-          
-        $query = $this->fonctions->prepared_select($sql, $params);
-        //echo "<br>SQL = $sql <br>";
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "")
-        {
-            $errlog = "Problème SQL dans le chargement des complement TT_EXCLU : " . $erreur;
-            echo $errlog;
-        }
-        elseif (mysqli_num_rows($query) == 0)
-        {
-            //echo "<br>load => pas de ligne dans la base de données<br>";
-            //$errlog = "Aucun jour de télétravail n'est exclu pour l'agent " . $this->identitecomplete() . " dans la période $datedebut -> $datefin <br>";
-            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
-            //echo $errlog;
-        }
-        else
-        {
-            while ($result = mysqli_fetch_row($query))
-            {
-                $listteletravail[] = $result[0];
-            }
-        }
-        return $listteletravail;
+        return $this->fonctions->listejoursteletravailexclus($this->agentid, $datedebut,$datefin);
     }
 
-    function supprjourteletravailexclu($date)
+    function supprjourteletravailexclu($date, $moment)
     {
-        $date = $this->fonctions->formatdatedb($date);
-        $errlog = '';
-        $sql = "DELETE 
-                FROM COMPLEMENT
-                WHERE AGENTID = ?
-                  AND COMPLEMENTID = '" . complement::TT_EXCLU_LABEL . $date . "'";
-        
-        $params = array($this->agentid());
-        $query = $this->fonctions->prepared_query($sql, $params);
-        //echo "<br>SQL = $sql <br>";
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "")
-        {
-            $errlog = "Problème SQL dans la suppression du complement " . complement::TT_EXCLU_LABEL . $date . " : " . $erreur;
-            echo $errlog;
-        }
-        elseif (mysqli_affected_rows($this->dbconnect) == 0)
-        {
-            $errlog = "Aucune exclusion de télétravail n'a été supprimée pour l'agent " . $this->identitecomplete() . " pour la date $date.<br>";
-            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
-            //echo $errlog;
-        }
-        return $errlog;
+        return $this->fonctions->supprjourteletravailexclu($this->agentid,$date, $moment );
+    }
+    
+    function estjourteletravailexclu($date, $moment)
+    {
+        return $this->fonctions->estjourteletravailexclu($this->agentid,$date, $moment);
     }
     
     function historiqueaffectation($datedebut,$datefin)

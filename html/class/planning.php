@@ -442,34 +442,67 @@ class planning
                     $fulldatetheorique = array_merge($fulldatetheorique,$teletravail->datetheorique($datedebutdb,$datefindb));
                 }
             }
-            //var_dump($fulldatetheorique);
+            
             foreach ($fulldatetheorique as $arraydate)
             {
                 $element = $this->getelement($arraydate[0], $arraydate[1]);
-                if (!is_null($element) and $element->type() == '')
+                if (!is_null($element))
                 {
-                    if (!$this->fonctions->estjourteletravailexclu($agentid,$arraydate[0]))
+                    if ($element->type() == '')
                     {
-                        $element->type('teletrav');
-                        $element->info('Télétravail');
+                        if (!$this->fonctions->estjourteletravailexclu($agentid,$arraydate[0],$arraydate[1]))
+                        {
+                            $element->type('teletrav');
+                            $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL);
+                            if ($arraydate[2]!==teletravail::CODE_CONVENTION_MEDICAL)
+                            {
+                                if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$element->type()]['libelle']))
+                                {
+                                    $element->info(TABCOULEURPLANNINGELEMENT[$element->type()]['libelle']);
+                                }
+                            }
+                            else
+                            {
+                                if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$element->type()]['libelle']))
+                                {
+                                    $element->info(TABCOULEURPLANNINGELEMENT[$element->type()]['libelle'] . '  pour raison médicale');
+                                }
+                            }
+                            $element->typeconvention($arraydate[2]); // On ajoute le type de convention de télétravail
+                        }
+                        else // L'élement est un jour de télétravail mais il est exclu => il ne s'affichera pas en rose dans le planning
+                        {
+                            $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_EXCLUSION);
+                        }
+                    }
+                    else
+                    {
+                        // C'est en théorie une 1/2 journée de télétravail, mais il y a quelque chose à la place
+                        // => On indique quand même que c'est un jour de télétravail théorique
+                        $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN);
+
                     }
                 }
             }
-            
-/*            
-            foreach ((array)$this->listeelement as $element)
+            $listplaningelement = $this->planning();
+            foreach ($listplaningelement as $element)
             {
-                if ($element->type() == '')
+                $deplace = $this->fonctions->estjourteletravaildeplace($agentid, $element->date(), $element->moment());
+                if ($element->type() == '' and $deplace !== false)
                 {
-                    if ($agent->estenteletravail($element->date(), $element->moment()))
+                    $element->type('teletrav');
+                    if ($deplace->momentorigine == '')
                     {
-                        $element->type('teletrav');
-                        $element->info('Télétravail');
+                        $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($deplace->dateorigine));                        
                     }
+                    else
+                    {
+                        $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($deplace->dateorigine) . ' ' . $this->fonctions->nommoment($deplace->momentorigine));
+                    }
+                    // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
+                    $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
                 }
-                
             }
-*/
         }
         
         

@@ -172,7 +172,8 @@
                     'UFO',
                     'UNR',
                     'INT',
-                    'SEG'
+                    'SEG',
+                    'DFEDS'
                 );
                 
                 // UFR = Les UFR
@@ -182,7 +183,8 @@
                 // UNR = Les Unités de recherche ??
                 // INT = Les instituts
                 // SEG = Les services généraux
-                $codefonction = "";
+                // DFEDS = Départements (formation) de l'EDS (ticket GLPI 142772)
+                 $codefonction = "";
 	            $resp_struct = "";
 	            // Si la structure est active on cherche le responsable.
 	            if (strcasecmp($statut_struct, 'ACT') == 0)

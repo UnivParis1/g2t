@@ -14,8 +14,22 @@ ALTER TABLE `TELETRAVAIL`
   ADD COLUMN `TYPECONVENTION` VARCHAR(45) NOT NULL AFTER `STATUT`,
   ADD COLUMN `ESIGNATUREID` VARCHAR(30) NULL AFTER `TYPECONVENTION`,
   ADD COLUMN `ESIGNATUREURL` VARCHAR(200) NULL AFTER `ESIGNATUREID`,
-  ADD COLUMN `COMMENTAIRE` VARCHAR(300) NULL AFTER `ESIGNATUREURL`;
-  
+  ADD COLUMN `COMMENTAIRE` VARCHAR(300) NULL AFTER `ESIGNATUREURL`,
+  ADD COLUMN `MOTIFMEDICALSANTE` VARCHAR(3) NOT NULL DEFAULT '0' AFTER `COMMENTAIRE`,
+  ADD COLUMN `MOTIFMEDICALGROSSESSE` VARCHAR(3) NOT NULL DEFAULT '0' AFTER `MOTIFMEDICALSANTE`,
+  ADD COLUMN `MOTIFMEDICALAIDANT` VARCHAR(3) NOT NULL DEFAULT '0' AFTER `MOTIFMEDICALGROSSESSE`;
+
+ CREATE TABLE `TTEXCEPTION` (
+  `AGENTID` VARCHAR(10) NOT NULL,
+  `DATEORIGINE` DATE NOT NULL,
+  `MOMENTORIGINE` VARCHAR(2) NOT NULL,
+  `DATEREMPLACEMENT` DATE NULL,
+  `MOMENTREMPLACEMENT` VARCHAR(2) NULL,
+  PRIMARY KEY (`AGENTID`, `DATEORIGINE`, `MOMENTORIGINE`));
+ALTER TABLE `TTEXCEPTION` 
+  ADD INDEX `REPLACE_INDX` (`DATEREMPLACEMENT` ASC, `MOMENTREMPLACEMENT` ASC);
+
+
  * 
  */
 
@@ -36,6 +50,10 @@ class teletravail
     public const CODE_CONVENTION_INITIALE = "1";
     public const CODE_CONVENTION_RENOUVELLEMENT = "2";
     public const CODE_CONVENTION_MEDICAL = "3";
+
+    public const MOTIF_MEDICAL_SANTE = 0;
+    public const MOTIF_MEDICAL_GROSSESSE = 1;
+    public const MOTIF_MEDICAL_AIDANT = 2;
     
     private $teletravailid = null;
     private $agentid = null;
@@ -47,6 +65,9 @@ class teletravail
     private $esignatureid = null;
     private $esignatureurl = null;
     private $commentaire = null;
+    private $motifmedicalsante = null;
+    private $motifmedicalgrossesse = null;
+    private $motifmedicalaidant = null;
     
     private $dbconnect = null;
     private $fonctions = null;
@@ -70,7 +91,7 @@ class teletravail
     
     function load($teletravailid)
     {
-        $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT, TYPECONVENTION, ESIGNATUREID, ESIGNATUREURL, COMMENTAIRE
+        $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT, TYPECONVENTION, ESIGNATUREID, ESIGNATUREURL, COMMENTAIRE, MOTIFMEDICALSANTE, MOTIFMEDICALGROSSESSE, MOTIFMEDICALAIDANT
                 FROM TELETRAVAIL
                 WHERE TELETRAVAILID = ? ";
         $params = array($teletravailid);
@@ -99,6 +120,9 @@ class teletravail
         $this->esignatureid = $result[7] . '';
         $this->esignatureurl = $result[8] . '';
         $this->commentaire = $result[9] . '';
+        $this->motifmedicalsante = $result[10]  .'';
+        $this->motifmedicalgrossesse = $result[11]  .'';
+        $this->motifmedicalaidant = $result[12]  .'';
         return true;
         
     }
@@ -279,6 +303,62 @@ class teletravail
         }
     }
     
+    function motifmedicalsante($motifmedicalsante = null)
+    {
+        if (is_null($motifmedicalsante)) {
+            if (is_null($this->motifmedicalsante)) {
+                $errlog = "teletravail->motifmedicalsantee : La valeur du motifmedicalsante n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+            {
+                return intval('0'.$this->motifmedicalsante);
+            }
+        }
+        else
+        {
+            $this->motifmedicalsante = $motifmedicalsante;
+        }
+    }
+
+    function motifmedicalgrossesse($motifmedicalgrossesse = null)
+    {
+        if (is_null($motifmedicalgrossesse)) {
+            if (is_null($this->motifmedicalgrossesse)) {
+                $errlog = "teletravail->motifmedicalgrossesse : La valeur du motifmedicalgrossesse n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+            {
+                return intval('0'.$this->motifmedicalgrossesse);
+            }
+        }
+        else
+        {
+            $this->motifmedicalgrossesse = $motifmedicalgrossesse;
+        }
+    }
+
+    function motifmedicalaidant($motifmedicalaidant = null)
+    {
+        if (is_null($motifmedicalaidant)) {
+            if (is_null($this->motifmedicalaidant)) {
+                $errlog = "teletravail->motifmedicalaidant : La valeur du motifmedicalaidant n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+            {
+                return intval('0'.$this->motifmedicalaidant);
+            }
+        }
+        else
+        {
+            $this->motifmedicalaidant = $motifmedicalaidant;
+        }
+    }
     
     function tabteletravail($tableau = null)
     {
@@ -340,12 +420,16 @@ class teletravail
             if (is_null($this->statut))
                 $this->statut = teletravail::TELETRAVAIL_ATTENTE;
             
+            //var_dump($this->motifmedicalsante);
+            //var_dump($this->motifmedicalgrossesse);
+            //var_dump($this->motifmedicalaidant);
+            
             $sql = "LOCK TABLES TELETRAVAIL WRITE";
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO TELETRAVAIL(AGENTID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT,TYPECONVENTION,ESIGNATUREID,ESIGNATUREURL,COMMENTAIRE)
-                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO TELETRAVAIL(AGENTID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT,TYPECONVENTION,ESIGNATUREID,ESIGNATUREURL,COMMENTAIRE, MOTIFMEDICALSANTE, MOTIFMEDICALGROSSESSE, MOTIFMEDICALAIDANT)
+                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = array($this->agentid, 
                             $this->fonctions->formatdatedb($this->datedebut), 
                             $this->fonctions->formatdatedb($this->datefin), 
@@ -354,7 +438,10 @@ class teletravail
                             $this->typeconvention,
                             $this->esignatureid,
                             $this->esignatureurl,
-                            $this->commentaire);
+                            $this->commentaire,
+                            $this->motifmedicalsante,
+                            $this->motifmedicalgrossesse,
+                            $this->motifmedicalaidant);
 
 /*
                     VALUES('" . $this->agentid  ."',
@@ -393,7 +480,10 @@ class teletravail
                         STATUT = ?,
                         ESIGNATUREID = ?,
                         ESIGNATUREURL = ?,
-                        COMMENTAIRE = ?
+                        COMMENTAIRE = ?,
+                        MOTIFMEDICALSANTE = ?,
+                        MOTIFMEDICALGROSSESSE = ?,
+                        MOTIFMEDICALAIDANT = ?
                     WHERE TELETRAVAILID = ?";
             //echo "SQL teletravail->Store (UPDATE) : $sql <br>";
             $params = array($this->fonctions->formatdatedb($this->datedebut), 
@@ -403,6 +493,9 @@ class teletravail
                             $this->esignatureid,
                             $this->esignatureurl,
                             $this->commentaire,
+                            $this->motifmedicalsante,
+                            $this->motifmedicalgrossesse,
+                            $this->motifmedicalaidant,
                             $this->teletravailid);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
@@ -486,12 +579,13 @@ class teletravail
                 return false;
             }
             $numerojour = date("w", strtotime("$date"));
+/*            
             if ($numerojour == 0)   // Lundi = 1, Mardi = 2, ..... Dimanche = 0
                 $numerojour = 6;
             else
                 $numerojour = $numerojour - 1;
             // $numerojour => Représente maintenant le numéro de l'index du jour dans le tableau
-            
+*/            
             return $this->estjourteletravaille($numerojour,$moment);
         }
     }
@@ -507,12 +601,12 @@ class teletravail
              $moment = fonctions::MOMENT_MATIN;
              if ($this->estteletravaille($date,"$moment"))
              {
-                 $datetheorique[$date . $moment] = array($date, $moment);
+                 $datetheorique[$date . $moment] = array($date, $moment, $this->typeconvention());
              }
              $moment = fonctions::MOMENT_APRESMIDI;
              if ($this->estteletravaille($date,"$moment"))
              {
-                 $datetheorique[$date . $moment] = array($date, $moment);
+                 $datetheorique[$date . $moment] = array($date, $moment, $this->typeconvention());
              }
              $timestamp = strtotime($date);
              $date = date("Ymd", strtotime("+1 day", $timestamp)); // On passe au lendemain

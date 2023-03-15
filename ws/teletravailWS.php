@@ -97,7 +97,15 @@
                             $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail-($nbredemiTP*0.5);
                             if ($nbjoursmaxteletravailcalcule<0) $nbjoursmaxteletravailcalcule = 0;
 */                        
-                            $information_typeconvention = array('name' => "typeconvention", 'description' => "Type de convention de télétravail", 'value' => $teletravail->libelletypeconvention($teletravail->typeconvention()), 'code' => $teletravail->typeconvention());
+                            $information_typeconvention = array(
+                                'name' => "typeconvention", 
+                                'description' => "Type de convention de télétravail", 
+                                'value' => $teletravail->libelletypeconvention($teletravail->typeconvention()), 
+                                'code' => $teletravail->typeconvention(),
+                                "sante" => "" . $teletravail->motifmedicalsante(),
+                                "grossesse" => "" . $teletravail->motifmedicalgrossesse(),
+                                "aidant" => "" . $teletravail->motifmedicalaidant()
+                            );
                             $information_nombrejours = array('name' => "nombrejours", 'description' => "Nombre de jours de télétravail demandé", 'value' => "$nbjoursdemande"); // "$nbjoursmaxteletravailcalcule");
                             $information_datedebut = array('name' => "datedebut", 'description' => "Date de début de la convention télétravail", 'value' => $fonctions->formatdate($teletravail->datedebut()));
                             $information_datefin = array('name' => "datefin", 'description' => "Date de fin de la convention télétravail", 'value' => $fonctions->formatdate($teletravail->datefin()));

@@ -68,4 +68,63 @@
     {
 //        var_dump('Aucun statut de teletravail à modifier.');
     }
+    
+    $sql="SELECT COUNT(*) FROM COMPLEMENT WHERE COMPLEMENTID LIKE '" . complement::TT_EXCLU_LABEL . "%'";
+    $query = mysqli_query($dbcon, $sql);
+    $erreur = mysqli_error($dbcon);
+    if ($erreur != "")
+    {
+        $errlog = "Erreur lors de la selection des anciennes exclusions du télétravail : " . $erreur;
+        echo $errlog . "<br/>";
+        error_log(basename(__FILE__) . " " . $errlog);
+        exit();
+    }
+    $result = mysqli_fetch_row($query);
+    if ($result[0] > 0)
+    {
+        $sql = "SELECT AGENTID, REPLACE(COMPLEMENTID,'" . complement::TT_EXCLU_LABEL . "',''), VALEUR FROM COMPLEMENT WHERE COMPLEMENTID LIKE '" . complement::TT_EXCLU_LABEL . "%'";
+        $params = array();
+        //echo "SQL = $sql <br>";
+        $query = $fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans la selection des anciennes exclusions du teletravail : " . $erreur;
+            var_dump ($errlog);
+        }
+        else
+        {
+            $convertionok = true;
+            while ($result = mysqli_fetch_row($query))
+            {
+                if ($result[1] == $result[2])
+                {
+                    // echo "result[0] = " . $result[0] . " result[1] = " . $result[1] . " result[2] = " . $result[2] . '<br>';
+                    $errlog = "";
+                    $errlog = $fonctions->ajoutjoursteletravailexclus($result[0], $result[1], '');
+                    if ($errlog!='')
+                    {
+                        var_dump("Erreur dans la création d'une exclusion (nouvelle version) => $errlog");
+                        $convertionok = false;
+                    }
+                    else
+                    {
+                        $sql = "DELETE FROM COMPLEMENT WHERE AGENTID = '". $result[0] . "' AND COMPLEMENTID = '" . complement::TT_EXCLU_LABEL . $result[1] . "'";
+                        mysqli_query($dbcon, $sql);
+                        $erreur = mysqli_error($dbcon);
+                        if ($erreur != "")
+                        {
+                            var_dump("Erreur dans la suppression d'une exclusion (ancienne version) => $erreur");
+                            $convertionok = false;
+                        }
+                    }
+                }
+            }
+            if ($convertionok == true)
+            {
+                //echo "Tout ok dans la conversion ancienne exclusion => nouvelle exclusion <br>";
+            }
+        }
+    }
+    
 ?>

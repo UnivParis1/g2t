@@ -111,8 +111,8 @@
  -->
 <script src="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.js"></script>
 
-
 <script>
+
     var completionAgent = function (event, ui)
     {
 		// NB: this event is called before the selected value is set in the "input"
@@ -145,15 +145,19 @@
 
     var hide_teletravail = function (nomtableau, id_hidden_input ="")
     {
-		//alert ('Plouf !');
-	    var tableau = document.getElementById(nomtableau);
-	    //alert (tableau.id);
+        //alert ('Plouf !');
+        var tableau = document.getElementById(nomtableau);
+        //alert (tableau.id);
     	var checkboxvalue = document.activeElement.checked;
-		for (var indexcellule = 0; indexcellule < tableau.querySelectorAll('.teletravail').length; indexcellule++)
-		{
+        for (var indexcellule = 0; indexcellule < tableau.querySelectorAll('.teletravail').length; indexcellule++)
+        {
             //alert(indexcellule);
             var currenttd = tableau.querySelectorAll('.teletravail')[indexcellule];
-            if (checkboxvalue || currenttd.classList.contains('exclusion'))  // Soit on a demander à le masquer, soit c'est une date exclue (<=> classe exclusion)
+
+            if (checkboxvalue || currenttd.classList.contains('<?php 
+               // ATTENTION : On TRIM la classe exclusion car il ne faut pas les espaces quand on vérifie si la classe est là
+               echo trim(planningelement::HTML_CLASS_EXCLUSION); 
+            ?>'))  // Soit on a demander à le masquer, soit c'est une date exclue (<=> classe exclusion)
             {
                 //alert('Suppression de la couleur');
                 // C'est du télétravail et on doit le masquer ou la date est exclue
@@ -162,13 +166,14 @@
                 //currenttd.classList.add('hidde_tip');
                 if (currenttd.getElementsByTagName('span').length>0)
                 { 
-	                var currentspan = currenttd.getElementsByTagName('span')[0];
-	                currentspan.classList.add('remove-teletravail');
-	                var datatip = currentspan.getAttribute('data-tip');
-	                datatip = datatip.split(':')[0].trim();
-	                // alert ('Span data-tip = ' + currentspan.getAttribute('data-tip'));
-	                currentspan.setAttribute('data-tip',datatip)
-	            }
+                    var currentspan = currenttd.getElementsByTagName('span')[0];
+                    currentspan.classList.add('remove-teletravail');
+                    var datatip = currentspan.getAttribute('data-tip');
+                    currentspan.setAttribute('data-svg',datatip);
+                    datatip = datatip.split(':')[0].trim();
+                    // alert ('Span data-tip = ' + currentspan.getAttribute('data-tip'));
+                    currentspan.setAttribute('data-tip',datatip);
+                }
             }
             else
             {
@@ -179,38 +184,47 @@
                 //currenttd.classList.remove('hidde_tip');
                 if (currenttd.getElementsByTagName('span').length>0)
                 { 
-	                var currentspan = currenttd.getElementsByTagName('span')[0];
-	                currentspan.classList.remove('remove-teletravail');
-	                //alert ('Span HTML = ' + currentspan.data-tip);
-	                var datatip = currentspan.getAttribute('data-tip');
-	                datatip = datatip.split(':')[0].trim();
-	                datatip = datatip.concat(' : <?php echo "$libelleteletrav";  ?>'); 
-	                // alert ('Span data-tip = ' + currentspan.getAttribute('data-tip'));
-	                currentspan.setAttribute('data-tip',datatip)
-	            }
+                    var currentspan = currenttd.getElementsByTagName('span')[0];
+                    currentspan.classList.remove('remove-teletravail');
+                    //alert ('Span HTML = ' + currentspan.data-tip);
+                    var datatip = currentspan.getAttribute('data-tip');
+                    var datasvg = currentspan.getAttribute('data-svg');
+                    if (datasvg.toString!=='')
+                    {
+                        currentspan.setAttribute('data-tip',datasvg);
+                    }
+                    else  // Pas de sauvegarde du data_tip
+                    {
+                        datatip = datatip.split(':')[0].trim();
+                        datatip = datatip.concat(' : <?php echo "$libelleteletrav";  ?>'); 
+                        // alert ('Span data-tip = ' + currentspan.getAttribute('data-tip'));
+                        currentspan.setAttribute('data-tip',datatip);
+                    }
+                    currentspan.removeAttribute('data-svg');
+                }
             }    
         }
         if (id_hidden_input != "")
         {
-        	var hidden_input = document.getElementById(id_hidden_input);
-        	if (checkboxvalue)
-        	{
-        		hidden_input.value='on';
-       		}
-       		else
-       		{
-       			hidden_input.value='off';
-       		}
+            var hidden_input = document.getElementById(id_hidden_input);
+            if (checkboxvalue)
+            {
+                    hidden_input.value='on';
+            }
+            else
+            {
+                    hidden_input.value='off';
+            }
         }
         if (checkboxvalue)
         {
-			tableau.classList.add('teletravail_hidden');
+            tableau.classList.add('<?php echo planningelement::JAVA_CLASS_TELETRAVAIL_HIDDEN; ?>');
         }
         else
         {
-        	tableau.classList.remove('teletravail_hidden');
+            tableau.classList.remove('<?php echo planningelement::JAVA_CLASS_TELETRAVAIL_HIDDEN; ?>');
         }
-	};
+    };
 
     var demandestatutchange = function (select, index)
     {
@@ -292,6 +306,64 @@
 </head>
 
 <body class="bodyhtml"> 
+
+    <dialog id="warningdialog" class="warningdialog">
+        <form method="dialog">
+            <p>
+<?php
+        $type = 'warning';
+        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+
+?>
+                <label id='warninglabeltext'>Votre texte ne doit pas dépasser XXXX caractères! :</label>
+            </p>
+            <menu>
+                <center>
+<!--                    <button id="confirmBtn" value="" style="width:100px;">Ok</button>  -->
+                    <button value="cancel" style="width:100px;">Ok</button>
+                </center>
+            </menu>
+        </form>
+    </dialog> 
+        
+    <script>
+        const warningdialog = document.getElementById('warningdialog');
+
+        warningdialog.addEventListener('close', function onClosewarning() 
+        {
+            if (warningdialog.returnValue==='cancel')
+            {
+                return false;
+            }
+        });
+    </script>        
+    <script>
+        function checktextlength(textarea, maxlength)
+        {
+            let warningdialog = document.getElementById('warningdialog');
+            let warninglabeltext = document.getElementById('warninglabeltext');
+            if (textarea.value.length > maxlength) 
+            {
+                textarea.value = textarea.value.substring(0, maxlength);
+                if (warningdialog!=null &&  typeof warningdialog.showModal === "function") 
+                {
+                    warninglabeltext.innerHTML = 'Votre texte ne doit pas dépasser '+maxlength+' caractères!';
+                    warningdialog.showModal();
+                    return false;
+                } 
+                else
+                {
+                    alert('Votre texte ne doit pas dépasser '+maxlength+' caractères!');
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
 
 <?php
     function affichestructureliste($structure, $niveau = 0)

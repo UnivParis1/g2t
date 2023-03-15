@@ -1,5 +1,14 @@
 <?php
 
+class ttexception
+{
+    public $agentid = null;
+    public $dateorigine = null;
+    public $momentorigine = null;
+    public $dateremplacement = null;
+    public $momentremplacement = null;
+}
+
 /**
  * Fonctions
  * Library of usefull functions
@@ -393,6 +402,43 @@ class fonctions
                 $listecategabs[$result[0]] = $result[1];
         }
         return $listecategabs;
+    }
+    
+    
+    // ALTER TABLE TYPEABSENCE ADD COLUMN `COMMENTOBLIG` VARCHAR(2) NOT NULL DEFAULT 'n' AFTER `ABSENCEIDPARENT`;
+    // UPDATE TYPEABSENCE SET `COMMENTOBLIG` = 'o' WHERE (`TYPEABSENCEID` = 'spec');
+    // UPDATE TYPEABSENCE SET `COMMENTOBLIG` = 'o' WHERE (`TYPEABSENCEID` = 'teleetab');
+    public function absencecommentaireoblig($typeabsence)
+    {
+        if ($typeabsence . "" == "")
+        {
+            return false;
+        }
+        $sql = "SELECT COMMENTOBLIG FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+        $params = array($typeabsence);
+        $query = $this->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->absencecommentaireoblig : " . $erreur . " ==> On passe dans le test en dur";
+            // echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            if ($typeabsence == 'spec' or $typeabsence == 'teleetab')
+            {
+                return true;
+            }
+        }
+        if (mysqli_num_rows($query) == 0) {
+            $errlog = "Fonctions->absencecommentaireoblig : Type d'absence inconnu ($typeabsence).";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        $result = mysqli_fetch_row($query);
+        //echo " COMMENTOBLIG => " . $result[0] . "<br>";
+        if (strcasecmp($result[0] . "",'o')==0) // Si la colonne vaut 'o' ou 'O'
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -2102,33 +2148,119 @@ class fonctions
             echo "<b style='color: red;' >ERROR time_elapsed : On demande à afficher un compteur qui n'existe pas (cpt $numcpt) </b><br>";
         }
     }
-
-    public function estjourteletravailexclu($agentid, $date)
+    
+    public function listejoursteletravailexclus($agentid, $datedebut, $datefin)
     {
-        $date = $this->formatdatedb($date);
-
-//        $sql = "SELECT VALEUR
-//                FROM COMPLEMENT
-//                WHERE AGENTID = ?
-//                  AND COMPLEMENTID = '" . complement::TT_EXCLU_LABEL . $date . "'
-//                  AND VALEUR = ?";
-//
-//        $params = array($agentid,$date);
+        $datedebut = $this->formatdatedb($datedebut);
+        $datefin = $this->formatdatedb($datefin);
         
-        $sql = "SELECT REPLACE(COMPLEMENTID,'" . complement::TT_EXCLU_LABEL . "',''), VALEUR
-                  FROM COMPLEMENT
-                 WHERE AGENTID = ?
-                   AND COMPLEMENTID = ?
-                 ORDER BY COMPLEMENTID";
-        $params = array($agentid,complement::TT_EXCLU_LABEL . $date);
-
-        
+        $listteletravail = array();
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
+                FROM TTEXCEPTION
+                WHERE AGENTID = ?
+                  AND DATEORIGINE >= ?
+                  AND DATEORIGINE <= ?
+                ORDER BY DATEORIGINE";
+        $params = array($agentid,$datedebut,$datefin);
+          
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
-            $errlog = "estjourteletravailexclu => Problème SQL dans le chargement des complement TT_EXCLU : " . $erreur;
+            $errlog = "Problème SQL dans le chargement des complement TT_EXCLU : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            //$errlog = "Aucun jour de télétravail n'est exclu pour l'agent " . $this->identitecomplete() . " dans la période $datedebut -> $datefin <br>";
+            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //echo $errlog;
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                $exception = new ttexception();
+                $exception->agentid = $agentid;
+                $exception->dateorigine = $result[0];
+                $exception->dateremplacement = '';
+                $exception->momentremplacement = '';
+                if ($result[1] == '') // On a exclu/déplacé la journée entière => On doit découper en 2 moment
+                {
+                    $exception->momentorigine = fonctions::MOMENT_MATIN;
+                    $listteletravail[] = $exception;
+                    $exception = new ttexception();
+                    $exception->agentid = $agentid;
+                    $exception->dateorigine = $result[0];
+                    $exception->dateremplacement = '';
+                    $exception->momentremplacement = '';
+                    $exception->momentorigine = fonctions::MOMENT_APRESMIDI;
+                    $listteletravail[] = $exception;
+                }
+                else
+                {
+                    $exception->momentorigine = $result[1];
+                    $listteletravail[] = $exception;
+                }
+            }
+        }
+        return $listteletravail;        
+    }
+
+    function supprjourteletravailexclu($agentid, $date, $moment)
+    {
+        $date = $this->formatdatedb($date);
+        $errlog = '';
+
+        $sql = "DELETE 
+                FROM TTEXCEPTION
+                WHERE AGENTID = ?
+                  AND DATEORIGINE = ?
+                  AND ( MOMENTORIGINE = ?
+                     OR MOMENTORIGINE ='') ";
+        $params = array($agentid,$date, $moment);
+        $query = $this->prepared_query($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans la suppression de l'exception télétravail " . $date . " - " . $moment . " : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_affected_rows($this->dbconnect) == 0)
+        {
+            $errlog = "Aucune exclusion de télétravail n'a été supprimée pour l'agent " . $agentid . " pour la date $date et le moment $moment";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+        }
+        return $errlog;
+    }
+    
+    public function estjourteletravailexclu($agentid, $date, $moment)
+    {
+        $date = $this->formatdatedb($date);
+        
+        $sql = "SELECT AGENTID 
+                FROM TTEXCEPTION
+                WHERE AGENTID = ?
+                  AND DATEORIGINE = ?
+                  AND ( MOMENTORIGINE = ?
+                     OR MOMENTORIGINE = '')";
+        
+        $params = array($agentid, $date, $moment);
+        
+        $query = $this->prepared_select($sql, $params);
+        /*
+        var_dump("SQL = $sql ");
+        var_dump("agentid = $agentid ");
+        var_dump("date = $date ");
+        var_dump("moment = $moment ");
+         */
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "estjourteletravailexclu => Problème SQL dans la recherche des exclusions : " . $erreur;
             echo $errlog;
         }
         elseif (mysqli_num_rows($query) == 0)
@@ -2140,6 +2272,72 @@ class fonctions
             return true;
         }
     }
+
+    public function estjourteletravaildeplace($agentid, $date, $moment)
+    {
+        if ($date . "" != "")
+        {
+            $date = $this->formatdatedb($date);
+        }
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
+                FROM TTEXCEPTION
+                WHERE AGENTID = ?
+                  AND DATEREMPLACEMENT = ?
+                  AND ( MOMENTREMPLACEMENT = ?
+                     OR MOMENTREMPLACEMENT = '')";
+        
+        $params = array($agentid,$date,$moment);
+        
+        $query = $this->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "estjourteletravaildeplace => Problème SQL dans le chargement de l'exception : " . $erreur;
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            return false;
+        }
+        else
+        {
+            $result = mysqli_fetch_row($query);
+            $exception = new ttexception();
+            $exception->agentid = $agentid;
+            $exception->dateorigine = $result[0];
+            $exception->momentorigine = $result[1];
+            $exception->dateremplacement = $result[2];
+            $exception->momentremplacement = $result[3];
+            return $exception;
+        }
+    }
+    
+    function ajoutjoursteletravailexclus($agentid, $dateorigine, $momentorigine, $dateremplacement = NULL, $momentremplacement = '')
+    {
+        $dateorigine = $this->formatdatedb($dateorigine);
+        if ($dateremplacement . "" != "")
+        {
+            $dateremplacement = $this->formatdatedb($dateremplacement);
+        }
+        else
+        {
+            $dateremplacement = null;
+        }
+        $errlog = '';
+        
+        $sql = 'INSERT INTO TTEXCEPTION(AGENTID, DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT) VALUES(?, ?, ?, ?, ?)';
+        $params = array($agentid,$dateorigine,$momentorigine,$dateremplacement,$momentremplacement);
+        $query = $this->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans l'enregistrement de l'exclusion : " . $erreur;
+            echo $errlog;
+        }
+        return $errlog;
+    }    
 
     public function typeabsencelistecomplete()
     {
@@ -3113,8 +3311,34 @@ class fonctions
         return $result_json;
     }
     
-    
+    function logueurmaxcolonne($table, $colonne)
+    {
+        $longueurmax = 0;
+        
+        $sql = "SELECT character_maximum_length 
+FROM   information_schema.columns 
+WHERE  table_schema = Database() 
+       AND table_name = ? 
+       AND column_name = ?";
 
+        $params = array($table,$colonne);
+        $query = $this->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "logueurmaxcolonne => Problème SQL dans la récupération de la taille maximale : " . $erreur;
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) > 0)
+        {
+            $result = mysqli_fetch_row($query);
+            $longueurmax = $result[0];
+        }
+        return $longueurmax;
+    }
+    
 }
 
 ?>

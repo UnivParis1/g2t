@@ -75,16 +75,25 @@
     $remove_array = null;
     $mode = 'resp';
     if (isset($_POST["nbr_jours_conges"]))
+    {
         $nbr_jours_conges = $_POST["nbr_jours_conges"];
+    }
     if (isset($_POST["commentaire_supp"]))
+    {
         $commentaire_supp = $_POST["commentaire_supp"];
+    }
     if (isset($_POST["ancienacquis_supp"]))
+    {
         $ancienacquis_supp = $_POST["ancienacquis_supp"];
+    }
     if (isset($_POST["mode"]))
+    {
         $mode = $_POST["mode"];
+    }
     if (isset($_POST["remove_compl_id"]))
+    {
         $remove_array = $_POST["remove_compl_id"];
-    
+    }
     $msg_erreur = "";
     $annee = substr($fonctions->anneeref(), 2, 2);
     $lib_sup = "sup$annee";
@@ -96,25 +105,27 @@
     echo "<br>";
 
     
+    $longueurmaxcommentaire = $fonctions->logueurmaxcolonne('COMMENTAIRECONGE','COMMENTAIRE');
+    
     if (is_array($remove_array))
     {
         if (!is_null($agent))
         {
-            foreach ($remove_array as $id => $value)
+            $solde = new solde($dbcon);
+            $solde->load($agentid,$lib_sup);
+            if ($solde->droitaquis() != $ancienacquis_supp)
             {
-                //echo "L'id est $id <br>";
-                $solde = new solde($dbcon);
-                $solde->load($agentid,$lib_sup);
-                if ($solde->droitaquis() != $ancienacquis_supp)
-                {
-                    $erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
-                    echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
-                    
+                $erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
+                echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
+
 //                    echo "<P style='color: red'>" . $erreur . "</P>";
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
-                }
-                else
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+            }
+            else
+            {
+                foreach ($remove_array as $id => $value)
                 {
+                //echo "L'id est $id <br>";
                     $erreur = $agent->supprcongesupplementaire($id, $user);
                     if ($erreur != '')
                     {
@@ -236,11 +247,11 @@
                 }
                 if ($ancienacquis_supp == $solde->droitaquis())
                 {
-                    $commentaire_supp_complet = $commentaire_supp . " (par " . $user->prenom() . " " . $user->nom() . ")";
+                    $commentaire_supp_complet = $commentaire_supp ; //. " (par " . $user->prenom() . " " . $user->nom() . ")";
                     $nouv_solde = ($solde->droitaquis() + $nbr_jours_conges);
                     $solde->droitaquis($nouv_solde);
                     $msg_erreur = $msg_erreur . $solde->store();
-                    $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet);
+                    $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet,$userid);
                 }
                 else
                 {
@@ -304,7 +315,7 @@
         echo "<br>";
         echo "Nombre de jours supplémentaires à ajouter : <input type=text name=nbr_jours_conges id=nbr_jours_conges size=3 >";
         echo "<br>";
-        echo "<b style='color: red'>Motif (Obligatoire) : </b><input type=text name=commentaire_supp id=commentaire_supp size=50 >";
+        echo "<b style='color: red'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères : </b><input type=text name=commentaire_supp id=commentaire_supp size=80 oninput='checktextlength(this,$longueurmaxcommentaire);' >";
         echo "<br>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";

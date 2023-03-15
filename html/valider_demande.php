@@ -46,6 +46,9 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
+    
+    //$longueurmaxmotif = $fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
+
 
     // Récupération du mode => resp ou gestion
     $mode = $_POST["mode"];

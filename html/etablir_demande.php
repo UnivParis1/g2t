@@ -48,9 +48,12 @@
 
     // Si passé en paramètre : Soit 'conges', soit 'absence'
     // permet d'afficher la page en mode 'demande d'absence' ou en mode 'demande de conges'
-    if (isset($_POST["typedemande"])) {
+    if (isset($_POST["typedemande"])) 
+    {
         $typedemande = $_POST["typedemande"];
-    } else {
+    } 
+    else 
+    {
         $typedemande = "conges";
         // $typedemande = "absence";
         // echo "Le type de page n'est pas renseigné... On le fixe à " . $typedemande . "<br>";
@@ -89,11 +92,17 @@
     
 
     if (isset($_POST["previous"]))
+    {
         $previoustxt = $_POST["previous"];
+    }
     else
+    {
         $previoustxt = null;
+    }
     if (strcasecmp($previoustxt, "yes") == 0)
+    {
         $previous = 1;
+    }
 
     //echo "<br>previous => $previous <br>";
 
@@ -115,8 +124,9 @@
         }
     }
     else
+    {
         $agentid = null;
-
+    }
     $agent = new agent($dbcon);
     // echo "agentid = " . $agentid . "<br>";
     if ((is_null($agentid) or $agentid == "") and is_null($responsable)) {
@@ -163,16 +173,22 @@
         } else {
             // Récupération du moment de début
             if (isset($_POST["deb_mataprem"]))
+            {
                 $deb_mataprem = $_POST["deb_mataprem"];
+            }
             else
+            {
                 $deb_mataprem = null;
-            if (is_null($deb_mataprem) or $deb_mataprem == "") {
+            }
+            if (is_null($deb_mataprem) or $deb_mataprem == "") 
+            {
                 $errlog = "Le moment de début n'est pas initialisé.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             }
             // date de début antérieure à la période
-            if ($fonctions->formatdatedb($date_debut) < ($fonctions->anneeref() - $previous) . $fonctions->debutperiode()) {
+            if ($fonctions->formatdatedb($date_debut) < ($fonctions->anneeref() - $previous) . $fonctions->debutperiode()) 
+            {
                 $errlog = "La date de début ne doit pas être antérieure au début de la période.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
@@ -185,7 +201,8 @@
 
     // Récupération de la date de fin
     $fin_mataprem = null;
-    if (isset($_POST["date_fin"])) {
+    if (isset($_POST["date_fin"])) 
+    {
         // echo "date_fin = $date_fin <br>";
         // echo "fonctions->verifiedate(date_fin) = " . $fonctions->verifiedate($date_fin) . "<br>";
         $date_fin = $_POST["date_fin"];
@@ -195,27 +212,38 @@
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             $datefausse = TRUE;
-        } else {
+        } 
+        else 
+        {
             // Récupération du moment de fin
             if (isset($_POST["fin_mataprem"]))
+            {
                 $fin_mataprem = $_POST["fin_mataprem"];
+            }
             else
+            {
                 $fin_mataprem = null;
-                if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem, fonctions::MOMENT_MATIN) != 0 and strcasecmp($fin_mataprem, fonctions::MOMENT_APRESMIDI) != 0)) {
+            }
+            if (is_null($fin_mataprem) or (strcasecmp($fin_mataprem, fonctions::MOMENT_MATIN) != 0 and strcasecmp($fin_mataprem, fonctions::MOMENT_APRESMIDI) != 0)) 
+            {
                 $errlog = "Le moment de fin n'est pas initialisé.";
                 $msg_erreur .= $errlog . "<br/>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             }
         }
-    } else {
+    } 
+    else 
+    {
         $date_fin = null;
         $datefausse = TRUE;
     }
 
-    if ($msg_erreur == "" and ! $datefausse) {
+    if ($msg_erreur == "" and ! $datefausse) 
+    {
         $datedebutdb = $fonctions->formatdatedb($date_debut);
         $datefindb = $fonctions->formatdatedb($date_fin);
-        if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == fonctions::MOMENT_APRESMIDI and $fin_mataprem == fonctions::MOMENT_MATIN)) {
+        if ($datedebutdb > $datefindb or ($datedebutdb == $datefindb and $deb_mataprem == fonctions::MOMENT_APRESMIDI and $fin_mataprem == fonctions::MOMENT_MATIN)) 
+        {
             $errlog = "Il y a une incohérence entre la date de début et la date de fin.";
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
@@ -224,8 +252,20 @@
     }
 
     // # Récupération du type de l'absence (annuel, CET, ...)
-    if (isset($_POST["listetype"])) {
-        $listetype = $_POST["listetype"];
+    $listetype = null;
+    if (isset($_POST["listetype"])) 
+    {
+        $listetype = trim($_POST["listetype"]);
+    }
+        
+    if (!is_null($listetype) and strlen($listetype)==0)
+    {
+        $errlog = "Le type de demande n'est pas défini.";
+        $msg_erreur .= $errlog . "<br/>";
+        error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));   
+    }
+    elseif (!is_null($listetype))
+    {
         $anneeref = $fonctions->congesanneeref($listetype);
         if ($anneeref != '' and ! $datefausse) {
             // On ajoute 2 car un congés 2014 est valable jusqu'en Mars 2016 => soit 2 ans de plus !!!
@@ -249,36 +289,31 @@
                 $msg_erreur .= $errlog . "<br/>";
             }
         }
-    } else
-        $listetype = null;
-    if ((is_null($listetype) or $listetype == "") and ($msg_erreur == "" and ! $datefausse)) {
-        // echo "Le type de demande n'est pas initialisé !!! <br>";
-        $errlog = "Le type de demande n'est pas défini.";
-        $msg_erreur .= $errlog . "<br/>";
-        error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
 
+    $longueurmaxcommentaire = $fonctions->logueurmaxcolonne('DEMANDE','COMMENTAIRE');
+    
     // # Récupération du commentaire (s'il existe)
     $warningcommentaire = "";
     $commentaire = "";
     if (isset($_POST["commentaire"]))
+    {
         $commentaire = trim($_POST["commentaire"]);
+    }
     if (! is_null($responsable) and $commentaire == "") 
     {
         if (isset($_POST["valider"]))
         {
-            $errlog = "Le commentaire dans la saisie est obligatoire.";
+            $errlog = "La saisie d'un commentaire est obligatoire.";
             $msg_erreur .= $errlog . "<br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
         }
-        else
-        {
-            $warningcommentaire = "Le commentaire dans la saisie est obligatoire.";
-        }
     } 
-    elseif ($commentaire == "" and $listetype == 'spec') 
+    // elseif ($commentaire == "" and ($listetype == 'spec' or $listetype == 'teleetab')) 
+    elseif ($commentaire == "" and $fonctions->absencecommentaireoblig($listetype))
     {
-        $errlog = "Le commentaire dans la saisie est obligatoire pour ce type d'absence ($listetype).";
+//        $errlog = "Le commentaire dans la saisie est obligatoire pour ce type d'absence ($listetype).";
+        $errlog = "La saisie d'un commentaire est obligatoire pour ce type d'absence.";
         $msg_erreur .= $errlog . "<br/>";
         error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
     }
@@ -286,10 +321,11 @@
     // echo "Le commentaire vaut : " . $commentaire . "<br>";
     //echo "<br>datefausse : $datefausse => ";  if ($datefausse) echo "True"; else echo "False";  echo "<BR>";
 
+    $congeanticipe = null;
     if (isset($_POST["congeanticipe"]))
+    {
         $congeanticipe = $_POST["congeanticipe"];
-    else
-        $congeanticipe = null;
+    }
 
     // # On regarde si le dossier est complet pour la période demandée ==> Si pas !! Pas de saisie possible
     if (! is_null($agent) and ! $datefausse) {
@@ -448,7 +484,10 @@
                         $msg_erreur = $msg_erreur . "<b>Contactez l'administrateur pour qu'il crée le type de congés...</b><br/>";
                         $masquerboutonvalider = TRUE; // Empêche le bouton de s'afficher !!!
                     } else
-                        $msg_erreur = $msg_erreur . "<br/><P style='color: green'>Création du solde de congés " . $codecongeanticipe . " pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "</P><br/>";
+                    {
+                        $solde->load($agent->agentid(), $codecongeanticipe);
+                        echo $fonctions->showmessage(fonctions::MSGWARNING, "Création du solde de congés " . $solde->typelibelle() . " pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "");
+                    }
                 } else {
                     // echo "Avant solde liste... <br>";
                     $soldeliste = $agent->soldecongesliste($fonctions->anneeref() - $previous);
@@ -470,7 +509,6 @@
         // echo "Date fausse (1) = " . $datefausse . "<br>";
 
         //echo "msg_erreur 2 = " .$msg_erreur ." <br>";
-        echo $fonctions->showmessage(fonctions::MSGWARNING, $warningcommentaire);
         
         if (! $datefausse) {
             $planning = new planning($dbcon);
@@ -498,19 +536,28 @@
                 if ($fonctions->formatdatedb($date_fin) > $datetemp) {
                     $msg_erreur = $msg_erreur . "La date de fin est trop loin - en dehors de la période (1 mois)  <br>";
                     $ignoreabsenceautodecla = FALSE;
-                } else
+                } 
+                else
+                {
                     $ignoreabsenceautodecla = TRUE;
-            } else
+                }
+            } 
+            else
+            {
                 $ignoreabsenceautodecla = FALSE;
-
+            }
             // Echo "Avant le est present .... <br>";
             $present = $planning->agentpresent($agent->agentid(), $date_debut, $deb_mataprem, $date_fin, $fin_mataprem, $ignoreabsenceautodecla);
             if (! $present)
             {
                 if (strtoupper($agent->civilite()) == "MME")
+                {
                     $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présente durant la période du $date_debut au $date_fin.<br>";
+                }
                 else
+                {
                     $msg_erreur = $msg_erreur . $agent->identitecomplete() . " n'est pas présent durant la période du $date_debut au $date_fin.<br>";
+                }
             }
         }
 
@@ -557,9 +604,13 @@
             $demande->moment_fin($fin_mataprem);
             $demande->commentaire($commentaire);
             if ($congeanticipe != "")
+            {
                 $ignoresoldeinsuffisant = TRUE;
+            }
             else
+            {
                 $ignoresoldeinsuffisant = FALSE;
+            }
             // echo "demande->nbredemijrs_demande() AVANT = " . $demande->nbredemijrs_demande() . "<br>";
             $resultat = $demande->store(null, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
             // echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
@@ -815,8 +866,8 @@
     				<input class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
     			</td>
     			<td align="left">
-    				<input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) echo " checked "; ?>>Matin 
-    				<input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if ($deb_mataprem == fonctions::MOMENT_APRESMIDI) echo " checked "; ?>>Après-midi
+                                <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) { echo " checked "; } ?>>Matin 
+                                <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if ($deb_mataprem == fonctions::MOMENT_APRESMIDI) { echo " checked "; } ?>>Après-midi
     			</td>
     		</tr>
     		<tr>
@@ -825,8 +876,8 @@
     				<input class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
     			</td>
     			<td align="left">
-    				<input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) echo " checked "; ?>>Matin
-    				<input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if (($fin_mataprem == fonctions::MOMENT_APRESMIDI) or ($fin_mataprem . "" == '')) echo " checked "; ?>>Après-midi
+                                <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) { echo " checked "; } ?>>Matin
+                                <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if (($fin_mataprem == fonctions::MOMENT_APRESMIDI) or ($fin_mataprem . "" == '')) { echo " checked "; } ?>>Après-midi
     			</td>
     		</tr>
     		<tr>
@@ -839,7 +890,7 @@
             if ($congeanticipe != "") {
                 $solde = new solde($dbcon);
                 $solde->typeabsenceid("ann" . substr(($fonctions->anneeref() + 1 - $previous), 2));
-                echo "<select name='listetype'>";
+                echo "<select name='listetype' id='listetype'>";
                 echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
                 echo "</select>";
                 echo "<input type='hidden' name='typedemande' value='conges' ?>";
@@ -853,7 +904,7 @@
                 }
                 // print_r ($soldeliste); echo "<br>";
                 if (! is_null($soldeliste)) {
-                    echo "<select name='listetype'>";
+                    echo "<select name='listetype'  id='listetype'>";
                     $nbretype = 0;
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
@@ -892,34 +943,34 @@
                             	}
                             	elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
                             	{
-                            		if ($solde->typeabsenceid() == 'cet')
-                            		{
-                            			$erreurCET .= "Vous ne pouvez pas utiliser votre solde CET car vous avez une demande d'alimentation du CET en cours. <br>";
-                            		}
-                            		elseif ($fonctions->congesanneeref($solde->typeabsenceid())+0 == $fonctions->anneeref()-1)
-                            		{
-                            			$erreurCET .= "Vous ne pouvez pas utiliser vos reliquats ".($fonctions->anneeref()-1)."/".$fonctions->anneeref()." car vous avez une demande d'alimentation du CET en cours. <br>";
-                            		}
-                            		else
-                            		{
-                            			echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
-                            			if ($keysolde == $listetype)
-                            			{
-                            			    echo " selected ";
-                            			}
-                            			echo " >" . $solde->typelibelle() . "</OPTION>";
-                            			$nbretype = $nbretype + 1;
-                            		}
+                                    if ($solde->typeabsenceid() == 'cet')
+                                    {
+                                        $erreurCET .= "Vous ne pouvez pas utiliser votre solde CET car vous avez une demande d'alimentation du CET en cours. <br>";
+                                    }
+                                    elseif ($fonctions->congesanneeref($solde->typeabsenceid())+0 == $fonctions->anneeref()-1)
+                                    {
+                                        $erreurCET .= "Vous ne pouvez pas utiliser vos reliquats ".($fonctions->anneeref()-1)."/".$fonctions->anneeref()." car vous avez une demande d'alimentation du CET en cours. <br>";
+                                    }
+                                    else
+                                    {
+                                        echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                                        if ($keysolde == $listetype)
+                                        {
+                                            echo " selected ";
+                                        }
+                                        echo " >" . $solde->typelibelle() . "</OPTION>";
+                                        $nbretype = $nbretype + 1;
+                                    }
                             	}
                             	else 
                             	{
-                            		echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
-                            		if ($keysolde == $listetype)
-                            		{
-                            		    echo " selected ";
-                            		}
-                            		echo " >" . $solde->typelibelle() . "</OPTION>";
-                                	$nbretype = $nbretype + 1;
+                                    echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                                    if ($keysolde == $listetype)
+                                    {
+                                        echo " selected ";
+                                    }
+                                    echo " >" . $solde->typelibelle() . "</OPTION>";
+                                    $nbretype = $nbretype + 1;
                             	}
                             }
                         }
@@ -927,16 +978,25 @@
                     echo "</select>";
                     // echo "nbretype = $nbretype <br>";
                     if ($nbretype == 0)
+                    {
                         $masquerboutonvalider = true;
+                    }
                 }
                 echo "<input type='hidden' name='typedemande' value='conges' ?>";
             }
-        } else {
-            echo "<SELECT name='listetype'>";
+        } 
+        else // On est en mode "saisie d'une absence ou d'un télétravail HC"
+        {
+            // ---------------------------------------------------------------------------
+            // --- ATTENTION : L'utilisation de classes sur un tag <option> n'est pas  ---
+            // ---             supporté par tous les navigateurs/OS                    ---
+            // ---             Exemple : Linux et MacOS : Pas de couleur sous FireFox  ---
+            // ---------------------------------------------------------------------------
+            echo "<SELECT name='listetype' id='listetype' onchange='updatedisplay()' class='abssencecommfacultatif'>";
             $listecateg = $fonctions->listecategorieabsence();
-            echo "<OPTION value=''></OPTION>";
+            echo "<OPTION class='abssencecommfacultatif' value=''>-- Veuillez sélectionner un type d'absence ou de télétravail --</OPTION>";
             foreach ($listecateg as $keycateg => $nomcateg) {
-                echo "<optgroup label='" . str_replace("_", " ", $nomcateg) . "'>";
+                echo "<optgroup class='abssencecommfacultatif' label='" . str_replace("_", " ", $nomcateg) . "'>";
                 $listeabs = $fonctions->listeabsence($keycateg);
                 foreach ($listeabs as $keyabs => $nomabs)
                 {
@@ -945,7 +1005,26 @@
                     {
                         echo " selected ";
                     }
-                    echo ">" . $nomabs . "</OPTION>";
+                    
+                    // Si on est en mode 'responsable' (<=> responsable défini) alors on n'affiche pas les symboles car le commentaire est obligatoire
+                    if ($fonctions->absencecommentaireoblig($keyabs) and is_null($responsable))
+
+/*
+                    // Si on est en mode 'responsable' (<=> responsable défini) alors on affiche systématiquement les symboles car le commentaire est obligatoire
+                    if ($fonctions->absencecommentaireoblig($keyabs) or !is_null($responsable))
+ */
+                    {
+                        echo " class='abssencecommoblig' ";
+//                        echo " data-color='abssencecommoblig' ";
+                        echo ">" . $nomabs . " &nbsp;&nbsp;&nbsp; &#9888; &#9998;";   // &#9888; => symbole HTML ⚠    &#128398; => synbole HTML 🖎
+                    }
+                    else
+                    {
+                        echo " class='abssencecommfacultatif' ";
+//                        echo " data-color='abssencecommfacultatif' ";
+                        echo ">" . $nomabs;
+                    }
+                    echo "</OPTION>";
                 }
                 echo "</optgroup>";
             }
@@ -960,37 +1039,46 @@
     	</table>
     <?php
         echo "<br>";
-        if (! is_null($responsable)) {
-            echo "<B style='color: red'>Commentaire (obligatoire) : </B><br>";
+        if (! is_null($responsable)) 
+        {
+            echo "<div id='warningcommoblig'>" . $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.") . "</div>";
+            echo "Commentaire (maximum : $longueurmaxcommentaire caractères) :<br>";
+//            echo $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.");
             echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
-            echo "<textarea rows='4' cols='60' name='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
+//            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
+            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire); updatedisplay();' >$commentaire</textarea> <br>";
             if ($commentaire == '')
             {
                 $disabledbutton = ' disabled ';
             }
-            echo "<script>";
-            echo "
-const modifycomment = (comment) =>
-{
-    const buttonvalid = document.getElementById('valider');
-    if (comment.value != '')
-    {
-        buttonvalid.disabled = false;
-    }
-    else
-    {
-        buttonvalid.disabled = true;
-    }
-}
-            ";
-            echo "</script>";
+/*            
+?>            
+    <script>
+        const modifycomment = (comment) =>
+        {
+            const buttonvalid = document.getElementById('valider');
+            if (comment.value.trim() != '')
+            {
+                buttonvalid.disabled = false;
+            }
+            else
+            {
+                buttonvalid.disabled = true;
+            }
+        };
+    </script>
+<?php
+ */
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";
-        } elseif (strcasecmp($typedemande, "conges") != 0) {
-            echo "Commentaire (obligatoire pour les 'Absences autorisées par l'établissement', sinon facultatif) : <br>";
-            echo "<textarea rows='4' cols='60' name='commentaire'>$commentaire</textarea> <br>";
+        } 
+        elseif (strcasecmp($typedemande, "conges") != 0) // On est en mode "absence ou télétravail HC"
+        {
+            echo "<div id='warningcommoblig' hidden='hidden'>" . $fonctions->showmessage(fonctions::MSGWARNING, "Le commentaire est obligatoire pour ce type de demande.") . "</div>";
+            echo "Commentaire<label id='warningcommfacult'> facultatif</label> (maximum : $longueurmaxcommentaire caractères) :<br>";
+            echo "<textarea rows='4' cols='60' name='commentaire' id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire); updatedisplay();'>$commentaire</textarea> <br>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
-            echo "<br>";
+            echo "<br>";            
         }
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -1003,12 +1091,78 @@ const modifycomment = (comment) =>
             $fonctions->showmessage(fonctions::MSGWARNING, $erreurCET);
         }
         if (! $masquerboutonvalider)
+        {
             echo "<input type='submit' name='valider' id='valider' value='Soumettre' $disabledbutton />";
+        }
         echo "<br><br>";
-        ?>
-    	</form>
 
-    <?php
+?>    
+    <script>      
+
+        const listetype=document.getElementById("listetype");
+        
+        function updatedisplay()
+        {
+            var currentoption = listetype.options[listetype.selectedIndex];
+            var warningcommoblig = document.getElementById("warningcommoblig");
+            var warningcommfacult = document.getElementById("warningcommfacult");
+            var buttonvalid = document.getElementById('valider');
+            var comment = document.getElementById('commentaire');
+
+            if (listetype.value ==='')
+            {
+                listetype.className = currentoption.className;
+                buttonvalid.disabled = true;
+                return;
+            }
+            listetype.className = currentoption.className;
+<?php
+        // Si on est en mode responsable, on ne doit pas gérer le warningcommoblig
+        // Donc on insère le code javascript si responsable est null
+        if (is_null($responsable))
+        {
+?>
+            if (currentoption.className.search('abssencecommoblig') >=0)
+            {
+                warningcommoblig.hidden = false;
+            }
+            else
+            {
+                warningcommoblig.hidden = true;
+            }
+            if (warningcommfacult!==null)
+            {
+                warningcommfacult.hidden = !warningcommoblig.hidden;
+            }
+<?php
+        } // Fin du "si responsable est null"
+
+?>
+            if (!warningcommoblig.hidden)
+            {
+                if (comment.value.trim() != '')
+                {
+                    buttonvalid.disabled = false;
+                }
+                else
+                {
+                    buttonvalid.disabled = true;
+                }
+            }
+            else
+            {
+                buttonvalid.disabled = false;
+            }
+        }
+        // On déclenche l'évènement onchange pour initialiser la classe du <select>
+        var event = document.createEvent('HTMLEvents');
+        event.initEvent('change', false, true); // onchange event 
+        listetype.dispatchEvent(event);
+    </script>    
+<?php 
+        //}
+        echo "</form>";
+
         // echo "Date_debut = $date_debut date_fin= $date_fin <br>";
         // echo "Debut periode = " . $fonctions->debutperiode() . "<br>";
         // echo "Fin periode = " . $fonctions->finperiode() . "<br>";
@@ -1041,8 +1195,9 @@ const modifycomment = (comment) =>
         echo $agent->affichecommentairecongehtml();
         echo "<br>";
     }
-?>
-
+?>   
+    
+    
 <!--
 <a href=".">Retour à la page d'accueil</a>
 -->

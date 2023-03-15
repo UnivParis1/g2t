@@ -102,7 +102,19 @@
     {
         $action = $_POST['action'];
     }
+    
+    $report_date = '';
+    if (isset($_POST['report_date']))
+    {
+        $report_date = $_POST['report_date'];
+    }
         
+    $report_moment = '';
+    if (isset($_POST['report_moment']))
+    {
+        $report_moment = $_POST['report_moment'];
+    }
+
     $rootstruct = '';
     if (isset($_POST['rootid']))
     {
@@ -121,6 +133,13 @@
         $structureid = $_POST['structureid'];
     }
     
+    $typeconvention = '';
+    if (isset($_POST['typeconvention']))
+    {
+        $typeconvention = $_POST['typeconvention'];
+    }
+    
+    
     if (isset($_POST['datedebut']))
     {
         $datedebut = $_POST['datedebut'];
@@ -132,7 +151,7 @@
     }
             
     require ("includes/menu.php");
-    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
+//    echo "<br><br><br>"; print_r($_POST); echo "<br>";
 
     
     if (isset($_POST['teletravailmail']))
@@ -154,19 +173,74 @@
 
     if ($date_selected != "" and $moment_selected != "" and $agentid_selected != "")
     {
+        // var_dump ("report_date = " . $report_date);
         $complement = new complement($dbcon);
         $agent = new agent($dbcon);
         $agent->load($agentid_selected);
         if ($action == 'desactive')
         {   // On fait une désactivation de la date
-            $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
-            if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
+            // var_dump('on desactive');
+            // $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
+            //var_dump($listeexclusion);
+            // if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)===false)
+            
+            // Si on doit déplacer la journée complète, on doit mettre à vide le moment sélectionné et le moment de destination
+            if ($report_moment!==fonctions::MOMENT_MATIN and $report_moment!==fonctions::MOMENT_APRESMIDI)
+            {
+                $report_moment = '';
+                $moment_selected = '';
+            }
+            
+            $exclusion = $agent->estjourteletravailexclu($date_selected, $moment_selected);
+            if ($exclusion===false)
             {   // On n'a pas trouvé la date dans la liste
-                $complement->complementid(complement::TT_EXCLU_LABEL . $fonctions->formatdatedb($date_selected));
-                $complement->agentid($agentid_selected);
-//                $complement->valeur($fonctions->formatdatedb($date_selected));  // . "|" . $moment_selected;
-                $complement->valeur(''); 
-                $complement->store();
+                $reportpossible = true;
+                if ($report_date != '')
+                {
+                    $planning = new planning($dbcon);
+                    $planning->load($agentid_selected, $report_date, $report_date, true, true, true);
+                    $planningelementliste = $planning->planning();
+                    if ($report_moment==fonctions::MOMENT_MATIN)
+                    {
+                        $planningelement = current($planningelementliste);
+                        $reportpossible = ($planningelement->type()=='');
+                    }
+                    elseif ($report_moment==fonctions::MOMENT_APRESMIDI)
+                    {
+                        $planningelement = next($planningelementliste);
+                        $reportpossible = ($planningelement->type()=='');                        
+                    }
+                    else
+                    {
+                        foreach ($planning->planning() as $planningelement)
+                        {
+                            if ($planningelement->type()!='')
+                            {
+                                $reportpossible = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // var_dump($reportpossible);
+                if ($reportpossible)
+                {
+                    // var_dump("On va faire le complément");
+                    $erreur = $fonctions->ajoutjoursteletravailexclus($agentid_selected, $date_selected, $moment_selected, $report_date, $report_moment);
+                    // var_dump("erreur = " . $erreur);
+                    if (trim($report_date) != '')
+                    {
+                        echo $fonctions->showmessage(fonctions::MSGINFO,"La journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete() . " est déplacée au " . $fonctions->formatdate($report_date) . ".");
+                    }
+                    else
+                    {
+                        echo $fonctions->showmessage(fonctions::MSGINFO,"La suppression de la journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete() . " est enregistrée.");
+                    }
+                }
+                else
+                {
+                    echo $fonctions->showmessage(fonctions::MSGERROR,"Impossible de déplacer la journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete() . " : La date souhaitée (le " . $fonctions->formatdate($report_date) . ") n'est pas disponible.");
+                }
             }
             else
             {
@@ -175,15 +249,28 @@
         }
         elseif ($action == 'reactive')
         {   // On fait une réactivation
-            $listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
-            if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)!==false)
+            //$listeexclusion = $agent->listejoursteletravailexclus($date_selected, $date_selected);
+            //if (array_search($fonctions->formatdatedb($date_selected),(array)$listeexclusion)!==false)
+            
+            $exclusion = $agent->estjourteletravailexclu($date_selected, $moment_selected);
+            // var_dump("exclusion = " . $exclusion);
+            if ($exclusion!==false)
             {   // On a trouvé la date dans la liste
-                $erreur = $agent->supprjourteletravailexclu($date_selected);
-                echo "<br>$erreur<br>";
+                // var_dump("On n'a pas trouvé la date dans les exclusions");
+                $erreur = $agent->supprjourteletravailexclu($date_selected, $moment_selected);
+                // var_dump("Erreur = XXXX" . $erreur . "XXXX");
+                if (strlen(trim($erreur))==0)
+                {
+                    echo $fonctions->showmessage(fonctions::MSGINFO,"La réactivation de la journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete() . " est enregistrée.");
+                }
+                else
+                {
+                    echo $fonctions->showmessage(fonctions::MSGERROR,"Impossible de réactiver la journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete()  . " : $erreur ");                    
+                }
             }
             else
             {
-                //echo "On demande une réactivation alors que la date n'est pas désactivé. On ne fait rien. <br>";
+                // var_dump ("On demande une réactivation alors que la date n'est pas désactivé. On ne fait rien.");
             }
         }
     }
@@ -193,25 +280,188 @@
     $couleur = $planningelement->couleur();
     
 ?>
+        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
+        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+
+        <dialog id="reportdialog" class="questiondialog">
+          <form method="dialog">
+            <p>
+<?php
+        $type = 'question';
+        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+
+?>
+                <label id='labeltext'>Action à réaliser :</label>
+                <select id='reportchoice' hidden='hidden'>
+                    <option value=''>Ne pas reporter</option>
+                </select>
+            </p>
+            <menu><center>
+              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
+              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+            </center></menu>
+          </form>
+        </dialog>    
 <script>
-	var dbclick_element = function(elementid, agentid, date,moment)
+    
+        let selectEl = document.getElementById('reportchoice');
+        let confirmBtn = document.getElementById('confirmBtn');
+        let reportdialog = document.getElementById('reportdialog');
+        let labeltext = document.getElementById('labeltext');
+        let cancelBtn = document.getElementById('cancelBtn');        
+        
+        selectEl.addEventListener('change', function onSelect(e) {
+          confirmBtn.value = selectEl.value;
+        });
+
+        reportdialog.addEventListener('close', function onClose() {
+            if (reportdialog.returnValue!=='cancel')
+            {
+                var report_info = reportdialog.returnValue.split('_');
+                var input = document.getElementById('report_date');
+                input.value = report_info[0];
+                var input = document.getElementById('report_moment');
+                if (report_info.length>=2)
+                {
+                    input.value = report_info[1];
+                }
+                else
+                {
+                    input.value = '';
+                }
+                
+                var submit_form = document.getElementById('select_mois');
+                submit_form.submit();
+            }
+            else
+            {
+                for (cpt=(selectEl.options.length-1) ; cpt>=0 ; cpt--)
+                {
+                    if (selectEl.item(cpt).value!=='')
+                    {
+                        selectEl.remove(cpt);
+                    }
+                }
+                
+                var input = document.getElementById('date_selected');
+                input.value = '';
+                var input = document.getElementById('moment_selected');
+                input.value = '';
+                var input = document.getElementById('agentid_selected');
+                input.value = '';
+                var input = document.getElementById('action');
+                input.value = '';
+                var input = document.getElementById('typeconvention');
+                input.value = '';
+                // alert ('La modification est annulée par l\'utilisateur.');
+            }
+        });
+        
+	var dbclick_element = function(elementid, agentid, date,moment,typeconvention)
 	{
             var element = document.getElementById(elementid);
             var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
             var tableau = element.closest("table");
-            if (tableau.classList.contains('teletravail_hidden'))
-            {
-                    // Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
-                    alert ('L\'affichage du télétravail est désactivé.');
-                    return;
-            }
-            //alert ('Active element = ' + document.activeElement.innerHTML + '   elementid = ' + elementid);
-            if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler
-            {
-                if (confirm ('Supprimer le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
-                {
-                        //alert('Le télétravail du ' + date + ' est supprimé.');
 
+            if (moment==='<?php echo fonctions::MOMENT_MATIN; ?>')
+            {
+                var matin = element;
+                var apresmidi = element.nextElementSibling; // L'après-midi est le noeud suivant
+            }
+            else if (moment==='<?php echo fonctions::MOMENT_APRESMIDI; ?>')
+            {
+                var apresmidi = element;
+                var matin = element.previousElementSibling; // Le matin est le noeud précédent
+            }
+            
+            // alert ('Matin couleur = ' + matin.bgColor);
+            // alert ('Après-midi couleur = ' + apresmidi.bgColor);
+            
+            if ((matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>')) 
+             && (apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>')))
+            {
+                // alert ('Matin et après-midi sont du télétravail');
+                deplacement = 'jour';
+            }
+            else if (matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>'))
+            {
+                // alert ('Matin est du télétravail mais pas après-midi');
+                deplacement = '<?php echo fonctions::MOMENT_MATIN; ?>';
+            }
+            else if (apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>'))
+            {
+                // alert ('Après-midi est du télétravail mais pas matin');
+                deplacement = '<?php echo fonctions::MOMENT_APRESMIDI; ?>';
+            }
+            else
+            {
+                // alert ('Ni le matin, ni l\'après-midi n\'est un jour de télétravail => Problème');
+                return;
+            }
+            
+            if (tableau.classList.contains('<?php echo planningelement::JAVA_CLASS_TELETRAVAIL_HIDDEN; ?>'))
+            {
+                // Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
+                //alert ('L\'affichage du télétravail est désactivé.');
+                //return;
+                if (typeof reportdialog.showModal === "function") {
+                    labeltext.innerHTML = 'Impossible de déplacer ou d\'annuler un jour de télétravail car l\'affichage du télétravail est désactivé.';
+                    selectEl.hidden = true;
+                    cancelBtn.textContent = "Ok";
+                    confirmBtn.hidden = true;
+                    reportdialog.showModal();
+                }        
+            }
+/*            
+*            /////////////////////////////////////////////////////////////
+*            // Il est maintenant autorisé de déplacer des jours de télétravail sur convention médical
+*            /////////////////////////////////////////////////////////////
+*            else if (typeconvention.toString()==='<?php echo teletravail::CODE_CONVENTION_MEDICAL  ?>')
+*            {
+*                //alert ('Impossible de déplacer ou d\'annuler un jour de télétravail sur convention médicale.');
+*                //return;
+*                if (typeof reportdialog.showModal === "function") {
+*                    labeltext.innerHTML = 'Impossible de déplacer ou d\'annuler un jour de télétravail sur convention médicale.';
+*                    selectEl.hidden = true;
+*                    cancelBtn.textContent = "Ok";
+*                    confirmBtn.hidden = true;
+*                    reportdialog.showModal();
+*                }        
+*            }
+*/
+            else if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler/déplacer
+            {
+                <?php
+                $reportteletravail = 'n';
+                $constantename = 'REPORTTELETRAVAIL';
+                if ($fonctions->testexistdbconstante($constantename))
+                {
+                    $reportteletravail = $fonctions->liredbconstante($constantename);
+                }
+                if (strcasecmp($reportteletravail, "o") == 0) // Si on active le report du télétravail
+                {
+                ?>
+                    if (typeof reportdialog.showModal === "function") {
+                        if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
+                        {
+                            labeltext.innerHTML = 'Que souhaitez vous faire de la demie-journée de télétravail du ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?> pour l\'agent ' + identiteagent + '<br><br>Action à réaliser :';
+                        }
+                        else if (deplacement === '<?php echo fonctions::MOMENT_APRESMIDI; ?>')
+                        {
+                            labeltext.innerHTML = 'Que souhaitez vous faire de la demie-journée de télétravail du ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?> pour l\'agent ' + identiteagent + '<br><br>Action à réaliser :';
+                        }
+                        else
+                        {
+                            labeltext.innerHTML = 'Que souhaitez vous faire de la journée de télétravail du ' + date + ' pour l\'agent ' + identiteagent + '<br><br>Action à réaliser :';
+                        }
+                        selectEl.hidden = false;
+                        cancelBtn.textContent = "Annuler";
+                        confirmBtn.hidden = false;
+                        
                         var input = document.getElementById('date_selected');
                         input.value = date;
                         var input = document.getElementById('moment_selected');
@@ -220,33 +470,146 @@
                         input.value = agentid;
                         var input = document.getElementById('action');
                         input.value = 'desactive';
-                        var submit_form = document.getElementById('select_mois');
-                        submit_form.submit();
+                        var input = document.getElementById('typeconvention');
+                        input.value = typeconvention;
 
+                        for (cpt=(selectEl.options.length-1) ; cpt>=0 ; cpt--)
+                        {
+                            if (selectEl.item(cpt).value!=='')
+                            {
+                                selectEl.remove(cpt);
+                            }
+                        }
+                        // alert('date = ' + date);
+                        var jrs="dimanche,lundi,mardi,mercredi,jeudi,vendredi,samedi".split(",");
+                        // On calcule la date du lundi de la semaine courante
+                        
+                        var elementdate = date.split('/'); 
+                        var currentdate = new Date(elementdate[2], elementdate[1]-1, elementdate[0]);  // on fourni le format YYYY, MM, DD !! Le mois de janvier est 0
+                        //alert('currentdate = ' + currentdate.toLocaleDateString());
+                        var dateref = new Date(currentdate.getFullYear(), currentdate.getMonth(),currentdate.getDate()-(currentdate.getDay()-1));
+                        // dateref correspond au lundi de la semaine courante
+                        //alert('dateref (Lundi de la semaine) = ' + dateref.toLocaleDateString());
+                        for (cpt=1 ; cpt <= 7 ; cpt++)
+                        {
+                            var frenchdate = dateref.getDate().toString().padStart(2, '0') + '/' + (dateref.getMonth()+1).toString().padStart(2, '0') + '/' + dateref.getFullYear();
+                            // alert(frenchdate);
+                            //alert('On traitre le ' + dateref + ' et frenchdate = ' + frenchdate);
+                            if (dateref.getDay()>0 && dateref.getDay()<6)
+                            {
+                                if (deplacement==='jour')
+                                {
+                                    if (frenchdate.toString()!==date.toString())
+                                    {
+                                        var newoption = document.createElement("option");
+                                        newoption.value = frenchdate + '_all';
+                                        newoption.text = "Reporter au " + jrs[dateref.getDay()] + " " + frenchdate;
+                                        selectEl.add(newoption, null);
+                                    }
+                                }
+                                else
+                                {
+                                    if (frenchdate.toString()!==date.toString() || (frenchdate.toString()===date.toString() && deplacement !== '<?php echo fonctions::MOMENT_MATIN; ?>'))
+                                    {
+                                        var newoption = document.createElement("option");
+                                        newoption.value = frenchdate + '_' + '<?php echo fonctions::MOMENT_MATIN; // echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?>';
+                                        newoption.text = "Reporter au " + jrs[dateref.getDay()] + " " + frenchdate + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?>';
+                                        selectEl.add(newoption, null);
+                                    }
+                                    if (frenchdate.toString()!==date.toString() || (frenchdate.toString()===date.toString() && deplacement !== '<?php echo fonctions::MOMENT_APRESMIDI; ?>'))
+                                    {
+                                        var newoption = document.createElement("option");
+                                        newoption.value = frenchdate + '_' + '<?php echo fonctions::MOMENT_APRESMIDI; //echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?>';
+                                        newoption.text = "Reporter au " + jrs[dateref.getDay()] + " " + frenchdate + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?>';
+                                        selectEl.add(newoption, null);
+                                    }
+                                }
+                            }
+                            else  // On est un samedi ou un dimanche 
+                            {
+                                break; // On sort de la boucle (car report uniquement sur la semaine en cours)
+                            }
+                            //alert('frenchdate (avant le suivant)= ' + frenchdate);
+                            var elementdate = frenchdate.split('/');
+                            var currentdate = new Date(elementdate[2], elementdate[1]-1, elementdate[0]);  // on fourni le format YYYY, MM, DD !! Le mois de janvier est 0
+                            var dateref = new Date(currentdate.getFullYear(), currentdate.getMonth(),currentdate.getDate()+1);
+                            // dateref correspond au jour suivant
+                            //alert('dateref (<=> jour suivant) = ' + dateref.toLocaleDateString());
+                        }
+                        reportdialog.showModal();
+                    } else {
+                        console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                    }
+                <?php
                 }
                 else
                 {
-                        //alert('Le télétravail du ' + date + ' est maintenu.');
+                ?>
+                    if (typeof reportdialog.showModal === "function") {
+                        if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
+                        {
+                            labeltext.innerHTML = 'Supprimer la demie-journée de télétravail du ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?> pour l\'agent ' + identiteagent + ' ?';
+                        }
+                        else if (deplacement === '<?php echo fonctions::MOMENT_APRESMIDI; ?>')
+                        {
+                            labeltext.innerHTML = 'Supprimer la demie-journée de télétravail du ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?> pour l\'agent ' + identiteagent + ' ?';
+                        }
+                        else
+                        {
+                            labeltext.innerHTML = 'Supprimer la journée de télétravail du ' + date + ' pour l\'agent ' + identiteagent + ' ?';
+                        }
+                        selectEl.hidden = true;
+                        cancelBtn.textContent = "Annuler";
+                        confirmBtn.hidden = false;
+                        
+                        var input = document.getElementById('date_selected');
+                        input.value = date;
+                        var input = document.getElementById('moment_selected');
+                        input.value = moment;
+                        var input = document.getElementById('agentid_selected');
+                        input.value = agentid;
+                        var input = document.getElementById('action');
+                        input.value = 'desactive';
+                        var input = document.getElementById('typeconvention');
+                        input.value = typeconvention;
+                        reportdialog.showModal();
+                    } else {
+                        console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                    }
+                <?php
                 }
+                ?>
             }
             else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé
             {
-                    if (confirm ('Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?'))
-                    {
-                            var input = document.getElementById('date_selected');
-                            input.value = date;
-                            var input = document.getElementById('moment_selected');
-                            input.value = moment;
-                            var input = document.getElementById('agentid_selected');
-                            input.value = agentid;
-                            var input = document.getElementById('action');
-                            input.value = 'reactive';
-                            var submit_form = document.getElementById('select_mois');
-                            submit_form.submit();
-                    }
-                    else
-                    {
-                            //alert('Pas de réactivation du télétravail du ' + date + '.');
+                    if (typeof reportdialog.showModal === "function") {
+                        if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
+                        {
+                            labeltext.innerHTML = 'Réactiver le télétravail de la demie-journée du : ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?> pour l\'agent ' + identiteagent + ' ?';
+                        }
+                        else if (deplacement === '<?php echo fonctions::MOMENT_APRESMIDI; ?>')
+                        {
+                            labeltext.innerHTML = 'Réactiver le télétravail de la demie-journée du : ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?> pour l\'agent ' + identiteagent + ' ?';
+                        }
+                        else
+                        {
+                            labeltext.innerHTML = 'Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?';
+                        }
+                        selectEl.hidden = true;
+                        
+                        var input = document.getElementById('date_selected');
+                        input.value = date;
+                        var input = document.getElementById('moment_selected');
+                        input.value = moment;
+                        var input = document.getElementById('agentid_selected');
+                        input.value = agentid;
+                        var input = document.getElementById('action');
+                        input.value = 'reactive';
+                        var input = document.getElementById('typeconvention');
+                        input.value = typeconvention;
+                        reportdialog.showModal();
+                    } else {
+                        console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
                     }
             }
 	};
@@ -283,6 +646,9 @@
     echo "<input type='hidden' name='date_selected' id='date_selected' value='' />";
     echo "<input type='hidden' name='moment_selected' id='moment_selected' value='' />";
     echo "<input type='hidden' name='agentid_selected' id='agentid_selected' value='' />";
+    echo "<input type='hidden' name='report_date' id='report_date' value='' />";
+    echo "<input type='hidden' name='report_moment' id='report_moment' value='' />";
+    echo "<input type='hidden' name='typeconvention' id='typeconvention' value='' />";
     echo "<input type='hidden' name='action' id='action' value='' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
