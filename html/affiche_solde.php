@@ -188,11 +188,30 @@
                 {
                     echo "<br>";
                     //$fonctions->time_elapsed("Début affichage structure " . $structure->nomcourt(), __METHOD__, true);
-                    echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
+                    //echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
                     $annerecherche = ($fonctions->anneeref() - $previous);
-                    $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+                    
+                    if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+                    {
+                        if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
+                        {
+                                continue;
+                        }
+                        $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'o');
+                    }
+                    else
+                    {
+                        $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+                    }
+
+                    //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
                     // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
         
+                    if (is_array($agentliste))
+                    {
+                           echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
+                    }
+
                     echo "<form name='listedemandepdf_" . $structure->id() . "'  method='post' action='affiche_pdf.php' target='_blank'>";
                     echo "<input type='hidden' name='userpdf' value='no'>";
                     // $htmltext = $htmltext . "<input type='hidden' name='previous' value='" . $_POST["previous"] . "'>";

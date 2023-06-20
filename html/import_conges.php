@@ -164,7 +164,7 @@
     <br>
     <form name='postconge_liste' method='post'>
 
-    	<textarea name="conge_liste" cols="60" rows="20"><?php echo $liste_conges ?></textarea>
+    	<textarea name="conge_liste" cols="60" rows="20" style='line-height:20px; resize: none;'><?php echo $liste_conges ?></textarea>
     <?php
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 ?>

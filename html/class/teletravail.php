@@ -29,6 +29,15 @@ ALTER TABLE `TELETRAVAIL`
 ALTER TABLE `TTEXCEPTION` 
   ADD INDEX `REPLACE_INDX` (`DATEREMPLACEMENT` ASC, `MOMENTREMPLACEMENT` ASC);
 
+ALTER TABLE `TELETRAVAIL` 
+  ADD COLUMN `ACTIVITETELETRAVAIL` VARCHAR(1000) NOT NULL DEFAULT '' AFTER `MOTIFMEDICALAIDANT`,
+  ADD COLUMN `PERIODEEXCLUSION` VARCHAR(300) NOT NULL DEFAULT '' AFTER `ACTIVITETELETRAVAIL`,
+  ADD COLUMN `PERIODEADAPTATION` VARCHAR(100) NOT NULL DEFAULT '' AFTER `PERIODEEXCLUSION`,
+  ADD COLUMN `STATUTRESPONSABLE` VARCHAR(10) NOT NULL DEFAULT '' AFTER `PERIODEADAPTATION`;
+
+ALTER TABLE TELETRAVAIL
+ADD COLUMN `CREATIONG2T` DATE NULL DEFAULT NULL AFTER `AGENTID`,
+ADD COLUMN `CREATIONESIGNATURE` DATE 19000101 DEFAULT NULL AFTER `CREATIONG2T`;
 
  * 
  */
@@ -68,6 +77,12 @@ class teletravail
     private $motifmedicalsante = null;
     private $motifmedicalgrossesse = null;
     private $motifmedicalaidant = null;
+    private $activiteteletravail = null;
+    private $periodeexclusion = null;
+    private $periodeadaptation = null;
+    private $statutresponsable = null;
+    private $creationg2t = null;
+    private $creationesignature = '19000101';
     
     private $dbconnect = null;
     private $fonctions = null;
@@ -91,7 +106,25 @@ class teletravail
     
     function load($teletravailid)
     {
-        $sql = "SELECT TELETRAVAILID, AGENTID, DATEDEBUT, DATEFIN, TABTELETRAVAIL, STATUT, TYPECONVENTION, ESIGNATUREID, ESIGNATUREURL, COMMENTAIRE, MOTIFMEDICALSANTE, MOTIFMEDICALGROSSESSE, MOTIFMEDICALAIDANT
+        $sql = "SELECT TELETRAVAILID,
+                       AGENTID, 
+                       DATEDEBUT, 
+                       DATEFIN, 
+                       TABTELETRAVAIL, 
+                       STATUT, 
+                       TYPECONVENTION, 
+                       ESIGNATUREID, 
+                       ESIGNATUREURL, 
+                       COMMENTAIRE, 
+                       MOTIFMEDICALSANTE, 
+                       MOTIFMEDICALGROSSESSE, 
+                       MOTIFMEDICALAIDANT,
+                       ACTIVITETELETRAVAIL,
+                       PERIODEEXCLUSION,
+                       PERIODEADAPTATION,
+                       STATUTRESPONSABLE,
+                       CREATIONG2T,
+                       CREATIONESIGNATURE
                 FROM TELETRAVAIL
                 WHERE TELETRAVAILID = ? ";
         $params = array($teletravailid);
@@ -123,8 +156,28 @@ class teletravail
         $this->motifmedicalsante = $result[10]  .'';
         $this->motifmedicalgrossesse = $result[11]  .'';
         $this->motifmedicalaidant = $result[12]  .'';
-        return true;
+        $this->activiteteletravail = $result[13]  .'';
+        $this->periodeexclusion = $result[14]  .'';
+        $this->periodeadaptation = $result[15]  .'';
+        $this->statutresponsable = $result[16]  .'';
+        $this->creationg2t = $result[17]  .'';
+        $this->creationesignature = $result[18]  .'';
+        if ($this->creationesignature == '')
+        {
+            $this->creationesignature = '19000101';
+        }
         
+        if (trim($this->esignatureurl.'')!='')
+        {
+            // On remplace éventuellement le nom du serveur par celui paramétré
+            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Avant transformation l'URL est : " . $this->esignatureurl));
+            $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
+            $urlpath = parse_url($this->esignatureurl,PHP_URL_PATH);
+            // $this->esignatureurl = $eSignature_url . $urlpath;
+            $this->esignatureurl = preg_replace('/([^:])(\/{2,})/', '$1/', $eSignature_url . $urlpath);
+            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Après transformation l'URL est : " . $this->esignatureurl));
+        }
+        return true;
     }
     
     function loadbyesignatureid($esignatureid)
@@ -154,6 +207,23 @@ class teletravail
     function teletravailid()
     {
         return $this->teletravailid;
+    }
+    
+    function creationg2t()
+    {
+        return $this->creationg2t . "";
+    }
+    
+    function creationesignature($datecreation = null)
+    {
+        if (is_null($datecreation)) 
+        {
+            return $this->creationesignature;
+        }
+        else
+        {
+            $this->creationesignature = $this->fonctions->formatdatedb($datecreation);
+        }
     }
     
     function agentid($agentid = null)
@@ -228,12 +298,24 @@ class teletravail
         }
     }
     
-    function libelletypeconvention($codetypeconvention)
+    function libelletypeconvention($codetypeconvention = null)
     {
+        if (is_null($codetypeconvention))
+        {
+            $codetypeconvention = $this->typeconvention;
+        }
+        
         if (!preg_match ("/^[0-9]+/", $codetypeconvention))
         {
             // Pas de chiffres => On retourne le texte
-            return $codetypeconvention;
+            if ($codetypeconvention.''=='')
+            {
+                return 'Type inconnu';
+            }
+            else
+            {
+                return $codetypeconvention;
+            }
         }
         
         $libelleconvention = "";
@@ -249,7 +331,7 @@ class teletravail
                 $libelleconvention = teletravail::TYPE_CONVENTION_MEDICAL;
                 break;
             default :
-                $libelleconvention = "Type de convention inconnu";
+                $libelleconvention = "Type inconnu";
                 break;
         }
         return $libelleconvention;
@@ -278,19 +360,43 @@ class teletravail
                 $errlog = "teletravail->esignatureurl : La valeur de esignatureurl n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->esignatureurl;
+            }
         }
         else
         {
-            $this->esignatureurl = $esignatureurl;
+            if ($this->esignatureurl . '' != '')
+            {
+                $errlog = "teletravail->esignatureurl : Impossible de modifier l'URL eSignature !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            else
+            {
+                if (trim($esignatureurl)!='')
+                {
+                    // On remplace éventuellement le nom du serveur par celui paramétré
+                    //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Avant transformation l'URL est : " . $esignatureurl));
+                    $eSignature_url = trim($this->fonctions->liredbconstante('ESIGNATUREURL'));
+                    $urlpath = parse_url($esignatureurl,PHP_URL_PATH);
+                    $this->esignatureurl = preg_replace('/([^:])(\/{2,})/', '$1/', $eSignature_url . $urlpath);
+                    //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Après transformation l'URL est : " . $this->esignatureurl));
+                }
+                else
+                {
+                    $this->esignatureurl = trim($esignatureurl);
+                }
+            }
         }
     }
     
     function commentaire($commentaire = null)
     {
         if (is_null($commentaire)) {
-            if (is_null($this->esignatureurl)) {
+            if (is_null($this->commentaire)) {
                 $errlog = "teletravail->commentaire : La valeur du commentaire n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -382,6 +488,53 @@ class teletravail
         }
     }
     
+    function libelletabteletravail()
+    {
+        $htmltext = '';
+        $somme = 0;
+        for ($index = 0 ; $index < strlen($this->tabteletravail()) ; $index ++)
+        {
+            $demijrs = substr($this->tabteletravail(),$index,1);
+            if ($demijrs>0) // Si dans le tableau la valeur est > 0
+            {
+                if (($index % 2) == 0)  // Si c'est le matin => On ajoute 1 à la somme
+                {
+                    $somme = $somme + 1;
+                }
+                elseif (($index % 2) == 1)  // Si c'est l'après-midi => On ajoute 2 à la somme
+                {
+                    $somme = $somme + 2;
+                }
+            }
+            if (($index % 2) == 1)
+            {
+                if ($somme > 0) // Si pas de télétravail => On affiche rien
+                {
+                    if ($somme == 1)  // Que le matin
+                    {
+                       $htmltext = $htmltext . $this->fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $this->fonctions->nommoment(fonctions::MOMENT_MATIN); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
+                    }
+                    elseif ($somme == 2) // Que l'après-midi
+                    {
+                       $htmltext = $htmltext . $this->fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $this->fonctions->nommoment(fonctions::MOMENT_APRESMIDI);
+                    }
+                    elseif ($somme == 3) // Toute la journée
+                    {
+                       $htmltext = $htmltext . $this->fonctions->nomjourparindex(intdiv($index,2)+1);
+                    }
+                    else // Là, on ne sait pas !!
+                    {
+                       $htmltext = $htmltext . "Problème => index = $index  demijrs = $demijrs   somme = $somme";
+                    }
+                    $htmltext = $htmltext . ", ";
+                }
+                $somme = 0;
+            }
+        }
+        // On enlève le ', ' en fin de chaine
+        return substr($htmltext, 0, strlen($htmltext)-2);
+    }
+    
     function statut($statut = null)
     {
         if (is_null($statut)) {
@@ -397,6 +550,55 @@ class teletravail
             $this->statut = $statut;
         }
     }
+    
+    function activiteteletravail($activiteteletravail = null)
+    {
+        if (is_null($activiteteletravail)) 
+        {
+            return ($this->activiteteletravail . "");
+        }
+        else
+        {
+            $this->activiteteletravail = $activiteteletravail;
+        }
+    }
+
+    function periodeexclusion($periodeexclusion = null)
+    {
+        if (is_null($periodeexclusion)) 
+        {
+            return ($this->periodeexclusion . "");
+        }
+        else
+        {
+            $this->periodeexclusion = $periodeexclusion;
+        }
+    }
+
+    function periodeadaptation($periodeadaptation = null)
+    {
+        if (is_null($periodeadaptation)) 
+        {
+            return ($this->periodeadaptation . "");
+        }
+        else
+        {
+            $this->periodeadaptation = $periodeadaptation;
+        }
+    }
+
+    function statutresponsable($statutresponsable = null)
+    {
+        if (is_null($statutresponsable)) 
+        {
+            return $this->statutresponsable;
+        }
+        else
+        {
+            $this->statutresponsable = $statutresponsable;
+        }
+    }
+    
     
     function store()
     {
@@ -418,8 +620,17 @@ class teletravail
             }
 
             if (is_null($this->statut))
+            {
                 $this->statut = teletravail::TELETRAVAIL_ATTENTE;
+            }
+            $this->creationg2t = date('Ymd');
             
+            /*
+            if (is_null($this->statutresponsable))
+            {
+                $this->statutresponsable = teletravail::TELETRAVAIL_ATTENTE;
+            }
+            */
             //var_dump($this->motifmedicalsante);
             //var_dump($this->motifmedicalgrossesse);
             //var_dump($this->motifmedicalaidant);
@@ -428,9 +639,28 @@ class teletravail
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 0";
             mysqli_query($this->dbconnect, $sql);
-            $sql = "INSERT INTO TELETRAVAIL(AGENTID,DATEDEBUT,DATEFIN,TABTELETRAVAIL,STATUT,TYPECONVENTION,ESIGNATUREID,ESIGNATUREURL,COMMENTAIRE, MOTIFMEDICALSANTE, MOTIFMEDICALGROSSESSE, MOTIFMEDICALAIDANT)
-                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO TELETRAVAIL(AGENTID,
+                                            CREATIONG2T,
+                                            CREATIONESIGNATURE,
+                                            DATEDEBUT,
+                                            DATEFIN,
+                                            TABTELETRAVAIL,
+                                            STATUT,
+                                            TYPECONVENTION,
+                                            ESIGNATUREID,
+                                            ESIGNATUREURL,
+                                            COMMENTAIRE,
+                                            MOTIFMEDICALSANTE,
+                                            MOTIFMEDICALGROSSESSE,
+                                            MOTIFMEDICALAIDANT,
+                                            ACTIVITETELETRAVAIL,
+                                            PERIODEEXCLUSION,
+                                            PERIODEADAPTATION,
+                                            STATUTRESPONSABLE)
+                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = array($this->agentid, 
+                            $this->fonctions->formatdatedb($this->creationg2t),
+                            $this->fonctions->formatdatedb($this->creationesignature . ""),
                             $this->fonctions->formatdatedb($this->datedebut), 
                             $this->fonctions->formatdatedb($this->datefin), 
                             $this->tabteletravail,
@@ -441,7 +671,12 @@ class teletravail
                             $this->commentaire,
                             $this->motifmedicalsante,
                             $this->motifmedicalgrossesse,
-                            $this->motifmedicalaidant);
+                            $this->motifmedicalaidant,
+                            $this->activiteteletravail . "",
+                            $this->periodeexclusion . "",
+                            $this->periodeadaptation . "",
+                            $this->statutresponsable
+                );
 
 /*
                     VALUES('" . $this->agentid  ."',
@@ -483,7 +718,12 @@ class teletravail
                         COMMENTAIRE = ?,
                         MOTIFMEDICALSANTE = ?,
                         MOTIFMEDICALGROSSESSE = ?,
-                        MOTIFMEDICALAIDANT = ?
+                        MOTIFMEDICALAIDANT = ?,
+                        ACTIVITETELETRAVAIL = ?,
+                        PERIODEEXCLUSION = ?,
+                        PERIODEADAPTATION = ?,
+                        STATUTRESPONSABLE = ?,
+                        CREATIONESIGNATURE = ?
                     WHERE TELETRAVAILID = ?";
             //echo "SQL teletravail->Store (UPDATE) : $sql <br>";
             $params = array($this->fonctions->formatdatedb($this->datedebut), 
@@ -496,7 +736,13 @@ class teletravail
                             $this->motifmedicalsante,
                             $this->motifmedicalgrossesse,
                             $this->motifmedicalaidant,
-                            $this->teletravailid);
+                            $this->activiteteletravail . "",
+                            $this->periodeexclusion . "",
+                            $this->periodeadaptation . "",
+                            $this->statutresponsable,
+                            $this->fonctions->formatdatedb($this->creationesignature . ""),
+                            $this->teletravailid
+                );
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             

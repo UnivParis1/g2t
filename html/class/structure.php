@@ -36,6 +36,8 @@ class structure
     private $typestruct = null;
     
     private $isincluded = null;
+    
+    private $islibrary = null;
 
     function __construct($db)
     {
@@ -51,7 +53,23 @@ class structure
     function load($structureid)
     {
         if (is_null($this->structureid)) {
-            $sql = "SELECT STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,GESTIONNAIREID,AFFICHESOUSSTRUCT,AFFICHEPLANNINGTOUTAGENT,DATECLOTURE,AFFICHERESPSOUSSTRUCT,RESPVALIDSOUSSTRUCT,GESTVALIDAGENT, TYPESTRUCT, ISINCLUDED FROM STRUCTURE WHERE STRUCTUREID=?";
+            $sql = "SELECT STRUCTUREID,
+                           NOMLONG,
+                           NOMCOURT,
+                           STRUCTUREIDPARENT,
+                           RESPONSABLEID,
+                           GESTIONNAIREID,
+                           AFFICHESOUSSTRUCT,
+                           AFFICHEPLANNINGTOUTAGENT,
+                           DATECLOTURE,
+                           AFFICHERESPSOUSSTRUCT,
+                           RESPVALIDSOUSSTRUCT,
+                           GESTVALIDAGENT, 
+                           TYPESTRUCT, 
+                           ISINCLUDED,
+                           ESTBIBLIOTHEQUE
+                    FROM STRUCTURE 
+                    WHERE STRUCTUREID=?";
             $params = array($structureid);
             $query = $this->fonctions->prepared_select($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
@@ -84,6 +102,7 @@ class structure
             $this->gestvalidagent = "$result[11]";
             $this->typestruct = "$result[12]";
             $this->isincluded = "$result[13]";
+            $this->islibrary = "$result[14]";
             
             // Prise en compte du cas de la délégation
             $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID=? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
@@ -157,18 +176,18 @@ class structure
     	$struct_tmp = $this;
     	while (! is_null($struct_tmp) && ! in_array($struct_tmp->typestruct(), $type_struct_final))
     	{
-    		$struct_tmp = $struct_tmp->parentstructure();
-    		if (! is_null($struct_tmp))
-    		{
-    		    if ($fullname)
-    		    {
-    		        $nameStructComplete = $struct_tmp->nomlong() . ' (' . $struct_tmp->nomcourt() . ')' . ' / '.$nameStructComplete;
-    		    }
-    		    else
-    		    {
-    		        $nameStructComplete =  $struct_tmp->nomcourt().' / '.$nameStructComplete;
-    		    }
-    		}
+            $struct_tmp = $struct_tmp->parentstructure();
+            if (! is_null($struct_tmp))
+            {
+                if ($fullname)
+                {
+                    $nameStructComplete = $struct_tmp->nomlong() . ' (' . $struct_tmp->nomcourt() . ')' . ' / '.$nameStructComplete;
+                }
+                else
+                {
+                    $nameStructComplete =  $struct_tmp->nomcourt().' / '.$nameStructComplete;
+                }
+            }
     	}
     	return $nameStructComplete;
     }
@@ -181,9 +200,25 @@ class structure
     function isincluded()
     {
         if ($this->isincluded == 0)
+        {
             return false;
+        }
         else
+        {
             return true;
+        }
+    }
+    
+    function estbibliotheque()
+    {
+        if ($this->islibrary == 0)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     function affichetoutagent($affiche = null)
@@ -1651,6 +1686,74 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             }
             return $structureliste;
         }
+    }
+    
+    function listedemandeteletravailenattente()
+    {
+        $tabteletravail = array();
+        if (! is_null($this->structureid)) 
+        {
+            $sql = "SELECT TELETRAVAIL.TELETRAVAILID 
+                    FROM TELETRAVAIL,AGENT,STRUCTURE
+                    WHERE STRUCTURE.STRUCTUREID = ?
+                      AND AGENT.STRUCTUREID = STRUCTURE.STRUCTUREID
+                      AND TELETRAVAIL.AGENTID = AGENT.AGENTID
+                      AND TELETRAVAIL.STATUTRESPONSABLE = ?
+                      AND TELETRAVAIL.STATUT = ?";
+            $params = array($this->structureid,teletravail::TELETRAVAIL_ATTENTE,teletravail::TELETRAVAIL_ATTENTE);
+            $query = $this->fonctions->prepared_select($sql, $params);
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Structure->listedemandeteletravailenattente : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            if (mysqli_num_rows($query) == 0) {
+                // echo "Structure->listedemandeteletravailenattente : Pas de demande de télétravail en attente pour la structure " . $this->structureid . "<br>";
+            }
+            while ($result = mysqli_fetch_row($query)) 
+            {
+                $teletravail = new teletravail($this->dbconnect);
+                $teletravail->load($result[0]);
+                if ($teletravail->agentid()!=$this->responsable()->agentid())
+                {
+                    $tabteletravail["" . $result[0]] = $teletravail;
+                }
+                unset($teletravail);
+            }
+            $tabsousstruct = $this->structurefille();
+            if (!is_null($tabsousstruct))
+            {
+                foreach ($tabsousstruct as $stucture)
+                {
+                    $sql = "SELECT TELETRAVAIL.TELETRAVAILID 
+                            FROM TELETRAVAIL
+                            WHERE TELETRAVAIL.AGENTID = ?
+                              AND TELETRAVAIL.STATUTRESPONSABLE = ?
+                              AND TELETRAVAIL.STATUT = ?";
+                    $params = array($stucture->responsable()->agentid(),teletravail::TELETRAVAIL_ATTENTE,teletravail::TELETRAVAIL_ATTENTE);
+                    $query = $this->fonctions->prepared_select($sql, $params);
+                    $erreur = mysqli_error($this->dbconnect);
+                    if ($erreur != "") {
+                        $errlog = "Structure (fille) ->listedemandeteletravailenattente : " . $erreur;
+                        echo $errlog . "<br/>";
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    }
+                    if (mysqli_num_rows($query) == 0) {
+                        // echo "Structure->listedemandeteletravailenattente : Pas de demande de télétravail en attente pour la structure " . $this->structureid . "<br>";
+                    }
+                    while ($result = mysqli_fetch_row($query)) 
+                    {
+                        $teletravail = new teletravail($this->dbconnect);
+                        $teletravail->load($result[0]);
+                        $tabteletravail["" . $result[0]] = $teletravail;
+                        unset($teletravail);
+                    }
+                }
+            }
+            return $tabteletravail;
+        }
+       
     }
 }
 

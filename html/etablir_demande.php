@@ -433,8 +433,12 @@
             }
             ksort($agentlistefull);
             echo "<SELECT name='agentid'>";
-            foreach ($agentlistefull as $keyagent => $membre) {
-                echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            foreach ($agentlistefull as $keyagent => $membre) 
+            {
+                if (!$membre->estutilisateurspecial())
+                {
+                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                }
             }
             echo "</SELECT>";
         }
@@ -863,7 +867,7 @@
         ?>
     			<br>
     			<td width=1px>
-    				<input class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
+    				<input required class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
     			</td>
     			<td align="left">
                                 <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) { echo " checked "; } ?>>Matin 
@@ -873,7 +877,7 @@
     		<tr>
     			<td>Date de fin de la demande :</td>
     			<td width=1px>
-    				<input class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
+    				<input required class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
     			</td>
     			<td align="left">
                                 <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) { echo " checked "; } ?>>Matin
@@ -894,14 +898,25 @@
                 echo "<OPTION value='" . $solde->typeabsenceid() . "'>" . $solde->typelibelle() . "</OPTION>";
                 echo "</select>";
                 echo "<input type='hidden' name='typedemande' value='conges' ?>";
-            } else {
-                $soldeliste = $agent->soldecongesliste($fonctions->anneeref() - $previous);
+            } 
+            else 
+            {
+                $soldeliste = array();
+                if ($previous != 0) 
+                {
+                   $soldeliste = $agent->soldecongesliste($fonctions->anneeref() - $previous);
+                }
                 // Si on est dans l'année précédente, on peut poser des congés avec le solde de l'année future
                 // Exemple : On peut poser des congés en Aout 2015/2016, avec le solde 2016/2017 (s'il existe <=> S'il est calculé)
-                if ($previous != 0) {
-                    $soldelisteannee = $agent->soldecongesliste($fonctions->anneeref());
-                    $soldeliste = array_merge((array) $soldeliste, (array) $soldelisteannee);
+                if ($rh_mode == 'yes' or !is_null($responsable))
+                {
+                    $soldelisteannee = $agent->soldecongesliste($fonctions->anneeref(),$dummy,true);
                 }
+                else
+                {
+                    $soldelisteannee = $agent->soldecongesliste($fonctions->anneeref(),$dummy,false);
+                }
+                $soldeliste = array_merge((array) $soldeliste, (array) $soldelisteannee);
                 // print_r ($soldeliste); echo "<br>";
                 if (! is_null($soldeliste)) {
                     echo "<select name='listetype'  id='listetype'>";
@@ -1042,11 +1057,11 @@
         if (! is_null($responsable)) 
         {
             echo "<div id='warningcommoblig'>" . $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.") . "</div>";
-            echo "Commentaire (maximum : $longueurmaxcommentaire caractères) :<br>";
+            echo "Commentaire (maximum : $longueurmaxcommentaire caractères - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
 //            echo $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.");
             echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
 //            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
-            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire); updatedisplay();' >$commentaire</textarea> <br>";
+            echo "<textarea rows='4' cols='60' style='line-height:20px; resize: none;' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();' >$commentaire</textarea> <br>";
             if ($commentaire == '')
             {
                 $disabledbutton = ' disabled ';
@@ -1075,8 +1090,8 @@
         elseif (strcasecmp($typedemande, "conges") != 0) // On est en mode "absence ou télétravail HC"
         {
             echo "<div id='warningcommoblig' hidden='hidden'>" . $fonctions->showmessage(fonctions::MSGWARNING, "Le commentaire est obligatoire pour ce type de demande.") . "</div>";
-            echo "Commentaire<label id='warningcommfacult'> facultatif</label> (maximum : $longueurmaxcommentaire caractères) :<br>";
-            echo "<textarea rows='4' cols='60' name='commentaire' id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire); updatedisplay();'>$commentaire</textarea> <br>";
+            echo "Commentaire<label id='warningcommfacult'> facultatif</label> (maximum : $longueurmaxcommentaire caractères - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
+            echo "<textarea rows='4' cols='60' style='line-height:20px; resize: none;' name='commentaire' id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();'>$commentaire</textarea> <br>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";            
         }
@@ -1098,6 +1113,12 @@
 
 ?>    
     <script>      
+
+        var commentaire = document.getElementById('commentaire');
+        if (commentaire)
+        {
+            checktextlength(commentaire,<?php echo $fonctions->logueurmaxcolonne('DEMANDE','COMMENTAIRE'); ?>,"commentairerestant");
+        }
 
         const listetype=document.getElementById("listetype");
         

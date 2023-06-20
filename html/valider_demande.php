@@ -203,11 +203,27 @@
         foreach ($listestruct as $key => $structure) {
             $aumoinsunedemande = False;
             $cleelement = $structure->id();
+            
+            if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+            {
+                if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
+                {
+                     continue;
+                }
+                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'o');
+            }
+            else
+            {
+                $validsousstruct = strtolower($structure->respvalidsousstruct());
+                // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
+                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
+            }
+
             echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             echo "<form name='frm_validation_conge'  method='post' >";
-            $validsousstruct = strtolower($structure->respvalidsousstruct());
-            // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
+            ////$validsousstruct = strtolower($structure->respvalidsousstruct());
+            ////// echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
+            ////$agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
             if (is_array($agentliste)) {
                 foreach ($agentliste as $membrekey => $membre) {
                     // echo "boucle => " .$membre->nom() . "<br>";
@@ -217,8 +233,9 @@
                     // Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
                     // On doit afficher les congés qui sont dans la période suivante
                     if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) and ($previous == 0))
+                    {
                         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-
+                    }
                     // echo "Debut = $debut fin = $fin <br>";
                     // echo "structure->id() = " . $structure->id() . "<br>";
                     // echo "Membre = " . $membre->nom() . "<br>";
@@ -288,9 +305,21 @@
             echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'n');
             if (is_array($agentliste)) {
+                $codeinterne = 0;
+                $structure->resp_envoyer_a($codeinterne);
                 foreach ($agentliste as $membrekey => $membre) {
                     $todisplay = true;
-                    if (strcasecmp($structure->gestvalidagent(), "n") == 0) // Si le gestionnaire ne peux valider que les responsables
+                    
+                    // Si le responsable de la structure est l'agent (membre) courant et que le responsable n'est pas géré par le gestionnaire de la structure courante
+                    // Ticket GLPI 147328
+                    // Correction pour les responsables des sous-structures (ticket GLPI 148635)
+                    if ($structure->responsable()->agentid() == $membre->agentid() 
+                            and $codeinterne!=3  // 3 = Gestionnaire de la structure courante
+                            and $structure->id() == $user->structureid())
+                    {
+                        $todisplay = false;
+                    }
+                    elseif (strcasecmp($structure->gestvalidagent(), "n") == 0) // Si le gestionnaire ne peux valider que les responsables
                     {
                         if ($membre->estresponsable() == false) // Si le membre n'est pas un responsable ==> On n'affiche pas
                         {

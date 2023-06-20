@@ -294,6 +294,7 @@ class planning
                                 $element->agentid($agentid);
                                 // echo "<br>Je set (matin) le demande id => " . $demande->id() ."<br>";
                                 $element->demandeid($demande->id());
+                                $element->demande($demande);
                                 // echo "<br>Je l'ai fixé (matin) demande id => " . $element->demandeid() . "<br>";
                                 // echo "Planning->load : Type = " . $result[2] . " Info = " . $result[15] . "<br>";
                                 // echo "Planning->load : Type (element) = " . $element->type() . " Info (element) = " . $element->info() . "<br>";
@@ -305,6 +306,8 @@ class planning
                                     // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
                                     if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
                                         $element->demandeid("");
+                                        // On reset l'objet demande de l'élément
+                                        $element->demande("");
                                     }
                                     $this->listeelement[$datetemp . $demandetempmoment] = $element;
                                 }
@@ -328,6 +331,7 @@ class planning
                                 $element->agentid($agentid);
                                 // echo "<br>Je set (apres midi) le demande id => " . $demande->id() ."<br>";
                                 $element->demandeid($demande->id());
+                                $element->demande($demande);
                                 // echo "<br>Je l'ai fixé (apres midi) demande id => " . $element->demandeid() . "<br>";
                                 // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
                                 if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
@@ -336,6 +340,8 @@ class planning
                                     // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
                                     if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
                                         $element->demandeid("");
+                                        // On reset l'objet demande de l'élément
+                                        $element->demande("");
                                     }
                                     $this->listeelement[$datetemp . $demandetempmoment] = $element;
                                 }

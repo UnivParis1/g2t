@@ -1,5 +1,15 @@
 <?php
 
+class sihamaffectation
+{
+    public $debut;
+    public $fin;
+    public $numcontrat;
+    public $quotite;
+};
+    
+
+
 /**
  * Agent
  * Definition of the agent
@@ -324,8 +334,11 @@ class agent
                 $errlog = "Agent->nom : Le nom de l'agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {  
                 return $this->nom;
+            }
         } 
         else
         {
@@ -354,8 +367,11 @@ class agent
                 $errlog = "Agent->prenom : Le prénom de l'agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->prenom;
+            }
         } 
         else
         {
@@ -384,8 +400,11 @@ class agent
                 $errlog = "Agent->civilite : La civilité de l'agent n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->civilite;
+            }
         } 
         else
         {
@@ -409,9 +428,13 @@ class agent
     function identitecomplete($namefirst = false)
     {
         if ($namefirst)
+        {
             return $this->civilite . " " . $this->nom() . " " . $this->prenom();
+        }
         else
+        {
             return $this->civilite . " " . $this->prenom() . " " . $this->nom();
+        }
     }
 
     /**
@@ -637,8 +660,11 @@ class agent
                 $errlog = "Agent->typepopulation : Le type de population de l'agent n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->typepopulation;
+            }
         } 
         else
         {
@@ -829,7 +855,9 @@ class agent
             return FALSE;
         }
         if (mysqli_num_rows($query) == 0)
+        {
             return FALSE;
+        }
         $result = mysqli_fetch_row($query);
         return (strcasecmp($result[0], "O") == 0);
     }
@@ -869,7 +897,9 @@ class agent
             return FALSE;
         }
         if (mysqli_num_rows($query) == 0)
+        {
             return FALSE;
+        }
         $result = mysqli_fetch_row($query);
         return (strcasecmp($result[0], "O") == 0);
     }
@@ -936,13 +966,16 @@ class agent
         if (is_null($nbrejrs)) {
             $complement->load($this->agentid, 'ENFANTMALADE');
             return intval($complement->valeur());
-        } elseif ((strcasecmp(intval($nbrejrs), $nbrejrs) == 0) and (intval($nbrejrs) >= 0)) // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
+        } 
+        elseif ((strcasecmp(intval($nbrejrs), $nbrejrs) == 0) and (intval($nbrejrs) >= 0)) // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
         {
             $complement->complementid('ENFANTMALADE');
             $complement->agentid($this->agentid);
-            $complement->valeur(intval($enfantmaladevalue));
+            $complement->valeur(intval($nbrejrs));
             $complement->store();
-        } else {
+        } 
+        else 
+        {
             $errlog = "Agent->nbjrsenfantmalade (AGENT) : Le nombre de jours 'enfant malade doit être un nombre positif ou nul'";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -1098,7 +1131,7 @@ class agent
      */
     function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null, $ics = null, $checkgrouper = false)
     {
-    	if ($checkgrouper && !$destinataire->isG2tUser())
+    	if ($checkgrouper && is_object($destinataire) && !$destinataire->isG2tUser())
     	{
     		// le destinataire ne fait pas partie des utilisateurs G2T
     		$errorlog = "sendmail annulé car expéditeur absent des utilisateurs G2T (".$destinataire->identitecomplete().") \n";
@@ -1151,8 +1184,24 @@ class agent
 	        // $msg .= "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n";
 	        $msg .= "Content-Transfer-Encoding:8bit\r\n";
 	        $msg .= "\r\n";
-	        $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
-	        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8') . "\r\n";
+                if (is_object($destinataire))
+                {
+                    $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+                }
+                else
+                {
+                    // $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire,'UTF-8'))) . ",<br><br>";
+                    $msg .= "Bonjour,<br><br>";
+                }
+	        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>";
+                
+                // Si l'adresse est donnée directement, on ne met pas le footer dans le message. 
+                // En effet, le destinataire n'est pas forcément un utilisateur G2T (impossible de contrôler)
+                // => Pas de référence à l'application
+                if (is_object($destinataire))
+                {
+                    $msg .= "Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8') . "\r\n";
+                }
 
 	        // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 	        $msg .= "\r\n";
@@ -1233,30 +1282,37 @@ class agent
 	        }
 	        else
 	        {
-    	        // ini_set(sendmail_from,$this->adressemail);
-    	        ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
-    	        ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
-    	        // $objet .=" G2T";
-    	        /*
-    	        $errorlog = "sendmail ok : Destinataire = ".$destinataire->identitecomplete()." (mail = " . $destinataire->mail() . ")\n";
-    	        $errorlog .= "Expéditeur : " . $this->identitecomplete() .  " (mail = "   . $this->mail() . ") \n";
-    	        $errorlog .= "objet du mail : ".$objet."\n";
-    	        $errorlog .= "contenu du mail : ".$message."\n";
-    	        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errorlog));
-    	        */
-	            mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
-	            //  mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
-	            // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
-    	        ini_restore('sendmail_from');
-    	        // On fait une pause de 1 sec pour eviter de se faire jeter par le serveur SMTP
-    	        if (defined('TYPE_ENVIRONNEMENT'))
-    	        {
-    	            if (strtolower(TYPE_ENVIRONNEMENT) == 'test')
-    	            {
-    	                // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Environnement de test/dev => On sleep après l'envoi du mail \n"));
-            	        sleep(2);
-    	            }
-    	        }
+                    // ini_set(sendmail_from,$this->adressemail);
+                    ini_set('sendmail_from', $this->prenom() . " " . $this->nom() . " <" . $this->adressemail . ">");
+                    ini_set('SMTP', $this->fonctions->liredbconstante("SMTPSERVER"));
+                    // $objet .=" G2T";
+                    /*
+                    $errorlog = "sendmail ok : Destinataire = ".$destinataire->identitecomplete()." (mail = " . $destinataire->mail() . ")\n";
+                    $errorlog .= "Expéditeur : " . $this->identitecomplete() .  " (mail = "   . $this->mail() . ") \n";
+                    $errorlog .= "objet du mail : ".$objet."\n";
+                    $errorlog .= "contenu du mail : ".$message."\n";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errorlog));
+                    */
+                    if (is_object($destinataire))
+                    {
+                        mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
+                    }
+                    else
+                    {
+                        mail($destinataire . " <" . $destinataire . ">", "$encoded_subject", "$msg", "$header");
+                    }
+                        //  mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
+                        // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
+                    ini_restore('sendmail_from');
+                    // On fait une pause de 1 sec pour eviter de se faire jeter par le serveur SMTP
+                    if (defined('TYPE_ENVIRONNEMENT'))
+                    {
+                        if (strtolower(TYPE_ENVIRONNEMENT) == 'test')
+                        {
+                            // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Environnement de test/dev => On sleep après l'envoi du mail \n"));
+                            sleep(2);
+                        }
+                    }
 	        }
     	}
 
@@ -1474,7 +1530,7 @@ class agent
      *            concat the errors text with an existing string
      * @return array list of objects solde
      */
-    function soldecongesliste($anneeref = null, &$erreurmsg = "")
+    function soldecongesliste($anneeref = null, &$erreurmsg = "", $includereport = false)
     {
         $soldeliste = null;
         if (is_null($anneeref)) {
@@ -1517,7 +1573,7 @@ class agent
             $reportactif = FALSE;
         
         $subparams = array();
-        if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT")) && $reportactif) 
+        if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && (date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT") or $includereport)) && $reportactif) 
         {
             $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND (ANNEEREF= ? OR ANNEEREF= ?))";
             $subparams = array($anneeref,($anneeref - 1));
@@ -1926,28 +1982,82 @@ class agent
         $htmltext = $htmltext . "<div id='demandeliste'>";
         $htmltext = $htmltext . "<center><table class='tableau' >";
         if (count($demandeliste) == 0)
+        {
             $htmltext = $htmltext . "   <tr class='titre'><td>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
+        }
         else {
             $htmltext = $htmltext . "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
-            $htmltext = $htmltext . "   <tr class='entete'><td>Type de demande</td><td>Date de dépot</td><td>Date de début</td><td>Date de fin</td><td>Nbr de jours</td><td>Etat de la demande</td><td>Motif (obligatoire si le congé est annulé)</td></tr>";
+            $htmltext = $htmltext . "   <tr class='entete'>"
+                    . "<td>Type de demande</td>"
+                    . "<td>Date de dépot</td>"
+                    . "<td>Date de début</td>"
+                    . "<td>Date de fin</td>"
+                    . "<td>Nbr de jours</td>"
+                    . "<td>Etat de la demande</td>"
+                    . "<td>Motif (obligatoire si le congé est annulé)</td>"
+                    . "</tr>";
             foreach ($demandeliste as $key => $demande) {
                 //if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) {
                 if ($demande->motifrefus() != "" or (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)) {
-                    $htmltext = $htmltext . "<tr class='element'>";
-                    $libelledemande = $demande->typelibelle();
+                    $htmltext = $htmltext . "<tr class='element bulleinfo'>";
+                    $libelledemande = $this->fonctions->tronque_chaine($demande->typelibelle(),40, true);
+/*                  
                     if (strlen($libelledemande) > 40) {
                         $libelledemande = mb_substr($demande->typelibelle(), 0, 40, 'UTF-8') . "...";
                     }
+*/                    
+                    $datatitle = '';
+                    if (strlen($demande->typelibelle()) != strlen($libelledemande)) 
+                    {
+                        $datatitle = " data-title=" . chr(34) . htmlentities($demande->typelibelle()) . chr(34);  
+                    }
+                    $htmltext = $htmltext . "<td  $datatitle >";
+                    $htmltext = $htmltext . $libelledemande; 
+                    $htmltext = $htmltext . "</td>";   
+                    $htmltext = $htmltext . "<td>";
+                    $htmltext = $htmltext . $demande->date_demande() . " " . $demande->heure_demande();
+                    $htmltext = $htmltext . "</td>";   
+                    $htmltext = $htmltext . "<td>";
+                    $htmltext = $htmltext . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut());
+                    $htmltext = $htmltext . "</td>";   
+                    $htmltext = $htmltext . "<td>";
+                    $htmltext = $htmltext . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin());
+                    $htmltext = $htmltext . "</td>";   
+                    $datatitle = '';
+                    $datatitleindicator = '';
+                    if (strlen($demande->commentaire()) != 0) 
+                    {
+                        $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);
+                        // $datatitleindicator = " &#11127;";
+                        // $datatitleindicator = " &#128196;";
+                        $datatitleindicator = " &#128195; ";
+
+                    }
+                    $htmltext = $htmltext . "<td $datatitle >";
+                    $htmltext = $htmltext . $demande->nbrejrsdemande() . $datatitleindicator;
+                    $htmltext = $htmltext . "</td>";   
+                    $htmltext = $htmltext . "<td>";
+                    $htmltext = $htmltext . $this->fonctions->demandestatutlibelle($demande->statut());
+                    $htmltext = $htmltext . "</td>";  
+                    $datatitle = '';
+                    if (strlen($demande->motifrefus()) != 0) 
+                    {
+                        $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->motifrefus(),60)) . chr(34);  
+                    }
+                    $htmltext = $htmltext . "<td class='cellulemultiligne' $datatitle >";
+                    $htmltext = $htmltext . htmlentities($this->fonctions->tronque_chaine($demande->motifrefus(),50));
+                    $htmltext = $htmltext . "</td>";   
                     
-                    $htmltext = $htmltext . "   <td>";
+/*                    
+                    $htmltext = $htmltext . "   <td>";                   
                     if (strlen($demande->commentaire()) != 0) {
                         $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
                     }
-                    $htmltext = $htmltext . $libelledemande;
+                    $htmltext = $htmltext . $libelledemande; 
                     if (strlen($demande->commentaire()) != 0) {
                         $htmltext = $htmltext . "</span>";
                     }
-                    $htmltext = $htmltext . "</td>";
+                    $htmltext = $htmltext . "</td>";               
                     $htmltext = $htmltext . "   <td>";
                     if (strlen($demande->commentaire()) != 0) {
                         $htmltext = $htmltext . "<span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
@@ -1994,6 +2104,7 @@ class agent
                     }
                     $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "   <td>" . htmlentities($demande->motifrefus()) . "</td>";
+ */
                     $htmltext = $htmltext . "</tr>";
                 }
             }
@@ -2011,9 +2122,13 @@ class agent
             {
                 //echo "<br>Element Type = " . $element->type() . "<br>";
                 if (isset($synthesetab[$element->info()]))
+                {
                     $synthesetab[$element->info()] = $synthesetab[$element->info()] + 0.5;
-                 else
+                }
+                else
+                {
                     $synthesetab[$element->info()] = 0.5;
+                }
             }
         }
         
@@ -2179,16 +2294,23 @@ class agent
         
         $headertext = "Tableau récapitulatif des demandes - Congés pris entre " . $this->fonctions->formatdate($datedebut) . " et ";
         if (date("Ymd") > $datefin)
+        {
             $headertext = $headertext . $this->fonctions->formatdate($datefin);
+        }
         else
+        {
             $headertext = $headertext . date("d/m/Y");
+        }
         
             $pdf->Cell(275, 5, utf8_decode($headertext), 1, 0, 'C');
         $pdf->Ln(5);
         
         if (count($demandeliste) == 0)
+        {
             $pdf->Cell(275, 5, utf8_decode("L'agent n'a aucun congé posé pour la période de référence en cours."), 1, 0, 'C');
-        else {
+        }
+        else 
+        {
             $pdf->Cell(60, 5, utf8_decode("Type de demande"), 1, 0, 'C');
             $pdf->Cell(25, 5, utf8_decode("Date de dépot"), 1, 0, 'C');
             $pdf->Cell(30, 5, utf8_decode("Date de début"), 1, 0, 'C');
@@ -2200,10 +2322,14 @@ class agent
             foreach ($demandeliste as $key => $demande) {
                 //if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) {
                 if ($demande->motifrefus() != "" or (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp($demande->statut(), demande::DEMANDE_ANNULE) != 0)) {
+                    $libelledemande = $this->fonctions->tronque_chaine($demande->typelibelle(),40, true);
+/*                    
                     $libelledemande = $demande->typelibelle();
-                    if (strlen($libelledemande) > 40) {
+                    if (strlen($libelledemande) > 40) 
+                    {
                         $libelledemande = substr($demande->typelibelle(), 0, 40) . "...";
                     }
+ */
                     $pdf->Cell(60, 5, utf8_decode($libelledemande), 1, 0, 'C');
                     $pdf->Cell(25, 5, utf8_decode($demande->date_demande()), 1, 0, 'C');
                     $pdf->Cell(30, 5, utf8_decode($demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
@@ -2226,9 +2352,13 @@ class agent
             {
                 //echo "<br>Element Type = " . $element->type() . "<br>";
                 if (isset($synthesetab[$element->info()]))
+                {
                    $synthesetab[$element->info()] = $synthesetab[$element->info()] + 0.5;
+                }
                 else
+                {
                    $synthesetab[$element->info()] = 0.5;
+                }
             }
         }
         
@@ -2237,9 +2367,13 @@ class agent
             $pdf->Ln(8);
             $headertext = "Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " et ";
             if (date("Ymd") > $datefin)
+            {
                 $headertext = $headertext . $this->fonctions->formatdate($datefin);
+            }
             else
+            {
                 $headertext = $headertext . date("d/m/Y");
+            }
             $pdf->Cell(100, 5, utf8_decode($headertext), 1, 0, 'C');
             $pdf->Ln(5);
             $pdf->Cell(80, 5, utf8_decode("Type de demande"), 1, 0, 'C');
@@ -2396,15 +2530,19 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' /></td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                         {
-                            $backgroundtext = '';
+                            $textareastyle = "style='line-height:20px; resize: none;";
                             $disabletext = " disabled ";
                             if (isset($arraycancel[$demande->id()]))
                             {
-                                $backgroundtext = " style='background-color : #f5b7b1;' ";
+                                $textareastyle = $textareastyle . " style='background-color : #f5b7b1;' ";
                                 $disabletext = "";
                             }
+                            $textareastyle = $textareastyle . "'";
                             
-                            $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroundtext size=80 oninput='checktextlength(this,$longueurmaxmotif); modifymotif(this," . $demande->id() . ");' $disabletext></td>";
+                            $htmltext = $htmltext . "   <td class='cellulesimple'>"
+                                    //. "<input type=text name=motif[" . $demande->id() . "] id=motif[" . $demande->id() . "] value='" . $demande->motifrefus() . "' $backgroundtext size=80 oninput='checktextlength(this,$longueurmaxmotif); modifymotif(this," . $demande->id() . ");' $disabletext>"
+                                    . "<textarea name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' rows='2' cols='80' $textareastyle oninput='checktextlength(this,$longueurmaxmotif); modifymotif(this," . $demande->id() . ");' $disabletext>" . $demande->motifrefus() . "</textarea>"
+                                    . "</td>";
                         }
                         $htmltext = $htmltext . "</tr>";
                     }
@@ -2578,7 +2716,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                             $premieredemande = FALSE;
                         }
                         
-                        $htmltext = $htmltext . "<tr align=center >";
+                        $htmltext = $htmltext . "<tr align=center class='bulleinfo'>";
                         // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
                         
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
@@ -2587,24 +2725,43 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         if ($demande->type() == 'enmal') {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ")</td>";
                         }
-                        //elseif ($demande->type() == 'spec' or $demande->type() == 'teleetab')
-                        elseif ($this->fonctions->absencecommentaireoblig($demande->type()))
+/*                        
+*                        elseif ($this->fonctions->absencecommentaireoblig($demande->type()))
+*                        {
+*                            $datatitle = '';
+*                            if (strlen($demande->commentaire()) != 0) 
+*                            {
+*                                $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);  
+*                            }
+*                            $htmltext = $htmltext . "   <td class='cellulesimple'>";
+*                            $htmltext = $htmltext . $demande->typelibelle();
+*                            $htmltext = $htmltext . "</td>";
+*                        } 
+*/
+                        else 
                         {
-                            $htmltext = $htmltext . "   <td class='cellulesimple'>";
-                            if (strlen(trim($demande->commentaire()."")) != 0)
+                            $libelledemande = $this->fonctions->tronque_chaine($demande->typelibelle(),40, true);
+                            $datatitle = '';
+                            if (strlen($demande->typelibelle()) != strlen($libelledemande)) 
                             {
-                                $htmltext = $htmltext . " <span data-tip=" . chr(34) . htmlentities($demande->commentaire()) . chr(34) . ">";
+                                $datatitle = " data-title=" . chr(34) . htmlentities($demande->typelibelle()) . chr(34);  
                             }
-                            $htmltext = $htmltext. $demande->typelibelle();
-                            if (strlen(trim($demande->commentaire()."")) != 0)
-                            {
-                                $htmltext = $htmltext . "</span>";
-                            }
-                            $htmltext = $htmltext . "</td>";
-                        } else {
-                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+                            $htmltext = $htmltext . "<td class='cellulesimple' $datatitle >";
+                            $htmltext = $htmltext . $libelledemande; 
+                            $htmltext = $htmltext . "</td>";   
+//                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         }
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
+                        
+                        $datatitle = '';
+                        $datatitleindicator = '';
+                        // S'il y a un commentaire et que celui-ci est obligatoire
+                        if (strlen($demande->commentaire()) != 0 and $this->fonctions->absencecommentaireoblig($demande->type())) 
+                        {
+                            $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34); 
+                            // $datatitleindicator = " &#11127;";
+                            $datatitleindicator = " &#128195;";
+                        }
+                        $htmltext = $htmltext . "   <td class='cellulesimple' $datatitle>" . $demande->nbrejrsdemande() . $datatitleindicator . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>";
                         $htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]' id='statut[" . $demande->id() . "]' onchange='demandestatutchange(this," . $demande->id() . ");'>";
                         $htmltext = $htmltext . "         <option ";
@@ -2641,21 +2798,27 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         $htmltext = $htmltext . "      <select>";
                         $htmltext = $htmltext . "</td>";
                         
-                        $backgroundtext = '';
+                        $textareastyle = "style='line-height:20px; resize: none;";
                         $disabletext = " disabled ";
                         if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_REFUSE)
                         {
-                            $backgroundtext = " style='background-color : #f5b7b1;' ";
+                            $textareastyle = $textareastyle . " background-color : #f5b7b1;' ";
                             $disabletext = "";
                         }
+                        $textareastyle = $textareastyle . "'";
                         
-                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' $backgroundtext size='80' oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext></td>";
+//                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' $backgroundtext size='80' oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext></td>";
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>"
+                                . "<textarea name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' rows='2' cols='80' $textareastyle oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext>" . $demande->motifrefus() . "</textarea>"
+                                . "</td>";
                         $htmltext = $htmltext . "</tr>";
                     }
                 }
             }
             if (! $premieredemande)
+            {
                 $htmltext = $htmltext . "</table>";
+            }
             // $htmltext = $htmltext . "<br>";
         }
         return $htmltext;
@@ -2740,13 +2903,13 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $commentaire = trim($result[3]);
                 if (trim($result[7])=='')
                 {
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $commentaire . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . htmlentities($commentaire) . "</td>";
                 }
                 else
                 {
                     $auteur = new agent($this->dbconnect);
                     $auteur->load(trim($result[7]));
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $commentaire . " (par " .  $auteur->identitecomplete()  .   ")</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne' >" . htmlentities($commentaire) . " (par " .  $auteur->identitecomplete()  .   ")</td>";
                 }
                 if ($allowremove)
                 {
@@ -2910,7 +3073,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
+        {
             error_log(basename(__FILE__) . " " . $erreur_requete);
+        }
         if (mysqli_num_rows($query) != 0) // Il existe un congé bonifié pour la période => On le solde des congés à 0
         {
             $resultcongbonif = mysqli_fetch_row($query);
@@ -3032,8 +3197,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $strresultat = $this->agentid . '_' . $statutnumligne . '_' . $quotitenumligne . '_' . $situationnumligne;
                 $strresultat = $strresultat . ';' . $this->agentid;
                 if (substr($codecontrat, 0, 5) != 'CONTR')
+                {
                     $codecontrat = '';
-                $strresultat = $strresultat . ';' . $codecontrat;
+                }
+                // On ne met pas le code contrat mais le numéro de la ligne du contrat car il est nécessaire pour calculer
+                // le solde de congés des agents
+                $strresultat = $strresultat . ';' . $statutnumligne; // $codecontrat;
                 $strresultat = $strresultat . ';' . $datedebut;
                 $strresultat = $strresultat . ';' . $datefin;
                 $strresultat = $strresultat . ';' . date("Ymd");
@@ -3098,7 +3267,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $query = $this->fonctions->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
+        {
             error_log(basename(__FILE__) . " " . $erreur_requete);
+        }
         $demandeliste = array();
         // Si pas de demande de CET, on retourne le tableau vide
         if (mysqli_num_rows($query) == 0) {
@@ -3137,30 +3308,30 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$retour = FALSE;
     	// Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
     	if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
-    		$con_ldap = ldap_connect($LDAP_SERVER);
-    		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    		$r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-    		$filtre = "(&(".$LDAP_CODE_AGENT_ATTR."=".$this->agentid().")(".$LDAP_MEMBER_ATTR."=".$LDAP_GROUP_NAME."))";
-    		$dn = $LDAP_SEARCH_BASE;
-    		// 1.1 => ldap ne demande aucun attribut
-    		$restriction = array(
-    				"1.1"
-    		);
-    		$sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-    		$info = ldap_get_entries($con_ldap, $sr);
-    		
-    		if (!$r || !$sr || !$info) // La connexion, l'interrogation ou la lecture des résultat LDAP a échoué
-    			$retour = TRUE;
-    		// Si l'utilisateur est dans le groupe 
-    		if (isset($info["count"]) && $info["count"] > 0) 
-    		{
-    			$retour = TRUE;
-    		}
-    		else
-    		{
-    			$errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") ne fait parti du groupe LDAP : $LDAP_GROUP_NAME";
-    			error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    		}
+            $con_ldap = ldap_connect($LDAP_SERVER);
+            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+            $filtre = "(&(".$LDAP_CODE_AGENT_ATTR."=".$this->agentid().")(".$LDAP_MEMBER_ATTR."=".$LDAP_GROUP_NAME."))";
+            $dn = $LDAP_SEARCH_BASE;
+            // 1.1 => ldap ne demande aucun attribut
+            $restriction = array(
+                            "1.1"
+            );
+            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+            $info = ldap_get_entries($con_ldap, $sr);
+
+            if (!$r || !$sr || !$info) // La connexion, l'interrogation ou la lecture des résultat LDAP a échoué
+                    $retour = TRUE;
+            // Si l'utilisateur est dans le groupe 
+            if (isset($info["count"]) && $info["count"] > 0) 
+            {
+                    $retour = TRUE;
+            }
+            else
+            {
+                $errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") ne fait parti du groupe LDAP : $LDAP_GROUP_NAME";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
     	}
     	return $retour;
     }
@@ -3266,30 +3437,30 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$htmltext = '';
     	if (sizeof($listid) != 0)
     	{
-	    	$htmltext = $htmltext . "<div id='demandes_alim_cet'>";
-	    	$htmltext = $htmltext . "<center>";
-	    	$htmltext = $htmltext . "<table class='tableausimple'>";
-	    	$htmltext = $htmltext . "<tr class='titresimple'><td colspan=8>Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "</td></tr>";
-	    	$htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
-	    	$htmltext = $htmltext . "</tr>";
-	    	foreach ($listid as $id)
-	    	{
-	    		$alimcet->load($id);
-	    		$htmltext = $htmltext . "<tr>
-                                            <td class='cellulesimple'>" . $id . "</td>
-                                            <td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>
-                                            <td class='cellulesimple'>" . $alimcet->typeconges() . "</td>
-                                            <td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>
-                                            <td class='cellulesimple'>" . $alimcet->statut() . "</td>
-                                            <td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td>
-                                            <td class='cellulesimple'>" . $alimcet->motif() . "</td>
-                                            <td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>
-                                         </tr>";
-	    	}
-	    	$htmltext = $htmltext . "</table><br>";
-	    	$htmltext = $htmltext . "</center>";
-	    	
-	    	$htmltext = $htmltext . "</div>";
+            $htmltext = $htmltext . "<div id='demandes_alim_cet'>";
+            $htmltext = $htmltext . "<center>";
+            $htmltext = $htmltext . "<table class='tableausimple'>";
+            $htmltext = $htmltext . "<tr class='titresimple'><td colspan=8>Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "</td></tr>";
+            $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "</tr>";
+            foreach ($listid as $id)
+            {
+                $alimcet->load($id);
+                $htmltext = $htmltext . "<tr>
+                                    <td class='cellulesimple'>" . $id . "</td>
+                                    <td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>
+                                    <td class='cellulesimple'>" . $alimcet->typeconges() . "</td>
+                                    <td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>
+                                    <td class='cellulesimple'>" . $alimcet->statut() . "</td>
+                                    <td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td>
+                                    <td class='cellulesimple'>" . $alimcet->motif() . "</td>
+                                    <td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>
+                                 </tr>";
+            }
+            $htmltext = $htmltext . "</table><br>";
+            $htmltext = $htmltext . "</center>";
+
+            $htmltext = $htmltext . "</div>";
     	}
     	else
     	{
@@ -3462,7 +3633,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     
     /**
      * 
-     * @param string $anneeref
+     * @param string $typeconge
      * @param array $listStatuts
      * @return array of esignatureid 
      */
@@ -3530,55 +3701,55 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$errlog = '';
     	if (sizeof($liste_affectations) >= 1)
     	{
-    		$debutaffprec = null;
-    		$finaffprec = null;
-    		$tab = array();
-	    	foreach($liste_affectations as $affectation)
-	    	{	
-	    		$nbaff ++;
-	    		$debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
-	    		
-	    		if (is_null($debutaffprec) && $debutaffectation > $datedebut)
-	    		{
-	    			// quotite 0 entre $datedebut et débutaffectation
-	    			$nbjoursnoaff = $this->fonctions->nbjours_deux_dates($datedebut, $debutaffectation) - 1; // le jour de début de l'affectation sera compté lors du calcul de la durée d'affectation
-	    			$tab[$nbaff] = array('duree' => $nbjoursnoaff, 'quotite' => 0);
-	    			$nbaff++;
-	    			$errlog .= "1ere affectation ($debutaffectation) commence après le début de période $datedebut";
-	    			$nbjourstot += $nbjoursnoaff;
-	    		}
-	    		$debutaffprec = $debutaffectation;
-	    		if ($debutaffectation <= $datedebut)
-	    		{
-	    			$debutaffectation = $datedebut;
-	    		}
-	    		$finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
-	    		if ($finaffectation >= $datefin)
-	    		{
-	    			$finaffectation = $datefin;
-	    		}
-	    		if (!is_null($finaffprec))
-	    		{
-	    			// nombre de jours entre la fin de la dernière affectation et le début de la courante
-	    			if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
-	    			{
-	    				$daysbetaff = $this->fonctions->nbjours_deux_dates($finaffprec, $debutaffectation) - 2; // le jour de la fin de l'affectation a déjà été compté et début de la suivante sera comptée ensuite
-	    				$tab[$nbaff] = array('duree' => $daysbetaff, 'quotite' => 0);
-	    				$nbaff++;
-	    				$errlog .= "affectation suivante $debutaffectation commence après fin affectation précédente $finaffprec. $daysbetaff jours entre les 2.";
-	    				$nbjourstot += $daysbetaff;
-	    			}
-	    		}
-	    		$finaffprec = $finaffectation;
-	    		$nbjoursaff = $this->fonctions->nbjours_deux_dates($debutaffectation, $finaffectation);
-	    		$nbjourstot += $nbjoursaff;
-	    		$errlog .= "date deb $debutaffectation date fin $finaffectation nb jours $nbjoursaff ";
-	    		$quotiteaff = $affectation->numquotite();
-	    		$tab[$nbaff] = array('duree' => $nbjoursaff, 'quotite' => $quotiteaff);
-	    		$retour += ($quotiteaff * $nbjoursaff);
-	    	}
-	    	$retour = $retour / $nbjourstot;
-	    	$errlog .= "quotite $retour";
+            $debutaffprec = null;
+            $finaffprec = null;
+            $tab = array();
+            foreach($liste_affectations as $affectation)
+            {	
+                $nbaff ++;
+                $debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
+
+                if (is_null($debutaffprec) && $debutaffectation > $datedebut)
+                {
+                    // quotite 0 entre $datedebut et débutaffectation
+                    $nbjoursnoaff = $this->fonctions->nbjours_deux_dates($datedebut, $debutaffectation) - 1; // le jour de début de l'affectation sera compté lors du calcul de la durée d'affectation
+                    $tab[$nbaff] = array('duree' => $nbjoursnoaff, 'quotite' => 0);
+                    $nbaff++;
+                    $errlog .= "1ere affectation ($debutaffectation) commence après le début de période $datedebut";
+                    $nbjourstot += $nbjoursnoaff;
+                }
+                $debutaffprec = $debutaffectation;
+                if ($debutaffectation <= $datedebut)
+                {
+                    $debutaffectation = $datedebut;
+                }
+                $finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
+                if ($finaffectation >= $datefin)
+                {
+                    $finaffectation = $datefin;
+                }
+                if (!is_null($finaffprec))
+                {
+                    // nombre de jours entre la fin de la dernière affectation et le début de la courante
+                    if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
+                    {
+                        $daysbetaff = $this->fonctions->nbjours_deux_dates($finaffprec, $debutaffectation) - 2; // le jour de la fin de l'affectation a déjà été compté et début de la suivante sera comptée ensuite
+                        $tab[$nbaff] = array('duree' => $daysbetaff, 'quotite' => 0);
+                        $nbaff++;
+                        $errlog .= "affectation suivante $debutaffectation commence après fin affectation précédente $finaffprec. $daysbetaff jours entre les 2.";
+                        $nbjourstot += $daysbetaff;
+                    }
+                }
+                $finaffprec = $finaffectation;
+                $nbjoursaff = $this->fonctions->nbjours_deux_dates($debutaffectation, $finaffectation);
+                $nbjourstot += $nbjoursaff;
+                $errlog .= "date deb $debutaffectation date fin $finaffectation nb jours $nbjoursaff ";
+                $quotiteaff = $affectation->numquotite();
+                $tab[$nbaff] = array('duree' => $nbjoursaff, 'quotite' => $quotiteaff);
+                $retour += ($quotiteaff * $nbjoursaff);
+            }
+            $retour = $retour / $nbjourstot;
+            $errlog .= "quotite $retour";
 	    	
     	}
 	    else 
@@ -3601,36 +3772,36 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 //    	echo "<br>";
     	if (sizeof((array)$liste_affectations) >= 1)
     	{
-    		$debutaffprec = null;
-    		$finaffprec = null;
-    		foreach($liste_affectations as $affectation)
-    		{
-    			$debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
-//    			echo "debutaffectation = $debutaffectation <br>";
-    			if (is_null($debutaffprec) && $debutaffectation > $datedebut)
-    			{
-    				$errlog .= "Pas d'affectation entre  le ".$this->fonctions->formatdate($datedebut)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
-    				error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    				return TRUE;
-    			}
-    			$debutaffprec = $debutaffectation;
-    			$finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
-//    			echo "debutaffprec = $debutaffprec <br>";
-//    			echo "finaffectation = $finaffectation <br>";
-    			if (!is_null($finaffprec))
-    			{
-    				// nombre de jours entre la fin de la dernière affectation et le début de la courante
-//    				echo "Avant dateconsecutive => $finaffprec   $debutaffectation <br>";
-    				if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
-    				{
-    					$errlog .= "Pas d'affectation entre le ".$this->fonctions->formatdate($finaffprec)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
-    					error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    					return TRUE;
-    				}
-    			}
-    			$finaffprec = $finaffectation;
-//    			echo "finaffprec = $finaffprec";
-    		}    		
+            $debutaffprec = null;
+            $finaffprec = null;
+            foreach($liste_affectations as $affectation)
+            {
+                $debutaffectation = $this->fonctions->formatdatedb($affectation->datedebut());
+//    		echo "debutaffectation = $debutaffectation <br>";
+                if (is_null($debutaffprec) && $debutaffectation > $datedebut)
+                {
+                    $errlog .= "Pas d'affectation entre  le ".$this->fonctions->formatdate($datedebut)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    return TRUE;
+                }
+                $debutaffprec = $debutaffectation;
+                $finaffectation = $this->fonctions->formatdatedb($affectation->datefin());
+//    		echo "debutaffprec = $debutaffprec <br>";
+//    		echo "finaffectation = $finaffectation <br>";
+                if (!is_null($finaffprec))
+                {
+                        // nombre de jours entre la fin de la dernière affectation et le début de la courante
+//    			echo "Avant dateconsecutive => $finaffprec   $debutaffectation <br>";
+                        if (!$this->fonctions->datesconsecutives($finaffprec, $debutaffectation))
+                        {
+                            $errlog .= "Pas d'affectation entre le ".$this->fonctions->formatdate($finaffprec)." et le ".$this->fonctions->formatdate($debutaffectation).". En cas d'erreur, contactez la DRH. ";
+                            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                            return TRUE;
+                        }
+                }
+                $finaffprec = $finaffectation;
+//    		echo "finaffprec = $finaffprec";
+            }    		
     	}
     	else
     	{
@@ -3875,6 +4046,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     /**
      *
      * @param string $anneeref
+     * @param boolean $maj_solde
+     * @param boolean $loginfo
+     * @param boolean $displayinfo
      * @return number of days
      */
     function calculsoldeannuel($anneeref = null, $maj_solde = true, $loginfo = false, $displayinfo = false)
@@ -4607,7 +4781,734 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return $responsable2;
     }
     
-    
+    /**
+     *
+     * @param string $anneeref
+     * @param boolean $maj_solde
+     * @param boolean $loginfo
+     * @param boolean $displayinfo
+     * @return number of days
+     */
+    function newcalculsoldeannuel($anneeref = null, $maj_solde = true, $loginfo = false, $displayinfo = false)
+    {
+        function log_traces($loginfo,$displayinfo,$texttolog)
+        {
+            global $fonctions;
+            
+            if ($loginfo == true) 
+            { 
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" $texttolog"));
+            }
+            if ($displayinfo == true)
+            {
+                echo " $texttolog \n";
+            }
+        }
+
+        function affectation_continue($datefinprecedente,$datedebutaff,$nbre_jour_periode)
+        {
+            global $fonctions;
+            
+            log_traces(true, false, "nbre_jour_periode => $nbre_jour_periode");            
+            $nbrejrsmoyenparmois = ( $nbre_jour_periode / 12 );
+            // Sur 4 mois, on a donc
+            $nbrejrsinterval = intval($nbrejrsmoyenparmois * 4);
+            log_traces(true, false, "Nombre de jours dans 4 mois => $nbrejrsinterval jours");            
+            log_traces(true, false, "datefinprecedente = $datefinprecedente   datedebutaff = $datedebutaff");
+            $datefinprecedente = date("Ymd", strtotime($datefinprecedente . "+1 day"));
+            log_traces(true, false, "Le jour suivant la date de fin précédente = $datefinprecedente");      
+            $nbrejrscalcule = $fonctions->nbjours_deux_dates($datefinprecedente, $datedebutaff)-1; // -1 => On doit exclure les deux dates extrèmes
+            log_traces(true, false, "Il y a $nbrejrscalcule jours d'interruption entre les deux dates");
+            if ($nbrejrscalcule > $nbrejrsinterval)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        
+        function calcul_date_anniversaire($dateDebAff,$NbreJoursTotalAff,$nbre_jour_periode)
+        {
+
+            // On enlève le nombre de jours que l'agent à déjà effectué à la date de début de l'affectation
+            $datedebuttheorique = date('Ymd',strtotime($dateDebAff. " - $NbreJoursTotalAff days"));
+            // Ensuite on ajoute la durée minimum que l'agent doit avoir travaillé
+            // Si l'agent doit avoir travaillé 10 mois on divise le nombre de jours de la période par 12 et on multiplie par 10
+            $nbrejrsmoyenparmois = ( $nbre_jour_periode / 12 );
+            // Sur 10 mois, on a donc
+            $nbrejrsinterval = (floor($nbrejrsmoyenparmois * 10)-1); // On fait -1 car il faut exclure le jour extrème
+            
+            $dateanniv = date('Ymd',strtotime($datedebuttheorique . " + $nbrejrsinterval days"));
+            return $dateanniv;
+        }
+
+        log_traces($loginfo,$displayinfo,"###########################################");
+        log_traces($loginfo,$displayinfo,"Calcul solde de l'agent : " . $this->identitecomplete() . " - id : " . $this->agentid());
+        log_traces($loginfo,$displayinfo,"###########################################");
+
+
+        $datefinaff = '19000101'; // On initialise la date de fin du contrat précédent au 01/01/1900 (=> très loin dans le passé)
+        $solde_agent = 0;
+        
+        if (is_null($anneeref))
+        {
+            $anneeref = $this->fonctions->anneeref();
+        }
+        // Construction des date de début et de fin de période (typiquement : 01/09/YYYY et 31/08/YYYY+1)
+        $date_deb_period = $anneeref . $this->fonctions->debutperiode();
+        $date_fin_period = ($anneeref + 1) . $this->fonctions->finperiode();
+        log_traces($loginfo,$displayinfo,"date_deb_period = $date_deb_period");
+        log_traces($loginfo,$displayinfo,"date_fin_period = $date_fin_period");
+
+        // Calcul du nombre de jours dans la période => Typiquement 365 ou 366 jours.
+        $nbre_jour_periode = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period);
+        log_traces($loginfo,$displayinfo,"nbre_jour_periode = $nbre_jour_periode");
+
+        // On charge le nombre de jours auquel un agent à droit sur l'année
+        $nbr_jrs_offert = $this->fonctions->liredbconstante("NBJOURS" . substr($date_deb_period, 0, 4));
+        log_traces($loginfo,$displayinfo,"Pour un temps complet sur toute la période, un agent a droit à $nbr_jrs_offert jours");
+
+        // On prend toutes les affectations actives d'un agent, dont la date de début est inférieur à la fin de la période
+        // Les affectations futures ne sont pas prises en compte dans le calcul du solde
+        $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AGENTID = ? AND OBSOLETE='N' AND DATEDEBUT < ? ORDER BY DATEDEBUT";
+        $params = array($this->agentid,($anneeref + 1) . $this->fonctions->finperiode());
+        $query_aff = $this->fonctions->prepared_select($sql, $params);
+
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "SELECT FROM AFFECTATION (Full) => $erreur_requete <br>";
+        }
+        if (mysqli_num_rows($query_aff) != 0) // On a des d'affectations
+        {
+            $NbreJoursTotalAff = 0;
+            $numcontratprecedent = 0;
+            while ($result_aff = mysqli_fetch_row($query_aff)) 
+            {
+                log_traces($loginfo,$displayinfo,"----------------------------------");
+                $datedebutaff = $this->fonctions->formatdatedb($result_aff[1]);
+                $datefinprecedente = $datefinaff;
+                $datefinaff = $this->fonctions->formatdatedb($result_aff[2]);
+
+                if (($datefinaff == '00000000') or ($datefinaff > $date_fin_period))
+                {
+                    $datefinaff = $date_fin_period;
+                }
+                log_traces($loginfo,$displayinfo,"datedebutaff = $datedebutaff  datefinaff = $datefinaff  datefinprecedente = $datefinprecedente");
+
+                // Calcul de la quotité de l'agent sur cette affectation
+                $quotite = $result_aff[3] / $result_aff[4];
+                $numcontrat = intval('0' .$result_aff[5]);
+                log_traces($loginfo,$displayinfo,"quotite = $quotite  numcontrat = $numcontrat");
+                
+                // Ce n'est pas un contrat ==> On calcule normalement
+                if ($numcontrat == "0")
+                {
+                    log_traces($loginfo,$displayinfo,"Ce n'est pas un contrat => Mode de calcul 'titulaire'");
+                    // Si la date de fin de l'affectation est avant la période, on l'ignore
+                    if ($datefinaff < $date_deb_period)
+                    {
+                        log_traces($loginfo,$displayinfo,"La date de fin de l'affectation est avant la période, on l'ignore");
+                        continue;
+                    }
+                    // Si la date de début est avant le début de la période et que la date de fin est après le début de la période 
+                    // on la fixe au début de la période <=> Les dates avant le début de la période sont ignorées
+                    if ($datedebutaff < $date_deb_period and $datefinaff >= $date_deb_period)
+                    {
+                        $datedebutaff = $date_deb_period;
+                    }
+                    // La date de fin est déja limitée à la fin de la période si cela était nécessaire => On ne touche pas à la date de fin d'affectation
+
+                    // On calcule le nombre de jours dans l'affectation dans la période
+                    $nbre_jour_aff_periode = $this->fonctions->nbjours_deux_dates($datedebutaff, $datefinaff);
+                    log_traces($loginfo,$displayinfo,"datedebutaff = $datedebutaff   datefinaff = $datefinaff  => L'agent est affecté $nbre_jour_aff_periode jours");
+                    
+                    // On calcule le nombre de jours que l'agent a acquis
+                    $solde_aff = (($nbr_jrs_offert * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
+                    // Le solde de l'agent est modfié
+                    $solde_agent = $solde_agent + $solde_aff;
+                    log_traces($loginfo,$displayinfo,"Solde calculé => $solde_aff    nouveau solde de l'agent = $solde_agent");
+                }
+                // C'est un contrat => $numcontrat > 0
+                else
+                {
+                    log_traces($loginfo,$displayinfo,"C'est un contrat => Mode de calcul à déterminer");
+                    // On teste si le numéro de contrat est le même que le précédent => C'est le même contrat donc pas de test de discontinuité
+                    // => Les deux affectations sont forcément continues car le contrat est le même
+                    if ($numcontratprecedent==$numcontrat)
+                    {
+                        log_traces($loginfo,$displayinfo,"Le numéro du contrat ($numcontrat) est le même que l'affectation précédente => Il y a forcément continuité");                        
+                    }
+                    // On va regarder si les affectations sont continue <=> est-ce qu'il y a un 'trou' par rapport à la date de fin de l'affectation précédente
+                    // C'est pour cela qu'on a initialisé $datefinprecedente à une valeur très loin dans le passé pour forcer un 'trou' si c'est la première affectation
+                    elseif (!affectation_continue($datefinprecedente,$datedebutaff,$nbre_jour_periode))
+                    {
+                        log_traces($loginfo,$displayinfo,"L'affectation n'est pas continue");
+                        // Les affectations ne sont pas continues => il y a un 'trou'
+                        // 
+                        // Il n'a donc plus de jours cumulés d'affectation => On repart à 0
+                        $NbreJoursTotalAff = 0;
+                        $datefinprecedente = $datefinaff;                        
+                        log_traces($loginfo,$displayinfo,"NbreJoursTotalAff = $NbreJoursTotalAff    datefinprecedente = $datefinprecedente");
+                    }
+                    else
+                    {
+                        log_traces($loginfo,$displayinfo,"L'affectation est continue => pas de rupture");
+                    }
+                    
+                    
+                    // On calcule le nombre de jours dans l'affectation dans la période
+                    $nbre_jour_aff = $this->fonctions->nbjours_deux_dates($datedebutaff, $datefinaff);  
+                    log_traces($loginfo,$displayinfo,"Dans son affectation, l'agent travaille $nbre_jour_aff jours en continu ($datedebutaff -> $datefinaff)");
+                    
+                    // On calcule la date d'anniversaire à laquelle l'agent aura droit à un calcul de droit 'comme les titulaires'
+                    $dateanniv = calcul_date_anniversaire($datedebutaff,$NbreJoursTotalAff,$nbre_jour_periode);
+                    log_traces($loginfo,$displayinfo,"La date anniversaire pour obtenir un mode de calcule 'comme les titulaires' est $dateanniv (datedebutaff = $datedebutaff  NbreJoursTotalAff = $NbreJoursTotalAff)");
+                    
+                    // Si la date anniversaire est avant la date de début de l'affectation => Toute la période est 'comme les titulaires'
+                    if ($dateanniv <= $datedebutaff)
+                    {
+                        log_traces($loginfo,$displayinfo,"Toute la période est 'comme les titulaires'");
+                        
+                        // Si la date de début est avant le début de la période et que la date de fin est après le début de la période 
+                        // on la fixe au début de la période <=> Les dates avant le début de la période sont ignorées
+                        if ($datedebutaff < $date_deb_period and $datefinaff >= $date_deb_period)
+                        {
+                            $datedebutaff = $date_deb_period;
+                        }
+                        // On calcule le nombre de jours dans l'affectation dans la période
+                        $nbre_jour_aff_periode = $this->fonctions->nbjours_deux_dates($datedebutaff, $datefinaff);  
+                        log_traces($loginfo,$displayinfo,"L'agent est affecté $nbre_jour_aff_periode jours entre le $datedebutaff et le $datefinaff");
+                    
+                        if ($datefinaff >= $date_deb_period)
+                        {
+                            // On calcule le nombre de jours que l'agent a acquis
+                            $solde_aff = (($nbr_jrs_offert * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
+                            // Le solde de l'agent est modfié
+                            $solde_agent = $solde_agent + $solde_aff;
+                            log_traces($loginfo,$displayinfo,"Solde calculé => $solde_aff    nouveau solde de l'agent = $solde_agent");
+                        }
+                    }
+                    // Si la date anniversaire est après la date de fin de l'affectation => Toute la période est à 2,5 jours/mois
+                    elseif ($dateanniv > $datefinaff)
+                    {
+                        log_traces($loginfo,$displayinfo,"Toute la période est 'comme les contractuels'");
+                        
+                        // Si la date de début est avant le début de la période et que la date de fin est après le début de la période 
+                        // on la fixe au début de la période <=> Les dates avant le début de la période sont ignorées
+                        if ($datedebutaff < $date_deb_period and $datefinaff >= $date_deb_period)
+                        {
+                            $datedebutaff = $date_deb_period;
+                        }
+                        
+                        // On calcule le nombre de jours dans l'affectation dans la période
+                        $nbre_jour_aff_periode = $this->fonctions->nbjours_deux_dates($datedebutaff, $datefinaff);  
+                        log_traces($loginfo,$displayinfo,"L'agent est affecté $nbre_jour_aff_periode jours entre le $datedebutaff et le $datefinaff");
+                    
+                        if ($datefinaff >= $date_deb_period)
+                        {
+                            // On calcule le nombre de jours que l'agent a acquis
+                            $solde_aff = (((2.5 * 12) * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
+                            // Le solde de l'agent est modfié
+                            $solde_agent = $solde_agent + $solde_aff;
+                            log_traces($loginfo,$displayinfo,"Solde calculé => $solde_aff    nouveau solde de l'agent = $solde_agent");
+                        }
+                    }
+                    // Si la date anniversaire est entre la date de début et la date de fin => On doit faire les deux calculs
+                    // 2,5 jrs/mois sur la première partie de la période (entre date début et date anniversaire)
+                    // "comme les titulaires" sur la deuxième partie de la période (entre date anniversaire et date de fin)
+                    else
+                    {
+                        log_traces($loginfo,$displayinfo,"La période est a cheval 'comme les contractuels' et 'comme les titulaires'");
+                        
+                        // Si la date de début est avant le début de la période et que la date de fin est après le début de la période 
+                        // on la fixe au début de la période <=> Les dates avant le début de la période sont ignorées
+                        if ($datedebutaff < $date_deb_period and $datefinaff >= $date_deb_period)
+                        {
+                            $datedebutaff = $date_deb_period;
+                        }
+                        
+                        // On calcule le nombre de jours dans l'affectation entre date début et la veille de la date anniversaire
+                        $veilledateanniv = date("Ymd", strtotime($dateanniv . "-1 day"));
+                        $nbre_jour_aff_periode = $this->fonctions->nbjours_deux_dates($datedebutaff, $veilledateanniv);  
+                    
+                        if ($datefinaff >= $date_deb_period)
+                        {
+                            // On calcule le nombre de jours que l'agent a acquis à 2,5 jrs/mois
+                            $solde_aff = (((2.5 * 12) * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
+                            // Le solde de l'agent est modfié
+                            $solde_agent = $solde_agent + $solde_aff;
+                            log_traces($loginfo,$displayinfo,"Solde calculé en 'contractuel' (du $datedebutaff au $veilledateanniv) => $solde_aff    nouveau solde de l'agent = $solde_agent");
+                        }
+                        // On calcule le nombre de jours dans l'affectation entre date anniversaire et la date de fin
+                        $nbre_jour_aff_periode = $this->fonctions->nbjours_deux_dates($dateanniv,$datefinaff);  
+                        
+                        if ($datefinaff >= $date_deb_period)
+                        {
+                            // On calcule le nombre de jours que l'agent a acquis "comme les titulaires"
+                            $solde_aff = (($nbr_jrs_offert * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite;
+                            // Le solde de l'agent est modfié
+                            $solde_agent = $solde_agent + $solde_aff;
+                            log_traces($loginfo,$displayinfo,"Solde calculé en 'titulaire' (du $dateanniv au $datefinaff) => $solde_aff    nouveau solde de l'agent = $solde_agent");
+                        }
+                    }
+                    // On ajoute le nombre de jours de l'affectation au nombre cumulé de jours déjà travaillé
+                    $NbreJoursTotalAff = $NbreJoursTotalAff + $nbre_jour_aff;
+                    log_traces($loginfo,$displayinfo,"L'agent a donc travaillé $NbreJoursTotalAff jours en continue");
+                }
+                $numcontratprecedent = $numcontrat;
+            }
+        }
+
+        log_traces($loginfo,$displayinfo,"Le solde calculé est : $solde_agent");
+        if ($solde_agent > 0) 
+        {
+            $partie_decimale = $solde_agent - floor($solde_agent);
+            if ((float) $partie_decimale < (float) 0.25)
+            {
+               $solde_agent = floor($solde_agent);
+            }
+            elseif ((float) ($partie_decimale >= (float) 0.25) && ((float) $partie_decimale < (float) 0.75))
+            {
+               $solde_agent = floor($solde_agent) + (float) 0.5;
+            }
+            else
+            {
+               $solde_agent = floor($solde_agent) + (float) 1;
+            }
+        }
+        log_traces($loginfo,$displayinfo,"Le solde final est : $solde_agent");
+
+        if ($maj_solde == true)
+        {
+            $typeabsenceid = "ann" . substr($anneeref, 2, 2);
+            $sql = "SELECT AGENTID,TYPEABSENCEID FROM SOLDE WHERE AGENTID= ? AND TYPEABSENCEID= ? ";
+            $params = array($this->agentid,$typeabsenceid);
+            $query = $this->fonctions->prepared_select($sql, $params);
+            $erreur_requete = mysqli_error($this->dbconnect);
+            if ($erreur_requete != "")
+            {
+                echo "SELECT AGENTID,TYPEABSENCEID FROM CONGE => $erreur_requete <br>";
+            }
+            if (mysqli_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
+            {
+                $sql = "UPDATE SOLDE SET DROITAQUIS= ? WHERE AGENTID= ? AND TYPEABSENCEID= ?";
+                $params = array($solde_agent, $this->agentid, $typeabsenceid);
+            }
+            else
+            {
+                $sql = "INSERT INTO SOLDE(AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES(?,?,?,'0')";
+                $params = array($this->agentid,$typeabsenceid,$solde_agent);
+
+            }
+            $query = $this->fonctions->prepared_query($sql, $params);
+            $erreur_requete = mysqli_error($this->dbconnect);
+            if ($erreur_requete != "")
+            {
+                echo "INSERT ou UPDATE CONGE => $erreur_requete <br>";
+            }
+        }
+        return ($solde_agent);
+    }
+
+    // L'autre version :
+    //
+    // On fait un tableau avec toutes les affectations
+    // Tant qu'il y a des enregistrement
+    //      tabaff[] = array(debut,fin, quotite, numcontrat)
+    // Fin tantque
+    // 
+    // Tant qu'on n'est pas à la fin du tableau tabaff
+    //      Lire l'élément courant
+    //      Datedebutcontrat = DateDebutaff
+    //      Si c'est un contrat
+    //          Tant que le contrat de l'élement courant = le contrant de l'élement suivant
+    //              Si datefinaff > datefinperiode
+    //                  datefinaff = datefinperiode
+    //              Finsi
+    //              Si datedébutaff<datedebutpériode et datefinaff>=datedebutpériode
+    //                  datedebutaff = datedebutpériode
+    //              Finsi
+    //              Si datedebutaff >= datedebutpériode
+    //                  Nombrejoursaff_periode = Nombrejoursaff_periode + nbrejours_entre_date(datedebutaff,datefinaff);
+    //              Finsi
+    //              Lire l'elément suivant (next)
+    //          Fin tantque
+    //      finSi
+    //      Datefincontrat = Datefinaff
+    //      DureeContrat = nbrejours_entre_date(Datedebutcontrat,Datefincontrat)
+    //      Si (pas un contrat)
+    //          Nombrejoursaff_periode = DureeContrat
+    //      FinSi
+    //      Si (pas un contrat) ou (DureeContrat > 10 mois)
+    //          solde_affectation = (($nbr_jrs_offert * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite
+    //      Sinon
+    //          solde_affectation = (((2.5 * 12) * $nbre_jour_aff_periode) / $nbre_jour_periode) * $quotite
+    //      finSi
+    //      Passer à l'élément suivant du tabaff
+    // Fin tantque
+    //
+    // Si solde>0
+    //      On l'arrondi
+    // FinSi
+    //
+    // Si maj_solde
+    //      On enregistre les données
+    // FinSi
+
+    /**
+     *
+     * @param string $anneeref
+     * @param boolean $maj_solde
+     * @param boolean $loginfo
+     * @param boolean $displayinfo
+     * @return number of days
+     */
+    function newcalculsoldeannuel2($anneeref = null, $maj_solde = true, $loginfo = false, $displayinfo = false)
+    {
+        
+        $this->fonctions->log_traces($loginfo,$displayinfo,"###########################################");
+        $this->fonctions->log_traces($loginfo,$displayinfo,"Calcul solde de l'agent : " . $this->identitecomplete() . " - id : " . $this->agentid());
+        $this->fonctions->log_traces($loginfo,$displayinfo,"###########################################");
+
+
+        $datefinaff = '19000101'; // On initialise la date de fin du contrat précédent au 01/01/1900 (=> très loin dans le passé)
+        $solde_agent = 0;
+        
+        if (is_null($anneeref))
+        {
+            $anneeref = $this->fonctions->anneeref();
+        }
+        // Construction des date de début et de fin de période (typiquement : 01/09/YYYY et 31/08/YYYY+1)
+        $date_deb_period = $anneeref . $this->fonctions->debutperiode();
+        $date_fin_period = ($anneeref + 1) . $this->fonctions->finperiode();
+        $this->fonctions->log_traces($loginfo,$displayinfo,"date_deb_period = $date_deb_period");
+        $this->fonctions->log_traces($loginfo,$displayinfo,"date_fin_period = $date_fin_period");
+
+        // Calcul du nombre de jours dans la période => Typiquement 365 ou 366 jours.
+        $nbre_jour_periode = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period);
+        $this->fonctions->log_traces($loginfo,$displayinfo,"nbre_jour_periode = $nbre_jour_periode");
+
+        // On charge le nombre de jours auquel un agent à droit sur l'année
+        $nbr_jrs_offert = $this->fonctions->liredbconstante("NBJOURS" . substr($date_deb_period, 0, 4));
+        $this->fonctions->log_traces($loginfo,$displayinfo,"Pour un temps complet sur toute la période, un agent a droit à $nbr_jrs_offert jours");
+
+        // On prend toutes les affectations actives d'un agent, dont la date de début est inférieur à la fin de la période
+        // Les affectations futures ne sont pas prises en compte dans le calcul du solde
+        $sql = "SELECT AFFECTATIONID,DATEDEBUT,DATEFIN,NUMQUOTITE,DENOMQUOTITE,NUMCONTRAT FROM AFFECTATION WHERE AGENTID = ? AND OBSOLETE='N' AND DATEDEBUT < ? ORDER BY DATEDEBUT";
+        $params = array($this->agentid,($anneeref + 1) . $this->fonctions->finperiode());
+        $query_aff = $this->fonctions->prepared_select($sql, $params);
+
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "SELECT FROM AFFECTATION (Full) => $erreur_requete <br>";
+        }
+        $tabaff = array();
+//        if (mysqli_num_rows($query_aff) != 0) // On a des d'affectations
+        while ($result_aff = mysqli_fetch_row($query_aff)) 
+        {
+            //log_traces($loginfo,$displayinfo,"Les valeurs de la requete sont : " . var_export($result_aff, true));
+            $affectation = new sihamaffectation;
+            $affectation->debut = $this->fonctions->formatdatedb($result_aff[1]);
+            //log_traces($loginfo,$displayinfo,"L'objet affectation : " . var_export($affectation, true));
+            $affectation->fin = $this->fonctions->formatdatedb($result_aff[2]);
+            if ($affectation->fin == '00000000')
+            {
+                $affectation->fin = '20991231';
+            }
+            //log_traces($loginfo,$displayinfo,"L'objet affectation : " . var_export($affectation, true));
+            $affectation->quotite = $result_aff[3] / $result_aff[4];
+            //log_traces($loginfo,$displayinfo,"L'objet affectation : " . var_export($affectation, true));
+            $affectation->numcontrat = intval('0' .$result_aff[5]);
+            //log_traces($loginfo,$displayinfo,"L'objet affectation : " . var_export($affectation, true));
+            $tabaff[] = $affectation;
+        }
+        $this->fonctions->log_traces($loginfo,$displayinfo,"Le tableau des affectations de l'agent est créé : " . var_export($tabaff, true));
+
+        $currentaff = current($tabaff);
+        $datefinprecedente = '19000101';  // On fixe la date loin dans le passée <=> 01/01/1900
+        $nbrejourtravailletotal = 0;
+        while ($currentaff !== false)
+        {
+            $datedebutstatut = $currentaff->debut;
+            $datefinstatut = $currentaff->fin;
+            $numcontrat = $currentaff->numcontrat;
+            $quotite = $currentaff->quotite;
+            $nbrejourtravaillestatut = 0;
+            $nbrejoursaff = 0;
+            $nbrejourtravailletotalperiode = 0;
+            if ($numcontrat != "0")
+            {
+                if (!$this->fonctions->affectation_continue($datefinprecedente,$datedebutstatut,$nbre_jour_periode))
+                {
+                    $nbrejoursaff = 0;
+                    $nbrejourtravaillestatut = 0;
+                    $nbrejourtravailletotal = 0;
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"Il y a une rupture de contrat car datefinprecedente = $datefinprecedente => nbrejoursaff = $nbrejoursaff et nbrejourtravaillestatut = $nbrejourtravaillestatut");
+                }
+                
+                while ($currentaff!==false and $currentaff->numcontrat == $numcontrat)
+                {
+                    // On calcule le nombre de jours sans travail dans le statut => différence entre la fin du statut précédent et la date début de l'actuel
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"datefinstatut = $datefinstatut   currentaff->debut = " . $currentaff->debut);
+                    $nbrejourssanstravailaff = $this->fonctions->nbjours_deux_dates($datefinstatut, $currentaff->debut) - 2; // On doit exclure les 2 dates limites
+                    // On fixe la fin du statut à la fin de l'affectation en cours
+                    $datefinstatut = $currentaff->fin;
+                    // On calcule le nombre de jours où l'agent à été affecté sur l'affectation courante
+                    $nbrejoursaff = $this->fonctions->nbjours_deux_dates($currentaff->debut, $currentaff->fin);
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"Entre le " . $currentaff->debut . " et le " . $currentaff->fin . " l'agent est affecté $nbrejoursaff jours");
+                    // On ajoute ce nombre de jours au total du statut
+                    $nbrejourtravaillestatut = $nbrejourtravaillestatut + $nbrejoursaff;
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"L'agent a cumulé sur son statut nbrejourtravaillestatut = $nbrejourtravaillestatut jours de travail");
+                    // On a joute ce nombre de jours au total de jours travaillés en continu
+                    $nbrejourtravailletotal = $nbrejourtravailletotal + $nbrejoursaff;
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"Depuis sa dernière interruption l'agent a cumulé $nbrejourtravailletotal jours de travail");
+                    
+                    if ($currentaff->debut < $date_deb_period and $currentaff->fin >= $date_deb_period)
+                    {
+                        $currentaff->debut = $date_deb_period;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de début du statut à la date de début de la peride : $date_deb_period");
+                    }
+                    if ($currentaff->fin > $date_fin_period)
+                    {
+                        $currentaff->fin = $date_fin_period;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de fin du statut à la date de fin de la peride : $date_fin_period");
+                    }
+                    if ($currentaff->debut >= $date_deb_period)
+                    {
+                        // On calcule le nombre de jours ou l'agent a travaillé dans la période
+                        $nbrejourtravailleperiode = $this->fonctions->nbjours_deux_dates($currentaff->debut, $currentaff->fin);
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"L'agent a travaillé sur la péride : nbrejourtravailleperiode = $nbrejourtravailleperiode jours");
+                        // On a joute ce nombre de jours au total de jours travaillés en continu
+                        $nbrejourtravailletotalperiode = $nbrejourtravailletotalperiode + $nbrejourtravailleperiode;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"Sur la période $date_deb_period -> $date_fin_period, l'agent a cumulé $nbrejourtravailletotalperiode jours de travail");
+                    }
+                    
+                    $currentaff = next($tabaff);
+                }
+                $currentaff = prev($tabaff);
+            }
+            else
+            {
+                $nbrejourtravaillestatut = $this->fonctions->nbjours_deux_dates($datedebutstatut,$datefinstatut);
+                $this->fonctions->log_traces($loginfo,$displayinfo,"L'agent titulaire a cumulé sur son statut (entre $datedebutstatut et $datefinstatut) le nbrejourtravaillestatut = $nbrejourtravaillestatut jours de travail");
+                if ($currentaff->debut < $date_deb_period and $currentaff->fin >= $date_deb_period)
+                {
+                    $currentaff->debut = $date_deb_period;
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de début du statut à la date de début de la peride : $date_deb_period");
+                }
+                if ($currentaff->fin > $date_fin_period)
+                {
+                    $currentaff->fin = $date_fin_period;
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de fin du statut à la date de fin de la peride : $date_fin_period");
+                }
+                $nbrejourtravailletotalperiode = $this->fonctions->nbjours_deux_dates($currentaff->debut, $currentaff->fin);
+                $this->fonctions->log_traces($loginfo,$displayinfo,"Sur la période " . $currentaff->debut . " -> " . $currentaff->fin . ", l'agent a cumulé $nbrejourtravailletotalperiode jours de travail");
+                
+            }
+            
+            $nbrejourstatuttotal = $this->fonctions->nbjours_deux_dates($datedebutstatut,$datefinstatut);
+            $this->fonctions->log_traces($loginfo,$displayinfo,"Entre le $datedebutstatut et le $datefinstatut => Le statut dure $nbrejourstatuttotal jours");
+            
+            // Si la date de fin du statut est après la date de début de la période courante, on calcule le nombre de jours congés
+            // Sinon on l'ignore car hors période
+            if ($datefinstatut >= $date_deb_period)
+            {
+                
+                // Si c'est un titulaire (numérocontrat = 0) 
+                //     ou si l'agent a une date de fin de statut > la date anniversaire des 10 mois d'ancienneté 
+                //     ou si l'agent a une date de fin de statut > la date anniversaire des 10 mois de statut
+                // On calcule avec les droits de titulaires
+                $dateanniv_statut = $this->fonctions->calcul_date_anniversaire($datefinstatut,$nbrejourtravaillestatut,$nbre_jour_periode);
+                $dateanniv_anciennete = $this->fonctions->calcul_date_anniversaire($datefinstatut,$nbrejourtravailletotal,$nbre_jour_periode);
+                $this->fonctions->log_traces($loginfo,$displayinfo,"Avant de déterminer si on est en mode titulaire ou contractuel : numcontrat=$numcontrat  datefinstatut=$datefinstatut  dateanniv_statut=$dateanniv_statut  dateanniv_anciennete=$dateanniv_anciennete");
+                if ($numcontrat=='0' 
+                 or $datefinstatut >= $dateanniv_statut
+                 or $datefinstatut >= $dateanniv_anciennete)
+                {
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"On est en mode titulaire");
+                    if ($datedebutstatut < $date_deb_period and $datefinstatut >= $date_deb_period)
+                    {
+                        $datedebutstatut = $date_deb_period;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de début du statut à la date de début de la peride : $date_deb_period");
+                    }
+                    if ($datefinstatut > $date_fin_period)
+                    {
+                        $datefinstatut = $date_fin_period;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de fin du statut à la date de fin de la peride : $date_fin_period");
+                    }
+
+                    //$this->fonctions->log_traces($loginfo,$displayinfo,"Avant le calcul nbrejours_periode_statut : datedebutstatut=$datedebutstatut  datefinstatut=$datefinstatut");
+                    //$nbrejours_periode_statut = $this->fonctions->nbjours_deux_dates($datedebutstatut,$datefinstatut);
+                    
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"Les données pour calculer le solde_statut sont : nbrejourtravailletotalperiode=$nbrejourtravailletotalperiode  nbre_jour_periode=$nbre_jour_periode  quotite=$quotite");                    
+                    $solde_statut = (($nbr_jrs_offert * $nbrejourtravailletotalperiode) / $nbre_jour_periode) * $quotite;
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"C'est un mode de calcul titulaire. On a donc le solde de son statut solde_statut =  $solde_statut");
+                    // Le solde de l'agent est modfié
+                    $solde_agent = $solde_agent + $solde_statut;                
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"C'est un mode de calcul titulaire. On a donc le solde de l'agent solde_agent = $solde_agent");
+                }
+                
+                // Pas un titulaire
+                else
+                {
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"On est en mode contractuel");
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"nbrejourtravailletotal = $nbrejourtravailletotal");
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"nbrejourtravaillestatut = $nbrejourtravaillestatut");
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"nbrejourtravailletotalperiode = $nbrejourtravailletotalperiode");
+                    
+                    // On calcule la date anniversaire des 10 mois sur le statut courant
+                    $dateanniv = $this->fonctions->calcul_date_anniversaire($datefinstatut,$nbrejourtravailletotalperiode,$nbre_jour_periode);
+                    $this->fonctions->log_traces($loginfo,$displayinfo,"La date anniversaire est : $dateanniv");                        
+                    
+                    // Si la date d'anniversaire est postérieur à la date de fin de période => On dit que la date d'anniversaire est la date de début de la période de l'année suivante
+                    if ($dateanniv > $date_fin_period)
+                    {
+                        $dateanniv = ($anneeref+1) . $this->fonctions->debutperiode();
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"La date anniversaire est plus loin que la fin de la période => forcée à : $dateanniv");                        
+                    }
+                    if ($dateanniv > $datefinstatut)
+                    {
+                        $dateanniv = date("Ymd", strtotime($datefinstatut . "+1 day"));
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"La date anniversaire est plus loin que la date de fin de statut => forcée à : $dateanniv");                        
+                    }
+                    
+                    if ($datedebutstatut < $date_deb_period and $datefinstatut >=$date_deb_period)
+                    {
+                        $datedebutstatut = $date_deb_period;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de début du statut à la date de début de la peride : $date_deb_period");
+                    }
+                    if ($datefinstatut > $date_fin_period)
+                    {
+                        $datefinstatut = $date_fin_period;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"On force la date de fin du statut à la date de fin de la peride : $date_fin_period");
+                    }
+
+                    // On calcule le nombre de jours entre date début du statut et la veille de la date anniversaire
+                    $veilledateanniv = date("Ymd", strtotime($dateanniv . "-1 day"));
+                    $nbre_jour_statut_avant_anniv = $this->fonctions->nbjours_deux_dates($datedebutstatut, $veilledateanniv);  
+                    if ($nbre_jour_statut_avant_anniv < 0)
+                    {
+                        $nbre_jour_statut_avant_anniv = 0;
+                    }
+                    if ($datefinstatut >= $date_deb_period)
+                    {
+                        // On calcule le nombre de jours que l'agent a acquis à 2,5 jrs/mois
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"Avant le calcul solde 'contractuel' => nbre_jour_statut_avant_anniv=$nbre_jour_statut_avant_anniv  nbre_jour_periode=$nbre_jour_periode  quotite=$quotite");                        
+                        $solde_statut_avant_anniv = (((2.5 * 12) * $nbre_jour_statut_avant_anniv) / $nbre_jour_periode) * $quotite;
+                        // Le solde de l'agent est modfié
+                        $solde_agent = $solde_agent + $solde_statut_avant_anniv;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"Solde calculé en 'contractuel' (du $datedebutstatut au $veilledateanniv) => $solde_statut_avant_anniv    nouveau solde de l'agent = $solde_agent");
+                    }
+                    
+                    // Si la date d'anniversaire est avant la période on la fixe à la période
+                    if ($dateanniv < $date_deb_period)
+                    {
+                        $dateanniv = $date_deb_period;
+                    }
+
+                    // On calcule le nombre de jours dans le statut entre date anniversaire et la date de fin du statut
+                    $nbre_jour_statut_apres_anniv = $this->fonctions->nbjours_deux_dates($dateanniv,$datefinstatut);  
+
+                    if ($datefinstatut >= $date_deb_period)
+                    {
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"Avant le calcul solde 'titulaire' => nbre_jour_statut_apres_anniv=$nbre_jour_statut_apres_anniv  nbre_jour_periode=$nbre_jour_periode  quotite=$quotite");                        
+                        // On calcule le nombre de jours que l'agent a acquis "comme les titulaires"
+                        $solde_statut_apres_anniv = (($nbr_jrs_offert * $nbre_jour_statut_apres_anniv) / $nbre_jour_periode) * $quotite;
+                        // Le solde de l'agent est modfié
+                        $solde_agent = $solde_agent + $solde_statut_apres_anniv;
+                        $this->fonctions->log_traces($loginfo,$displayinfo,"Solde calculé en 'titulaire' (du $dateanniv au $datefinstatut) => $solde_statut_apres_anniv    nouveau solde de l'agent = $solde_agent");
+                    }
+                }
+            }
+            else
+            {
+                $this->fonctions->log_traces($loginfo,$displayinfo,"Le statut n'est pas dans la période => On ne calcule pas les congés de l'agent");
+            }
+            $datefinprecedente = $datefinstatut;
+            // On passe à l'affectation suivante
+            $currentaff = next($tabaff);
+        }
+            
+        $this->fonctions->log_traces($loginfo,$displayinfo,"Le solde calculé est : $solde_agent");
+        if ($solde_agent > 0) 
+        {
+            $partie_decimale = $solde_agent - floor($solde_agent);
+            if ((float) $partie_decimale < (float) 0.25)
+            {
+               $solde_agent = floor($solde_agent);
+            }
+            elseif ((float) ($partie_decimale >= (float) 0.25) && ((float) $partie_decimale < (float) 0.75))
+            {
+               $solde_agent = floor($solde_agent) + (float) 0.5;
+            }
+            else
+            {
+               $solde_agent = floor($solde_agent) + (float) 1;
+            }
+        }
+        $this->fonctions->log_traces($loginfo,$displayinfo,"Le solde final est : $solde_agent");
+
+        if ($maj_solde == true)
+        {
+            $typeabsenceid = "ann" . substr($anneeref, 2, 2);
+            $sql = "SELECT AGENTID,TYPEABSENCEID FROM SOLDE WHERE AGENTID= ? AND TYPEABSENCEID= ? ";
+            $params = array($this->agentid,$typeabsenceid);
+            $query = $this->fonctions->prepared_select($sql, $params);
+            $erreur_requete = mysqli_error($this->dbconnect);
+            if ($erreur_requete != "")
+            {
+                echo "SELECT AGENTID,TYPEABSENCEID FROM CONGE => $erreur_requete <br>";
+            }
+            if (mysqli_num_rows($query) != 0) // le type annXX existe déja => On le met à jour
+            {
+                $sql = "UPDATE SOLDE SET DROITAQUIS= ? WHERE AGENTID= ? AND TYPEABSENCEID= ?";
+                $params = array($solde_agent, $this->agentid, $typeabsenceid);
+            }
+            else
+            {
+                $sql = "INSERT INTO SOLDE(AGENTID,TYPEABSENCEID,DROITAQUIS,DROITPRIS) VALUES(?,?,?,'0')";
+                $params = array($this->agentid,$typeabsenceid,$solde_agent);
+
+            }
+            $query = $this->fonctions->prepared_query($sql, $params);
+            $erreur_requete = mysqli_error($this->dbconnect);
+            if ($erreur_requete != "")
+            {
+                echo "INSERT ou UPDATE CONGE => $erreur_requete <br>";
+            }
+        }
+        return ($solde_agent);
+    }
+
+    function listedemandeteletravailenattente()
+    {
+        $tabteletravail = array();
+        $sql = "SELECT TELETRAVAIL.TELETRAVAILID 
+                FROM TELETRAVAIL
+                WHERE TELETRAVAIL.AGENTID = ?
+                  AND TELETRAVAIL.STATUTRESPONSABLE = ?
+                  AND TELETRAVAIL.STATUT = ?";
+        $params = array($this->agentid(),teletravail::TELETRAVAIL_ATTENTE,teletravail::TELETRAVAIL_ATTENTE);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Agent->listedemandeteletravailenattente : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $teletravail = new teletravail($this->dbconnect);
+            $teletravail->load($result[0]);
+            $tabteletravail["" . $result[0]] = $teletravail;
+            unset($teletravail);
+        }
+        return $tabteletravail;
+    }
     
 }
 

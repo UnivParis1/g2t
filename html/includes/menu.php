@@ -342,13 +342,93 @@
         });
     </script>        
     <script>
-        function checktextlength(textarea, maxlength)
+
+        var calculateContentHeight = function( ta, scanAmount ) {
+            var origHeight = ta.style.height,
+                height = ta.offsetHeight,
+                scrollHeight = ta.scrollHeight,
+                overflow = ta.style.overflow;
+            /// only bother if the ta is bigger than content
+            if ( height >= scrollHeight ) 
+            {
+                /// check that our browser supports changing dimension
+                /// calculations mid-way through a function call...
+                ta.style.height = (height + scanAmount) + 'px';
+                /// because the scrollbar can cause calculation problems
+                ta.style.overflow = 'hidden';
+                /// by checking that scrollHeight has updated
+                if ( scrollHeight < ta.scrollHeight ) 
+                {
+                    /// now try and scan the ta's height downwards
+                    /// until scrollHeight becomes larger than height
+                    while (ta.offsetHeight >= ta.scrollHeight) 
+                    {
+                        ta.style.height = (height -= scanAmount)+'px';
+                    }
+                    /// be more specific to get the exact height
+                    while (ta.offsetHeight < ta.scrollHeight) 
+                    {
+                        ta.style.height = (height++)+'px';
+                    }
+                }
+                /// reset the ta back to it's original height
+                ta.style.height = origHeight;
+                /// put the overflow back
+                ta.style.overflow = overflow;
+                return height;
+            } 
+            else 
+            {
+                return scrollHeight;
+            }
+        }
+
+        function calculateHeight(textarea) 
+        {
+            var ta = textarea;
+            style = (window.getComputedStyle) ? window.getComputedStyle(ta) : ta.currentStyle;
+            
+            //alert('la hauteur : ' + style.lineHeight);
+
+            // This will get the line-height only if it is set in the css,
+            // otherwise it's "normal"
+            taLineHeight = parseInt(style.lineHeight, 10);
+            //alert ('taLineHeight = ' + taLineHeight);
+            
+            if (isNaN(taLineHeight))
+            {
+                return -1;
+            }
+            
+            // Get the scroll height of the textarea
+            taHeight = calculateContentHeight(ta, taLineHeight);
+            // calculate the number of lines
+            numberOfLines = Math.ceil(taHeight / taLineHeight);
+
+            return numberOfLines;
+        };
+    
+    
+    
+        function checktextlength(textarea, maxlength, labelrestantname)
         {
             let warningdialog = document.getElementById('warningdialog');
             let warninglabeltext = document.getElementById('warninglabeltext');
+            let labelrestanttext = document.getElementById(labelrestantname);
             if (textarea.value.length > maxlength) 
             {
-                textarea.value = textarea.value.substring(0, maxlength);
+                let position = textarea.selectionStart;
+                let texte = textarea.value;
+                
+                //alert ('position = ' + position);
+                textarea.value = texte.substr(0, position - 1) + texte.substr(position, texte.length);
+                textarea.selectionStart = position-1;
+                textarea.selectionEnd = position-1;
+
+                if (labelrestanttext)
+                {
+                    labelrestanttext.innerHTML = 0;
+                }
                 if (warningdialog!=null &&  typeof warningdialog.showModal === "function") 
                 {
                     warninglabeltext.innerHTML = 'Votre texte ne doit pas dépasser '+maxlength+' caractères!';
@@ -361,11 +441,59 @@
                     return false;
                 }
             }
+            if (labelrestanttext)
+            {
+                labelrestanttext.innerHTML = maxlength - textarea.value.length;
+            }
+
+            var style = (window.getComputedStyle) ? window.getComputedStyle(textarea) : textarea.currentStyle;
+            //alert('style.height = ' + style.height + '  le parse = ' + parseInt(style.height, 10));
+            if (isNaN(parseInt(style.height, 10)))
+            {
+                //alert('je force la height');
+                textarea.style.height = parseInt(style.lineHeight, 10) * parseInt(textarea.getAttribute('rows')) + 'px';
+                //alert('et ça vaut : '+ style.height);
+            }
+            
+            var count = calculateHeight(textarea);
+            // alert ('count = ' + count);
+            if (count < 0)
+            {
+                var text = textarea.value;   
+                var lines = text.split(/\r|\r\n|\n/);
+                count = lines.length;
+            }
+            var maxRows = parseInt(textarea.getAttribute('rows'));
+            // alert('maxRows = ' + maxRows);
+            if (count > maxRows)
+            {
+                //alert('Count = '+count+ '  maxRows = '+maxRows);
+                let position = textarea.selectionStart;
+                let texte = textarea.value;
+                
+                //alert ('position = ' + position);
+                textarea.value = texte.substr(0, position - 1) + texte.substr(position, texte.length);
+                textarea.selectionStart = position-1;
+                textarea.selectionEnd = position-1;
+
+                if (warningdialog!=null &&  typeof warningdialog.showModal === "function") 
+                {
+                    warninglabeltext.innerHTML = 'Votre texte ne doit pas contenir plus de ' + maxRows + ' ligne(s).';
+                    warningdialog.showModal();
+                    return false;
+                } 
+                else
+                {
+                    alert('Votre texte ne doit pas contenir plus de ' + maxRows + ' ligne(s).');
+                    return false;
+                }
+            }
             return true;
         }
     </script>
 
 <?php
+
     function affichestructureliste($structure, $niveau = 0)
     {
         global $dbcon;
@@ -394,9 +522,6 @@
             }
         }
     }
-
-    
-    
     
     // On chrge le "vrai" utilisateur de l'application (Celui du ticket CAS)
     $realuser = new agent($dbcon);
@@ -550,7 +675,7 @@
 					<li onclick='document.agent_gest_teletravail.submit();'>
 						<form name='agent_gest_teletravail' method='post' action="gestion_teletravail.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                            <input type="hidden" name="mode" value="">
+                                                        <input type="hidden" name="mode" value="">
 						</form>
 						<a href="javascript:document.agent_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
@@ -652,6 +777,13 @@
 						</form> 
 						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
 					</li>	
+					<li onclick='document.resp_gest_teletravail.submit();'>
+						<form name='resp_gest_teletravail' method='post' action="gestion_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                        <input type="hidden" name="mode" value="resp">
+						</form>
+						<a href="javascript:document.resp_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
+					</li>
 					<li class="plus"><a>Gestion de l'année en cours</a>
 						<ul class="niveau3">
 							<li onclick='document.resp_struct_planning.submit();'>
@@ -953,13 +1085,21 @@
                     {
 ?>					
     					<li class="plus"><a>Gestion du télétravail</a>  <!-- Gestion du télétravail et paramétrage -->
-    						<ul class="niveau3">
+    					    <ul class="niveau3">
+            					<li onclick='document.rh_gest_teletravail_noesignature.submit();'>
+            						<form name='rh_gest_teletravail_noesignature' method='post' action="gestion_teletravail.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                                <input type="hidden" name="mode" value="gestrh">
+                                                                <input type="hidden" name="noesignature" value="yes">
+            						</form>
+                                                    <a href="javascript:document.rh_gest_teletravail_noesignature.submit();">Gestion des conventions de télétravail<br>(hors eSignature)</a>
+            					</li>
             					<li onclick='document.rh_gest_teletravail.submit();'>
             						<form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
             							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                        <input type="hidden" name="mode" value="gestrh">
+                                                                <input type="hidden" name="mode" value="gestrh">
             						</form>
-            						<a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
+                                                    <a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail<br>(avec eSignature)</a>
             					</li>
             					<li onclick='document.rh_affiche_info_teletravail.submit();'>
             						<form name='rh_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
@@ -967,8 +1107,14 @@
             						</form> 
             						<a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
             					</li>
-            				</ul>
-            			</li>
+            					<li onclick='document.rh_suivi_teletravail.submit();'>
+            						<form name='rh_suivi_teletravail' method='post' action="suivi_teletravail.php">
+            							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+            						</form> 
+            						<a href="javascript:document.rh_suivi_teletravail.submit();">Suivi de l'avancement des demandes de télétravail</a>
+            					</li>
+            				    </ul>
+            			        </li>
 <?php 
                     } // Fin du test si utilisateur est PROFIL_RHTELETRAVAIL
                     if ($user->estprofilrh(agent::PROFIL_RHCET))

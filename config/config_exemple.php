@@ -47,6 +47,7 @@ define('LDAPGROUPNAME', 'cn=applications.g2t.users,ou=groups,dc=etab,dc=fr');
 define('LDAP_STRUCT_SEARCH_BASE', 'ou=structures,dc=etab,dc=fr');
 define('LDAP_STRUCT_CODE_ENTITE_ATTR', 'supanncodeentite');
 define('LDAP_STRUCT_IS_INCLUDED_ATTR', 'up1flags');
+define('LDAP_STRUCT_BUSINESSCATE_ATTR', 'businesscategory');
 define('LDAP_FONCTION_SEARCH_BASE', 'ou=supannrolegenerique,ou=tables,dc=etab,dc=fr');
 define('LDAP_FONCTION_POIDS_ATTR', 'up1flags');
 define('LDAP_RIFSEEP_SEARCH_BASE','ou=supannActivite,ou=tables,dc=univ-paris1,dc=fr');
@@ -66,6 +67,9 @@ define('URLCALENDAR', 'https://courrier-test.etab.fr/kronolith/lib/import-icals.
 // URL d'accès au serveur eSignature
 define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
 
+// Adresse mail du collecteur GLPI pour la création d'un ticket suite validation de la convention télétravail
+define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@univ-paris1.fr');
+
 ////////////////////////////////////////////////////////////////////////////
 // ATTENTION : LES NOMS DES CONSTANTES DES UTILISATEURS SPECIAUX DOIVENT
 // ----------  OBLIGATOIREMENT COMMENCER PAR 'SPECIAL_USER_' POUR ETRE
@@ -75,5 +79,7 @@ define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
 define('SPECIAL_USER_IDCRONUSER', '-1');
 // Identifiant de l'utilisateur LISTE-RH / GESTION TEMPS
 define('SPECIAL_USER_IDLISTERHUSER', '-2');
+// Identifiant de l'utilisateur LISTE RH TELETRAVAIL
+define('SPECIAL_USER_IDLISTERHTELETRAVAIL', '-3');
 
 ?>

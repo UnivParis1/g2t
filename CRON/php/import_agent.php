@@ -94,17 +94,34 @@
         $agent->prenom('RH');
         $agent->mail('noreply@univ-paris1.fr');
         $agent->store(SPECIAL_USER_IDLISTERHUSER);
-        $agent = new agent($dbcon);
     }
-    
+    $agent = new agent($dbcon);
+    if (!$agent->existe(SPECIAL_USER_IDLISTERHTELETRAVAIL))
+    {
+        // Ajout manuel de l'agent GESTION TEMPS
+        $agent->nom('TELETRAVAIL');
+        $agent->prenom('RH');
+        $agent->mail('noreply@univ-paris1.fr');
+        $agent->store(SPECIAL_USER_IDLISTERHTELETRAVAIL);
+    }
+
+    $agent = new agent($dbcon);
     echo "Modification du profil RH de l'utilisateur " . constant('SPECIAL_USER_IDLISTERHUSER') . " \n";
     $agent->load(SPECIAL_USER_IDLISTERHUSER);
     $tabprofilrh = array();
     $tabprofilrh[] = agent::PROFIL_RHCET;
     $tabprofilrh[] = agent::PROFIL_RHCONGE;
-    $tabprofilrh[] = agent::PROFIL_RHTELETRAVAIL;
+    //$tabprofilrh[] = agent::PROFIL_RHTELETRAVAIL;
     $agent->enregistreprofilrh($tabprofilrh);
     
+    $agent = new agent($dbcon);
+    echo "Modification du profil RH de l'utilisateur " . constant('SPECIAL_USER_IDLISTERHTELETRAVAIL') . " \n";
+    $agent->load(SPECIAL_USER_IDLISTERHTELETRAVAIL);
+    $tabprofilrh = array();
+    //$tabprofilrh[] = agent::PROFIL_RHCET;
+    //$tabprofilrh[] = agent::PROFIL_RHCONGE;
+    $tabprofilrh[] = agent::PROFIL_RHTELETRAVAIL;
+    $agent->enregistreprofilrh($tabprofilrh);
 
     echo "Fin de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 ?>

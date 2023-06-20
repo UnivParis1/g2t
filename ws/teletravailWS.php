@@ -21,7 +21,7 @@
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
             break;
         case 'GET':
-            if (array_key_exists("esignatureid", $_GET)) // Retourne les informations liées à un droit d'option CET
+            if (array_key_exists("esignatureid", $_GET)) // Retourne les informations liées à une convention de télétravail
             {
                 $esignatureid = $_GET["esignatureid"];
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" On va retourner les infos de la convention télétravail " . $esignatureid));
@@ -102,13 +102,30 @@
                                 'description' => "Type de convention de télétravail", 
                                 'value' => $teletravail->libelletypeconvention($teletravail->typeconvention()), 
                                 'code' => $teletravail->typeconvention(),
-                                "sante" => "" . $teletravail->motifmedicalsante(),
-                                "grossesse" => "" . $teletravail->motifmedicalgrossesse(),
-                                "aidant" => "" . $teletravail->motifmedicalaidant()
+                                "sante" => "" . $fonctions->convert_int_to_on_off($teletravail->motifmedicalsante()),
+                                "grossesse" => "" . $fonctions->convert_int_to_on_off($teletravail->motifmedicalgrossesse()), 
+                                "aidant" => "" . $fonctions->convert_int_to_on_off($teletravail->motifmedicalaidant()),
+                                "activiteteletravail" => "" . $teletravail->activiteteletravail(),
+                                "periodeexclusion" => "" . $teletravail->periodeexclusion(),
+                                "periodeadaptation" => "" . $teletravail->periodeadaptation(),
+                                "creationg2t" => "" . $teletravail->creationg2t(),
+                                "creationesignature" => "" . $teletravail->creationesignature()
                             );
-                            $information_nombrejours = array('name' => "nombrejours", 'description' => "Nombre de jours de télétravail demandé", 'value' => "$nbjoursdemande"); // "$nbjoursmaxteletravailcalcule");
-                            $information_datedebut = array('name' => "datedebut", 'description' => "Date de début de la convention télétravail", 'value' => $fonctions->formatdate($teletravail->datedebut()));
-                            $information_datefin = array('name' => "datefin", 'description' => "Date de fin de la convention télétravail", 'value' => $fonctions->formatdate($teletravail->datefin()));
+                            $information_nombrejours = array(
+                                'name' => "nombrejours", 
+                                'description' => "Nombre de jours de télétravail demandé", 
+                                'value' => "$nbjoursdemande"
+                            );
+                            $information_datedebut = array(
+                                'name' => "datedebut", 
+                                'description' => "Date de début de la convention télétravail", 
+                                'value' => $fonctions->formatdate($teletravail->datedebut())
+                            );
+                            $information_datefin = array(
+                                'name' => "datefin", 
+                                'description' => "Date de fin de la convention télétravail", 
+                                'value' => $fonctions->formatdate($teletravail->datefin())
+                            );
                             $structure = new structure($dbcon);
                             if (!$structure->load($affectation->structureid()))
                             {
@@ -150,9 +167,16 @@
                             );
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos de convention télétravail " . $esignatureid . " => Pas d'erreur"));
 //                            $result_json = array('agent' => $agent, 'infosconvention' => $information_typeconvention, 'informations' => array('nbjours' => $information_nombrejours, 'infosjours' => $information_jourteletravail));
-                            $result_json = array('agent' => $agent, 
-                                                 'infosconvention' => $information_typeconvention, 
-                                                 'informations' => array_merge(array($information_nombrejours), array($information_datedebut), array($information_datefin), $information_jourteletravail));
+                            $result_json = array(
+                                'agent' => $agent, 
+                                'infosconvention' => $information_typeconvention, 
+                                'informations' => array_merge(
+                                        array($information_nombrejours), 
+                                        array($information_datedebut), 
+                                        array($information_datefin), 
+                                        $information_jourteletravail
+                                        )
+                            );
                             //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le json resutat => " . print_r($result_json,true)));
                         }
                         else

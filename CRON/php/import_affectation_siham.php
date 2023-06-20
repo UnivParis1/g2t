@@ -25,32 +25,40 @@
     $skipreadfile = false;
     if (isset($argv[1])) {
         if ($argv[1] == 'noimport')
+        {
             $skipreadfile = true;
+        }
     }
 
-    if (! $skipreadfile) {
+    if (! $skipreadfile) 
+    {
         $exit = false;
         echo "Vérification existance des fichiers....\n";
-        if (! file_exists($modalitefile)) {
+        if (! file_exists($modalitefile)) 
+        {
             echo "Le fichier $modalitefile n'existe pas !!! \n";
             $exit = true;
         }
-        if (! file_exists($statutfile)) {
+        if (! file_exists($statutfile)) 
+        {
             echo "Le fichier $statutfile n'existe pas !!! \n";
             $exit = true;
         }
-        if (! file_exists($structurefile)) {
+        if (! file_exists($structurefile)) 
+        {
             echo "Le fichier $structurefile n'existe pas !!! \n";
             $exit = true;
         }
-        if (! file_exists($situationfile)) {
+        if (! file_exists($situationfile)) 
+        {
             echo "Le fichier $situationfile n'existe pas !!! \n";
             $exit = true;
         }
         
         
 
-        if ($exit == true) {
+        if ($exit == true) 
+        {
             echo "Il manque au moins un fichier => Aucune mise à jour réalisée !!! \n";
             exit();
         }
@@ -60,9 +68,11 @@
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$modalitefile", "r");
-        while (! feof($fp)) {
+        while (! feof($fp)) 
+        {
             $ligne = fgets($fp); // lecture du contenu de la ligne
-            if (trim($ligne) != "") {
+            if (trim($ligne) != "") 
+            {
                 $ligne_element = explode($separateur, $ligne);
                 if (count($ligne_element) == 0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
                 {
@@ -80,9 +90,11 @@
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$statutfile", "r");
-        while (! feof($fp)) {
+        while (! feof($fp)) 
+        {
             $ligne = fgets($fp); // lecture du contenu de la ligne
-            if (trim($ligne) != "") {
+            if (trim($ligne) != "") 
+            {
                 $ligne_element = explode($separateur, $ligne);
                 if (count($ligne_element) == 0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
                 {
@@ -100,9 +112,11 @@
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$situationfile", "r");
-        while (! feof($fp)) {
+        while (! feof($fp)) 
+        {
             $ligne = fgets($fp); // lecture du contenu de la ligne
-            if (trim($ligne) != "") {
+            if (trim($ligne) != "") 
+            {
                 $ligne_element = explode($separateur, $ligne);
                 if (count($ligne_element) == 0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
                 {
@@ -120,9 +134,11 @@
         // Vérification que le fichier d'entree est bien conforme
         // => On le lit en entier et on vérifie qu'un séparateur est bien présent sur chaque ligne non vide...
         $fp = fopen("$structurefile", "r");
-        while (! feof($fp)) {
+        while (! feof($fp)) 
+        {
             $ligne = fgets($fp); // lecture du contenu de la ligne
-            if (trim($ligne) != "") {
+            if (trim($ligne) != "") 
+            {
                 $ligne_element = explode($separateur, $ligne);
                 if (count($ligne_element) == 0) // Si la ligne (qui n'est pas vide) ne contient aucun caractère separateur => la structure du fichier n'est pas bonne
                 {
@@ -143,18 +159,24 @@
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
+        {
             echo "Error : DELETE QUOTITE => $erreur_requete \n";
-                
-        if (! file_exists($modalitefile)) {
+        }        
+        if (! file_exists($modalitefile)) 
+        {
             echo "Le fichier $modalitefile n'existe pas !!! \n";
-        } else {
+        } 
+        else 
+        {
             
             $agent = new agent($dbcon);
             $currentagent = null;
             $fp = fopen("$modalitefile", "r");
-            while (! feof($fp)) {
+            while (! feof($fp)) 
+            {
                 $ligne = fgets($fp); // lecture du contenu de la ligne
-                if (trim($ligne) != "") {
+                if (trim($ligne) != "") 
+                {
                     $ligne_element = explode($separateur, $ligne);
                     $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
@@ -199,7 +221,8 @@
 
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "") {
+                    if ($erreur_requete != "") 
+                    {
                         echo "Error : INSERT QUOTITE => $erreur_requete \n";
                         echo "sql = $sql \n";
                     }
@@ -224,7 +247,8 @@
                             echo "Error : SELECT DECLARATIONTP A 100% => $erreur_requete \n";
                         }
                         
-                        if (mysqli_num_rows($query_decla) == 0) {
+                        if (mysqli_num_rows($query_decla) == 0) 
+                        {
                             echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la crée \n";
                             $declarationTP->agentid($agentid);
                             $declarationTP->numlignequotite($numligne);
@@ -234,7 +258,9 @@
                             $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                             $erreur = $declarationTP->store();
                             if ($erreur != "")
+                            {
                                 echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                            }
                         }
                         else // Il y a une déclarationTP pour cet agent/numligne
                         {
@@ -249,9 +275,13 @@
                             $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
                             $erreur = $declarationTP->store();
                             if ($erreur != "")
+                            {
                                 echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                            }
                         }
-                    } else {
+                    } 
+                    else 
+                    {
                         echo "La quotité n'est pas à 100% \n";
                         
                         // Quotité != 100% donc on ne crée pas de declaration TP
@@ -271,7 +301,8 @@
                         {
                             echo "Error : SELECT DECLARATIONTP NON 100% => $erreur_requete \n";
                         }
-                        if (mysqli_num_rows($query_decla) == 0) {
+                        if (mysqli_num_rows($query_decla) == 0) 
+                        {
                             echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On laisse l'agent déclarer son TP \n";
                         }
                         else {
@@ -324,10 +355,12 @@
                     {
                         echo "Error : SELECT DECLARATIONTP MODIF DEBUT FIN => $erreur_requete \n";
                     }
-                    if (mysqli_num_rows($query_decla) == 0) {
+                    if (mysqli_num_rows($query_decla) == 0) 
+                    {
                         echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne avec une date début et fin différente \n";
                     }
-                    else {
+                    else 
+                    {
                         while  ($result = mysqli_fetch_row($query_decla))
                         {
                             unset($declarationTP);
@@ -352,7 +385,6 @@
                 }
             }
             fclose($fp);
-            
         }
 
         echo "Import des STATUTS D'AFFECTATION (NUMERO DE CONTRAT/TITULAIRE)\n";
@@ -361,16 +393,23 @@
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
+        {
             echo "Error : DELETE STATUT => $erreur_requete \n";
+        }
 
         // On charge la table des statut avec le fichier
-        if (! file_exists($statutfile)) {
+        if (! file_exists($statutfile)) 
+        {
             echo "Le fichier $statutfile n'existe pas !!! \n";
-        } else {
+        } 
+        else 
+        {
             $fp = fopen("$statutfile", "r");
-            while (! feof($fp)) {
+            while (! feof($fp)) 
+            {
                 $ligne = fgets($fp); // lecture du contenu de la ligne
-                if (trim($ligne) != "") {
+                if (trim($ligne) != "") 
+                {
                     $ligne_element = explode($separateur, $ligne);
                     $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
@@ -393,7 +432,8 @@
 
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "") {
+                    if ($erreur_requete != "") 
+                    {
                         echo "Error : INSERT STATUT => $erreur_requete \n";
                         echo "sql = $sql \n";
                     }
@@ -408,16 +448,23 @@
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
+        {
             echo "Error : DELETE SITUATIONADMIN => $erreur_requete \n";
+        }
             
         // On charge la table des statut avec le fichier
-        if (! file_exists($situationfile)) {
+        if (! file_exists($situationfile)) 
+        {
             echo "Le fichier $situationfile n'existe pas !!! \n";
-        } else {
+        } 
+        else 
+        {
             $fp = fopen("$situationfile", "r");
-            while (! feof($fp)) {
+            while (! feof($fp)) 
+            {
                 $ligne = fgets($fp); // lecture du contenu de la ligne
-                if (trim($ligne) != "") {
+                if (trim($ligne) != "") 
+                {
                     $ligne_element = explode($separateur, $ligne);
                     $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
@@ -440,7 +487,8 @@
                         
                     mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "") {
+                    if ($erreur_requete != "") 
+                    {
                         echo "Error : INSERT SITUATIONADMIN => $erreur_requete \n";
                         echo "sql = $sql \n";
                     }
@@ -453,9 +501,12 @@
         // Import des affectations-structure.txt
         
         // On charge la table des structures avec le fichier
-        if (! file_exists($structurefile)) {
+        if (! file_exists($structurefile)) 
+        {
             echo "Le fichier $structurefile n'existe pas !!! \n";
-        } else {
+        } 
+        else 
+        {
             $fp = fopen("$structurefile", "r");
             $sql = "DELETE FROM HISTORIQUEAFFECTATION";
             mysqli_query($dbcon, $sql);
@@ -464,9 +515,11 @@
             {
                 echo "Error : DELETE HISTORIQUEAFFECTATION => $erreur_requete \n";
             }
-            while (! feof($fp)) {
+            while (! feof($fp)) 
+            {
                 $ligne = fgets($fp); // lecture du contenu de la ligne
-                if (trim($ligne) != "") {
+                if (trim($ligne) != "") 
+                {
                     $ligne_element = explode($separateur, $ligne);
                     $agentid = trim($ligne_element[0]);
                     $numligne = trim($ligne_element[1]);
@@ -562,14 +615,18 @@
             $agentid = $ligne_element[1];
             if ($ligne_element[2] != '') // Si c'est un contrat !!!!
             {
-                $numcontrat = "1";
-            } else {
+                // On récupère le numéro du contrat et non plus 0 ou 1
+                $numcontrat = intval('0'.$ligne_element[2]); // "1";
+            } 
+            else 
+            {
                 // Si le numéro du contrat est vide alors on le force à 0 ==> Ce n'est pas une contrat
                 $numcontrat = '0'; // $ligne_element[2]; // Pourrait être remplacé par $numcontrat = 0 car lors de l'insertion SQL, si $numcontrat = '' => SQL prend la valeur par défaut = 0
             }
             $datedebut = $ligne_element[3];
             $datefin = $ligne_element[4];
-            if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) {
+            if (("$datefin" == "") or ($datefin == "0000-00-00") or ($datefin == "00000000") or ($datefin == "00/00/0000")) 
+            {
                 $datefin = "9999-12-31";
             }
             $datemodif = $ligne_element[5];

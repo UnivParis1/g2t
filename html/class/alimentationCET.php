@@ -432,6 +432,7 @@ class alimentationCET
         $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
         $urlpath = parse_url($this->esignatureurl,PHP_URL_PATH);
         $this->esignatureurl = $eSignature_url . $urlpath;
+        $this->esignatureurl = preg_replace('/([^:])(\/{2,})/', '$1/', $eSignature_url . $urlpath);
         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Après transformation l'URL est : " . $this->esignatureurl));
         
         

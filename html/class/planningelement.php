@@ -39,6 +39,8 @@ class planningelement
 
     private $demandeid = null;
     
+    private $demande = null;
+    
     private $typeconvention = null;
     
     private $htmlextraclass = '';
@@ -135,6 +137,33 @@ class planningelement
         }
     }
     
+    
+    /**
+    *
+    * @param string|object $demandeobj
+    *            L'objet demande associé à l'élément
+    *            Chaine vide pour supprimer l'objet demande associé l'élément
+    * @return mixed
+    *            Si le paramètre $demandeobj est null et que l'objet demande est défini, retourne l'objet demande
+    *            Si le paramètre $demandeobj est null et que l'objet demande n'est pas défini, retourne null
+    *            Si le paramètre $demandeobj n'est pas null, aucune valeur n'est retournée
+    */
+    function demande($demandeobj = null)
+    {
+        if (is_null($demandeobj)) 
+        {
+            return $this->demande;
+        } 
+        elseif (is_string($demandeobj) and $demandeobj == '')
+        {
+            $this->demande = null;
+        }
+        else
+        {
+            $this->demande = $demandeobj;
+        }
+    }
+
     function typeconvention($typeconvention = null)
     {
         if (is_null($typeconvention)) {
@@ -228,6 +257,28 @@ class planningelement
                 // Même si on doit afficher l'élément en N&B, les élémenet dont le parent est 'teletravHC' doivent être affiché en couleur
                 $noiretblanc = false; 
             }
+            // Si on est en N&B et si la demande en attente et qu'on dispose de quoi identifier la demande d'origine => On va vérifier le type de la demande
+            elseif (strcasecmp($this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)) and $noiretblanc)
+            {
+                if (!is_null($this->demande))
+                {
+                    $demande = $this->demande;
+                    //var_dump("La demande existe => " . $demande->id());
+                }
+                else
+                {
+                    $demande = new demande($this->dbconnect);
+                    $demande->load($this->demandeid());
+                    $this->demande = $demande;
+                    //var_dump("La demande est chargée à partir de l'id  => " . $demande->id());
+                }
+                $demandeparenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
+                //  Si la demande est de type télétravail HC, on ne l'affiche pas car l'agent travaille
+                if (strcasecmp($demandeparenttype,'teletravHC')==0)
+                {
+                    return self::COULEUR_VIDE;
+                }
+            }
             
             if ($noiretblanc == true)
                 return self::COULEUR_NOIRE;
@@ -305,6 +356,7 @@ class planningelement
     {
         $htmltext = "";
         $datetext = "";
+        $datadatefr = "";
         if (!is_null($this->date) or strlen($this->date)>6)
         {
             $datetext = $this->fonctions->nomjour($this->date) . " " . $this->fonctions->formatdate($this->date) . " : ";
@@ -381,14 +433,38 @@ class planningelement
 */
             // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
             // ==> On affiche le type du parent 'Teletravail hors convention'
-            if (strlen($this->info()) != 0 and strcasecmp($this->parenttype(),'teletravHC')==0 and $noiretblanc) 
+            $demandeparenttype = '';
+/*            
+            if (strcasecmp($this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)))
+            {
+                if (!is_null($this->demande))
+                {
+                    $demande = $this->demande;
+                }
+                else
+                {
+                    $demande = new demande($this->dbconnect);
+                    $demande->load($this->demandeid());
+                    $this->demande = $demande;
+                }
+                $demandeparenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
+                //var_dump($demandeparenttype);
+            }
+*/            
+            if (strlen($this->info()) != 0 and (strcasecmp($this->parenttype(),'teletravHC')==0 or strcasecmp($demandeparenttype,'teletravHC')==0) and $noiretblanc) 
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
-                $spanactive = true;
+                if ($demandeparenttype != '')
+                {
+                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$demandeparenttype]['libelle'] . chr(34) . ">";                    
+                }
+                else
+                {
+                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                }
+                $spanactive = true;                
             }
-            
-            if (strlen($this->info()) != 0 
+            elseif (strlen($this->info()) != 0 
                 and $noiretblanc == false 
                 or ($noiretblanc == true 
                     and !in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE)) and !$spanactive
@@ -398,8 +474,7 @@ class planningelement
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
-
-            if ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
+            elseif ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
             {
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
                 $spanactive = true;
@@ -440,16 +515,40 @@ class planningelement
                 }
             }
 */
+            $demandeparenttype = '';
+/*            
+            if (strcasecmp($this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)))
+            {
+                if (!is_null($this->demande))
+                {
+                    $demande = $this->demande;
+                }
+                else
+                {
+                    $demande = new demande($this->dbconnect);
+                    $demande->load($this->demandeid());
+                    $this->demande = $demande;
+                }
+                $demandeparenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
+                // var_dump($demandeparenttype);
+            }
+*/            
             // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
             // ==> On affiche le type du parent 'Teletravail hors convention'
-            if (strlen($this->info()) != 0 and strcasecmp($this->parenttype(),'teletravHC')==0 and $noiretblanc)
+            if (strlen($this->info()) != 0 and (strcasecmp($this->parenttype(),'teletravHC')==0 or strcasecmp($demandeparenttype,'teletravHC')==0) and $noiretblanc) 
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                if ($demandeparenttype != '')
+                {
+                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$demandeparenttype]['libelle'] . chr(34) . ">";                    
+                }
+                else
+                {
+                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . chr(34) . ">";
+                }
                 $spanactive = true;
             }
-            
-            if (strlen($this->info()) != 0
+            elseif (strlen($this->info()) != 0
                 and $noiretblanc == false
                 or ($noiretblanc == true
                     and !in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE)) and !$spanactive
@@ -459,8 +558,7 @@ class planningelement
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
-            
-            if ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
+            elseif ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
             {
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
                 $spanactive = true;

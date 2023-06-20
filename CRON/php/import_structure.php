@@ -138,8 +138,10 @@
                 $dn = $LDAP_SEARCH_BASE;
                 $LDAP_CODE_STRUCT_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_CODE_ENTITE_ATTR");
                 $LDAP_IS_INCLUDED_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_IS_INCLUDED_ATTR");
+                $LDAP_BUSINESSCATE_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_BUSINESSCATE_ATTR");
+               
                 $restriction = array(
-                    "$LDAP_CODE_STRUCT_ATTR", "$LDAP_IS_INCLUDED_ATTR"
+                    "$LDAP_CODE_STRUCT_ATTR", "$LDAP_IS_INCLUDED_ATTR", "$LDAP_BUSINESSCATE_ATTR"
                 );
                 $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
                 $info = ldap_get_entries($con_ldap, $sr);
@@ -157,9 +159,15 @@
                 {
                     $isincluded = (int)(in_array("included",$info[0]["$LDAP_IS_INCLUDED_ATTR"])); // On regarde si 'included' est dans la tableau des valeurs
                 }
+                $businesscategory = '';
+                if (isset($info[0]["$LDAP_BUSINESSCATE_ATTR"][0]))
+                {
+                    $businesscategory = $info[0]["$LDAP_BUSINESSCATE_ATTR"][0]; 
+                }
+                
                 echo "La structure $code_struct est inclue dans la structure parente (1 = true, 0 = false) : $isincluded \n";
                 echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
-                
+                echo "La categorie de la structure est $businesscategory \n";
                 
                 $type_struct_RA = array(
                     ''
@@ -332,6 +340,16 @@
                         $date_cloture = '2999-12-31';
                     // echo "code_struct = $code_struct nom_long_struct=$nom_long_struct nom_court_struct=$nom_court_struct parent_struct=$parent_struct resp_struct=$resp_struct date_cloture=$date_cloture\n";
                     
+                    if (strcasecmp($businesscategory,"library")==0) // Si c'est une library/bibliotheque => On mémorise la valeur
+                    {
+                        $estbibliotheque = 1;
+                    }
+                    else
+                    {
+                        $estbibliotheque = 0;
+                    }
+                    
+                    
                     $sql = "SELECT * FROM STRUCTURE WHERE STRUCTUREID='" . $code_struct . "'";
                     $query = mysqli_query($dbcon, $sql);
                     $erreur_requete = mysqli_error($dbcon);
@@ -340,10 +358,47 @@
                     if (mysqli_num_rows($query) == 0) // Structure manquante
                     {
                         echo "Creation d'une nouvelle structure : $nom_long_struct (Id = $code_struct) \n";
-                        $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,NOMLONG,NOMCOURT,STRUCTUREIDPARENT,RESPONSABLEID,DATECLOTURE,TYPESTRUCT,ISINCLUDED) VALUES('%s','%s','%s','%s','%s','%s','%s','%s')", $fonctions->my_real_escape_utf8($code_struct), $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $isincluded);
+                        $sql = sprintf("INSERT INTO STRUCTURE(STRUCTUREID,
+                                                              NOMLONG,
+                                                              NOMCOURT,
+                                                              STRUCTUREIDPARENT,
+                                                              RESPONSABLEID,
+                                                              DATECLOTURE,
+                                                              TYPESTRUCT,
+                                                              ISINCLUDED,
+                                                              ESTBIBLIOTHEQUE)
+                                        VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')", 
+                                            $fonctions->my_real_escape_utf8($code_struct), 
+                                            $fonctions->my_real_escape_utf8($nom_long_struct), 
+                                            $fonctions->my_real_escape_utf8($nom_court_struct), 
+                                            $fonctions->my_real_escape_utf8($parent_struct), 
+                                            $fonctions->my_real_escape_utf8($resp_struct), 
+                                            $fonctions->my_real_escape_utf8($date_cloture), 
+                                            $fonctions->my_real_escape_utf8($type_struct), 
+                                            $isincluded,
+                                            $estbibliotheque
+                                );
                     } else {
                         echo "Mise a jour d'une structure : $nom_long_struct (Id = $code_struct) \n";
-                        $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',NOMCOURT='%s',STRUCTUREIDPARENT='%s',RESPONSABLEID='%s', DATECLOTURE='%s', TYPESTRUCT='%s', ISINCLUDED='%s' WHERE STRUCTUREID='%s'", $fonctions->my_real_escape_utf8($nom_long_struct), $fonctions->my_real_escape_utf8($nom_court_struct), $fonctions->my_real_escape_utf8($parent_struct), $fonctions->my_real_escape_utf8($resp_struct), $fonctions->my_real_escape_utf8($date_cloture), $fonctions->my_real_escape_utf8($type_struct), $isincluded, $fonctions->my_real_escape_utf8($code_struct));
+                        $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',
+                                                             NOMCOURT='%s',
+                                                             STRUCTUREIDPARENT='%s',
+                                                             RESPONSABLEID='%s', 
+                                                             DATECLOTURE='%s', 
+                                                             TYPESTRUCT='%s', 
+                                                             ISINCLUDED='%s',
+                                                             ESTBIBLIOTHEQUE='%s'
+                                        WHERE STRUCTUREID='%s'",
+                                            $fonctions->my_real_escape_utf8($nom_long_struct), 
+                                            $fonctions->my_real_escape_utf8($nom_court_struct), 
+                                            $fonctions->my_real_escape_utf8($parent_struct), 
+                                            $fonctions->my_real_escape_utf8($resp_struct), 
+                                            $fonctions->my_real_escape_utf8($date_cloture), 
+                                            $fonctions->my_real_escape_utf8($type_struct), 
+                                            $isincluded,
+                                            $estbibliotheque,
+                                            $fonctions->my_real_escape_utf8($code_struct)
+                                );
                         // echo $sql."\n";
                     }
                     mysqli_query($dbcon, $sql);

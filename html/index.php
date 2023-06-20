@@ -30,15 +30,15 @@
             $errlog = "<body class='bodyhtml'>Vous n'êtes pas autorisé à vous connecter à cette application.";
             $errlog = $errlog . "<br>";
             $errlog = $errlog . "Veuillez vous rapprocher de votre gestionnaire RH ou de la DIRVAL";
-            
+
             echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($errlog)));
-            
+
             $techlog = "Informations techniques :";
             $techlog = $techlog . "<br><ul>";
             $techlog = $techlog . "<li>Identité de l'utilisateur : " . $uid . " (identifiant = " . $userid . ")</li>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($techlog)));
-            
+
             $errlog = "<h3>Plusieurs raisons peuvent être à l'origine de cette limitation d'accès :";
             $errlog = $errlog . "<br><ul>";
             $errlog = $errlog . "<li>Vous êtes affecté à une structure qui n'est pas encore paramétrée pour utiliser G2T.</li>";
@@ -69,15 +69,15 @@
             $errlog = "<body class='bodyhtml'>Vous n'êtes pas autorisé à vous connecter à cette application.";
             $errlog = $errlog . "<br>";
             $errlog = $errlog . "Veuillez vous rapprocher de votre gestionnaire RH ou de la DIRVAL";
-            
+
             echo $fonctions->showmessage(fonctions::MSGERROR,$errlog);
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($errlog)));
-            
+
             $techlog = "Informations techniques :";
             $techlog = $techlog . "<br><ul>";
             $techlog = $techlog . "<li>Identité de l'utilisateur : " . $uid . " (identifiant = " . $userid . ")</li>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($techlog)));
-            
+
             $errlog = "<h3>Plusieurs raisons peuvent être à l'origine de cette limitation d'accès :";
             $errlog = $errlog . "<br><ul>";
             $errlog = $errlog . "<li>Vous êtes affecté à une structure qui n'est pas encore paramétrée pour utiliser G2T.</li>";
@@ -91,7 +91,7 @@
             echo $techlog;
             echo "</body>";
             exit();
-            
+
         }
     }
 
@@ -116,8 +116,11 @@
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
         echo $structure->nomlong();
-    } else
+    } 
+    else
+    {
         echo "Pas d'affectation actuellement => Pas de structure";
+    }
 
     // $tempstructid = $user->structure()->id();
     echo "<br><br>";
@@ -137,13 +140,21 @@
                 $datedebut = "29991231";  // La date de début est dans le futur
                 $datefin = "19000101";    // La date de fin est dans le passé
                 if ($fonctions->formatdatedb($affectation->datedebut()) < $datedebut)
+                {
                     $datedebut = $fonctions->formatdatedb($affectation->datedebut());
+                }
                 if ($datefin < $fonctions->formatdatedb($affectation->datefin()))
+                {
                     $datefin = $fonctions->formatdatedb($affectation->datefin());
+                }
                 if ($datedebut < $fonctions->anneeref() . $fonctions->debutperiode())
+                {
                     $datedebut = $fonctions->anneeref() . $fonctions->debutperiode();
+                }
                 if ($datefin > ($fonctions->anneeref()+1) . $fonctions->finperiode())
+                {
                     $datefin = ($fonctions->anneeref()+1) . $fonctions->finperiode();
+                }
 
                 //echo "datedebut = $datedebut    datefin = $datefin <br>";
                 // On verifie que sur l'affectation en cours, il n'y a pas de période non déclaré.
@@ -159,75 +170,100 @@
         }
     }
 
-     $periode = new periodeobligatoire($dbcon);
-     $liste = $periode->load($fonctions->anneeref());
-     if (count($liste) > 0)
-     {
-         echo "<center>";
-         echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;color: #FF0000;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
-         foreach ($liste as $element)
-         {
-             echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
-         }
-         echo "</ul>";
-         echo "Veuillez penser à poser vos congés en conséquence.";
-         echo "</div></center>";
-         echo "<br><br>";
-     }
+    $periode = new periodeobligatoire($dbcon);
+    $liste = $periode->load($fonctions->anneeref());
+    if (count($liste) > 0)
+    {
+        echo "<center>";
+        echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;color: #FF0000;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+        foreach ($liste as $element)
+        {
+            echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
+        }
+        echo "</ul>";
+        echo "Veuillez penser à poser vos congés en conséquence.";
+        echo "</div></center>";
+        echo "<br><br>";
+    }
     echo $user->soldecongeshtml($fonctions->anneeref());
 
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
 
 /*
-    echo $fonctions->showmessage(fonctions::MSGERROR,"Ceci est un message d'erreur et il doit être affiché avec un fond rouge foncé et le texte en blanc");
-    echo $fonctions->showmessage(fonctions::MSGWARNING,"Ceci est un message d'alerte et il doit être affiché avec un fond jaune/orange et le texte en blanc");
-    echo $fonctions->showmessage(fonctions::MSGINFO,"<br> <br>Ceci est un message de type information et il doit être affiché avec un fond vert clair et le texte en blanc<br><BR>   <bR>ceci est une ligne complémentaire<br>et j'en rajoute une 3e au cas où...<br>et si j'en met une 4e ca marche ?<br> <br>et la 5e mais ca commence à faire bcp donc je ne pense pas<br><bR>");
-    echo $fonctions->showmessage(fonctions::MSGINFO,"     <br> <br><br><BR><Br>   <Br>  <br>     <br><bR>");
+    $struct = new structure($dbcon);
+    $struct->load('DGHA_4');
+    if ($struct->estbibliotheque())
+    {
+        echo "La structure " . $struct->nomcourt() . " est une bibliothèque <br>";
+    }
+    else
+    {
+        echo "La structure " . $struct->nomcourt() . " N'est PAS une bibliothèque <br>";        
+    }
+
+    $struct = new structure($dbcon);
+    $struct->load('IU21A_5');
+    if ($struct->estbibliotheque())
+    {
+        echo "La structure " . $struct->nomcourt() . " est une bibliothèque <br>";
+    }
+    else
+    {
+        echo "La structure " . $struct->nomcourt() . " N'est PAS une bibliothèque <br>";        
+    }
 */
+    
 /*
+    $testagent = new agent($dbcon);
+    $testagent->load(91288);
+    //$testagent->load(84929);
+    $solde = new solde($dbcon);
+    $solde->load($testagent->agentid(), 'ann22');
+//    echo "Le nombre de jours 2022/2023 de " . $testagent->identitecomplete() . " est : " . $testagent->newcalculsoldeannuel(null,false,true,false) . ' et son solde intial (ancienne méthode) est ' . $solde->droitaquis() . '<br>';
+    echo "Le nombre de jours 2022/2023 de " . $testagent->identitecomplete() . " est : " . $testagent->newcalculsoldeannuel2(null,false,true,false) . ' et son solde intial (ancienne méthode) est ' . $solde->droitaquis() . '<br>';
+*/
+ /* 
     $testagent = new agent($dbcon);
     $testagent->load(9328);
-    echo "L'adresse LDAP de " . $testagent->identitecomplete() . " est : " . $testagent->ldapmail() . '<br>';
+    $solde = new solde($dbcon);
+    $solde->load($testagent->agentid(), 'ann22');
+//    echo "Le nombre de jours 2022/2023 de " . $testagent->identitecomplete() . " est : " . $testagent->newcalculsoldeannuel(null,false,true,false) . ' et son solde intial (ancienne méthode) est ' . $solde->droitaquis() . '<br>';
+    echo "Le nombre de jours 2022/2023 de " . $testagent->identitecomplete() . " est : " . $testagent->newcalculsoldeannuel2(null,false,true,false) . ' et son solde intial (ancienne méthode) est ' . $solde->droitaquis() . '<br>';
+*/
+/*    
     $testagent = new agent($dbcon);
-    $testagent->load(1223455);
-    echo "L'adresse LDAP de " . $testagent->identitecomplete() . " est : " . $testagent->ldapmail() . '<br>';
-    $testagent = new agent($dbcon);
-    $testagent->load(-2);
-    echo "L'adresse LDAP de " . $testagent->identitecomplete() . " est : " . $testagent->ldapmail() . '<br>';
+    //$testagent->load(91288);
+    $testagent->load(84929);
+    $solde = new solde($dbcon);
+    $solde->load($testagent->agentid(), 'ann22');
+//    echo "Le nombre de jours 2022/2023 de " . $testagent->identitecomplete() . " est : " . $testagent->newcalculsoldeannuel(null,false,true,false) . ' et son solde intial (ancienne méthode) est ' . $solde->droitaquis() . '<br>';
+    echo "Le nombre de jours 2022/2023 de " . $testagent->identitecomplete() . " est : " . $testagent->newcalculsoldeannuel2(null,false,true,false) . ' et son solde intial (ancienne méthode) est ' . $solde->droitaquis() . '<br>';
+*/
+/*
+    $datefinprec = '20230901';
+    $datedebutsuiv = '20240312';
+    if ($fonctions->affectation_continue($datefinprec, $datedebutsuiv, 365))
+    {
+        echo "<br>Il n'y a pas d'interruption entre " . $fonctions->formatdate($datefinprec) . " et " . $fonctions->formatdate($datedebutsuiv) . "<br>";
+    }
+    else
+    {
+        echo "<br>Il y a interruption entre " . $fonctions->formatdate($datefinprec) . " et " . $fonctions->formatdate($datedebutsuiv) . "<br>";
+    }
+ */
+/*    
+    $date = '20230430';
+    $nbjrstravaille = '365';
+    $dateanniv = $fonctions->calcul_date_anniversaire($date,$nbjrstravaille, 365);
+    echo "<br>La date d'anniversaire de " . $fonctions->formatdate($date) . " avec $nbjrstravaille jours travaillés est " . $fonctions->formatdate($dateanniv) . "<br>";
 */    
 /*
-    echo "<br>";
-    $adressemail = 'pascal.comte@univ-paris1.fr';
-    if ($fonctions->mailexistedansldap($adressemail))
-    {
-        echo "$adressemail trouvée dans LDAP";
-    }
-    else
-    {
-        echo "$adressemail NON trouvée dans LDAP";
-    }
-    echo "<br>";
-    $adressemail = 'plouf.plouf@univ-paris1.fr';
-    if ($fonctions->mailexistedansldap($adressemail))
-    {
-        echo "$adressemail trouvée dans LDAP";
-    }
-    else
-    {
-        echo "$adressemail NON trouvée dans LDAP";
-    }
-    echo "<br>";
-    $adressemail = 'gestion.temps@univ-paris1.fr';
-    if ($fonctions->mailexistedansldap($adressemail))
-    {
-        echo "$adressemail trouvée dans LDAP";
-    }
-    else
-    {
-        echo "$adressemail NON trouvée dans LDAP";
-    }
-*/    
+    $esignatureid = 892679;
+
+    $fonctions->creation_ticketGLPI_materiel($esignatureid);
+*/   
+    
 ?>
 </body>
 </html>

@@ -783,6 +783,7 @@
         $modelteletravailavanceupdate = false;
         $modelteletravailsimpleupdate = false;
         $reportteletravailupdate = false;
+        $esignatureteletravailupdate = false;
 
         if (isset($_POST['updateinfo_teletravail']))
         {
@@ -874,6 +875,21 @@
                 else
                 {
                     $reportteletravailupdate = true;
+                }
+            }
+            if (isset($_POST['esignatureteletravail']))
+            {
+                $esignatureteletravail = $_POST['esignatureteletravail'];
+                $constantename = "ESIGNATURETELETRAVAIL";
+                $erreur = $fonctions->enregistredbconstante($constantename, $esignatureteletravail);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $esignatureteletravailupdate = true;
                 }
             }
             
@@ -1116,7 +1132,7 @@
         {
             echo $fonctions->showmessage(fonctions::MSGERROR, $msgerror);
         }
-        if ($signataireupdate or $nbjrsteletravailupdate or $modelteletravailavanceupdate or $modelteletravailsimpleupdate or $reportteletravailupdate)
+        if ($signataireupdate or $nbjrsteletravailupdate or $modelteletravailavanceupdate or $modelteletravailsimpleupdate or $reportteletravailupdate or $esignatureteletravailupdate)
         {
             echo $fonctions->showmessage(fonctions::MSGINFO, "Les données sont enregistrées");
         }
@@ -1193,6 +1209,17 @@
             $listerhuser->prenom($prenomlisterhuser);
             $listerhuser->mail($maillisterhuser);
             $listerhuser->store(SPECIAL_USER_IDLISTERHUSER);
+            
+            $nomlisterhteletravail = $_POST['nomlisterhteletravail'];
+            $prenomlisterhteletravail = $_POST['prenomlisterhteletravail'];
+            $maillisterhteletravail = $_POST['maillisterhteletravail'];
+            $listerhuser = new agent($dbcon);
+            $listerhuser->nom($nomlisterhteletravail);
+            $listerhuser->prenom($prenomlisterhteletravail);
+            $listerhuser->mail($maillisterhteletravail);
+            $listerhuser->store(SPECIAL_USER_IDLISTERHTELETRAVAIL);
+
+
         }
     }
     
@@ -2173,7 +2200,34 @@
         echo ">" . $fonctions->ouinonlibelle('n');
         echo "</option>";
         echo "</select>";
-    	echo "<br><br>";
+
+        echo "<br>";
+        echo "Activer l'intégration des demandes de convention télétravail dans eSignature : ";
+        $constantename = 'ESIGNATURETELETRAVAIL';
+        $esignatureteletravail = 'n';
+        if ($fonctions->testexistdbconstante($constantename))
+        {
+            $esignatureteletravail = $fonctions->liredbconstante($constantename);
+        }
+        echo "<select id='esignatureteletravail' name='esignatureteletravail'>";
+	echo "<option value='o'";
+        if (strcasecmp($esignatureteletravail, "o") == 0)
+        {
+            echo " selected ";
+        }
+        echo ">" . $fonctions->ouinonlibelle('o');
+        echo "</option>";
+	echo "<option value='n'";
+        if (strcasecmp($esignatureteletravail, "n") == 0)
+        {
+            echo " selected ";
+        }
+        echo ">" . $fonctions->ouinonlibelle('n');
+        echo "</option>";
+        echo "</select>";
+
+
+        echo "<br><br>";
     	echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
 	    echo "<input type='submit' value='Soumettre'  name='updateinfo_teletravail'/>";
@@ -2768,27 +2822,41 @@
         	    <br>
 <?php
             $cronuser = new agent($dbcon);
-            if (!$agent->existe(SPECIAL_USER_IDCRONUSER))
+            if (!$cronuser->existe(SPECIAL_USER_IDCRONUSER))
             {
                 $cronuser = new agent($dbcon);
                 $cronuser->nom('CRON');
                 $cronuser->prenom('G2T');
                 $cronuser->mail('noreply@etablissement.fr');
                 $cronuser->store(SPECIAL_USER_IDCRONUSER);
+                $cronuser = new agent($dbcon);
             }
             $cronuser->load(SPECIAL_USER_IDCRONUSER);
             
             $listerhuser = new agent($dbcon);
-            if (!$agent->existe(SPECIAL_USER_IDLISTERHUSER))
+            if (!$listerhuser->existe(SPECIAL_USER_IDLISTERHUSER))
             {
                 $listerhuser = new agent($dbcon);
                 $listerhuser->nom('DIFFUSION');
                 $listerhuser->prenom('RH');
                 $listerhuser->mail('noreply@etablissement.fr');
                 $listerhuser->store(SPECIAL_USER_IDLISTERHUSER);
+                $listerhuser = new agent($dbcon);
             }
             $listerhuser->load(SPECIAL_USER_IDLISTERHUSER);
             
+            $listerhteletravail = new agent($dbcon);
+            if (!$listerhteletravail->existe(SPECIAL_USER_IDLISTERHTELETRAVAIL))
+            {
+                $listerhteletravail = new agent($dbcon);
+                $listerhteletravail->nom('TELETRAVAIL');
+                $listerhteletravail->prenom('RH');
+                $listerhteletravail->mail('noreply@etablissement.fr');
+                $listerhteletravail->store(SPECIAL_USER_IDLISTERHTELETRAVAIL);
+                $listerhteletravail = new agent($dbcon);
+            }
+            $listerhteletravail->load(SPECIAL_USER_IDLISTERHTELETRAVAIL);
+
             $dbconstante = "FORCE_AGENT_MAIL";
             $spantxt = '';
     		if ($fonctions->testexistdbconstante($dbconstante))
@@ -2801,19 +2869,30 @@
     		}
 ?>
     			<table class='tableausimple'>
-        			<tr><td class='titresimple'>Fonction/Utilité</td><td class='titresimple'>Nom</td><td class='titresimple'>Prénom</td><td class='titresimple'>Adresse mail de l'expéditeur</td></tr>
-                    <tr>
-                    	<td class='cellulesimple'><span data-tip="Utilisateur représentant l'application lors de l'envoi automatique de mails (informations, alertes, rappels aux agents, ...) ">Application G2T</td>
-                    	<td class='cellulesimple'><input type='text' name='nomcronuser' value='<?php echo $cronuser->nom() ?>' size=30 ></td>
-                    	<td class='cellulesimple'><input type='text' name='prenomcronuser' value='<?php echo $cronuser->prenom() ?>' size=30 ></td>
-                    	<td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='mailcronuser' value='<?php echo $cronuser->mailforspecialagent() ?>' size=60 ></td>
-                	</tr>
-                    <tr>
-                    	<td class='cellulesimple'><span data-tip="Liste de diffusion RH pour informer un ensemble de personnes (CET, alertes sur des dossiers agents, ...)">Liste de diffusion RH</td>
-                    	<td class='cellulesimple'><input type='text' name='nomlisterhuser' value='<?php echo $listerhuser->nom() ?>' size=30 ></td>
-                    	<td class='cellulesimple'><input type='text' name='prenomlisterhuser' value='<?php echo $listerhuser->prenom() ?>' size=30 ></td>
-                    	<td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhuser' value='<?php echo $listerhuser->mailforspecialagent() ?>' size=60 ></td>
-                	</tr>
+                            <tr>
+                                <td class='titresimple'>Fonction/Utilité</td>
+                                <td class='titresimple'>Nom</td>
+                                <td class='titresimple'>Prénom</td>
+                                <td class='titresimple'>Adresse mail de l'expéditeur</td>
+                            </tr>
+                            <tr>
+                                <td class='cellulesimple'><span data-tip="Utilisateur représentant l'application lors de l'envoi automatique de mails (informations, alertes, rappels aux agents, ...) ">Application G2T</td>
+                                <td class='cellulesimple'><input type='text' name='nomcronuser' value='<?php echo $cronuser->nom() ?>' size=30 ></td>
+                                <td class='cellulesimple'><input type='text' name='prenomcronuser' value='<?php echo $cronuser->prenom() ?>' size=30 ></td>
+                                <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='mailcronuser' value='<?php echo $cronuser->mailforspecialagent() ?>' size=60 ></td>
+                            </tr>
+                            <tr>
+                                <td class='cellulesimple'><span data-tip="Liste de diffusion RH pour informer un ensemble de personnes (CET, alertes sur des dossiers agents, ...)">Liste de diffusion RH congés/CET</td>
+                                <td class='cellulesimple'><input type='text' name='nomlisterhuser' value='<?php echo $listerhuser->nom() ?>' size=30 ></td>
+                                <td class='cellulesimple'><input type='text' name='prenomlisterhuser' value='<?php echo $listerhuser->prenom() ?>' size=30 ></td>
+                                <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhuser' value='<?php echo $listerhuser->mailforspecialagent() ?>' size=60 ></td>
+                            </tr>
+                            <tr>
+                                <td class='cellulesimple'><span data-tip="Liste de diffusion RH dédiée 'télétravail'">Liste de diffusion RH télétravail</td>
+                                <td class='cellulesimple'><input type='text' name='nomlisterhteletravail' value='<?php echo $listerhteletravail->nom() ?>' size=30 ></td>
+                                <td class='cellulesimple'><input type='text' name='prenomlisterhteletravail' value='<?php echo $listerhteletravail->prenom() ?>' size=30 ></td>
+                                <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhteletravail' value='<?php echo $listerhteletravail->mailforspecialagent() ?>' size=60 ></td>
+                            </tr>
     			</table>
 		        <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
         		<input type='hidden' id='current_tab' name='current_tab' value='tab_utilisateurs'>

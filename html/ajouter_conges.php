@@ -209,8 +209,12 @@
         }
         ksort($agentlistefull);
         echo "<SELECT name='agentid'>";
-        foreach ($agentlistefull as $keyagent => $membre) {
-            echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+        foreach ($agentlistefull as $keyagent => $membre) 
+        {
+            if (!$membre->estutilisateurspecial())
+            {
+                echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            }
         }
         echo "</SELECT>";
         echo "<br>";
@@ -272,10 +276,12 @@
                 $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
                 foreach ($agentrhlist as $agentrh) {
                     $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
-                    $corpmail = $corpmail . "Le motif de cet ajout est : " . $commentaire_supp . ".\n";
+                    $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
                     $corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
                     $user->sendmail($agentrh, "Ajout de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
                 }
+                $nbr_jours_conges = null;
+                $commentaire_supp = null;
             }
         } 
         else
@@ -308,14 +314,16 @@
         }
         
         echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
-        echo "Ajout de jours de congés supplémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
+        echo "Ajout de jours de congés complémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         echo "<br>";
-        echo "Le solde de " . $solde->typelibelle() . " est actuellement de " . ($solde->droitaquis()-$solde->droitpris()) . " jour(s) <br>";
+        echo "Le solde de " . strtolower($solde->typelibelle()) . " est actuellement de " . ($solde->droitaquis()-$solde->droitpris()) . " jour(s) <br>";
         echo "<form name='frm_ajoutconge'  method='post' >";
         echo "<br>";
-        echo "Nombre de jours supplémentaires à ajouter : <input type=text name=nbr_jours_conges id=nbr_jours_conges size=3 >";
+        echo "Nombre de jours complémentaires à ajouter : <input required type='text' name='nbr_jours_conges' id='nbr_jours_conges' size=3 value='$nbr_jours_conges'>";
         echo "<br>";
-        echo "<b style='color: red'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères : </b><input type=text name=commentaire_supp id=commentaire_supp size=80 oninput='checktextlength(this,$longueurmaxcommentaire);' >";
+        echo "<b style='color: red'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères  - Reste : <label id='motifrestant'>$longueurmaxcommentaire</label> car.) : </b>";
+//        echo "<input type='text' name='commentaire_supp' id='commentaire_supp' size=80 oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >";
+        echo "<textarea required rows='4' cols='80' style='line-height:20px; resize: none;' name='commentaire_supp' id='commentaire_supp' oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >$commentaire_supp</textarea>";
         echo "<br>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
@@ -326,6 +334,15 @@
         echo "<br>";
         echo "</span>";
         echo "<br><br>";
+?>
+        <script>
+            var commentaire_supp = document.getElementById('commentaire_supp');
+            if (commentaire_supp)
+            {
+                checktextlength(commentaire_supp,<?php echo $fonctions->logueurmaxcolonne('COMMENTAIRECONGE','COMMENTAIRE'); ?>,"motifrestant");
+            }
+        </script>
+<?php
         $htmlcommentaire = $agent->affichecommentairecongehtml(true,$fonctions->anneeref(),true);
         if (trim($htmlcommentaire) != "")
         {

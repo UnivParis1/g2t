@@ -264,8 +264,12 @@
                 unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
             }
             echo "<SELECT name='agentid'>";
-            foreach ($agentlistefull as $keyagent => $membre) {
-                echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+            foreach ($agentlistefull as $keyagent => $membre) 
+            {
+                if (!$membre->estutilisateurspecial())
+                {
+                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                }
             }
             echo "</SELECT>";
             echo "<br>";

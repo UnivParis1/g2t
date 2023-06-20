@@ -223,16 +223,16 @@
 /* Tableau simple (bordure fine, noire etc)            */
 /*******************************************************/
 .tableausimple {
-	border-width:1px; 
-	border-style:solid; 
-	border-color:#888B8A;
+   border-width:1px; 
+   border-style:solid; 
+   border-color:#888B8A;
    border-collapse:collapse;
 /*	width:50%; */
  }
 .cellulesimple{
-	border-width:1px;
-	border-style:solid; 
-	border-color:#888B8A;
+   border-width:1px;
+   border-style:solid; 
+   border-color:#888B8A;
    padding-left:10px;
    padding-right:10px;
 /*	width:50%; */
@@ -240,13 +240,17 @@
 .titresimple{
    FONT-WEIGHT: bold ; 
    color : #BF3021; 
-	border-width:1px;
+   border-width:1px;
    border-style:solid; 
    border-color:#888B8A;
    padding-left:10px;
    padding-right:10px;
    text-align : center;
 /* width:50%; */
+}
+
+.cellulemultiligne{
+    white-space:pre;
 }
 
 /****************************************************
@@ -433,11 +437,14 @@ LI.plus::after {
 /****************************************************/
 #demandeliste {
    FONT-WEIGHT: normal ;
+   cursor : default;
 }
 #demandeliste table {
    border-collapse : collapse; 
    border-spacing : 0px; 
    text-align : center; 
+   column-width: auto;
+   table-layout: auto;
 }
 #demandeliste TR.titre TD {
    FONT-WEIGHT: bold ; 
@@ -668,20 +675,12 @@ LI.plus::after {
 / BULLE D'INFORMATION
 /****************************************************/
 span[data-tip]{
-/*
-  border-bottom: 2px dotted #888; 
-
-  cursor:default; 
- */
-}
-
-[data-tip]{
   display: inline-block;
   position: relative;
   width: 100%;
 }
 
-[data-tip]:hover:before{
+span[data-tip]:hover:before{
   content: attr(data-tip);
   position: absolute;
   padding: 0 8px;  
@@ -698,7 +697,7 @@ span[data-tip]{
   font-size: 11px;
 }
 
-[data-tip]:hover:after {
+span[data-tip]:hover:after {
   content: "";
   position: absolute;
 /*
@@ -712,6 +711,62 @@ span[data-tip]{
   border-right: 8px solid transparent;
   left: -5px; 
   top: -10px;
+}
+
+td[data-title]:hover:after {
+    opacity: 1;
+    transition: all 0.1s ease 0.5s;
+    visibility: visible;
+}
+td[data-title]:after {
+    content: attr(data-title);
+    position: absolute;
+    bottom: -1.6em;
+    left: 10px;
+    padding: 4px 4px 4px 8px;
+/*    color: #666;*/
+    color: #fff;
+    white-space: pre;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+    -moz-box-shadow: 0px 0px 4px #666;
+    -webkit-box-shadow: 0px 0px 4px #666;
+    box-shadow: 0px 0px 4px #666;
+    background-color: rgba(0, 0, 0, 0.8);
+    text-align: start;
+/*    
+    background-image: -moz-linear-gradient(top, #f0eded, #bfbdbd);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #f0eded), color-stop(1, #bfbdbd));
+    background-image: -webkit-linear-gradient(top, #f0eded, #bfbdbd);
+    background-image: -moz-linear-gradient(top, #f0eded, #bfbdbd);
+    background-image: -ms-linear-gradient(top, #f0eded, #bfbdbd);
+    background-image: -o-linear-gradient(top, #f0eded, #bfbdbd);
+*/
+    opacity: 0;
+    z-index: 1;
+    visibility: hidden;
+}
+td[data-title] {
+    position: relative;
+}
+
+.bulleinfo:hover {
+    background: #f5c95c8e;
+    color: black;
+}
+
+/**************************************************
+/ SELECT / INPUT / TEXTAREA OBLIGATOIRES
+/**************************************************/
+select:required{
+    border-bottom: 2px solid #f5b7b1;
+}
+
+input:required,
+textarea:required {
+    border: 3px solid #f5b7b1;
+    /* background-color : #f5b7b1; */
 }
 
 /**************************************************

@@ -27,15 +27,15 @@ class fonctions
     public const SIGNATAIRE_SPECIAL = "4";
     public const SIGNATAIRE_RESPONSABLE_N2 = "5";
     public const SIGNATAIRE_LIBELLE = array(fonctions::SIGNATAIRE_AGENT => "AGENT INDIVIDUEL", fonctions::SIGNATAIRE_STRUCTURE => "TOUS LES AGENTS D'UNE STRUCTURE", fonctions::SIGNATAIRE_RESPONSABLE => "RESPONSABLE DE STRUCTURE", fonctions::SIGNATAIRE_SPECIAL => "UTILISATEUR SPECIAL", fonctions::SIGNATAIRE_RESPONSABLE_N2 => "RESPONSABLE N+2");
-    
+
     public const MSGERROR = 'error';
     public const MSGWARNING = 'warning';
     public const MSGINFO = 'info';
-    
+
     public const MOMENT_MATIN = 'm';
     public const MOMENT_APRESMIDI = 'a';
 
-    
+
     private $dbconnect = null;
 
     /**
@@ -145,9 +145,9 @@ class fonctions
         {
             return "";
         }
-        
 
-/*        
+
+/*
         $sql = "SELECT NOM,VALEUR FROM CONSTANTES WHERE NOM LIKE 'FERIE%'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -226,7 +226,7 @@ class fonctions
                 $monthname = "décembre";
                 break;
         }
-        
+
         if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
             return ucfirst($monthname);
         } else {
@@ -250,7 +250,7 @@ class fonctions
             $index = $index % 12;
             if ($index==0) $index = 12;
             $monthname = $this->nommois("01/" . str_pad($index,  2, "0",  STR_PAD_LEFT) . "/2012");
-            
+
             if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
                 return ucfirst($monthname);
             } else {
@@ -258,7 +258,7 @@ class fonctions
             }
         }
     }
-    
+
     /**
      *
      * @param string $date
@@ -269,7 +269,7 @@ class fonctions
     {
         if (is_null($date))
             $date = date("d/m/Y");
-        
+
 //        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
 //            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
 //        $dayname = strftime("%A", strtotime($this->formatdatedb($date)));
@@ -299,7 +299,7 @@ class fonctions
                 $dayname = "samedi";
                 break;
         }
-            
+
         if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
             return ucfirst($dayname);
         } else {
@@ -403,8 +403,8 @@ class fonctions
         }
         return $listecategabs;
     }
-    
-    
+
+
     // ALTER TABLE TYPEABSENCE ADD COLUMN `COMMENTOBLIG` VARCHAR(2) NOT NULL DEFAULT 'n' AFTER `ABSENCEIDPARENT`;
     // UPDATE TYPEABSENCE SET `COMMENTOBLIG` = 'o' WHERE (`TYPEABSENCEID` = 'spec');
     // UPDATE TYPEABSENCE SET `COMMENTOBLIG` = 'o' WHERE (`TYPEABSENCEID` = 'teleetab');
@@ -481,7 +481,7 @@ class fonctions
         {
             return "0901";
         }
-/*        
+/*
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -519,7 +519,7 @@ class fonctions
         {
             return "0831";
         }
-/*        
+/*
         $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -538,7 +538,7 @@ class fonctions
         $result = mysqli_fetch_row($query);
         // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
         return "$result[0]";
-*/        
+*/
     }
 
     /**
@@ -633,7 +633,7 @@ class fonctions
         {
             return "";
         }
-        
+
         $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
         $params = array($typeconge);
         $query = $this->prepared_select($sql, $params);
@@ -666,7 +666,7 @@ class fonctions
     public function liredbconstante($constante)
     {
         if (defined("$constante")) /* Si la constante est définie */
-        { 
+        {
             return constant($constante);
         }
         else
@@ -682,7 +682,7 @@ class fonctions
             $sql = "SELECT VALEUR,NOM FROM CONSTANTES WHERE NOM $operateur ?";
             $params = array($constante);
             $query = $this->prepared_select($sql, $params);
-    
+
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Fonctions->liredbconstante : " . $erreur;
@@ -693,7 +693,7 @@ class fonctions
                 $errlog = "Fonctions->liredbconstante : La constante '" . $constante . "' n'est pas defini dans la base.";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-            } 
+            }
             elseif (trim($operateur) == '=')
             {
                 $result = mysqli_fetch_row($query);
@@ -710,7 +710,7 @@ class fonctions
             }
         }
     }
-    
+
     public function enregistredbconstante($constante, $valeur)
     {
         if (defined("$constante")) /* Si la constante est définie */
@@ -743,7 +743,7 @@ class fonctions
             return '';
         }
     }
-    
+
     public function testexistdbconstante($constante)
     {
         if (defined("$constante")) /* Si la constante est définie */
@@ -760,12 +760,12 @@ class fonctions
             {
                 $operateur = '=';
             }
-            
-            
+
+
             $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM $operateur ?";
             $params = array($constante);
             $query = $this->prepared_select($sql, $params);
-            
+
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") {
                 $errlog = "Fonctions->testexistdbconstante : " . $erreur;
@@ -775,7 +775,7 @@ class fonctions
             return (mysqli_num_rows($query) != 0);
         }
     }
-    
+
     /**
      *
      * @param string $datedebut
@@ -825,7 +825,7 @@ class fonctions
     function diff_mois($mois_dep, $mois_arriv)
     {
         trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
-        
+
         if ($mois_dep > $mois_arriv) {
             $nbr_mois = (13 - $mois_dep) + $mois_arriv;
         } else {
@@ -848,7 +848,7 @@ class fonctions
     function nbr_jrs_travail_mois_deb($jour_dep, $mois_dep, $annee)
     {
         trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
-        
+
         // nbr de jour ds le mois
         $nbr_jrs_mois = $this->nbr_jours_dans_mois($mois_dep, $annee);
         // nbr de jour ds le mois depuis le jour de début de l'affectation
@@ -937,8 +937,8 @@ class fonctions
         $htmltext = $htmltext . "
 <script>
     var currentlegende = document.getElementById('" . $idlegende .  "');
-    if (currentlegende) 
-    { 
+    if (currentlegende)
+    {
         var div = currentlegende.previousSibling;
         //alert ('Le nom de la balise est : ' + div.tagName);
         if (div && div.tagName.toLowerCase()==='div')
@@ -967,7 +967,7 @@ class fonctions
     }
 </script>
 ";
-        
+
         return $htmltext;
     }
 
@@ -981,7 +981,7 @@ class fonctions
     {
         $tablegende = $this->legende($anneeref,$includeteletravail);
         $long_chps = 0;
-        foreach ($tablegende as $key => $legende) 
+        foreach ($tablegende as $key => $legende)
         {
             if ($pdf->GetStringWidth($legende["libelle"]) > $long_chps)
                 $long_chps = $pdf->GetStringWidth($legende["libelle"]);
@@ -998,7 +998,7 @@ class fonctions
                 }
                 // $LL_TYPE_CONGE = "$result[LL_TYPE_CONGE]";
                 list ($col_leg1, $col_leg2, $col_leg3) = $this->html2rgb($legende["couleur"]);
-    
+
                 // $long_chps=strlen($legende["type_conge"])+10;
                 // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
                 $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
@@ -1102,7 +1102,7 @@ class fonctions
             else
                 echo "teletravailstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
     }
-    
+
     /**
      *
      * @param string $statut
@@ -1211,7 +1211,7 @@ class fonctions
         $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID IN (";
         // $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID='%s' AND COMPLEMENTID IN (";
         if (is_null($typeprofil)) {
-            $sql = $sql . "'" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHCONGE . "', '" . agent::PROFIL_RHANOMALIE . "', '" . agent::PROFIL_RHTELETRAVAIL . "'"; 
+            $sql = $sql . "'" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHCONGE . "', '" . agent::PROFIL_RHANOMALIE . "', '" . agent::PROFIL_RHTELETRAVAIL . "'";
         } elseif ($typeprofil == 1 or $typeprofil == agent::PROFIL_RHCET) {
             $sql = $sql . "'" . agent::PROFIL_RHCET . "'";
         } elseif ($typeprofil == 2 or $typeprofil == agent::PROFIL_RHCONGE) {
@@ -1239,7 +1239,7 @@ class fonctions
         }
         while ($result = mysqli_fetch_row($query)) {
             $agentrh = new agent($this->dbconnect);
-            if ($agentrh->load("$result[0]")) 
+            if ($agentrh->load("$result[0]"))
             {
                 $datecourante = date('d/m/Y');
                 // Un agent sans affectation ne peut pas être agent RH sauf si son id < 0 (<=> utilisateurs spécifiques) (ticket GLPI 131031)
@@ -1350,8 +1350,8 @@ class fonctions
         {
             return ($this->anneeref()+1).$this->finperiode();
         }
-        
-/*        
+
+/*
         if (!is_null($date))
     	{
     	    $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTALIMCET'";
@@ -1400,7 +1400,7 @@ class fonctions
         {
             return ($this->anneeref()+1).$this->finperiode();
         }
-        
+
 /*
         if (!is_null($date))
     	{
@@ -1450,8 +1450,8 @@ class fonctions
         {
             return ($this->anneeref()+1).'0101';
         }
-        
-/*        
+
+/*
         if (!is_null($date))
         {
             $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTOPTIONCET'";
@@ -1500,8 +1500,8 @@ class fonctions
         {
             return ($this->anneeref()+1).'0131';
         }
-        
-/*        
+
+/*
         if (!is_null($date))
         {
             $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'FINOPTIONCET'";
@@ -1541,8 +1541,8 @@ class fonctions
         {
             return "";
         }
-        
-/*        
+
+/*
     	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'IDMODELALIMCET'";
     	$params = array();
     	$query = $this->prepared_select($sql, $params);
@@ -1560,14 +1560,14 @@ class fonctions
     	}
     	$result = mysqli_fetch_row($query);
     	return "$result[0]";
-*/    	
+*/
     }
 
     public function getidmodelteletravail($maxniveau, $agent)
     {
         // echo "<br>On est dans le cas d'un niveau $maxniveau<br>";
         $resp_n2 = $agent->getresponsable_niveau2();
-        
+
         if ($maxniveau == 4 and $resp_n2===false)
         {
             $dbconstante='IDMODELTELETRAVAIL';
@@ -1581,7 +1581,7 @@ class fonctions
             echo $this->showmessage(fonctions::MSGERROR, "Incohérence entre le nombre de niveau et la situation de l'agent (nombre de niveau = $maxniveau et l'agent " . (($resp_n2===false)?" n'a pas de ":" a un ")  . "responsable).");
             return "";
         }
-        
+
         if ($this->testexistdbconstante($dbconstante))
         {
             return $this->liredbconstante($dbconstante);
@@ -1591,8 +1591,8 @@ class fonctions
             return "";
         }
     }
-    
-    
+
+
     /**
      *
      * @param array $tab
@@ -1684,7 +1684,7 @@ class fonctions
          echo '</pre>';
          */
     }
-    
+
     public function get_g2t_url()
     {
         if (defined('G2T_URL')) /* A partir de la version 7 de G2T, la constante est forcément déclarée ==> Donc on devrait passer systématiquement ici */
@@ -1893,8 +1893,8 @@ class fonctions
         {
             $sql = $sql . "SELECT DISTINCT AGENTID, NOM, PRENOM FROM (";
         }
-        
-        $sql = $sql . "SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM 
+
+        $sql = $sql . "SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM
                 FROM TELETRAVAIL, AGENT
                 WHERE AGENT.AGENTID = TELETRAVAIL.AGENTID
                   AND TELETRAVAIL.STATUT = '" . teletravail::TELETRAVAIL_VALIDE  . "'
@@ -1906,7 +1906,7 @@ class fonctions
         if ($inclusansconvention)
         {
             $sql = $sql . "UNION
-                SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM 
+                SELECT DISTINCT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM
                 FROM DEMANDE, AGENT
                 WHERE AGENT.AGENTID = DEMANDE.AGENTID
                   AND DEMANDE.STATUT = '" . demande::DEMANDE_VALIDE  .  "'
@@ -2092,7 +2092,7 @@ class fonctions
         }
         return true;
     }
-    
+
     public function prepared_query($sql, $params, $types = "")
     {
         //$stmt = $this->dbconnect->prepare($sql);
@@ -2126,7 +2126,7 @@ class fonctions
         {
             $text = "Durée";
         }
-        
+
         if ($appelant == '')
         {
             $appelant = 'Appelant inconnu';
@@ -2148,12 +2148,12 @@ class fonctions
             echo "<b style='color: red;' >ERROR time_elapsed : On demande à afficher un compteur qui n'existe pas (cpt $numcpt) </b><br>";
         }
     }
-    
+
     public function listejoursteletravailexclus($agentid, $datedebut, $datefin)
     {
         $datedebut = $this->formatdatedb($datedebut);
         $datefin = $this->formatdatedb($datefin);
-        
+
         $listteletravail = array();
         $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
                 FROM TTEXCEPTION
@@ -2162,7 +2162,7 @@ class fonctions
                   AND DATEORIGINE <= ?
                 ORDER BY DATEORIGINE";
         $params = array($agentid,$datedebut,$datefin);
-          
+
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);
@@ -2206,7 +2206,7 @@ class fonctions
                 }
             }
         }
-        return $listteletravail;        
+        return $listteletravail;
     }
 
     function supprjourteletravailexclu($agentid, $date, $moment)
@@ -2214,7 +2214,7 @@ class fonctions
         $date = $this->formatdatedb($date);
         $errlog = '';
 
-        $sql = "DELETE 
+        $sql = "DELETE
                 FROM TTEXCEPTION
                 WHERE AGENTID = ?
                   AND DATEORIGINE = ?
@@ -2236,20 +2236,20 @@ class fonctions
         }
         return $errlog;
     }
-    
+
     public function estjourteletravailexclu($agentid, $date, $moment)
     {
         $date = $this->formatdatedb($date);
-        
-        $sql = "SELECT AGENTID 
+
+        $sql = "SELECT AGENTID
                 FROM TTEXCEPTION
                 WHERE AGENTID = ?
                   AND DATEORIGINE = ?
                   AND ( MOMENTORIGINE = ?
                      OR MOMENTORIGINE = '')";
-        
+
         $params = array($agentid, $date, $moment);
-        
+
         $query = $this->prepared_select($sql, $params);
         /*
         var_dump("SQL = $sql ");
@@ -2285,9 +2285,9 @@ class fonctions
                   AND DATEREMPLACEMENT = ?
                   AND ( MOMENTREMPLACEMENT = ?
                      OR MOMENTREMPLACEMENT = '')";
-        
+
         $params = array($agentid,$date,$moment);
-        
+
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);
@@ -2312,7 +2312,7 @@ class fonctions
             return $exception;
         }
     }
-    
+
     function ajoutjoursteletravailexclus($agentid, $dateorigine, $momentorigine, $dateremplacement = NULL, $momentremplacement = '')
     {
         $dateorigine = $this->formatdatedb($dateorigine);
@@ -2325,7 +2325,7 @@ class fonctions
             $dateremplacement = null;
         }
         $errlog = '';
-        
+
         $sql = 'INSERT INTO TTEXCEPTION(AGENTID, DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT) VALUES(?, ?, ?, ?, ?)';
         $params = array($agentid,$dateorigine,$momentorigine,$dateremplacement,$momentremplacement);
         $query = $this->prepared_select($sql, $params);
@@ -2337,7 +2337,7 @@ class fonctions
             echo $errlog;
         }
         return $errlog;
-    }    
+    }
 
     public function typeabsencelistecomplete()
     {
@@ -2415,13 +2415,13 @@ class fonctions
         $html = $html . "</p>";
         return $html;
     }
-    
+
     public function listeindemniteteletravail($datedebut, $datefin)
     {
 
        $datedebut = $this->formatdatedb($datedebut);
        $datefin = $this->formatdatedb($datefin);
-       
+
        $listeindemteletravail = array();
        $constante = $this->liredbconstante("INDEMNITETELETRAVAIL");
        // La structure de la constante est : datedebut|datefin|montant;datedebut|datefin|montant;.....
@@ -2443,7 +2443,7 @@ class fonctions
                            or ($arrayvalue[1] >= $datefin and $arrayvalue[0] <= $datefin)
                            or ($arrayvalue[0] >= $datedebut and $arrayvalue[1] <= $datefin))
                        {
-                           $indemnite = array(); 
+                           $indemnite = array();
                            $indemnite["datedebut"] = $arrayvalue[0];
                            $indemnite["datefin"] = $arrayvalue[1];
                            $indemnite["montant"] = str_replace(',','.',$arrayvalue[2]);
@@ -2461,14 +2461,14 @@ class fonctions
 //       }
        return $listeindemteletravail;
     }
-    
+
     public function recur_ksort(&$array) {
         foreach ($array as &$value) {
             if (is_array($value)) $this->recur_ksort($value);
         }
         return ksort($array);
     }
-    
+
     public function synchronisationjoursferies($tabannees,&$tabferies)
     {
         $error = "";
@@ -2515,21 +2515,21 @@ class fonctions
         }
         // Tri récursif du tableau des jours fériés
         $this->recur_ksort($tabferies);
-        
+
         foreach($tabferies as $anneeref => $tabferiesparannee)
         {
             $datestring = "";
             foreach($tabferiesparannee as $datedb => $date)
             {
                 if (strlen($datestring)>0) $datestring = $datestring . ";";
-                $datestring = $datestring . $datedb;     
+                $datestring = $datestring . $datedb;
             }
             //var_dump($datestring);
             if (strlen($datestring)>0)
             {
                 $constantename = 'FERIE' . $anneeref;
                 $error = $this->enregistredbconstante($constantename,$datestring);
-/*            
+/*
                 if (!$this->testexistdbconstante($constantename))
                 {
                     $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES('$constantename','$datestring')";
@@ -2537,7 +2537,7 @@ class fonctions
                 else
                 {
                     $sql = "UPDATE CONSTANTES SET VALEUR = '$datestring' WHERE NOM = '$constantename'";
-                    
+
                 }
                 //var_dump($sql);
                 $return = mysqli_query($this->dbconnect, $sql);
@@ -2545,13 +2545,13 @@ class fonctions
                 if ($erreur != "") {
                     $error = $error . "  " . $erreur;
                     error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
-                } 
-*/                
+                }
+*/
             }
         }
         return $error;
     }
-    
+
     public function signatairetoarray($signatairestring)
     {
         $signatairearray = array();
@@ -2591,7 +2591,7 @@ class fonctions
         $tabsignataire[$newlevelsignataire][$idsignataire] = array($newtypesignataire,$newidsignataire);
         return $tabsignataire;
     }
-    
+
     public function signatairetostring($tabsignataire)
     {
         $signatairestring = '';
@@ -2619,7 +2619,7 @@ class fonctions
         }
         return $signatairestring;
     }
-    
+
     public function listeutilisateursspeciaux()
     {
         $tab_special_users = array();
@@ -2632,7 +2632,7 @@ class fonctions
         }
         return $tab_special_users;
     }
-    
+
     public function ckecksignatairecetliste(&$params, $agent)
     {
 
@@ -2661,7 +2661,7 @@ class fonctions
                 "1*" . $agent->ldapmail(),
                 "2*" . $resp->mail()
             );
-            
+
             $constantename = 'CETSIGNATAIRE';
             $signataireliste = '';
             $tabsignataire = array();
@@ -2675,7 +2675,7 @@ class fonctions
                 foreach ($tabsignataire as $niveau => $infosignataires)
                 {
                     if ($maxniveau<$niveau) $maxniveau = $niveau;
-                    
+
                     foreach ($infosignataires as $idsignataire => $infosignataire)
                     {
                         if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
@@ -2714,7 +2714,7 @@ class fonctions
                     }
                 }
             }
-            
+
             $taberrorcheckmail = array();
             $tabniveauok = array();
             foreach ($params['recipientEmails'] as $recipient)
@@ -2732,11 +2732,11 @@ class fonctions
                     $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
                 }
             }
-            
+
             // var_dump($tabniveauok);
             // var_dump("count(tabniveauok) = " . count($tabniveauok));
             // var_dump("maxniveau = " . $maxniveau);
-            
+
             if (count($tabniveauok)!=$maxniveau)
             {
                 $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
@@ -2747,12 +2747,12 @@ class fonctions
             $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
         }
         return $taberrorcheckmail;
-        
+
     }
 
     public function ckecksignataireteletravailliste(&$params, $agent, &$maxniveau)
     {
-        
+
         $maxniveau = 0;
         $structid = $agent->structureid();
         $struct = new structure($this->dbconnect);
@@ -2778,7 +2778,7 @@ class fonctions
                 "1*" . $agent->ldapmail(),
                 "2*" . $resp->mail()
             );
-            
+
             ////////////////////////////////////////////////////
             // On cherche le responsable n+2 de l'agent
             $responsable_n2 = $agent->getresponsable_niveau2();
@@ -2792,7 +2792,7 @@ class fonctions
                 // On n'a pas trouvé de responsable n+2
                 $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
             }
-            
+
             $signataireliste = '';
             $tabsignataire = array();
             if ($this->testexistdbconstante($constantename))
@@ -2805,7 +2805,7 @@ class fonctions
                 foreach ($tabsignataire as $niveau => $infosignataires)
                 {
                     if ($maxniveau<$niveau) $maxniveau = $niveau;
-                    
+
                     foreach ($infosignataires as $idsignataire => $infosignataire)
                     {
                         if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
@@ -2859,7 +2859,7 @@ class fonctions
                     }
                 }
             }
-            
+
             $taberrorcheckmail = array();
             $tabniveauok = array();
             foreach ($params['recipientEmails'] as $recipient)
@@ -2877,11 +2877,11 @@ class fonctions
                     $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
                 }
             }
-            
+
             // var_dump($tabniveauok);
             // var_dump("count(tabniveauok) = " . count($tabniveauok));
             // var_dump("maxniveau = " . $maxniveau);
-            
+
             if (count($tabniveauok)!=$maxniveau)
             {
                 $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
@@ -2892,10 +2892,10 @@ class fonctions
             $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
         }
         return $taberrorcheckmail;
-        
+
     }
-    
-    
+
+
     public function listeagentsavecaffectation($namefirst = true)
     {
         $listeagent = array();
@@ -2908,7 +2908,7 @@ class fonctions
         }
         else
         {
-            while ($result = mysqli_fetch_row($query_agent)) 
+            while ($result = mysqli_fetch_row($query_agent))
             {
                 if ($namefirst)
                 {
@@ -2922,7 +2922,7 @@ class fonctions
         }
         return $listeagent;
     }
-        
+
     public function listeagentsg2t($namefirst = true)
     {
         $listeagent = array();
@@ -2938,7 +2938,7 @@ class fonctions
                 $separateur = ",";
             }
             $sql = $sql . ") ";
-            
+
         }
         $sql = $sql . " ORDER BY NOM,PRENOM,AGENTID";
         //var_dump($sql);
@@ -2950,7 +2950,7 @@ class fonctions
         }
         else
         {
-            while ($result = mysqli_fetch_row($query_agent)) 
+            while ($result = mysqli_fetch_row($query_agent))
             {
                 if ($namefirst)
                 {
@@ -2964,11 +2964,11 @@ class fonctions
         }
         return $listeagent;
     }
-    
+
     public function deleteesignaturedocument($esignatureid)
     {
-        $erreur = '';        
-        
+        $erreur = '';
+
         if (!preg_match ("/^[0-9]+/", $esignatureid))
         {
             //echo "Pas de chiffres<br>";
@@ -2978,17 +2978,17 @@ class fonctions
         }
         $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
         $url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
-/*        
+/*
         $params = array('id' => $teletravail->esignatureid());
         $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
             is_array( $item )
             ? array_walk( $item, $walk, $key )
             : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-            
+
         };
         array_walk( $params, $walk );
         $json = implode( '&', $output );
-*/        
+*/
         $json = '';
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -3021,17 +3021,17 @@ class fonctions
             $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($json, true);
             error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
         }
-        
+
         return $erreur;
     }
-    
-    public function listeconventionteletravailavecstatut($statut) 
+
+    public function listeconventionteletravailavecstatut($statut)
     {
         $tabconvention = array();
-        $sql = "SELECT TELETRAVAILID 
+        $sql = "SELECT TELETRAVAILID
                 FROM TELETRAVAIL
                 WHERE STATUT = ? ";
-        
+
         $params = array($statut);
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
@@ -3053,17 +3053,17 @@ class fonctions
         }
         return $tabconvention;
     }
-    
+
     public function synchroniseconventionteletravail($esignatureid)
     {
-        $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); 
-        
+        $eSignature_url = $this->liredbconstante("ESIGNATUREURL");
+
         $status = "";
         $reason = "";
         $datesignatureresponsable = '19000101';
-        
+
         error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut de la convention télétravail =>  " . $esignatureid));
-        
+
         $curl = curl_init();
         $params_string = "";
         $opts = [
@@ -3075,7 +3075,7 @@ class fonctions
         curl_setopt_array($curl, $opts);
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $json = curl_exec($curl);
-        
+
         $error = curl_error ($curl);
         curl_close($curl);
         if ($error != "")
@@ -3090,10 +3090,10 @@ class fonctions
             error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
             error_log(basename(__FILE__) . " " . var_export($json,true));
             $current_status = str_replace("'", "", $json);  // json_decode($json, true);
-            
+
             error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests/status"));
             error_log(basename(__FILE__) . " " . $current_status); // var_export($current_status,true));
-        
+
         switch (strtolower($current_status))
         {
             //uploading, draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
@@ -3102,6 +3102,7 @@ class fonctions
             case 'pending' :
             case 'signed' :
             case 'checked' :
+/*************************************************
                 // On récupère les niveaux signés et si il y a plus de 2 signataires, on passe le statut à TELETRAVAIL_VALIDE
                 // car la convention commence dès que le responsable a signé.
                 $curl = curl_init();
@@ -3123,7 +3124,7 @@ class fonctions
                 }
                 $response = json_decode($json, true);
                 error_log(basename(__FILE__) . $this->stripAccents(" La réponse (recup signataires) => " . print_r($response,true)));
-                
+
                 if (isset($response['auditSteps']) and count($response['auditSteps'])>=2)
                 {
                     $datesignatureresponsable = $response['auditSteps'][1]['timeStampDate'];
@@ -3138,6 +3139,10 @@ class fonctions
                     $status = teletravail::TELETRAVAIL_ATTENTE;
                 }
                 break;
+ ***************************************************/
+                $status = teletravail::TELETRAVAIL_ATTENTE;
+                break;
+
             case 'refused':
                 $status = teletravail::TELETRAVAIL_REFUSE;
                 error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
@@ -3183,14 +3188,14 @@ class fonctions
                 $status = teletravail::TELETRAVAIL_ANNULE;
                 break;
             default :
-                $status = "";
                 $erreur = "";
                 $response = json_decode($current_status, true);
                 if (isset($response['error'])) $erreur = $response['error'];
-                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur";
+                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur current_status => $current_status";
                 error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $status = "";
                 $result_json = array('status' => 'Error', 'description' => $erreur);
-                
+
         }
         }
         if ($status <> '')
@@ -3208,7 +3213,7 @@ class fonctions
             {
                 error_log(basename(__FILE__) . $this->stripAccents(" statut de la convention dans eSignature = $status -> " . $this->teletravailstatutlibelle($status)));
                 error_log(basename(__FILE__) . $this->stripAccents(" teletravail->statut() = " . $teletravail->statut() . " -> " . $this->teletravailstatutlibelle($teletravail->statut())));
-                
+
                 // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
                 if ($status == $teletravail->statut() and $reason==$teletravail->commentaire())
                 {
@@ -3245,7 +3250,13 @@ class fonctions
                         {
                             $teletravail->storepdf();
                         }
-                        
+
+                        // On va récupérer les informations sur les demandes de matériel dans la convention
+                        if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE)
+                        {
+                            $this->creation_ticketGLPI_materiel($esignatureid);
+                        }
+
                         // On va regarder si d'autres conventions se chevauchent
                         $agentid = $teletravail->agentid();
                         $agent = new agent($this->dbconnect);
@@ -3310,15 +3321,117 @@ class fonctions
         }
         return $result_json;
     }
-    
+
+    function creation_ticketGLPI_materiel($esignatureid)
+    {
+        $eSignature_url = $this->liredbconstante("ESIGNATUREURL");
+
+        $curl = curl_init();
+        $params_string = "";
+        $opts = [
+            CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $params_string,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        curl_close($curl);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info matériel télétravail) =>  " . $error));
+        }
+        $response = json_decode($json, true);
+        //var_dump($response);
+
+        //$key_materiel = "form_data_Equipement";
+        $dbconstante = 'ESIGNATURE_MATERIEL_KEY';
+        $key_materiel = "form_data_Equipement";
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            $key_materiel = $this->liredbconstante($dbconstante);
+        }
+        /*
+            "form_data_EquipementOrdinateur": "on",
+            "form_data_EquipementSouris": "off",
+            "form_data_EquipementBase": "off",
+            "form_data_EquipementSac": "off",
+            "form_data_EquipementCasque": "off",
+        */
+        $tab_materiel = array_intersect_key($response, array_flip(preg_grep("/^$key_materiel/i", array_keys($response), 0)));
+        if ($tab_materiel!==false and !is_null($tab_materiel))
+        {
+            $dbconstante = 'GLPI_COLLECTEUR';
+            $mail_glpi = "";
+            if ($this->testexistdbconstante($dbconstante))
+            {
+                $mail_glpi = $this->liredbconstante($dbconstante);
+            }
+            if ($mail_glpi <> '')
+            {
+                $demandeur = new agent($this->dbconnect);
+                $teletravail = new teletravail($this->dbconnect);
+                $teletravail->loadbyesignatureid($esignatureid);
+                $demandeur->load($teletravail->agentid());
+                //var_dump($tab_materiel);
+                $besoin = "";
+                $materieldemande = false;
+                foreach($tab_materiel as $key => $value)
+                {
+                    $typemateriel = str_ireplace($key_materiel,'',$key);
+                    $besoin = $besoin . "&nbsp;&nbsp;&bull; ";
+                    if (strcasecmp($value,'on')==0) // L'agent a demandé => valeur ON
+                    {
+                        $besoin = $besoin . "J'ai demandé ";
+                        $materieldemande = true;
+                    }
+                    else
+                    {
+                        $besoin = $besoin . "Je n'ai pas demandé ";
+                    }
+                    $besoin = $besoin . ": un(e) " . strtolower($typemateriel) . " \n";
+                }
+
+                // On construit le destinataire car il n'est pas dans la base
+                //$destinataire = new agent($this->dbconnect);
+                //$destinataire->nom('GLPI');
+                //$destinataire->prenom('COLLECTEUR');
+                //$destinataire->mail($mail_glpi);
+
+                //$destinataire = "pascal.comte@univ-paris1.fr";
+                $destinataire = $mail_glpi;
+                if ($materieldemande==true)
+                {
+                    $destinataire = $mail_glpi;
+                    //echo "Le destinataire : $destinataire <br>";
+
+                    $objet = "Demande de matériel suite à validation de convention télétravail";
+                    $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : \n";
+                    $corps = $corps . "\n" . $besoin . "\n Cordialement, \n" . $demandeur->identitecomplete() . " \n";
+                    $demandeur->sendmail($destinataire, $objet, $corps);
+                    error_log(basename(__FILE__) . $this->stripAccents(" Envoi du mail pour la demande de materiel : " . str_replace(array("\n","&nbsp;","&bull;"), ' ', $besoin) . " => $destinataire"));
+                    //echo "Après l'envoie du mail \n";
+                }
+                else
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Pas de materiel demande pour la convention " . $teletravail->teletravailid() . " => Pas d'envoi de mail à $destinataire"));
+                }
+            }
+        }
+    }
+
     function logueurmaxcolonne($table, $colonne)
     {
         $longueurmax = 0;
-        
-        $sql = "SELECT character_maximum_length 
-FROM   information_schema.columns 
-WHERE  table_schema = Database() 
-       AND table_name = ? 
+
+        $sql = "SELECT character_maximum_length
+FROM   information_schema.columns
+WHERE  table_schema = Database()
+       AND table_name = ?
        AND column_name = ?";
 
         $params = array($table,$colonne);
@@ -3338,7 +3451,199 @@ WHERE  table_schema = Database()
         }
         return $longueurmax;
     }
-    
+
+    function log_traces($loginfo,$displayinfo,$texttolog)
+    {
+        if ($loginfo == true)
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" $texttolog"));
+        }
+        if ($displayinfo == true)
+        {
+            echo " $texttolog \n";
+        }
+    }
+
+    function convert_int_to_on_off($valeur)
+    {
+        if (trim($valeur)=='1')
+        {
+            return 'on';
+        }
+        elseif (trim($valeur)=='0')
+        {
+            return 'off';
+        }
+        else
+        {
+            return "Valeur inconnue - $valeur";
+        }
+    }
+
+    function affectation_continue($datefinprecedente,$datedebutsuivante,$nbre_jour_periode)
+    {
+        $NBREMOIS = 4;
+
+        $this->log_traces(true, false, "datefinprecedente => $datefinprecedente");
+        $datefincalculee = date("Ymd", strtotime($datefinprecedente . "+" . $NBREMOIS . " month"));
+        $this->log_traces(true, false, "datefincalculee => $datefincalculee");
+        $moisdepart = date("m", strtotime($datefinprecedente));
+        $moisarrive = date("m", strtotime($datefincalculee));
+        $anneearrive = date("Y", strtotime($datefincalculee));
+        $this->log_traces(true, false, "moisdepart => $moisdepart moisarrive => $moisarrive  anneearrive => $anneearrive");
+        if ($moisarrive > (($moisdepart+$NBREMOIS)%12))
+        {
+            $this->log_traces(true, false, "Le moisarrive est sur le mois suivant");
+            $moisarrive = $moisdepart+$NBREMOIS;
+            if ($moisarrive>12)
+            {
+                $moisarrive = $moisarrive - 12;
+            }
+            $nbrejoursmois = $this->nbr_jours_dans_mois($moisarrive, $anneearrive);
+            $datefincalculee = $anneearrive . $moisarrive . $nbrejoursmois;
+            $this->log_traces(true, false, "La nouvelle date de fin calculee est : $datefincalculee");
+
+        }
+        // S'il faut + de $NBREMOIS mois d'interruption, il faut donc ajouter 1 jour à la date de fin calculee
+        // => Si la date de reprise est égale à 4 mois + 1 => L'interruption est juste de 4 mois => Il y a continuité
+        // $datefincalculee = date("Ymd", strtotime($datefincalculee . "+1 day"));
+
+        $this->log_traces(true, false, "datefincalculee : $datefincalculee   datedebutsuivante=$datedebutsuivante");
+        // Si la date de fin de l'interruption est avant la date de début de la date suivante => Il y a rupture
+        if ($datefincalculee < $datedebutsuivante)
+        {
+            $this->log_traces(true, false, "On retourne : FALSE => Il y a interruption");
+            return false;
+        }
+        else
+        {
+            $this->log_traces(true, false, "On retourne : TRUE => C'est continu");
+            return true;
+        }
+
+
+/*
+        $this->log_traces(true, false, "nbre_jour_periode => $nbre_jour_periode");
+        $nbrejrsmoyenparmois = ( $nbre_jour_periode / 12 );
+        // Sur 4 mois, on a donc
+        $nbrejrsinterval = intval($nbrejrsmoyenparmois * 4);
+        $this->log_traces(true, false, "Nombre de jours dans 4 mois => $nbrejrsinterval jours");
+        $this->log_traces(true, false, "datefinprecedente = $datefinprecedente   datedebutaff = $datedebutsuivante");
+        //$datefinprecedente = date("Ymd", strtotime($datefinprecedente . "+1 day"));
+        //$this->log_traces(true, false, "Le jour suivant la date de fin précédente = $datefinprecedente");
+        $nbrejrscalcule = $this->nbjours_deux_dates($datefinprecedente, $datedebutsuivante)-2; // -2 => On doit exclure les deux dates extrèmes
+        $this->log_traces(true, false, "Il y a $nbrejrscalcule jours d'interruption entre les deux dates");
+        if ($nbrejrscalcule > $nbrejrsinterval)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+ */
+    }
+
+    function calcul_date_anniversaire($dateref,$nbrejrstravailtotal,$nbre_jour_periode)
+    {
+        $NBREMOIS = 10;
+
+        // On enlève le nombre de jours que l'agent à déjà effectué à la date de début de l'affectation
+        $datedebuttheorique = date('Ymd',strtotime($dateref . " - $nbrejrstravailtotal days"));
+        $moisdebut = date("m", strtotime($datedebuttheorique));
+        $this->log_traces(true, false, "datedebuttheorique => $datedebuttheorique  moisdebut => $moisdebut");
+
+        // On ajoute $NBREMOIS mois à cette date de début théorique
+        $dateanniv = date("Ymd", strtotime($datedebuttheorique . "+" . $NBREMOIS . " month"));
+        $moisdateanniv = date("m", strtotime($dateanniv));
+        $anneedateanniv = date("Y", strtotime($dateanniv));
+        $this->log_traces(true, false, "dateanniv => $dateanniv  moisdateanniv => $moisdateanniv  anneedateanniv => $anneedateanniv");
+
+        if (($moisdateanniv > (($moisdebut+$NBREMOIS)%12)) and ($moisdebut+$NBREMOIS)!=12)
+        {
+            $this->log_traces(true, false, "Le moisdateanniv est sur le mois suivant");
+            $dateanniv = $anneedateanniv . $moisdateanniv . '01';
+            $this->log_traces(true, false, "La nouvelle date anniversaire dateanniv => $dateanniv");
+        }
+        return $dateanniv;
+
+/*
+        // On enlève le nombre de jours que l'agent à déjà effectué à la date de début de l'affectation
+        $datedebuttheorique = date('Ymd',strtotime($dateref . " - $nbrejrstravailtotal days"));
+        // Ensuite on ajoute la durée minimum que l'agent doit avoir travaillé
+        // Si l'agent doit avoir travaillé 10 mois on divise le nombre de jours de la période par 12 et on multiplie par 10
+        $nbrejrsmoyenparmois = ( $nbre_jour_periode / 12 );
+        // Sur 10 mois, on a donc
+        $nbrejrsinterval = (floor($nbrejrsmoyenparmois * 10)-1); // On fait -1 car il faut exclure le jour extrème
+
+        $dateanniv = date('Ymd',strtotime($datedebuttheorique . " + $nbrejrsinterval days"));
+        return $dateanniv;
+ */
+    }
+
+    function tronque_chaine ($chaine, $lg_max, $strict = false)
+    {
+        if (strlen($chaine) > $lg_max)
+        {
+            if ($strict)
+            {
+                $chaine = substr($chaine, 0, $lg_max) . "...";
+            }
+            else
+            {
+                $chaine = substr($chaine, 0, $lg_max);
+                $last_space = strrpos($chaine, " ");
+                if ($last_space===false)
+                {
+                    $last_space=strlen($chaine);
+                }
+                $chaine = substr($chaine, 0, $last_space)."...";
+            }
+        }
+        return $chaine;
+    }
+
+    function ajoute_crlf ($chaine, $lg_max)
+    {
+        //global $fonctions;
+        if (strlen($chaine) > $lg_max)
+        {
+            $chaineresultat = '';
+            while (strlen($chaine) > $lg_max)
+            {
+                $subchaine = substr($chaine, 0, $lg_max);
+                // On cherche le dernier CR (<=>chr(13)) et le dernier espace.
+                $last_space = strrpos($subchaine, " ");
+                $last_retrun = strrpos($subchaine, chr(13));
+                if ($last_space===false and $last_retrun===false)
+                {
+                    // S'il n'y a plus d'espace ou de CR, on ne tronque plus rien
+                    //break;
+                    $last_space = strlen($chaine);  // $lg_max;
+                }
+                elseif ($last_space===false and $last_retrun!==false)
+                {
+                    // S'il y a un CR et pas d'espace, on coupe sur le CR
+                    $last_space = $last_retrun;
+                }
+                elseif ($last_space!==false and $last_retrun!==false)
+                {
+                    // Si on a à la fois un CR et un espace, on prend le plus petit
+                    $last_space = min($last_space,$last_retrun);
+                }
+                $chaineresultat = $chaineresultat . trim(substr($chaine, 0, $last_space));
+                // ATTENTION : Bien faire $last_space+1 afin de "sauter" le caractère de découpe (espace ou CR)
+                $chaine = substr($chaine, $last_space+1);
+                if (strlen($chaineresultat)>0)
+                {
+                    $chaineresultat = $chaineresultat . chr(13);  // chr(13) <=> Carriage return
+                }
+            }
+            $chaine = $chaineresultat . trim($chaine);
+        }
+        return $chaine;
+    }
+
 }
 
 ?>
