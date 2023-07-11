@@ -1287,6 +1287,11 @@
             $constantename = "LIMITE_CONGE_PERIODE";
             $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $limite_conge_periode);
             if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
+
+            $urlg2tmanuel = trim($_POST['urlg2tmanuel']);
+            $constantename = "URL_G2TMANUEL";
+            $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $urlg2tmanuel);
+            if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
             
             if ($msg_erreur!="")
             {
@@ -2931,6 +2936,10 @@
         $limitecongesperiode = 'o';
         if ($fonctions->testexistdbconstante($dbconstante))  $limitecongesperiode = $fonctions->liredbconstante($dbconstante);
 
+        $dbconstante = 'URL_G2TMANUEL';
+        $urlg2tmanuel = 'https://ent.univ-paris1.fr/assets/aide/canal/g2t.html';
+        if ($fonctions->testexistdbconstante($dbconstante))  $urlg2tmanuel = trim($fonctions->liredbconstante($dbconstante));
+
 ?>
       	<br>
         <form name='form_administration' id='form_administration' method='post' >
@@ -2963,15 +2972,23 @@
         echo "</select>";
         echo "<br>Actuellement la période de référence est du " . $jourdebutperiode . '/' . $moisdebutperiode . " au " . $jourfinperiode . '/' . $moisfinperiode . "<br>";
 ?>
-        </td></tr>
-        <tr><td><span data-tip="Non = L'agent peut poser des jours de congés un mois au delà de la fin de la période de référence">Limiter la pose de congés à la période de référence : 
-        <select name='limite_conge_periode' id='limite_conge_periode'>
-	        <option value='o' <?php if (strcasecmp($limitecongesperiode, "n") != 0) echo " selected ";?> ><?php echo $fonctions->ouinonlibelle('o'); ?></option>
-	        <option value='n' <?php if (strcasecmp($limitecongesperiode, "n") == 0) echo " selected ";?> ><?php echo $fonctions->ouinonlibelle('n'); ?></option>
-        </select>
-        </td></tr>
-		</table>
-		<br>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span data-tip="Non = L'agent peut poser des jours de congés un mois au delà de la fin de la période de référence">Limiter la pose de congés à la période de référence : 
+                        <select name='limite_conge_periode' id='limite_conge_periode'>
+                            <option value='o' <?php if (strcasecmp($limitecongesperiode, "n") != 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('o'); ?></option>
+                            <option value='n' <?php if (strcasecmp($limitecongesperiode, "n") == 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('n'); ?></option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span data-tip="URL d'accès au manuel utilisateur G2T">URL du manuel utilisateur G2T : 
+                        <input type='text' name='urlg2tmanuel' size="100" value='<?php echo $urlg2tmanuel; ?>' >
+                    </td>
+                </tr>
+	    </table>
+	    <br>
 	    <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
 	    <input type='hidden' id='current_tab' name='current_tab' value='tab_admin'>
 	    <input type='submit' value='Soumettre'  name='modif_adminform'/>

@@ -51,5 +51,128 @@
     
     
     echo "Fin de la synchronisation des conventions de télétravail " . date("d/m/Y H:i:s") . "\n";
+    
+    echo "Envoi du mail de rappel aux agents suivants qui doivent signer la convention \n";
+    
+    $cronagent = new agent($dbcon);
+    if (!$cronagent->load(SPECIAL_USER_IDCRONUSER))
+    {
+        echo "Impossible de charger l'utilisateur CRON";
+    }
+    else
+    {
+        $tabdestinataireesignature = array();
+        $tabdestinataireg2t = array();
+        $tabconvention = $fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE);
+        $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+        foreach($tabconvention as $convention)
+        {
+            $esignatureid = $convention->esignatureid();
+            if ($esignatureid <>'' and $esignatureid>0)
+            {
+                echo "La convention (eSingatureid = $esignatureid) est dans eSignature => On récupère les informations \n";
+                // On interroge le WS eSignature /ws/signrequests/{id}
+                $curl = curl_init();
+                $params_string = "";
+                $opts = [
+                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_PROXY => ''
+                ];
+                curl_setopt_array($curl, $opts);
+                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                $json = curl_exec($curl);
+                $error = curl_error ($curl);
+                curl_close($curl);
+                if ($error != "")
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup niveau signature) =>  " . $error));
+                }
+                else
+                {
+                    $response = json_decode($json, true);
+                    // parentSignBook->liveWorkflow->currentStepNumber
+
+                    if (isset($response['parentSignBook']['liveWorkflow']['currentStepNumber']))
+                    {
+                        $currentstepnumber = $response['parentSignBook']['liveWorkflow']['currentStepNumber'];
+                        echo "Le currentstepnumber = $currentstepnumber dans la convention $esignatureid \n";
+                        if (isset($response['parentSignBook']['liveWorkflow']['liveWorkflowSteps']))
+                        {
+                            $liveworkflowsteps = $response['parentSignBook']['liveWorkflow']['liveWorkflowSteps'];
+                            $nbworkflowsteps = count($liveworkflowsteps);
+                            echo "nbworkflowsteps = $nbworkflowsteps \n";
+                            if ($currentstepnumber <= $nbworkflowsteps -2)  // On ne traite pas les deux derniers niveaux de signature
+                            {
+                                $currentstep = $liveworkflowsteps[$currentstepnumber-1]; // L'index comence à 0
+                                foreach($currentstep['recipients'] as $recipient)
+                                {
+                                    $recipientuser = $recipient['user'];
+                                    echo "Recipient nom => " . $recipientuser['name'] . " " . $recipientuser['firstname'] . "   eppn = " . $recipientuser['eppn'] . "  mail = " . $recipientuser['email'] . " \n";
+                                    $destinataire = new agent($dbcon);
+                                    if (!$destinataire->loadbyemail($recipientuser['email']))
+                                    {
+                                        echo "Envoi impossible au destinataire " . $recipientuser['email'] . "\n";
+                                    }
+                                    else
+                                    {
+                                        echo "Le desitnataire est : " . $destinataire->identitecomplete() . " \n";
+                                        $tabdestinataireesignature[$destinataire->agentid()] = $destinataire;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        echo "Impossible de déterminer le currentstep \n";
+                    }
+                }
+            }
+            elseif ($convention->statutresponsable() == teletravail::TELETRAVAIL_ATTENTE)
+            {
+                echo "Le responsable n'a pas complete la convention. \n";
+                $agent = new agent($dbcon);
+                $agent->load($convention->agentid());
+                $structure = new structure($dbcon);
+                $structure->load($agent->structureid());
+                if ($structure->responsable()->agentid() == $agent->agentid())
+                {
+                    $responsable = $structure->resp_envoyer_a($codeinterne);
+                }
+                else
+                {
+                    $responsable = $structure->agent_envoyer_a($codeinterne);
+                }
+                echo "On envoie un rappel au responsable de l'agent => Reponsable = " . $responsable->identitecomplete() . " \n";
+                $tabdestinataireg2t[$responsable->agentid()] = $responsable;
+            }
+            else
+            {
+                echo "Pas d'identifiant eSignature et le statut du responsable n'est pas 'en attente' (convention " . $convention->teletravailid()  . ") => Pas de traitement \n";
+            }
+        }
+        
+        foreach($tabdestinataireg2t as $destinataire)
+        {
+            echo "On va envoyer un mail au responsable " . $destinataire->identitecomplete() . " car il n'a pas complete la convention dans G2T.\n";
+            $cronagent->sendmail($destinataire,
+                                 "Convention de télétravail à compléter dans G2T", 
+                                 "Vous avez une ou plusieurs conventions de télétravail à compléter dans G2T.\nVous pouvez les consulter dans votre menu 'Responsable'.\n"
+                                 );
+        }
+        foreach($tabdestinataireesignature as $destinataire)
+        {
+            echo "On va envoyer un mail a l'agent " . $destinataire->identitecomplete() . " car il n'a pas signe/vise une convention dans eSignature ($eSignature_url).\n";
+            $cronagent->sendmail($destinataire->mail(),
+                                 "Convention de télétravail à signer/viser dans eSignature", 
+                                 "Vous avez une ou plusieurs conventions de télétravail à signer/viser dans eSignature.\nVous pouvez les consulter directement à l'adresse suivante : <a href='$eSignature_url'>$eSignature_url</a>.\n\nCordialement.\n" . $cronagent->identitecomplete() . "\n"
+//                                 "Vous avez une ou plusieurs conventions de télétravail à signer/viser dans eSignature.\nVous pouvez les consulter directement à l'adresse suivante : $eSignature_url.\n\nCordialement.\n" . $cronagent->identitecomplete() . "\n"
+                                 );
+        }
+        
+    }
+    echo "Fin de l'envoi du mail de rappel aux agents suivants qui doivent signer la convention \n";
 	
 ?>

@@ -116,6 +116,37 @@ class agent
         // echo "Fin...";
     }
     
+    function loadbyemail($email)
+    {
+        $sql = "SELECT AGENTID FROM AGENT WHERE LOWER(ADRESSEMAIL) = LOWER(?) ";
+        $params = array($this->fonctions->my_real_escape_utf8($email));
+        $query = $this->fonctions->prepared_select($sql, $params);
+        // echo "sql = " . $sql . "<br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Agent->loadbyemail (AGENT) : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        if (mysqli_num_rows($query) == 0) 
+        {
+            $errlog = "Agent->loadbyemail (AGENT) : Aucune adresse mail ($email) trouvée.";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        if (mysqli_num_rows($query) > 1) 
+        {
+            $errlog = "Agent->loadbyemail (AGENT) : Plusieurs adresses mail ($email) trouvées.";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        $result = mysqli_fetch_row($query);
+        return $this->load("$result[0]");
+    }
+    
     function existe($agentid)
     {
         $sql = "SELECT AGENTID FROM AGENT WHERE AGENTID= ? ";
@@ -1127,6 +1158,10 @@ class agent
      *            the body of the mail
      * @param string $piecejointe
      *            the name of the document to join to the mail
+     * @param string $ics
+     *            the ICS string to join to the mail
+     * @param boolean $checkgrouper
+     *            true => check group member / false => don't check
      * @return
      */
     function sendmail($destinataire = null, $objet = null, $message = null, $piecejointe = null, $ics = null, $checkgrouper = false)
@@ -1193,7 +1228,7 @@ class agent
                     // $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire,'UTF-8'))) . ",<br><br>";
                     $msg .= "Bonjour,<br><br>";
                 }
-	        $msg .= nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false)) . "<br>";
+	        $msg .= str_replace("&#039;", "'", str_replace("&gt;", ">", str_replace("&lt;", "<", nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false))))) . "<br>";
                 
                 // Si l'adresse est donnée directement, on ne met pas le footer dans le message. 
                 // En effet, le destinataire n'est pas forcément un utilisateur G2T (impossible de contrôler)

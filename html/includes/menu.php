@@ -572,6 +572,7 @@
         }
         else // C'est un utilisateur simple => Affichage de la page de maintenance
         {
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("L'utilisateur " . $realuser->identitecomplete() . " a essaye d'acceder a l'environnement alors qu'il est en maintenance."));
             echo "<img width=144 height=79 src='https://ent-data.univ-paris1.fr/esup/canal/maintenance/maintenance.gif' align=left hspace=12>";
             echo "L'application de gestion des congés est en maintenance, elle sera bientôt à nouveau en ligne.<br>Veuillez nous excuser pour la gêne occasionnée.";
             echo "</body></html>";
@@ -754,12 +755,20 @@
 <?php
 	    }
     }
+    $dbconstante = 'URL_G2TMANUEL';
+    $urlg2tmanuel = '';
+    if ($fonctions->testexistdbconstante($dbconstante))  $urlg2tmanuel = trim($fonctions->liredbconstante($dbconstante));
+    if (trim($urlg2tmanuel)!='')
+    {
 ?>
 					<li onclick='document.agent_aide.submit();'>
-						<form name='agent_aide' method='get' TARGET=_BLANK action="https://ent.univ-paris1.fr/assets/aide/canal/g2t.html">
+						<form name='agent_aide' method='get' TARGET=_BLANK action="<?php echo $urlg2tmanuel; ?>">
 						</form> 
 						<a href="javascript:document.agent_aide.submit();">Manuel utilisateur</a>
 					</li>
+<?php
+    }
+?>
 				</ul>
 			</li>
 		</ul>
