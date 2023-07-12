@@ -2683,7 +2683,7 @@ class fonctions
                             $agentsignataire = new agent($this->dbconnect);
                             if ($agentsignataire->load($infosignataire[1]))
                             {
-                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
@@ -2693,7 +2693,7 @@ class fonctions
                             $agentsignataire = $structuresignataire->responsable();
                             if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
                             {
-                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
@@ -2703,7 +2703,7 @@ class fonctions
                             $datedujour = date("d/m/Y");
                             foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
                             {
-                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
                         else
@@ -2804,7 +2804,7 @@ class fonctions
                 $tabsignataire = $this->signatairetoarray($signataireliste);
                 foreach ($tabsignataire as $niveau => $infosignataires)
                 {
-                    if ($maxniveau<$niveau) $maxniveau = $niveau;
+                    if ($maxniveau<$niveau) { $maxniveau = $niveau; }
 
                     foreach ($infosignataires as $idsignataire => $infosignataire)
                     {
@@ -2813,7 +2813,7 @@ class fonctions
                             $agentsignataire = new agent($this->dbconnect);
                             if ($agentsignataire->load($infosignataire[1]))
                             {
-                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
@@ -2823,7 +2823,7 @@ class fonctions
                             $agentsignataire = $structuresignataire->responsable();
                             if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
                             {
-                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
@@ -2833,7 +2833,7 @@ class fonctions
                             $datedujour = date("d/m/Y");
                             foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
                             {
-                                $params['recipientEmails'][] = $niveau . "*" . $agentsignataire->mail();
+                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                             }
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
@@ -2847,7 +2847,7 @@ class fonctions
                             else
                             {
                                 //echo "Le responsable n+2 de " . $agent->identitecomplete() . " est " . $topresponsable->identitecomplete() . "<br><br>";
-                                $params['recipientEmails'][] = $niveau . "*" . $responsable_n2->mail();
+                                $params['recipientEmails'][$niveau . "*" . $responsable_n2->mail()] = $niveau . "*" . $responsable_n2->mail();
                             }
                             ////////////////////////////////////////////////////
                         }
