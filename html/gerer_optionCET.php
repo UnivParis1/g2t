@@ -50,67 +50,99 @@
         }
     }
     else
+    {
         $agentid = null;
+    }
 
     $valeur_a = null;
     if (isset($_POST["valeur_a"]))
+    {
         $valeur_a = $_POST["valeur_a"];
+    }
         
     $valeur_g = null;
     if (isset($_POST["valeur_g"]))
+    {
         $valeur_g = $_POST["valeur_g"];
+    }
         
     $valeur_h = null;
     if (isset($_POST["valeur_h"]))
+    {
         $valeur_h = $_POST["valeur_h"];
+    }
         
     $valeur_i = null;
     if (isset($_POST["valeur_i"]))
+    {
         $valeur_i = $_POST["valeur_i"];
+    }
         
     $valeur_j = null;
     if (isset($_POST["valeur_j"]))
+    {
         $valeur_j = $_POST["valeur_j"];
+    }
         
     $valeur_k = null;
     if (isset($_POST["valeur_k"]))
+    {
         $valeur_k = $_POST["valeur_k"];
+    }
         
     $valeur_l = null;
     if (isset($_POST["valeur_l"]))
+    {
         $valeur_l = $_POST["valeur_l"];
+    }
     
     $simul_a = null;
     if (isset($_POST["simul_a"]))
+    {
         $simul_a = $_POST["simul_a"];
+    }
         
     $simul_g = null;
     if (isset($_POST["simul_g"]))
+    {
         $simul_g = $_POST["simul_g"];
+    }
     
     $typeagent = null;
     if (isset($_POST["type_agent"]))
+    {
         $typeagent = $_POST["type_agent"];
+    }
     
     $simul_option = null;
     if (isset($_POST["simul_option"]))
+    {
         $simul_option = $_POST["simul_option"];
+    }
             
     $cree_option = null;
     if (isset($_POST["cree_option"]))
+    {
         $cree_option = $_POST["cree_option"];
+    }
         
     $esignature_delete = null;
     if (isset($_POST["esignature_delete"]))
+    {
         $esignature_delete = $_POST["esignature_delete"];
+    }
         
     $esignatureid_delete = null;
     if (isset($_POST["esignatureid_delete"]))
+    {
         $esignatureid_delete = $_POST["esignatureid_delete"];
+    }
     
     $mode = "agent";
     if (isset($_POST["mode"]))
+    {
         $mode = $_POST["mode"];
+    }
     
         
     require ("includes/menu.php");
@@ -152,10 +184,10 @@
         echo "' class='agent' /> ";
 ?>
         <script>
-                $("#agent").autocompleteUser(
-                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
-  	    </script>
+            $("#agent").autocompleteUser(
+                    '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                       wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
+        </script>
 <?php
 
         echo "<br>";
@@ -240,86 +272,85 @@
                 $errorcheckmailstr = '';
                 foreach ($taberrorcheckmail as $errorcheckmail)
                 {
-                    if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                    if (strlen($errorcheckmailstr)>0) { $errorcheckmailstr = $errorcheckmailstr . '<br>'; }
                     $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
                 }
                 echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible d'enregistrer la demande de droit d'option sur CET car <br>$errorcheckmailstr");
             }
             else
             {
-	            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-	                    is_array( $item )
-	                    ? array_walk( $item, $walk, $key )
-	                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-	                    
-	            };
-	            array_walk( $params, $walk );
-	            $params_string = implode( '&', $output );
-	            //var_dump ("Output = " . $params_string);
-	            
-	            $opts = [
-	                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
-	                CURLOPT_POST => true,
-	                CURLOPT_POSTFIELDS => $params_string,
-	                CURLOPT_RETURNTRANSFER => true,
-	                CURLOPT_SSL_VERIFYPEER => false
-	            ];
-	            curl_setopt_array($curl, $opts);
-	            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-	            $json = curl_exec($curl);
-	            $error = curl_error ($curl);
-	            curl_close($curl);
-	            if ($error != "")
-	            {
-	                echo "Erreur Curl = " . $error . "<br><br>";
-	            }
-	            //echo "<br>" . print_r($json,true) . "<br>";
-	            $id = json_decode($json, true);
-	            
-	            //var_dump($id);
-	            if (is_array($id))
-	            {
-	                $erreur = $id['error'];  
-	            }
-	            elseif ("$id" < 0)
-	            {
-	                $erreur =  "La création du droit d'option dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
-	            }
-	            elseif ("$id" <> "")
-	            {
-	                //echo "Id de la nouvelle demande = " . $id . "<br>";
-	                $optionCET->esignatureid($id);
-	                $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-	                $optionCET->statut($optionCET::STATUT_PREPARE);
-	                
-	                $erreur = $optionCET->store();
-	                $agent->synchroCET();
-	                $sauvegardeok = true;
-	                
-	            }
-	            else
-	            {
-	                $erreur =  "La création du droit d'option dans eSignature a échoué !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
-	            }
-	            if ($erreur <> "")
-	            {
-	                if (is_array($id))
-	                {
-	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . print_r($id,true)));
-	                }
-	                else
-	                {
-	                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
-	                }
-	                echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur (création) = $erreur");
-	                //echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
-	            }
-	            else
-	            {
-	                //var_dump($optionCET);
-	                error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-	                //echo "La sauvegarde (création) s'est bien passée...<br><br>";
-	            }
+                $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+                    is_array( $item )
+                    ? array_walk( $item, $walk, $key )
+                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                };
+                array_walk( $params, $walk );
+                $params_string = implode( '&', $output );
+                //var_dump ("Output = " . $params_string);
+
+                $opts = [
+                    CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => $params_string,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_SSL_VERIFYPEER => false
+                ];
+                curl_setopt_array($curl, $opts);
+                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                $json = curl_exec($curl);
+                $error = curl_error ($curl);
+                curl_close($curl);
+                if ($error != "")
+                {
+                    echo "Erreur Curl = " . $error . "<br><br>";
+                }
+                //echo "<br>" . print_r($json,true) . "<br>";
+                $id = json_decode($json, true);
+
+                //var_dump($id);
+                if (is_array($id))
+                {
+                    $erreur = $id['error'];  
+                }
+                elseif ("$id" < 0)
+                {
+                    $erreur =  "La création du droit d'option dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+                }
+                elseif ("$id" <> "")
+                {
+                    //echo "Id de la nouvelle demande = " . $id . "<br>";
+                    $optionCET->esignatureid($id);
+                    $optionCET->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+                    $optionCET->statut($optionCET::STATUT_PREPARE);
+
+                    $erreur = $optionCET->store();
+                    $agent->synchroCET();
+                    $sauvegardeok = true;
+
+                }
+                else
+                {
+                    $erreur =  "La création du droit d'option dans eSignature a échoué !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+                }
+                if ($erreur <> "")
+                {
+                    if (is_array($id))
+                    {
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . print_r($id,true)));
+                    }
+                    else
+                    {
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
+                    }
+                    echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur (création) = $erreur");
+                    //echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
+                }
+                else
+                {
+                    //var_dump($optionCET);
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+                }
             }
         }
         else // Il y a une demande d'alim ou d'option en cours
@@ -354,7 +385,7 @@
             $return = $fonctions->deleteesignaturedocument($esignatureid_delete);
             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
             {
-                if (strlen($errlog)>0) $errlog = $errlog . '<br>';
+                if (strlen($errlog)>0) { $errlog = $errlog . '<br>'; }
                 $error_suppr = $error_suppr . "Impossible d'annuler la demande d'option $esignatureid_delete : $return";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
             }
@@ -367,54 +398,6 @@
                 $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_delete);
             }
                 
-/*            
-            $curl = curl_init();
-            $params_string = "";
-            $opts = [
-                CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid_delete,
-                CURLOPT_POSTFIELDS => $params_string,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false
-            ];
-            //curl_setopt($curl, CURLOPT_PROXY, '');
-    
-            curl_setopt_array($curl, $opts);
-            //echo "Les options CURL sont : " . print_r($opts,true) . "<BR><BR>";
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            curl_close($curl);
-            if ($error != "")
-            {
-                echo $fonctions->showmessage(fonctions::MSGERROR,  "Erreur Curl = " . $error . "<br><br>");
-                $error_suppr = "Erreur Curl = " . $error . "<br><br>";
-            }
-            //echo "<br>" . print_r($json,true) . "<br>";
-            $response = json_decode($json, true);
-            echo "<br>";
-            if (!is_null($response))
-            {
-            	error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($response, true)));
-            	$error_suppr = "Erreur lors de la suppression de la demande de droit d'option dans Esignature !!==> Pas de suppression dans G2T.<br><br>";
-            }
-            else
-            {
-            	if (stristr(substr($json,0,20),'HTML') === false)
-            	{
-		            $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
-		            $optionCET->store();
-		
-		            error_log(basename(__FILE__) . $fonctions->stripAccents(" Synchronisation de la demande $esignatureid_delete après appel du WS eSignature de suppression."));
-		            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid_delete);
-            	}
-            	else 
-            	{
-            		$error_suppr = "Erreur lors de la suppression de la demande de droit d'option dans Esignature !!==> Pas de suppression dans G2T.<br><br>";
-            		error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur de connexion à Esignature lors de la suppression de la demande de droit d'option dans Esignature : ".var_export($json, true)));
-            	}
-            }
-*/
         }
     }
 
@@ -428,188 +411,185 @@
     
 ?>
         <script type="text/javascript">
-/*
-        function opendemande() {
-        	demandeliste = document.getElementById("esignatureid_aff")
-        	urldemande = demandeliste.value;
-        	//alert("opendemande est activé : " + urldemande );
-        	window.open(urldemande);
-        	return false;
-        }
-*/
-        
-        function isInt(value) {
-    		return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
-    	}
-        
-        function update_case()
-        {
-        	//alert("Update Case est activé");
-        	
-        	// On récupère la valeur A
-        	document.getElementById("valeur_a").value = document.getElementById("valeur_a").value.replace(",",".");
-            valeur_a = document.getElementById("valeur_a").value;
-            valeur_a = parseFloat(valeur_a);
-            
-            // On récupère la valeur G
-        	document.getElementById("valeur_g").value = document.getElementById("valeur_g").value.replace(",",".");
-           	valeur_g = document.getElementById("valeur_g").value;
-            valeur_g = parseFloat(valeur_g);
-            
-        	// On récupère la valeur H 
-        	document.getElementById("valeur_h").value = document.getElementById("valeur_h").value.replace(",",".");
-        	valeur_h = document.getElementById("valeur_h").value;
-        	valeur_h  = parseFloat(valeur_h);
-    
-            // On récupère la valeur I et on efface le label correspondant
-        	document.getElementById("valeur_i").value = document.getElementById("valeur_i").value.replace(",",".");
-           	valeur_i = document.getElementById("valeur_i").value;
-        	label_i = document.getElementById("label_i");
-        	if (label_i !== null)
-        		label_i.innerHTML = "";
-           	
-           	// On récupère la valeur J et on efface le label correspondant
-        	document.getElementById("valeur_j").value = document.getElementById("valeur_j").value.replace(",",".");
-           	valeur_j = document.getElementById("valeur_j").value;
-        	document.getElementById("label_j").innerHTML = "";
-           	
-           	// Les valeurs calculées K et L sont effacées et les labels correspondant également
-     		document.getElementById("valeur_k").value = "";
-           	document.getElementById("label_k").innerHTML = "";
-     		document.getElementById("valeur_l").value = "";
-     		document.getElementById("label_l").innerHTML = "";
-           	
-        	const button = document.getElementById('cree_option')
-        	deactive_button = false;
-    
-        	//////////////////////////////////////////////////////
-        	// Traitement de la valeur de la case I
-        	//////////////////////////////////////////////////////
-    		if (valeur_i == "")
-    		{
-        		deactive_button = true;
-       		}
-        	else if (isNaN(valeur_i))
-        	{
-        		//alert("La valeur de la case I n'est pas un nombre.");
-        		if (label_i !== null)
-        			label_i.innerHTML = "Le nombre de jours à prendre en compte au titre de la RAFP n'est pas un nombre valide.";
-        		deactive_button = true;
-        	}    	
-        	else if (!isInt(valeur_i))
-        	{
-        		if (label_i !== null)
-        			label_i.innerHTML = "Le nombre de jours à prendre en compte au titre de la RAFP doit être un entier.";
-        		deactive_button = true;
-        	}
-        	else if (parseInt(valeur_i) < 0)
-        	{
-        		if (label_i !== null)
-        			label_i.innerHTML = "Le nombre de jours à prendre en compte au titre de la RAFP doit être positif ou nul.";
-        		deactive_button = true;
-        	}
-    
-        	//////////////////////////////////////////////////////
-        	// Traitement de la valeur de la case J
-        	//////////////////////////////////////////////////////
-    		if (valeur_j == "")
-    		{
-        		deactive_button = true;
-       		}
-        	else if (isNaN(valeur_j))
-        	{
-        		//alert("La valeur de la case J n'est pas un nombre.");
-        		document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser n'est pas un nombre valide.";
-        		deactive_button = true;
-        	}    	
-        	else if (!isInt(valeur_j))
-        	{
-        		document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être un entier.";
-        		deactive_button = true;
-        	}
-        	else if (parseInt(valeur_j) < 0)
-        	{
-         		document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être positif ou nul.";
-        		deactive_button = true;
-        	}
-    
-     
-            if (!deactive_button) // Le bouton est encore activé => Les valeurs saisies sont des nombres entiers positifs ou nuls
-            {   
-            	// On vérifie les contraintes de répartition
-            
-            	// On sait que I et J sont des nombres => On récupère leurs valeurs
-                valeur_i = parseInt(valeur_i);
-                valeur_j = parseInt(valeur_j);
-                
-            	debordementCET = 0;
-            	// nbre de jours à indemniser ou à mettte sur RAFP
-            	if (valeur_g > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
-            	{
-            		debordementCET = valeur_g - <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>;   // <?php echo $fonctions->liredbconstante('PLAFONDCET') ?> => Nbre maxi sur le CET
-            	}
-            	
-            	// S'il y a plus de jours que les 60 maximum => On doit forcément répartir ce "surplus" dans les case I (RAFP) et J (Indemnistation) 
-            	if ((valeur_i + valeur_j) < debordementCET)
-            	{
-    	     		if (label_i !== null)
-    	     		{
-        				label_i.innerHTML = "La somme du nombre de jours à prendre en compte au titre de la RAFP et du nombre de jours à indemniser doit être supérieure ou égale à " + debordementCET + ".";
-    	     			document.getElementById("label_j").innerHTML = label_i.innerHTML;
-    	     		}
-    	     		else
-    	     		{
-    	     			document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être supérieur ou égal à " + debordementCET + ".";
-    	     		}
-            		deactive_button = true;
-            	}
+    /*
+            function opendemande() {
+                    demandeliste = document.getElementById("esignatureid_aff")
+                    urldemande = demandeliste.value;
+                    //alert("opendemande est activé : " + urldemande );
+                    window.open(urldemande);
+                    return false;
             }
-            
-            if (!deactive_button) // Le bouton est encore activé => Les répartitions sont bonnes
+    */
+
+            function isInt(value) {
+                return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value));
+            }
+
+            function update_case()
             {
-    
-            	// On calcule le nombre de jours à maintenir dans le CET (au dessus des 15 jours)
-            	valeur_k = valeur_h - valeur_i - valeur_j;
-    	       	
-            	if (valeur_k < 0)  // On a demandé trop d'indemnisation ou trop de RAFP
-            	{
-        			if (label_i !== null)
-        			{
-        				label_i.innerHTML = "La somme du nombre de jours à prendre en compte au titre de la RAFP et du nombre de jours à indemniser doit être inférieure ou égale à " + valeur_h + ".";
-    	     			document.getElementById("label_j").innerHTML = label_i.innerHTML;
-    	     		}
-    	     		else
-    	     		{
-    	     			document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être inférieur ou égal à " + valeur_h + ".";
-    	     		}
-            		deactive_button = true;
-            	}
-            	
-    
-                valeur_l = valeur_k + 15;
-            	if (valeur_l > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
-            	{
-             		document.getElementById("label_l").innerHTML = "La valeur de solde du CET après option doit être inférieure à <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>.";
-            		deactive_button = true;
-    	    	}
-            	else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
-            	{
-    	     		document.getElementById("label_l").innerHTML = "Il n'est pas possible d'augmenter le solde du CET de plus de 10 jours."; // "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
-            		deactive_button = true;
-            	}
+                //alert("Update Case est activé");
+
+                // On récupère la valeur A
+                document.getElementById("valeur_a").value = document.getElementById("valeur_a").value.replace(",",".");
+                valeur_a = document.getElementById("valeur_a").value;
+                valeur_a = parseFloat(valeur_a);
+
+                // On récupère la valeur G
+                document.getElementById("valeur_g").value = document.getElementById("valeur_g").value.replace(",",".");
+                valeur_g = document.getElementById("valeur_g").value;
+                valeur_g = parseFloat(valeur_g);
+
+                // On récupère la valeur H 
+                document.getElementById("valeur_h").value = document.getElementById("valeur_h").value.replace(",",".");
+                valeur_h = document.getElementById("valeur_h").value;
+                valeur_h  = parseFloat(valeur_h);
+
+                // On récupère la valeur I et on efface le label correspondant
+                document.getElementById("valeur_i").value = document.getElementById("valeur_i").value.replace(",",".");
+                valeur_i = document.getElementById("valeur_i").value;
+                label_i = document.getElementById("label_i");
+                if (label_i !== null)
+                    label_i.innerHTML = "";
+
+                // On récupère la valeur J et on efface le label correspondant
+                document.getElementById("valeur_j").value = document.getElementById("valeur_j").value.replace(",",".");
+                valeur_j = document.getElementById("valeur_j").value;
+                document.getElementById("label_j").innerHTML = "";
+
+                // Les valeurs calculées K et L sont effacées et les labels correspondant également
+                document.getElementById("valeur_k").value = "";
+                document.getElementById("label_k").innerHTML = "";
+                document.getElementById("valeur_l").value = "";
+                document.getElementById("label_l").innerHTML = "";
+
+                const button = document.getElementById('cree_option');
+                deactive_button = false;
+
+                //////////////////////////////////////////////////////
+                // Traitement de la valeur de la case I
+                //////////////////////////////////////////////////////
+                if (valeur_i == "")
+                {
+                    deactive_button = true;
+                }
+                else if (isNaN(valeur_i))
+                {
+                    //alert("La valeur de la case I n'est pas un nombre.");
+                    if (label_i !== null)
+                        label_i.innerHTML = "Le nombre de jours à prendre en compte au titre de la RAFP n'est pas un nombre valide.";
+                    deactive_button = true;
+                }    	
+                else if (!isInt(valeur_i))
+                {
+                    if (label_i !== null)
+                        label_i.innerHTML = "Le nombre de jours à prendre en compte au titre de la RAFP doit être un entier.";
+                    deactive_button = true;
+                }
+                else if (parseInt(valeur_i) < 0)
+                {
+                    if (label_i !== null)
+                        label_i.innerHTML = "Le nombre de jours à prendre en compte au titre de la RAFP doit être positif ou nul.";
+                    deactive_button = true;
+                }
+
+                //////////////////////////////////////////////////////
+                // Traitement de la valeur de la case J
+                //////////////////////////////////////////////////////
+                if (valeur_j == "")
+                {
+                    deactive_button = true;
+                }
+                else if (isNaN(valeur_j))
+                {
+                    //alert("La valeur de la case J n'est pas un nombre.");
+                    document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser n'est pas un nombre valide.";
+                    deactive_button = true;
+                }    	
+                else if (!isInt(valeur_j))
+                {
+                    document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être un entier.";
+                    deactive_button = true;
+                }
+                else if (parseInt(valeur_j) < 0)
+                {
+                    document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être positif ou nul.";
+                    deactive_button = true;
+                }
+
+
+                if (!deactive_button) // Le bouton est encore activé => Les valeurs saisies sont des nombres entiers positifs ou nuls
+                {   
+                    // On vérifie les contraintes de répartition
+
+                    // On sait que I et J sont des nombres => On récupère leurs valeurs
+                    valeur_i = parseInt(valeur_i);
+                    valeur_j = parseInt(valeur_j);
+
+                    debordementCET = 0;
+                    // nbre de jours à indemniser ou à mettte sur RAFP
+                    if (valeur_g > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
+                    {
+                        debordementCET = valeur_g - <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>;   // <?php echo $fonctions->liredbconstante('PLAFONDCET') ?> => Nbre maxi sur le CET
+                    }
+
+                    // S'il y a plus de jours que les 60 maximum => On doit forcément répartir ce "surplus" dans les case I (RAFP) et J (Indemnistation) 
+                    if ((valeur_i + valeur_j) < debordementCET)
+                    {
+                        if (label_i !== null)
+                        {
+                            label_i.innerHTML = "La somme du nombre de jours à prendre en compte au titre de la RAFP et du nombre de jours à indemniser doit être supérieure ou égale à " + debordementCET + ".";
+                            document.getElementById("label_j").innerHTML = label_i.innerHTML;
+                        }
+                        else
+                        {
+                            document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être supérieur ou égal à " + debordementCET + ".";
+                        }
+                        deactive_button = true;
+                    }
+                }
+
+                if (!deactive_button) // Le bouton est encore activé => Les répartitions sont bonnes
+                {
+
+                    // On calcule le nombre de jours à maintenir dans le CET (au dessus des 15 jours)
+                    valeur_k = valeur_h - valeur_i - valeur_j;
+
+                    if (valeur_k < 0)  // On a demandé trop d'indemnisation ou trop de RAFP
+                    {
+                        if (label_i !== null)
+                        {
+                            label_i.innerHTML = "La somme du nombre de jours à prendre en compte au titre de la RAFP et du nombre de jours à indemniser doit être inférieure ou égale à " + valeur_h + ".";
+                            document.getElementById("label_j").innerHTML = label_i.innerHTML;
+                        }
+                        else
+                        {
+                            document.getElementById("label_j").innerHTML = "Le nombre de jours à indemniser doit être inférieur ou égal à " + valeur_h + ".";
+                        }
+                        deactive_button = true;
+                    }
+
+
+                    valeur_l = valeur_k + 15;
+                    if (valeur_l > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
+                    {
+                        document.getElementById("label_l").innerHTML = "La valeur de solde du CET après option doit être inférieure à <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>.";
+                        deactive_button = true;
+                    }
+                    else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
+                    {
+                        document.getElementById("label_l").innerHTML = "Il n'est pas possible d'augmenter le solde du CET de plus de 10 jours."; // "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
+                        deactive_button = true;
+                    }
+                }
+
+                if (!deactive_button) // Le bouton est encore activé => tous les contrôles sont ok, on peut afficher les résultats des calculs
+                {
+                    document.getElementById("valeur_k").value = valeur_k;
+                    document.getElementById("valeur_l").value = valeur_l;
+                }
+                button.disabled = deactive_button;
             }
-            
-            if (!deactive_button) // Le bouton est encore activé => tous les contrôles sont ok, on peut afficher les résultats des calculs
-            {
-    	    	document.getElementById("valeur_k").value = valeur_k;
-    	        document.getElementById("valeur_l").value = valeur_l;
-            }
-            
-        	button.disabled = deactive_button;
-    
-    
-        }
-    	</script>
+        </script>
 <?php     
         echo "Création d'une demande d'option sur CET pour " . $agent->identitecomplete() . "<br>";
         //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
@@ -761,9 +741,13 @@
             {
                 $affectation = current((array)$affectationliste);
                 if ($affectation->numcontrat() <> 0)
+                {
                    $typeagent = 'cont';
+                }
                 else
+                {
                    $typeagent = "titu";
+                }
             }
         }
         
@@ -823,7 +807,7 @@
                 $errorcheckmailstr = '';
                 foreach ($taberrorcheckmail as $errorcheckmail)
                 {
-                    if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                    if (strlen($errorcheckmailstr)>0) {$errorcheckmailstr = $errorcheckmailstr . '<br>';}
                     $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
                 }
                 echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible d'enregistrer la demande de droit d'option sur CET car <br>$errorcheckmailstr");
@@ -879,45 +863,6 @@
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
             //echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
 
-/* 
-            //echo "<br>------------------------------------------------------------- <br>";
-            $qvt_id = 'DGEE_4';  // Id = DGEE_4	    Nom long = Service santé, handicap, action culturelle et sociale        Nom court = DRH-SSHACS
-            $resp_agent = null;
-            // On récupère tous les agents avec le profil RHCET
-            foreach ( (array)$fonctions->listeprofilrh(agent::PROFIL_RHCET) as $qvt_agent) // RHCET
-            {
-                //echo $qvt_agent->identitecomplete() . " (" . $qvt_agent->mail() . ") est gestionnaire CET <br>";
-                if (count((array)$qvt_agent->structrespliste())>0)
-                {
-                    $resp_agent = $qvt_agent;
-                    //echo "J'ai trouvé le responsable : " . $resp_agent->identitecomplete() . " (" . $resp_agent->mail() . ") <br>";
-               }
-            }
-        
-            //echo "<br>------------------------------------------------------------- <br>";
-            // On récupère le responsable du service QVT (Qualité de vie au travail) - Niveau 4
-            if (is_null($resp_agent))
-            {
-                $struct = new structure($dbcon);
-                $struct->load($qvt_id);
-                $resp_agent = $struct->responsable();
-            }
-            //echo $resp_agent->identitecomplete() . " (" . $resp_agent->mail() . ") est le responsable du service QVT <br>";
-            
-            //echo "<br>------------------------------------------------------------- <br>";
-            // On récupère le responsable du service DRH et DGS - Niveau 5
-            
-            $struct = new structure($dbcon);
-            $drh_id = 'DGE_3';  // Id = DGE_3     Nom long = Direction des ressources humaines        Nom court = DRH
-            $struct->load($drh_id);
-            $drh_agent = $struct->responsable();
-            //echo $drh_agent->identitecomplete() . " (" . $drh_agent->mail() . ") est le responsable du service DRH <br>";
-            $struct = new structure($dbcon);
-            $dgs_id = 'DG_2';  // Id = DG_2     Nom long = Direction générale des services        Nom court = DGS
-            $struct->load($dgs_id);
-            $dgs_agent = $struct->responsable();
-            //echo $dgs_agent->identitecomplete() . " (" . $dgs_agent->mail() . ") est le responsable du service DGS <br>";
-*/            
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             echo "<input type='submit' name='cree_option' id='cree_option' value='Soumettre' disabled>";

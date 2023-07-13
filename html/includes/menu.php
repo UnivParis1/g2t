@@ -708,36 +708,32 @@
 ?>	
 <?php
     // Si la date limite d'utilisation des reliquats est dépassée on n'affiche pas l'alimentation et le droit d'option sur CET
-    $constante = 'FIN_REPORT';
+    //$constante = 'FIN_REPORT';
+    //if ($fonctions->testexistdbconstante($constante))
+    //{
+    //    $res = $fonctions->liredbconstante($constante);
+    //    $datereliq = ($fonctions->anneeref()+1).$res;
+    //    if (date("Ymd") <= $datereliq) 
+    //    {
+
+    $constante = 'DEBUTALIMCET';
+    $debutcet = '19000101';
     if ($fonctions->testexistdbconstante($constante))
     {
-        $res = $fonctions->liredbconstante($constante);
-        $datereliq = ($fonctions->anneeref()+1).$res;
-/*        
-	$sqldatereliq = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FIN_REPORT'";
-	$queryreliq = mysqli_query($dbcon, $sqldatereliq);
-	$erreur = mysqli_error($dbcon);
-	if ($erreur != "")
-	{
-		$errlog = "Problème SQL dans le chargement de la date limite d'utilisation du reliquat : " . $erreur;
-		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-	}
-	elseif ($res = mysqli_fetch_row($queryreliq))
-	{
-		$datereliq = ($fonctions->anneeref()+1).$res[0];
-*/
-	    if (date("Ymd") <= $datereliq) 
-	    {
+        $debutcet = $fonctions->liredbconstante($constante);
+    }
+    $constante = 'FINALIMCET';
+    $fincet = '19000101';
+    if ($fonctions->testexistdbconstante($constante))
+    {
+        //$fincet = $fonctions->liredbconstante($constante);
+        $fincet = date('Ymd',strtotime('+3 month',strtotime($fonctions->liredbconstante($constante))));
+        //var_dump("fincet ALIM = $fincet");
+    }
+    if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet)
+    {    
+
 ?>  
-<!--					
-                    <li onclick='document.alim_cet_test.submit();'>
-						<form name='alim_cet_test' method='post' action="gerer_alimentationCET_test.php">
-							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-						</form>
-						<a href="javascript:document.alim_cet_test.submit();">Alimentation du CET TEST</a>
-					</li>
--->
 					<li onclick='document.alim_cet.submit();'>
 						<form name='alim_cet' method='post' action="gerer_alimentationCET.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -745,6 +741,26 @@
 						</form>
 						<a href="javascript:document.alim_cet.submit();">Alimentation du CET</a>
 					</li>
+<?php
+    }
+    $constante = 'DEBUTOPTIONCET';
+    $debutcet = '19000101';
+    if ($fonctions->testexistdbconstante($constante))
+    {
+        $debutcet = $fonctions->liredbconstante($constante);
+    }
+    $constante = 'FINOPTIONCET';
+    $fincet = '19000101';
+    if ($fonctions->testexistdbconstante($constante))
+    {
+        //$fincet = $fonctions->liredbconstante($constante);
+        $fincet = date('Ymd',strtotime('+3 month',strtotime($fonctions->liredbconstante($constante))));
+        //var_dump("fincet OPTION = $fincet");
+    }
+    if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet)
+    {    
+
+?>
 					<li onclick='document.option_cet.submit();'>
 						<form name='option_cet' method='post' action="gerer_optionCET.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -753,11 +769,10 @@
 						<a href="javascript:document.option_cet.submit();">Droit d'option sur CET</a>
 					</li>
 <?php
-	    }
     }
     $dbconstante = 'URL_G2TMANUEL';
     $urlg2tmanuel = '';
-    if ($fonctions->testexistdbconstante($dbconstante))  $urlg2tmanuel = trim($fonctions->liredbconstante($dbconstante));
+    if ($fonctions->testexistdbconstante($dbconstante)) { $urlg2tmanuel = trim($fonctions->liredbconstante($dbconstante)); }
     if (trim($urlg2tmanuel)!='')
     {
 ?>
