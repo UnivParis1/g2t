@@ -723,7 +723,7 @@ class structure
                 // echo "Nom du mois = " . $monthname . "<br>";
                 $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . "'>" . $monthname . "</td></tr>";
                 // echo "Nbre de jour = " . count($planningservice[$agentid]->planning()) . "<br>";
-                $htmltext = $htmltext . "<tr class='entete'><th class='cellulesimple' style='cursor: pointer;'>Agent<span class='sortindicator'> </span></th>";
+                $htmltext = $htmltext . "<tr class='entete'><th class='cellulesimple cellulemultiligne' style='cursor: pointer;'>Agent<span class='sortindicator'> </span></th>";
                 if ($showstructcolonne)
                 {
                     $htmltext = $htmltext . "<th class='cellulesimple' style='cursor: pointer;'>Structure<span class='sortindicator'> </span></th>";
@@ -752,7 +752,7 @@ class structure
             // echo "l'agent $agentid est chargé ... <br>";
             $htmltext = $htmltext . "<tr class='ligneplanning'>";
 //            $htmltext = $htmltext . "<td>" . $agent->nom() . " " . $agent->prenom() . "</td>";
-            $htmltext = $htmltext . "<td>" . $agent->civilite() . " <span class='agentidentite'>" . $agent->nom() . " " . $agent->prenom() . "</span></td>"; //$agent->identitecomplete(true)
+            $htmltext = $htmltext . "<td class='cellulemultiligne'>" . $agent->civilite() . " <span class='agentidentite'>" . $agent->nom() . " " . $agent->prenom() . "</span></td>"; //$agent->identitecomplete(true)
             if ($showstructcolonne)
             {
                 if (!isset($tabstruct[$agent->structureid()]))

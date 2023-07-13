@@ -151,7 +151,7 @@
     }
             
     require ("includes/menu.php");
-//    echo "<br><br><br>"; print_r($_POST); echo "<br>";
+    //echo "<br><br><br>"; print_r($_POST); echo "<br>";
 
     
     if (isset($_POST['teletravailmail']))
@@ -650,6 +650,8 @@
     echo "<input type='hidden' name='report_moment' id='report_moment' value='' />";
     echo "<input type='hidden' name='typeconvention' id='typeconvention' value='' />";
     echo "<input type='hidden' name='action' id='action' value='' />";
+    echo "<input type='hidden' name='check_showroot' id='check_showroot' value='" . $check_showroot . "' />";
+    echo "<input type='hidden' name='rootid' id='rootid' value='" . $rootstruct . "' />";
     echo "<input type='submit' value='Soumettre' /></center>";
     echo "</form>";
     
