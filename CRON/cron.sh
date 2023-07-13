@@ -8,6 +8,8 @@ chemin=`pwd`
 mydate=`date +%Y-%m-%d`
 echo `date` debut traitement >>./log/trace_cron_$mydate.log
 
+php php/switch_maintenance.php >>./log/trace_cron_$mydate.log
+
 numjour=`date +%w`
 ## Si le numero du jour est different de 0 ou 6 alors on traite les fichiers d'import
 ## 0 = Dimanche
@@ -43,6 +45,7 @@ fi
 php php/mail_alerte_reliquats.php >>./log/trace_cron_$mydate.log
 php php/mail_alerte_teletravail.php >>./log/trace_cron_$mydate.log
 
+php php/switch_maintenance.php >>./log/trace_cron_$mydate.log
 
 echo `date`  fin de traitement >>./log/trace_cron_$mydate.log
 
