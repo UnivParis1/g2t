@@ -22,3 +22,6 @@
 /G2T-v7 (Github).phprj
 /nbproject/private/
 /nbproject
+/*.sql
+/Procédure migration G2T-v7 en G2T-v7.1.txt
+Thumbs.db
