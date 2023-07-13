@@ -58,18 +58,6 @@
             $valeur = "n";
         }
         $erreur = $fonctions->enregistredbconstante($constante, $valeur);
-/*
-        if ($_POST["maintenance"] == "on") 
-        {
-            // Update Mode maintenance à 'o'
-            $sql = "UPDATE CONSTANTES SET VALEUR = 'o' WHERE NOM = 'MAINTENANCE'";
-        } else {
-            // Update Mode maintenance à 'n'
-            $sql = "UPDATE CONSTANTES SET VALEUR = 'n' WHERE NOM = 'MAINTENANCE'";
-        }
-        $query = mysqli_query($dbcon, $sql);
-        $erreur = mysqli_error($dbcon);
-*/
         if ($erreur != "") 
         {
             $errlog = "Erreur activation/desactivation mode maintenance : " . $erreur;

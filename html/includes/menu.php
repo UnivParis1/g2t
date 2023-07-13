@@ -565,10 +565,25 @@
     }
     
     // Si on est en mode "MAINTENANCE"
-    if (strcasecmp($fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) {
+    $constante = 'MAINTENANCE';
+    $maintenance = $fonctions->liredbconstante($constante);
+    $constante = 'SYNCHRONISATION';
+    $synchro = 'n';
+    if ($fonctions->testexistdbconstante($constante))
+    {
+        $synchro = $fonctions->liredbconstante($constante);
+    }
+    if (strcasecmp($maintenance, 'n') != 0 or strcasecmp($synchro, 'n') != 0) {
         if ($realuser->estadministrateur()) // Si un administrateur est connecté
         {
-            echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
+            if (strcasecmp($maintenance, 'n') != 0)
+            {
+                echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
+            }
+            if (strcasecmp($synchro, 'n') != 0)
+            {
+                echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : LE MODE SYNCHRONISATION EST ACTIV&Eacute; -- APPLICATION EN COURS DE SYNCHRO</U></B></div></CENTER><BR>";
+            }
         }
         else // C'est un utilisateur simple => Affichage de la page de maintenance
         {
