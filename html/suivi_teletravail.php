@@ -96,7 +96,11 @@
             $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
             foreach ((array)$currentstep['recipients'] as $recipient)
             {
-                $enattente = $enattente . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                $signataireidentite = $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                if (trim($signataireidentite) != "")
+                {
+                    $enattente = $enattente . "<br>" . $signataireidentite;
+                }
             }
         }
         elseif($teletravail->statutresponsable()==teletravail::TELETRAVAIL_ATTENTE)
