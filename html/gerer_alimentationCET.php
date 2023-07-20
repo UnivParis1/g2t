@@ -354,7 +354,7 @@
                     'formDatas' => "{}"
                 );
 	            	            	
-                $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+                $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
 
             	if (count($taberrorcheckmail) > 0)
             	{
@@ -697,7 +697,7 @@
 
                 if (is_null($cree_demande))
                 {
-                    $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+                    $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
                     if (count($taberrorcheckmail) > 0)
                     {
                         // var_dump("errorcheckmail = $errorcheckmail");

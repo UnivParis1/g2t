@@ -215,7 +215,7 @@
     if (!is_null($agentid) and $esignatureactive)
     {
         //echo "Avant la vérification du circuit => numéro 1 <br>";
-        $taberrorcheckmail = $fonctions->ckecksignataireteletravailliste($params,$agent,$maxniveau);
+        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
     }
     if (count($taberrorcheckmail) > 0)
     {
@@ -676,7 +676,7 @@
             $taberrorcheckmail = array();
             if ($esignatureactive)
             {
-                $taberrorcheckmail = $fonctions->ckecksignataireteletravailliste($params,$agent,$maxniveau);
+                $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
             }
             if (count($taberrorcheckmail) > 0)
             {
@@ -954,7 +954,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     if ($esignatureactive)
                     {
                         //echo "Avant la vérification du circuit => numéro 2 <br>";
-                        $taberrorcheckmail = $fonctions->ckecksignataireteletravailliste($params,$agent,$maxniveau);
+                        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
                     }
                     if (count($taberrorcheckmail) > 0)
                     {

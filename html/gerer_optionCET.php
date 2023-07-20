@@ -265,7 +265,7 @@
                 'formDatas' => "{}" 
             );
 	            
-            $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+            $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
             if (count($taberrorcheckmail) > 0)
             {
                 // var_dump("errorcheckmail = $errorcheckmail");
@@ -800,7 +800,7 @@
         
         if (is_null($cree_option))
         {
-            $taberrorcheckmail = $fonctions->ckecksignatairecetliste($params,$agent);
+            $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
             if (count($taberrorcheckmail) > 0)
             {
                 // var_dump("errorcheckmail = $errorcheckmail");

@@ -2633,7 +2633,7 @@ class fonctions
         return $tab_special_users;
     }
 
-    public function ckecksignatairecetliste(&$params, $agent)
+    public function checksignatairecetliste(&$params, $agent)
     {
 
         $maxniveau = 0;
@@ -2750,7 +2750,7 @@ class fonctions
 
     }
 
-    public function ckecksignataireteletravailliste(&$params, $agent, &$maxniveau)
+    public function checksignataireteletravailliste(&$params, $agent, &$maxniveau)
     {
 
         $maxniveau = 0;
