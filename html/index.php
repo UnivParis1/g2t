@@ -262,7 +262,13 @@
     $esignatureid = 892679;
 
     $fonctions->creation_ticketGLPI_materiel($esignatureid);
-*/   
+*/  
+/*
+    $testagent = new agent($dbcon);
+    $testagent->load('-3');
+    $cn  = $fonctions->getcnfromldap($testagent->mail());
+    echo "Le CN de "  .$testagent->identitecomplete() . " est : $cn <br>";
+*/    
     
 ?>
 </body>

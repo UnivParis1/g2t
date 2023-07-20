@@ -50,9 +50,12 @@ define('LDAP_STRUCT_IS_INCLUDED_ATTR', 'up1flags');
 define('LDAP_STRUCT_BUSINESSCATE_ATTR', 'businesscategory');
 define('LDAP_FONCTION_SEARCH_BASE', 'ou=supannrolegenerique,ou=tables,dc=etab,dc=fr');
 define('LDAP_FONCTION_POIDS_ATTR', 'up1flags');
-define('LDAP_RIFSEEP_SEARCH_BASE','ou=supannActivite,ou=tables,dc=univ-paris1,dc=fr');
+define('LDAP_RIFSEEP_SEARCH_BASE','ou=supannActivite,ou=tables,dc=etab,dc=fr');
 define('LDAP_RIFSEEP_NAME_ATTR','up1tablekey');
 define('LDAP_RIFSEEP_LIBELLE_ATTR','displayname');
+define('LDAP_GROUP_SEARCHBASE','ou=groups,dc=etab,dc=fr');
+define('LDAP_GROUP_CN_ATTR','cn');
+define('LDAP_ETAB_SEARCHBASE','dc=etab,dc=fr');
 
 // Connexion au serveur CAS
 define('CASSERVER', 'cas.etab.fr');

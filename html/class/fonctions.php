@@ -2071,8 +2071,7 @@ class fonctions
         $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_SEARCH_BASE = 'dc=univ-paris1,dc=fr';
+        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAP_ETAB_SEARCHBASE");    // 'dc=univ-paris1,dc=fr';
         $LDAP_AGENT_UID_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -2091,6 +2090,33 @@ class fonctions
             return false;
         }
         return true;
+    }
+    
+    function getcnfromldap($adressemail)
+    {
+        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAP_GROUP_SEARCHBASE");
+        $LDAP_GROUP_CN_ATTR = $this->liredbconstante("LDAP_GROUP_CN_ATTR");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_AGENT_MAIL_ATTR = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+        $filtre = "($LDAP_AGENT_MAIL_ATTR=" . $adressemail . ")";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array("$LDAP_GROUP_CN_ATTR");
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
+        $cn = '';
+        if (isset($info[0]["$LDAP_GROUP_CN_ATTR"][0]))
+        {
+            $cn = $info[0]["$LDAP_GROUP_CN_ATTR"][0];
+            $errlog = "Le CN est trouvé dans LDAP => cn=" . $cn . ".";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+        }
+        return $cn;
     }
 
     public function prepared_query($sql, $params, $types = "")
@@ -2862,19 +2888,32 @@ class fonctions
 
             $taberrorcheckmail = array();
             $tabniveauok = array();
-            foreach ($params['recipientEmails'] as $recipient)
+            foreach ($params['recipientEmails'] as $keyrecipient => $recipient)
             {
                 $substr = explode('*',$recipient);
                 $mailadress = $substr[1];
                 $niveau = $substr[0];
                 // var_dump("mailadress = $mailadress");
+                $cn='';
                 if (!$this->mailexistedansldap($mailadress))
                 {
                     $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
                 }
                 else
                 {
-                    $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                    
+                    //$cn = $this->getcnfromldap($mailadress);
+                    if ($cn != '')
+                    {
+                        unset($params['recipientEmails'][$keyrecipient]);
+                        $params['recipientEmails'][$niveau . "*" . $cn] = $niveau . "*" . $cn;
+                        $tabniveauok[$niveau] = "On a remplacé l'adresse du groupe ($mailadress) par son CN ($cn) dans le niveau $niveau";
+                        error_log(basename(__FILE__) . $this->stripAccents(" " . $tabniveauok[$niveau]));
+                    }
+                    else
+                    {
+                        $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                    }
                 }
             }
 
