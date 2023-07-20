@@ -2885,6 +2885,29 @@ class fonctions
                     }
                 }
             }
+            
+            //////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////
+            /////  POUR TEST UNIQUEMENT //////////////////////////////////
+            
+            $params['recipientEmails'] = array
+            (
+                "1*" . $agent->ldapmail(),
+                "2*pascal.comte@univ-paris1.fr"
+            );
+            $tempstr = "3*canica.sar@univ-paris1.fr";
+            $params['recipientEmails'][$tempstr] = $tempstr;
+            $tempstr = "4*pascal.comte@univ-paris1.fr";
+            $params['recipientEmails'][$tempstr] = $tempstr;
+            $tempstr = "4*eSignature.test@univ-paris1.fr";
+            $params['recipientEmails'][$tempstr] = $tempstr;
+            $tempstr = "5*pascal.comte@univ-paris1.fr";
+            $params['recipientEmails'][$tempstr] = $tempstr;
+            
+            //var_dump($params);
+            //////////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////
+            
 
             $taberrorcheckmail = array();
             $tabniveauok = array();
