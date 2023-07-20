@@ -21,7 +21,7 @@ REM set PHPDIR=C:\wamp64\bin\php\php7.4.9
 
 %PHPDIR%\php --version >> %LOG_PATH%\trace_cron.log
 
-%PHPDIR%\php php\switch_synchronisation.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
+%PHPDIR%\php php\switch_synchronisation.php actif -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 
 %PHPDIR%\php php\import_agent.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 %PHPDIR%\php php\import_absence.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
@@ -43,4 +43,4 @@ REM %PHPDIR%\php php\mail_declarationTP.php -d error_log=%LOG_PATH%\PHP_Log.log 
 REM REM %PHPDIR%\php php\generer_solde.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 REM REM %PHPDIR%\php php\demande_cet.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
 
-%PHPDIR%\php php\switch_synchronisation.php -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
+%PHPDIR%\php php\switch_synchronisation.php inactif -d error_log=%LOG_PATH%\PHP_Log.log >>%LOG_PATH%\trace_cron.log 2>>%LOG_PATH%\trace_cron_error.log
