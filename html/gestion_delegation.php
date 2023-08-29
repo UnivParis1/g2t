@@ -1,6 +1,6 @@
 <?php
 
-    require_once ('CAS.php');
+    // require_once ('CAS.php');
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
     
