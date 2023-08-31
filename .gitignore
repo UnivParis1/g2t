@@ -1,27 +1,11 @@
-/.metadata/
-/.project
-/.classpath
-/CRON/log/
-/INPUT_FILES_V3/
-/html/CAS/
-/html/class/tcpdf/
-/CRON/p1_post_affectation.php
-/CRON/p1_post_solde.php
-/CRON/p1_specific_update.php
-/CRON/specific/
-/html/documents*/
-/html/images*/
-/html/pdf*/
-/html/includes/g2t_ws_url.php_DO_NOT_USE
-/pdf/
-/config/config.php
-/.settings/
-/phpinfos.php
-/Test.php
-/.gitignore
-/G2T-v7 (Github).phprj
-/nbproject/private/
-/nbproject
 /*.sql
-/Procédure migration G2T-v7 en G2T-v7.1.txt
+/CRON/log/
+/CRON/specific/
+/INPUT_FILES_V3/
+/composer.lock
+/config/config.php
+/html/includes/g2t_ws_url.php_DO_NOT_USE
+/nbproject/private/
+/pdf/
+/vendor/
 Thumbs.db
