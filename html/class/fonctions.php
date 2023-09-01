@@ -2890,6 +2890,8 @@ class fonctions
             //////////////////////////////////////////////////////////////
             /////  POUR TEST UNIQUEMENT //////////////////////////////////
             
+            echo $this->showmessage(fonctions::MSGERROR,"-- BLOC DE CODE A DESACTIVER -- UNIQUEMENT EN TEST --");
+            
             $params['recipientEmails'] = array
             (
                 "1*" . $agent->ldapmail(),

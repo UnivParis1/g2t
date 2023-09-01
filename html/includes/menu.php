@@ -1004,7 +1004,7 @@
 						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
 					</li>
 					<li class="plus"><a>Gestion de l'année en cours</a>
-						<ul class="niveau3">
+                                            <ul class="niveau3">
         					<li onclick='document.gest_struct_planning.submit();'>
         						<form name='gest_struct_planning' method='post' action="structure_planning.php">
         							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1013,6 +1013,43 @@
         						</form> 
         						<a href="javascript:document.gest_struct_planning.submit();">Planning de la structure</a>
         					</li>
+<?php
+    $structureliste = $user->structgestliste();
+    $code = null;
+    foreach ($structureliste as $structure)
+    {
+        $resp = $structure->resp_envoyer_a($code);
+        if ($code ==3) // 3 = Envoie des mails au gestionnaire de la structure courante
+        {
+            // On a au moins une structure qui match => On arrête la boucle
+            break;
+        }
+    }
+    if ($code == 3) 
+    {
+?>
+
+                                                <li onclick='document.gest_conge.submit();'>
+                                                    <form name='gest_conge' method='post' action="etablir_demande.php">
+                                                            <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>">
+                                                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                            <input type="hidden" name="typedemande" value="conges">
+                                                            <input type="hidden" name="previous" value="no">
+                                                    </form> 
+                                                    <a href="javascript:document.gest_conge.submit();">Saisir une demande de congé pour un responsable</a>
+                                                </li>
+                                                <li onclick='document.gest_absence.submit();'>
+                                                    <form name='gest_absence' method='post' action="etablir_demande.php">
+                                                            <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>"> 
+                                                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                            <input type="hidden" name="typedemande" value="absence"> 
+                                                            <input type="hidden" name="previous" value="no">
+                                                    </form> 
+                                                    <a href="javascript:document.gest_absence.submit();">Saisir une demande d'absence ou de télétravail pour un responsable</a>
+                                                </li>
+<?php
+    }
+?>
         					<li onclick='document.gest_valid_conge.submit();'>
         						<form name='gest_valid_conge' method='post' action="valider_demande.php">
         							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1042,7 +1079,7 @@
         						</form>
         						<a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
         					</li>
-						</ul>
+                                            </ul>
 					</li>
 					<li class="plus"><a>Gestion de l'année précédente</a>
 						<ul class="niveau3">
@@ -1054,6 +1091,43 @@
         						</form> 
         						<a href="javascript:document.gest_struct_planning_previous.submit();">Planning de la structure</a>
         					</li>
+<?php
+    $structureliste = $user->structgestliste();
+    $code = null;
+    foreach ($structureliste as $structure)
+    {
+        $resp = $structure->resp_envoyer_a($code);
+        if ($code ==3) // 3 = Envoie des mails au gestionnaire de la structure courante
+        {
+            // On a au moins une structure qui match => On arrête la boucle
+            break;
+        }
+    }
+    if ($code == 3) 
+    {
+?>
+
+                                                <li onclick='document.gest_conge_prev.submit();'>
+                                                    <form name='gest_conge_prev' method='post' action="etablir_demande.php">
+                                                            <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>">
+                                                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                            <input type="hidden" name="typedemande" value="conges">
+                                                            <input type="hidden" name="previous" value="yes">
+                                                    </form> 
+                                                    <a href="javascript:document.gest_conge_prev.submit();">Saisir une demande de congé pour un responsable</a>
+                                                </li>
+                                                <li onclick='document.gest_absence_prev.submit();'>
+                                                    <form name='gest_absence_prev' method='post' action="etablir_demande.php">
+                                                            <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>"> 
+                                                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                            <input type="hidden" name="typedemande" value="absence"> 
+                                                            <input type="hidden" name="previous" value="yes">
+                                                    </form> 
+                                                    <a href="javascript:document.gest_absence_prev.submit();">Saisir une demande d'absence ou de télétravail pour un responsable</a>
+                                                </li>
+<?php
+    }
+?>
         					<li onclick='document.gest_valid_conge_prev.submit();'>
         						<form name='gest_valid_conge_prev' method='post' action="valider_demande.php">
         							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 

@@ -7,20 +7,16 @@
     $CAS_SERVER = $fonctions->liredbconstante("CASSERVER");
     $CAS_PORT = 443;
     $CAS_PATH = $fonctions->liredbconstante("CASPATH");
-/*        
-    $CASClientMethod = new ReflectionMethod('phpCAS', 'client');
-    // var_dump($CASClientMethod->getNumberOfParameters()); // affiche le nombre de paramètres attendus
-    $casversion = phpCAS::getVersion();
-    if ($CASClientMethod->getNumberOfParameters()>6 or $casversion == '1.3.8-1')
+ 
+    // En partant de la constante G2T_URL on va définir l'URL du service CAS
+    $array_url = parse_url(G2T_URL);
+    $client_service_name = $array_url["scheme"] . '://' . $array_url["host"];
+    if (isset($array_url["port"]) and $array_url["port"] != 0)
     {
-        phpCAS::client(CAS_VERSION_2_0, $CAS_SERVER, $CAS_PORT, $CAS_PATH,G2T_URL, true);
+        $client_service_name = $client_service_name . ":" . $array_url["port"];
     }
-    else
-    {
-        phpCAS::client(CAS_VERSION_2_0, $CAS_SERVER, $CAS_PORT, $CAS_PATH, true);  
-    }
-*/
-//    $client_service_name = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'];
+    
+/******************************************************   
     //////////////////////////////////
     // On va construire l'URL du service pour CAS
     // On récuère le nom du serveur G2T
@@ -64,6 +60,10 @@
     }
     //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
     $client_service_name = $serverprotocol . "://" . $servername . ":" . $serverport;
+**********************************************************/ 
+    
+    $errlog = "Le CAS Service Name : " . $client_service_name;
+    //error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     
     // var_dump($client_service_name);
     phpCAS::client(CAS_VERSION_2_0, $CAS_SERVER, $CAS_PORT, $CAS_PATH,$client_service_name, true);

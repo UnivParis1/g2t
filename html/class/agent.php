@@ -1,5 +1,7 @@
 <?php
 
+use Fpdf\Fpdf as FPDF;
+
 class sihamaffectation
 {
     public $debut;
@@ -1695,6 +1697,7 @@ class agent
      */
     function soldecongespdf($anneeref, $infoagent = FALSE, $pdf = NULL, $header = TRUE)
     {
+
         $closeafter = FALSE;
         if (is_null($pdf)) {
             $pdf=new FPDF();

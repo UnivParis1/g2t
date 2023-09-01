@@ -1,10 +1,14 @@
 /*.sql
+/CRON/cron.bat
 /CRON/log/
-/CRON/specific/
+/CRON/specific/*.php
+!/CRON/specific/*_exemple.php
 /INPUT_FILES_V3/
 /composer.lock
-/config/config.php
-/html/includes/g2t_ws_url.php_DO_NOT_USE
+/config/*.php
+!/config/*_exemple.php
+/images/logo_paris1_prod.png
+/images/logo_paris1_test.png
 /nbproject/private/
 /pdf/
 /vendor/

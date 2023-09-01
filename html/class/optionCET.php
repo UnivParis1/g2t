@@ -1,4 +1,7 @@
 <?php
+
+use Fpdf\Fpdf as FPDF;
+
 class optionCET
 {
     

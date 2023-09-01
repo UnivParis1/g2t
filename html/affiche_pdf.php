@@ -12,6 +12,8 @@
     require_once ('./includes/dbconnection.php');
     require_once ("./includes/all_g2t_classes.php");
     
+    use Fpdf\Fpdf as FPDF;
+
     // print_r($_POST); echo "<br>";
     // $agent = new agent($dbcon);
 
@@ -38,7 +40,7 @@
         $typepdf = $_POST["typepdf"];
 
     if ($typepdf == 'listedemande') {
-        header('Content-Disposition: attachment; filename="liste_demandes.pdf"');
+        //header('Content-Disposition: attachment; filename="liste_demandes.pdf"');
         if ($listeagent != "") {
             // echo "Avant le split <br>";
             $tablisteagent = preg_split("/,/", $listeagent);
@@ -80,7 +82,7 @@
     }
 
     if (isset($_POST["userpdf"])) {
-        header('Content-Disposition: attachment; filename="planning_agent.pdf"');
+        //header('Content-Disposition: attachment; filename="planning_agent.pdf"');
         if (strcasecmp($_POST["userpdf"], "yes") == 0) {
             $agentid = $_POST["agentid"];
             $includeteletravail = $_POST["includeteletravail"];
@@ -98,7 +100,7 @@
     }
 
     if (isset($_POST["structpdf"])) {
-        header('Content-Disposition: attachment; filename="planning_structure.pdf"');
+        //header('Content-Disposition: attachment; filename="planning_structure.pdf"');
         if (strcasecmp($_POST["structpdf"], "yes") == 0) {
             $structid = $_POST["structid"];
             $mois_annee = $_POST["mois_annee"];
@@ -131,7 +133,7 @@
 
      if (isset($_POST["teletravailPDF"]))
      {
-         header('Content-Disposition: attachment; filename="agent_télétravail.pdf"');
+         //header('Content-Disposition: attachment; filename="agent_télétravail.pdf"');
          // On va éditer le document PDF de télétravail
          
          $structureid = null;

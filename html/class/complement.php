@@ -1,5 +1,7 @@
 <?php
 
+use Fpdf\Fpdf as FPDF;
+
 /**
  * Complement
  * Definition of a complement

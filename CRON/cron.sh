@@ -3,8 +3,6 @@ chemin=`dirname $0`
 cd $chemin
 chemin=`pwd`
 
-#cd /var/www/g2t/CRON
-
 mydate=`date +%Y-%m-%d`
 echo `date` debut traitement >>./log/trace_cron_$mydate.log
 
@@ -19,11 +17,35 @@ then
    php php/import_agent.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/import_absence.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/import_structure.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-   php specific/p1_specific_update.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   
+   nomfichierspecifique="specific/post_structure.php"
+   if [ -f "$nomfichierspecifique" ]
+   then
+      php $nomfichierspecifique >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   else
+      echo "Le fichier $nomfichierspecifique n'existe pas - On l'ignore" >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   fi
+   
    php php/import_affectation_siham.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-   php specific/p1_post_affectation.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+
+   nomfichierspecifique="specific/post_affectation.php"
+   if [ -f "$nomfichierspecifique" ]
+   then
+      php $nomfichierspecifique >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   else
+      echo "Le fichier $nomfichierspecifique n'existe pas - On l'ignore" >>./log/trace_cron_$mydate.log
+   fi
+
    php php/calcul_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
-   php specific/p1_post_solde.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+
+   nomfichierspecifique="specific/post_solde.php"
+   if [ -f "$nomfichierspecifique" ]
+   then
+      php $nomfichierspecifique >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
+   else
+      echo "Le fichier $nomfichierspecifique n'existe pas - On l'ignore" >>./log/trace_cron_$mydate.log
+   fi
+
    php php/mail_conges.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/mail_declarationTP.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log
    php php/synchro_demandes_cet.php >>./log/trace_cron_$mydate.log 2>>./log/trace_cron_$mydate.log

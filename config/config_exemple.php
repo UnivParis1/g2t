@@ -71,7 +71,7 @@ define('URLCALENDAR', 'https://courrier-test.etab.fr/kronolith/lib/import-icals.
 define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
 
 // Adresse mail du collecteur GLPI pour la création d'un ticket suite validation de la convention télétravail
-define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@univ-paris1.fr');
+define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@etab.fr');
 
 ////////////////////////////////////////////////////////////////////////////
 // ATTENTION : LES NOMS DES CONSTANTES DES UTILISATEURS SPECIAUX DOIVENT

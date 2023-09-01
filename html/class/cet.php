@@ -1,5 +1,7 @@
 <?php
 
+use Fpdf\Fpdf as FPDF;
+
 /**
  * CET
  * Definition of a CET (Compte épargne temps)

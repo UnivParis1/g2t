@@ -1,5 +1,7 @@
 <?php
 
+use Fpdf\Fpdf as FPDF;
+
 class solde
 {
 

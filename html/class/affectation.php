@@ -1,5 +1,7 @@
 <?php
 
+use Fpdf\Fpdf as FPDF;
+
 /**
  * Affectation
  * Definition of an nomination

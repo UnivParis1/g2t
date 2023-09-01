@@ -3,6 +3,8 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
     
+    use Fpdf\Fpdf as FPDF;
+
     $fonctions = new fonctions($dbcon);
     define('K_PATH_IMAGES', $fonctions->imagepath());
     define('K_PATH_CACHE', $fonctions->g2tbasepath() . '/html/pdf/');

@@ -41,11 +41,21 @@
         $responsableid = $_POST["responsable"];
         $responsable = new agent($dbcon);
         $responsable->load($responsableid);
+        //var_dump("On est en mode RESPONSABLE.");
+    }
+    // Récupération de l'agent gestionnaire... ==> On le colle dans l'objet responsable
+    elseif (isset($_POST["gestionnaire"])) {
+        $responsableid = $_POST["gestionnaire"];
+        $responsable = new agent($dbcon);
+        $responsable->load($responsableid);
+        //var_dump("On est en mode GESTIONNAIRE.");
     } else {
         $responsableid = null;
         $responsable = null;
     }
-
+    
+    
+    
     // Si passé en paramètre : Soit 'conges', soit 'absence'
     // permet d'afficher la page en mode 'demande d'absence' ou en mode 'demande de conges'
     if (isset($_POST["typedemande"])) 
@@ -379,8 +389,9 @@
 
     //echo "msg_erreur 1 = " .$msg_erreur ." <br>";
     
-    
+    //var_dump("avant le test agent is null");
     if (is_null($agent)) {
+        //var_dump('on est dans le agent is null');
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
         if ($rh_mode=='yes')
         {
@@ -412,19 +423,43 @@
         }
         else
         {
-            $structureliste = $responsable->structrespliste();
-            // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-            $agentlistefull = array();
-            foreach ($structureliste as $structure) {
-                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-                // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                // echo "fin du select <br>";
-                $structurefille = $structure->structurefille();
-                foreach ((array) $structurefille as $structure) {
-                    $responsable = $structure->responsable();
-                    if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
-                        $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
+            //var_dump("on est dans le else...");
+            if (isset($_POST["responsable"]))
+            {
+                $structureliste = $responsable->structrespliste();
+                // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+                $agentlistefull = array();
+                foreach ($structureliste as $structure) {
+                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+                    // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                    // echo "fin du select <br>";
+                    $structurefille = $structure->structurefille();
+                    foreach ((array) $structurefille as $structure) {
+                        $responsable = $structure->responsable();
+                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
+                            $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
+                        }
+                    }
+                }
+            }
+            elseif (isset($_POST["gestionnaire"]))
+            {
+                // En mode gestionnaire on ne permet de saisir des conges/absences que pour le responsable de la structure
+                // dont le gestionnaire gère les conges.
+                // On verifie que le code est 3  dans resp_envoyer_a
+                // Si oui, on n'ajoute que le responsable dans la liste
+                $structureliste = $responsable->structgestliste();
+                // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+                $agentlistefull = array();
+                foreach ($structureliste as $structure) {
+                    $resp = $structure->resp_envoyer_a($code);
+                    if ($code ==3) // 3 = Envoie des mails au gestionnaire de la structure courante
+                    {
+                        $responsable = $structure->responsable();
+                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
+                            $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
+                        }
                     }
                 }
             }
@@ -445,7 +480,14 @@
         echo "<br>";
 
         echo "<input type='hidden' name='typedemande' value='" . $typedemande . "'>";
-        echo "<input type='hidden' name='responsable' value='" . $responsable->agentid() . "'>";
+        if (isset($_POST["responsable"]))
+        {
+            echo "<input type='hidden' name='responsable' value='" . $responsable->agentid() . "'>";
+        }
+        if (isset($_POST["gestionnaire"]))
+        {
+            echo "<input type='hidden' name='gestionnaire' value='" . $responsable->agentid() . "'>";            
+        }
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='congeanticipe' value='" . $congeanticipe . "'>";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
@@ -1059,7 +1101,15 @@
             echo "<div id='warningcommoblig'>" . $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.") . "</div>";
             echo "Commentaire (maximum : $longueurmaxcommentaire caractères - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
 //            echo $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.");
-            echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
+            if (isset($_POST["responsable"]))
+            {
+                echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
+            }
+            if (isset($_POST["gestionnaire"]))
+            {
+                echo "<input type='hidden' name='gestionnaire' value='" . $responsableid . "'>";            
+            }
+            //echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
 //            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
             echo "<textarea rows='4' cols='60' style='line-height:20px; resize: none;' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();' >$commentaire</textarea> <br>";
             if ($commentaire == '')

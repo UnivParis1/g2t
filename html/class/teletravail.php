@@ -42,6 +42,8 @@ ADD COLUMN `CREATIONESIGNATURE` DATE 19000101 DEFAULT NULL AFTER `CREATIONG2T`;
  * 
  */
 
+use Fpdf\Fpdf as FPDF;
+
 class teletravail
 {
     public const OLD_STATUT_ACTIVE = "Active";
