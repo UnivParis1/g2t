@@ -226,8 +226,8 @@
         // echo "Le tableau des structures files : " . print_r($structureliste, true) . "<br>";
 
         echo "<form name='paramstructure'  method='post' >";
-        echo "<table>";
         foreach ($structureliste as $keystruc => $struct) {
+            echo "<table>";
 
             // echo "REsponsable = " . $struct->responsable()->identitecomplete() . "<br>";
             // $agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),'o');
@@ -352,16 +352,23 @@
                 echo "<tr>";
                 echo "<td>";
                 echo "Envoyer les demandes de congés des agents au : ";
-                echo "<SELECT name='agent_mail[" . $struct->id() . "]' size='1'>";
-                echo "<OPTION value=1";
-                if ($codeinterne == 1)
+                echo "<SELECT id='agent_mail[" . $struct->id() . "]' name='agent_mail[" . $struct->id() . "]' size='1'>";
+//                echo "<OPTION value=1";
+                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
+                if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT)
+                {
                     echo " selected='selected' ";
+                }
                 echo ">Responsable G2T du service " . $struct->nomcourt() . "</OPTION>";
-                echo "<OPTION value=2";
-                if ($codeinterne == 2)
+//                echo "<OPTION value=2";
+                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_GEST_COURANT;
+                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+                {
                     echo " selected='selected' ";
+                }
                 echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
+                echo "&nbsp; <label id='agent_send_identity[" . $struct->id() . "]' ></label>";
                 echo "</td>";
                 echo "</tr>";
 
@@ -370,23 +377,33 @@
                 echo "<tr>";
                 echo "<td>";
                 echo "Envoyer les demandes de congés du responsable G2T au : ";
-                echo "<SELECT name='resp_mail[" . $struct->id() . "]' size='1'>";
+                echo "<SELECT id='resp_mail[" . $struct->id() . "]' name='resp_mail[" . $struct->id() . "]' size='1'>";
                 if (! is_null($parentstruct)) {
                     $struct->resp_envoyer_a($codeinterne);
-                    echo "<OPTION value=1";
-                    if ($codeinterne == 1)
+//                    echo "<OPTION value=1";
+                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_RESP_PARENT;
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                    {
                         echo " selected='selected' ";
+                    }
                     echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
-                    echo "<OPTION value=2";
-                    if ($codeinterne == 2)
+//                    echo "<OPTION value=2";
+                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_PARENT;
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT)
+                    {
                         echo " selected='selected' ";
+                    }
                     echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
                 }
-                echo "<OPTION value=3";
-                if ($codeinterne == 3)
+//                echo "<OPTION value=3";
+                echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_COURANT;
+                if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                {
                     echo " selected='selected' ";
+                }
                 echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
+                echo "&nbsp; <label id='resp_send_identity[" . $struct->id() . "]' ></label>";
                 echo "</td>";
                 echo "</tr>";
                 if ($infoagent != "")
@@ -395,8 +412,72 @@
                 }
                 echo "<tr><td height=15></td></tr>";
             }
+            echo "</table>";
+
+?>
+<script>
+    function user_mode_change_<?php echo $struct->id(); ?>()
+    {
+        //alert('User mode change');
+        var select_tag = document.getElementById('agent_mail[<?php echo $struct->id()?>]');
+        var agent_send_identity = document.getElementById('agent_send_identity[<?php echo $struct->id(); ?>]');
+        //var currentvalue = select_tag.selectedIndex+1;
+        //console.log(currentvalue);
+        if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_AGENT_ENVOI_RESP_COURANT; ?>)
+        {
+            agent_send_identity.innerHTML = '<?php echo $struct->responsable()->identitecomplete();  ?>';
         }
-        echo "</table>";
+        else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_AGENT_ENVOI_GEST_COURANT; ?>)
+        {
+            agent_send_identity.innerHTML = '<?php if (!is_null($struct->gestionnaire())) { echo $struct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+        }
+        else
+        {
+            alert ('Index inconnu !!');
+        }
+    }
+
+    function resp_mode_change_<?php echo $struct->id(); ?>()
+    {
+        //alert('Resp mode change');
+        var select_tag = document.getElementById('resp_mail[<?php echo $struct->id()?>]');
+        var resp_send_identity = document.getElementById('resp_send_identity[<?php echo $struct->id(); ?>]');
+        //var currentvalue = select_tag.selectedIndex+1;
+        //console.log(currentvalue);
+        if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_RESP_PARENT; ?>)
+        {
+            resp_send_identity.innerHTML = '<?php echo $parentstruct->responsable()->identitecomplete();  ?>';
+        }
+        else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_PARENT; ?>)
+        {
+            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct->gestionnaire())) { echo $parentstruct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+        }
+        else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_COURANT; ?>)
+        {
+            resp_send_identity.innerHTML = '<?php if (!is_null($struct->gestionnaire())) { echo $struct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+        }
+        else
+        {
+            alert ('Index inconnu !!');
+        }
+    }
+    var select_tag = document.getElementById('agent_mail[<?php echo $struct->id()?>]');
+    select_tag.addEventListener('change', () =>
+        user_mode_change_<?php echo $struct->id(); ?>()
+        );
+    var e = new Event("change");
+    select_tag.dispatchEvent(e);
+
+    var select_tag = document.getElementById('resp_mail[<?php echo $struct->id()?>]');
+    select_tag.addEventListener('change', () =>
+        resp_mode_change_<?php echo $struct->id(); ?>()
+        );
+    var e = new Event("change");
+    select_tag.dispatchEvent(e);
+</script>
+<?php
+
+        }
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='structureid' value='" . $structureid . "'>";
         echo "<input type='submit' name= 'Modif_struct' value='Enregistrer les modifications' >";

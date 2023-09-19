@@ -230,7 +230,7 @@ class fonctions
         if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
             return ucfirst($monthname);
         } else {
-            return utf8_encode(ucfirst($monthname));
+            return $this->utf8_encode(ucfirst($monthname));
         }
     }
 
@@ -254,7 +254,7 @@ class fonctions
             if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
                 return ucfirst($monthname);
             } else {
-                return utf8_encode(ucfirst($monthname));
+                return $this->utf8_encode(ucfirst($monthname));
             }
         }
     }
@@ -303,7 +303,7 @@ class fonctions
         if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
             return ucfirst($dayname);
         } else {
-            return utf8_encode(ucfirst($dayname));
+            return $this->utf8_encode(ucfirst($dayname));
         }
     }
 
@@ -332,7 +332,7 @@ class fonctions
             if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
                 return ucfirst($dayname);
             } else {
-                return utf8_encode(ucfirst($dayname));
+                return $this->utf8_encode(ucfirst($dayname));
             }
         }
     }
@@ -1002,8 +1002,8 @@ class fonctions
                 // $long_chps=strlen($legende["type_conge"])+10;
                 // $long_chps=$pdf->GetStringWidth($legende["type_conge"])+6;
                 $pdf->SetFillColor($col_leg1, $col_leg2, $col_leg3);
-                $pdf->Cell(4, 5, utf8_decode(""), 1, 0, 'C', 1);
-                $pdf->Cell($long_chps, 4, utf8_decode($legende["libelle"]), 0, 0, 'L');
+                $pdf->Cell(4, 5, $this->utf8_decode(""), 1, 0, 'C', 1);
+                $pdf->Cell($long_chps, 4, $this->utf8_decode($legende["libelle"]), 0, 0, 'L');
                 $index++;
             }
         }
@@ -1196,7 +1196,15 @@ class fonctions
      */
     public function my_real_escape_utf8($texte)
     {
-        return mysqli_real_escape_string($this->dbconnect, utf8_encode($texte));
+        //return mysqli_real_escape_string($this->dbconnect, $this->utf8_encode($texte));
+        if (mb_detect_encoding($texte, 'UTF-8', true)===false) // Ce n'est pas de l'UTF-8
+        {
+            return mysqli_real_escape_string($this->dbconnect, iconv('ISO-8859-1', 'UTF-8', $texte));
+        }
+        else
+        {   // C'est déjà de l'UTF-8 => On ne réencode pas le texte
+            return mysqli_real_escape_string($this->dbconnect, $texte);            
+        }
     }
 
     /**
@@ -2684,8 +2692,8 @@ class fonctions
         {
             $params['recipientEmails'] = array
             (
-                "1*" . $agent->ldapmail(),
-                "2*" . $resp->mail()
+                "1*" . $agent->ldapmail() => "1*" . $agent->ldapmail(),
+                "2*" . $resp->mail() => "2*" . $resp->mail()
             );
 
             $constantename = 'CETSIGNATAIRE';
@@ -2740,6 +2748,15 @@ class fonctions
                     }
                 }
             }
+
+            // On passe le tableau en minuscule
+            $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
+            // On passe les clés en minuscules
+            $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
+            // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
+            $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
+            // On trie le tableau résultat par valeur de clé (donc par niveau)
+            ksort($params['recipientEmails']);
 
             $taberrorcheckmail = array();
             $tabniveauok = array();
@@ -2801,13 +2818,14 @@ class fonctions
         {
             $params['recipientEmails'] = array
             (
-                "1*" . $agent->ldapmail(),
-                "2*" . $resp->mail()
+                "1*" . $agent->ldapmail() => "1*" . $agent->ldapmail(),
+                "2*" . $resp->mail() => "2*" . $resp->mail()
             );
 
             ////////////////////////////////////////////////////
             // On cherche le responsable n+2 de l'agent
             $responsable_n2 = $agent->getresponsable_niveau2();
+            //var_dump($responsable_n2);
             if ($responsable_n2 === false)
             {
                 // On n'a pas trouvé de responsable n+2
@@ -2819,6 +2837,8 @@ class fonctions
                 $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
             }
 
+            //var_dump($constantename);
+            
             $signataireliste = '';
             $tabsignataire = array();
             if ($this->testexistdbconstante($constantename))
@@ -2830,7 +2850,10 @@ class fonctions
                 $tabsignataire = $this->signatairetoarray($signataireliste);
                 foreach ($tabsignataire as $niveau => $infosignataires)
                 {
-                    if ($maxniveau<$niveau) { $maxniveau = $niveau; }
+                    if ($maxniveau<$niveau) 
+                    { 
+                        $maxniveau = $niveau; 
+                    }
 
                     foreach ($infosignataires as $idsignataire => $infosignataire)
                     {
@@ -2890,61 +2913,51 @@ class fonctions
             //////////////////////////////////////////////////////////////
             /////  POUR TEST UNIQUEMENT //////////////////////////////////
             
-            echo $this->showmessage(fonctions::MSGERROR,"-- BLOC DE CODE A DESACTIVER -- UNIQUEMENT EN TEST --");
-            
-            $params['recipientEmails'] = array
-            (
-                "1*" . $agent->ldapmail(),
-                "2*pascal.comte@univ-paris1.fr"
-            );
-            $tempstr = "3*canica.sar@univ-paris1.fr";
-            $params['recipientEmails'][$tempstr] = $tempstr;
-            $tempstr = "4*pascal.comte@univ-paris1.fr";
-            $params['recipientEmails'][$tempstr] = $tempstr;
-            $tempstr = "4*eSignature.test@univ-paris1.fr";
-            $params['recipientEmails'][$tempstr] = $tempstr;
-            $tempstr = "5*pascal.comte@univ-paris1.fr";
-            $params['recipientEmails'][$tempstr] = $tempstr;
+//            echo $this->showmessage(fonctions::MSGERROR,"-- BLOC DE CODE A DESACTIVER -- UNIQUEMENT EN TEST --");
+//            
+//            $params['recipientEmails'] = array
+//            (
+//                "1*" . $agent->ldapmail() => "1*" . $agent->ldapmail(),
+//                "2*pascal.comte@univ-paris1.fr" => "2*pascal.comte@univ-paris1.fr"
+//            );
+//            $tempstr = "3*canica.sar@univ-paris1.fr";
+//            $params['recipientEmails'][$tempstr] = $tempstr;
+//            $tempstr = "4*pascal.comte@univ-paris1.fr";
+//            $params['recipientEmails'][$tempstr] = $tempstr;
+//            $tempstr = "4*eSignature.test@univ-paris1.fr";
+//            $params['recipientEmails'][$tempstr] = $tempstr;
+//            $tempstr = "5*pascal.comte@univ-paris1.fr";
+//            $params['recipientEmails'][$tempstr] = $tempstr;
             
             //var_dump($params);
             //////////////////////////////////////////////////////////////
             //////////////////////////////////////////////////////////////
+                        
+            // On passe le tableau en minuscule
+            $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
+            // On passe les clés en minuscules
+            $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
+            // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
+            $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
+            // On trie le tableau résultat par valeur de clé (donc par niveau)
+            ksort($params['recipientEmails']);
             
-
+            //var_dump($params['recipientEmails']);
+            
             $taberrorcheckmail = array();
             $tabniveauok = array();
-            foreach ($params['recipientEmails'] as $keyrecipient => $recipient)
+            $levelkeys = array_keys($params['recipientEmails']);
+            foreach($levelkeys as $key)
             {
-                $substr = explode('*',$recipient);
+                $substr = explode('*',$key);
                 $mailadress = $substr[1];
                 $niveau = $substr[0];
-                // var_dump("mailadress = $mailadress");
-                $cn='';
-                if (!$this->mailexistedansldap($mailadress))
-                {
-                    $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
-                }
-                else
-                {
-                    
-                    //$cn = $this->getcnfromldap($mailadress);
-                    if ($cn != '')
-                    {
-                        unset($params['recipientEmails'][$keyrecipient]);
-                        $params['recipientEmails'][$niveau . "*" . $cn] = $niveau . "*" . $cn;
-                        $tabniveauok[$niveau] = "On a remplacé l'adresse du groupe ($mailadress) par son CN ($cn) dans le niveau $niveau";
-                        error_log(basename(__FILE__) . $this->stripAccents(" " . $tabniveauok[$niveau]));
-                    }
-                    else
-                    {
-                        $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
-                    }
-                }
+                $tabniveauok[$niveau] = "On a un agent dans le niveau $niveau";                
             }
 
-            // var_dump($tabniveauok);
-            // var_dump("count(tabniveauok) = " . count($tabniveauok));
-            // var_dump("maxniveau = " . $maxniveau);
+            //var_dump($tabniveauok);
+            //var_dump("count(tabniveauok) = " . count($tabniveauok));
+            //var_dump("maxniveau = " . $maxniveau);
 
             if (count($tabniveauok)!=$maxniveau)
             {
@@ -2957,6 +2970,148 @@ class fonctions
         }
         return $taberrorcheckmail;
 
+    }
+  
+    
+    // $maillist doit avoir des clé de la forme : niveau*adresse_mail
+    // exemple : 5*jonh.doe@etab.fr
+    public function explosemail($maillist)
+    {
+        //var_dump($maillist);
+        
+        $returnmail = array();
+        $tabmailparniveau = array();
+        foreach ($maillist as $recipient)
+        {
+            $substr = explode('*',$recipient);
+            $mailadress = $substr[1];
+            $niveau = $substr[0];
+            
+            $tabmailparniveau[$niveau][] = $mailadress;
+        }
+                    
+        foreach($tabmailparniveau as $niveau => $tabmail)
+        {
+            $paramlist = '';
+            foreach($tabmail as $mailadress)
+            {
+                $paramlist = $paramlist . 'id[]=' . $mailadress . '&';
+            }
+            $wsgroupURL = $this->liredbconstante('WSGROUPURL');
+
+            // On appelle WSGroups qui se charge de lister tous les mails correspondants au paramètres
+            // https://wsgroups.etab.fr/searchUserTrusted?id[]=jonh.doe@etab.fr&id[]=mail_group@etab.fr&allowInvalidAccounts=all&allowRoles=true&attrs=member-all,mail
+            $curl = curl_init();
+            $params_string = "";
+            $wsgroupsquery = "$wsgroupURL/searchUserTrusted?$paramlist&allowInvalidAccounts=all&allowRoles=true&attrs=member-all,mail";
+            //var_dump("La reqète à WSGroups = $wsgroupsquery");
+            $opts = [
+                CURLOPT_URL => "$wsgroupsquery",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_PROXY => ''
+            ];
+            
+            curl_setopt_array($curl, $opts);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            
+            $dbconstante = "WSGROUPS_SECRET_TOKEN";
+            if ($this->testexistdbconstante($dbconstante))
+            {
+                $accessToken = trim($this->liredbconstante($dbconstante));
+                if (strlen($accessToken)>0)
+                {
+                    ///////////////////////////////////////////////////////////
+                    //// ATTENTION : TOKEN DE BYPASS A METTRE EN PARAMETRE DANS LE CONFIG
+                    curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer $accessToken"));
+                    ///////////////////////////////////////////////////////////
+                }
+            }
+            $json = curl_exec($curl);
+            $error = curl_error ($curl);
+            curl_close($curl);
+            if ($error != "")
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup searchUserTrusted agent " . $mailadress .  ") =>  " . $error));
+            }
+            $response = json_decode($json, true);
+
+            //echo "Niveau = $niveau <br>";
+            //echo print_r($response,true);
+            
+            //$response =  array_change_key_case((array)$response, CASE_LOWER); // array_map('strtolower', $response);
+            
+            $dbconstante = "FORCE_AGENT_MAIL";
+            foreach ((array)$response as $agentinfo)
+            {
+                if (isset($agentinfo["member-all"]))
+                {
+                    // C'est un groupe qui est explosé => On récupère les mails des membres
+                    foreach ($agentinfo["member-all"] as $agentinfo)
+                    {
+                        if ($this->testexistdbconstante($dbconstante))
+                        {
+                            $mail = trim($this->liredbconstante($dbconstante));
+                            if (strlen($mail)>0)
+                            {
+                                $agentinfo["mail"] = $mail;
+                            }
+                        }
+                        if (isset($agentinfo["mail"]))
+                        {
+                            $infoadresse = $niveau . "*" . strtolower($agentinfo["mail"]);
+                            $returnmail[$infoadresse] = $infoadresse;
+                        }
+                        else
+                        {
+                            if (isset($agentinfo["key"]))
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail pour " . $agentinfo["key"] .  ""));
+                            }
+                            else
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail pour " . print_r($agentinfo,true) .  ""));
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // On ne modifie pas l'adresse du demandeur de la convention de télétravail
+                    // même si la constante FORCE_AGENT_MAIL est activée
+                    if ($this->testexistdbconstante($dbconstante) and $niveau>1)
+                    {
+                        $mail = trim($this->liredbconstante($dbconstante));
+                        if (strlen($mail)>0)
+                        {
+                            $agentinfo["mail"] = $mail;
+                        }
+                    }
+                    // C'est un agent => On récupère l'adresse mail
+                    if (isset($agentinfo["mail"]))
+                    {
+                        $infoadresse = $niveau . "*" . strtolower($agentinfo["mail"]);
+                        $returnmail[$infoadresse] = $infoadresse;
+                    }
+                    else
+                    {
+                        if (isset($agentinfo["key"]))
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail pour " . $agentinfo["key"] .  ""));
+                        }
+                        else
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail pour " . print_r($agentinfo,true) .  ""));
+                        }
+                    }
+                }
+            }
+            
+        }    
+
+        //var_dump($returnmail);
+        
+        return $returnmail;
     }
 
 
@@ -3707,7 +3862,25 @@ WHERE  table_schema = Database()
         }
         return $chaine;
     }
+    
+    function utf8_decode($texte)
+    {
+        return iconv('UTF-8', 'ISO-8859-1', $texte);
+    }
 
-}
+    
+    function utf8_encode($texte)
+    {
+        if (mb_detect_encoding($texte, 'UTF-8', true)===false) // Ce n'est pas de l'UTF-8
+        {
+            return iconv('ISO-8859-1', 'UTF-8', $texte);
+        }
+        else
+        {
+            return $texte;
+        }
+    }
+
+    }
 
 ?>

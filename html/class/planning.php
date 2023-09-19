@@ -823,14 +823,14 @@ class planning
             $structure = new structure($this->dbconnect);
             $structure->load($affectation->structureid());
             $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-            $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $nomstructure));
             $pdf->Ln();
         }
         $pdf->Ln(10);
-        $pdf->Cell(60, 10, utf8_decode('Planning de  : ' . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom()));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Planning de  : ' . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom()));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 10, '', true);
-        $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Edité le ' . date("d/m/Y")));
         $pdf->Ln(10);
         
         // echo "Avant le planning <br>";
@@ -838,9 +838,9 @@ class planning
         // ///création du planning suivant le tableau généré
         // /Création des entetes de colones contenant les 31 jours/////
         
-        $pdf->Cell(30, 5, utf8_decode(""), 1, 0, 'C');
+        $pdf->Cell(30, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
         for ($index = 1; $index <= 31; $index ++) {
-            $pdf->Cell(8, 5, utf8_decode($index), 1, 0, 'C');
+            $pdf->Cell(8, 5, $this->fonctions->utf8_decode($index), 1, 0, 'C');
         }
         $pdf->Ln(5);
 
@@ -868,7 +868,7 @@ class planning
                 $monthname = $this->fonctions->nommois($planningelement->date()) . " " . date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
                 if ($currentmonth != "")
                     $pdf->Ln(5);
-                    $pdf->Cell(30, 5, utf8_decode($monthname), 1, 0, 'C');
+                    $pdf->Cell(30, 5, $this->fonctions->utf8_decode($monthname), 1, 0, 'C');
                 
                 $currentmonth = $month;
             }
@@ -879,9 +879,9 @@ class planning
             list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($planningelement->couleur($noiretblanc));
             $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
             if (strcasecmp($planningelement->moment(), fonctions::MOMENT_MATIN) != 0)
-                $pdf->Cell(4, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
+                $pdf->Cell(4, 5, $this->fonctions->utf8_decode(""), 'TBR', 0, 'C', 1);
             else
-                $pdf->Cell(4, 5, utf8_decode(""), 'TBL', 0, 'C', 1);
+                $pdf->Cell(4, 5, $this->fonctions->utf8_decode(""), 'TBL', 0, 'C', 1);
             // echo "Apres les demies-cellules <br>";
 
             if (!in_array($planningelement->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))

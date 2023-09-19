@@ -485,16 +485,25 @@
                 echo "<tr>";
                 echo "<td>";
                 echo "Envoyer les demandes de congés des agents au : ";
-                echo "<SELECT name='agent_mail[" . $structure->id() . "]' size='1'>";
-                echo "<OPTION value=1";
-                if ($codeinterne == 1)
+                echo "<SELECT id='agent_mail[" . $structure->id() . "]' name='agent_mail[" . $structure->id() . "]' size='1' onchange='user_mode_change_" . $structure->id() . "()'>";
+                //echo "<OPTION value=1";
+                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
+                if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT)
+                {
                     echo " selected='selected' ";
+                }
                 echo ">Responsable G2T du service " . $structure->nomcourt() . "</OPTION>";
-                echo "<OPTION value=2";
-                if ($codeinterne == 2)
+//                echo "<OPTION value=2";
+                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_GEST_COURANT;
+                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+                {
                     echo " selected='selected' ";
+                }
                 echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
+                echo "</td>";
+                echo "<td>";
+                echo "<label id='agent_send_identity[" . $structure->id() . "]' ></label>";
                 echo "</td>";
                 echo "</tr>";
 
@@ -504,24 +513,104 @@
                 echo "<tr>";
                 echo "<td>";
                 echo "Envoyer les demandes de congés du responsable G2T au : ";
-                echo "<SELECT name='resp_mail[" . $structure->id() . "]' size='1'>";
+                echo "<SELECT id='resp_mail[" . $structure->id() . "]'  name='resp_mail[" . $structure->id() . "]' size='1' onchange='resp_mode_change_" . $structure->id() . "()'>";
                 if (! is_null($parentstruct)) {
-                    echo "<OPTION value=1";
-                    if ($codeinterne == 1)
+//                    echo "<OPTION value=1";
+                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_RESP_PARENT;
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                    {
                         echo " selected='selected' ";
+                    }
                     echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
-                    echo "<OPTION value=2";
-                    if ($codeinterne == 2)
+//                    echo "<OPTION value=2";
+                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_PARENT;
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT)
+                    {
                         echo " selected='selected' ";
+                    }
                     echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
                 }
-                echo "<OPTION value=3";
-                if ($codeinterne == 3)
+//                echo "<OPTION value=3";
+                echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_COURANT;
+                if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                {
                     echo " selected='selected' ";
+                }
                 echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
                 echo "</SELECT>";
                 echo "</td>";
+                echo "<td>";
+                echo "<label id='resp_send_identity[" . $structure->id() . "]' ></label>";
+                echo "</td>";
                 echo "</tr>";
+                echo "</table>";
+?>
+<script>
+    
+    function user_mode_change_<?php echo $structure->id(); ?>()
+    {
+        //alert('User mode change');
+        var select_tag = document.getElementById('agent_mail[<?php echo $structure->id()?>]');
+        var agent_send_identity = document.getElementById('agent_send_identity[<?php echo $structure->id(); ?>]');
+        //var currentvalue = select_tag.selectedIndex+1;
+        //if (currentvalue===1)
+        if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_AGENT_ENVOI_RESP_COURANT; ?>)
+        {
+            agent_send_identity.innerHTML = '<?php echo $structure->responsable()->identitecomplete();  ?>';
+        }
+        //else if (currentvalue===2)
+        else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_AGENT_ENVOI_GEST_COURANT; ?>)
+        {
+            agent_send_identity.innerHTML = '<?php if (!is_null($structure->gestionnaire())) { echo $structure->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+        }
+        else
+        {
+            alert ('Index inconnu !!');
+        }
+    }
+
+    function resp_mode_change_<?php echo $structure->id(); ?>()
+    {
+        //alert('Resp mode change');
+        var select_tag = document.getElementById('resp_mail[<?php echo $structure->id()?>]');
+        var resp_send_identity = document.getElementById('resp_send_identity[<?php echo $structure->id(); ?>]');
+        //var currentvalue = select_tag.selectedIndex+1;
+        //if (currentvalue===1)
+        if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_RESP_PARENT; ?>)
+        {
+            resp_send_identity.innerHTML = '<?php echo $parentstruct->responsable()->identitecomplete();  ?>';
+        }
+        //else if (currentvalue===2)
+        else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_PARENT; ?>)
+        {
+            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct->gestionnaire())) { echo $parentstruct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+        }
+        //else if (currentvalue===3)
+        else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_COURANT; ?>)
+        {
+            resp_send_identity.innerHTML = '<?php if (!is_null($structure->gestionnaire())) { echo $structure->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+        }
+        else
+        {
+            alert ('Index inconnu !!');
+        }
+    }
+    var select_tag = document.getElementById('agent_mail[<?php echo $structure->id()?>]');
+    select_tag.addEventListener('change', () =>
+        user_mode_change_<?php echo $structure->id(); ?>()
+        );
+    var e = new Event("change");
+    select_tag.dispatchEvent(e);
+
+    var select_tag = document.getElementById('resp_mail[<?php echo $structure->id()?>]');
+    select_tag.addEventListener('change', () =>
+        resp_mode_change_<?php echo $structure->id(); ?>()
+        );
+    var e = new Event("change");
+    select_tag.dispatchEvent(e);
+</script>
+<?php
+                echo "<table>";
                 $gestionnaire = $structure->gestionnaire();
                 echo "\n<tr>";
                 echo "<td>Nom du gestionnaire G2T : ";
@@ -655,10 +744,11 @@
                     echo "</td>";
                     echo "</tr>";
                 }
-                echo "<tr><td height=15></td></tr>";
+//                echo "<tr><td height=15></td></tr>";
                 echo "</table>";
             }
-            echo "<br><br><br>";
+            //echo "<br><br><br>";
+            echo "<br><br>";
         }
     }
 

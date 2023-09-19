@@ -48,7 +48,7 @@
             $errlog = $errlog . "<li>Vous êtes un agent BIATSS qui n'a pas/plus d'affectation fonctionnelle dans SIHAM.</li>";
             $errlog = $errlog . "<li>Vous êtes un agent contractuel dont le contrat n'est pas saisi ou renouvelé dans SIHAM.</li>";
             $errlog = $errlog . "<li>Vous êtes un agent hébergé et votre situation administrative n'est plus valide dans SIHAM.</li>";
-            $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbone.</li>";
+            $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbonne.</li>";
             $errlog = $errlog . "</ul></h3><br>";
             $errlog = $errlog . "<hr>";
             echo $errlog;
@@ -87,7 +87,7 @@
             $errlog = $errlog . "<li>Vous êtes un agent BIATSS qui n'a pas/plus d'affectation fonctionnelle dans SIHAM.</li>";
             $errlog = $errlog . "<li>Vous êtes un agent contractuel dont le contrat n'est pas saisi ou renouvelé dans SIHAM.</li>";
             $errlog = $errlog . "<li>Vous êtes un agent hébergé et votre situation administrative n'est plus valide dans SIHAM.</li>";
-            $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbone.</li>";
+            $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbonne.</li>";
             $errlog = $errlog . "</ul></h3><br>";
             $errlog = $errlog . "<hr>";
             echo $errlog;
@@ -271,8 +271,17 @@
     $testagent->load('-3');
     $cn  = $fonctions->getcnfromldap($testagent->mail());
     echo "Le CN de "  .$testagent->identitecomplete() . " est : $cn <br>";
-*/    
-    
+*/  
+/*   
+ $maillist = $fonctions->explosemail(array(
+     "1*christophe.gurret@univ-paris1.fr",
+     "2*pascal.comte@univ-paris1.fr",
+     "3*canica.sar@univ-paris1.fr",
+     "4*pascal.comte@univ-paris1.fr",
+     "4*eSignature.test@univ-paris1.fr",
+     "5*pascal.comte@univ-paris1.fr"));
+ var_dump($maillist);
+*/
 ?>
 </body>
 </html>

@@ -857,6 +857,16 @@ textarea:required {
 }
 
 /*************************************************
+/ Image de chargement
+/*************************************************/
+.waiting_div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);   
+}
+
+/*************************************************
 / CSS SIHAM pour affichage CET dans module agent de l'ENT
 /*************************************************/
 .siham_css {

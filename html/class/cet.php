@@ -402,7 +402,7 @@ class cet
             $structure = new structure($this->dbconnect);
             $structure->load($affectation->structureid());
             $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-            $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $nomstructure));
             $pdf->Ln(10);
         }
         
@@ -414,28 +414,28 @@ class cet
          */
         if ($ajoutmode) {
             // echo "Apres le nom du service <br>";
-            $pdf->Cell(40, 10, utf8_decode('Votre "Compte Epargne Temps" (CET) vient d\'être alimenté.'));
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Votre "Compte Epargne Temps" (CET) vient d\'être alimenté.'));
             $pdf->Ln(10);
             // $pdf->Cell(40,10,'La date d\'ouverture de votre CET est : ' . $this->datedebut());
             $pdf->Ln(10);
-            $pdf->Cell(40, 10, utf8_decode('Le solde actuel de votre CET est : ' . (($this->cumultotal() - $this->jrspris())) . ' jour(s).'));
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Le solde actuel de votre CET est : ' . (($this->cumultotal() - $this->jrspris())) . ' jour(s).'));
             $pdf->Ln(10);
-            $pdf->Cell(40, 10, utf8_decode('Cette année, vous avez ajouté ' . ($this->cumulannuel($this->fonctions->anneeref())) . ' jour(s).'));
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Cette année, vous avez ajouté ' . ($this->cumulannuel($this->fonctions->anneeref())) . ' jour(s).'));
         } else {
-            $pdf->Cell(40, 10, utf8_decode('Votre "Compte Epargne Temps" (CET) vient d\'être modifié.'));
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Votre "Compte Epargne Temps" (CET) vient d\'être modifié.'));
             $pdf->Ln(10);
-            $pdf->Cell(40, 10, utf8_decode($detail));
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode($detail));
             $pdf->Ln(10);
-            $pdf->Cell(40, 10, utf8_decode('Le solde actuel de votre CET est : ' . ($this->cumultotal() - $this->jrspris()) . ' jour(s).'));
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Le solde actuel de votre CET est : ' . ($this->cumultotal() - $this->jrspris()) . ' jour(s).'));
         }
         // echo "Apres les textes <br>";
         $pdf->Ln(10);
         
         $pdf->Ln(10);
         $pdf->Ln(10);
-        $pdf->Cell(40, 10, utf8_decode("Pour le service de la Direction des ressources humaines"));
+        $pdf->Cell(40, 10, $this->fonctions->utf8_decode("Pour le service de la Direction des ressources humaines"));
         $pdf->Ln(10);
-        $pdf->Cell(40, 10, utf8_decode($responsable->identitecomplete()));
+        $pdf->Cell(40, 10, $this->fonctions->utf8_decode($responsable->identitecomplete()));
         $pdf->Ln(10);
         
         // echo "Nom du fichier....<br>";

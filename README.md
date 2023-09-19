@@ -1,22 +1,24 @@
 # Description
-G2T est une application PHP de gestion de congÈs, du CET (alimentation et droit d'option) et de dÈclaration de tÈlÈtravail.
-Elle est dÈveloppÈe par l'UniversitÈ Paris 1 PanthÈon-Sorbonne.
+G2T est une application PHP/MySQL de gestion de cong√©s, du CET (alimentation et droit d'option) et du t√©l√©travail.
+Elle est d√©velopp√©e par l'Universit√© Paris 1 Panth√©on-Sorbonne.
 Consultez le fichier LICENSE pour plus d'informations. 
 
-# NÈcessite
-* PHP >=7.x
-* Esup-Signature
+# N√©cessite
+* PHP >= 7.x
 * Composer
+* Esup-Signature (https://www.esup-portail.org/wiki/display/SIGN)
+* les services wsgroups (https://github.com/UnivParis1/wsgroups) - /searchUserCAS, /searchUserTrusted, /searchUser, /web-widget
 
-# Base de donnÈes
-* MySQL >=5.7.x
+# Base de donn√©es
+* MySQL >= 5.7.x
 
 # Installation
-* TÈlÈchargez la version de G2T souhaitÈe ([Releases G2T](https://github.com/UnivParis1/g2t/releases)).
-* DÈcompressez le code source ‡ partir du fichier .zip ou .tar.
-* A partir de la racine de l'application, rÈcupÈrez les librairies PHPCas (>=v1.6.x) et fpdf (>=1.82) : `composer install` ou `composer update`
-* Dans le dossier config, crÈez un fichier config.php ‡ partir du fichier config_exemple.php et personnalisez le.
-* Dans le dossier images, dÈposez le fichier du logo de votre Ètablissement avec le nom dÈfini dans le config.php
-* CrÈez les fichiers post_affectation.php, post_solde.php et post_structure.php ‡ partir des fichiers exemples respectifs et adaptez les en fonction de votre besoin.
-* G2T est prÍt ‡ Ítre utilisÈ.
+* T√©l√©chargez la version de G2T souhait√©e ([Releases G2T](https://github.com/UnivParis1/g2t/releases)).
+* D√©compressez le code source √† partir du fichier .zip ou .tar.
+* A partir de la racine de l'application, r√©cup√©rez les librairies PHPCas (>=v1.6.x) et fpdf (>=1.82) : `composer install` ou `composer update`
+* Dans le dossier config, cr√©ez un fichier config.php √† partir du fichier config_exemple.php et personnalisez le.
+* Dans le dossier images, d√©posez le fichier du logo de votre √©tablissement avec le nom d√©fini dans le config.php
+* Cr√©ez les fichiers post_affectation.php, post_solde.php et post_structure.php √† partir des fichiers exemples respectifs et adaptez les en fonction de votre besoin.
+* Sur le serveur MySQL, cr√©ez une base de donn√©es et alimentez la avec les fichiers d'interface
+* G2T est pr√™t √† √™tre utilis√©.
 

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<AGENTS>
+  <AGENT>
+    <AGENTID>455</AGENTID>
+    <CIVIL>MME</CIVIL>
+    <NOM>DOE</NOM>
+    <PRENOM>JANE</PRENOM>
+    <MAIL>Jane.Doe@mon_etab.fr</MAIL>
+    <CATEGORIE>Ing&#xE9;nieur d'Etudes - Cat. A</CATEGORIE>
+    <DUMMY> </DUMMY>
+  </AGENT>
+  <AGENT>
+    <AGENTID>488</AGENTID>
+    <CIVIL>M.</CIVIL>
+    <NOM>DOE</NOM>
+    <PRENOM>JOHN</PRENOM>
+    <MAIL>John.Doe@mon_etab.fr</MAIL>
+    <CATEGORIE>CDD - Cat. inconnue</CATEGORIE>
+    <DUMMY> </DUMMY>
+  </AGENT>
+  <AGENT>
+    <AGENTID>489</AGENTID>
+    <CIVIL>MME</CIVIL>
+    <NOM>TEST</NOM>
+    <PRENOM>CLAIRE</PRENOM>
+    <MAIL>Claire.Test@mon_etab.fr</MAIL>
+    <CATEGORIE>Magasinier - Cat. C</CATEGORIE>
+    <DUMMY> </DUMMY>
+  </AGENT>
+  <AGENT>
+    <AGENTID>9328</AGENTID>
+    <CIVIL>M.</CIVIL>
+    <NOM>UNKNOW</NOM>
+    <PRENOM>INCONNU</PRENOM>
+    <MAIL>Inconnu.Unknow@mon_etab.fr</MAIL>
+    <CATEGORIE>Ing&#xE9;nieur d'Etudes - Cat. A</CATEGORIE>
+    <DUMMY> </DUMMY>
+  </AGENT>
+</AGENTS>

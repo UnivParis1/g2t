@@ -70,15 +70,15 @@
         $pdf->Image($fonctions->imagepath() . '/' . LOGO_FILENAME, 70, 25, 60, 20);
         $pdf->Ln(40);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
-        $pdf->Cell(60, 10, utf8_decode("Historique des demandes de congés de CET depuis le $datedebut -- Edité le " . date("d/m/Y")));
+        $pdf->Cell(60, 10, $fonctions->utf8_decode("Historique des demandes de congés de CET depuis le $datedebut -- Edité le " . date("d/m/Y")));
         $pdf->Ln(15);
 
         $pdf->SetFont('helvetica', 'B', 11, '', true);
-        $pdf->Cell(100, 5, utf8_decode("Identité de l'agent"), 1, 0, 'C');
-        $pdf->Cell(60, 5, utf8_decode("Date de début"), 1, 0, 'C');
-        $pdf->Cell(60, 5, utf8_decode("Date de fin"), 1, 0, 'C');
-        $pdf->Cell(30, 5, utf8_decode("Nbre de jours"), 1, 0, 'C');
-        $pdf->Cell(30, 5, utf8_decode("Statut"), 1, 0, 'C');
+        $pdf->Cell(100, 5, $fonctions->utf8_decode("Identité de l'agent"), 1, 0, 'C');
+        $pdf->Cell(60, 5, $fonctions->utf8_decode("Date de début"), 1, 0, 'C');
+        $pdf->Cell(60, 5, $fonctions->utf8_decode("Date de fin"), 1, 0, 'C');
+        $pdf->Cell(30, 5, $fonctions->utf8_decode("Nbre de jours"), 1, 0, 'C');
+        $pdf->Cell(30, 5, $fonctions->utf8_decode("Statut"), 1, 0, 'C');
         $pdf->Ln();
 
         while ($result = mysqli_fetch_row($query)) {
@@ -98,16 +98,16 @@
             if (($demande->statut() == demande::DEMANDE_VALIDE and $complement->valeur() != $demande->statut()) or ($demande->statut() == demande::DEMANDE_ANNULE and $complement->valeur() != $demande->statut() and $complement->valeur() != "")) {
                 $pdf->SetFont('helvetica', '', 11, '', true);
                 $pdf->SetTextColor(0, 0, 0);
-                $pdf->Cell(100, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
-                $pdf->Cell(60, 5, utf8_decode($demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
-                $pdf->Cell(60, 5, utf8_decode($demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
-                $pdf->Cell(30, 5, utf8_decode($demande->nbrejrsdemande() . "jour(s)"), 1, 0, 'C');
+                $pdf->Cell(100, 5, $fonctions->utf8_decode($agent->identitecomplete()), 1, 0, 'C');
+                $pdf->Cell(60, 5, $fonctions->utf8_decode($demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
+                $pdf->Cell(60, 5, $fonctions->utf8_decode($demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
+                $pdf->Cell(30, 5, $fonctions->utf8_decode($demande->nbrejrsdemande() . "jour(s)"), 1, 0, 'C');
 //                if (strcasecmp($demande->statut(), 'R') == 0) {
                 if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) == 0 or strcmp($demande->statut(), demande::DEMANDE_REFUSE) == 0) { // Si la demande est annulée ou refusée
                     $pdf->SetFont('helvetica', 'B', 11, '', true);
                     $pdf->SetTextColor(255, 0, 0);
                 }
-                $pdf->Cell(30, 5, utf8_decode($fonctions->demandestatutlibelle($demande->statut())), 1, 0, 'C');
+                $pdf->Cell(30, 5, $fonctions->utf8_decode($fonctions->demandestatutlibelle($demande->statut())), 1, 0, 'C');
                 $pdf->SetFont('helvetica', '', 11, '', true);
                 $pdf->SetTextColor(0, 0, 0);
                 $pdf->Ln();

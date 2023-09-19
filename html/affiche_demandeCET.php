@@ -85,6 +85,12 @@
     $user->load($userid);
     
     require ("includes/menu.php");
+    $path = $fonctions->imagepath() . "/chargement.gif";
+    list($width, $height) = getimagesize("$path");
+    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+    $data = file_get_contents($path);
+    $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
     
     //echo "<br>" . print_r($_POST,true) . "<br>";
 
@@ -399,6 +405,20 @@
     }
     
 ?>
+<script>
+    window.addEventListener("load", (event) => {
+        var waiting_img = document.getElementById('waiting_img');
+        if (waiting_img)
+        {
+            waiting_img.hidden=true;
+        }
+        var waiting_div = document.getElementById('waiting_div');
+        if (waiting_div)
+        {
+            waiting_div.hidden=true;
+        }
+    });
+</script>
 
 </body>
 </html>

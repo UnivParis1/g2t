@@ -5,6 +5,13 @@ use Fpdf\Fpdf as FPDF;
 class structure
 {
 
+    public const MAIL_RESP_ENVOI_RESP_PARENT = "1";
+    public const MAIL_RESP_ENVOI_GEST_PARENT = "2";
+    public const MAIL_RESP_ENVOI_GEST_COURANT = "3";
+    
+    public const MAIL_AGENT_ENVOI_RESP_COURANT = "1";
+    public const MAIL_AGENT_ENVOI_GEST_COURANT = "2";
+
     private $dbconnect = null;
 
     private $structureid = null;
@@ -424,7 +431,7 @@ class structure
             //error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne ");
             $agent = new agent($this->dbconnect);
             switch ($codeinterne) {
-                case 2: // Envoi au gestionnaire du service parent
+                case structure::MAIL_RESP_ENVOI_GEST_PARENT : // Envoi au gestionnaire du service parent
                     $parentstruct = $this->parentstructure();
                     if (! is_null($parentstruct))
                     {
@@ -439,7 +446,7 @@ class structure
                         }
                     }
                     break;
-                case 3: // Envoi au gestionnaire du service courant
+                case structure::MAIL_RESP_ENVOI_GEST_COURANT: // Envoi au gestionnaire du service courant
                     //if ($this->gestionnaireid . "" != "")
                     if ($agent->existe($this->gestionnaireid))
                     {
@@ -451,7 +458,7 @@ class structure
                     }
                     break;
                 default: // $codeinterne = 1 ou $codeinterne non initialisé
-                    $codeinterne = 1; // Envoi au responsable du service parent
+                    $codeinterne = structure::MAIL_RESP_ENVOI_RESP_PARENT; // Envoi au responsable du service parent
                     $parentstruct = $this->parentstructure();
                     // error_log(basename(__FILE__) . " " . $this->nomlong);
                     // error_log(basename(__FILE__) . " " . $parentstruct->nomlong);
@@ -508,7 +515,7 @@ class structure
             $agent = new agent($this->dbconnect);
             switch ($codeinterne) 
             {
-                case 2: // Envoi au gestionnaire du service courant
+                case structure::MAIL_AGENT_ENVOI_GEST_COURANT: // Envoi au gestionnaire du service courant
                     //if ($this->gestionnaireid . "" != "")
                     if ($agent->existe($this->gestionnaireid))
                     {
@@ -520,7 +527,7 @@ class structure
                     }
                     break;
                 default: // $codeinterne = 1 ou $codeinterne non initialisé
-                    $codeinterne = 1; // Envoi au responsable du service courant
+                    $codeinterne = structure::MAIL_AGENT_ENVOI_RESP_COURANT; // Envoi au responsable du service courant
                     //if ($this->responsableid . "" != "")
                     if ($agent->existe($this->responsableid))
                     {
@@ -579,7 +586,7 @@ class structure
     {
         if (is_null($respid)) {
             if (is_null($this->responsableid) or ($this->responsableid == '')) {
-                $errlog = "<B><div style='color:#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
+                //$errlog = "<B><div style='color:#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
@@ -612,7 +619,7 @@ class structure
         if (is_null($gestid)) {
             if (is_null($this->gestionnaireid) or ($this->gestionnaireid == '')) {
                 $errlog = "<br><B><div style='color:#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
-                echo $errlog . "<br/>";
+                //echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
                 $gestionnaire = new agent($this->dbconnect);
@@ -1309,12 +1316,12 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
-        $pdf->Cell(60, 10, utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
         $pdf->Ln(10);
-        $pdf->Cell(60, 10, utf8_decode('Planning du mois de : ' . $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . substr($mois_annee_debut, 3)));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Planning du mois de : ' . $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . substr($mois_annee_debut, 3)));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 11, '', true);
-        $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Edité le ' . date("d/m/Y")));
         $pdf->Ln(10);
         
         // echo "Avant le planning <br>";
@@ -1323,7 +1330,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) {
             $pdf->SetTextColor(204, 0, 0);
-            $pdf->Cell(60, 10, utf8_decode("Attention : Les informations antérieures à la date du jour ont été masquées."));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode("Attention : Les informations antérieures à la date du jour ont été masquées."));
             $pdf->SetTextColor(0, 0, 0);
             $pdf->Ln(10);
         }
@@ -1344,14 +1351,14 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             if ($titre_a_ajouter) 
             {
                 $pdf->SetFont('helvetica', 'B', 8, '', true);
-                $pdf->Cell(60, 5, utf8_decode(""), 1, 0, 'C');
+                $pdf->Cell(60, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
                 for ($index = 1; $index <= count($planningservice[$agentid]->planning()) / 2; $index ++) {
-                    $pdf->Cell(6, 5, utf8_decode($index), 1, 0, 'C');
+                    $pdf->Cell(6, 5, $this->fonctions->utf8_decode($index), 1, 0, 'C');
                 }
                 $pdf->Ln(5);
-                $pdf->Cell(60, 5, utf8_decode(""), 1, 0, 'C');
+                $pdf->Cell(60, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
                 for ($index = 1; $index <= count($planningservice[$agentid]->planning()) / 2; $index ++) {
-                    $pdf->Cell(6, 5, utf8_decode(substr($this->fonctions->nomjour(str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut), 0, 2)), 1, 0, 'C');
+                    $pdf->Cell(6, 5, $this->fonctions->utf8_decode(substr($this->fonctions->nomjour(str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut), 0, 2)), 1, 0, 'C');
                 }
                 $titre_a_ajouter = FALSE;
             }
@@ -1362,8 +1369,8 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             // echo "l'agent $agentid est chargé ... <br>";
             $pdf->Ln(5);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
-//            $pdf->Cell(60, 5, utf8_decode($agent->nom() . " " . $agent->prenom()), 1, 0, 'C');
-            $pdf->Cell(60, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
+//            $pdf->Cell(60, 5, $this->fonctions->utf8_decode($agent->nom() . " " . $agent->prenom()), 1, 0, 'C');
+            $pdf->Cell(60, 5, $this->fonctions->utf8_decode($agent->identitecomplete()), 1, 0, 'C');
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
             // echo "Apres chargement des elements <br>";
@@ -1372,9 +1379,9 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($element->couleur($noiretblanc));
                 $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
                 if (strcasecmp($element->moment(), fonctions::MOMENT_MATIN) != 0)
-                    $pdf->Cell(3, 5, utf8_decode(""), 'TBR', 0, 'C', 1);
+                    $pdf->Cell(3, 5, $this->fonctions->utf8_decode(""), 'TBR', 0, 'C', 1);
                 else
-                    $pdf->Cell(3, 5, utf8_decode(""), 'TBL', 0, 'C', 1);
+                    $pdf->Cell(3, 5, $this->fonctions->utf8_decode(""), 'TBL', 0, 'C', 1);
 
                 if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
                 {
@@ -1535,12 +1542,12 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
-        $pdf->Cell(60, 10, utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
         $pdf->Ln(10);
-        $pdf->Cell(60, 10, utf8_decode('Liste des agents en télétravail pour la période du ' . $this->fonctions->formatdate($tableaudate[0][0]) . " au " . $this->fonctions->formatdate($tableaudate[count($tableaudate)-1][1])));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Liste des agents en télétravail pour la période du ' . $this->fonctions->formatdate($tableaudate[0][0]) . " au " . $this->fonctions->formatdate($tableaudate[count($tableaudate)-1][1])));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 11, '', true);
-        $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Edité le ' . date("d/m/Y")));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 8, '', true);
         
@@ -1564,20 +1571,20 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 if (!$agenttrouve)
                 {
                     // C'est le premier agent qu'on trouve ==> On crée l'entête
-                    $pdf->Cell(60, 5, utf8_decode("Nom de l'agent"), 1, 0, 'C');
+                    $pdf->Cell(60, 5, $this->fonctions->utf8_decode("Nom de l'agent"), 1, 0, 'C');
                     foreach ($tableaudate as $tabdebutfin)
                     {
-                        $pdf->cell(40, 5, utf8_decode("$tabdebutfin[2]"), 1, 0, 'C');
+                        $pdf->cell(40, 5, $this->fonctions->utf8_decode("$tabdebutfin[2]"), 1, 0, 'C');
                     }
                 }
                 // L'agent est dans la structure et est en télétravail durant la période
                 $pdf->Ln(5);
-                $pdf->Cell(60, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
+                $pdf->Cell(60, 5, $this->fonctions->utf8_decode($agent->identitecomplete()), 1, 0, 'C');
                 foreach ($tableaudate as $tabdebutfin)
                 {
                     //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("debut = " . $tabdebutfin[0] . " fin = " . $tabdebutfin[1]));
                     $nombrejoursteletravail = $agent->nbjoursteletravail($tabdebutfin[0], $tabdebutfin[1]);
-                    $pdf->cell(40, 5, utf8_decode($nombrejoursteletravail), 1, 0, 'C');
+                    $pdf->cell(40, 5, $this->fonctions->utf8_decode($nombrejoursteletravail), 1, 0, 'C');
                 }
                 $agenttrouve = true;
             }
@@ -1598,19 +1605,19 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     if (!$agenttrouve)
                     {
                         // C'est le premier agent qu'on trouve ==> On crée l'entête
-                        $pdf->Cell(60, 5, utf8_decode("Nom de l'agent"), 1, 0, 'C');
+                        $pdf->Cell(60, 5, $this->fonctions->utf8_decode("Nom de l'agent"), 1, 0, 'C');
                         foreach ($tableaudate as $tabdebutfin)
                         {
-                            $pdf->cell(40, 5, utf8_decode("$tabdebutfin[2]"), 1, 0, 'C');
+                            $pdf->cell(40, 5, $this->fonctions->utf8_decode("$tabdebutfin[2]"), 1, 0, 'C');
                         }
                     }
                     // L'agent est dans la structure et est en télétravail durant la période
                     $pdf->Ln(5);
-                    $pdf->Cell(60, 5, utf8_decode($agent->identitecomplete()), 1, 0, 'C');
+                    $pdf->Cell(60, 5, $this->fonctions->utf8_decode($agent->identitecomplete()), 1, 0, 'C');
                     foreach ($nombrejoursteletravail as $nombrejrs)
                     {
                         //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("debut = " . $tabdebutfin[0] . " fin = " . $tabdebutfin[1]));
-                        $pdf->cell(40, 5, utf8_decode($nombrejrs), 1, 0, 'C');
+                        $pdf->cell(40, 5, $this->fonctions->utf8_decode($nombrejrs), 1, 0, 'C');
                     }
                     $agenttrouve = true;
                     
@@ -1620,12 +1627,12 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         }
         if (!$agenttrouve)
         {
-            $pdf->Cell(60, 5, utf8_decode("Aucun agent n'est en télétravail durant cette période."));
+            $pdf->Cell(60, 5, $this->fonctions->utf8_decode("Aucun agent n'est en télétravail durant cette période."));
         }
         $responsable = $this->responsable();
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 8, '', true);
-        $pdf->Cell(60, 5, utf8_decode("Signature du responsable : " . $responsable->identitecomplete()));
+        $pdf->Cell(60, 5, $this->fonctions->utf8_decode("Signature du responsable : " . $responsable->identitecomplete()));
         
         $pdf->Ln(8);
         

@@ -382,7 +382,7 @@ class agent
             }
             else
             {
-                $this->nom = utf8_encode($name);
+                $this->nom = $this->fonctions->utf8_encode($name);
             }
         }
     }
@@ -415,7 +415,7 @@ class agent
             }
             else
             {
-                $this->prenom = utf8_encode($firstname);
+                $this->prenom = $this->fonctions->utf8_encode($firstname);
             }
         }
     }
@@ -448,7 +448,7 @@ class agent
             }
             else
             {
-                $this->civilite = utf8_encode($civilite);
+                $this->civilite = $this->fonctions->utf8_encode($civilite);
             }
         }
     }
@@ -525,7 +525,7 @@ class agent
             }
             else
             {
-                $this->adressemail = utf8_encode($mail);
+                $this->adressemail = $this->fonctions->utf8_encode($mail);
             }
         }
     }
@@ -707,7 +707,7 @@ class agent
             }
             else
             {
-                $this->typepopulation = utf8_encode($type);
+                $this->typepopulation = $this->fonctions->utf8_encode($type);
             }
         }
     }
@@ -1223,11 +1223,11 @@ class agent
 	        $msg .= "\r\n";
                 if (is_object($destinataire))
                 {
-                    $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+                    $msg .= "Bonjour " . $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
                 }
                 else
                 {
-                    // $msg .= "Bonjour " . utf8_encode(ucwords(mb_strtolower($destinataire,'UTF-8'))) . ",<br><br>";
+                    // $msg .= "Bonjour " . $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire,'UTF-8'))) . ",<br><br>";
                     $msg .= "Bonjour,<br><br>";
                 }
 	        $msg .= str_replace("&#039;", "'", str_replace("&gt;", ">", str_replace("&lt;", "<", nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false))))) . "<br>";
@@ -1339,7 +1339,7 @@ class agent
                         mail($destinataire . " <" . $destinataire . ">", "$encoded_subject", "$msg", "$header");
                     }
                         //  mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$objet", "$msg", "$header");
-                        // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", utf8_encode("$objet"), "$msg", "$header");
+                        // mail($destinataire->prenom() . " " . $destinataire->nom() . " <" .$destinataire->mail() . ">", $this->fonctions->utf8_encode("$objet"), "$msg", "$header");
                     ini_restore('sendmail_from');
                     // On fait une pause de 1 sec pour eviter de se faire jeter par le serveur SMTP
                     if (defined('TYPE_ENVIRONNEMENT'))
@@ -1748,15 +1748,15 @@ class agent
                 $structure = new structure($this->dbconnect);
                 $structure->load($affectation->structureid());
                 $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-                $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
+                $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $nomstructure));
             }
             
             // $pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('.$this->structure()->nomcourt() . ')' );
             $pdf->Ln(5);
-            $pdf->Cell(60, 10, utf8_decode('Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom()));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom()));
             $pdf->Ln(5);
             $pdf->SetFont('helvetica', 'B', 8, '', true);
-            $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Edité le ' . date("d/m/Y")));
         }
         $pdf->SetFont('helvetica', '', 6, '', true);
         $pdf->Ln(10);
@@ -1767,15 +1767,15 @@ class agent
                 $headertext = $headertext . $this->fonctions->formatdate(($anneeref + 1) . $this->fonctions->finperiode());
             else
                 $headertext = $headertext . date("d/m/Y");
-                $pdf->Cell(215, 5, utf8_decode($headertext), 1, 0, 'C');
+                $pdf->Cell(215, 5, $this->fonctions->utf8_decode($headertext), 1, 0, 'C');
         } else
-            $pdf->Cell(215, 5, utf8_decode("Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom()), 1, 0, 'C');
+            $pdf->Cell(215, 5, $this->fonctions->utf8_decode("Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom()), 1, 0, 'C');
         $pdf->Ln(5);
-        $pdf->Cell(75, 5, utf8_decode("Type de demande"), 1, 0, 'C');
-        $pdf->Cell(30, 5, utf8_decode("Droits acquis"), 1, 0, 'C');
-        $pdf->Cell(30, 5, utf8_decode("Droit pris"), 1, 0, 'C');
-        $pdf->Cell(30, 5, utf8_decode("Solde actuel"), 1, 0, 'C');
-        $pdf->Cell(50, 5, utf8_decode("Demandes en attente"), 1, 0, 'C');
+        $pdf->Cell(75, 5, $this->fonctions->utf8_decode("Type de demande"), 1, 0, 'C');
+        $pdf->Cell(30, 5, $this->fonctions->utf8_decode("Droits acquis"), 1, 0, 'C');
+        $pdf->Cell(30, 5, $this->fonctions->utf8_decode("Droit pris"), 1, 0, 'C');
+        $pdf->Cell(30, 5, $this->fonctions->utf8_decode("Solde actuel"), 1, 0, 'C');
+        $pdf->Cell(50, 5, $this->fonctions->utf8_decode("Demandes en attente"), 1, 0, 'C');
         $pdf->Ln(5);
         
         $totaldroitaquis = 0;
@@ -1784,7 +1784,7 @@ class agent
         $totaldemandeattente = 0;
         $soldeliste = $this->soldecongesliste($anneeref);
         foreach ((array) $soldeliste as $key => $tempsolde) {
-            $pdf->Cell(75, 5, utf8_decode($tempsolde->typelibelle()), 1, 0, 'C');
+            $pdf->Cell(75, 5, $this->fonctions->utf8_decode($tempsolde->typelibelle()), 1, 0, 'C');
             if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
             {
                 $textdroitaquis = "";
@@ -1798,17 +1798,17 @@ class agent
                         $textdroitaquis = $textdroitaquis . " (C. BONIF.)";
                 }
             }
-            $pdf->Cell(30, 5, utf8_decode($textdroitaquis), 1, 0, 'C');
+            $pdf->Cell(30, 5, $this->fonctions->utf8_decode($textdroitaquis), 1, 0, 'C');
             if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas les droits pris
             {
-                $pdf->Cell(30, 5, utf8_decode(""), 1, 0, 'C');
+                $pdf->Cell(30, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
             }
             else
             {
-                $pdf->Cell(30, 5, utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
+                $pdf->Cell(30, 5, $this->fonctions->utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
             }
-            $pdf->Cell(30, 5, utf8_decode($tempsolde->solde() . ""), 1, 0, 'C');
-            $pdf->Cell(50, 5, utf8_decode($tempsolde->demandeenattente() . ""), 1, 0, 'C');
+            $pdf->Cell(30, 5, $this->fonctions->utf8_decode($tempsolde->solde() . ""), 1, 0, 'C');
+            $pdf->Cell(50, 5, $this->fonctions->utf8_decode($tempsolde->demandeenattente() . ""), 1, 0, 'C');
             $totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis();
             $totaldroitpris = $totaldroitpris + $tempsolde->droitpris();
             $totaldroitrestant = $totaldroitrestant + $tempsolde->solde();
@@ -1823,7 +1823,7 @@ class agent
          * $pdf->Cell(50,5,$totaldemandeattente . "",1,0,'C');
          */
         // $pdf->Ln(8);
-        $pdf->Cell(8, 5, utf8_decode("Soldes de congés donnés sous réserve du respect des règles de gestion"));
+        $pdf->Cell(8, 5, $this->fonctions->utf8_decode("Soldes de congés donnés sous réserve du respect des règles de gestion"));
         $pdf->Ln(8);
         // ob_end_clean();
         if ($closeafter == TRUE)
@@ -2316,16 +2316,16 @@ class agent
                 $structure = new structure($this->dbconnect);
                 $structure->load($affectation->structureid());
                 $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-                $pdf->Cell(60, 10, utf8_decode('Service : ' . $nomstructure));
+                $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $nomstructure));
                 $pdf->Ln();
             }
             
-            $pdf->Cell(60, 10, utf8_decode('Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom()));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Historique des demandes de  : ' . $this->civilite() . " " . $this->nom() . " " . $this->prenom()));
             $pdf->Ln(5);
-            $pdf->Cell(60, 10, utf8_decode("Période du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin)));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode("Période du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin)));
             $pdf->Ln(10);
             $pdf->SetFont('helvetica', 'B', 6, '', true);
-            $pdf->Cell(60, 10, utf8_decode('Edité le ' . date("d/m/Y")));
+            $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Edité le ' . date("d/m/Y")));
             $pdf->Ln(10);
         }
         $pdf->SetFont('helvetica', '', 6, '', true);
@@ -2340,22 +2340,22 @@ class agent
             $headertext = $headertext . date("d/m/Y");
         }
         
-            $pdf->Cell(275, 5, utf8_decode($headertext), 1, 0, 'C');
+            $pdf->Cell(275, 5, $this->fonctions->utf8_decode($headertext), 1, 0, 'C');
         $pdf->Ln(5);
         
         if (count($demandeliste) == 0)
         {
-            $pdf->Cell(275, 5, utf8_decode("L'agent n'a aucun congé posé pour la période de référence en cours."), 1, 0, 'C');
+            $pdf->Cell(275, 5, $this->fonctions->utf8_decode("L'agent n'a aucun congé posé pour la période de référence en cours."), 1, 0, 'C');
         }
         else 
         {
-            $pdf->Cell(60, 5, utf8_decode("Type de demande"), 1, 0, 'C');
-            $pdf->Cell(25, 5, utf8_decode("Date de dépot"), 1, 0, 'C');
-            $pdf->Cell(30, 5, utf8_decode("Date de début"), 1, 0, 'C');
-            $pdf->Cell(30, 5, utf8_decode("Date de fin"), 1, 0, 'C');
-            $pdf->Cell(20, 5, utf8_decode("Nbr de jours"), 1, 0, 'C');
-            $pdf->Cell(30, 5, utf8_decode("Etat de la demande"), 1, 0, 'C');
-            $pdf->Cell(80, 5, utf8_decode("Motif (obligatoire si le congé est annulé)"), 1, 0, 'C');
+            $pdf->Cell(60, 5, $this->fonctions->utf8_decode("Type de demande"), 1, 0, 'C');
+            $pdf->Cell(25, 5, $this->fonctions->utf8_decode("Date de dépot"), 1, 0, 'C');
+            $pdf->Cell(30, 5, $this->fonctions->utf8_decode("Date de début"), 1, 0, 'C');
+            $pdf->Cell(30, 5, $this->fonctions->utf8_decode("Date de fin"), 1, 0, 'C');
+            $pdf->Cell(20, 5, $this->fonctions->utf8_decode("Nbr de jours"), 1, 0, 'C');
+            $pdf->Cell(30, 5, $this->fonctions->utf8_decode("Etat de la demande"), 1, 0, 'C');
+            $pdf->Cell(80, 5, $this->fonctions->utf8_decode("Motif (obligatoire si le congé est annulé)"), 1, 0, 'C');
             $pdf->ln(5);
             foreach ($demandeliste as $key => $demande) {
                 //if ($demande->motifrefus() != "" or strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) {
@@ -2368,13 +2368,13 @@ class agent
                         $libelledemande = substr($demande->typelibelle(), 0, 40) . "...";
                     }
  */
-                    $pdf->Cell(60, 5, utf8_decode($libelledemande), 1, 0, 'C');
-                    $pdf->Cell(25, 5, utf8_decode($demande->date_demande()), 1, 0, 'C');
-                    $pdf->Cell(30, 5, utf8_decode($demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
-                    $pdf->Cell(30, 5, utf8_decode($demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
-                    $pdf->Cell(20, 5, utf8_decode($demande->nbrejrsdemande()), 1, 0, 'C');
-                    $pdf->Cell(30, 5, utf8_decode($this->fonctions->demandestatutlibelle($demande->statut())), 1, 0, 'C');
-                    $pdf->Cell(80, 5, utf8_decode($demande->motifrefus()), 1, 0, 'C');
+                    $pdf->Cell(60, 5, $this->fonctions->utf8_decode($libelledemande), 1, 0, 'C');
+                    $pdf->Cell(25, 5, $this->fonctions->utf8_decode($demande->date_demande()), 1, 0, 'C');
+                    $pdf->Cell(30, 5, $this->fonctions->utf8_decode($demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
+                    $pdf->Cell(30, 5, $this->fonctions->utf8_decode($demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
+                    $pdf->Cell(20, 5, $this->fonctions->utf8_decode($demande->nbrejrsdemande()), 1, 0, 'C');
+                    $pdf->Cell(30, 5, $this->fonctions->utf8_decode($this->fonctions->demandestatutlibelle($demande->statut())), 1, 0, 'C');
+                    $pdf->Cell(80, 5, $this->fonctions->utf8_decode($demande->motifrefus()), 1, 0, 'C');
                     $pdf->ln(5);
                 }
             }
@@ -2412,10 +2412,10 @@ class agent
             {
                 $headertext = $headertext . date("d/m/Y");
             }
-            $pdf->Cell(100, 5, utf8_decode($headertext), 1, 0, 'C');
+            $pdf->Cell(100, 5, $this->fonctions->utf8_decode($headertext), 1, 0, 'C');
             $pdf->Ln(5);
-            $pdf->Cell(80, 5, utf8_decode("Type de demande"), 1, 0, 'C');
-            $pdf->Cell(20, 5, utf8_decode("Droit pris"), 1, 0, 'C');
+            $pdf->Cell(80, 5, $this->fonctions->utf8_decode("Type de demande"), 1, 0, 'C');
+            $pdf->Cell(20, 5, $this->fonctions->utf8_decode("Droit pris"), 1, 0, 'C');
             $pdf->ln(5);
             ksort($synthesetab);
             foreach ($synthesetab as $key => $nbrejrs) {
@@ -2423,8 +2423,8 @@ class agent
                 if (strlen($key) > 40) {
                     $libelledemande = substr($key, 0, 40) . "...";
                 }
-                $pdf->Cell(80, 5, utf8_decode($libelledemande), 1, 0, 'C');
-                $pdf->Cell(20, 5, utf8_decode($nbrejrs), 1, 0, 'C');
+                $pdf->Cell(80, 5, $this->fonctions->utf8_decode($libelledemande), 1, 0, 'C');
+                $pdf->Cell(20, 5, $this->fonctions->utf8_decode($nbrejrs), 1, 0, 'C');
                 $pdf->ln(5);
             }
         }
@@ -3236,11 +3236,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $strresultat = $strresultat . ';' . $this->agentid;
                 if (substr($codecontrat, 0, 5) != 'CONTR')
                 {
-                    $codecontrat = '';
+                    $strresultat = $strresultat . ';' . '0'; // Si ce n'est pas un contrat, le numéro de la ligne doit être vide ou égal à 0
                 }
-                // On ne met pas le code contrat mais le numéro de la ligne du contrat car il est nécessaire pour calculer
-                // le solde de congés des agents
-                $strresultat = $strresultat . ';' . $statutnumligne; // $codecontrat;
+                else
+                {
+                    // On ne met pas le code contrat mais le numéro de la ligne du contrat car il est nécessaire pour calculer
+                    // le solde de congés des agents
+                    $strresultat = $strresultat . ';' . $statutnumligne; // $codecontrat;
+                }
                 $strresultat = $strresultat . ';' . $datedebut;
                 $strresultat = $strresultat . ';' . $datefin;
                 $strresultat = $strresultat . ';' . date("Ymd");
@@ -4764,57 +4767,111 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     function getresponsable_niveau2()
     {
         
-        // echo "L'agent est => " . $this->identitecomplete() . "<br>";
+        //echo "L'agent est => " . $this->identitecomplete() . "<br>";
         $structure = new structure($this->dbconnect);
         if (!$structure->load($this->structureid()))
         {
-            //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
+            //echo $this->fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
             return false;
         }
         $codeinterne = null;
+        //echo "Avant le if this->agent....<br>";
         if ($this->agentid()==$structure->responsable()->agentid())
         {
             $responsable = $structure->resp_envoyer_a($codeinterne,false);
+            if (!is_null($responsable))
+            {
+                //echo "Dans le !null(responsable)<br>";
+                // Si on envoie au gestionnaire courant => La structure est la même
+                if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                {
+                    //echo "Avant le load de la structure de l'agent<br>";
+                    $structureresp = new structure($this->dbconnect);
+                    $structureresp->load($this->structureid());
+                    //echo "fin du load de la structure de l'agent<br>";
+                }
+                else
+                // Si on l'envoi au responsable ou au gestionnaire de la structure parente => La strucuture est la parente
+                {
+                    //echo "Avant l'affectation de la strucuture parente<br>";
+                    $structureresp = $structure->parentstructure();
+                }
+            }
         }
         else
         {
             $responsable = $structure->agent_envoyer_a($codeinterne,false);
+            // Pour un agent, on envoie forcément au responsable ou au gestion de la structure courante
+            $structureresp = new structure($this->dbconnect);
+            $structureresp->load($this->structureid());            
         }
         if (is_null($responsable))
         {
-            //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de responsable.<br>");
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de responsable.<br>");
             return false;
         }
-        // echo "Le responsable de l'agent est : " . $responsable->identitecomplete() . "<br>";
+        //echo "Le responsable de l'agent est : " . $responsable->identitecomplete() . "<br>";
+
+/* 
         $structureresp = new structure($this->dbconnect);
         if (!$structureresp->load($responsable->structureid()))
         {
             //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : Le responsable n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
             return false;
         }
+ */
         $codeinterne = null;
         if ($responsable->agentid()==$structureresp->responsable()->agentid())
         {
             $responsable2 = $structureresp->resp_envoyer_a($codeinterne,false);
+            if (!is_null($responsable2))
+            {
+                // Si on envoie au gestionnaire courant => La structure est la même
+                if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                {
+                    $structureresp2 = new structure($this->dbconnect);
+                    if (!$structureresp2->load($responsable->structureid()))
+                    {
+                        $structureresp2 = null;
+                    }
+                }
+                else
+                // Si on l'envoi au responsable ou au gestionnaire de la structure parente => La strucuture est la parente
+                {
+                    $structureresp2 = $structure->parentstructure();
+                }
+            }
         }
         else
         {
             $responsable2 = $structureresp->agent_envoyer_a($codeinterne,false);
+            // Pour un agent, on envoie forcément au responsable ou au gestion de la structure courante
+            $structureresp2 = new structure($this->dbconnect);
+            if (!$structureresp2->load($responsable->structureid()))
+            {
+                $structureresp2 = null;
+            }
         }
-        // echo "Le n+2 de l'agent est : " . $responsable2->identitecomplete() . "<br>";
+        //echo "Le n+2 de l'agent est : " . $responsable2->identitecomplete() . "<br>";
+/*
         $structureresp2 = new structure($this->dbconnect);
         if ($structureresp2->load($responsable2->structureid()))
         {
+ */
+        if (!is_null($structureresp2))
+        {
+            //var_dump($structureresp2->nomlong() . ' ' . $structureresp2->id());
             $tabstructure = $structureresp2->structureinclue();
+            //var_dump($tabstructure);
             if (!isset($tabstructure[$structureresp->id()]))
             {
-                //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : Le structure du responsable niveau 2 ne contient pas la structure du responsable.<br>");
+                //echo $this->fonctions->showmessage(fonctions::MSGERROR, "Erreur : La structure du responsable niveau 2 ne contient pas la structure du responsable.<br>");
                 return false;
             }
         }
         else
         {
-            //echo $fonctions->showmessage(fonctions::MSGWARNING, "Warning : Le responsable niveau 2 n'a pas de structure d'affectation ou celle-ci est inconnue => Mais c'est pas grave.<br>");
+            //echo $this->fonctions->showmessage(fonctions::MSGWARNING, "Warning : Le responsable niveau 2 n'a pas de structure d'affectation ou celle-ci est inconnue => Mais c'est pas grave.<br>");
         }
         return $responsable2;
     }

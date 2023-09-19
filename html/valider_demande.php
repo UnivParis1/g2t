@@ -314,7 +314,7 @@
                     // Ticket GLPI 147328
                     // Correction pour les responsables des sous-structures (ticket GLPI 148635)
                     if ($structure->responsable()->agentid() == $membre->agentid() 
-                            and $codeinterne!=3  // 3 = Gestionnaire de la structure courante
+                            and $codeinterne!=structure::MAIL_RESP_ENVOI_GEST_COURANT  // 3 = Gestionnaire de la structure courante
                             and $structure->id() == $user->structureid())
                     {
                         $todisplay = false;

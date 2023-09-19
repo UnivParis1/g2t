@@ -600,7 +600,7 @@ class declarationTP
         $pdf->Ln(50);
         // $pdf->Cell(60,10,'Service : '. $this->structure()->nomlong().' ('. $this->structure()->nomcourt() .')' );
         $pdf->Ln(10);
-        $pdf->Cell(60, 10, utf8_decode('Demande de temps partiel N°' . $this->declarationTPid() . ' de ' . $this->agent()->identitecomplete()));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Demande de temps partiel N°' . $this->declarationTPid() . ' de ' . $this->agent()->identitecomplete()));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', '', 10, '', true);
         // echo "Avant le test statut <br>";
@@ -610,18 +610,18 @@ class declarationTP
         // else
         // $decision='refusée';
         
-        $pdf->Cell(40, 10, utf8_decode("La demande de temps partiel que vous avez déposée le " . $this->datedemande() . ' a été ' . $decision . ' le ' . $this->datestatut()));
+        $pdf->Cell(40, 10, $this->fonctions->utf8_decode("La demande de temps partiel que vous avez déposée le " . $this->datedemande() . ' a été ' . $decision . ' le ' . $this->datestatut()));
         $pdf->Ln(10);
         // echo "Avant test quotité <br>";
-        $pdf->Cell(60, 10, utf8_decode('Récapitulatif de votre demande de temps partiel pour la période du ' . $this->datedebut() . ' au ' . $this->datefin() . '.'));
+        $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Récapitulatif de votre demande de temps partiel pour la période du ' . $this->datedebut() . ' au ' . $this->datefin() . '.'));
         $pdf->Ln(10);
         $pdf->SetFont('helvetica', 'B', 6, '', true);
         
         $cellheight = 5;
-        $pdf->Cell(20, $cellheight, utf8_decode(''), 1, 0, 'L', false);
+        $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode(''), 1, 0, 'L', false);
         // On affiche les 5 jours de la semaine
         for ($cpt = 1; $cpt < 6; $cpt ++) {
-            $pdf->Cell(20, $cellheight, utf8_decode($this->fonctions->nomjourparindex($cpt)), 1, 0, 'C', false);
+            $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode($this->fonctions->nomjourparindex($cpt)), 1, 0, 'C', false);
         }
         $element = new planningelement($this->dbconnect);
         $element->type("tppar");
@@ -630,7 +630,7 @@ class declarationTP
         $pdf->SetFillColor($rgbarray[0], $rgbarray[1], $rgbarray[2]);
         
         $pdf->Ln();
-        $pdf->Cell(20, $cellheight, utf8_decode('Semaine paire'), 1, 0, 'L', false);
+        $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode('Semaine paire'), 1, 0, 'L', false);
         for ($cpt = 0; $cpt < 10; $cpt ++) {
             if ($this->tabtpspartiel[$cpt] == 1)
                 $fillcel = true;
@@ -638,12 +638,12 @@ class declarationTP
                 $fillcel = false;
             
             if ($cpt % 2 == 0)
-                $pdf->Cell(10, $cellheight, utf8_decode(''), 'LTB', 0, 'C', $fillcel);
+                $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'LTB', 0, 'C', $fillcel);
             else
-                $pdf->Cell(10, $cellheight, utf8_decode(''), 'RTB', 0, 'C', $fillcel);
+                $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'RTB', 0, 'C', $fillcel);
         }
         $pdf->Ln();
-        $pdf->Cell(20, $cellheight, utf8_decode('Semaine impaire'), 1, 0, 'L', false);
+        $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode('Semaine impaire'), 1, 0, 'L', false);
         for ($cpt = 10; $cpt < 20; $cpt ++) {
             if ($this->tabtpspartiel[$cpt] == 1)
                 $fillcel = true;
@@ -651,9 +651,9 @@ class declarationTP
                 $fillcel = false;
             
             if ($cpt % 2 == 0)
-                $pdf->Cell(10, $cellheight, utf8_decode(''), 'LTB', 0, 'C', $fillcel);
+                $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'LTB', 0, 'C', $fillcel);
             else
-                $pdf->Cell(10, $cellheight, utf8_decode(''), 'RTB', 0, 'C', $fillcel);
+                $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'RTB', 0, 'C', $fillcel);
         }
         
         $pdf->Ln(15);

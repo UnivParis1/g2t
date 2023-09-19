@@ -63,6 +63,8 @@ define('CASPATH', '/cas');
 
 // URL d'accès au serveur WSGROUPS
 define('WSGROUPURL', 'https://wsgroups.etab.fr/');
+// Défini le token secret permettant de bypasser la propriété TRUSTED dans les appels : wsgroups/searchUserTrusted
+define('WSGROUPS_SECRET_TOKEN', '');
 
 // URL d'accès à l'agenda
 define('URLCALENDAR', 'https://courrier-test.etab.fr/kronolith/lib/import-icals.php?');

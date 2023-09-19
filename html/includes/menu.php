@@ -555,7 +555,7 @@
         $errlog = $errlog . "<li>Vous êtes un agent BIATSS qui n'a pas/plus d'affectation fonctionnelle dans SIHAM.</li>";
         $errlog = $errlog . "<li>Vous êtes un agent contractuel dont le contrat n'est pas saisi ou renouvelé dans SIHAM.</li>";
         $errlog = $errlog . "<li>Vous êtes un agent hébergé et votre situation administrative n'est plus valide dans SIHAM.</li>";
-        $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbone.</li>";
+        $errlog = $errlog . "<li>Vous n'êtes pas/plus personnel de Paris 1 Panthéon-Sorbonne.</li>";
         $errlog = $errlog . "</ul></h3><br>";
         $errlog = $errlog . "<hr>";
         echo $errlog;
@@ -637,6 +637,24 @@
     unset($arraystructpartielle);
     unset($affectationarray);
     unset($affectation);
+    
+    $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
+    $agentstructure = new structure($dbcon);
+    if (is_array($affectationliste)) {
+        $affectation = reset($affectationliste);
+        $structureid = $affectation->structureid();
+        if ($agentstructure->load($structureid) == false)
+        {
+            $agentstructure->affichetoutagent("n"); // Si impossible de charger la structure => On force la valeur à 'n'
+            $agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
+        }
+    } 
+    else 
+    {
+        $agentstructure->affichetoutagent("n");
+        $agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
+    }
+
 
 ?>
 
@@ -651,13 +669,17 @@
 						</form> 
 						<a href="javascript:document.accueil.submit();">Accueil</a>
 					</li>
+<?php
+    if (!$agentstructure->estbibliotheque())
+    {
+?>
 					<li onclick='document.planning.submit();' <?php echo $hidemenu; ?> >
 						<form name='planning' method='post' action="affiche_planning.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form>
 						<a href="javascript:document.planning.submit();">Planning de l'agent</a>
 					</li>
-				   <li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
+                                        <li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
 						<form name='dem_conge' method='post' action="etablir_demande.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
@@ -679,7 +701,10 @@
 							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>">
 						</form>
 						<a href="javascript:document.agentannulation.submit();">Annulation de demandes</a>
-					</li>				
+					</li>
+<?php                                    
+    }
+?>
 					<li onclick='document.agent_tpspartiel.submit();'>
 						<form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -696,17 +721,7 @@
 						<a href="javascript:document.agent_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
 <?php
-    $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));
-    $structure = new structure($dbcon);
-    if (is_array($affectationliste)) {
-        $affectation = reset($affectationliste);
-        $structureid = $affectation->structureid();
-        if ($structure->load($structureid) == false)
-            $structure->affichetoutagent("n"); // Si impossible de charger la structure => On force la valeur à 'n'
-    } else {
-        $structure->affichetoutagent("n");
-    }
-    if (strcasecmp($structure->affichetoutagent(), "o") == 0) 
+    if (strcasecmp($agentstructure->affichetoutagent(), "o") == 0 and !$agentstructure->estbibliotheque()) 
     // if ($user->structure()->affichetoutagent() == "o")
     {
 ?>
@@ -745,7 +760,7 @@
         $fincet = date('Ymd',strtotime('+3 month',strtotime($fonctions->liredbconstante($constante))));
         //var_dump("fincet ALIM = $fincet");
     }
-    if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet)
+    if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet and !$agentstructure->estbibliotheque())
     {    
 
 ?>  
@@ -772,7 +787,7 @@
         $fincet = date('Ymd',strtotime('+3 month',strtotime($fonctions->liredbconstante($constante))));
         //var_dump("fincet OPTION = $fincet");
     }
-    if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet)
+    if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet and !$agentstructure->estbibliotheque())
     {    
 
 ?>
@@ -803,11 +818,26 @@
 			</li>
 		</ul>
 <?php
-    if ($user->estresponsable()) {
+    if ($user->estresponsable()) 
+    {
+        $structrespliste = $user->structrespliste();
+        $estrespdebibliotheque = true;
+        foreach ((array)$structrespliste as $struct)
+        {
+            if (!$struct->estbibliotheque())
+            {
+                $estrespdebibliotheque = false;
+                break;
+            }
+        }
 ?> 
 		<ul class="niveau1">
 			<li onclick="">MENU RESPONSABLE
 				<ul class="niveau2">
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
 					<li onclick='document.resp_parametre.submit();'>
 						<form name='resp_parametre' method='post' action="gestion_dossier.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -815,7 +845,10 @@
 							<input type="hidden" name="mode" value="resp">
 						</form> 
 						<a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
-					</li>	
+					</li>
+<?php
+        }
+?>
 					<li onclick='document.resp_gest_teletravail.submit();'>
 						<form name='resp_gest_teletravail' method='post' action="gestion_teletravail.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -825,6 +858,10 @@
 					</li>
 					<li class="plus"><a>Gestion de l'année en cours</a>
 						<ul class="niveau3">
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
 							<li onclick='document.resp_struct_planning.submit();'>
 								<form name='resp_struct_planning' method='post' action="structure_planning.php">
 									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -871,13 +908,13 @@
 								<a href="javascript:document.resp_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
 							</li>
 <?php
-    // Si on est 6 mois avant la fin de la période ==> On peut saisir des jours par anticipation
-    $datetemp = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
-    $timestamp = strtotime($datetemp);
-    $datetemp = date("Ymd", strtotime("-6month", $timestamp)); // On remonte de 6 mois
-                                                                // echo "TimeStamp = " . $datetemp . "<br>";
-    if (date("Ymd") > $datetemp) 
-    {
+            // Si on est 6 mois avant la fin de la période ==> On peut saisir des jours par anticipation
+            $datetemp = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
+            $timestamp = strtotime($datetemp);
+            $datetemp = date("Ymd", strtotime("-6month", $timestamp)); // On remonte de 6 mois
+                                                                        // echo "TimeStamp = " . $datetemp . "<br>";
+            if (date("Ymd") > $datetemp) 
+            {
 ?>				
 							<li onclick='document.resp_conge_anticipe.submit();'>
 								<form name='resp_conge_anticipe' method='post' action="etablir_demande.php">
@@ -889,7 +926,8 @@
 								<a href="javascript:document.resp_conge_anticipe.submit();">Saisir une demande de congé par anticipation pour un agent</a>
 							</li>
 <?php
-    }
+            }
+        }
 ?>								
 							<li onclick='document.resp_valid_tpspartiel.submit();'>
 								<form name='resp_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
@@ -913,6 +951,10 @@
 								<a href="javascript:document.resp_gestcet.submit();">Gestion du CET d'un agent</a>
 							</li>
 -->
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
 							<li onclick='document.resp_aff_solde.submit();'>
 								<form name='resp_aff_solde' method='post' action="affiche_solde.php">
 									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -921,8 +963,15 @@
 								</form> 
 								<a href="javascript:document.resp_aff_solde.submit();">Affichage du solde des agents de la structure</a>
 							</li>
+<?php
+        }
+?>
 						</ul>
 					</li>
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
 					<li class="plus"><a>Gestion de l'année précédente</a>
 						<ul class="niveau3">
 							<li onclick='document.resp_struct_planning_previous.submit();'>
@@ -978,6 +1027,7 @@
 						</ul>
 					</li>
 <?php
+        }
     // Un agent responsable (sens strict) peut modifier le paramétrage de la structure
     // if ($user->estresponsable(false))
     // {
@@ -1019,13 +1069,13 @@
     foreach ($structureliste as $structure)
     {
         $resp = $structure->resp_envoyer_a($code);
-        if ($code ==3) // 3 = Envoie des mails au gestionnaire de la structure courante
+        if ($code ==structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
         {
             // On a au moins une structure qui match => On arrête la boucle
             break;
         }
     }
-    if ($code == 3) 
+    if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
     {
 ?>
 

@@ -115,7 +115,7 @@ Merci de contrôler son dossier.\n");
                     $destinatairemail = $structure->agent_envoyer_a($codeinterne);
                     if (! is_null($destinatairemail))
                     {
-                        if ($codeinterne == 2) // On envoie le mail au gestionnaire service courant
+                        if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT) // On envoie le mail au gestionnaire service courant
                         {
                             if (isset($mail_gest[$destinatairemail->agentid()]))
                                 $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
@@ -155,21 +155,21 @@ Merci de contrôler le dossier RH du responsable.\n");
                     {
                         switch ($codeinterne)
                         {
-                            case 1:
+                            case structure::MAIL_RESP_ENVOI_RESP_PARENT :
                                 $typesignataire = 'responsable';
                                 $structureparent = $structure->parentstructure();
                                 break;
-                            case 2:
+                            case structure::MAIL_RESP_ENVOI_GEST_PARENT :
                                 $typesignataire = 'gestionnaire';
                                 $structureparent = $structure->parentstructure();
                                 break;
-                            case 3:
+                            case structure::MAIL_RESP_ENVOI_GEST_COURANT :
                                 $typesignataire = 'gestionnaire';
                                 $structureparent = $structure;
                                 break;
                         }
                         // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
-                        if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+                        if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                         {
                             if (isset($mail_gest[$destinatairemail->agentid()]))
                                 $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',';

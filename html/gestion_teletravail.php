@@ -1033,7 +1033,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                             }
                             elseif ("$id" < 0 and $esignatureactive)
                             {
-                                $erreur =  "La création de la convention dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
+                                $erreur =  "La création de la convention dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde de la demande de télétravail dans G2T.";
                                 error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
                             }
                             elseif ("$id" <> "" or !$esignatureactive)
@@ -1645,6 +1645,17 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $declaration = null;
                 }
             }
+            
+            if (is_null($declaration) and $agentstructure->estbibliotheque())
+            {
+                $declaration = new declarationTP($dbcon);
+                $declaration->agentid($agent->agentid());
+                $declaration->tabtpspartiel(str_repeat("0", 20));
+                $declaration->statut(declarationTP::DECLARATIONTP_VALIDE);
+                //$declarationTP->datedebut($datedebut);
+                //$declarationTP->datefin($datefin);
+            }
+            
             // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
             if (is_null($declaration) or $mode=='gestrh')
             {
@@ -2130,11 +2141,15 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             ///// ATTENTION : Dans le style du textarea, le height doit être égal à rows x line-height
             echo "<textarea required class='inputtoreset inputtext' rows='10' cols='200' style='line-height:20px; resize: none;' name='activitetele' id='activitetele' oninput='checktextlength(this,$longueurmaxtexte,\"activitetelerestant\"); '>$activitetele</textarea> <br>";
             $longueurmaxtexte = $fonctions->logueurmaxcolonne('TELETRAVAIL','PERIODEEXCLUSION');
-            echo "<br>Liste des périodes d'exclusion du télétravail (maximum : $longueurmaxtexte caractères et 2 lignes - Reste : <label id='periodeexclusionrestant'>$longueurmaxtexte</label> car.) : <br>";
+            echo "<br>Liste des périodes d'exclusion du télétravail (maximum : $longueurmaxtexte caractères et 2 lignes - Reste : <label id='periodeexclusionrestant'>$longueurmaxtexte</label> car.) : ";
+            echo "<br><strong>Laissez cette zone vide si l'agent n'est pas concerné.</strong>";
+            echo "<br>";
             ///// ATTENTION : Dans le style du textarea, le height doit être égal à rows x line-height
             echo "<textarea class='inputtoreset inputtext' rows='2' cols='200' style='line-height:20px; resize: none;' name='periodeexclusion' id='periodeexclusion' oninput='checktextlength(this,$longueurmaxtexte,\"periodeexclusionrestant\"); '>$periodeexclusion</textarea> <br>";
             $longueurmaxtexte = $fonctions->logueurmaxcolonne('TELETRAVAIL','PERIODEADAPTATION');
-            echo "<br>Durée de la période d'adaptation  (maximum : $longueurmaxtexte caractères et 1 ligne - Reste : <label id='periodeadaptrestant'>$longueurmaxtexte</label> car.): <br>";
+            echo "<br>Durée de la période d'adaptation  (maximum : $longueurmaxtexte caractères et 1 ligne - Reste : <label id='periodeadaptrestant'>$longueurmaxtexte</label> car.): ";
+            echo "<br><strong>Laissez cette zone vide si l'agent n'est pas concerné.</strong>";
+            echo "<br>";
             ///// ATTENTION : Dans le style du textarea, le height doit être égal à rows x line-height
             echo "<textarea class='inputtoreset inputtext' rows='1' cols='200' style='line-height:20px; resize: none;' name='periodeadaptation' id='periodeadaptation' oninput='checktextlength(this,$longueurmaxtexte,\"periodeadaptrestant\"); '>$periodeadaptation</textarea> <br>";
             echo "</div>";

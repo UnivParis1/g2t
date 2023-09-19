@@ -3,12 +3,16 @@
 /CRON/log/
 /CRON/specific/*.php
 !/CRON/specific/*_exemple.php
-/INPUT_FILES_V3/
+/INPUT_FILES_V3/*.xml
+!/INPUT_FILES_V3/*_exemple.xml
+/INPUT_FILES_V3/*/
 /composer.lock
 /config/*.php
 !/config/*_exemple.php
 /images/logo_paris1_prod.png
 /images/logo_paris1_test.png
+/images/chargement*.gif
+!/images/chargement.gif
 /nbproject/private/
 /pdf/
 /vendor/

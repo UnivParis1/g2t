@@ -84,7 +84,7 @@ Merci de contrôler son dossier.\n");
             {
                 // On est dans le cas d'une demande d'un agent
                 $destinatairemail = $structure->agent_envoyer_a($codeinterne);
-                if ($codeinterne == 2) // On envoie le mail au gestionnaire service courant
+                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT) // On envoie le mail au gestionnaire service courant
                 {
                     if (isset($mail_gest[$destinatairemail->agentid()]))
                         $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
@@ -116,7 +116,7 @@ Merci de contrôler le dossier RH du responsable.\n");
                 $destinatairemail = $structure->resp_envoyer_a($codeinterne);
                 if (! is_null($destinatairemail)) {
                     // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
-                    if ($codeinterne == 2 or $codeinterne == 3) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 2=Gestionnaire service parent 3=Gestionnaire service courant
                     {
                         if (isset($mail_gest[$destinatairemail->agentid()]))
                             $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
