@@ -8,13 +8,14 @@
 
     echo "Début de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 
-    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_agents_$date.xml";
+    $filename = $fonctions->inputfilepath() . "/siham_agents_$date.xml";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
         exit();
     }
     else
     {
+        echo "Le fichier $filename est présent. \n";
 /*
         // On vide la table des agents pour la recharger complètement
         $sql = "DELETE FROM AGENT";

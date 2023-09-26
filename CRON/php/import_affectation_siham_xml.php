@@ -17,10 +17,10 @@
 
     echo "Début de la création des affectations " . date("d/m/Y H:i:s") . "\n";
 
-    $modalitefile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_modalite_$date.xml";
-    $statutfile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_status_$date.xml";
-    $situationfile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_situation_$date.xml";
-    $structurefile = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_affectations_structures_$date.xml";
+    $modalitefile = $fonctions->inputfilepath() . "/siham_affectations_modalite_$date.xml";
+    $statutfile = $fonctions->inputfilepath() . "/siham_affectations_status_$date.xml";
+    $situationfile = $fonctions->inputfilepath() . "/siham_affectations_situation_$date.xml";
+    $structurefile = $fonctions->inputfilepath() . "/siham_affectations_structures_$date.xml";
 
     $skipreadfile = false;
     if (isset($argv[1])) {
@@ -39,23 +39,37 @@
             echo "Le fichier $modalitefile n'existe pas !!! \n";
             $exit = true;
         }
+        else
+        {
+            echo "Le fichier $modalitefile est présent. \n";
+        }
         if (! file_exists($statutfile)) 
         {
             echo "Le fichier $statutfile n'existe pas !!! \n";
             $exit = true;
+        }
+        else
+        {
+            echo "Le fichier $statutfile est présent. \n";
         }
         if (! file_exists($structurefile)) 
         {
             echo "Le fichier $structurefile n'existe pas !!! \n";
             $exit = true;
         }
+        else
+        {
+            echo "Le fichier $structurefile est présent. \n";
+        }
         if (! file_exists($situationfile)) 
         {
             echo "Le fichier $situationfile n'existe pas !!! \n";
             $exit = true;
         }
-        
-        
+        else
+        {
+            echo "Le fichier $situationfile est présent. \n";
+        }
 
         if ($exit == true) 
         {

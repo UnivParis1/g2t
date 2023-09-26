@@ -164,7 +164,7 @@ class structure
             $this->nomcourt = $name;
     }
     
-    function nomcompletcet($fullpath = false, $fullname = false)
+    function nomcompletcet($fullpath = false, $fullname = false, $codeonly = false)
     {
         if ($fullpath)
         {
@@ -177,6 +177,10 @@ class structure
         if ($fullname)
         {
             $nameStructComplete = $this->nomlong() . ' (' . $this->nomcourt() . ')';
+        }
+        elseif ($codeonly)
+        {
+            $nameStructComplete = $this->id();
         }
         else
         {
@@ -191,6 +195,10 @@ class structure
                 if ($fullname)
                 {
                     $nameStructComplete = $struct_tmp->nomlong() . ' (' . $struct_tmp->nomcourt() . ')' . ' / '.$nameStructComplete;
+                }
+                elseif ($codeonly)
+                {
+                    $nameStructComplete =  $struct_tmp->id().'/'.$nameStructComplete;
                 }
                 else
                 {
@@ -226,7 +234,31 @@ class structure
         }
         else
         {
-            return true;
+            $dbconstante = "BRANCHE_BIB";
+            $branche_bib = '';
+            if ($this->fonctions->testexistdbconstante($dbconstante)) 
+            {
+                $branche_bib = trim($this->fonctions->liredbconstante($dbconstante));
+            }
+            
+            // S'il n'y a pas de branche speciale "BIB/Centre doc" configuré => On retourne que c'est une bibliothèque (car $this->islibrary=1)
+            if ($branche_bib=='')
+            {
+                return true;
+            }
+            
+            // On ajoute un '/' devant et derrière pour la recherche
+            $idcomplet = "/" . $this->nomcompletcet(true, false, true) . "/";
+            //$idcomplet = str_replace(" ", "", $idcomplet);
+            // Si la structure n'est pas dans la branche 'Bib/Centre doc' => Ce n'est pas une bib/centre doc
+            if (stristr($idcomplet, '/' . $branche_bib . '/')===false)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
     }
 
@@ -426,6 +458,12 @@ class structure
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             $result = mysqli_fetch_row($query);
+            if (count((array)$result)==0)
+            {
+                // Si on ne trouve pas la structure dans la base
+                $codeinterne = structure::MAIL_RESP_ENVOI_RESP_PARENT;
+                return null;
+            }
             $codeinterne = $result[0];
             //echo "codeinterne = $codeinterne <br>";
             //error_log(basename(__FILE__) . " " . "codeinterne = $codeinterne ");
@@ -511,6 +549,12 @@ class structure
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
             $result = mysqli_fetch_row($query);
+            if (count((array)$result)==0)
+            {
+                // Si on ne trouve pas la structure dans la base
+                $codeinterne = structure::MAIL_AGENT_ENVOI_RESP_COURANT;
+                return null;
+            }
             $codeinterne = $result[0];
             $agent = new agent($this->dbconnect);
             switch ($codeinterne) 
@@ -586,8 +630,8 @@ class structure
     {
         if (is_null($respid)) {
             if (is_null($this->responsableid) or ($this->responsableid == '')) {
-                //$errlog = "<B><div style='color:#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
-                echo $errlog . "<br/>";
+                $errlog = "<B><div style='color:#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
+                //echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
                 $responsable = new agent($this->dbconnect);

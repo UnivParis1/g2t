@@ -693,7 +693,10 @@
 							<input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
 							<input type="hidden" name="typedemande" value="absence">
 						</form>
-						<a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence ou de télétravail</a>
+<!--
+                                            <a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence ou de télétravail</a>
+-->
+                                            <a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence</a>
 					</li>
 					<li onclick='document.agentannulation.submit();'>
 						<form name='agentannulation' method='post' action="gestion_demande.php">
@@ -898,7 +901,11 @@
 									<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
 									<input type="hidden" name="typedemande" value="absence"> 
 									<input type="hidden" name="previous" value="no">
-								</form> <a href="javascript:document.resp_absence.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
+								</form> 
+<!--
+                                                                <a href="javascript:document.resp_absence.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
+-->
+                                                                <a href="javascript:document.resp_absence.submit();">Saisir une demande d'absence pour un agent</a>
 							</li>
 							<li onclick='document.resp_ajout_conge.submit();'>
 								<form name='resp_ajout_conge' method='post' action="ajouter_conges.php">
@@ -1014,7 +1021,10 @@
 									<input type="hidden" name="typedemande" value="absence"> 
 									<input type="hidden" name="previous" value="yes">
 								</form> 
-								<a href="javascript:document.resp_absence_previous.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
+<!--
+                                                                <a href="javascript:document.resp_absence_previous.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
+-->
+								<a href="javascript:document.resp_absence_previous.submit();">Saisir une demande d'absence pour un agent</a>
 							</li>
 							<li onclick='document.resp_aff_solde_previous.submit();'>
 								<form name='resp_aff_solde_previous' method='post' action="affiche_solde.php">
@@ -1052,6 +1062,13 @@
 							<input type="hidden" name="mode" value="gestion">
 						</form>
 						<a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
+					</li>
+					<li onclick='document.gest_gest_teletravail.submit();'>
+						<form name='gest_gest_teletravail' method='post' action="gestion_teletravail.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                                        <input type="hidden" name="mode" value="gestion">
+						</form>
+						<a href="javascript:document.gest_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
 					</li>
 					<li class="plus"><a>Gestion de l'année en cours</a>
                                             <ul class="niveau3">
@@ -1094,8 +1111,11 @@
                                                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                                             <input type="hidden" name="typedemande" value="absence"> 
                                                             <input type="hidden" name="previous" value="no">
-                                                    </form> 
+                                                    </form>
+<!--
                                                     <a href="javascript:document.gest_absence.submit();">Saisir une demande d'absence ou de télétravail pour un responsable</a>
+-->
+                                                    <a href="javascript:document.gest_absence.submit();">Saisir une demande d'absence pour un responsable</a>
                                                 </li>
 <?php
     }
@@ -1172,8 +1192,11 @@
                                                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                                             <input type="hidden" name="typedemande" value="absence"> 
                                                             <input type="hidden" name="previous" value="yes">
-                                                    </form> 
+                                                    </form>
+<!--
                                                     <a href="javascript:document.gest_absence_prev.submit();">Saisir une demande d'absence ou de télétravail pour un responsable</a>
+-->
+                                                    <a href="javascript:document.gest_absence_prev.submit();">Saisir une demande d'absence pour un responsable</a>
                                                 </li>
 <?php
     }
@@ -1415,6 +1438,12 @@
 <?php
                     } // Fin du test si utilisateur est PROFIL_RHCONGE
 ?>
+					<li onclick='document.rh_affiche_inputfiles.submit();'>
+						<form name='rh_affiche_inputfiles' method='post' action="affiche_inputfiles.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+						</form> 
+						<a href="javascript:document.rh_affiche_inputfiles.submit();">Afficher les données d'interface</a>
+					</li>
 					<li onclick='document.rh_affiche_g2t_param.submit();'>
 						<form name='rh_affiche_g2t_param' method='post' action="g2t_param.php">
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
@@ -1490,6 +1519,18 @@
 							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
 						</form> 
 						<a href="javascript:document.admin_affiche_g2t_param.submit();">Paramétrage</a>
+					</li>
+                                        <li onclick='document.admin_suivi_teletravail.submit();'>
+                                                <form name='admin_suivi_teletravail' method='post' action="suivi_teletravail.php">
+                                                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                                </form> 
+                                                <a href="javascript:document.admin_suivi_teletravail.submit();">Suivi de l'avancement des demandes de télétravail</a>
+                                        </li>
+					<li onclick='document.admin_affiche_inputfiles.submit();'>
+						<form name='admin_affiche_inputfiles' method='post' action="affiche_inputfiles.php">
+							<input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+						</form> 
+						<a href="javascript:document.admin_affiche_inputfiles.submit();">Afficher les données d'interface</a>
 					</li>
 				</ul>
 			</li>

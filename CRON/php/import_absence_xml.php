@@ -9,13 +9,14 @@
     echo "Début de l'import des absences de l'application RH " . date("d/m/Y H:i:s") . "\n";
     
     // On charge la table des absences avec le fichier
-    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_absence_$date.xml";
+    $filename = $fonctions->inputfilepath() . "/siham_absence_$date.xml";
     if (! file_exists($filename)) {
         echo "Le fichier $filename n'existe pas !!! \n";
         exit();
     } 
     else 
     {
+        echo "Le fichier $filename est présent. \n";
         // On vide la table des absences pour la recharger complètement
         $sql = "DELETE FROM ABSENCERH";
         mysqli_query($dbcon, $sql);

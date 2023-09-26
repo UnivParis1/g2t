@@ -159,7 +159,7 @@
             echo "On va envoyer un mail au responsable " . $destinataire->identitecomplete() . " car il n'a pas complete la convention dans G2T.\n";
             $cronagent->sendmail($destinataire,
                                  "Convention de télétravail à compléter dans G2T", 
-                                 "Vous avez une ou plusieurs conventions de télétravail à compléter dans G2T.\nVous pouvez les consulter dans votre menu 'Responsable'.\n"
+                                 "Vous avez une ou plusieurs conventions de télétravail à compléter dans G2T.\nVous pouvez les consulter dans votre menu 'Responsable' ou 'Gestionnaire'.\n"
                                  );
         }
         foreach($tabdestinataireesignature as $destinataire)

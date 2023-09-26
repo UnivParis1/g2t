@@ -30,12 +30,13 @@
         exit();
     }
 
+    ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
+
     $user = new agent($dbcon);
     $user->load($userid);
 
     require ("includes/menu.php");
     echo "<br>";
-    echo "Affichage des conventions de télétravail en attente de traitement<br>";
     
     $listeteletravail_attente = array();
     $listeteletravail_refusee = array();
@@ -46,10 +47,13 @@
     
     $listeteletravail = array_merge($listeteletravail_attente,$listeteletravail_refusee,$listeteletravail_annulee);
     
+    echo "Affichage des conventions de télétravail en attente de traitement (" . count($listeteletravail)  . " demande(s))<br>";
     $premiereligne = true;
     echo "<table class='tableausimple'>";
     foreach($listeteletravail as $teletravail)
     {
+        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("La convention en cours de traitement est : " . $teletravail->teletravailid()));
+
         if ($premiereligne)
         {
             echo "<tr>";
@@ -71,6 +75,7 @@
         $agent->load($teletravail->agentid());
         $enattente = "";
         $enattente = $enattente . " de : ";
+        $extraclass = "";
         if ($teletravail->esignatureid()<>"")
         {
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
@@ -93,21 +98,29 @@
             }
             $response = json_decode($json, true);
             //var_dump($response);
-            $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
-            foreach ((array)$currentstep['recipients'] as $recipient)
+            if (isset($response['parentSignBook']['liveWorkflow']['currentStep']))
             {
-                $signataireidentite = $recipient['user']['firstname'] . " " . $recipient['user']['name'];
-                if (trim($signataireidentite) != "")
+                $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
+                foreach ((array)$currentstep['recipients'] as $recipient)
                 {
-                    $enattente = $enattente . "<br>" . $signataireidentite;
+                    $signataireidentite = $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                    if (trim($signataireidentite) != "")
+                    {
+                        $enattente = $enattente . "<br>" . $signataireidentite;
+                    }
                 }
+            }
+            else
+            {
+                $enattente = $enattente . "Impossible de déterminer l'acteur";
             }
         }
         elseif($teletravail->statutresponsable()==teletravail::TELETRAVAIL_ATTENTE)
         {
             $structure = new structure($dbcon);
             $structure->load($agent->structureid());
-            if ($structure->responsable()->agentid() == $agent->agentid())
+            //var_dump($structure->nomlong());
+            if (!is_null($structure->responsable()) and ($structure->responsable()->agentid() == $agent->agentid()))
             {
                 $responsable = $structure->resp_envoyer_a($codeinterne);
             }
@@ -115,6 +128,14 @@
             {
                 $responsable = $structure->agent_envoyer_a($codeinterne);
             }
+            if (is_null($responsable))
+            {
+                $responsable = new agent($dbcon);
+                $responsable->nom("INCONNU");
+                $responsable->prenom("INCONNU");
+                $extraclass = " celerror ";
+            }
+            
             $enattente = $enattente . "<br>" . ucwords(strtolower($responsable->prenom() . " " . $responsable->nom()));
         }
         echo "<tr>";
@@ -148,7 +169,7 @@
         }
         echo "    <td class='cellulesimple'> $openspan " . $teletravail->libelletypeconvention() . "$closespan</td>";
         echo "    <td class='cellulesimple'>" . $teletravail->libelletabteletravail() . "</td>";
-        echo "    <td class='cellulesimple'>" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . $enattente . "</td>";
+        echo "    <td class='cellulesimple $extraclass'>" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . $enattente . "</td>";
         // echo "    <td class='cellulesimple'>" . $teletravail->commentaire() . "</td>";
         echo "    <td class='cellulesimple'><a href='" . $teletravail->esignatureurl() . "' target='_blank'>". $teletravail->esignatureurl()."</a></td>";
         echo "</tr>";

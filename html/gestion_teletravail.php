@@ -94,7 +94,7 @@
             $agentid = null;
         }
     }
-    elseif ($mode=='resp')
+    elseif ($mode=='resp' or $mode=='gestion')
     {
         $agentid = null;
 /*
@@ -406,7 +406,15 @@
             $demijours = $_POST["demijours"];
         }
         
-        $datedebutminconv = date('d/m/Y');
+//        $datedebutminconv = date('d/m/Y');
+        if ($esignatureactive)
+        {
+            $datedebutminconv = date('d/m/Y');
+        }
+        else
+        {
+            $datedebutminconv = date('d/m/Y',strtotime('-6 month'));
+        }
         if (isset($_POST["datedebutminconv"]))
         {
             $datedebutminconv = $_POST["datedebutminconv"];
@@ -417,7 +425,15 @@
         {
             $datedebutmaxconv = $_POST["datedebutmaxconv"];
         }
-        $datefinminconv = date('d/m/Y');
+//        $datefinminconv = date('d/m/Y');
+        if ($esignatureactive)
+        {
+            $datefinminconv = date('d/m/Y');
+        }
+        else
+        {
+            $datefinminconv = date('d/m/Y',strtotime('-6 month'));
+        }
         if (isset($_POST["datefinminconv"]))
         {
             $datefinminconv = $_POST["datefinminconv"];
@@ -834,7 +850,7 @@
                 $cron = new agent($dbcon);
                 $cron->load(SPECIAL_USER_IDCRONUSER);
                 $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "
-Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' de l'application G2T.\n");
+Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' ou 'Gestionnaire' de l'application G2T.\n");
                 $info = "La création de la convention est réussie.";
                 $erreur = "";
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => Id G2T = " . $teletravail->teletravailid() ));
@@ -1116,7 +1132,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     }
     echo "<br><br>";
 
-    if (is_null($agentid) and $mode!='resp')
+    if (is_null($agentid) and ($mode!='resp' and $mode!='gestion'))
     {
         echo "<form name='demandeforagent'  method='post' action='gestion_teletravail.php'>";
         echo "Personne à rechercher : <br>";
@@ -1138,7 +1154,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='submit' value='Soumettre' >";
         echo "</form>";
     }
-    elseif (!is_null($agentid) and $mode!='resp')
+    elseif (!is_null($agentid) and ($mode!='resp' and $mode!='gestion'))
     {
         $erreur = '';
         if ($esignatureactive)
@@ -1250,11 +1266,14 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        echo "    <td class='cellulesimple'><center>";
     	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
     	        {
+                    // On peut modifier la date de début de la convention dans une période de 6 mois avant la date saisie
+                    $datedebutminconv_tab = date("d/m/Y", strtotime("-6 month", strtotime($fonctions->formatdatedb($datedebutteletravail))));
+                    
 ?>
         <input class="calendrier" type=text
         	name=<?php echo $calendrierid_deb . '[' . $teletravailid . ']'?>
         	id=<?php echo $calendrierid_deb . '[' . $teletravailid .']'?> size=10
-        	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
+        	minperiode='<?php echo $datedebutminconv_tab; ?>'
         	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
         	value='<?php echo $datedebutteletravail ?>'>
 <?php
@@ -1267,12 +1286,14 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        echo "    <td class='cellulesimple'><center>";
     	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
     	        {
+//                    $datefinminconv_tab = date("d/m/Y", strtotime("-6 month", strtotime($fonctions->formatdatedb($datefinteletravail))));
+                    $datefinminconv_tab = $datedebutminconv_tab;
 ?>
         <input class="calendrier" type=text
         	name=<?php echo $calendrierid_fin . '[' . $teletravailid . ']' ?>
         	id=<?php echo $calendrierid_fin . '[' . $teletravailid . ']' ?>
         	size=10
-        	minperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()-1 . $fonctions->debutperiode()); ?>'
+        	minperiode='<?php echo $datefinminconv_tab; ?>'
         	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+4 . $fonctions->finperiode()); ?>'
         	value='<?php echo $datefinteletravail ?>'>
 <?php 
@@ -1490,17 +1511,32 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	echo "<select required id='typeconv' name='typeconv' onChange='displayhidewarning(this.value);'>";
     	echo "<option value=''>---- Sélectionnez le type de convention ----</option>";
 
-    	if (count($teletravailliste)==0)
+        $demandeinitiale = true;
+    	if (count($teletravailliste)>0)
     	{
-        	echo "<option value='" . teletravail::CODE_CONVENTION_INITIALE . "'";
-                if ($inputtypeconv == teletravail::CODE_CONVENTION_INITIALE) { echo " selected "; }
-        	echo ">" . teletravail::TYPE_CONVENTION_INITIALE . "</option>";
+            // On regarde s'il existe une demande déjà validée ou en attente de validation ==> Si oui, ce n'est pas une demande initiale
+            foreach($teletravailliste as $teletravailid)
+            {
+    	        $teletravail = new teletravail($dbcon);
+    	        $teletravail->load($teletravailid);
+                if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE or $teletravail->statut() == teletravail::TELETRAVAIL_ATTENTE)
+                {
+                    $demandeinitiale = false;
+                    break;
+                }
+            }
+        }
+        if ($demandeinitiale)
+        {
+            echo "<option value='" . teletravail::CODE_CONVENTION_INITIALE . "'";
+            if ($inputtypeconv == teletravail::CODE_CONVENTION_INITIALE) { echo " selected "; }
+            echo ">" . teletravail::TYPE_CONVENTION_INITIALE . "</option>";
     	}
     	else
     	{
     	    echo "<option value='" . teletravail::CODE_CONVENTION_RENOUVELLEMENT . "'";
             if ($inputtypeconv == teletravail::CODE_CONVENTION_RENOUVELLEMENT) { echo " selected "; }
-        	echo ">" . teletravail::TYPE_CONVENTION_RENOUVELLEMENT . "</option>";
+            echo ">" . teletravail::TYPE_CONVENTION_RENOUVELLEMENT . "</option>";
     	}
     	
     	echo "<option value='" . teletravail::CODE_CONVENTION_MEDICAL . "'";
@@ -1553,9 +1589,23 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 <?php
     	echo "<br>";
     	
-    	$datedebutminconv = date('d/m/Y');
+        if ($esignatureactive)
+        {
+        	$datedebutminconv = date('d/m/Y');
+        }
+        else
+        {
+        	$datedebutminconv = date('d/m/Y',strtotime('-6 month'));
+        }
     	$datedebutmaxconv = date('d/m/') . (date('Y')+1);
-    	$datefinminconv = date('d/m/Y');
+        if ($esignatureactive)
+        {
+        	$datefinminconv = date('d/m/Y');
+        }
+        else
+        {
+        	$datefinminconv = date('d/m/Y',strtotime('-6 month'));
+        }
     	$datefinmaxconv = date('d/m/') . (date('Y')+2);
 
         echo "<table>";
@@ -1786,8 +1836,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
                     and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
                     {
-                        echo "><center><input type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]'";
-                        if ($teletravail->estjourteletravaille($indexjour) and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL) echo " checked ";
+                        echo "><center><input class='checkbox_jours' type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]' onclick='verif_nbre_checkbox();'";
+                        if ($teletravail->estjourteletravaille($indexjour) and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL) { echo " checked "; }
                         echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></center></td>";
                     }
                     else
@@ -1893,6 +1943,49 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             }
         }
         echo "<br>";
+?>
+        <script>
+            function verif_nbre_checkbox()
+            {
+                // console.log('event fired');
+                var checkBoxlist = document.getElementsByClassName("checkbox_jours");
+                var nbselected = 0;
+                // console.log(checkBoxlist.length);
+                for (let index = 0; index < checkBoxlist.length; index++) 
+                {
+                    var currentcheckbox = checkBoxlist[index];
+                    if (currentcheckbox.checked)
+                    {
+                        nbselected++;
+                    }
+                }
+                if (nbselected === <?php echo $nbjoursmaxteletravailcalcule; ?>)
+                {
+                    for (let index = 0; index < checkBoxlist.length; index++) 
+                    {
+                        var currentcheckbox = checkBoxlist[index];
+                        if (!currentcheckbox.checked)
+                        {
+                            currentcheckbox.disabled=true;
+                        }
+                    }
+                }
+                else if (nbselected < <?php echo $nbjoursmaxteletravailcalcule; ?>)
+                {
+                    for (let index = 0; index < checkBoxlist.length; index++) 
+                    {
+                        var currentcheckbox = checkBoxlist[index];
+                        currentcheckbox.disabled=false;
+                    }
+                }
+                else if (nbselected > <?php echo $nbjoursmaxteletravailcalcule; ?>)
+                {
+                    alert ('Trop de cases cochées');
+                }
+            }
+            verif_nbre_checkbox();
+        </script>
+<?php
         echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
@@ -1910,7 +2003,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
         echo "</form>";
     }
-    elseif ($mode=='resp')
+    elseif ($mode=='resp' or $mode=='gestion')
     {
 ?>
         <script>
@@ -2004,32 +2097,76 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 motifrefus.disabled = divstatutrefuse.hidden;
                 checktextlength(motifrefus,<?php echo $fonctions->logueurmaxcolonne('TELETRAVAIL','COMMENTAIRE'); ?>,"motifrefusrestant");
             }
+            
         </script>
 <?php
 
+        if ($mode=='resp')
+        {
         //echo "<br>On est en mode responsable ==> On va modifier les demandes de télétravail de la structure dont on est responsable.<br>";
-        $structliste = $user->structrespliste(true);
+            $structliste = $user->structrespliste(true);
+        }
+        else
+        {
+            //var_dump('Je suis en mode gestionnaire');
+            $structliste = $user->structgestliste();   
+            //var_dump($structliste);
+        }
         $agentliste = array();
+        $teletravailtrouve = false;
         foreach ($structliste as $structure)
         {
-            $agentliste = $structure->agentlist(date('Ymd'), date('Ymd'), 'n');
-            $structliste = $structure->structurefille();
-            //$structliste = $this->structureinclue();
-            if (! is_null($structliste)) {
-                foreach ($structliste as $key => $sousstruct) 
-                {
-                    if ($fonctions->formatdatedb($sousstruct->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+            if ($mode=='resp')
+            {
+                $agentliste = $structure->agentlist(date('Ymd'), date('Ymd'), 'n');
+                $structliste = $structure->structurefille();
+                //$structliste = $this->structureinclue();
+                if (! is_null($structliste)) {
+                    foreach ($structliste as $key => $sousstruct) 
                     {
-                        $resp = $sousstruct->responsable();
+                        if ($fonctions->formatdatedb($sousstruct->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+                        {
+                            $resp = $sousstruct->responsable();
+                            $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                        }
+                    }
+                }
+            }
+            else if ($mode=='gestion')
+            {
+                // On récupère les demandes des agents que si le gestionnaire signe aussi les congés des agents
+                $codeinterne=null;
+                $respsignataire = $structure->agent_envoyer_a($codeinterne,false);
+                // Si le signataire du responsable est l'utilisateur courant
+                if ($respsignataire->agentid() == $user->agentid())
+                {
+                    if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+                    {
+                        foreach($structure->agentlist(date("d/m/Y"), date("d/m/Y")) as $membre)
+                        {
+                            $agentliste[$membre->nom() . " " . $membre->prenom() . " " . $membre->agentid()] = $membre;
+                        }
+                    }
+                }
+                
+                // On récupère les demandes du responsable dont le gestionnaire signe les demandes 
+                $codeinterne=null;                
+                $respsignataire = $structure->resp_envoyer_a($codeinterne,false);
+                // Si le signataire du responsable est l'utilisateur courant
+                if ($respsignataire->agentid() == $user->agentid())
+                {
+                    if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+                    {
+                        $resp = $structure->responsable();
                         $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
                     }
                 }
             }
-            $teletravailtrouve = false;
+            //var_dump($agentliste);
             
             foreach ((array)$agentliste as $agent)
             {
-                if ($agent->agentid()!=$user->agentid())
+                if ($agent->agentid()!=$user->agentid() or $mode!='resp')
                 {
                     $tabdemandeteletravail = $agent->listedemandeteletravailenattente();
                     foreach($tabdemandeteletravail as $teletravail)
@@ -2088,10 +2225,10 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }                    
                 }
             }
-            if ($teletravailtrouve===true)
-            {
-                echo "</table>";
-            }
+        }
+        if ($teletravailtrouve===true)
+        {
+            echo "</table>";
         }
         if (!$teletravailtrouve)
         {

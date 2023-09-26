@@ -1263,12 +1263,16 @@ class fonctions
 
     /**
      *
+     * @deprecated
+     *
      * @param string $structid
      *            Code de la structure à convertir
      * @return string Code de la structure correspondante.
      */
     public function labo2ufr($structid)
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+
         $sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = ?";
         $params = array($structid);
         $query = $this->prepared_select($sql, $params);
@@ -1860,24 +1864,26 @@ class fonctions
     public function imagepath()
     {
         $basepath = $this->g2tbasepath();
-        //return $basepath . '/html/images/';
         return $basepath . '/images/';
     }
 
     public function pdfpath()
     {
         $basepath = $this->g2tbasepath();
-        //return $basepath . '/html/pdf/';
         return $basepath . '/pdf/';
     }
 
     public function documentpath()
     {
         $basepath = $this->g2tbasepath();
-        //return $basepath . '/html/documents/';
         return $basepath . '/documents/';
     }
 
+    public function inputfilepath()
+    {
+        $basepath = $this->g2tbasepath();
+        return $basepath . '/INPUT_FILES_V3/';
+    }
 
     public function synchroGlobaleCETeSignature($typeconge, $anneeref)
     {

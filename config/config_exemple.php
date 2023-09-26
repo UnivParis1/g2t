@@ -75,6 +75,13 @@ define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
 // Adresse mail du collecteur GLPI pour la création d'un ticket suite validation de la convention télétravail
 define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@etab.fr');
 
+// Identifiant de la branche 'Bibliothèque et documentation'
+// Permet de traiter les membres de cette branche comme des bibliothèques
+// Les structures typées comme bibliothèques mais non inclues dans cette branche ne sont pas considérées des bibliothèques
+// Cas d'un centre de documentation d'une UFR par exemple
+// Laisser à chaine vide si pas de branche particulière pour les bibliothèques et les centres de documentation
+define('BRANCHE_BIB','');
+
 ////////////////////////////////////////////////////////////////////////////
 // ATTENTION : LES NOMS DES CONSTANTES DES UTILISATEURS SPECIAUX DOIVENT
 // ----------  OBLIGATOIREMENT COMMENCER PAR 'SPECIAL_USER_' POUR ETRE

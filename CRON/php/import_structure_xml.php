@@ -8,7 +8,7 @@
     echo "Début de l'import des structures " . date("d/m/Y H:i:s") . "\n";
     
     // On regarde si le fichier des fonctions est present
-    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_fonctions_$date.xml";
+    $filename = $fonctions->inputfilepath() . "/siham_fonctions_$date.xml";
     $tabpoidsfonct = array();
     if (!file_exists($filename)) 
     {
@@ -17,6 +17,8 @@
     }
     else 
     {
+        echo "Le fichier $filename est présent. \n";
+
         // Initialisation du LDAP
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
@@ -67,7 +69,7 @@
     // Sinon
     // on update les infos
     
-    $filename = $fonctions->g2tbasepath() . "/INPUT_FILES_V3/siham_structures_$date.xml";
+    $filename = $fonctions->inputfilepath() . "/siham_structures_$date.xml";
     if (! file_exists($filename)) 
     {
         echo "Le fichier $filename n'existe pas !!! \n";
@@ -75,6 +77,8 @@
     } 
     else 
     {        
+        echo "Le fichier $filename est présent. \n";
+        
         // Initialisation du LDAP
         $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
