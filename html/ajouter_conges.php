@@ -191,8 +191,9 @@
         $structureliste = $user->structrespliste();
         // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
         $agentlistefull = array();
-        foreach ($structureliste as $structure) {
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+        foreach ($structureliste as $structure) 
+        {
+            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $structure->sousstructure());
             // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
             $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
             // echo "fin du select <br>";

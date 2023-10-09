@@ -116,6 +116,15 @@
     $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
 //    echo "<center><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' style='position: absolute; margin: 0 0 0 -" . ($width/2)  . "px;'></center>";
     echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
+    if (ob_get_contents()!==false)
+    {
+        ob_end_flush();
+        @ob_flush();
+        flush();
+        ob_start();
+    }
+    // Fin du forçage de l'affichage de l'image d'attente
     
     echo "<form name='form_teletravail_interval' id='form_teletravail_interval' method='post' >";
     echo "Sélectionnez la période souhaitée : ";

@@ -837,6 +837,10 @@
             elseif($esignatureactive)
             {
                 $agent->synchroteletravail();
+                $responsable = $agent->getresponsable();
+                if (!is_null($responsable) and $responsable!==false)
+                {
+/*              
                 $structure = new structure($dbcon);
                 $structure->load($agent->structureid());
                 if ($structure->responsable()->agentid() == $agent->agentid())
@@ -847,10 +851,16 @@
                 {
                     $responsable = $structure->agent_envoyer_a($codeinterne);
                 }
-                $cron = new agent($dbcon);
-                $cron->load(SPECIAL_USER_IDCRONUSER);
-                $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "
+ */
+                    $cron = new agent($dbcon);
+                    $cron->load(SPECIAL_USER_IDCRONUSER);
+                    $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "
 Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' ou 'Gestionnaire' de l'application G2T.\n");
+                }
+                else
+                {
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le responsable est null ou false => Pas d'envoi de mail au responsable de l'agent"));
+                }
                 $info = "La création de la convention est réussie.";
                 $erreur = "";
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => Id G2T = " . $teletravail->teletravailid() ));

@@ -524,7 +524,7 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 $sql = $sql . "VALUES('" . $this->agentid . "','" . $this->typeabsenceid . "','" . $this->fonctions->formatdatedb($this->datedebut) . "',";
                 $sql = $sql . "'" . $this->momentdebut . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->momentfin . "',";
                 $sql = $sql . "'" . $this->commentaire . "',";
-                $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '','" . demande::DEMANDE_ATTENTE . "','')";
+                $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '1900-01-01','" . demande::DEMANDE_ATTENTE . "','')";
                 // echo "SQL = " . $sql . "<br>";
                 $params = array();
                 $query = $this->fonctions->prepared_query($sql, $params);
@@ -551,8 +551,8 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 // On decompte le nombre de jours que l'on vient de poser sauf si c'est un CET
                 if ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp($this->typeabsenceid, 'cet') != 0)) {
                     $sql = "UPDATE SOLDE
-					  		 SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
-							 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
+                            SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
+                            WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
                     // echo "SQL = $sql <br>";
                     $params = array();
                     $query = $this->fonctions->prepared_query($sql, $params);
@@ -578,11 +578,18 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 return $errlog . "<br/>";
                 ;
             } else {
+                // Si la date est null ou si elle est < 1900-01-01 (<=> Non initialisée)
+                if (is_null($this->datestatut) or $this->fonctions->formatdatedb($this->datestatut)<'19000101') 
+                {
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("demande::store => La date de changement de statut de la demande n'est pas valide => On la force à la date du jour."));
+                    $this->datestatut = date('d/m/Y');
+                }
                 // On est dans le cas d'une modification de demande
                 $sql = "UPDATE DEMANDE
-						SET DATESTATUT='" . $this->fonctions->formatdatedb($this->datestatut) . "'
-						  , STATUT='" . $this->statut . "', MOTIFREFUS='" . $this->motifrefus . "'
-						 WHERE DEMANDEID=" . $this->demandeid;
+                        SET DATESTATUT='" . $this->fonctions->formatdatedb($this->datestatut) . "',
+                            STATUT='" . $this->statut . "',
+                            MOTIFREFUS='" . $this->motifrefus . "'
+                         WHERE DEMANDEID=" . $this->demandeid;
                 // echo "SQL = $sql <br>";
                 $params = array();
                 $query = $this->fonctions->prepared_query($sql, $params);
@@ -604,8 +611,8 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                     if (strcasecmp($this->typeabsenceid, 'cet') != 0) {
                         // On recrédite le nombre de jours dans les congés....
                         $sql = "UPDATE SOLDE
-							  		 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
-									 WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
+                                SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
+                                WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
                         // echo "SQL = $sql <br>";
                         $params = array();
                         $query = $this->fonctions->prepared_query($sql, $params);

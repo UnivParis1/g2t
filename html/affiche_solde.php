@@ -42,6 +42,15 @@
     $data = file_get_contents($path);
     $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
     echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
+    if (ob_get_contents()!==false)
+    {
+        ob_end_flush();
+        @ob_flush();
+        flush();
+        ob_start();
+    }
+    // Fin du forçage de l'affichage de l'image d'attente
 
     echo "<br>";
 
@@ -131,7 +140,7 @@
             echo "<br>";
             echo "Solde des agents de la structure : " . $struct->nomlong() . " (" . $struct->nomcourt() . ") <br>";
             $annerecherche = ($fonctions->anneeref() - $previous);
-            $agentliste = $struct->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+            $agentliste = $struct->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
             if (is_array($agentliste)) {
                 foreach ($agentliste as $agentkey => $agent) {
                     // echo "Annee ref = " . $fonctions->anneeref();
@@ -156,8 +165,51 @@
         $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure)
         {
+//            error_log(basename(__FILE__) . " : La structure est " . $structure->nomcourt());
+            
             $annerecherche = ($fonctions->anneeref() - $previous);
-            $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+
+            //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+            if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues 
+            {
+                if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
+                {
+                        continue;
+                }
+                $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'o');
+//                error_log(basename(__FILE__) . " : On est là !");
+            }
+            else
+            {
+                $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure->respaffsoldesousstruct());
+//                error_log(basename(__FILE__) . " : On est ici !");
+
+            }
+            
+            // On récupère les responsables des sous-structures pour les inclures dans la liste des soldes à afficher
+            $structurefilleliste = $structure->structurefille();
+            if (is_array($structurefilleliste)) {
+                foreach ($structurefilleliste as $key => $structurefille) {
+                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
+                        $respstructfille = $structurefille->responsable();
+                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
+                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                            // /$responsableliste[$responsable->agentid()] = $responsable;
+                        }
+                        $respstructfille = $structurefille->responsablesiham();
+                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
+                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                            // /$responsableliste[$responsable->agentid()] = $responsable;
+                        }
+                    }
+                }
+            }
+            
+            
+            
+//            error_log(basename(__FILE__) . " : La liste des agents est " . print_r($agentliste,true));
             if (is_array($agentliste))
             {
                 echo "<optgroup label='". $structure->nomcourt() ."'>";
@@ -165,7 +217,9 @@
                 {
                     echo "<option value='" . $agent->agentid() . "'";
                     if ($agentselect == $agent->agentid())
+                    {
                         echo " selected ";
+                    }
                     echo ">" . $agent->identitecomplete(true) . "</option>";
                 }
                 echo "</optgroup>";
@@ -176,9 +230,13 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='previous' value='";
         if ($previous==1)
+        {
             echo 'yes';
+        }
         else
+        {
             echo 'no';
+        }
         echo "'>";
         echo "<br>";
         echo "<input type='submit' name= 'valid_agent' value='Soumettre' >";
@@ -198,7 +256,8 @@
                     //echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
                     $annerecherche = ($fonctions->anneeref() - $previous);
                     
-                    if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+                    //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+                    if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues 
                     {
                         if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                         {
@@ -208,7 +267,7 @@
                     }
                     else
                     {
-                        $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
+                        $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure->respaffsoldesousstruct());
                     }
 
                     //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
@@ -303,7 +362,9 @@
                 {
                     echo "<option value='" . $agent->agentid() . "'";
                     if ($agentselect == $agent->agentid())
+                    {
                         echo " selected ";
+                    }
                     echo ">" . $agent->identitecomplete(true) . "</option>";
                 }
                 echo "</optgroup>";
@@ -314,9 +375,13 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='previous' value='";
         if ($previous==1)
+        {
             echo 'yes';
+        }
         else
+        {
             echo 'no';
+        }
         echo "'>";
         echo "<br>";
         echo "<input type='submit' name= 'valid_agent' value='Soumettre' >";

@@ -159,6 +159,15 @@
     $data = file_get_contents($path);
     $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
     echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
+    if (ob_get_contents()!==false)
+    {
+        ob_end_flush();
+        @ob_flush();
+        flush();
+        ob_start();
+    }
+    // Fin du forçage de l'affichage de l'image d'attente
     
     if (isset($_POST['teletravailmail']))
     {
@@ -702,7 +711,7 @@
                 }
                 
                 
-                $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'o',$planninggris,true,true);
+                $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,$structure->sousstructure(),$planninggris,true,true);
                 echo $planninghtml;
                 
                 //$structparent = $structure->structureenglobante();
@@ -789,81 +798,11 @@
                 $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'o',$planninggris,true,true);
                 echo $planninghtml;
                 $structparent = $structure->structureenglobante();
-
-/*                
-                if (trim($planninghtml) != "" and $structkey <> $structparent->id())
-                {
-                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
-                    echo "<br>";
-                    echo "<form name='form_showroot' id='form_showroot' method='post'>";
-                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
-                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
-                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
-                    echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
-                    echo "<input type='hidden' name='structureid' value='" . $structure->id() .  "' />";
-                    
-                    echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
-                    if ($check_showroot == 'on' and $structureid == $structkey)
-                        echo " checked ";
-                    echo "/>";
-                    echo "Voir le planning de la structure \"racine\" => " . $structparent->nomcourt();
-                    echo "</form>";
-                }
-*/
             }
         }
-            
-/*        
-        
-        
-        
-        foreach ($structureliste as $structkey => $structure) {
-            // Si la structure est ouverte => On la garde
-            if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                if (strcasecmp($structure->sousstructure(), "o") == 0) {
-                    $sousstructliste = $structure->structurefille();
-                    foreach ((array) $sousstructliste as $key => $struct) {
-                        // Si la structure est fermée.... On la supprime de la liste
-                        if ($fonctions->formatdatedb($struct->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-                            // echo "Index = " . array_search($struct, $sousstructliste) . " Key = " . $key . "<br>";
-                            // echo "<br>sousstructliste AVANT = "; print_r($sousstructliste); echo "<br>";
-                            unset($sousstructliste["$key"]);
-                            // echo "<br>sousstructliste APRES = "; print_r($sousstructliste); echo "<br>";
-                        }
-                    }
-                    $structureliste = array_merge($structureliste, (array) $sousstructliste);
-                    // Remarque : Le tableau ne contiendra pas de doublon, car la clÃ© est le code de la structure !!!
-                }
-            } else // La strcuture est fermée... Donc on la supprime de la liste.
-            {
-                // echo " structkey = " . $structkey . "<br>";
-                unset($structureliste["$structkey"]);
-            }
-        }
-        // echo "StructureListe = "; print_r($structureliste); echo "<br>";
-        foreach ($structureliste as $structkey => $structure) {
-            echo "<br>";
-            echo $structure->planninghtml($indexmois . "/" . $annee,null,false,true);
-        }
-
-        $structureliste = $user->structgestliste();
-        foreach ($structureliste as $structkey => $structure) {
-            if (strcasecmp($structure->afficherespsousstruct(), "o") == 0) {
-                echo "<br>";
-                echo $structure->planningresponsablesousstructhtml($indexmois . "/" . $annee,true);
-            }
-        }
-*/
     } 
     else 
     {
-/*       
-
-        $affectationliste = $user->affectationliste(date("Ymd"), date("Ymd"));        
-        foreach ($affectationliste as $affectkey => $affectation) 
-        {
-*/            
         $affstructureid = $user->structureid();
         if ($affstructureid . "" != "")
         {

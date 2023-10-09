@@ -78,7 +78,7 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "", "", $userid);
+                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid);
             } 
             else 
             {

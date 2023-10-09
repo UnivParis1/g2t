@@ -26,16 +26,20 @@ class structure
 
     private $gestionnaireid = null;
 
-    private $affichesousstruct = null;
- // permet d'afficher les agents des sous structures
-    private $affichetoutagent = null;
- // permet d'afficher le planning de la structure pour tous les agents de la stucture
-    private $afficherespsousstruct = null;
- // permet d'afficher le planning des responsables des sous structures
-    private $respvalidsousstruct = null;
- // permet au responsable de la structure de valider les demandes des agents d'une structure fille
-    private $gestvalidagent = null;
- // autorise le gestionnaire à valider les demandes des congés des agents
+    private $affichesousstruct = null; // permet d'afficher les agents des sous structures
+
+    private $affichetoutagent = null; // permet d'afficher le planning de la structure pour tous les agents de la stucture
+
+    // private $afficherespsousstruct = null; // permet d'afficher le planning des responsables des sous structures -- OBSOLETE --
+
+    // private $respvalidsousstruct = null; // permet au responsable de la structure de valider les demandes des agents d'une structure fille -- OBSOLETE --
+
+    private $gestvalidagent = null; // autorise le gestionnaire à valider les demandes des congés des agents
+
+    private $respaffsoldesousstruct = null; // le responsable de la structure courante visualise le solde des agents des structures inclues 
+    
+    private $respaffdemandesousstruct = null; // le responsable de la structure courante valide les congés des agents des structures inclues 
+    
     private $datecloture = null;
 
     private $delegueid = null;
@@ -62,6 +66,25 @@ class structure
     function load($structureid)
     {
         if (is_null($this->structureid)) {
+//            $sql = "SELECT STRUCTUREID,
+//                           NOMLONG,
+//                           NOMCOURT,
+//                           STRUCTUREIDPARENT,
+//                           RESPONSABLEID,
+//                           GESTIONNAIREID,
+//                           AFFICHESOUSSTRUCT,
+//                           AFFICHEPLANNINGTOUTAGENT,
+//                           DATECLOTURE,
+//                           AFFICHERESPSOUSSTRUCT,
+//                           RESPVALIDSOUSSTRUCT,
+//                           GESTVALIDAGENT, 
+//                           TYPESTRUCT, 
+//                           ISINCLUDED,
+//                           ESTBIBLIOTHEQUE,
+//                           RESPAFFSOLDESOUSSTRUCT,
+//                           RESPAFFDEMANDESOUSSTRUCT
+//                    FROM STRUCTURE 
+//                    WHERE STRUCTUREID=?";
             $sql = "SELECT STRUCTUREID,
                            NOMLONG,
                            NOMCOURT,
@@ -71,12 +94,14 @@ class structure
                            AFFICHESOUSSTRUCT,
                            AFFICHEPLANNINGTOUTAGENT,
                            DATECLOTURE,
-                           AFFICHERESPSOUSSTRUCT,
-                           RESPVALIDSOUSSTRUCT,
+                           NULL,
+                           NULL,
                            GESTVALIDAGENT, 
                            TYPESTRUCT, 
                            ISINCLUDED,
-                           ESTBIBLIOTHEQUE
+                           ESTBIBLIOTHEQUE,
+                           RESPAFFSOLDESOUSSTRUCT,
+                           RESPAFFDEMANDESOUSSTRUCT
                     FROM STRUCTURE 
                     WHERE STRUCTUREID=?";
             $params = array($structureid);
@@ -103,15 +128,21 @@ class structure
             $this->affichesousstruct = "$result[6]";
             $this->affichetoutagent = "$result[7]";
             if (trim($result[8]) != '')
+            {
                 $this->datecloture = "$result[8]";
+            }
             else // En théorie on ne doit jamais passer par là, car la date de cloture est forcée lors de l'import....
+            {
                 $this->datecloture = '31/12/9999';
-            $this->afficherespsousstruct = "$result[9]";
-            $this->respvalidsousstruct = "$result[10]";
+            }
+            // $this->afficherespsousstruct = "$result[9]";
+            // $this->respvalidsousstruct = "$result[10]";
             $this->gestvalidagent = "$result[11]";
             $this->typestruct = "$result[12]";
             $this->isincluded = "$result[13]";
             $this->islibrary = "$result[14]";
+            $this->respaffsoldesousstruct = "$result[15]";
+            $this->respaffdemandesousstruct = "$result[16]";
             
             // Prise en compte du cas de la délégation
             $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID=? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
@@ -274,19 +305,90 @@ class structure
         } else
             $this->affichetoutagent = $affiche;
     }
-
-    function respvalidsousstruct($valide = null)
+    
+    function respaffsoldesousstruct($valide = null)
     {
         if (is_null($valide)) {
-            if (is_null($this->respvalidsousstruct)) {
-                $errlog = "Structure->respvalidsousstruct : Le paramètre respvalidsousstruct de la structure n'est pas défini !!!";
+            if (is_null($this->respaffsoldesousstruct)) {
+                $errlog = "Structure->respaffsoldesousstruct : Le paramètre respaffsoldesousstruct de la structure n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
-                return $this->respvalidsousstruct;
-        } else
-            $this->respvalidsousstruct = $valide;
+            } 
+            else
+            {
+                return $this->respaffsoldesousstruct;
+            }
+        } 
+        else
+        {
+            $this->respaffsoldesousstruct = $valide;
+        }
     }
+
+    function respaffdemandesousstruct($valide = null)
+    {
+        if (is_null($valide)) {
+            if (is_null($this->respaffdemandesousstruct)) {
+                $errlog = "Structure->respaffdemandesousstruct : Le paramètre respaffdemandesousstruct de la structure n'est pas défini !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } 
+            else
+            {
+                return $this->respaffdemandesousstruct;
+            }
+        } 
+        else
+        {
+            $this->respaffdemandesousstruct = $valide;
+        }
+    }
+    
+    /****************************
+     * 
+     * @deprecated
+     * 
+     ****************************/
+//    function respvalidsousstruct($valide = null)
+//    {
+//        trigger_error('Method ' . __METHOD__ . ' is deprecated => use respaffsoldesousstruct method instead', E_USER_DEPRECATED);
+//        
+//        if (is_null($valide)) {
+//            if (is_null($this->respvalidsousstruct)) {
+//                $errlog = "Structure->respvalidsousstruct : Le paramètre respvalidsousstruct de la structure n'est pas défini !!!";
+//                echo $errlog . "<br/>";
+//                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+//            }
+//            else
+//            { 
+//                return $this->respvalidsousstruct;
+//            }
+//        } 
+//        else
+//        {
+//            $this->respvalidsousstruct = $valide;
+//        }
+//    }
+
+    /****************************
+     * 
+     * @deprecated
+     * 
+     ****************************/
+//    function afficherespsousstruct($respsousstruct = null)
+//    {
+//        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+//
+//        if (is_null($respsousstruct)) {
+//            if (is_null($this->afficherespsousstruct)) {
+//                $errlog = "Structure->afficherespsousstruct : Le paramètre afficherespsousstruct de la structure n'est pas défini !!!";
+//                echo $errlog . "<br/>";
+//                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+//            } else
+//                return $this->afficherespsousstruct;
+//        } else
+//            $this->afficherespsousstruct = $respsousstruct;
+//    }
 
     function gestvalidagent($valide = null)
     {
@@ -312,19 +414,6 @@ class structure
                 return $this->affichesousstruct;
         } else
             $this->affichesousstruct = $sousstruct;
-    }
-
-    function afficherespsousstruct($respsousstruct = null)
-    {
-        if (is_null($respsousstruct)) {
-            if (is_null($this->afficherespsousstruct)) {
-                $errlog = "Structure->afficherespsousstruct : Le paramètre afficherespsousstruct de la structure n'est pas défini !!!";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
-                return $this->afficherespsousstruct;
-        } else
-            $this->afficherespsousstruct = $respsousstruct;
     }
 
     function structurefille()
@@ -356,7 +445,7 @@ class structure
     function agentlist($datedebut, $datefin, $sousstrucuture = null)
     {
         $agentliste = null;
-        if ((strcasecmp($this->affichesousstruct, 'o') == 0 and strcasecmp($sousstrucuture, 'n') != 0) or (strcasecmp($sousstrucuture, 'o') == 0)) {
+        if ((strcasecmp($this->sousstructure(), 'o') == 0 and strcasecmp($sousstrucuture, 'n') != 0) or (strcasecmp($sousstrucuture, 'o') == 0)) {
             //$structliste = $this->structurefille();
             $structliste = $this->structureinclue();
             if (! is_null($structliste)) {
@@ -662,7 +751,7 @@ class structure
     {
         if (is_null($gestid)) {
             if (is_null($this->gestionnaireid) or ($this->gestionnaireid == '')) {
-                $errlog = "<br><B><div style='color:#FF0000'>Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
+                $errlog = "Structure->Gestionnaire : Le gestionnaire de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini.";
                 //echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
@@ -1294,15 +1383,38 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // echo "structure->store : Non refaite !!!!! <br>";
         // return false;
         $msgerreur = null;
+//        $sql = "UPDATE STRUCTURE 
+//                SET AFFICHESOUSSTRUCT=?, 
+//                    AFFICHEPLANNINGTOUTAGENT=?, 
+//                    AFFICHERESPSOUSSTRUCT=?, 
+//                    RESPVALIDSOUSSTRUCT=?, 
+//                    GESTVALIDAGENT=?,
+//                    RESPAFFSOLDESOUSSTRUCT=?,
+//                    RESPAFFDEMANDESOUSSTRUCT=?
+//                WHERE STRUCTUREID=?";
+//        // echo "SQL = " . $sql . "<br>";
+//        $params = array($this->sousstructure(),
+//                        $this->affichetoutagent(),
+//                        $this->afficherespsousstruct,
+//                        $this->respvalidsousstruct,
+//                        $this->gestvalidagent(),
+//                        $this->respaffsoldesousstruct(),
+//                        $this->respaffdemandesousstruct(),
+//                        $this->id());
         $sql = "UPDATE STRUCTURE 
                 SET AFFICHESOUSSTRUCT=?, 
                     AFFICHEPLANNINGTOUTAGENT=?, 
-                    AFFICHERESPSOUSSTRUCT=?, 
-                    RESPVALIDSOUSSTRUCT=?, 
-                    GESTVALIDAGENT=? 
+                    GESTVALIDAGENT=?,
+                    RESPAFFSOLDESOUSSTRUCT=?,
+                    RESPAFFDEMANDESOUSSTRUCT=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
-        $params = array($this->sousstructure(),$this->affichetoutagent(),$this->afficherespsousstruct(),$this->respvalidsousstruct(),$this->gestvalidagent(),$this->id());
+        $params = array($this->sousstructure(),
+                        $this->affichetoutagent(),
+                        $this->gestvalidagent(),
+                        $this->respaffsoldesousstruct(),
+                        $this->respaffdemandesousstruct(),
+                        $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") {

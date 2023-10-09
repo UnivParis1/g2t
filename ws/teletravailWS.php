@@ -7,6 +7,8 @@
     $erreur = '';
     $erreur_curl = '';
     $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+    // On indique par défaut que tout s'est bien passé
+    $result_json = array('status' => 'Ok', 'description' => '');
         
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));
     error_log(basename(__FILE__) . " GET = " . str_replace("\n","",var_export($_GET,true)));

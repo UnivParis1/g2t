@@ -817,12 +817,15 @@ class planning
          * }
          */
         $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y')); // On récupère l'affectation courante
+//        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : affectationliste = " . print_r($affectationliste,true)));
         if (is_array($affectationliste)) {
             // echo "affectationliste = " . print_r($affectationliste, true) . "<br>";
             $affectation = reset($affectationliste); // ATTENTION : Reset permet de récupérer le premier élément du tableau => On ne connait pas la clé
             $structure = new structure($this->dbconnect);
+//            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : Avant le load structure "));
             $structure->load($affectation->structureid());
             $nomstructure = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
+//            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : structure full name = $nomstructure"));
             $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $nomstructure));
             $pdf->Ln();
         }
@@ -832,16 +835,19 @@ class planning
         $pdf->SetFont('helvetica', 'B', 10, '', true);
         $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Edité le ' . date("d/m/Y")));
         $pdf->Ln(10);
+//        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : On a affiché les données du user = " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() ));
         
         // echo "Avant le planning <br>";
         
         // ///création du planning suivant le tableau généré
         // /Création des entetes de colones contenant les 31 jours/////
         
+//        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : Avant le decode"));
         $pdf->Cell(30, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
         for ($index = 1; $index <= 31; $index ++) {
             $pdf->Cell(8, 5, $this->fonctions->utf8_decode($index), 1, 0, 'C');
         }
+//        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : Après le decode"));
         $pdf->Ln(5);
 
         // On charge toutes les absences dans un tableau
@@ -851,6 +857,7 @@ class planning
         {
             $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
         }
+//        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : Après récup listeabs = " . print_r($listeabs,true)));
         
         
         // echo "Avant le tableau <br>";
@@ -905,6 +912,7 @@ class planning
                 }
             }
         }
+//        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Planning->pdf : Après le for"));
         
         // ///MISE EN PLACE DES LEGENDES DU PLANNING
         

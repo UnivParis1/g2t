@@ -1051,9 +1051,9 @@
             // ---------------------------------------------------------------------------
             echo "<SELECT name='listetype' id='listetype' onchange='updatedisplay()' class='abssencecommfacultatif'>";
             $listecateg = $fonctions->listecategorieabsence();
-            echo "<OPTION class='abssencecommfacultatif' value=''>-- Veuillez sélectionner un type d'absence ou de télétravail --</OPTION>";
+            echo "<OPTION class='abssencecommfacultatif' value=''>-- Veuillez sélectionner un type d'absence --</OPTION>";
             foreach ($listecateg as $keycateg => $nomcateg) {
-                echo "<optgroup class='abssencecommfacultatif' label='" . str_replace("_", " ", $nomcateg) . "'>";
+                echo "<optgroup class='abssencecommfacultatif' label='" . str_replace("_", " ", $nomcateg) . " &nbsp;'>";
                 $listeabs = $fonctions->listeabsence($keycateg);
                 foreach ($listeabs as $keyabs => $nomabs)
                 {
@@ -1184,6 +1184,7 @@
             {
                 listetype.className = currentoption.className;
                 buttonvalid.disabled = true;
+                warningcommoblig.hidden = true;
                 return;
             }
             listetype.className = currentoption.className;

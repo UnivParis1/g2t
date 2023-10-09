@@ -204,7 +204,8 @@
             $aumoinsunedemande = False;
             $cleelement = $structure->id();
             
-            if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+            //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
+            if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues 
             {
                 if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                 {
@@ -214,11 +215,32 @@
             }
             else
             {
-                $validsousstruct = strtolower($structure->respvalidsousstruct());
+                $validsousstruct = strtolower($structure->respaffdemandesousstruct());  // strtolower($structure->respvalidsousstruct());
                 // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
                 $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
             }
 
+            // On récupère les responsables des sous-structures pour les inclures dans la liste des soldes à afficher
+            $structurefilleliste = $structure->structurefille();
+            if (is_array($structurefilleliste)) {
+                foreach ($structurefilleliste as $key => $structurefille) {
+                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
+                        $respstructfille = $structurefille->responsable();
+                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
+                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                            // /$responsableliste[$responsable->agentid()] = $responsable;
+                        }
+                        $respstructfille = $structurefille->responsablesiham();
+                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
+                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                            // /$responsableliste[$responsable->agentid()] = $responsable;
+                        }
+                    }
+                }
+            }
+            
             echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             echo "<form name='frm_validation_conge'  method='post' >";
             ////$validsousstruct = strtolower($structure->respvalidsousstruct());

@@ -2,6 +2,18 @@
 
 use Fpdf\Fpdf as FPDF;
 
+class commentaireconge
+{
+    public $commentaireid;
+    public $agentid;
+    public $typeabsenceid;
+    public $dateajout;
+    public $commentaire;
+    public $nbjoursajoute;
+    public $auteurid;
+    public $libelleabsence;
+}
+
 class sihamaffectation
 {
     public $debut;
@@ -742,26 +754,9 @@ class agent
     {
         if (is_null($this->travailsamedi))
         {
-            $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID='TRAVAILSAMEDI'";
-            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
-            $query = $this->fonctions->prepared_select($sql, $params);
-            // echo "sql = " . $sql . "<br>";
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                $errlog = "Agent->travailsamedi (AGENT) : " . $erreur;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                return FALSE;
-            }
-            if (mysqli_num_rows($query) == 0)
-            {
-                $this->travailsamedi = false;
-            }
-            else
-            {
-                $result = mysqli_fetch_row($query);
-                $this->travailsamedi = (strcasecmp($result[0], "O") == 0);
-            }
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, "TRAVAILSAMEDI");
+            $this->travailsamedi = (strcasecmp($complement->valeur(), "O") == 0);
         }
         return $this->travailsamedi;
     }
@@ -770,26 +765,9 @@ class agent
     {
         if (is_null($this->travaildimanche))
         {
-            $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID='TRAVAILDIMANCHE'";
-            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
-            $query = $this->fonctions->prepared_select($sql, $params);
-            // echo "sql = " . $sql . "<br>";
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                $errlog = "Agent->travaildimanche (AGENT) : " . $erreur;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                return FALSE;
-            }
-            if (mysqli_num_rows($query) == 0)
-            {
-                $this->travaildimanche = false;
-            }
-            else
-            {
-                $result = mysqli_fetch_row($query);
-                $this->travaildimanche = (strcasecmp($result[0], "O") == 0);
-            }
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, "TRAVAILDIMANCHE");
+            $this->travaildimanche = (strcasecmp($complement->valeur(), "O") == 0);
         }
         return $this->travaildimanche;
     }
@@ -876,23 +854,9 @@ class agent
      */
     function estadministrateur()
     {
-        $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID='ESTADMIN'";
-        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
-        $query = $this->fonctions->prepared_select($sql, $params);
-        // echo "sql = " . $sql . "<br>";
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Agent->estadministrateur (AGENT) : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            return FALSE;
-        }
-        if (mysqli_num_rows($query) == 0)
-        {
-            return FALSE;
-        }
-        $result = mysqli_fetch_row($query);
-        return (strcasecmp($result[0], "O") == 0);
+        $complement = new complement($this->dbconnect);
+        $complement->load($this->agentid, "ESTADMIN");
+        return (strcasecmp($complement->valeur(), "O") == 0);
     }
 
     /**
@@ -903,86 +867,90 @@ class agent
      */
     function estprofilrh($typeprofil = null)
     {
-        $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID IN (";
-        if (is_null($typeprofil)) {
-            $sql = $sql . "'" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHTELETRAVAIL . "', '" . agent::PROFIL_RHCONGE . "'";
-        } elseif ($typeprofil == 1 or $typeprofil == agent::PROFIL_RHCET) {
-            $sql = $sql . "'" . agent::PROFIL_RHCET . "'";
-        } elseif ($typeprofil == 2 or $typeprofil == agent::PROFIL_RHCONGE) {
-            $sql = $sql . "'" . agent::PROFIL_RHCONGE . "'";
-        } elseif ($typeprofil == agent::PROFIL_RHTELETRAVAIL) {
-            $sql = $sql . "'" . agent::PROFIL_RHTELETRAVAIL . "'";
-        } else {
+
+        if (is_null($typeprofil)) 
+        {
+            // On charge les type de profil RH et dès qu'on en trouve un à 'O' => On retourne TRUE
+            // Si aucun n'est 'O' on retourne FALSE
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, agent::PROFIL_RHCET);
+            if (strcasecmp($complement->valeur(), "O") == 0)
+            {
+                return true;
+            }
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, agent::PROFIL_RHCONGE);
+            if (strcasecmp($complement->valeur(), "O") == 0)
+            {
+                return true;
+            }
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, agent::PROFIL_RHTELETRAVAIL);
+            if (strcasecmp($complement->valeur(), "O") == 0)
+            {
+                return true;
+            }
+            return false;
+        } 
+        elseif ($typeprofil == 1 or $typeprofil == agent::PROFIL_RHCET) 
+        {
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, agent::PROFIL_RHCET);
+            return (strcasecmp($complement->valeur(), "O") == 0);
+        } 
+        elseif ($typeprofil == 2 or $typeprofil == agent::PROFIL_RHCONGE) 
+        {
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, agent::PROFIL_RHCONGE);
+            return (strcasecmp($complement->valeur(), "O") == 0);
+        } 
+        elseif ($typeprofil == agent::PROFIL_RHTELETRAVAIL) 
+        {
+            $complement = new complement($this->dbconnect);
+            $complement->load($this->agentid, agent::PROFIL_RHTELETRAVAIL);
+            return (strcasecmp($complement->valeur(), "O") == 0);
+        } 
+        else 
+        {
             $errlog = "Agent->estprofilrh (AGENT) : Type de profil demandé inconnu (typeprofil = $typeprofil)";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return FALSE;
         }
-        $sql = $sql . ")";
-        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
-        $query = $this->fonctions->prepared_select($sql, $params);
-        // echo "sql = " . $sql . "<br>";
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Agent->estprofilrh (AGENT) : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            return FALSE;
-        }
-        if (mysqli_num_rows($query) == 0)
-        {
-            return FALSE;
-        }
-        $result = mysqli_fetch_row($query);
-        return (strcasecmp($result[0], "O") == 0);
     }
     
     function enregistreprofilrh($arrayprofil = array())
     {
         if (is_array($arrayprofil))
         {
-            $sql = "DELETE FROM COMPLEMENT WHERE AGENTID= ? AND COMPLEMENTID IN ('" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHTELETRAVAIL . "', '" . agent::PROFIL_RHCONGE . "')";
-            $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
-            $query = $this->fonctions->prepared_select($sql, $params);
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                echo "agent->enregistreprofilrh (DELETE) : " . $erreur . "<br>";
-                error_log(basename(__FILE__) . " " . $erreur);
-            }
-            
+            $complement = new complement($this->dbconnect);
+            $complement->delete($this->agentid,agent::PROFIL_RHCET);
             if (in_array(agent::PROFIL_RHCET,$arrayprofil))
             {
-                $sql = "INSERT INTO COMPLEMENT(AGENTID, COMPLEMENTID, VALEUR, STATUT, DATEDEBUT, DATEFIN) VALUES(?, ?, 'O', '', '" . $this->fonctions->formatdatedb('01/01/1900') . "', NULL)";
-                $params = array($this->fonctions->my_real_escape_utf8($this->agentid),agent::PROFIL_RHCET);
-                $query = $this->fonctions->prepared_select($sql, $params);
-                $erreur = mysqli_error($this->dbconnect);
-                if ($erreur != "") {
-                    echo "agent->enregistreprofilrh (INSERT - " . agent::PROFIL_RHCET . ") : " . $erreur . "<br>";
-                    error_log(basename(__FILE__) . " " . $erreur);
-                }
+                $complement->agentid($this->agentid);
+                $complement->complementid(agent::PROFIL_RHCET);
+                $complement->valeur('O');
+                $complement->store();
             }
+            $complement = new complement($this->dbconnect);
+            $complement->delete($this->agentid,agent::PROFIL_RHCONGE);
             if (in_array(agent::PROFIL_RHCONGE,$arrayprofil))
             {
-                $sql = "INSERT INTO COMPLEMENT(AGENTID, COMPLEMENTID, VALEUR, STATUT, DATEDEBUT, DATEFIN) VALUES(?, ?, 'O', '', '" . $this->fonctions->formatdatedb('01/01/1900') . "', NULL)";
-                $params = array($this->fonctions->my_real_escape_utf8($this->agentid),agent::PROFIL_RHCONGE);
-                $query = $this->fonctions->prepared_select($sql, $params);
-                $erreur = mysqli_error($this->dbconnect);
-                if ($erreur != "") {
-                    echo "agent->enregistreprofilrh (INSERT - " . agent::PROFIL_RHCONGE . ") : " . $erreur . "<br>";
-                    error_log(basename(__FILE__) . " " . $erreur);
-                }
+                $complement->agentid($this->agentid);
+                $complement->complementid(agent::PROFIL_RHCONGE);
+                $complement->valeur('O');
+                $complement->store();
             }
+            $complement = new complement($this->dbconnect);
+            $complement->delete($this->agentid,agent::PROFIL_RHTELETRAVAIL);
             if (in_array(agent::PROFIL_RHTELETRAVAIL,$arrayprofil))
             {
-                $sql = "INSERT INTO COMPLEMENT(AGENTID, COMPLEMENTID, VALEUR, STATUT, DATEDEBUT, DATEFIN) VALUES(?, ?, 'O', '', '" . $this->fonctions->formatdatedb('01/01/1900') . "', NULL)";
-                $params = array($this->fonctions->my_real_escape_utf8($this->agentid),agent::PROFIL_RHTELETRAVAIL);
-                $query = $this->fonctions->prepared_select($sql, $params);
-                $erreur = mysqli_error($this->dbconnect);
-                if ($erreur != "") {
-                    echo "agent->enregistreprofilrh (INSERT - " . agent::PROFIL_RHTELETRAVAIL . ") : " . $erreur . "<br>";
-                    error_log(basename(__FILE__) . " " . $erreur);
-                }
+                $complement->agentid($this->agentid);
+                $complement->complementid(agent::PROFIL_RHTELETRAVAIL);
+                $complement->valeur('O');
+                $complement->store();
             }
+ 
         }
     }
     
@@ -2421,7 +2389,7 @@ class agent
             foreach ($synthesetab as $key => $nbrejrs) {
                 $libelledemande = $key;
                 if (strlen($key) > 40) {
-                    $libelledemande = substr($key, 0, 40) . "...";
+                    $libelledemande = $this->fonctions->tronque_chaine($key,40,true); // substr($key, 0, 40) . "...";
                 }
                 $pdf->Cell(80, 5, $this->fonctions->utf8_decode($libelledemande), 1, 0, 'C');
                 $pdf->Cell(20, 5, $this->fonctions->utf8_decode($nbrejrs), 1, 0, 'C');
@@ -2862,6 +2830,63 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return $htmltext;
     }
 
+    function listecommentaireconge($typeabsenceid = null)
+    {
+        $listecommentaire = array();
+        if (is_null($typeabsenceid))
+        {
+            $sql = "SELECT COMMENTAIRECONGE.COMMENTAIRECONGEID,
+                           COMMENTAIRECONGE.AGENTID,
+                           COMMENTAIRECONGE.TYPEABSENCEID,
+                           COMMENTAIRECONGE.DATEAJOUTCONGE,
+                           COMMENTAIRECONGE.COMMENTAIRE,
+                           COMMENTAIRECONGE.NBRJRSAJOUTE,
+                           COMMENTAIRECONGE.AUTEURID,
+                           TYPEABSENCE.LIBELLE
+                    FROM COMMENTAIRECONGE, TYPEABSENCE
+                    WHERE COMMENTAIRECONGE.AGENTID = ? 
+                      AND TYPEABSENCE.TYPEABSENCEID = COMMENTAIRECONGE.TYPEABSENCEID";
+            $params = array($this->agentid);
+        }
+        else
+        {
+            $sql = "SELECT COMMENTAIRECONGE.COMMENTAIRECONGEID,
+                           COMMENTAIRECONGE.AGENTID,
+                           COMMENTAIRECONGE.TYPEABSENCEID,
+                           COMMENTAIRECONGE.DATEAJOUTCONGE,
+                           COMMENTAIRECONGE.COMMENTAIRE,
+                           COMMENTAIRECONGE.NBRJRSAJOUTE,
+                           COMMENTAIRECONGE.AUTEURID,
+                           TYPEABSENCE.LIBELLE
+                    FROM COMMENTAIRECONGE, TYPEABSENCE
+                    WHERE COMMENTAIRECONGE.AGENTID= ? 
+                      AND COMMENTAIRECONGE.TYPEABSENCEID = ?
+                      AND TYPEABSENCE.TYPEABSENCEID = COMMENTAIRECONGE.TYPEABSENCEID";
+            $params = array($this->agentid,$typeabsenceid);
+        }
+        $query = $this->fonctions->prepared_select($sql, $params);
+        //echo "SQL = " . $sql . "<br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            echo "Agent->listecommentaireconge : " . $erreur . "<br>";
+            error_log(basename(__FILE__) . " Agent->listecommentaireconge : " . $erreur);
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $commentaireconge = new commentaireconge();
+            $commentaireconge->commentaireid = $result[0];
+            $commentaireconge->agentid = $result[1];
+            $commentaireconge->typeabsenceid = $result[2];
+            $commentaireconge->dateajout = $result[3];
+            $commentaireconge->commentaire = $result[4];
+            $commentaireconge->nbjoursajoute = $result[5];
+            $commentaireconge->auteurid = $result[6] . "";
+            $commentaireconge->libelleabsence = $result[7];
+            $listecommentaire[] = $commentaireconge;
+        }
+        return $listecommentaire;
+    }
+    
     /**
      *
      * @param
@@ -3905,8 +3930,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	return $nbjours;
     }
     
+    /**
+     *
+     * @deprecated
+    */
     function getResponsableForCET()
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
     	$pasresptrouve = false;
     	$structid = $this->structureid();
     	$struct = new structure($this->dbconnect);
@@ -3933,7 +3964,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Il n'y a pas de responsable pour la structure " . $struct->nomlong()));
     	}
     	return $resp;
-	}
+    }
 
     /**
      *
@@ -4763,117 +4794,161 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         return $listhistorique;
     }
-
-    function getresponsable_niveau2()
+    
+    /**
+     * $fromstruct permet de spécifier à partir de quelle structure on doit chercher le responsable<br>
+     * C'est nécessaire lorsqu'on cherche un responsable d'un responsable (donc N+2) car le responsable<br>
+     * n'est pas forcément affecté ou affecté dans la bonne structure<br>
+     * Pour un agent (non responsable) on peut passer la structure de l'agent ou null<br>
+     * Si null => initialisé à partir de la structureid de l'agent<br>
+     * 
+     * @param structure $fromstruct
+     * @param structure $structresp
+     * @param number $codeinterne
+     * @return agent responsable ou false
+     */
+    function getresponsable($fromstruct = null, &$structresp = null, &$codeinterne = null)
     {
-        
-        //echo "L'agent est => " . $this->identitecomplete() . "<br>";
-        $structure = new structure($this->dbconnect);
-        if (!$structure->load($this->structureid()))
-        {
-            //echo $this->fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
-            return false;
-        }
-        $codeinterne = null;
-        //echo "Avant le if this->agent....<br>";
-        if ($this->agentid()==$structure->responsable()->agentid())
-        {
-            $responsable = $structure->resp_envoyer_a($codeinterne,false);
-            if (!is_null($responsable))
-            {
-                //echo "Dans le !null(responsable)<br>";
-                // Si on envoie au gestionnaire courant => La structure est la même
-                if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT)
-                {
-                    //echo "Avant le load de la structure de l'agent<br>";
-                    $structureresp = new structure($this->dbconnect);
-                    $structureresp->load($this->structureid());
-                    //echo "fin du load de la structure de l'agent<br>";
-                }
-                else
-                // Si on l'envoi au responsable ou au gestionnaire de la structure parente => La strucuture est la parente
-                {
-                    //echo "Avant l'affectation de la strucuture parente<br>";
-                    $structureresp = $structure->parentstructure();
-                }
-            }
-        }
-        else
-        {
-            $responsable = $structure->agent_envoyer_a($codeinterne,false);
-            // Pour un agent, on envoie forcément au responsable ou au gestion de la structure courante
-            $structureresp = new structure($this->dbconnect);
-            $structureresp->load($this->structureid());            
-        }
-        if (is_null($responsable))
-        {
-            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Erreur : L'agent n'a pas de responsable.<br>");
-            return false;
-        }
-        //echo "Le responsable de l'agent est : " . $responsable->identitecomplete() . "<br>";
+        error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("On cherche le N+1 de " . $this->identitecomplete()));
 
-/* 
-        $structureresp = new structure($this->dbconnect);
-        if (!$structureresp->load($responsable->structureid()))
-        {
-            //echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur : Le responsable n'a pas de structure d'affectation ou celle-ci est inconnue.<br>");
-            return false;
-        }
- */
+        $pasresptrouve = false;
         $codeinterne = null;
-        if ($responsable->agentid()==$structureresp->responsable()->agentid())
+        $structresp = null;
+        if (!is_null($fromstruct) and is_a($fromstruct, 'structure'))
         {
-            $responsable2 = $structureresp->resp_envoyer_a($codeinterne,false);
-            if (!is_null($responsable2))
-            {
-                // Si on envoie au gestionnaire courant => La structure est la même
-                if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT)
-                {
-                    $structureresp2 = new structure($this->dbconnect);
-                    if (!$structureresp2->load($responsable->structureid()))
-                    {
-                        $structureresp2 = null;
-                    }
-                }
-                else
-                // Si on l'envoi au responsable ou au gestionnaire de la structure parente => La strucuture est la parente
-                {
-                    $structureresp2 = $structure->parentstructure();
-                }
-            }
+            $struct = $fromstruct;
+            $structid = $fromstruct->id();
         }
         else
         {
-            $responsable2 = $structureresp->agent_envoyer_a($codeinterne,false);
-            // Pour un agent, on envoie forcément au responsable ou au gestion de la structure courante
-            $structureresp2 = new structure($this->dbconnect);
-            if (!$structureresp2->load($responsable->structureid()))
+            $structid = $this->structureid();
+            $struct = new structure($this->dbconnect);
+            if (!$struct->load($structid))
             {
-                $structureresp2 = null;
-            }
-        }
-        //echo "Le n+2 de l'agent est : " . $responsable2->identitecomplete() . "<br>";
-/*
-        $structureresp2 = new structure($this->dbconnect);
-        if ($structureresp2->load($responsable2->structureid()))
-        {
- */
-        if (!is_null($structureresp2))
-        {
-            //var_dump($structureresp2->nomlong() . ' ' . $structureresp2->id());
-            $tabstructure = $structureresp2->structureinclue();
-            //var_dump($tabstructure);
-            if (!isset($tabstructure[$structureresp->id()]))
-            {
-                //echo $this->fonctions->showmessage(fonctions::MSGERROR, "Erreur : La structure du responsable niveau 2 ne contient pas la structure du responsable.<br>");
+                // Si on ne peut pas charger la structure => On ne peut pas définir le responsable de l'agent
+                error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de charger la structure (id = $structid) => " . $struct->nomlong()));
                 return false;
             }
         }
+    	$resp = $struct->responsable();
+        // Si on n'a pas récupérer de responsable de la structure
+        // l'adresse mail du responsable est vide
+    	if (($resp->mail() . "") <> "")
+    	{
+            // Si le responsable de la structure est l'agent courant => L'agent est responsable
+            if ($resp->agentid() == $this->agentid())
+            {
+                $resp = $struct->resp_envoyer_a($codeinterne,false);
+                if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                {
+                    // Le responsable (qui est le gestionnaire de la structure courante) est dans la structure courante
+                    $structresp = $struct;
+                }
+                else if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne==structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                {
+                    // Le responsable est dans la structure parente si la structure de l'agent est inclue dans la structure parente
+                    $structresp = $struct->parentstructure();
+                }
+            }
+            // L'agent est n'est pas le responsable de la structure
+            else
+            {
+                // Dans le cas ou on veut déterminer le responsable d'un agent, ce responsable est forcément dans la structure de l'agent
+                $resp = $struct->agent_envoyer_a($codeinterne,false);
+                $structresp = $struct;
+            }
+            // Si le responsable est null ou si c'est le CRON ou si le mail est vide
+            if (is_null($resp) or $resp->agentid()==SPECIAL_USER_IDCRONUSER or $resp->mail()."" == "")
+            {
+                $pasresptrouve = true;
+            }
+    	}
+    	else
+    	{
+            $pasresptrouve = true;
+    	}
+        
+    	if ($pasresptrouve)
+    	{
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Il n'y a pas de responsable pour la structure " . $struct->nomlong()));
+            $resp = false;
+    	}
+        if ($resp!==false)
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+1 de " . $this->identitecomplete() . " est " . $resp->identitecomplete()));
+        }
+    	return $resp;
+    }
+
+
+    
+    function getresponsable_niveau2()
+    {
+        $MODE_AGENT=1;
+        $MODE_RESP=2;
+
+        error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("On cherche le N+2 de " . $this->identitecomplete()));
+        
+    	$structid = $this->structureid();
+    	$struct = new structure($this->dbconnect);
+    	if (!$struct->load($structid))
+        {
+            // Si on ne peut pas charger la structure => On ne peut pas définir le responsable de l'agent
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de charger la structure (id = $structid) => " . $struct->nomlong()));
+            return false;
+        }
+    	$struct_resp = $struct->responsable();
+        if ($struct_resp->agentid() == $this->agentid())
+        {
+            $mode = $MODE_RESP;
+        }
         else
         {
-            //echo $this->fonctions->showmessage(fonctions::MSGWARNING, "Warning : Le responsable niveau 2 n'a pas de structure d'affectation ou celle-ci est inconnue => Mais c'est pas grave.<br>");
+            $mode = $MODE_AGENT;
         }
-        return $responsable2;
+
+        // Le N+2 d'un agent est le responsable de son responsable
+        $respstruct = null;
+        $codeinterne = null;
+        $resp = $this->getresponsable(null, $respstruct, $codeinterne);
+        
+        if ($resp===false or is_null($resp))
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable+2 de l'agent car impossible de déterminer le responsable+1"));
+            return false;
+        }
+        if ($mode==$MODE_AGENT and $codeinterne==structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("En mode AGENT, on renvoit les demandes vers le gestionnaire => Pas de responsable+2"));
+            return false;
+        }
+        if ($mode==$MODE_RESP and ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT))
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("En mode RESPONSABLE, on renvoit les demandes vers un gestionnaire => Pas de responsable+2"));
+            return false;
+        }
+        // On sait que le responsable n'est pas un gestionnaire
+        // Donc on va chercher son responsable
+        $respduresp=$resp->getresponsable($respstruct, $respdurespstruct, $codeinterne);
+        if ($respduresp===false or is_null($respduresp))
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable du responsable " . $resp->agentid() . " => Donc pas de N+2"));
+            return false;
+        }
+        // On récupère les strucutures inclues dans la structure du responsable du responsable
+        $tabstructure = $respdurespstruct->structureinclue();
+        // On regarde si la structure du reponsable est dans la liste
+        if (!isset($tabstructure[$respstruct->id()]) and $respstruct->id()!=$respdurespstruct->id())
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " n'est pas inclue dans la structure parente " . $respdurespstruct->id() . " => Donc pas de N+2"));
+            return false;
+        }
+        error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " est inclue dans la structure parente " . $respdurespstruct->id() . " ou c'est la même => On a un N+2"));
+        error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+2 de l'agent " . $this->agentid() . " est " . $respduresp->agentid()));
+        return $respduresp;
+        
+        
+        // Fin de la nouvelle version
     }
     
     /**

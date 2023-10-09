@@ -34,7 +34,8 @@
     $user = new agent($dbcon);
     $user->load($userid);
 
-    if (isset($_POST["agentid"])) {
+    if (isset($_POST["agentid"]) and $_POST["agentid"]!='') 
+    {
         $agentid = $_POST["agentid"];
         $agent = new agent($dbcon);
         $agent->load($agentid);
@@ -44,21 +45,73 @@
         $agentid = null;
     }
     
+    $date = date("Ymd");
+    if (isset($_POST["date"]))
+    {
+        $date = $_POST["date"];
+    }
+    
     require ("includes/menu.php");
 
     //echo "POST = "; print_r($_POST); echo "<br>";
 
+    
+    $inputfilepath = $fonctions->inputfilepath();
+    $scandir = scandir("$inputfilepath" . '/');
+    //var_dump($scandir);
+
+    $datearray = array();
+    foreach($scandir as $fichier)
+    {
+        // On cherche le nombre de fichier siham_agents_*.xml
+        if(preg_match("#siham_agents_[0-9]+\.xml$#",strtolower($fichier)))
+        {
+            // On va supprimer le début et la fin du nom du fichier pour ne conserver que la date du fichier
+            // Donc on décrit ici le format du nom du fichier => ALPHA_ALPHA_NUM.xml
+            $pattern = '/[a-z]+_[a-z]+_([0-9]+)\.xml/i';
+            // On ne garde que le 1er bloc entre () du nom du fichier => back reference \1 
+            $replacement = '\1';
+            $datestr = preg_replace($pattern, $replacement, $fichier);
+            $datearray[] = $datestr;
+        }
+    }
+    // On trie (descending sort) le tableau sur les valeurs (date) 
+    rsort($datearray);
+    
     echo "<br>";
     echo "<form name='infos_agent' method='post'>";
 
+    echo "Sélectionnez la date du fichier :<br>";
+    echo "<select size='1'  id='date' name='date'>";
+    
+    foreach ($datearray as $currentdate)
+    {
+        $selected = '';
+        if ($currentdate == $date)
+        {
+            $selected = 'selected';
+        }
+        echo "<option value='$currentdate' $selected >" . $fonctions->formatdate($currentdate) . "</option>";
+    }
+    echo "</select>";
+    echo "<br>";
+    echo "<br>";
+    
+    echo "Liste des agents : <br>";
     $agentsliste = $fonctions->listeagentsg2t();
     echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
     echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
     foreach ($agentsliste as $key => $identite)
     {
-        echo "<option value='$key'>$identite</option>";
+        $selected = '';
+        if ($agentid == $key)
+        {
+            $selected = 'selected';
+        }
+        echo "<option value='$key' $selected >$identite</option>";
     }
     echo "</select>";
+    echo "<br>";
     echo "<br>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='submit' value='Soumettre'>";
@@ -66,11 +119,11 @@
     echo "<br>";
     echo "<br>";
     
-    $inputfilepath = $fonctions->inputfilepath();
-    $date = date("Ymd");
+    //$date = date("Ymd");
     $bgcolor_ok = "#c5efbd"; // "#87d478";
     $bgcolor_erreur = "#f1948a";
     
+    $filemissing = false;
     $identite_trouve = false;
     $aff_situation_trouve = false;
     $aff_modalite_trouve = false;
@@ -84,6 +137,7 @@
         $filename = $inputfilepath . "/siham_agents_$date.xml";
         if (! file_exists($filename)) {
             echo "Le fichier $filename n'existe pas !!! <br>";
+            $filemissing = true;
         } 
         else 
         {
@@ -150,6 +204,7 @@
         $filename = $inputfilepath . "/siham_absence_$date.xml";
         if (! file_exists($filename)) {
             echo "Le fichier $filename n'existe pas !!! <br>";
+            $filemissing = true;
         } 
         else 
         {
@@ -209,6 +264,7 @@
         $filename = $inputfilepath . "/siham_fonctions_$date.xml";
         if (! file_exists($filename)) {
             echo "Le fichier $filename n'existe pas !!! <br>";
+            $filemissing = true;
         } 
         else 
         {
@@ -277,6 +333,7 @@
         if (! file_exists($filename)) 
         {
             echo "Le fichier $filename n'existe pas !!! <br>";
+            $filemissing = true;
         } 
         else 
         {        
@@ -356,6 +413,7 @@
         if (! file_exists($situationfile)) 
         {
             echo "Le fichier $situationfile n'existe pas !!! <br>";
+            $filemissing = true;
         }
         else
         {
@@ -427,6 +485,7 @@
         if (! file_exists($modalitefile)) 
         {
             echo "Le fichier $modalitefile n'existe pas !!! <br>";
+            $filemissing = true;
         }
         else
         {
@@ -498,6 +557,7 @@
         if (! file_exists($statutfile)) 
         {
             echo "Le fichier $statutfile n'existe pas !!! \n";
+            $filemissing = true;
         }
         else
         {
@@ -569,6 +629,7 @@
         if (! file_exists($structurefile)) 
         {
             echo "Le fichier $structurefile n'existe pas !!! <br>";
+            $filemissing = true;
         }
         else
         {
@@ -640,13 +701,20 @@
     if (!is_null($agentid))
     {
         echo "<B>Bilan de l'intégration de l'agent dans G2T</B><br>";
-        if (!$identite_trouve or !$aff_situation_trouve or !$aff_modalite_trouve or !$aff_statut_trouve or !$aff_structure_trouve)
+        if (!$filemissing)
         {
-            echo "<B><label style='background-color: $bgcolor_erreur; font-size: large;'>Le dossier de l'agent " . $agent->identitecomplete() . " semble incomplet </label></B></br><br>";
+            if (!$identite_trouve or !$aff_situation_trouve or !$aff_modalite_trouve or !$aff_statut_trouve or !$aff_structure_trouve)
+            {
+                echo "<B><label style='background-color: $bgcolor_erreur; font-size: large;'>Le dossier de l'agent " . $agent->identitecomplete() . " semble incomplet </label></B></br><br>";
+            }
+            else
+            {
+                echo "<B><label style='background-color:$bgcolor_ok; font-size: large;'>Le dossier de l'agent " . $agent->identitecomplete() . " semble complet </label></B></br><br>";
+            }
         }
         else
         {
-            echo "<B><label style='background-color:$bgcolor_ok; font-size: large;'>Le dossier de l'agent " . $agent->identitecomplete() . " semble complet </label></B></br><br>";
+            echo "<B><label style='background-color: $bgcolor_erreur; font-size: large;'>Au moins un fichier est manquant. Impossible de faire une analyse du dossier.</label></B></br><br>";
         }
     }
 ?>

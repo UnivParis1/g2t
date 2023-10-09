@@ -30,12 +30,31 @@
         exit();
     }
 
-    ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
+//    ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 
     $user = new agent($dbcon);
     $user->load($userid);
 
     require ("includes/menu.php");
+    
+    $path = $fonctions->imagepath() . "/chargement.gif";
+    list($width, $height) = getimagesize("$path");
+    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+    $data = file_get_contents($path);
+    $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
+
+    if (ob_get_contents()!==false)
+    {
+        ob_end_flush();
+        @ob_flush();
+        flush();
+        ob_start();
+    }
+    // Fin du forçage de l'affichage de l'image d'attente
+    
+    
     echo "<br>";
     
     $listeteletravail_attente = array();
@@ -177,5 +196,21 @@
     echo "</table>";
 
 ?>
+    <script>
+        window.addEventListener("load", (event) => {
+            var waiting_img = document.getElementById('waiting_img');
+            if (waiting_img)
+            {
+                waiting_img.hidden=true;
+            }
+            var waiting_div = document.getElementById('waiting_div');
+            if (waiting_div)
+            {
+                waiting_div.hidden=true;
+            }
+        });
+    </script>    
+
+
 </body>
 </html>

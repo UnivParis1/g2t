@@ -6,6 +6,7 @@
 /INPUT_FILES_V3/*.xml
 !/INPUT_FILES_V3/*_exemple.xml
 /INPUT_FILES_V3/*/
+/html/includes/dbconnection.php
 /composer.lock
 /config/*.php
 !/config/*_exemple.php

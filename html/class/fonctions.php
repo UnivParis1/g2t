@@ -1217,7 +1217,6 @@ class fonctions
     {
         $agentarray = array();
         $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID IN (";
-        // $sql = "SELECT VALEUR,STATUT,DATEDEBUT,DATEFIN FROM COMPLEMENT WHERE AGENTID='%s' AND COMPLEMENTID IN (";
         if (is_null($typeprofil)) {
             $sql = $sql . "'" . agent::PROFIL_RHCET . "', '" . agent::PROFIL_RHCONGE . "', '" . agent::PROFIL_RHANOMALIE . "', '" . agent::PROFIL_RHTELETRAVAIL . "'";
         } elseif ($typeprofil == 1 or $typeprofil == agent::PROFIL_RHCET) {
@@ -1261,35 +1260,35 @@ class fonctions
         return $agentarray;
     }
 
-    /**
-     *
-     * @deprecated
-     *
-     * @param string $structid
-     *            Code de la structure à convertir
-     * @return string Code de la structure correspondante.
-     */
-    public function labo2ufr($structid)
-    {
-        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
-
-        $sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = ?";
-        $params = array($structid);
-        $query = $this->prepared_select($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "labo2ufr : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-            return $structid;
-        }
-        if (mysqli_num_rows($query) == 0) {
-            return $structid;
-        }
-        $result = mysqli_fetch_row($query);
-        $querryresult = $result[1];
-        return $querryresult;
-    }
+//    /**
+//     *
+//     * @deprecated
+//     *
+//     * @param string $structid
+//     *            Code de la structure à convertir
+//     * @return string Code de la structure correspondante.
+//     */
+//    public function labo2ufr($structid)
+//    {
+//        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+//
+//        $sql = "SELECT LABORATOIREID,UFRID FROM LABO_UFR WHERE LABORATOIREID = ?";
+//        $params = array($structid);
+//        $query = $this->prepared_select($sql, $params);
+//        $erreur = mysqli_error($this->dbconnect);
+//        if ($erreur != "") {
+//            $errlog = "labo2ufr : " . $erreur;
+//            echo $errlog . "<br/>";
+//            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+//            return $structid;
+//        }
+//        if (mysqli_num_rows($query) == 0) {
+//            return $structid;
+//        }
+//        $result = mysqli_fetch_row($query);
+//        $querryresult = $result[1];
+//        return $querryresult;
+//    }
 
 
     public function CETaverifier($datedebut)
@@ -1678,16 +1677,18 @@ class fonctions
             return "Pas de réponse du webservice G2T.";
         }
         //echo "<br>Le json (synchro_g2t_eSignature) " . print_r($json,true) . "<br>";
+        error_log(basename(__FILE__) . $this->stripAccents(" Le json (synchro_g2t_eSignature) " . print_r($json,true)));
         $response = json_decode($json, true);
         //echo "<br>La reponse (synchro_g2t_eSignature) " . print_r($response,true) . "<br>";
+        error_log(basename(__FILE__) . $this->stripAccents(" Le response (synchro_g2t_eSignature) " . print_r($response,true)));
         if (isset($response['description']))
         {
-        	return $response['description'];
+            return $response['description'];
         }
         else
         {
-        	error_log(basename(__FILE__) . $this->stripAccents(" Réponse du webservice G2T non conforme (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . var_export($response, true) ));
-        	return "Réponse du webservice G2T non conforme.";
+            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du webservice G2T non conforme (id eSignature = $id, URL WS G2T = $full_g2t_ws_url) => Erreur : " . var_export($response, true) ));
+            return "Réponse du webservice G2T non conforme.";
         }
         /*
          echo "<br>";
@@ -2803,6 +2804,9 @@ class fonctions
     {
 
         $maxniveau = 0;
+        $resp = $agent->getresponsable();
+        if (is_null($resp) or ($resp===false))
+/*
         $structid = $agent->structureid();
         $struct = new structure($this->dbconnect);
         $struct->load($structid);
@@ -2817,6 +2821,7 @@ class fonctions
         }
         error_log(basename(__FILE__) . " " . $this->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
         if ($resp->agentid() == SPECIAL_USER_IDCRONUSER)
+ */
         {
             $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
         }
@@ -3148,6 +3153,31 @@ class fonctions
         return $listeagent;
     }
 
+    public function listeagentsavecjourscomplementaires($anneeref)
+    {
+        $listeagent = array();
+        $sql = "SELECT SOLDE.AGENTID,AGENT.NOM,AGENT.PRENOM
+                FROM SOLDE,AGENT 
+                WHERE SOLDE.AGENTID=AGENT.AGENTID 
+                  AND SOLDE.TYPEABSENCEID='sup" . trim($anneeref) . "'
+                  AND SOLDE.DROITAQUIS>0";
+        $query_agent = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "fonctions->listeagentsavecjourscomplementaires : Erreur SELECT FROM SOLDE,AGENT  => $erreur_requete \n";
+        }
+        else
+        {
+            while ($result = mysqli_fetch_row($query_agent))
+            {
+                $listeagent[$result[0]] = $result[1] . " " . $result[2];
+            }
+        }
+        return $listeagent;
+    }
+
+
     public function listeagentsg2t($namefirst = true)
     {
         $listeagent = array();
@@ -3319,14 +3349,14 @@ class fonctions
             error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests/status"));
             error_log(basename(__FILE__) . " " . $current_status); // var_export($current_status,true));
 
-        switch (strtolower($current_status))
-        {
-            //uploading, draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
-            //           draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned, fully-deleted
-            case 'draft' :
-            case 'pending' :
-            case 'signed' :
-            case 'checked' :
+            switch (strtolower($current_status))
+            {
+                //uploading, draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
+                //           draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned, fully-deleted
+                case 'draft' :
+                case 'pending' :
+                case 'signed' :
+                case 'checked' :
 /*************************************************
                 // On récupère les niveaux signés et si il y a plus de 2 signataires, on passe le statut à TELETRAVAIL_VALIDE
                 // car la convention commence dès que le responsable a signé.
@@ -3365,63 +3395,63 @@ class fonctions
                 }
                 break;
  ***************************************************/
-                $status = teletravail::TELETRAVAIL_ATTENTE;
-                break;
+                    $status = teletravail::TELETRAVAIL_ATTENTE;
+                    break;
 
-            case 'refused':
-                $status = teletravail::TELETRAVAIL_REFUSE;
-                error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
-                // On interroge le WS eSignature /ws/signrequests/{id}
-                $curl = curl_init();
-                $params_string = "";
-                $opts = [
-                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_PROXY => ''
-                ];
-                curl_setopt_array($curl, $opts);
-                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                $json = curl_exec($curl);
-                $error = curl_error ($curl);
-                curl_close($curl);
-                if ($error != "")
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup commentaire) =>  " . $error));
-                }
-                $response = json_decode($json, true);
-                if (isset($response['comments']))
-                {
-                    $reason = '';
-                    foreach ($response['comments'] as $comment)
+                case 'refused':
+                    $status = teletravail::TELETRAVAIL_REFUSE;
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
+                    // On interroge le WS eSignature /ws/signrequests/{id}
+                    $curl = curl_init();
+                    $params_string = "";
+                    $opts = [
+                        CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
+                        CURLOPT_RETURNTRANSFER => true,
+                        CURLOPT_SSL_VERIFYPEER => false,
+                        CURLOPT_PROXY => ''
+                    ];
+                    curl_setopt_array($curl, $opts);
+                    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    $json = curl_exec($curl);
+                    $error = curl_error ($curl);
+                    curl_close($curl);
+                    if ($error != "")
                     {
-                        $reason = $reason . " " . $comment['text'];
+                        error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup commentaire) =>  " . $error));
                     }
-                    $reason = trim($reason);
-                }
-                break;
-            case 'completed' :
-            case 'exported' :
-            case 'archived' :
-            case 'cleaned' :
-                $status = teletravail::TELETRAVAIL_VALIDE;
-                break;
-            case 'deleted' :
-            case 'canceled' :
-            case 'fully-deleted' :
-            case '' :
-                $status = teletravail::TELETRAVAIL_ANNULE;
-                break;
-            default :
-                $erreur = "";
-                $response = json_decode($current_status, true);
-                if (isset($response['error'])) $erreur = $response['error'];
-                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur current_status => $current_status";
-                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
-                $status = "";
-                $result_json = array('status' => 'Error', 'description' => $erreur);
+                    $response = json_decode($json, true);
+                    if (isset($response['comments']))
+                    {
+                        $reason = '';
+                        foreach ($response['comments'] as $comment)
+                        {
+                            $reason = $reason . " " . $comment['text'];
+                        }
+                        $reason = trim($reason);
+                    }
+                    break;
+                case 'completed' :
+                case 'exported' :
+                case 'archived' :
+                case 'cleaned' :
+                    $status = teletravail::TELETRAVAIL_VALIDE;
+                    break;
+                case 'deleted' :
+                case 'canceled' :
+                case 'fully-deleted' :
+                case '' :
+                    $status = teletravail::TELETRAVAIL_ANNULE;
+                    break;
+                default :
+                    $erreur = "";
+                    $response = json_decode($current_status, true);
+                    if (isset($response['error'])) $erreur = $response['error'];
+                    $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur current_status => $current_status";
+                    error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                    $status = "";
+                    $result_json = array('status' => 'Error', 'description' => $erreur);
 
-        }
+            }
         }
         if ($status <> '')
         {
@@ -3448,6 +3478,74 @@ class fonctions
                 }
                 else // if (in_array($statut, array(teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE))) // Si le statut dans eSignature est REFUSE ou VALIDE
                 {
+                    
+                    // Si le status est VALIDE alors on va mettre la date du dernier signataire comme date de début de la convention
+                    if ($status==teletravail::TELETRAVAIL_VALIDE)
+                    {
+                        $curl = curl_init();
+                        $params_string = "";
+                        $opts = [
+                            CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
+                            CURLOPT_POST => true,
+                            CURLOPT_POSTFIELDS => $params_string,
+                            CURLOPT_RETURNTRANSFER => true,
+                            CURLOPT_SSL_VERIFYPEER => false,
+                            CURLOPT_PROXY => ''
+                        ];
+                        curl_setopt_array($curl, $opts);
+                        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                        $json = curl_exec($curl);
+                        $error = curl_error ($curl);
+                        curl_close($curl);
+                        if ($error != "")
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info date dernier signataire) =>  " . $error));
+                        }
+                        $responsedata = json_decode($json, true);
+
+                        if (isset($responsedata["sign_step_5_date"]))
+                        {
+                            // On récupère la date de signature du niveau 5
+                            $splitdate = explode(" ",$responsedata["sign_step_5_date"]);
+                            // On vérifie que le format de la date est ok
+                            if (strtotime($splitdate[0])===false)
+                            {
+                                // Le format n'est pas ok
+                                $datesignatureresponsable = '19000101';
+                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 5 : Format incorrect => " . $splitdate[0]));
+                            }
+                            else
+                            {
+                                // C'est une date
+                                $datesignatureresponsable = $splitdate[0];
+                            }
+                        }
+                        else if (isset($responsedata["sign_step_4_date"]))
+                        {
+                            // On récupère la date de signature du niveau 4
+                            $splitdate = explode(" ",$responsedata["sign_step_4_date"]);
+                            if (strtotime($splitdate[0])===false)
+                            {
+                                // Le format n'est pas ok
+                                $datesignatureresponsable = '19000101';
+                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 4 : Format incorrect => " . $splitdate[0]));
+                            }
+                            else
+                            {
+                                // C'est une date
+                                $datesignatureresponsable = $splitdate[0];
+                            }
+                        }
+                        else
+                        {
+                            // On n'a aucune information sur la date de signature
+                            $datesignatureresponsable = '19000101';
+                            error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du dernier signataire"));
+                            error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
+                        }
+                        error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
+                    }
+
                     if ($this->formatdatedb($datesignatureresponsable)>$this->formatdatedb($teletravail->datedebut()))
                     {
                         error_log(basename(__FILE__) . $this->stripAccents(" On passe la date de début de la convention à $datesignatureresponsable - valeur actuelle : " . $teletravail->datedebut()));
@@ -3509,11 +3607,11 @@ class fonctions
                                         //echo "date fin  = " . $this->formatdatedb($teletravail->datefin()) . "<br>";
                                         if ($this->formatdatedb($teletravailmodif->datefin()) < $this->formatdatedb($teletravailmodif->datedebut()))
                                         {
-                                            $return = $this->deleteesignaturedocument($teletravailmodif->esignatureid());
+                                            $return = "" . $this->deleteesignaturedocument($teletravailmodif->esignatureid());
                                             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
                                             {
                                                 if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-                                                $erreur = $erreur . $return;
+                                                $erreur = $erreur . $return . "";
                                                 error_log(basename(__FILE__) . " " . $this->stripAccents($return));
                                             }
                                             //echo "On passe la convetion à ANNULE<br>";
@@ -3530,6 +3628,7 @@ class fonctions
                                 }
                             }
                         }
+                        $erreur = $erreur . '';
                         if ($erreur <> '')
                         {
                             error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'adaptation des conventions => Erreur = " . $erreur));
@@ -3538,17 +3637,27 @@ class fonctions
                         else
                         {
                             error_log(basename(__FILE__) . $this->stripAccents(" Traitement ok de la modification du statut de la convention " . $currentconventionid . " => Pas d'erreur"));
-                            $result_json = array('status' => 'Ok', 'description' => $erreur);
+                            $result_json = array('status' => 'Ok', 'description' => $erreur . '');
                         }
                     }
                 }
             }
         }
+        error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
         return $result_json;
     }
 
     function creation_ticketGLPI_materiel($esignatureid)
     {
+        $constante = 'MAINTENANCE';
+        $maintenance = $this->liredbconstante($constante);
+        if (strcasecmp($maintenance, 'n') != 0)
+        {
+            // Si on est en mode maintenance => On ne fait rien
+            error_log(basename(__FILE__) . $this->stripAccents(" Création du ticket GLPI => Mode maintenance activé. On ne fait rien."));
+            return "";
+        }
+        
         $eSignature_url = $this->liredbconstante("ESIGNATUREURL");
 
         $curl = curl_init();
@@ -3806,45 +3915,109 @@ WHERE  table_schema = Database()
  */
     }
 
+//    function tronque_chaine ($chaine, $lg_max, $strict = false)
+//    {
+//        if (strlen($chaine) > $lg_max)
+//        {
+//            if ($strict)
+//            {
+//                $chaine = substr($chaine, 0, $lg_max) . "...";
+//            }
+//            else
+//            {
+//                $chaine = substr($chaine, 0, $lg_max);
+//                $last_space = strrpos($chaine, " ");
+//                if ($last_space===false)
+//                {
+//                    $last_space=strlen($chaine);
+//                }
+//                $chaine = substr($chaine, 0, $last_space)."...";
+//            }
+//        }
+//        return $chaine;
+//    }
+    
+    
     function tronque_chaine ($chaine, $lg_max, $strict = false)
     {
-        if (strlen($chaine) > $lg_max)
+        if (mb_strlen($chaine) > $lg_max)
         {
             if ($strict)
             {
-                $chaine = substr($chaine, 0, $lg_max) . "...";
+                $chaine = mb_substr($chaine, 0, $lg_max) . "...";
             }
             else
             {
-                $chaine = substr($chaine, 0, $lg_max);
-                $last_space = strrpos($chaine, " ");
+                $chaine = mb_substr($chaine, 0, $lg_max);
+                $last_space = mb_strrpos($chaine, " ");
                 if ($last_space===false)
                 {
-                    $last_space=strlen($chaine);
+                    $last_space=mb_strlen($chaine);
                 }
-                $chaine = substr($chaine, 0, $last_space)."...";
+                $chaine = mb_substr($chaine, 0, $last_space)."...";
             }
         }
         return $chaine;
     }
 
+//    function ajoute_crlf ($chaine, $lg_max)
+//    {
+//        //global $fonctions;
+//        if (strlen($chaine) > $lg_max)
+//        {
+//            $chaineresultat = '';
+//            while (strlen($chaine) > $lg_max)
+//            {
+//                $subchaine = substr($chaine, 0, $lg_max);
+//                // On cherche le dernier CR (<=>chr(13)) et le dernier espace.
+//                $last_space = strrpos($subchaine, " ");
+//                $last_retrun = strrpos($subchaine, chr(13));
+//                if ($last_space===false and $last_retrun===false)
+//                {
+//                    // S'il n'y a plus d'espace ou de CR, on ne tronque plus rien
+//                    //break;
+//                    $last_space = strlen($chaine);  // $lg_max;
+//                }
+//                elseif ($last_space===false and $last_retrun!==false)
+//                {
+//                    // S'il y a un CR et pas d'espace, on coupe sur le CR
+//                    $last_space = $last_retrun;
+//                }
+//                elseif ($last_space!==false and $last_retrun!==false)
+//                {
+//                    // Si on a à la fois un CR et un espace, on prend le plus petit
+//                    $last_space = min($last_space,$last_retrun);
+//                }
+//                $chaineresultat = $chaineresultat . trim(substr($chaine, 0, $last_space));
+//                // ATTENTION : Bien faire $last_space+1 afin de "sauter" le caractère de découpe (espace ou CR)
+//                $chaine = substr($chaine, $last_space+1);
+//                if (strlen($chaineresultat)>0)
+//                {
+//                    $chaineresultat = $chaineresultat . chr(13);  // chr(13) <=> Carriage return
+//                }
+//            }
+//            $chaine = $chaineresultat . trim($chaine);
+//        }
+//        return $chaine;
+//    }
+
     function ajoute_crlf ($chaine, $lg_max)
     {
         //global $fonctions;
-        if (strlen($chaine) > $lg_max)
+        if (mb_strlen($chaine) > $lg_max)
         {
             $chaineresultat = '';
-            while (strlen($chaine) > $lg_max)
+            while (mb_strlen($chaine) > $lg_max)
             {
-                $subchaine = substr($chaine, 0, $lg_max);
+                $subchaine = mb_substr($chaine, 0, $lg_max);
                 // On cherche le dernier CR (<=>chr(13)) et le dernier espace.
-                $last_space = strrpos($subchaine, " ");
-                $last_retrun = strrpos($subchaine, chr(13));
+                $last_space = mb_strrpos($subchaine, " ");
+                $last_retrun = mb_strrpos($subchaine, chr(13));
                 if ($last_space===false and $last_retrun===false)
                 {
                     // S'il n'y a plus d'espace ou de CR, on ne tronque plus rien
                     //break;
-                    $last_space = strlen($chaine);  // $lg_max;
+                    $last_space = mb_strlen($chaine);  // $lg_max;
                 }
                 elseif ($last_space===false and $last_retrun!==false)
                 {
@@ -3856,10 +4029,10 @@ WHERE  table_schema = Database()
                     // Si on a à la fois un CR et un espace, on prend le plus petit
                     $last_space = min($last_space,$last_retrun);
                 }
-                $chaineresultat = $chaineresultat . trim(substr($chaine, 0, $last_space));
+                $chaineresultat = $chaineresultat . trim(mb_substr($chaine, 0, $last_space));
                 // ATTENTION : Bien faire $last_space+1 afin de "sauter" le caractère de découpe (espace ou CR)
-                $chaine = substr($chaine, $last_space+1);
-                if (strlen($chaineresultat)>0)
+                $chaine = mb_substr($chaine, $last_space+1);
+                if (mb_strlen($chaineresultat)>0)
                 {
                     $chaineresultat = $chaineresultat . chr(13);  // chr(13) <=> Carriage return
                 }
@@ -3871,7 +4044,7 @@ WHERE  table_schema = Database()
     
     function utf8_decode($texte)
     {
-        return iconv('UTF-8', 'ISO-8859-1', $texte);
+        return mb_convert_encoding($texte, 'ISO-8859-1','UTF-8' );
     }
 
     
@@ -3879,7 +4052,8 @@ WHERE  table_schema = Database()
     {
         if (mb_detect_encoding($texte, 'UTF-8', true)===false) // Ce n'est pas de l'UTF-8
         {
-            return iconv('ISO-8859-1', 'UTF-8', $texte);
+            return mb_convert_encoding($texte, 'UTF-8', 'ISO-8859-1');
+            //return iconv('ISO-8859-1', 'UTF-8', $texte);
         }
         else
         {
@@ -3887,6 +4061,6 @@ WHERE  table_schema = Database()
         }
     }
 
-    }
+}
 
 ?>

@@ -91,18 +91,10 @@ class complement
             $errlog = "Complement->Store : Le numéro AGENTID (" . $this->agentid . ") ou le code du complément (" . $this->complementid . ") n'est pas initialisé";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            return;
+            return $errlog;
         }
-        $sql = "DELETE FROM COMPLEMENT WHERE AGENTID=? AND COMPLEMENTID=?";
-        $params = array($this->agentid,$this->complementid);
-        $query = $this->fonctions->prepared_query($sql, $params);
-
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Complement->Store (DELETE) : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        }
+        $this->delete($this->agentid,$this->complementid);
+        
         $sql = "INSERT INTO COMPLEMENT(AGENTID,COMPLEMENTID,VALEUR) VALUES(?,?,?)";
         $params = array($this->agentid,$this->complementid,$this->valeur);
         $query = $this->fonctions->prepared_query($sql, $params);
@@ -117,6 +109,27 @@ class complement
         return $erreur;
     }
 
+    /**
+     *
+     * @param
+     * @return
+     */
+    function delete($agentid, $complementid)
+    {
+        $sql = "DELETE FROM COMPLEMENT WHERE AGENTID=? AND COMPLEMENTID=?";
+        $params = array($agentid,$complementid);
+        $query = $this->fonctions->prepared_query($sql, $params);
+
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Complement->delete : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        return $erreur;
+    }
+    
+    
     /**
      *
      * @param string $agentid

@@ -37,10 +37,14 @@
 
     $action = $_POST["action"]; // Action = lecture ou modif
     if (is_null($action) or $action == "")
+    {
         $action = 'lecture';
+    }
     $mode = $_POST["mode"]; // Action = gestion ou resp
     if (is_null($action) or $action == "")
+    {
         $action = 'resp';
+    }
 
     // echo "Apres le chargement du user !!! <br>";
     require ("includes/menu.php");
@@ -48,30 +52,42 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-    // print_r ( $_POST); echo "<br>";
+//     print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
 
     $reportlist = null;
     if (isset($_POST['report']))
+    {
         $reportlist = $_POST['report'];
+    }
 
     $enfantmaladelist = null;
     if (isset($_POST['enfantmalade']))
+    {
         $enfantmaladelist = $_POST['enfantmalade'];
+    }
 
     $cumultotallist = null;
     if (isset($_POST['cumultotal']))
+    {
         $cumultotallist = $_POST['cumultotal'];
+    }
 
     $array_agent_mail = null;
     if (isset($_POST['agent_mail']))
+    {
         $array_agent_mail = $_POST['agent_mail'];
+    }
     $array_resp_mail = null;
     if (isset($_POST['resp_mail']))
+    {
         $array_resp_mail = $_POST['resp_mail'];
+    }
 
     $datedebutcetlist = null;
     if (isset($_POST['datedebutcet']))
+    {
         $datedebutcetlist = $_POST['datedebutcet'];
+    }
 
     if (is_array($reportlist)) {
         foreach ($reportlist as $agentid => $reportvalue) {
@@ -122,7 +138,9 @@
 
     $displaysousstructlist = null;
     if (isset($_POST["displaysousstruct"]))
+    {
         $displaysousstructlist = $_POST["displaysousstruct"];
+    }
     if (is_array($displaysousstructlist)) {
         foreach ($displaysousstructlist as $structureid => $valeur) {
             $structureid = str_replace("'", "", $structureid);
@@ -134,8 +152,10 @@
     }
 
     $displayallagentlist = null;
-    if (isset($_POST["displaysousstruct"]))
+    if (isset($_POST["displayallagent"]))
+    {
         $displayallagentlist = $_POST["displayallagent"];
+    }
     if (is_array($displayallagentlist)) {
         foreach ($displayallagentlist as $structureid => $valeur) {
             $structureid = str_replace("'", "", $structureid);
@@ -146,35 +166,41 @@
         }
     }
 
-    $displayrespsousstructlist = null;
-    if (isset($_POST["displayrespsousstruct"]))
-        $displayrespsousstructlist = $_POST["displayrespsousstruct"];
-    if (is_array($displayrespsousstructlist)) {
-        foreach ($displayrespsousstructlist as $structureid => $valeur) {
-            $structureid = str_replace("'", "", $structureid);
-            $structure = new structure($dbcon);
-            $structure->load($structureid);
-            $structure->afficherespsousstruct($valeur);
-            $structure->store();
-        }
-    }
+//    $displayrespsousstructlist = null;
+//    if (isset($_POST["displayrespsousstruct"]))
+//    {
+//        $displayrespsousstructlist = $_POST["displayrespsousstruct"];
+//    }
+//    if (is_array($displayrespsousstructlist)) {
+//        foreach ($displayrespsousstructlist as $structureid => $valeur) {
+//            $structureid = str_replace("'", "", $structureid);
+//            $structure = new structure($dbcon);
+//            $structure->load($structureid);
+//            $structure->afficherespsousstruct($valeur);
+//            $structure->store();
+//        }
+//    }
 
-    $respvalidsousstructlist = null;
-    if (isset($_POST["respvalidsousstruct"]))
-        $respvalidsousstructlist = $_POST["respvalidsousstruct"];
-    if (is_array($respvalidsousstructlist)) {
-        foreach ($respvalidsousstructlist as $structureid => $valeur) {
-            $structureid = str_replace("'", "", $structureid);
-            $structure = new structure($dbcon);
-            $structure->load($structureid);
-            $structure->respvalidsousstruct($valeur);
-            $structure->store();
-        }
-    }
+//    $respvalidsousstructlist = null;
+//    if (isset($_POST["respvalidsousstruct"]))
+//    {
+//        $respvalidsousstructlist = $_POST["respvalidsousstruct"];
+//    }
+//    if (is_array($respvalidsousstructlist)) {
+//        foreach ($respvalidsousstructlist as $structureid => $valeur) {
+//            $structureid = str_replace("'", "", $structureid);
+//            $structure = new structure($dbcon);
+//            $structure->load($structureid);
+//            $structure->respvalidsousstruct($valeur);
+//            $structure->store();
+//        }
+//    }
 
     $gestvalidagent = null;
     if (isset($_POST["gestvalidagent"]))
+    {
         $gestvalidagent = $_POST["gestvalidagent"];
+    }
     if (is_array($gestvalidagent)) {
         foreach ($gestvalidagent as $structureid => $valeur) {
             $structureid = str_replace("'", "", $structureid);
@@ -184,14 +210,49 @@
             $structure->store();
         }
     }
+    
+    $respaffsoldesousstruct = null;
+    if (isset($_POST["respaffsoldesousstruct"]))
+    {
+        $respaffsoldesousstruct = $_POST["respaffsoldesousstruct"];
+    }
+    if (is_array($respaffsoldesousstruct)) {
+        foreach ($respaffsoldesousstruct as $structureid => $valeur) {
+            $structureid = str_replace("'", "", $structureid);
+            $structure = new structure($dbcon);
+            $structure->load($structureid);
+            $structure->respaffsoldesousstruct($valeur);
+            $structure->store();
+        }
+    }
+    
+    $respaffdemandesousstruct = null;
+    if (isset($_POST["respaffdemandesousstruct"]))
+    {
+        $respaffdemandesousstruct = $_POST["respaffdemandesousstruct"];
+    }
+    if (is_array($respaffdemandesousstruct)) {
+        foreach ($respaffdemandesousstruct as $structureid => $valeur) {
+            $structureid = str_replace("'", "", $structureid);
+            $structure = new structure($dbcon);
+            $structure->load($structureid);
+            $structure->respaffdemandesousstruct($valeur);
+            $structure->store();
+        }
+    }
+    
 
     $arraygestionnaire = null;
     if (isset($_POST["gestion"]))
+    {
         $arraygestionnaire = $_POST["gestion"];
+    }
 
     $arrayinfouser = null;
     if (isset($_POST["infouser"]))
+    {
         $arrayinfouser = $_POST["infouser"];
+    }
 
     if (is_array($arraygestionnaire)) {
         // ATTENTION : La $valeur est soit le AGENTID soit le UID si on vient de le modifier !!
@@ -237,19 +298,27 @@
     // ///////////////////////////////////////////////////
     $arraydelegation = null;
     if (isset($_POST["delegation"]))
+    {
         $arraydelegation = $_POST["delegation"];
+    }
 
     $arrayinfodelegation = null;
     if (isset($_POST["infodelegation"]))
+    {
         $arrayinfodelegation = $_POST["infodelegation"];
+    }
 
     $arraydatedebut = null;
     if (isset($_POST["date_debut"]))
+    {
         $arraydatedebut = $_POST["date_debut"];
+    }
 
     $arraydatefin = null;
     if (isset($_POST["date_fin"]))
+    {
         $arraydatefin = $_POST["date_fin"];
+    }
 
     if (is_array($arraydelegation)) 
     {
@@ -262,7 +331,7 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "", "", $userid);
+                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid);
             } else {
                 // echo "Dans le else avant le filtre LDAP <br>";
                 //echo "\$valeur est soit un uid soit un numéro agent : $valeur <br>";
@@ -303,12 +372,24 @@
                     } else {
                         $datedebutdeleg = "";
                         if (isset($arraydatedebut[$structure->id()]))
+                        {
                             $datedebutdeleg = $arraydatedebut[$structure->id()];
+                        }
                         $datefindeleg = "";
                         if (isset($arraydatefin[$structure->id()]))
+                        {
                             $datefindeleg = $arraydatefin[$structure->id()];
+                        }
 
                         $structure->getdelegation($delegationuserid, $datedebutdelegbd, $datefindelegbd);
+                        if ($datedebutdelegbd == "")
+                        {
+                            $datedebutdelegbd = "01/01/1900";
+                        }
+                        if ($datefindelegbd == "")
+                        {
+                            $datefindelegbd = "01/01/1900";
+                        }
                         // echo "datedebutdeleg = $datedebutdeleg datefindeleg = $datefindeleg <br>";
                         if ($datedebutdeleg == "" or $datefindeleg == "") 
                         {
@@ -393,92 +474,219 @@
             }
         }
         
-        if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n')) or count($responsableliste)>0) {
+        if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n')) or count($responsableliste)>0) 
+        {
             if ($mode == 'resp')
+            {
                 echo $structure->dossierhtml(($action == 'modif'), $userid);
+            }
             else
+            {
                 echo $structure->dossierhtml(($action == 'modif'));
+            }
 
-            echo "Autoriser l'affichage du planning à tous les agents des sous-structures (responsable G2T/gestionnaire G2T) : ";
-            if ($action == 'modif') {
+            echo "<table>";
+            echo "<tr>";
+            echo "<td>";
+            echo "Voir le planning des agents des sous-structures dans le planning de la structure <b>" . $structure->nomcourt()  . "</b> (responsable G2T/gestionnaire G2T) : ";
+            echo "</td><td>";
+            if ($action == 'modif') 
+            {
                 echo "<select name=displaysousstruct['" . $structure->id() . "']>";
                 echo "<option value='o'";
                 if (strcasecmp($structure->sousstructure(), "o") == 0)
+                {
                     echo " selected ";
+                }
                 echo ">Oui</option>";
                 echo "<option value='n'";
                 if (strcasecmp($structure->sousstructure(), "n") == 0)
+                {
                     echo " selected ";
+                }
                 echo ">Non</option>";
                 echo "</select>";
-            } else
+            } 
+            else
+            {
                 echo $fonctions->ouinonlibelle($structure->sousstructure());
+            }
+            echo "</td>";
+            echo "</tr>";
+            
+            if ($mode == 'resp') 
+            {
+                // La possibilité de gérer tous les agents des structures inclues n'est offerte que si on est dans la strcuture "racine" (<=> non inclue)
+                if (!$structure->isincluded())
+                {
+//                    echo "<br>";
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Afficher le solde de tous les agents des sous-structures (responsable G2T uniquement) : ";
+                    echo "</td><td>";
+                    if ($action == 'modif') {
+                        echo "<select name=respaffsoldesousstruct['" . $structure->id() . "']>";
+                        echo "<option value='o'";
+                        if (strcasecmp($structure->respaffsoldesousstruct(), "o") == 0)
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Oui</option>";
+                        echo "<option value='n'";
+                        if (strcasecmp($structure->respaffsoldesousstruct(), "n") == 0)
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Non</option>";
+                        echo "</select>";
+                    } 
+                    else
+                    {
+                        echo $fonctions->ouinonlibelle($structure->respaffsoldesousstruct());
+                    }
+                    echo "</td>";
+                    echo "</tr>";
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Gérer les demandes de congés de tous les agents des sous-structures (responsable G2T uniquement) : ";
+                    echo "</td><td>";
+                    if ($action == 'modif') {
+                        echo "<select name=respaffdemandesousstruct['" . $structure->id() . "']>";
+                        echo "<option value='o'";
+                        if (strcasecmp($structure->respaffdemandesousstruct(), "o") == 0)
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Oui</option>";
+                        echo "<option value='n'";
+                        if (strcasecmp($structure->respaffdemandesousstruct(), "n") == 0)
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Non</option>";
+                        echo "</select>";
+                    } 
+                    else
+                    {
+                        echo $fonctions->ouinonlibelle($structure->respaffdemandesousstruct());
+                    }
+                    echo "</td>";
+                    echo "</tr>";
+                }
+            }
 
-            echo "<br>";
-            echo "Autoriser l'affichage uniquement du planning des responsables G2T des sous-structures (responsable G2T/gestionnaire G2T) : ";
-            if ($action == 'modif') {
-                echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
-                echo "<option value='o'";
-                if (strcasecmp($structure->afficherespsousstruct(), "o") == 0)
-                    echo " selected ";
-                echo ">Oui</option>";
-                echo "<option value='n'";
-                if (strcasecmp($structure->afficherespsousstruct(), "n") == 0)
-                    echo " selected ";
-                echo ">Non</option>";
-                echo "</select>";
-            } else
-                echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
+//            echo "<br>";
+//            echo "Autoriser l'affichage uniquement du planning des responsables G2T des sous-structures (responsable G2T/gestionnaire G2T) : ";
+//            if ($action == 'modif') 
+//            {
+//                echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
+//                echo "<option value='o'";
+//                if (strcasecmp($structure->afficherespsousstruct(), "o") == 0)
+//                {
+//                    echo " selected ";
+//                }
+//                echo ">Oui</option>";
+//                echo "<option value='n'";
+//                if (strcasecmp($structure->afficherespsousstruct(), "n") == 0)
+//                {
+//                    echo " selected ";
+//                }
+//                echo ">Non</option>";
+//                echo "</select>";
+//            } 
+//            else
+//            {
+//                echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
+//            }
 
-            echo "<br>";
-            echo "Autoriser la consultation du planning de la structure à tous les agents de celle-ci : ";
-            if ($action == 'modif') {
+//            echo "<br>";
+            echo "<tr>";
+            echo "<td>";
+            echo "Autoriser la consultation du planning de la structure <b>" . $structure->nomcourt() . "</b> par tous les agents de celle-ci : ";
+            echo "</td><td>";
+            if ($action == 'modif') 
+            {
                 echo "<select name=displayallagent['" . $structure->id() . "']>";
                 echo "<option value='o'";
                 if (strcasecmp($structure->affichetoutagent(), "o") == 0)
+                {
                     echo " selected ";
+                }
                 echo ">Oui</option>";
                 echo "<option value='n'";
                 if (strcasecmp($structure->affichetoutagent(), "n") == 0)
+                {
                     echo " selected ";
+                }
                 echo ">Non</option>";
                 echo "</select>";
-            } else
+            } 
+            else
+            {
                 echo $fonctions->ouinonlibelle($structure->affichetoutagent());
+            }
+            echo "</td>";
+            echo "</tr>";
 
-            echo "<br>";
-            echo "Autoriser la validation des demandes d'une sous-structure par le responsable G2T de la structure parente : ";
-            if ($action == 'modif') {
-                echo "<select name=respvalidsousstruct['" . $structure->id() . "']>";
-                echo "<option value='o'";
-                if (strcasecmp($structure->respvalidsousstruct(), "o") == 0)
-                    echo " selected ";
-                echo ">Oui</option>";
-                echo "<option value='n'";
-                if (strcasecmp($structure->respvalidsousstruct(), "n") == 0)
-                    echo " selected ";
-                echo ">Non</option>";
-                echo "</select>";
-            } else
-                echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
+//            echo "<br>";
+//            echo "Autoriser la validation des demandes d'une sous-structure par le responsable G2T de la structure parente : ";
+//            if ($action == 'modif') 
+//            {
+//                echo "<select name=respvalidsousstruct['" . $structure->id() . "']>";
+//                echo "<option value='o'";
+//                if (strcasecmp($structure->respvalidsousstruct(), "o") == 0)
+//                {
+//                    echo " selected ";
+//                }
+//                echo ">Oui</option>";
+//                echo "<option value='n'";
+//                if (strcasecmp($structure->respvalidsousstruct(), "n") == 0)
+//                {
+//                    echo " selected ";
+//                }
+//                echo ">Non</option>";
+//                echo "</select>";
+//            } 
+//            else
+//            {
+//                echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
+//            }
 
-            if ($mode == 'resp') {
-                echo "<br>";
-                echo "Autoriser la validation des demandes des agents par le gestionnaire G2T : ";
+            if ($mode == 'resp') 
+            {
+//                echo "<br>";
+                echo "<tr>";
+                echo "<td>";
+                echo "Autoriser la validation des demandes des agents de la structure <b>" . $structure->nomcourt() . "</b> par le gestionnaire G2T : ";
+                echo "</td><td>";
                 if ($action == 'modif') {
                     echo "<select name=gestvalidagent['" . $structure->id() . "']>";
                     echo "<option value='o'";
                     if (strcasecmp($structure->gestvalidagent(), "o") == 0)
+                    {
                         echo " selected ";
+                    }
                     echo ">Oui</option>";
                     echo "<option value='n'";
                     if (strcasecmp($structure->gestvalidagent(), "n") == 0)
+                    {
                         echo " selected ";
+                    }
                     echo ">Non</option>";
                     echo "</select>";
-                } else
+                } 
+                else
+                {
                     echo $fonctions->ouinonlibelle($structure->gestvalidagent());
+                }
+                echo "</td>";
+                echo "</tr>";
             }
+
+            echo "</table>";
+            echo "<br>";
+
+
             if ($mode == 'resp') {
                 $structure->agent_envoyer_a($codeinterne);
                 echo "<table>";
@@ -578,12 +786,12 @@
         //if (currentvalue===1)
         if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_RESP_PARENT; ?>)
         {
-            resp_send_identity.innerHTML = '<?php echo $parentstruct->responsable()->identitecomplete();  ?>';
+            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct) and !is_null($parentstruct->responsable())) { echo $parentstruct->responsable()->identitecomplete(); } else { echo 'Non défini'; } ?>';
         }
         //else if (currentvalue===2)
         else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_PARENT; ?>)
         {
-            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct->gestionnaire())) { echo $parentstruct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct) and !is_null($parentstruct->gestionnaire())) { echo $parentstruct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
         }
         //else if (currentvalue===3)
         else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_COURANT; ?>)
@@ -630,7 +838,9 @@
                 //
                 echo "<input type='hidden' id='gestion[" . $structure->id() . "]' name='gestion[" . $structure->id() . "]' value='";
                 if (! is_null($gestionnaire))
+                {
                     echo $gestionnaire->agentid();
+                }
                 echo "' class='infouser[" . $structure->id() . "]' /> ";
 ?>
 			    <script>
@@ -678,7 +888,9 @@
 
                     echo "<input type='hidden' id='delegation[" . $structure->id() . "]' name='delegation[" . $structure->id() . "]' value='";
                     if (! is_null($delegationuser))
+                    {
                         echo $delegationuser->agentid();
+                    }
                     echo "' class='infodelegation[" . $structure->id() . "]' /> ";
 ?>
 				    <script>
@@ -756,8 +968,11 @@
     echo "<input type='hidden' name='action' value=" . $action . ">";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
 
+//    echo "<br><br>action = $action <br><br>";
     if ($action == 'modif')
+    {
         echo "<input type='submit' value='Soumettre' />";
+    }
     echo "</form>";
 
 ?>

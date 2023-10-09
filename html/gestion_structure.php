@@ -446,11 +446,11 @@
         //console.log(currentvalue);
         if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_RESP_PARENT; ?>)
         {
-            resp_send_identity.innerHTML = '<?php echo $parentstruct->responsable()->identitecomplete();  ?>';
+            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct)) { echo $parentstruct->responsable()->identitecomplete(); }  else { echo 'Non défini'; }?>';
         }
         else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_PARENT; ?>)
         {
-            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct->gestionnaire())) { echo $parentstruct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
+            resp_send_identity.innerHTML = '<?php if (!is_null($parentstruct) and !is_null($parentstruct->gestionnaire())) { echo $parentstruct->gestionnaire()->identitecomplete(); } else { echo 'Non défini'; } ?>';
         }
         else if (select_tag.options[select_tag.selectedIndex].value==<?php echo structure::MAIL_RESP_ENVOI_GEST_COURANT; ?>)
         {

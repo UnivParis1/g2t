@@ -454,6 +454,20 @@
                 } 
                 else 
                 {
+//                    $oldsql = "SELECT STRUCTUREID,
+//                                      NOMLONG,
+//                                      NOMCOURT,
+//                                      STRUCTUREIDPARENT,
+//                                      RESPONSABLEID,
+//                                      GESTIONNAIREID,
+//                                      AFFICHESOUSSTRUCT,
+//                                      AFFICHEPLANNINGTOUTAGENT,
+//                                      DEST_MAIL_RESPONSABLE,
+//                                      DEST_MAIL_AGENT,
+//                                      DATECLOTURE,
+//                                      AFFICHERESPSOUSSTRUCT 
+//                               FROM STRUCTURE
+//                               WHERE STRUCTUREID = '$oldstructid' ";
                     $oldsql = "SELECT STRUCTUREID,
                                       NOMLONG,
                                       NOMCOURT,
@@ -464,8 +478,7 @@
                                       AFFICHEPLANNINGTOUTAGENT,
                                       DEST_MAIL_RESPONSABLE,
                                       DEST_MAIL_AGENT,
-                                      DATECLOTURE,
-                                      AFFICHERESPSOUSSTRUCT 
+                                      DATECLOTURE
                                FROM STRUCTURE
                                WHERE STRUCTUREID = '$oldstructid' ";
                     $oldquery = mysqli_query($dbcon, $oldsql);
@@ -491,13 +504,22 @@
                         }
                         if ($fonctions->formatdatedb($datecloture) > "20151231") // Si l'ancienne structuture n'est pas fermée
                         {
+//                            $sql = "UPDATE STRUCTURE 
+//                                    SET GESTIONNAIREID ='$result[5]', 
+//                                        AFFICHESOUSSTRUCT = '$result[6]', 
+//                                        AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
+//                                        DEST_MAIL_RESPONSABLE = '$result[8]', 
+//                                        DEST_MAIL_AGENT = '$result[9]', 
+//                                        AFFICHERESPSOUSSTRUCT = '$result[11]' ,
+//                                        TYPESTRUCT = '$type_struct',
+//                                        ISINCLUDED = '$isincluded'
+//                                    WHERE STRUCTUREID = '$code_struct'";
                             $sql = "UPDATE STRUCTURE 
                                     SET GESTIONNAIREID ='$result[5]', 
                                         AFFICHESOUSSTRUCT = '$result[6]', 
                                         AFFICHEPLANNINGTOUTAGENT = '$result[7]', 
                                         DEST_MAIL_RESPONSABLE = '$result[8]', 
                                         DEST_MAIL_AGENT = '$result[9]', 
-                                        AFFICHERESPSOUSSTRUCT = '$result[11]' ,
                                         TYPESTRUCT = '$type_struct',
                                         ISINCLUDED = '$isincluded'
                                     WHERE STRUCTUREID = '$code_struct'";
