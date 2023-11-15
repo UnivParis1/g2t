@@ -108,16 +108,52 @@
 
     //echo "POST = "; print_r($_POST); echo "<br>";
 
+    $cancelbutton = array();
+    if (isset($_POST["cancelbutton"]))
+    {
+        $cancelbutton = $_POST["cancelbutton"];
+    }
+    foreach ($cancelbutton as $demandeid => $value) 
+    {
+        //var_dump("On parcourt les demandes bouton : " . $demandeid);
+        $demande = new demande($dbcon);
+        $demande->load($demandeid);
+        
+        $demandeur = $demande->agent();
+        $resp = $demandeur->getresponsable();
+        if (is_null($resp) or ($resp===false))
+        {
+            $errlog = "Aucun responsable défini pour " . $demandeur->identitecomplete() . " : Impossible de demander l'annulation.";
+            echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+        }
+        else
+        {
+            $demandeur->sendmail($resp,"Demande d'annulation d'une demande", "Merci de bien vouloir annuler ma demande de congés ou d'absence établie le " . $fonctions->formatdate($demande->date_demande()) . " :\n"
+              . "<ul>"
+              . "<li>Début : " . $fonctions->formatdate($demande->datedebut()) . " " . $fonctions->nommoment($demande->moment_debut()) . "</li>"
+              . "<li>Fin : " . $fonctions->formatdate($demande->datefin()) . " " . $fonctions->nommoment($demande->moment_fin()) . "</li>"
+              . "<li>Nombre de jours : " . $demande->nbrejrsdemande() . "</li>"
+              . "<li>Type de demande : " . $demande->typelibelle() . "</li>"
+              . "</ul>\n");
+            echo $fonctions->showmessage(fonctions::MSGINFO, "La demande d'annulation a été envoyée à " . $resp->identitecomplete());
+        }
+    }
+
+
     $cancelarray = array();
     if (isset($_POST["cancel"]))
+    {
         $cancelarray = $_POST["cancel"];
+    }
 
     foreach ($cancelarray as $demandeid => $value) {
         // echo "demandeid = $demandeid value = $value <br>";
-        if (strcasecmp($value, "yes") == 0) {
+//        if (strcasecmp($value, "yes") == 0) {
             $motif = "";
             if (isset($_POST["motif"][$demandeid]))
+            {
                 $motif = $_POST["motif"][$demandeid];
+            }
             // echo "Motif = $motif";
             $demande = new demande($dbcon);
             // echo "cleelement = $cleelement demandeid = $demandeid <br>";
@@ -186,7 +222,7 @@
                     //echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
                 }
             }
-        }
+//        }
     }
 
     $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
@@ -200,10 +236,9 @@
 
     // echo "Debut = $debut fin = $fin <br>";
     // echo "structure->id() = " . $structure->id() . "<br>";
-
     //echo "noresponsableset = $noresponsableset <br> mode = $mode <br>";
     $displaysubmit = true;
-    echo "<form name='frm_gest_demande'  method='post' >";
+    echo "<form name='frm_gest_demande' id='frm_gest_demande' method='post' >";
     if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
         //echo "Pas de responsable.... C'est un agent qui veut gérer ses demandes<br>";
@@ -211,6 +246,8 @@
         if ($htmltext != "")
         {
             echo $htmltext;
+            // Les annulations en mode agent sont gérés par des boutons donc pas besoin de "submit"
+            $displaysubmit = false;
         }
         else
         {
@@ -355,8 +392,83 @@
     {
         echo "<input type='submit' value='Soumettre' />";
     }
-    echo "</form>"
+    echo "</form>";
 
+?>
+        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
+        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+
+        <dialog id="confirmdialog" class="questiondialog">
+          <form method="dialog">
+            <p>
+<?php
+        $type = 'question';
+        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+
+?>
+                <label id='labeltext'>Confirmez vous cette action ?</label>
+            </p>
+            <menu><center>
+              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
+              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+            </center></menu>
+          </form>
+        </dialog>
+        
+        <script>
+            let confirmdialog = document.getElementById('confirmdialog');
+            let confirmBtn = document.getElementById('confirmBtn');
+            let labeltext = document.getElementById('labeltext');
+            let cancelBtn = document.getElementById('cancelBtn');        
+    
+            confirmdialog.addEventListener('close', function onClose() {
+//                alert ('On va close');
+                if (confirmdialog.returnValue!=='cancel')
+                {
+//                    alert('L id est ' + confirmBtn.value);
+                    // L'id du boutton en cours est dans la propertie value du bouton confirm
+                    var submit_button = document.getElementById(confirmBtn.value);
+//                    alert('Le button = ' + submit_button.id);
+                    submit_button.tagname = 'OK';
+//                    submit_button.value = 'yes';
+                    submit_button.click();
+//                    var submit_form = document.getElementById('frm_gest_demande');
+//                    alert('submit_form = ' + submit_form.id)
+//                    submit_form.submit();
+                }
+            });
+
+            var click_element = function(elementid)
+            {
+                if (typeof confirmdialog.showModal === "function") {
+                    var submit_button = document.getElementById(elementid);
+                    if (submit_button.classList.contains("cancelbutton"))
+                    {
+                        labeltext.innerHTML = 'Confirmez vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
+                    }
+                    else if (submit_button.classList.contains("cancel"))
+                    {
+                        labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+                    }
+                    cancelBtn.textContent = "Non";
+                    cancelBtn.hidden = false;
+                    confirmBtn.textContent = "Oui";
+                    confirmBtn.hidden = false;
+                    confirmBtn.value = elementid;
+                    confirmdialog.showModal();
+                }        
+                else {
+                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                }
+            };
+        </script>
+<?php
+    
+    
 ?>
 
 <br>

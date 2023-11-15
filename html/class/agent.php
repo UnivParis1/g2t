@@ -2475,11 +2475,21 @@ const modifymotif = (motif, motifid) =>
             {
                 // echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
                 // if (($demande->statut() == "a" and $mode == "agent") or ($demande->statut() == "v" and $mode == "resp"))
-                if ((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0) or (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)) {
+                if (((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) and strcasecmp($mode, "agent") == 0) 
+                  or (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)) 
+                {
                     if ($premieredemande) {
                         $htmltext = $htmltext . "<table id='tabledemande_" . $this->agentid() . "' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=7 align=center ><div style='color:#BF3021'>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
+                        if ($mode=='agent')
+                        {
+                            $nbcolonne = 8;
+                        }
+                        else
+                        {
+                            $nbcolonne = 7;
+                        }
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=$nbcolonne align=center ><div style='color:#BF3021'>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
 /*
                         $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
@@ -2495,8 +2505,9 @@ const modifymotif = (motif, motifid) =>
                                                       <th class='cellulesimple' style='cursor: pointer;'>Date de fin <span class='sortindicator'> </span></th>
                                                       <th class='cellulesimple' style='cursor: pointer;'>Type de demande <span class='sortindicator'> </span></th>
                                                       <th class='cellulesimple' style='cursor: pointer;'>Nbre jours <span class='sortindicator'> </span></th>";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($mode, "agent") == 0)
                         {
+                            $htmltext = $htmltext . "<th class='cellulesimple' style='cursor: pointer;'>Statut<span class='sortindicator'> </span></th>";
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
                         }
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
@@ -2519,21 +2530,49 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($mode, "agent") == 0)
                         {
-                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->commentaire() . "</td>";
-                        }
-                        $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] value='yes' ";
-                        $arraycancel = null;
-                        if (isset($_POST["cancel"]))
-                        {
-                            $arraycancel = $_POST["cancel"];
-                            if (isset($arraycancel[$demande->id()]))
+                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</td>";
+
+                            $datatitle = '';
+                            if (strlen($demande->commentaire()) != 0) 
                             {
-                                $htmltext = $htmltext . " checked='' ";
+                                $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);  
+                            }
+                            $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne' $datatitle >";
+                            $htmltext = $htmltext . htmlentities($this->fonctions->tronque_chaine($demande->commentaire(),50));
+                            $htmltext = $htmltext . "</td>";   
+/*                            
+                            $htmltext = $htmltext . "   <td class='cellulesimple cellulemultiligne'>" . $demande->commentaire() . "</td>";
+*/                           
+                        }
+                        if ((strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "agent") == 0))
+                        {
+                            $disable = "";
+                            if (isset($_POST["cancelbutton"]) and isset($_POST["cancelbutton"][$demande->id()]))
+                            {
+                                $disable = " disabled ";
+                            }
+                            $htmltext = $htmltext . "<td class='cellulesimple'><input class='cancelbutton' type='submit' $disable name=cancelbutton[" . $demande->id() . "] id=cancelbutton[" . $demande->id() . "] value='Demander l&apos;annulation' onclick='if (this.tagname!=\"OK\") {click_element(\"cancelbutton[" . $demande->id() . "]\"); return false; }'";
+                        }
+                        elseif ((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0))
+                        {
+                            $htmltext = $htmltext . "<td class='cellulesimple'><input class='cancel' type='submit' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] value='Annuler la demande'  onclick='if (this.tagname!=\"OK\") {click_element(\"cancel[" . $demande->id() . "]\"); return false; }'";
+                        }
+                        else // On est en mode responsable
+                        {
+                            $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] value='yes' ";
+                            $arraycancel = null;
+                            if (isset($_POST["cancel"]))
+                            {
+                                $arraycancel = $_POST["cancel"];
+                                if (isset($arraycancel[$demande->id()]))
+                                {
+                                    $htmltext = $htmltext . " checked='' ";
+                                }
                             }
                         }
-                        $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' /></td>";
+                        $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' ></input></td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                         {
                             $textareastyle = "style='line-height:20px; resize: none;";
