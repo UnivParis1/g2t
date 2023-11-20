@@ -8,7 +8,18 @@
     $WSGROUPURL = $fonctions->liredbconstante("WSGROUPURL");
     // echo "<br><br>WSGROUPURL = $WSGROUPURL <br>";
 ?>
-<title>G2T<?php if (isset($user) and (is_a($user, 'agent')) and ($user->agentid()."" <> "")) { echo " - " . $user->identitecomplete(); } ?></title>
+<title>G2T
+<?php 
+    if (defined('TYPE_ENVIRONNEMENT') and strcasecmp(TYPE_ENVIRONNEMENT,'PROD')!=0)
+    { 
+        echo " - " . strtoupper(TYPE_ENVIRONNEMENT); 
+    }
+
+    if (isset($user) and (is_a($user, 'agent')) and ($user->agentid()."" <> "")) 
+    { 
+        echo " - " . $user->identitecomplete(); 
+    } 
+?></title>
 <link rel="stylesheet"
     href="<?php echo "$WSGROUPURL"?>/web-widget/jquery-ui.css"
     type="text/css" media="all">
