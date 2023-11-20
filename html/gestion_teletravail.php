@@ -655,167 +655,6 @@
             $teletravail->motifmedicalgrossesse($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_GROSSESSE]);
             $teletravail->motifmedicalaidant($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_AIDANT]);
  
-/*************************************************            
-            if (!is_null($agentid))
-            {
-                // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
-                $agent = new agent($dbcon);
-                $agent->load($agentid);
-                $agent_eppn = $agent->eppn();
-                
-                // On récupère le mail de l'agent en cours
-                $agent_mail = $agent->mail(); // $agent->ldapmail();
-            }
-            
-            $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
-            $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/teletravailWS.php";
-            $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
-            
-            $curl = curl_init();
-            // ----------------------------------------------------------------
-            // On force l'EPPN avec le compte système de eSignature
-            $agent_eppn = 'system';
-            //-----------------------------------------------------------------
-                
-            $params = array
-            (
-                'eppn' => "$agent_eppn",
-                'targetEmails' => array
-                (
-                    "$agent_mail"
-                ),
-                'targetUrl' => "$full_g2t_ws_url",
-                'targetUrls' => array("$full_g2t_ws_url"),
-                'formDatas' => "{}"
-            );
-            
-            $taberrorcheckmail = array();
-            if ($esignatureactive)
-            {
-                $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
-            }
-            if (count($taberrorcheckmail) > 0)
-            {
-                // var_dump("errorcheckmail = $errorcheckmail");
-                $errorcheckmailstr = '';
-                foreach ($taberrorcheckmail as $errorcheckmail)
-                {
-                    if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
-                    $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
-                }
-                $erreur = "Impossible d'enregistrer la convention de télétravail car <br>$errorcheckmailstr";
-            }
-            else
-            {
-                $id_model = '';
-                if ($esignatureactive)
-                {
-                    $id_model = trim($fonctions->getidmodelteletravail($maxniveau, $agent));
-                }
-                if (trim($id_model) == '' and $esignatureactive)
-                {
-                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-                    $erreur = $erreur . "Le modèle eSignature pour la création d'une convention télétravail n'a pas pu être déterminé.";
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
-                }
-                else
-                {
-                    $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
-                    {
-                        is_array( $item )
-                        ? array_walk( $item, $walk, $key )
-                        : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                    };
-                    array_walk( $params, $walk );
-                    $params_string = implode( '&', $output );
-                    // var_dump ("Output = " . $params_string);
-                    
-                    $opts = [
-                        CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
-                        CURLOPT_POST => true,
-                        CURLOPT_POSTFIELDS => $params_string,
-                        CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_SSL_VERIFYPEER => false
-                    ];
-                    curl_setopt_array($curl, $opts);
-                    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                    $json = "";
-                    $error = "";
-                    if ($esignatureactive)
-                    {
-                        $json = curl_exec($curl);
-                        $error = curl_error ($curl);
-                    }
-                    curl_close($curl);
-                    if ($error != "")
-                    {
-                        echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur Curl = " . $error);
-                    }
-                    //echo "<br>" . print_r($json,true) . "<br>";
-                    //echo "<br>"; var_dump($json); echo "<br>";
-                    if ($esignatureactive)
-                    {
-                        $id = json_decode($json, true);
-                    }
-                    else
-                    {
-                        $id = '';
-                    }
-                    error_log(basename(__FILE__) . " " . var_export($opts, true));
-                    error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION CONVENTION -- " . var_export($id, true));
-                    //var_dump($id);
-                    if (is_array($id) and $esignatureactive)
-                    {
-                        $erreur = "La création de la convention dans eSignature a échoué => " . print_r($id,true);
-                        error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-                    }
-                    elseif ("$id" < 0 and $esignatureactive)
-                    {
-                        $erreur =  "La création de la convention dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
-                        error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-                    }
-                    elseif ("$id" <> "" or !$esignatureactive)
-                    {
-                        //echo "Id de la nouvelle demande = " . $id . "<br>";
-                        $teletravail->esignatureid($id);
-                        if ($esignatureactive)
-                        {
-                            $teletravail->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                            $teletravail->statut(teletravail::TELETRAVAIL_ATTENTE);
-                            $teletravail->statutresponsable(teletravail::TELETRAVAIL_ATTENTE);
-                        }
-                        else
-                        {
-                            $teletravail->esignatureurl(''); 
-                            $teletravail->statut(teletravail::TELETRAVAIL_VALIDE);
-                            $teletravail->statutresponsable('');  // A voir si on remplace par teletravail::TELETRAVAIL_VALIDE
-                        }
-                        
-                        ///////////////////////////////////////////////////
-                        /// FIN DE LA SAUVEGARDE ESIGNATURE             ///
-                        ///////////////////////////////////////////////////
-                        
-                        $erreur = $teletravail->store();
-                        $agent->synchroteletravail();
-                        if ($erreur <> "")
-                        {
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
-                        }
-                        else
-                        {
-                            $info = "La création de la convention est réussie.";
-                            $erreur = "";
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => eSignatureid = " . $id ));
-                        }
-                    }
-                    else
-                    {
-                        $erreur  = "La création de la convention de télétravail dans eSignature a échoué !!==> Pas de sauvegarde de la conention télétravail dans G2T.";
-                        error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-                    }
-                }
-            }
- *********************************************************/
             $teletravail->esignatureurl('');
             if ($esignatureactive)
             {
@@ -1117,6 +956,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     $inputdatefin = null;
     $inputtabteletravail = null;
     $inputmotifmedical = null;
+    $teletravailenattente = false;
     
     
     if ($erreur != "")
@@ -1221,6 +1061,11 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        $datefinteletravail = $fonctions->formatdate($teletravail->datefin());
     	        $calendrierid_deb = "date_debut_conv";
     	        $calendrierid_fin = "date_fin_conv";
+                
+                if ($teletravail->statut()==teletravail::TELETRAVAIL_ATTENTE)
+                {
+                    $teletravailenattente = true;
+                }
     	            	        
     	        $extraclass = "";
     	        $openspan = "";
@@ -1323,50 +1168,6 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo "    <td class='cellulesimple convstatut' ><span class='convstatutvalue' hidden>" .  $teletravail->statut() . "</span><center>$openspan" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . "$closespan</center></td>";
     	        echo "    <td class='cellulesimple'><center>";
                 $htmltext = $teletravail->libelletabteletravail();
-/*                
-    	        $somme = 0;
-    	        $htmltext = "";
-    	        for ($index = 0 ; $index < strlen($teletravail->tabteletravail()) ; $index ++)
-    	        {
-    	            $demijrs = substr($teletravail->tabteletravail(),$index,1);
-    	            if ($demijrs>0) // Si dans le tableau la valeur est > 0
-    	            {
-    	                if (($index % 2) == 0)  // Si c'est le matin => On ajoute 1 à la somme
-                        {
-    	                    $somme = $somme + 1;
-                        }
-    	                elseif (($index % 2) == 1)  // Si c'est l'après-midi => On ajoute 2 à la somme
-                        {
-    	                    $somme = $somme + 2;
-                        }
-    	            }
-    	            if (($index % 2) == 1)
-    	            {
-    	                if ($somme > 0) // Si pas de télétravail => On affiche rien
-    	                {
-                            if ($somme == 1)  // Que le matin
-                            {
-                               $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment(fonctions::MOMENT_MATIN); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
-                            }
-    	                    elseif ($somme == 2) // Que l'après-midi
-                            {
-    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1) . " " . $fonctions->nommoment(fonctions::MOMENT_APRESMIDI);
-                            }
-    	                    elseif ($somme == 3) // Toute la journée
-                            {
-    	                       $htmltext = $htmltext . $fonctions->nomjourparindex(intdiv($index,2)+1);
-                            }
-    	                    else // Là, on ne sait pas !!
-                            {
-    	                       $htmltext = $htmltext . "Problème => index = $index  demijrs = $demijrs   somme = $somme";
-                            }
-    	                    $htmltext = $htmltext . ", ";
-   	                }
-                        $somme = 0;
-                    }
-    	        }
-                $htmltext = substr($htmltext, 0, strlen($htmltext)-2);
- */
                 $motifmedical = '';
                 if ($teletravail->typeconvention()==teletravail::CODE_CONVENTION_MEDICAL)
                 {
@@ -1505,10 +1306,18 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         });
     </script>
 <?php
-    	echo "<br><br>";
-        //echo "<br>inputtypeconv = $inputtypeconv <br>";
         $formhidden = "";
         $formdisabled = "";
+        
+        if ($teletravailenattente)
+        {
+            //var_dump("Télétravail en attente !");
+            $formhidden = " hidden='hidden' ";
+            $formdisabled = " disabled ";
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de télétravail en attente de validation.<br>Vous ne pouvez pas en saisir une nouvelle.<br>Vous devez attendre que le circuit de validation soit terminé ou annuler la demande en attente.");
+        }
+    	echo "<br><br>";
+        //echo "<br>inputtypeconv = $inputtypeconv <br>";
 
         if (!$esignatureactive and $mode!='gestrh')
         {
