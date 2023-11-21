@@ -247,7 +247,7 @@
         
     }
     
-    if (isset($_POST["modification"]))  // On a cliqué sur le bouton "annulation"
+    if (count((array)$cancelteletravailarray)>0) // On a cliqué sur un bouton d'annulation pour annulé une convention
     {
         //echo "On va annuler des conventions de télétravail.<br>";
         foreach ((array)$cancelteletravailarray as $cancelteletravailid)
@@ -308,6 +308,10 @@
                 }
             }
         }
+    }
+    
+    if (isset($_POST["modification"]))  // On a cliqué sur le bouton "modification" 
+    {
         // On va modifier les dates des conventions de télétravail
         foreach ((array)$datedebutconv as $idconv => $datedebut)
         {
@@ -1211,8 +1215,9 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 }
                 if ($mode=='gestrh' or $esignatureactive)
                 {
-                    echo "<td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
-                    if ($mode=='gestrh' and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
+//                    echo "<td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
+                    echo "<td class='cellulesimple'><center><button class='cancel' type='submit' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
+                    if ($mode=='gestrh' and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE))) // and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
                     {
                         echo " disabled='disabled' ";
                     }
@@ -1220,6 +1225,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     {
                         echo " disabled='disabled' ";
                     }
+                    echo " onclick='if (this.tagname!=\"OK\") {click_element(\"" . $teletravail->teletravailid()  .  "\"); return false; }'>Annuler</button";
                     echo "></center></td>";
                 }
                 if ($displayPDFbutton and $esignatureactive)
@@ -1238,11 +1244,93 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
     	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
             echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
-    	    if (!$disablesubmit)
+    	    if (!$disablesubmit and ($mode != ''))
     	    {
-    	       echo "<input type='submit' value='Soumettre' name='modification'/>";
+    	       echo "<input type='submit' value='Enr. modif. date' id='modification' name='modification' onclick='if (this.tagname!=\"OK\") {click_element(\"modification\"); return false; }'/>";
     	    }
     	    echo "</form>";
+
+?>
+        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
+        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+
+        <dialog id="confirmdialog" class="questiondialog">
+          <form method="dialog">
+            <p>
+<?php
+        $type = 'question';
+        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+
+?>
+                <label id='labeltext'>Confirmez vous cette action ?</label>
+            </p>
+            <menu><center>
+              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
+              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+            </center></menu>
+          </form>
+        </dialog>
+        
+        <script>
+            let confirmdialog = document.getElementById('confirmdialog');
+            let confirmBtn = document.getElementById('confirmBtn');
+            let labeltext = document.getElementById('labeltext');
+            let cancelBtn = document.getElementById('cancelBtn');        
+    
+            confirmdialog.addEventListener('close', function onClose() {
+//                alert ('On va close');
+                if (confirmdialog.returnValue!=='cancel')
+                {
+//                    alert('L id est ' + confirmBtn.value);
+                    // L'id du boutton en cours est dans la propertie value du bouton confirm
+                    var submit_button = document.getElementById(confirmBtn.value);
+//                    alert('Le button = ' + submit_button.id);
+                    submit_button.tagname = 'OK';
+//                    submit_button.value = 'yes';
+                    submit_button.click();
+//                    var submit_form = document.getElementById('frm_gest_demande');
+//                    alert('submit_form = ' + submit_form.id)
+//                    submit_form.submit();
+                }
+            });
+
+            var click_element = function(elementid)
+            {
+                if (typeof confirmdialog.showModal === "function") {
+                    var submit_button = document.getElementById(elementid);
+                    if (submit_button.classList.contains("cancelbutton"))
+                    {
+                        labeltext.innerHTML = 'Confirmez-vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
+                    }
+                    else if (submit_button.classList.contains("cancel"))
+                    {
+                        labeltext.innerHTML = 'Confirmez-vous l\'annulation de cette demande ? ';
+                    }
+                    else
+                    {
+                        labeltext.innerHTML = 'Confirmez-vous les modifications des dates ? ';
+                    }
+                    cancelBtn.textContent = "Non";
+                    cancelBtn.hidden = false;
+                    confirmBtn.textContent = "Oui";
+                    confirmBtn.hidden = false;
+                    confirmBtn.value = elementid;
+                    confirmdialog.showModal();
+                }        
+                else {
+                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                }
+            };
+        </script>
+<?php
+
+
+
+
             echo "<br>";
             echo "<input type='checkbox' id='hide' name='hide' onclick='hide_inactive();'>Masquer les conventions non validées</input><br>";
 ?>
