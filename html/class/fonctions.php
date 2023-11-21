@@ -3316,6 +3316,8 @@ class fonctions
         $status = "";
         $reason = "";
         $datesignatureresponsable = '19000101';
+        $sendmailtoresp = false;
+
 
         error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut de la convention télétravail =>  " . $esignatureid));
 
@@ -3545,6 +3547,11 @@ class fonctions
                         }
                         error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
                     }
+                    
+                    if (($status == teletravail::TELETRAVAIL_ANNULE or $status == teletravail::TELETRAVAIL_REFUSE) and $teletravail->statut() == teletravail::TELETRAVAIL_ATTENTE)
+                    {
+                        $sendmailtoresp = true;
+                    }
 
                     if ($this->formatdatedb($datesignatureresponsable)>$this->formatdatedb($teletravail->datedebut()))
                     {
@@ -3584,6 +3591,18 @@ class fonctions
                         $agentid = $teletravail->agentid();
                         $agent = new agent($this->dbconnect);
                         $agent->load($agentid);
+
+                        if ($sendmailtoresp)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" On va envoyer un mail au responsable car on a annulé/refusé une convention télétravail (id G2T = " . $teletravail->teletravailid() . ")"));
+                            $resp = $agent->getresponsable();
+                            $cronuser = new agent($this->dbconnect);
+                            $cronuser->load(SPECIAL_USER_IDCRONUSER);
+                            $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $agent->identitecomplete(), "Une demande de convention de télétravail pour " . $agent->identitecomplete() . " a été annulée/refusée.<br>"
+                                . "Ceci est un message informatif. Vous n'avez aucune action à réaliser. <br>");
+                            error_log(basename(__FILE__) . $this->stripAccents(" Le mail au responsable (" . $resp->identitecomplete() . " " . $resp->mail() . ") a été envoyé (id G2T = " . $teletravail->teletravailid() . ")"));
+                        }
+
                         $currentconventionid=$teletravail->teletravailid();
                         $datedebutteletravail = $teletravail->datedebut();
                         $datefinteletravail = $teletravail->datefin();
