@@ -678,7 +678,9 @@
                     $htmltext = $htmltext . "<tr align=center $extracolor>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$inputagentid</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$numligne</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$idstruct</td>";
+                    $structure = new structure($dbcon);
+                    $structure->load($idstruct);
+                    $htmltext = $htmltext . "   <td class='cellulesimple'>$idstruct (" . $structure->nomcourt() . ")</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$datedebutformate</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$datefinformate</td>";
                     $htmltext = $htmltext . "</tr>";
