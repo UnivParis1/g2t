@@ -36,37 +36,58 @@
     if ($CASuserId===false)
     {
         // Ce n'est pas un administrateur
-        error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
-        echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
-        //        header('Location: index.php');
-        exit();
+        // On regarde si l'agent a un profil RH
+        $userid = $fonctions->useridfromCAS($uid);
+        $user = new agent($dbcon);
+        $user->load($userid);
+        
+        if (!$user->estprofilrh())
+        {
+            error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
+            echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
+            //        header('Location: index.php');
+            exit();
+        }
     }
-
-    $user = new agent($dbcon);
-    $user->load($userid);
-
+    else
+    {
+        $user = new agent($dbcon);
+        $user->load($userid);
+    }
+    
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
 
+    $structureid = null;
     if (isset($_POST["structureid"]))
+    {
         $structureid = $_POST["structureid"];
-    else
-        $structureid = null;
+    }
+
+    $mode = '';
+    if (isset($_POST["mode"]))
+    {
+        $mode = $_POST["mode"];
+    }
 
     $arrayinfouser = null;
     if (isset($_POST["infouser"]))
+    {
         $arrayinfouser = $_POST["infouser"];
+    }
 
+    $gestionnaireliste = array();
     if (isset($_POST["gestion"]))
+    {
         $gestionnaireliste = $_POST["gestion"];
-    else
-        $gestionnaireliste = array();
+    }
 
+    $responsableliste = array();
     if (isset($_POST["resp"]))
+    {
         $responsableliste = $_POST["resp"];
-    else
-        $responsableliste = array();
-
+    }
+       
     $showall = false;
     if (isset($_POST['showall'])) {
         if ($_POST['showall'] == 'true')
@@ -202,9 +223,12 @@
      */
 
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    echo "<input type='hidden' name='mode' value='" . $mode . "'>";
     echo "<br><input type='checkbox' name='showall' value='true'";
     if ($showall == true)
+    {
         echo " checked ";
+    }
     echo ">Afficher les structures fermées<br>";
     echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
     echo "</form>";
@@ -225,7 +249,7 @@
         ksort($structureliste);
         // echo "Le tableau des structures files : " . print_r($structureliste, true) . "<br>";
 
-        echo "<form name='paramstructure'  method='post' >";
+        echo "<form name='paramstructure' id='paramstructure' method='post' >";
         foreach ($structureliste as $keystruc => $struct) {
             echo "<table>";
 
@@ -479,13 +503,33 @@
 
         }
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='structureid' value='" . $structureid . "'>";
         echo "<input type='submit' name= 'Modif_struct' value='Enregistrer les modifications' >";
         echo "</form>";
         echo "<br>";
     }
-
+    
+    if ($mode == 'gestrh')
+    {
 ?>
+        <script>
+            var formcreationteletravail = document.getElementById('paramstructure');
+            if (formcreationteletravail)
+            {
+                // console.log ('La form est trouvée');
+                for (var champ=0; champ < formcreationteletravail.elements.length; champ++) 
+                {
+                    // console.log (formcreationteletravail.elements[champ].name);
+                    formcreationteletravail.elements[champ].disabled = true;
+                }
+            }
+
+        </script>
+<?php
+    }
+?>
+
 
 <!--
 <a href=".">Retour à la page d'accueil</a>

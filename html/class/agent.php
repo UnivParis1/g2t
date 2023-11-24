@@ -1312,7 +1312,7 @@ class agent
                     // On fait une pause de 1 sec pour eviter de se faire jeter par le serveur SMTP
                     if (defined('TYPE_ENVIRONNEMENT'))
                     {
-                        if (strtolower(TYPE_ENVIRONNEMENT) == 'test')
+                        if (strcasecmp(TYPE_ENVIRONNEMENT,'PROD')!=0)
                         {
                             // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Environnement de test/dev => On sleep après l'envoi du mail \n"));
                             sleep(2);

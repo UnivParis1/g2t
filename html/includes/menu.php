@@ -1232,6 +1232,13 @@
                     </form>
                     <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
                 </li>
+                <li onclick='document.rh_struct_gest.submit();'>
+                    <form name='rh_struct_gest' method='post' action="gestion_structure.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        <input type="hidden" name="mode" value="gestrh">
+                    </form> 
+                    <a href="javascript:document.rh_struct_gest.submit();">Paramétrage des structures</a>
+                </li>
 <?php 
                     if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
                     {
@@ -1433,6 +1440,7 @@
                 <li onclick='document.admin_struct_gest.submit();'>
                     <form name='admin_struct_gest' method='post' action="gestion_structure.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        <input type="hidden" name="mode" value="">
                     </form> 
                     <a href="javascript:document.admin_struct_gest.submit();">Paramétrage des structures</a>
                 </li>

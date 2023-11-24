@@ -653,7 +653,7 @@
             }
             if (count($listeconventionchevauche)>0)
             {
-                $alerte = $alerte . "Attention : Plusieurs conventions se chevauchent. Elles seront adapatées au moment de la validation par le responsable.";
+                $alerte = $alerte . "Attention : Plusieurs conventions se chevauchent. Les dates seront automatiquement adapatées à la fin du circuit de validation si nécessaire.";
             }
         }
 
@@ -1407,23 +1407,40 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         $formhidden = "";
         $formdisabled = "";
         
+    	echo "<br><HR id='separateurHR' style='width:50px;margin:0px;visibility:hidden;'><br>";
+?>
+    <script>
+        var tabteletravail = document.getElementById('listeteletravail');
+        if (tabteletravail)
+        {
+            var HRelement = document.getElementById('separateurHR');
+            if (HRelement)
+            {
+                HRelement.style.width = tabteletravail.offsetWidth+'px';
+                HRelement.style.visibility = "visible";
+            }
+        }
+    </script>
+<?php
+
+        //echo "<br>inputtypeconv = $inputtypeconv <br>";
         if ($teletravailenattente)
         {
-            //var_dump("Télétravail en attente !");
-            $formhidden = " hidden='hidden' ";
-            $formdisabled = " disabled ";
-            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de télétravail en attente de validation.<br>Vous ne pouvez pas en saisir une nouvelle.<br>Vous devez attendre que le circuit de validation soit terminé ou annuler la demande en attente.");
+            $formhidden = "";
+            $formdisabled = " disabled='disabled' ";
         }
-    	echo "<br><br>";
-        //echo "<br>inputtypeconv = $inputtypeconv <br>";
 
         if (!$esignatureactive and $mode!='gestrh')
         {
             $formhidden = " hidden='hidden' ";
-            $formdisabled = " disabled ";
+            $formdisabled = " disabled='disabled' ";
         }
     	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' $formhidden $formdisabled>";
     	echo "Création d'une nouvelle demande de convention pour : " . $agent->identitecomplete()  . " <br>";    	
+        if ($teletravailenattente)
+        {
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de télétravail en attente de validation.<br>Vous ne pouvez pas en saisir une nouvelle.<br>Vous devez attendre que le circuit de validation soit terminé ou annuler la demande en attente.");
+        }
     	echo "Type de demande de convention télétravail : ";
     	echo "<select required id='typeconv' name='typeconv' onChange='displayhidewarning(this.value);'>";
     	echo "<option value=''>---- Sélectionnez le type de convention ----</option>";
@@ -1918,7 +1935,25 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         {
            echo "<input type='submit' value='Soumettre'  name='creation'/>";
         }
-        echo "</form>";
+        echo "</form>";        
+
+        if (isset($formdisabled) and $formdisabled != '')
+        {
+?>
+            <script>
+                var formcreationteletravail = document.getElementById('form_teletravail_creation');
+                if (formcreationteletravail)
+                {
+                    // console.log ('La form est trouvée');
+                    for (var champ=0; champ < formcreationteletravail.elements.length; champ++) 
+                    {
+                        // console.log (formcreationteletravail.elements[champ].name);
+                        formcreationteletravail.elements[champ].disabled = true;
+                    }
+                }
+            </script>
+<?php
+        }
     }
     elseif ($mode=='resp' or $mode=='gestion')
     {
