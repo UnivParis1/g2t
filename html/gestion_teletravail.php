@@ -180,7 +180,7 @@
     
     require ("includes/menu.php");
     
-    //echo "<br>" . print_r($_POST, true) . "<br><br>";
+    // echo "<br>" . print_r($_POST, true) . "<br><br>";
     
     //echo "$cancelteletravailarray = ";
     //var_export($cancelteletravailarray);
@@ -639,7 +639,67 @@
             }
         }
 
-        if ($dateok)
+        //////////////////////////////////////////////////////////////
+        if ($erreur=='')
+        {
+            $affectation = null;
+            $affectationliste = $agent->affectationliste($datedebutteletravail, $datefinteletravail, true);
+            if (count((array)$affectationliste)==0)
+            {
+                $erreur = $erreur . "Vous n'avez pas d'affectation entre le $datedebutteletravail et le $datefinteletravail. Impossible de déclarer une convention de télétravail.";
+                $nbjoursmaxteletravailcalcule = 0;
+                $disablesubmit = true;
+            }
+            else
+            {
+                $affectation = reset($affectationliste);
+                $nbjoursmaxteletravailcalcule = $_POST["nbjoursmaxteletravailcalcule"];
+                if ($nbjoursmaxteletravailcalcule == 0)
+                {
+                    $disablesubmit = true;
+                }
+
+                $declarationliste = $affectation->declarationTPliste($datedebutteletravail, $datefinteletravail);
+                $declaration = null;
+                if (! is_null($declarationliste)) 
+                {
+                    foreach ($declarationliste as $declaration)
+                    {
+                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) 
+                        {
+                            // La première déclaration de TP non refusée qu'on trouve est la bonne
+                            break;
+                        }
+                        $declaration = null;
+                    }
+                }
+
+                if (is_null($declaration) and $agentstructure->estbibliotheque())
+                {
+                    $declaration = new declarationTP($dbcon);
+                    $declaration->agentid($agent->agentid());
+                    $declaration->tabtpspartiel(str_repeat("0", 20));
+                    $declaration->statut(declarationTP::DECLARATIONTP_VALIDE);
+                }
+
+                // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
+                if (is_null($declaration) or $mode=='gestrh')
+                {
+                    if (is_null($declaration) and $mode!='gestrh')
+                    {
+                        $erreur = $erreur . "Vous n'avez pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.<br>Impossible de saisir une convention de télétravail";
+                    }
+                    elseif (is_null($declaration) and $mode=='gestrh')
+                    {
+                        $erreur = $erreur . "L'agent " . $agent->identitecomplete() . " pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.";
+                    }
+                }
+            }
+        }
+        //////////////////////////////////////////////////////////////////////////////
+
+
+        if ($dateok and $erreur=='')
         {
             $listeconventionchevauche = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
             foreach ($listeconventionchevauche as $keyconv => $conventionid)
@@ -651,6 +711,7 @@
                     unset ($listeconventionchevauche[$keyconv]);
                 }
             }
+            //var_dump($listeconventionchevauche);
             if (count($listeconventionchevauche)>0)
             {
                 $alerte = $alerte . "Attention : Plusieurs conventions se chevauchent. Les dates seront automatiquement adapatées à la fin du circuit de validation si nécessaire.";
@@ -1519,6 +1580,64 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
     }
 
+
+    function dateIsValid(dateStr) {
+        const regex = /^\d{2}\/\d{2}\/\d{4}$/;
+
+        if (dateStr.match(regex) === null) {
+            return false;
+        }
+
+        const [day, month, year] = dateStr.split('/');
+        const isoFormattedStr = `${year}-${month}-${day}`;
+        const date = new Date(isoFormattedStr);
+        const timestamp = date.getTime();
+
+        if (typeof timestamp !== 'number' || Number.isNaN(timestamp)) {
+            return false;
+        }
+        return date.toISOString().startsWith(isoFormattedStr);
+    }
+
+
+
+    function getnbjrsteletravail(id)
+    {
+        //console.log ('Activation de getnbjrsteletravail');
+        var calendrierdeb = document.getElementById(id);
+        
+        if (calendrierdeb && dateIsValid(calendrierdeb.value))
+        {
+            let nbjoursmaxteletravailcalcule = document.getElementById('nbjoursmaxteletravailcalcule');
+            
+            const [day, month, year] = calendrierdeb.value.split('/');
+            var keydate = year + "" + month + "" + day;
+            var valuetodisplay = 0;
+            for (const [key, value] of Object.entries(tabaffectation))
+            {
+                const [debut, fin] = key.split('-');
+                // keydate => date saisie dans le calendrier
+                if (debut <= keydate && keydate <= fin)
+                {
+                    console.log ('debut = ' + debut + '  fin = ' + fin +  '   keydate = ' + keydate + '   value = ' + value);
+                    valuetodisplay = value;
+                }
+            }
+            if (nbjoursmaxteletravailcalcule)
+            {
+                nbjoursmaxteletravailcalcule.value = valuetodisplay;
+                // nbjoursmaxteletravailcalcule.innerHTML = valuetodisplay;
+                verif_nbre_checkbox();
+                let creationbtn = document.getElementById('creation');
+                if (creationbtn && valuetodisplay > 0)
+                {
+                    //creationbtn.style.display = 'block' ;
+                    creationbtn.hidden = false;
+                }
+            }
+        }
+    }
+
 </script>    
 <?php
     	echo "<br>";
@@ -1557,7 +1676,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         	id=<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?> size=10
         	minperiode='<?php echo $fonctions->formatdate($datedebutminconv); ?>'
         	maxperiode='<?php echo $fonctions->formatdate($datedebutmaxconv); ?>'
-        	value='<?php echo $inputdatedebut ?>'>
+        	value='<?php echo $inputdatedebut ?>'
+                onchange="getnbjrsteletravail('<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?>');">
     <?php
         echo "</td>";
     	echo "</tr>";
@@ -1590,7 +1710,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<br>";
         
         $affectation = null;
-        $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y'), true);
+        $affectationliste = $agent->affectationliste(date('d/m/Y'), date('31/12/2100'), true);
         if (count((array)$affectationliste)==0)
         {
             echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas d'affectation actuellement. Impossible de déclarer une convention de télétravail.");
@@ -1599,19 +1719,59 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
         else
         {
-            $affectation = current($affectationliste);
-            
-            if ($affectation->quotite()=='100%')
+            //var_dump($affectationliste);
+            // On construit le tableau javascript qui contient les quotité de l'agent
+            $tabaffectation_java = "var tabaffectation = { ";
+            $tabaffectation_value = "";
+            foreach ($affectationliste as $affectation)
             {
-                $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
+                if ($tabaffectation_value != "")
+                {
+                    $tabaffectation_value = $tabaffectation_value . ", ";
+                }
+//                $tabaffectation_value = $tabaffectation_value . "['" . $fonctions->formatdatedb($affectation->datedebut()) . "'] : ";
+                $tabaffectation_value = $tabaffectation_value . "['" . $fonctions->formatdatedb($affectation->datedebut()) . "-" . $fonctions->formatdatedb($affectation->datefin()) . "'] : ";
+                if ($affectation->quotite()=='100%')
+                {
+                    $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
+                }
+                elseif ($affectation->quotitevaleur() == 0.8 or $affectation->quotitevaleur() == 0.9)
+                {
+                    $nbjoursmaxteletravailcalcule = 1;
+                }
+                else
+                {
+                    $nbjoursmaxteletravailcalcule = 0;
+                }
+                $tabaffectation_value = $tabaffectation_value . $nbjoursmaxteletravailcalcule . " ";
             }
-            elseif ($affectation->quotitevaleur() == 0.8 or $affectation->quotitevaleur() == 0.9)
+            $tabaffectation_java = $tabaffectation_java . $tabaffectation_value . " } ;";
+            echo "<script>" . $tabaffectation_java . "</script>";
+            //var_dump($tabaffectation_java);
+            $affectation = reset($affectationliste);
+            
+            if (!isset($_POST["nbjoursmaxteletravailcalcule"]))
             {
-                $nbjoursmaxteletravailcalcule = 1;
+
+                if ($affectation->quotite()=='100%')
+                {
+                    $nbjoursmaxteletravailcalcule = $nbjoursmaxteletravail;
+                }
+                elseif ($affectation->quotitevaleur() == 0.8 or $affectation->quotitevaleur() == 0.9)
+                {
+                    $nbjoursmaxteletravailcalcule = 1;
+                }
+                else
+                {
+                    $nbjoursmaxteletravailcalcule = 0;
+                }
             }
             else
             {
-                $nbjoursmaxteletravailcalcule = 0;
+                $nbjoursmaxteletravailcalcule = $_POST["nbjoursmaxteletravailcalcule"];
+            }
+            if ($nbjoursmaxteletravailcalcule == 0)
+            {
                 $disablesubmit = true;
             }
             
@@ -1749,7 +1909,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo "<div id='divttnormal' $hidden>";
                 echo "<br>";
                 // Ci-dessous : Le tableau pour les temps complets et les TP 90% et 80%
-                echo "<label id='labelmaxjrs' >Jours de télétravail : Vous pouvez déclarer jusqu'à " . $nbjoursmaxteletravailcalcule . " jour(s) de télétravail.</label>";
+                echo "<label id='labelmaxjrs' >Jours de télétravail : Vous pouvez déclarer jusqu'à <input type='text' style='border:none;' size=1 readonly id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='$nbjoursmaxteletravailcalcule'></input> jour(s) de télétravail.</label>";
                 echo "<table class='tableausimple' id='tabttnormal' ";
                 echo ">";
                 echo "<tr><center>";
@@ -1893,7 +2053,18 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         nbselected++;
                     }
                 }
-                if (nbselected === <?php echo $nbjoursmaxteletravailcalcule; ?>)
+                let nbjoursmaxteletravailcalcule = document.getElementById('nbjoursmaxteletravailcalcule');
+                
+                if (nbjoursmaxteletravailcalcule && nbjoursmaxteletravailcalcule.value == 0)
+                {
+                    for (let index = 0; index < checkBoxlist.length; index++) 
+                    {
+                        var currentcheckbox = checkBoxlist[index];
+                        currentcheckbox.checked = false;
+                        currentcheckbox.disabled=true;
+                    }                    
+                }
+                else if (nbjoursmaxteletravailcalcule && (nbselected == nbjoursmaxteletravailcalcule.value))
                 {
                     for (let index = 0; index < checkBoxlist.length; index++) 
                     {
@@ -1904,7 +2075,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         }
                     }
                 }
-                else if (nbselected < <?php echo $nbjoursmaxteletravailcalcule; ?>)
+                else if (nbjoursmaxteletravailcalcule && (nbselected < nbjoursmaxteletravailcalcule.value))
                 {
                     for (let index = 0; index < checkBoxlist.length; index++) 
                     {
@@ -1912,15 +2083,21 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         currentcheckbox.disabled=false;
                     }
                 }
-                else if (nbselected > <?php echo $nbjoursmaxteletravailcalcule; ?>)
+                else if (nbjoursmaxteletravailcalcule && (nbselected > nbjoursmaxteletravailcalcule.value))
                 {
                     alert ('Trop de cases cochées');
+                    for (let index = 0; index < checkBoxlist.length; index++) 
+                    {
+                        var currentcheckbox = checkBoxlist[index];
+                        currentcheckbox.checked = false;
+                        currentcheckbox.disabled=false;
+                    }
                 }
             }
             verif_nbre_checkbox();
         </script>
 <?php
-        echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
+//        echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
         echo "<input type='hidden' id='nbrelignetableauconvention' name='nbrelignetableauconvention' value='". $nbrelignetableauconvention . "'>";
@@ -1931,10 +2108,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' id='datefinmaxconv' name='datefinmaxconv' value='" . $datefinmaxconv . "'>";
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
         
-        if (!$disablesubmit)
+        $hiddentext = '';
+        if ($disablesubmit)
         {
-           echo "<input type='submit' value='Soumettre'  name='creation'/>";
+            $hiddentext = " hidden='hidden' ";
         }
+        echo "<input type='submit' value='Soumettre' id='creation' name='creation' $hiddentext />";
         echo "</form>";        
 
         if (isset($formdisabled) and $formdisabled != '')
