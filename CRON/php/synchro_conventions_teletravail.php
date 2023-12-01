@@ -136,16 +136,19 @@
                 echo "Le responsable n'a pas complete la convention. \n";
                 $agent = new agent($dbcon);
                 $agent->load($convention->agentid());
-                $structure = new structure($dbcon);
-                $structure->load($agent->structureid());
-                if ($structure->responsable()->agentid() == $agent->agentid())
-                {
-                    $responsable = $structure->resp_envoyer_a($codeinterne);
-                }
-                else
-                {
-                    $responsable = $structure->agent_envoyer_a($codeinterne);
-                }
+                $responsable = $agent->getsignataire();
+/*                
+                //$structure = new structure($dbcon);
+                //$structure->load($agent->structureid());
+                //if ($structure->responsable()->agentid() == $agent->agentid())
+                //{
+                //    $responsable = $structure->resp_envoyer_a($codeinterne);
+                //}
+                //else
+                //{
+                //    $responsable = $structure->agent_envoyer_a($codeinterne);
+                //}
+ */
                 echo "On envoie un rappel au responsable de l'agent => Reponsable = " . $responsable->identitecomplete() . " \n";
                 $tabdestinataireg2t[$responsable->agentid()] = $responsable;
             }

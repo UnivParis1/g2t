@@ -327,7 +327,7 @@
             echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'n');
             if (is_array($agentliste)) {
-                $codeinterne = 0;
+                $codeinterne = null;
                 $structure->resp_envoyer_a($codeinterne);
                 foreach ($agentliste as $membrekey => $membre) {
                     $todisplay = true;

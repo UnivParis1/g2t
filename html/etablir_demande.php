@@ -452,18 +452,21 @@
                 $structureliste = $responsable->structgestliste();
                 // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
                 $agentlistefull = array();
-                foreach ($structureliste as $structure) {
+                foreach ($structureliste as $structure) 
+                {
                     $resp = $structure->resp_envoyer_a($code);
-                    if ($code ==3) // 3 = Envoie des mails au gestionnaire de la structure courante
+                    if ($code ==structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
                     {
                         $responsable = $structure->responsable();
-                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
+                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) 
+                        {
                             $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                         }
                     }
                 }
             }
-            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
+            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) 
+            {
                 unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
             }
             ksort($agentlistefull);

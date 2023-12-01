@@ -846,21 +846,21 @@
         
             // On récupère le responsable du service de l'agent - Niveau 2
             //echo "<br>------------------------------------------------------------- <br>";
-            $structid = $agent->structureid();
-            $struct = new structure($dbcon);
-            $struct->load($structid);
-            $code = null;
-            if ($struct->responsable()->agentid() == $agent->agentid())
-            {
-                error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
-                $resp = $struct->resp_envoyer_a($code);
-            }
-            else
-            {
-                error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
-                $resp = $struct->agent_envoyer_a($code);
-            }
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
+            //$structid = $agent->structureid();
+            //$struct = new structure($dbcon);
+            //$struct->load($structid);
+            //$code = null;
+            //if ($struct->responsable()->agentid() == $agent->agentid())
+            //{
+            //    error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
+            //    $resp = $struct->resp_envoyer_a($code);
+            //}
+            //else
+            //{
+            //    error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
+            //    $resp = $struct->agent_envoyer_a($code);
+            //}
+            //error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
             //echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
 
             echo "<br><br>";

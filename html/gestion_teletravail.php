@@ -298,7 +298,7 @@
                         $demandeurid = $teletravail->agentid();
                         $demandeur = new agent($dbcon);
                         $demandeur->load($demandeurid);
-                        $resp = $demandeur->getresponsable();
+                        $resp = $demandeur->getsignataire();
                         $cronuser = new agent($dbcon);
                         $cronuser->load(SPECIAL_USER_IDCRONUSER);
                         $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $demandeur->identitecomplete(), "Une demande de convention de télétravail pour " . $demandeur->identitecomplete() . " a été annulée/refusée.<br>"
@@ -751,21 +751,9 @@
             elseif($esignatureactive)
             {
                 $agent->synchroteletravail();
-                $responsable = $agent->getresponsable();
+                $responsable = $agent->getsignataire();
                 if (!is_null($responsable) and $responsable!==false)
                 {
-/*              
-                $structure = new structure($dbcon);
-                $structure->load($agent->structureid());
-                if ($structure->responsable()->agentid() == $agent->agentid())
-                {
-                    $responsable = $structure->resp_envoyer_a($codeinterne);
-                }
-                else
-                {
-                    $responsable = $structure->agent_envoyer_a($codeinterne);
-                }
- */
                     $cron = new agent($dbcon);
                     $cron->load(SPECIAL_USER_IDCRONUSER);
                     $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "

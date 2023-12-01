@@ -1282,7 +1282,16 @@ class agent
 	        if (strcasecmp($this->fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) 
 	        {   // On est en mode maintenance ==> Pas d'envoi de mail
 	            $errlog = "Le mode MAINTENANCE est activé. Il n'y a pas d'envoi de mail";
-	            echo "$errlog <br>";
+                    echo "$errlog ";
+                    global $uid;
+                    if (isset($uid) and $uid<>"")
+                    {
+                        echo "<br>";
+                    }
+                    else
+                    {
+                        echo "\n";                        
+                    }
 	            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog) . "\n");
 	        }
 	        else
@@ -4846,7 +4855,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      * @param number $codeinterne
      * @return agent responsable ou false
      */
-    function getresponsable($fromstruct = null, &$structresp = null, &$codeinterne = null)
+    function getsignataire($fromstruct = null, &$structresp = null, &$codeinterne = null)
     {
         error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("On cherche le N+1 de " . $this->identitecomplete()));
 
@@ -4921,7 +4930,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 
 
     
-    function getresponsable_niveau2()
+    function getsignataire_niveau2(&$respdurespstruct = null, &$codeinterne = null)
     {
         $MODE_AGENT=1;
         $MODE_RESP=2;
@@ -4949,7 +4958,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         // Le N+2 d'un agent est le responsable de son responsable
         $respstruct = null;
         $codeinterne = null;
-        $resp = $this->getresponsable(null, $respstruct, $codeinterne);
+        $resp = $this->getsignataire(null, $respstruct, $codeinterne);
         
         if ($resp===false or is_null($resp))
         {
@@ -4968,7 +4977,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         // On sait que le responsable n'est pas un gestionnaire
         // Donc on va chercher son responsable
-        $respduresp=$resp->getresponsable($respstruct, $respdurespstruct, $codeinterne);
+        $respduresp=$resp->getsignataire($respstruct, $respdurespstruct, $codeinterne);
         if ($respduresp===false or is_null($respduresp))
         {
             error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable du responsable " . $resp->agentid() . " => Donc pas de N+2"));
@@ -4985,9 +4994,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " est inclue dans la structure parente " . $respdurespstruct->id() . " ou c'est la même => On a un N+2"));
         error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+2 de l'agent " . $this->agentid() . " est " . $respduresp->agentid()));
         return $respduresp;
-        
-        
-        // Fin de la nouvelle version
     }
     
     /**

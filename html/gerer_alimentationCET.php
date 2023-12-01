@@ -463,8 +463,9 @@
         if ($affectationliste != NULL)
         {
             $affectation = current($affectationliste);
-            $structure = new structure($dbcon);
-            $structure->load($affectation->structureid());
+            
+            //$structure = new structure($dbcon);
+            //$structure->load($affectation->structureid());
         }
 
         $solde = new solde($dbcon);
@@ -728,15 +729,17 @@
                 echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";;
                 echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
                 echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-                $code = null;
-                if ($structure->responsable()->agentid() == $agent->agentid())
-                {
-                    $resp = $structure->resp_envoyer_a($code);
-                }
-                else
-                {
-                    $resp = $structure->agent_envoyer_a($code);
-                }
+/*                
+                //$code = null;
+                //if ($structure->responsable()->agentid() == $agent->agentid())
+                //{
+                //    $resp = $structure->resp_envoyer_a($code);
+                //}
+                //else
+                //{
+                //    $resp = $structure->agent_envoyer_a($code);
+                //}
+ */
                 echo "<br><br>";
                 if ($mode == 'rh')
                 {

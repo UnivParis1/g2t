@@ -1160,13 +1160,13 @@
     foreach ($structureliste as $structure)
     {
         $resp = $structure->resp_envoyer_a($code);
-        if ($code ==3) // 3 = Envoie des mails au gestionnaire de la structure courante
+        if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
         {
             // On a au moins une structure qui match => On arrête la boucle
             break;
         }
     }
-    if ($code == 3) 
+    if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
     {
 ?>
                         <li onclick='document.gest_conge_prev.submit();'>

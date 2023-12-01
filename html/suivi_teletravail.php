@@ -136,18 +136,21 @@
         }
         elseif($teletravail->statutresponsable()==teletravail::TELETRAVAIL_ATTENTE)
         {
-            $structure = new structure($dbcon);
-            $structure->load($agent->structureid());
-            //var_dump($structure->nomlong());
-            if (!is_null($structure->responsable()) and ($structure->responsable()->agentid() == $agent->agentid()))
-            {
-                $responsable = $structure->resp_envoyer_a($codeinterne);
-            }
-            else
-            {
-                $responsable = $structure->agent_envoyer_a($codeinterne);
-            }
-            if (is_null($responsable))
+            $responsable = $agent->getsignataire();
+/*
+            //$structure = new structure($dbcon);
+            //$structure->load($agent->structureid());
+            ////var_dump($structure->nomlong());
+            //if (!is_null($structure->responsable()) and ($structure->responsable()->agentid() == $agent->agentid()))
+            //{
+            //    $responsable = $structure->resp_envoyer_a($codeinterne);
+            //}
+            //else
+            //{
+            //    $responsable = $structure->agent_envoyer_a($codeinterne);
+            //}
+*/ 
+            if (is_null($responsable) or $responsable===false)
             {
                 $responsable = new agent($dbcon);
                 $responsable->nom("INCONNU");

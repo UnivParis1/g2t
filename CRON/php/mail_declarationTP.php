@@ -36,7 +36,8 @@
         $drhuser = null;
     }
     
-    while ($result = mysqli_fetch_row($query)) {
+    while ($result = mysqli_fetch_row($query)) 
+    {
         $declaration = new declarationTP($dbcon);
         $declaration->load($result[0]);
         
@@ -56,6 +57,69 @@ Merci de contrôler son dossier.\n");
             }
             continue;
         }
+        
+        $destinatairemail = $agent->getsignataire(null,$structresp,$codeinterne);
+        if (is_null($destinatairemail) or $destinatairemail===false)
+        {
+            echo "Pas de destinataire de mail pour la structure (id : " . $agent->structureid() . "), pas d'envoi de mail. \n";
+            if (!is_null($cronuser) and !is_null($drhuser))
+            {
+                if (!in_array($agent->agentid(), $arraydemandeur))
+                {
+                    // CRON G2T envoie le mail à la DRH pour information
+                    echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
+                    $cronuser->sendmail($drhuser,"Un agent a une demande de déclaration de temps partiel mais pas de responsable","L'agent " . $agent->identitecomplete() . " (" . $agent->agentid() . ") a une demande de déclaration de temps partiel mais n'a pas de responsable dans G2T.
+Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
+Merci de contrôler son dossier.\n");
+                    $arraydemandeur[] = $agent->agentid();
+                }
+            }
+        }
+        else
+        {
+            if (in_array($codeinterne, array(structure::MAIL_AGENT_ENVOI_GEST_COURANT,structure::MAIL_RESP_ENVOI_GEST_PARENT,structure::MAIL_RESP_ENVOI_GEST_COURANT))) // On envoie le mail au gestionnaire
+            {
+                if (isset($mail_gest[$destinatairemail->agentid()]))
+                {
+                    $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
+                }
+                else
+                {
+                    $mail_gest[$destinatairemail->agentid()] = 1;
+                }
+            } 
+            elseif (in_array($codeinterne, array(structure::MAIL_AGENT_ENVOI_RESP_COURANT,structure::MAIL_RESP_ENVOI_RESP_PARENT))) // On envoie le mail au responsable
+            {
+                if (isset($mail_resp[$destinatairemail->agentid()]))
+                {
+                    $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
+                }
+                else
+                {
+                    $mail_resp[$destinatairemail->agentid()] = 1;
+                }
+            }
+            else
+            {
+                echo "Problème dans l'envoi de mail - déclarationTP : Le codeinterne n'est pas connu : $codeinterne \n";
+            }
+
+            if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
+            {
+                if (!in_array($agent->structureid(), $arraystruct))
+                {
+                    $structure = new structure($dbcon);
+                    $structure->load($agent->structureid());
+                    echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+                    $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") n'a pas de responsable dans G2T, alors que des déclarations de temps partiels sont sasies.
+Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+Merci de contrôler le dossier RH du responsable.\n");
+                    $arraystruct[] = $agent->structureid();
+                }
+            }
+        }
+        
+/*
         $structure = new structure($dbcon);
         $structure->load($agent->structureid());
 
@@ -143,6 +207,7 @@ Merci de contrôler le dossier RH du responsable.\n");
                 }
             }
         }
+*/            
         unset($structure);
         unset($declaration);
         unset($agent);

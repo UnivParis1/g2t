@@ -29,7 +29,7 @@
         //var_dump(TABCOULEURPLANNINGELEMENT);
     }
 
-    
+/*    
     $sql="SELECT COUNT(*) FROM TELETRAVAIL WHERE STATUT IN ('" . teletravail::OLD_STATUT_ACTIVE . "','" . teletravail::OLD_STATUT_INACTIVE . "')";
     $query = mysqli_query($dbcon, $sql);
     $erreur = mysqli_error($dbcon);
@@ -127,5 +127,41 @@
             }
         }
     }
-    
+*/
+
+    $sql="SELECT COUNT(*) FROM STRUCTURE WHERE DEST_MAIL_AGENT IN ('" . structure::OLD_MAIL_AGENT_ENVOI_RESP_COURANT . "','" . structure::OLD_MAIL_AGENT_ENVOI_GEST_COURANT . "')";
+    $query = mysqli_query($dbcon, $sql);
+    $erreur = mysqli_error($dbcon);
+    if ($erreur != "")
+    {
+        $errlog = "Erreur lors de la selection des anciens statuts de STRUCTURE::DEST_MAIL_AGENT : " . $erreur;
+        echo $errlog . "<br/>";
+        error_log(basename(__FILE__) . " " . $errlog);
+        exit();
+    }
+    $result = mysqli_fetch_row($query);
+    if ($result[0] > 0)
+    {
+        $sql = "UPDATE STRUCTURE SET DEST_MAIL_AGENT = '" . structure::MAIL_AGENT_ENVOI_RESP_COURANT . "' WHERE DEST_MAIL_AGENT = '" . structure::OLD_MAIL_AGENT_ENVOI_RESP_COURANT . "' ";
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "")
+        {
+            $errlog = "Erreur lors du changement de STRUCTURE::DEST_MAIL_AGENT de " . structure::OLD_MAIL_AGENT_ENVOI_RESP_COURANT . " vers " . structure::MAIL_AGENT_ENVOI_RESP_COURANT . " : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $errlog);
+            exit();
+        }
+        
+        $sql = "UPDATE STRUCTURE SET DEST_MAIL_AGENT = '" . structure::MAIL_AGENT_ENVOI_GEST_COURANT . "' WHERE DEST_MAIL_AGENT = '" . structure::OLD_MAIL_AGENT_ENVOI_GEST_COURANT . "' ";
+        $query = mysqli_query($dbcon, $sql);
+        $erreur = mysqli_error($dbcon);
+        if ($erreur != "")
+        {
+            $errlog = "Erreur lors du changement de STRUCTURE::DEST_MAIL_AGENT de " . structure::OLD_MAIL_AGENT_ENVOI_GEST_COURANT . " vers " . structure::MAIL_AGENT_ENVOI_GEST_COURANT . " : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $errlog);
+            exit();
+        }
+    }
 ?>

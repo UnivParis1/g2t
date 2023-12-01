@@ -1577,7 +1577,7 @@ class fonctions
     public function getidmodelteletravail($maxniveau, $agent)
     {
         // echo "<br>On est dans le cas d'un niveau $maxniveau<br>";
-        $resp_n2 = $agent->getresponsable_niveau2();
+        $resp_n2 = $agent->getsignataire_niveau2();
 
         if ($maxniveau == 4 and $resp_n2===false)
         {
@@ -2678,30 +2678,35 @@ class fonctions
     {
 
         $maxniveau = 0;
-        $structid = $agent->structureid();
-        $struct = new structure($this->dbconnect);
-        $struct->load($structid);
-        $code = null;
-        if ($struct->responsable()->agentid() == $agent->agentid())
+        $arraysignataire = array();
+        $resp = $agent->getsignataire(null,$respstruct,$codeinterne);
+        if (!is_null($resp) and ($resp!==false))
         {
-            $resp = $struct->resp_envoyer_a($code);
+            $arraysignataire[$resp->agentid()] = $resp;
         }
-        else
+        if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
         {
-            $resp = $struct->agent_envoyer_a($code);
+            $respsiham = $respstruct->responsablesiham();
+            if ($respsiham->mail() . "" != "")
+            {
+                $arraysignataire[$respsiham->agentid()] = $respsiham;                
+            }
         }
-        error_log(basename(__FILE__) . " " . $this->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-        if ($resp->agentid() == SPECIAL_USER_IDCRONUSER)
+        if (isset($arraysignataire[SPECIAL_USER_IDCRONUSER]))
+        {
+            unset($arraysignataire[SPECIAL_USER_IDCRONUSER]);
+        }
+        if (count($arraysignataire)==0)
         {
             $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
         }
         else
         {
-            $params['recipientEmails'] = array
-            (
-                "1*" . $agent->ldapmail() => "1*" . $agent->ldapmail(),
-                "2*" . $resp->mail() => "2*" . $resp->mail()
-            );
+            $params['recipientEmails']["1*" . $agent->ldapmail()] = "1*" . $agent->ldapmail();
+            foreach($arraysignataire as $resp)
+            {
+                $params['recipientEmails']["2*" . $resp->mail()] = "2*" . $resp->mail();
+            }
 
             $constantename = 'CETSIGNATAIRE';
             $signataireliste = '';
@@ -2804,40 +2809,55 @@ class fonctions
     {
 
         $maxniveau = 0;
-        $resp = $agent->getresponsable();
-        if (is_null($resp) or ($resp===false))
-/*
-        $structid = $agent->structureid();
-        $struct = new structure($this->dbconnect);
-        $struct->load($structid);
-        $code = null;
-        if ($struct->responsable()->agentid() == $agent->agentid())
+        $arraysignataire = array();
+        $resp = $agent->getsignataire(null,$respstruct,$codeinterne);
+        if (!is_null($resp) and ($resp!==false))
         {
-            $resp = $struct->resp_envoyer_a($code);
+            $arraysignataire[$resp->agentid()] = $resp;
         }
-        else
+        if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
         {
-            $resp = $struct->agent_envoyer_a($code);
+            $respsiham = $respstruct->responsablesiham();
+            if ($respsiham->mail() . "" != "")
+            {
+                $arraysignataire[$respsiham->agentid()] = $respsiham;                
+            }
         }
-        error_log(basename(__FILE__) . " " . $this->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-        if ($resp->agentid() == SPECIAL_USER_IDCRONUSER)
- */
+        if (isset($arraysignataire[SPECIAL_USER_IDCRONUSER]))
+        {
+            unset($arraysignataire[SPECIAL_USER_IDCRONUSER]);
+        }
+        if (count($arraysignataire)==0)
         {
             $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
         }
         else
         {
-            $params['recipientEmails'] = array
-            (
-                "1*" . $agent->ldapmail() => "1*" . $agent->ldapmail(),
-                "2*" . $resp->mail() => "2*" . $resp->mail()
-            );
+            $params['recipientEmails']["1*" . $agent->ldapmail()] = "1*" . $agent->ldapmail();
+            foreach($arraysignataire as $resp)
+            {
+                $params['recipientEmails']["2*" . $resp->mail()] = "2*" . $resp->mail();
+            }
 
             ////////////////////////////////////////////////////
             // On cherche le responsable n+2 de l'agent
-            $responsable_n2 = $agent->getresponsable_niveau2();
+            $arraysignataire_n2 = array();
+            $responsable_n2 = $agent->getsignataire_niveau2($respstruct,$codeinterne);
+            if (!is_null($responsable_n2) and ($responsable_n2!==false))
+            {
+                $arraysignataire_n2[$responsable_n2->agentid()] = $responsable_n2;
+            }
+            if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+            {
+                $respsiham_n2 = $respstruct->responsablesiham();
+                if ($respsiham_n2->mail() . "" != "")
+                {
+                    $arraysignataire_n2[$respsiham_n2->agentid()] = $respsiham_n2;                
+                }
+            }
+
             //var_dump($responsable_n2);
-            if ($responsable_n2 === false)
+            if (count($arraysignataire_n2)==0)
             {
                 // On n'a pas trouvé de responsable n+2
                 $constantename = 'TELETRAVAILSIGNATAIRE';
@@ -2900,14 +2920,17 @@ class fonctions
                         {
                             ///////////////////////////////////////////////////
                             // Si il y a un responsable de niveau 2 défini
-                            if ($responsable_n2 === false)
+                            if (count($arraysignataire_n2)==0)
                             {
                                 //echo "Pas possible de trouver le n+2 de " . $agent->identitecomplete() . "<br><br>";
                             }
                             else
                             {
-                                //echo "Le responsable n+2 de " . $agent->identitecomplete() . " est " . $topresponsable->identitecomplete() . "<br><br>";
-                                $params['recipientEmails'][$niveau . "*" . $responsable_n2->mail()] = $niveau . "*" . $responsable_n2->mail();
+                                foreach ($arraysignataire_n2 as $responsable_n2)
+                                {
+                                    //echo "Le responsable n+2 de " . $agent->identitecomplete() . " est " . $topresponsable->identitecomplete() . "<br><br>";
+                                    $params['recipientEmails'][$niveau . "*" . $responsable_n2->mail()] = $niveau . "*" . $responsable_n2->mail();
+                                }
                             }
                             ////////////////////////////////////////////////////
                         }
@@ -3595,7 +3618,7 @@ class fonctions
                         if ($sendmailtoresp)
                         {
                             error_log(basename(__FILE__) . $this->stripAccents(" On va envoyer un mail au responsable car on a annulé/refusé une convention télétravail (id G2T = " . $teletravail->teletravailid() . ")"));
-                            $resp = $agent->getresponsable();
+                            $resp = $agent->getsignataire();
                             $cronuser = new agent($this->dbconnect);
                             $cronuser->load(SPECIAL_USER_IDCRONUSER);
                             $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $agent->identitecomplete(), "Une demande de convention de télétravail pour " . $agent->identitecomplete() . " a été annulée/refusée.<br>"

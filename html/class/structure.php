@@ -9,8 +9,10 @@ class structure
     public const MAIL_RESP_ENVOI_GEST_PARENT = "2";
     public const MAIL_RESP_ENVOI_GEST_COURANT = "3";
     
-    public const MAIL_AGENT_ENVOI_RESP_COURANT = "1";
-    public const MAIL_AGENT_ENVOI_GEST_COURANT = "2";
+    public const OLD_MAIL_AGENT_ENVOI_RESP_COURANT = "1";
+    public const OLD_MAIL_AGENT_ENVOI_GEST_COURANT = "2";
+    public const MAIL_AGENT_ENVOI_RESP_COURANT = "4";
+    public const MAIL_AGENT_ENVOI_GEST_COURANT = "5";
 
     private $dbconnect = null;
 
@@ -616,12 +618,26 @@ class structure
                 $errlog = "Structure->agent_envoyer_a : Le codeinterne est NULL";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else {
+            } 
+            else 
+            {
+                // On vérifie qu'il n'y a pas d'ancienne valeur à écrire
+                // Si oui, on les translate vers les nouvelles constantes
+                switch ($codeinterne)
+                {
+                    case structure::OLD_MAIL_AGENT_ENVOI_GEST_COURANT :
+                        $codeinterne = structure::MAIL_AGENT_ENVOI_GEST_COURANT;
+                        break;
+                    case structure::OLD_MAIL_AGENT_ENVOI_RESP_COURANT :
+                        $codeinterne = structure::MAIL_AGENT_ENVOI_RESP_COURANT;
+                        break;
+                }
                 $sql = "UPDATE STRUCTURE SET DEST_MAIL_AGENT=? WHERE STRUCTUREID = ?";
                 $params = array($codeinterne,$this->structureid);
                 $query = $this->fonctions->prepared_query($sql, $params);
                 $erreur = mysqli_error($this->dbconnect);
-                if ($erreur != "") {
+                if ($erreur != "") 
+                {
                     $errlog = "Structure->agent_envoyer_a (UPDATE) : " . $erreur;
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));

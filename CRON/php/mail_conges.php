@@ -76,24 +76,14 @@ Merci de contrôler son dossier.\n");
             }
             continue;
         }
-        
-        $structure = new structure($dbcon);
-        $structure->load($affectation->structureid());
 
-        // Si ce n'est pas le responsable de la structure qui a fait la demande
-        // => C'est un agent
-        // On regarde à qui on doit envoyer la demande de congés pour sa structure
-        $responsable = $structure->responsable();
-        if (is_null($responsable))
+        $destinatairemail = $demandeur->getsignataire(null,$structresp,$codeinterne);
+        if (is_null($destinatairemail) or $destinatairemail===false)
         {
-            // S'il n'y a pas de responsable => 
-            //  - Dans le cas d'un agent on ne peut pas prévenir le responsable
-            //  - Dans le cas du responsable, on est incapable de déterminer que c'est lui le responsable
-            // En théorie ça ne se produit jamais car il y a tjrs un responsable (au pire G2T CRON)
-            echo "Pas de responsable de structure (id : " . $affectation->structureid() . "), pas d'envoi de mail. \n";
-            // On va envoyer un message à la DRH afin d'indiquer qu'un agent a une demande en attente, mais pas de responsable
+            echo "Pas de destinataire de mail pour la structure (id : " . $demandeur->structureid() . "), pas d'envoi de mail. \n";
             if (!is_null($cronuser) and !is_null($drhuser))
             {
+                //var_dump($arraydemandeur);
                 if (!in_array($demandeur->agentid(), $arraydemandeur))
                 {
                     // CRON G2T envoie le mail à la DRH pour information
@@ -103,112 +93,213 @@ Cela est généralement dû à une affectation fonctionnelle manquante dans le d
 Merci de contrôler son dossier.\n");
                     $arraydemandeur[] = $demandeur->agentid();
                 }
+                else
+                {
+                    echo "Agent " . $demandeur->identitecomplete() . " (" . $demandeur->agentid() . ") déjà signalé => Pas de mail d'information à la DRH\n";                    
+                }
             }
         }
-        else {
+        else
+        {
             // Si l'affectation correspondant à la demande est commencée => Sinon on ne dit rien !!!
             if ($fonctions->formatdatedb($affectation->datedebut()) <= $fonctions->formatdatedb($date)) 
             {
-                if ($affectation->agentid() != $responsable->agentid()) 
+                if (in_array($codeinterne, array(structure::MAIL_AGENT_ENVOI_GEST_COURANT,structure::MAIL_RESP_ENVOI_GEST_PARENT,structure::MAIL_RESP_ENVOI_GEST_COURANT))) // On envoie le mail au gestionnaire
                 {
-                    // On est dans le cas d'une demande d'un agent
-                    $destinatairemail = $structure->agent_envoyer_a($codeinterne);
-                    if (! is_null($destinatairemail))
+                    if (isset($mail_gest[$destinatairemail->agentid()]))
                     {
-                        if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT) // On envoie le mail au gestionnaire service courant
-                        {
-                            if (isset($mail_gest[$destinatairemail->agentid()]))
-                                $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
-                            else
-                                $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
-                        }
-                        else // On envoie le mail au responsable service courant
-                        {
-                            if (isset($mail_resp[$destinatairemail->agentid()]))
-                                $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
-                            else
-                                $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
-                            
-                            if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
-                            {
-                                if (!in_array($structure->id(), $arraystruct))
-                                {
-                                    echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
-                                    $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
-Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
-Merci de contrôler le dossier RH du responsable.\n");
-                                    $arraystruct[] = $structure->id();
-                                }
-                            }
-                        }
+                        $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
                     }
                     else
                     {
-                        echo "Impossible de trouver le destinataire du mail d'une demande agent \n";
+                        $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
+                    }
+                } 
+                elseif (in_array($codeinterne, array(structure::MAIL_AGENT_ENVOI_RESP_COURANT,structure::MAIL_RESP_ENVOI_RESP_PARENT))) // On envoie le mail au responsable
+                {
+                    if (isset($mail_resp[$destinatairemail->agentid()]))
+                    {
+                        $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
+                    }
+                    else
+                    {
+                        $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
                     }
                 }
-                else 
+                else
                 {
-                    // On est dans le cas d'une demande d'un responsable de la structure
-                    $destinatairemail = $structure->resp_envoyer_a($codeinterne);
-                    if (! is_null($destinatairemail)) 
+                    echo "Problème dans l'envoi de mail - conges : Le codeinterne n'est pas connu : $codeinterne \n";
+                }
+                if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
+                {
+                    $structureparent = $structresp;
+                    switch ($codeinterne)
                     {
-                        switch ($codeinterne)
-                        {
-                            case structure::MAIL_RESP_ENVOI_RESP_PARENT :
-                                $typesignataire = 'responsable';
-                                $structureparent = $structure->parentstructure();
-                                break;
-                            case structure::MAIL_RESP_ENVOI_GEST_PARENT :
-                                $typesignataire = 'gestionnaire';
-                                $structureparent = $structure->parentstructure();
-                                break;
-                            case structure::MAIL_RESP_ENVOI_GEST_COURANT :
-                                $typesignataire = 'gestionnaire';
-                                $structureparent = $structure;
-                                break;
-                        }
-                        // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
-                        if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 2=Gestionnaire service parent 3=Gestionnaire service courant
-                        {
-                            if (isset($mail_gest[$destinatairemail->agentid()]))
-                                $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',';
-                            else
-                                $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
-                        } 
-                        else // Responsable service parent
-                        {
-                            if (isset($mail_resp[$destinatairemail->agentid()]))
-                                $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
-                            else
-                                $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
-                        }
-                        if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
-                        {
-                            if (!in_array($structure->id(), $arraystruct))
-                            {                                
-                                echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
-                                $corpsmail = "Le responsable de la structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") a une demande à valider. Le signataire doit être le $typesignataire de la structure " . $structureparent->nomlong() . " (" . $structureparent->nomcourt()  . "). Cependant celui-ci n'est pas défini.
-Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+                        case structure::MAIL_RESP_ENVOI_RESP_PARENT :
+                        case structure::MAIL_AGENT_ENVOI_RESP_COURANT :
+                            $typesignataire = 'responsable';
+                            break;
+                        case structure::MAIL_RESP_ENVOI_GEST_COURANT :
+                        case structure::MAIL_RESP_ENVOI_GEST_PARENT :
+                        case structure::MAIL_AGENT_ENVOI_GEST_COURANT :
+                            $typesignataire = 'gestionnaire';
+                            break;
+                    }
+                    
+                    $structure = new structure($dbcon);
+                    $structure->load($affectation->structureid());
+
+                    if (!in_array($structure->id(), $arraystruct))
+                    {
+                        echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de $typesignataire \n";
+                        $corpsmail = "Le $typesignataire de la structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") a une demande à valider. Cependant celui-ci n'est pas défini.
+Dans le cas du responsable, cela est généralement dû à une fonction manquante dans le dossier RH.
 Dans le cas d'un gestionnaire, il faut que le responsable de la structure modifie le paramétrage de la structure dans G2T (Menu responsable/Paramétrage des dossiers et des structures).
 Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G2T.\n";
-                                /*
-                                $corpsmail = "La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
-Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
-Merci de contrôler le dossier RH du responsable.\n";
-                                */
-                                $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure",$corpsmail);
-                                $arraystruct[] = $structure->id();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        echo "Impossible de trouver le destinataire du mail d'une demande responsable \n";
+                        $cronuser->sendmail($drhuser,"Pas de $typesignataire défini pour une structure",$corpsmail);
+                        $arraystruct[] = $structure->id();
                     }
                 }
             }
         }
+        
+        
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//        $structure = new structure($dbcon);
+//        $structure->load($affectation->structureid());
+//
+//        // Si ce n'est pas le responsable de la structure qui a fait la demande
+//        // => C'est un agent
+//        // On regarde à qui on doit envoyer la demande de congés pour sa structure
+//        $responsable = $structure->responsable();
+//        if (is_null($responsable))
+//        {
+//            // S'il n'y a pas de responsable => 
+//            //  - Dans le cas d'un agent on ne peut pas prévenir le responsable
+//            //  - Dans le cas du responsable, on est incapable de déterminer que c'est lui le responsable
+//            // En théorie ça ne se produit jamais car il y a tjrs un responsable (au pire G2T CRON)
+//            echo "Pas de responsable de structure (id : " . $affectation->structureid() . "), pas d'envoi de mail. \n";
+//            // On va envoyer un message à la DRH afin d'indiquer qu'un agent a une demande en attente, mais pas de responsable
+//            if (!is_null($cronuser) and !is_null($drhuser))
+//            {
+//                if (!in_array($demandeur->agentid(), $arraydemandeur))
+//                {
+//                    // CRON G2T envoie le mail à la DRH pour information
+//                    echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
+//                    $cronuser->sendmail($drhuser,"Un agent a une demande de congés/d'absence mais pas de responsable","L'agent " . $demandeur->identitecomplete() . " (" . $demandeur->agentid() . ") a une demande de congés/d'absence mais n'a pas de responsable dans G2T.
+//Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
+//Merci de contrôler son dossier.\n");
+//                    $arraydemandeur[] = $demandeur->agentid();
+//                }
+//            }
+//        }
+//        else {
+//            // Si l'affectation correspondant à la demande est commencée => Sinon on ne dit rien !!!
+//            if ($fonctions->formatdatedb($affectation->datedebut()) <= $fonctions->formatdatedb($date)) 
+//            {
+//                if ($affectation->agentid() != $responsable->agentid()) 
+//                {
+//                    // On est dans le cas d'une demande d'un agent
+//                    $destinatairemail = $structure->agent_envoyer_a($codeinterne);
+//                    if (! is_null($destinatairemail))
+//                    {
+//                        if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT) // On envoie le mail au gestionnaire service courant
+//                        {
+//                            if (isset($mail_gest[$destinatairemail->agentid()]))
+//                                $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',' ;
+//                            else
+//                                $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
+//                        }
+//                        else // On envoie le mail au responsable service courant
+//                        {
+//                            if (isset($mail_resp[$destinatairemail->agentid()]))
+//                                $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
+//                            else
+//                                $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
+//                            
+//                            if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
+//                            {
+//                                if (!in_array($structure->id(), $arraystruct))
+//                                {
+//                                    echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+//                                    $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
+//Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+//Merci de contrôler le dossier RH du responsable.\n");
+//                                    $arraystruct[] = $structure->id();
+//                                }
+//                            }
+//                        }
+//                    }
+//                    else
+//                    {
+//                        echo "Impossible de trouver le destinataire du mail d'une demande agent \n";
+//                    }
+//                }
+//                else 
+//                {
+//                    // On est dans le cas d'une demande d'un responsable de la structure
+//                    $destinatairemail = $structure->resp_envoyer_a($codeinterne);
+//                    if (! is_null($destinatairemail)) 
+//                    {
+//                        switch ($codeinterne)
+//                        {
+//                            case structure::MAIL_RESP_ENVOI_RESP_PARENT :
+//                                $typesignataire = 'responsable';
+//                                $structureparent = $structure->parentstructure();
+//                                break;
+//                            case structure::MAIL_RESP_ENVOI_GEST_PARENT :
+//                                $typesignataire = 'gestionnaire';
+//                                $structureparent = $structure->parentstructure();
+//                                break;
+//                            case structure::MAIL_RESP_ENVOI_GEST_COURANT :
+//                                $typesignataire = 'gestionnaire';
+//                                $structureparent = $structure;
+//                                break;
+//                        }
+//                        // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
+//                        if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+//                        {
+//                            if (isset($mail_gest[$destinatairemail->agentid()]))
+//                                $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] . $demande->id() . ',';
+//                            else
+//                                $mail_gest[$destinatairemail->agentid()] = $demande->id() . ',';
+//                        } 
+//                        else // Responsable service parent
+//                        {
+//                            if (isset($mail_resp[$destinatairemail->agentid()]))
+//                                $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
+//                            else
+//                                $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
+//                        }
+//                        if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
+//                        {
+//                            if (!in_array($structure->id(), $arraystruct))
+//                            {                                
+//                                echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+//                                $corpsmail = "Le responsable de la structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") a une demande à valider. Le signataire doit être le $typesignataire de la structure " . $structureparent->nomlong() . " (" . $structureparent->nomcourt()  . "). Cependant celui-ci n'est pas défini.
+//Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+//Dans le cas d'un gestionnaire, il faut que le responsable de la structure modifie le paramétrage de la structure dans G2T (Menu responsable/Paramétrage des dossiers et des structures).
+//Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G2T.\n";
+//                                /*
+//                                $corpsmail = "La structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") n'a pas de responsable dans G2T, alors que des demandes de congés sont sasies.
+//Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+//Merci de contrôler le dossier RH du responsable.\n";
+//                                */
+//                                $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure",$corpsmail);
+//                                $arraystruct[] = $structure->id();
+//                            }
+//                        }
+//                    }
+//                    else
+//                    {
+//                        echo "Impossible de trouver le destinataire du mail d'une demande responsable \n";
+//                    }
+//                }
+//            }
+//        }
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
         unset($demande);
         unset($structure);
         unset($declarationliste);

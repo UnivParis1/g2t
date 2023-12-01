@@ -120,7 +120,7 @@
         $demande->load($demandeid);
         
         $demandeur = $demande->agent();
-        $resp = $demandeur->getresponsable();
+        $resp = $demandeur->getsignataire();
         if (is_null($resp) or ($resp===false))
         {
             $errlog = "Aucun responsable défini pour " . $demandeur->identitecomplete() . " : Impossible de demander l'annulation.";
