@@ -702,6 +702,19 @@
     
     if (!is_null($agentid))
     {
+        echo "<B>Vérification que l'agent est dans le groupe G2T :</B><br>";
+        if ($agent->isG2tUser())
+        {
+            echo "<label style='background-color : $bgcolor_ok'>L'agent " . $agent->identitecomplete() . " est dans le groupe G2T => Il peut se connecter.</label><br>";
+        }
+        else
+        {
+            echo "<label style='background-color : $bgcolor_erreur'>L'utilisateur " . $agent->identitecomplete() . " n'est pas dans le groupe G2T => Il ne peut pas se connecter.</label><br>";
+        }
+        echo "<br>";
+    }
+    if (!is_null($agentid))
+    {
         echo "<B>Bilan de l'intégration de l'agent dans G2T</B><br>";
         if (!$filemissing)
         {
