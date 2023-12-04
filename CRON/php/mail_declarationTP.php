@@ -119,95 +119,96 @@ Merci de contrôler le dossier RH du responsable.\n");
             }
         }
         
-/*
-        $structure = new structure($dbcon);
-        $structure->load($agent->structureid());
-
-        // Si aucun responsable de structure n'est défini on ne traite pas la déclaration de temps partiel 
-        if (is_null($structure->responsable()))
-        {
-            echo "Pas de responsable de structure (id : " . $structure->id() . "), pas d'envoi de mail. \n";
-            if (!is_null($cronuser) and !is_null($drhuser))
-            {
-                if (!in_array($agent->agentid(), $arraydemandeur))
-                {
-                    // CRON G2T envoie le mail à la DRH pour information
-                    echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
-                    $cronuser->sendmail($drhuser,"Un agent a une demande de déclaration de temps partiel mais pas de responsable","L'agent " . $agent->identitecomplete() . " (" . $agent->agentid() . ") a une demande de déclaration de temps partiel mais n'a pas de responsable dans G2T.
-Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
-Merci de contrôler son dossier.\n");
-                    $arraydemandeur[] = $agent->agentid();
-                }
-            }
-        }
-        else {
-            // Si ce n'est pas le responsable de la structure qui a fait la demande
-            // => C'est un agent
-            // On regarde à qui on doit envoyer la demande de TP pour sa structure
-            if ($agent->agentid() != $structure->responsable()->agentid()) 
-            {
-                // On est dans le cas d'une demande d'un agent
-                $destinatairemail = $structure->agent_envoyer_a($codeinterne);
-                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT) // On envoie le mail au gestionnaire service courant
-                {
-                    if (isset($mail_gest[$destinatairemail->agentid()]))
-                        $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
-                    else
-                        $mail_gest[$destinatairemail->agentid()] = 1;
-                } else // On envoie le mail au responsable service courant
-                {
-                    if (isset($mail_resp[$destinatairemail->agentid()]))
-                        $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
-                    else
-                        $mail_resp[$destinatairemail->agentid()] = 1;
-                }
-                
-                if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
-                {
-                    if (!in_array($structure->id(), $arraystruct))
-                    {
-                        echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
-                        $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") n'a pas de responsable dans G2T, alors que des déclarations de temps partiels sont sasies.
-Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
-Merci de contrôler le dossier RH du responsable.\n");
-                        $arraystruct[] = $structure->id();
-                    }
-                }
-            }        
-            else 
-            {
-                // C'est le responsable de la structure qui a fait la demande
-                $destinatairemail = $structure->resp_envoyer_a($codeinterne);
-                if (! is_null($destinatairemail)) {
-                    // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
-                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 2=Gestionnaire service parent 3=Gestionnaire service courant
-                    {
-                        if (isset($mail_gest[$destinatairemail->agentid()]))
-                            $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
-                        else
-                            $mail_gest[$destinatairemail->agentid()] = 1;
-                    } else // Responsable service parent
-                    {
-                        if (isset($mail_resp[$destinatairemail->agentid()]))
-                            $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
-                        else
-                            $mail_resp[$destinatairemail->agentid()] = 1;
-                    }
-                    if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
-                    {
-                        if (!in_array($structure->id(), $arraystruct))
-                        {
-                            echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
-                            $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") n'a pas de responsable dans G2T, alors que des déclarations de temps partiels sont sasies.
-Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
-Merci de contrôler le dossier RH du responsable.\n");
-                            $arraystruct[] = $structure->id();
-                        }
-                    }
-                }
-            }
-        }
-*/            
+/////////////////////
+//        $structure = new structure($dbcon);
+//        $structure->load($agent->structureid());
+//
+//        // Si aucun responsable de structure n'est défini on ne traite pas la déclaration de temps partiel 
+//        if (is_null($structure->responsable()))
+//        {
+//            echo "Pas de responsable de structure (id : " . $structure->id() . "), pas d'envoi de mail. \n";
+//            if (!is_null($cronuser) and !is_null($drhuser))
+//            {
+//                if (!in_array($agent->agentid(), $arraydemandeur))
+//                {
+//                    // CRON G2T envoie le mail à la DRH pour information
+//                    echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
+//                    $cronuser->sendmail($drhuser,"Un agent a une demande de déclaration de temps partiel mais pas de responsable","L'agent " . $agent->identitecomplete() . " (" . $agent->agentid() . ") a une demande de déclaration de temps partiel mais n'a pas de responsable dans G2T.
+//Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
+//Merci de contrôler son dossier.\n");
+//                    $arraydemandeur[] = $agent->agentid();
+//                }
+//            }
+//        }
+//        else {
+//            // Si ce n'est pas le responsable de la structure qui a fait la demande
+//            // => C'est un agent
+//            // On regarde à qui on doit envoyer la demande de TP pour sa structure
+//            if ($agent->agentid() != $structure->responsable()->agentid()) 
+//            {
+//                // On est dans le cas d'une demande d'un agent
+//                $destinatairemail = $structure->agent_envoyer_a($codeinterne);
+//                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT) // On envoie le mail au gestionnaire service courant
+//                {
+//                    if (isset($mail_gest[$destinatairemail->agentid()]))
+//                        $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
+//                    else
+//                        $mail_gest[$destinatairemail->agentid()] = 1;
+//                } else // On envoie le mail au responsable service courant
+//                {
+//                    if (isset($mail_resp[$destinatairemail->agentid()]))
+//                        $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
+//                    else
+//                        $mail_resp[$destinatairemail->agentid()] = 1;
+//                }
+//                
+//                if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
+//                {
+//                    if (!in_array($structure->id(), $arraystruct))
+//                    {
+//                        echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+//                        $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") n'a pas de responsable dans G2T, alors que des déclarations de temps partiels sont sasies.
+//Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+//Merci de contrôler le dossier RH du responsable.\n");
+//                        $arraystruct[] = $structure->id();
+//                    }
+//                }
+//            }        
+//            else 
+//            {
+//                // C'est le responsable de la structure qui a fait la demande
+//                $destinatairemail = $structure->resp_envoyer_a($codeinterne);
+//                if (! is_null($destinatairemail)) {
+//                    // echo "destinatairemailid = " . $destinatairemail->agentid() . "\n";
+//                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT or $codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 2=Gestionnaire service parent 3=Gestionnaire service courant
+//                    {
+//                        if (isset($mail_gest[$destinatairemail->agentid()]))
+//                            $mail_gest[$destinatairemail->agentid()] = $mail_gest[$destinatairemail->agentid()] + 1;
+//                        else
+//                            $mail_gest[$destinatairemail->agentid()] = 1;
+//                    } else // Responsable service parent
+//                    {
+//                        if (isset($mail_resp[$destinatairemail->agentid()]))
+//                            $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] + 1;
+//                        else
+//                            $mail_resp[$destinatairemail->agentid()] = 1;
+//                    }
+//                    if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
+//                    {
+//                        if (!in_array($structure->id(), $arraystruct))
+//                        {
+//                            echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
+//                            $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") n'a pas de responsable dans G2T, alors que des déclarations de temps partiels sont sasies.
+//Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
+//Merci de contrôler le dossier RH du responsable.\n");
+//                            $arraystruct[] = $structure->id();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//////////////////////////////////////
+        
         unset($structure);
         unset($declaration);
         unset($agent);
