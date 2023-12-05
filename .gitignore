@@ -1,5 +1,10 @@
 /*.sql
 /CRON/cron.bat
+/CRON/cron.sh
+/CRON/php/import_absence.php
+/CRON/php/import_affectation_siham.php
+/CRON/php/import_agent.php
+/CRON/php/import_structure.php
 /CRON/log/
 /CRON/specific/*.php
 !/CRON/specific/*_exemple.php
