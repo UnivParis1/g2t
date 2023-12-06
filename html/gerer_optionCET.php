@@ -155,10 +155,10 @@
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
     
-/*
-    echo "<br>" . print_r($_POST,true);
-    echo "<br><br><br>";
-*/    
+
+//    echo "<br>" . print_r($_POST,true);
+//    echo "<br><br><br>";
+    
     $anneeref = $fonctions->anneeref();
     
     // Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
@@ -360,7 +360,8 @@
         }
     }
     
-    if (!is_null($esignature_delete))
+//    if (!is_null($esignature_delete))
+    if (!is_null($esignatureid_delete))
     {
         // On appelle le WS de eSignature pour annuler la demande 
         // On synchronise ensuite le statut avec le WS G2T et on ajoute le commentaire via l'objet optionCET
@@ -593,10 +594,6 @@
 <?php     
         echo "Création d'une demande d'option sur CET pour " . $agent->identitecomplete() . "<br>";
         //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
-        echo "<form name='creation_option'  method='post' >";
-        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-        echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-         
         $valeur_a = "";
         $valeur_g = "";
         $controleok = true;
@@ -773,7 +770,7 @@
         if (count($listid)>0)
         {
             echo "<br>Suppression d'une demande de droit d'option.<br>";
-            echo "<form name='form_esignature_delete'  method='post' >";
+            echo "<form name='form_esignature_delete' id='form_esignature_delete' method='post' >";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
             echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
@@ -790,7 +787,8 @@
             echo "</select>";
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"return confirm('Annuler la demande ?')\">";
+//            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"return confirm('Annuler la demande ?')\">";
+            echo "<input type='submit' class='cancel' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"click_element('esignature_delete'); return false; \">";
             echo "</form>";
             if (isset($error_suppr))
             {
@@ -816,6 +814,10 @@
         
         if ($controleok == true)
         {
+            echo "<form name='creation_option'  method='post' >";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+
             echo "<input type=hidden placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
             echo "<input type=hidden placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
             echo "<input type=hidden placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
@@ -876,6 +878,80 @@
         echo $agent->soldecongeshtml("$anneeref");
         echo "<br>";
     }
+?>
+        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
+        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+
+        <dialog id="confirmdialogCET" class="questiondialog">
+          <form method="dialog">
+            <p>
+<?php
+        $type = 'question';
+        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+
+?>
+                <label id='labeltext'>Confirmez vous cette action ?</label>
+            </p>
+            <menu><center>
+              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
+              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+            </center></menu>
+          </form>
+        </dialog>
+        
+        <script>
+            let confirmdialog = document.getElementById('confirmdialogCET');
+            let confirmBtn = document.getElementById('confirmBtn');
+            let labeltext = document.getElementById('labeltext');
+            let cancelBtn = document.getElementById('cancelBtn');        
+    
+            confirmdialog.addEventListener('close', function onClose() {
+//                alert ('On va close');
+                if (confirmdialog.returnValue!=='cancel')
+                {
+//                    alert('L id est ' + confirmBtn.value);
+                    // L'id du boutton en cours est dans la propertie value du bouton confirm
+//                    var submit_button = document.getElementById(confirmBtn.value);
+////                    alert('Le button = ' + submit_button.id);
+//                    submit_button.tagname = 'OK';
+//                    submit_button.value = 'yes';
+//                    submit_button.click();
+
+                    var submit_form = document.getElementById('form_esignature_delete');
+//                    alert('submit_form = ' + submit_form.id);
+                    submit_form.submit();
+                }
+            });
+
+            var click_element = function(elementid)
+            {
+                if (typeof confirmdialog.showModal === "function") {
+                    var submit_button = document.getElementById(elementid);
+                    if (submit_button.classList.contains("cancel"))
+                    {
+                        labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+                    }
+                    else
+                    {
+                        labeltext.innerHTML = 'Confirmez vous cette action ? ';
+                    }
+                    cancelBtn.textContent = "Non";
+                    cancelBtn.hidden = false;
+                    confirmBtn.textContent = "Oui";
+                    confirmBtn.hidden = false;
+//                    confirmBtn.value = elementid;
+                    confirmdialog.showModal();
+                }        
+                else {
+                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                }
+            };
+        </script>
+<?php
     
 ?>
 

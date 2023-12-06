@@ -168,9 +168,10 @@
 	echo "La base de l'URL du serveur eSignature est : " .$eSignature_url . " id du modele " .$id_model. "<br>";
 
     echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
-    echo "<br>" . print_r($_POST,true);
-    //echo "<br><br><br>";
-*/
+ */
+//    echo "<br>" . print_r($_POST,true);
+//    echo "<br><br><br>";
+
     
     // Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
     if (is_null($agentid) and $mode == 'rh')
@@ -216,7 +217,8 @@
     	$agent->synchroCET();
     }
     
-    if (isset($_POST['annuler_demande']))
+//    if (isset($_POST['annuler_demande']))
+    if (isset($_POST['esignatureid_annule']))
     {
         $errlog = '';
         $esignatureid_annule = $_POST['esignatureid_annule'];
@@ -613,12 +615,14 @@
             elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
             {
                 echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
-                /*echo "Souhaitez-vous annuler la demande ? <br>";
-                echo "<form name='annuler_alimentation'  method='post' >";
-                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-                echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-                echo "<input type='submit' name='annule_demande' id='annule_demande' value='Annuler' onclick=\"return confirm('Annuler la demande d\'alimentation du CET ?')\">";
-                echo "</form>";*/
+                /*
+//                echo "Souhaitez-vous annuler la demande ? <br>";
+//                echo "<form name='annuler_alimentation'  method='post' >";
+//                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+//                echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+//                echo "<input type='submit' name='annule_demande' id='annule_demande' value='Annuler' onclick=\"return confirm('Annuler la demande d\'alimentation du CET ?')\">";
+//                echo "</form>";
+                */
 			
             }
             elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
@@ -780,7 +784,7 @@
                         if (sizeof($listid) != 0)
                         {
                             echo "Annulation d'une demande d'alimentation.<br>";
-                            echo "<form name='form_esignature_annule'  method='post' >";
+                            echo "<form name='form_esignature_annule' id='form_esignature_annule' method='post' >";
                             echo "<input type='hidden' name='userid' value='" . $userid . "'>";
                             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
                             echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
@@ -797,13 +801,15 @@
                             echo "</select>";
                             echo "<br><br>";
                             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-                            echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
-                            echo "</form>";
+//                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
+                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"click_element('annuler_demande'); return false; \">";
+//                            echo "<button class='cancel' name='annuler_demande' id='annuler_demande' onclick='alert(\"plouf\"); if (this.tagname!=\"OK\") {alert(\"truc\"); click_element(\"annuler_demande\"); alert(\"toto\"); return false; } alert(\"zozo\");'>Annuler la demande</button>";
                             if (isset($error_suppr))
                             {
                                 echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
                             }
                             echo "<br>";
+                            echo "</form>";
                         }
                     }
                     else
@@ -823,12 +829,90 @@
         }
         else 
         {
-        echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car une demande de droit d'option est en cours ou validée.");
+            if (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
+            {
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Annulation de demande d'alimentation impossible car une demande de droit d'option est en cours ou validée.");
+            }
         }
 
         echo $agent->afficheAlimCetHtml();
         echo $agent->soldecongeshtml($anneeref + 1);
     }
+
+?>
+        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
+        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+
+        <dialog id="confirmdialogCET" class="questiondialog">
+          <form method="dialog">
+            <p>
+<?php
+        $type = 'question';
+        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+
+?>
+                <label id='labeltext'>Confirmez vous cette action ?</label>
+            </p>
+            <menu><center>
+              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
+              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+            </center></menu>
+          </form>
+        </dialog>
+        
+        <script>
+            let confirmdialog = document.getElementById('confirmdialogCET');
+            let confirmBtn = document.getElementById('confirmBtn');
+            let labeltext = document.getElementById('labeltext');
+            let cancelBtn = document.getElementById('cancelBtn');        
+    
+            confirmdialog.addEventListener('close', function onClose() {
+//                alert ('On va close');
+                if (confirmdialog.returnValue!=='cancel')
+                {
+//                    alert('L id est ' + confirmBtn.value);
+                    // L'id du boutton en cours est dans la propertie value du bouton confirm
+//                    var submit_button = document.getElementById(confirmBtn.value);
+////                    alert('Le button = ' + submit_button.id);
+//                    submit_button.tagname = 'OK';
+//                    submit_button.value = 'yes';
+//                    submit_button.click();
+
+                    var submit_form = document.getElementById('form_esignature_annule');
+//                    alert('submit_form = ' + submit_form.id);
+                    submit_form.submit();
+                }
+            });
+
+            var click_element = function(elementid)
+            {
+                if (typeof confirmdialog.showModal === "function") {
+                    var submit_button = document.getElementById(elementid);
+                    if (submit_button.classList.contains("cancel"))
+                    {
+                        labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+                    }
+                    else
+                    {
+                        labeltext.innerHTML = 'Confirmez vous cette action ? ';
+                    }
+                    cancelBtn.textContent = "Non";
+                    cancelBtn.hidden = false;
+                    confirmBtn.textContent = "Oui";
+                    confirmBtn.hidden = false;
+//                    confirmBtn.value = elementid;
+                    confirmdialog.showModal();
+                }        
+                else {
+                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                }
+            };
+        </script>
+<?php
     
 ?>
 
