@@ -122,13 +122,13 @@
                 $("#agent").autocompleteUser(
                         '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
-  	    </script>
+  	 </script>
 <?php
 
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
         echo "<br>";
@@ -161,7 +161,6 @@
                     if ($msg_erreur != "") {
                         $msg_erreur = "Création d'un nouveau CET pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom();
                         echo $fonctions->showmessage(fonctions::MSGINFO, $msg_erreur);
-                        //echo "<p style='color: green'>" . $msg_erreur . "</p>";
                         error_log(basename(__FILE__) . " uid : " . $agentid . " " . $msg_erreur);
                         // On force $msg_erreur à "" car on se moque de savoir quelle est l'erreur
                         $msg_erreur = "";
@@ -260,7 +259,6 @@
     if ($msg_erreur != "") 
     {
         echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_erreur");
-        //echo "<p style='color: red'>" . $msg_erreur . "</p><br>";
         error_log(basename(__FILE__) . " " . $msg_erreur);
         $msg_erreur = "";
     }
@@ -297,7 +295,6 @@
             // Il y a eu une erreur sur le chargement du CET ==> On met l'objet cet à NULL
             $cet = null;
             echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_erreur");
-            //echo "<p style='color: red'>" . $msg_erreur . "</p>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msg_erreur));
         } 
         elseif ($msg_bloquant != "") 
@@ -310,7 +307,7 @@
 
         echo "<br>";
         if ($nbrejoursdispo > 0) {
-            echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
+            echo "<span class='ajoutcetbloc'>";
             echo "<form name='frm_ajoutcet'  method='post' >";
             echo "Nombre de jours à ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > déduit du solde " . $soldelibelle . "<br>";
             echo "<br>";
@@ -322,7 +319,9 @@
             echo "<input type='hidden' name='ajoutcet' value='yes'>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             if ($msg_bloquant == "")
-                echo "<input type='submit' value='Soumettre' >";
+            {
+                echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+            }
             echo "</form>";
             echo "</span>";
             echo "<br>";
@@ -337,7 +336,7 @@
             $nbrejoursdispo = (($cet->cumultotal() - $cet->jrspris()));
             if ($nbrejoursdispo > 0) {
                 echo "<br>";
-                echo "<span style='border:solid 1px black; background:lightsteelblue; width:600px; display:block;'>";
+                echo "<span class='supprcetbloc'>";
                 echo "<form name='frm_retraitcet'  method='post' >";
                 echo "Nombre de jours à retirer au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > <br>";
                 // Calcul du nombre de jours disponibles en retrait du CET
@@ -359,7 +358,9 @@
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
 
                 if ($msg_bloquant == "")
-                    echo "<input type='submit' value='Soumettre' >";
+                {
+                    echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+                }
                 echo "</form>";
                 echo "</span>";
             } else {

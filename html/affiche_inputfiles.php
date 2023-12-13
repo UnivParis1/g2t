@@ -114,7 +114,7 @@
     echo "<br>";
     echo "<br>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-    echo "<input type='submit' value='Soumettre'>";
+    echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     echo "<br>";
     echo "<br>";
@@ -142,7 +142,7 @@
         else 
         {
             $xml = simplexml_load_file("$filename");
-            echo "<B>Affichage de l'identité de l'agent <label style='background-color : $bgcolor_erreur'>OBLIGATOIRE</label></B><br>";
+            echo "<B>Affichage de l'identité de l'agent <label class='kobackgroundtext'>OBLIGATOIRE</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
 
@@ -163,7 +163,11 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=6 align=center ><div style='color:#BF3021'>Affichage de l'identité de l'agent " . $agent->identitecomplete() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr >
+                                                      <td class='titresimple' colspan=6 align=center >
+                                                        Affichage de l'identité de l'agent " . $agent->identitecomplete() . "
+                                                      </td>
+                                                    </tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Civilité</th>
@@ -176,7 +180,7 @@
                         $htmltext = $htmltext . "<tbody>";
                         $premiereligne = false;
                     }
-                    $extracolor = " style='background-color : $bgcolor_ok' ";
+                    $extracolor = " class='okbackgroundtext' "; 
                     $identite_trouve = true;
                     $htmltext = $htmltext . "<tr align=center $extracolor >";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$inputagentid</td>";
@@ -209,7 +213,7 @@
         else 
         {
             $xml = simplexml_load_file("$filename");
-            echo "<B>Affichage des absences de l'agent <label style='background-color : $bgcolor_ok'>FACULTATIF</label></B><br>";
+            echo "<B>Affichage des absences de l'agent <label class='okbackgroundtext'>FACULTATIF</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
 
@@ -229,7 +233,9 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=4 align=center ><div style='color:#BF3021'>Affichage des absences de l'agent " . $agent->identitecomplete() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr >
+                                                       <td class='titresimple' colspan=4 align=center >Affichage des absences de l'agent " . $agent->identitecomplete() . "</td>
+                                                    </tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Date début</th>
@@ -269,7 +275,7 @@
         else 
         {
             $xml = simplexml_load_file("$filename");
-            echo "<B>Affichage des fonctions de l'agent (niveau dossier agent) <label style='background-color : $bgcolor_ok'>FACULTATIF</label></B><br>";
+            echo "<B>Affichage des fonctions de l'agent (niveau dossier agent) <label class='okbackgroundtext'>FACULTATIF</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
 
@@ -292,7 +298,7 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center ><div style='color:#BF3021'>Affichage des fonctions de l'agent " . $agent->identitecomplete() . " (niveau dossier agent)</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des fonctions de l'agent " . $agent->identitecomplete() . " (niveau dossier agent)</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Code la fonction</th>
@@ -338,7 +344,7 @@
         else 
         {        
             $xml = simplexml_load_file("$filename");
-            echo "<B>Affichage des structures où l'agent est responsable (niveau UO SIHAM) <label style='background-color : $bgcolor_ok'>FACULTATIF</label></B><br>";
+            echo "<B>Affichage des structures où l'agent est responsable (niveau UO SIHAM) <label class='okbackgroundtext'>FACULTATIF</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
             
@@ -366,7 +372,7 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=8 align=center ><div style='color:#BF3021'>Affichage des structures où l'agent " . $agent->identitecomplete() . " est responsable (niveau UO SIHAM)</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=8 align=center >Affichage des structures où l'agent " . $agent->identitecomplete() . " est responsable (niveau UO SIHAM)</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Code de la structure</th>
                                                       <th class='cellulesimple' >Nom long de la structure</th>
@@ -418,7 +424,7 @@
         else
         {
             $xml = simplexml_load_file("$situationfile");
-            echo "<B>Affichage des situations/activités de l'agent <label style='background-color : $bgcolor_erreur'>OBLIGATOIRE</label></B><br>";
+            echo "<B>Affichage des situations/activités de l'agent <label class='kobackgroundtext'>OBLIGATOIRE</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
 
@@ -440,7 +446,7 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center ><div style='color:#BF3021'>Affichage des situations/activités de l'agent " . $agent->identitecomplete() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des situations/activités de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Numéro de ligne SIHAM</th>
@@ -456,7 +462,7 @@
                     $extracolor = '';
                     if ($fonctions->formatdatedb($datefinformate)>=date('Ymd') and $fonctions->formatdatedb($datedebutformate)<=date('Ymd'))
                     {
-                        $extracolor = " style='background-color : $bgcolor_ok' ";
+                        $extracolor = " class='okbackgroundtext' ";
                         $aff_situation_trouve = true;
                     }
                     $htmltext = $htmltext . "<tr align=center $extracolor>";
@@ -490,7 +496,7 @@
         else
         {
             $xml = simplexml_load_file("$modalitefile");
-            echo "<B>Affichage des modalités de travail de l'agent (quotité) <label style='background-color : $bgcolor_erreur'>OBLIGATOIRE</label></B><br>";
+            echo "<B>Affichage des modalités de travail de l'agent (quotité) <label class='kobackgroundtext'>OBLIGATOIRE</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
 
@@ -512,7 +518,7 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center ><div style='color:#BF3021'>Affichage des modalités de travail (quotité) de l'agent " . $agent->identitecomplete() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des modalités de travail (quotité) de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Numéro de ligne SIHAM</th>
@@ -528,7 +534,7 @@
                     $extracolor = '';
                     if ($fonctions->formatdatedb($datefinformate)>=date('Ymd') and $fonctions->formatdatedb($datedebutformate)<=date('Ymd'))
                     {
-                        $extracolor = " style='background-color : $bgcolor_ok' ";
+                        $extracolor = " class='okbackgroundtext' ";
                         $aff_modalite_trouve = true;
                     }
                     $htmltext = $htmltext . "<tr align=center $extracolor>";
@@ -562,7 +568,7 @@
         else
         {
             $xml = simplexml_load_file("$statutfile");
-            echo "<B>Affichage des statuts de l'agent <label style='background-color : $bgcolor_erreur'>OBLIGATOIRE</label></B><br>";
+            echo "<B>Affichage des statuts de l'agent <label class='kobackgroundtext'>OBLIGATOIRE</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
             
@@ -584,7 +590,7 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center ><div style='color:#BF3021'>Affichage des statuts de l'agent " . $agent->identitecomplete() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des statuts de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Numéro de ligne SIHAM</th>
@@ -600,7 +606,7 @@
                     $extracolor = '';
                     if ($fonctions->formatdatedb($datefinformate)>=date('Ymd') and $fonctions->formatdatedb($datedebutformate)<=date('Ymd'))
                     {
-                        $extracolor = " style='background-color : $bgcolor_ok' ";
+                        $extracolor = " class='okbackgroundtext' ";
                         $aff_statut_trouve = true;
                     }
                     $htmltext = $htmltext . "<tr align=center $extracolor>";
@@ -634,7 +640,7 @@
         else
         {
             $xml = simplexml_load_file("$structurefile");
-            echo "<B>Affichage des affectations fonctionnelles de l'agent <label style='background-color : $bgcolor_erreur'>OBLIGATOIRE</label></B><br>";
+            echo "<B>Affichage des affectations fonctionnelles de l'agent <label class='kobackgroundtext'>OBLIGATOIRE</label></B><br>";
             $htmltext = '';
             $premiereligne = true;
 
@@ -656,7 +662,7 @@
                     {
                         $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center ><div style='color:#BF3021'>Affichage des affectations fonctionnelles de l'agent " . $agent->identitecomplete() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des affectations fonctionnelles de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
                                                       <th class='cellulesimple' >Id de l'agent</th>
                                                       <th class='cellulesimple' >Numéro de ligne SIHAM</th>
@@ -672,7 +678,7 @@
                     $extracolor = '';
                     if ($fonctions->formatdatedb($datefinformate)>=date('Ymd') and $fonctions->formatdatedb($datedebutformate)<=date('Ymd'))
                     {
-                        $extracolor = " style='background-color : $bgcolor_ok' ";
+                        $extracolor = " class='okbackgroundtext' ";
                         $aff_structure_trouve = true;
                     }
                     $htmltext = $htmltext . "<tr align=center $extracolor>";
@@ -705,11 +711,11 @@
         echo "<B>Vérification que l'agent est dans le groupe G2T :</B><br>";
         if ($agent->isG2tUser())
         {
-            echo "<label style='background-color : $bgcolor_ok'>L'agent " . $agent->identitecomplete() . " est dans le groupe G2T => Il peut se connecter.</label><br>";
+            echo "<label class='okbackgroundtext'>L'agent " . $agent->identitecomplete() . " est dans le groupe G2T => Il peut se connecter.</label><br>";
         }
         else
         {
-            echo "<label style='background-color : $bgcolor_erreur'>L'utilisateur " . $agent->identitecomplete() . " n'est pas dans le groupe G2T => Il ne peut pas se connecter.</label><br>";
+            echo "<label class='kobackgroundtext'>L'utilisateur " . $agent->identitecomplete() . " n'est pas dans le groupe G2T => Il ne peut pas se connecter.</label><br>";
         }
         echo "<br>";
     }
@@ -720,16 +726,16 @@
         {
             if (!$identite_trouve or !$aff_situation_trouve or !$aff_modalite_trouve or !$aff_statut_trouve or !$aff_structure_trouve)
             {
-                echo "<B><label style='background-color: $bgcolor_erreur; font-size: large;'>Le dossier de l'agent " . $agent->identitecomplete() . " semble incomplet </label></B></br><br>";
+                echo "<B><label class='kobackgroundtext largefontsize'>Le dossier de l'agent " . $agent->identitecomplete() . " semble incomplet </label></B></br><br>";
             }
             else
             {
-                echo "<B><label style='background-color:$bgcolor_ok; font-size: large;'>Le dossier de l'agent " . $agent->identitecomplete() . " semble complet </label></B></br><br>";
+                echo "<B><label class='okbackgroundtext largefontsize'>Le dossier de l'agent " . $agent->identitecomplete() . " semble complet </label></B></br><br>";
             }
         }
         else
         {
-            echo "<B><label style='background-color: $bgcolor_erreur; font-size: large;'>Au moins un fichier est manquant. Impossible de faire une analyse du dossier.</label></B></br><br>";
+            echo "<B><label class='kobackgroundtext largefontsize'>Au moins un fichier est manquant. Impossible de faire une analyse du dossier.</label></B></br><br>";
         }
     }
 ?>

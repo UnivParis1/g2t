@@ -217,6 +217,7 @@
         //echo "Avant la vérification du circuit => numéro 1 <br>";
         $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
     }
+    //var_dump($maxniveau);
     if (count($taberrorcheckmail) > 0)
     {
         // var_dump("errorcheckmail = $errorcheckmail");
@@ -1064,7 +1065,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";        
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
     elseif (!is_null($agentid) and ($mode!='resp' and $mode!='gestion'))
@@ -1265,7 +1266,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 if ($mode=='gestrh' or $esignatureactive)
                 {
 //                    echo "<td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
-                    echo "<td class='cellulesimple'><center><button class='cancel' type='submit' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
+                    echo "<td class='cellulesimple'><center><button type='submit' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' class='cancel g2tbouton g2tsupprbouton' ";
                     if ($mode=='gestrh' and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE))) // and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
                     {
                         echo " disabled='disabled' ";
@@ -1279,7 +1280,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 }
                 if ($displayPDFbutton and $esignatureactive)
                 {
-                    echo "<td class='cellulesimple'><center><input type='submit' value='Générer le PDF' name='genererpdf[" . $teletravail->teletravailid() . "]' ";
+                    echo "<td class='cellulesimple'><center><input type='submit' value='Générer' name='genererpdf[" . $teletravail->teletravailid() . "]' class='g2tbouton g2tdocumentbouton'";
                     if (trim($teletravail->esignatureid())=='' or trim($teletravail->esignatureurl())=='' or $teletravail->statut() == teletravail::TELETRAVAIL_ANNULE)
                     {
                         echo " disabled='disabled' ";
@@ -1295,7 +1296,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
     	    if (!$disablesubmit and ($mode != ''))
     	    {
-    	       echo "<input type='submit' value='Enr. modif. date' id='modification' name='modification' onclick='if (this.tagname!=\"OK\") {click_element(\"modification\"); return false; }'/>";
+    	       echo "<input type='submit' id='modification' name='modification' class='g2tbouton g2tvalidebouton g2tboutonwidthauto' value='Enr. modif. date' onclick='if (this.tagname!=\"OK\") {click_element(\"modification\"); return false; }'/>";
     	    }
     	    echo "</form>";
 
@@ -1312,14 +1313,14 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
 
 ?>
                 <label id='labeltext'>Confirmez vous cette action ?</label>
             </p>
             <menu><center>
-              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
-              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
             </center></menu>
           </form>
         </dialog>
@@ -1456,7 +1457,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         $formhidden = "";
         $formdisabled = "";
         
-    	echo "<br><HR id='separateurHR' style='width:50px;margin:0px;visibility:hidden;'><br>";
+    	echo "<br><HR id='separateurHR' class='barreseparation'><br>";
 ?>
     <script>
         var tabteletravail = document.getElementById('listeteletravail');
@@ -1652,7 +1653,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<table>";
         echo "<tr>";
     	echo "<td>Date de début : </td>";
-        echo "<td><span style='font-size: larger;' data-tip=" . chr(34) . htmlentities("Ceci est la date de début souhaitée. La date d'effet de la convention ne pourra être antérieure à la date de signature de tous les intervenants.") . chr(34) . "> &#9432; </span></td>";
+        echo "<td><span class='largerfontsize' data-tip=" . chr(34) . htmlentities("Ceci est la date de début souhaitée. La date d'effet de la convention ne pourra être antérieure à la date de signature de tous les intervenants.") . chr(34) . "> &#9432; </span></td>";
     	if ($fonctions->verifiedate($inputdatedebut)) 
         {
     	    $inputdatedebut = $fonctions->formatdate($inputdatedebut);
@@ -1814,7 +1815,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     echo "<span id='warningmedical' class='celinfo resetfont' ><br>Attention : Des documents complémentaires devront être fournis au moment de la signature de la convention de télétravail.</span><br>";
                     echo "Motif de la demande de télétravail pour raison médicale (obligatoire) : <br>";
                     $check = '';
-                    $customstyle = "style='margin-left: 40px; margin-top: 5px; margin-bottom: 5px;'";
+                    $customstyle = "class='motifraisonmedicalteletravail'";
                     if (isset($inputmotifmedical[teletravail::MOTIF_MEDICAL_SANTE]))
                     {
                         $check = ' checked ';
@@ -1897,7 +1898,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo "<div id='divttnormal' $hidden>";
                 echo "<br>";
                 // Ci-dessous : Le tableau pour les temps complets et les TP 90% et 80%
-                echo "<label id='labelmaxjrs' >Jours de télétravail : Vous pouvez déclarer jusqu'à <input type='text' style='border:none;' size=1 readonly id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='$nbjoursmaxteletravailcalcule'></input> jour(s) de télétravail.</label>";
+                echo "<label id='labelmaxjrs' >Jours de télétravail : Vous pouvez déclarer jusqu'à <input type='text' class='noborder' size=1 readonly id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='$nbjoursmaxteletravailcalcule'></input> jour(s) de télétravail.</label>";
                 echo "<table class='tableausimple' id='tabttnormal' ";
                 echo ">";
                 echo "<tr><center>";
@@ -1914,7 +1915,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $fermespan = '';
                     // Si l'agent n'est jamais en TP (semaine paire/impaire et matin/après-midi pour le jour courant)
                     // On affiche le jour complet pour le télétravail
-                    echo "<td class='cellulesimple' style='width: 90px;'";
+                    echo "<td class='cellulesimple widthtd90' ";
                     if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
                     and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
                     {
@@ -1945,7 +1946,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo "<span id='warningmedical' class='celinfo resetfont' ><br>Attention : Des documents complémentaires devront être fournis au moment de la signature de la convention de télétravail.</span><br>";
                 echo "Motif de la demande de télétravail pour raison médicale (obligatoire) : <br>";
                 $check = '';
-                $customstyle = "style='margin-left: 40px; margin-top: 5px; margin-bottom: 5px;'";
+                $customstyle = "class='motifraisonmedicalteletravail'";
                 if (isset($inputmotifmedical[teletravail::MOTIF_MEDICAL_SANTE]))
                 {
                     $check = ' checked ';
@@ -1964,7 +1965,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 }
                 echo "<input type='checkbox' $check name='motifmedical[". teletravail::MOTIF_MEDICAL_AIDANT . "]' $customstyle>Proche aidant</input><br>";
                 
-                echo "<label id='labeljrsmedical' style='margin-top: 10px; display:inline-block;' >Demie-journée de télétravail sur prescription médicale.</label>";
+                echo "<label id='labeljrsmedical' class='gestteletravaillabel' >Demie-journée de télétravail sur prescription médicale.</label>";
                 $tableau_matin = "";
                 $tableau_apresmidi = "";
                 $moment = fonctions::MOMENT_MATIN;
@@ -2101,7 +2102,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         {
             $hiddentext = " hidden='hidden' ";
         }
-        echo "<input type='submit' value='Soumettre' id='creation' name='creation' $hiddentext />";
+        echo "<input type='submit' id='creation' name='creation' class='g2tbouton g2tvalidebouton' value='Enregistrer' $hiddentext />";
         echo "</form>";        
 
         if (isset($formdisabled) and $formdisabled != '')
@@ -2395,19 +2396,19 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             $longueurmaxtexte = $fonctions->logueurmaxcolonne('TELETRAVAIL','ACTIVITETELETRAVAIL');
             echo "Liste des activités télétravaillables (maximum : $longueurmaxtexte caractères et 10 lignes - Reste : <label id='activitetelerestant'>$longueurmaxtexte</label> car.) : <br>";
             ///// ATTENTION : Dans le style du textarea, le height doit être égal à rows x line-height
-            echo "<textarea required class='inputtoreset inputtext' rows='10' cols='200' style='line-height:20px; resize: none;' name='activitetele' id='activitetele' oninput='checktextlength(this,$longueurmaxtexte,\"activitetelerestant\"); '>$activitetele</textarea> <br>";
+            echo "<textarea required class='inputtoreset inputtext commenttextarea' rows='10' cols='200' name='activitetele' id='activitetele' oninput='checktextlength(this,$longueurmaxtexte,\"activitetelerestant\"); '>$activitetele</textarea> <br>";
             $longueurmaxtexte = $fonctions->logueurmaxcolonne('TELETRAVAIL','PERIODEEXCLUSION');
             echo "<br>Liste des périodes d'exclusion du télétravail (maximum : $longueurmaxtexte caractères et 2 lignes - Reste : <label id='periodeexclusionrestant'>$longueurmaxtexte</label> car.) : ";
             echo "<br><strong>Laissez cette zone vide si l'agent n'est pas concerné.</strong>";
             echo "<br>";
             ///// ATTENTION : Dans le style du textarea, le height doit être égal à rows x line-height
-            echo "<textarea class='inputtoreset inputtext' rows='2' cols='200' style='line-height:20px; resize: none;' name='periodeexclusion' id='periodeexclusion' oninput='checktextlength(this,$longueurmaxtexte,\"periodeexclusionrestant\"); '>$periodeexclusion</textarea> <br>";
+            echo "<textarea class='inputtoreset inputtext commenttextarea' rows='2' cols='200' name='periodeexclusion' id='periodeexclusion' oninput='checktextlength(this,$longueurmaxtexte,\"periodeexclusionrestant\"); '>$periodeexclusion</textarea> <br>";
             $longueurmaxtexte = $fonctions->logueurmaxcolonne('TELETRAVAIL','PERIODEADAPTATION');
             echo "<br>Durée de la période d'adaptation  (maximum : $longueurmaxtexte caractères et 1 ligne - Reste : <label id='periodeadaptrestant'>$longueurmaxtexte</label> car.): ";
             echo "<br><strong>Laissez cette zone vide si l'agent n'est pas concerné.</strong>";
             echo "<br>";
             ///// ATTENTION : Dans le style du textarea, le height doit être égal à rows x line-height
-            echo "<textarea class='inputtoreset inputtext' rows='1' cols='200' style='line-height:20px; resize: none;' name='periodeadaptation' id='periodeadaptation' oninput='checktextlength(this,$longueurmaxtexte,\"periodeadaptrestant\"); '>$periodeadaptation</textarea> <br>";
+            echo "<textarea class='inputtoreset inputtext commenttextarea' rows='1' cols='200' name='periodeadaptation' id='periodeadaptation' oninput='checktextlength(this,$longueurmaxtexte,\"periodeadaptrestant\"); '>$periodeadaptation</textarea> <br>";
             echo "</div>";
             $hidden = '';
             if ($statutresp."" != teletravail::TELETRAVAIL_REFUSE)
@@ -2418,7 +2419,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             echo $fonctions->showmessage(fonctions::MSGWARNING, "La saisie du motif est obligatoire.");
             $longueurmaxtexte = $fonctions->logueurmaxcolonne('TELETRAVAIL','COMMENTAIRE');
             echo "Motif du refus (maximum : $longueurmaxtexte caractères et 4 lignes - Reste : <label id='motifrefusrestant'>$longueurmaxtexte</label> car.) : <br>";
-            echo "<textarea required class='inputtoreset inputtext' rows='4' cols='80' style='line-height:20px; resize: none;' name='motifrefus' id='motifrefus' oninput='checktextlength(this,$longueurmaxtexte,\"motifrefusrestant\"); '>$motifrefus</textarea> <br>";
+            echo "<textarea required class='inputtoreset inputtext commenttextarea' rows='4' cols='80' name='motifrefus' id='motifrefus' oninput='checktextlength(this,$longueurmaxtexte,\"motifrefusrestant\"); '>$motifrefus</textarea> <br>";
             echo "</div>";
             echo "<br>";
             echo "<br>";
@@ -2428,7 +2429,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'></input>";
             echo "<input type='hidden' id='idconvention' name='idconvention' value=''></input>";
             echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
-            echo "<input type='submit' name='but_resp_statut' id='but_resp_statut' value='Soumettre'></input>";
+            echo "<input type='submit' name='but_resp_statut' id='but_resp_statut' class='g2tbouton g2tvalidebouton' value='Enregistrer' ></input>";
             echo "</form>";
 ?>
             <script>

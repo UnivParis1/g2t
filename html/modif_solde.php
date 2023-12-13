@@ -177,8 +177,6 @@
     echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
     echo $fonctions->showmessage(fonctions::MSGINFO, $info);
     
-    //echo "<P style='color: red'>" . $msg_erreur . "</P>";
-    //echo "<P style='color: green'>" . $info . "</P>";
     
     //print_r($_POST); echo "<br>";
 
@@ -227,7 +225,7 @@
     }
     echo "</select>";
     echo "<br><br>";
-    echo "<input type='submit' value='Soumettre' >";
+    echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
 
     if (!is_null($agent)) {
@@ -238,7 +236,7 @@
         echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "' class='agent' /> ";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
-        echo "<input type='submit' id='calculdroit' name='calculdroit' value='Recalculer' >";
+        echo "<input type='submit' id='calculdroit' name='calculdroit' class='g2tbouton g2tvalidebouton' value='Recalculer' >";
         echo "</form>";
         echo "<br><br>";
 /*
@@ -253,7 +251,7 @@
                 
         echo "Le solde initial de l'agent pour $anneeref / " . ($anneeref+1) . " devrait être de : " . $solde_agent . "<br>";
 */        
-        echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
+        echo "<span class='ajoutcongesbloc'>";
         //echo "Informations sur les congés de " . $agent->identitecomplete() . "<br>";
         $solde = new solde($dbcon);
         $msg_erreur = $solde->load($agent->agentid(),"ann" . substr($anneeref,-2,2));
@@ -278,7 +276,7 @@
             echo "Veuillez saisir le nouveau droit pris pour " . $solde->typelibelle() . " : ";
             echo "<input type='text' name='droitpris' value='" . $solde->droitpris() .  "'>";
             echo "<br><br>";
-            echo "<input type='submit' id='newsolde' name='newsolde' value='Soumettre' >";
+            echo "<input type='submit' id='newsolde' name='newsolde' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
             echo "</form>";
         }
         echo "</span>";

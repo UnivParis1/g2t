@@ -12,6 +12,8 @@
 !/INPUT_FILES_V3/*_exemple.xml
 /INPUT_FILES_V3/*/
 /html/includes/dbconnection.php
+/html/style/images/archives/
+/html/style/obsolete/
 /composer.lock
 /config/*.php
 !/config/*_exemple.php

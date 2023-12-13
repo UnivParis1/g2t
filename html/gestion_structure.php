@@ -175,7 +175,6 @@
             if ($msgerreur != "") {
                 $errlog = "Pas de sauvegarde car " . $msgerreur;
                 echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
-                //echo "<p style='color: red'>" . $errlog . "</p><br>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } else {
                 // Tout s'est bien passé
@@ -230,7 +229,7 @@
         echo " checked ";
     }
     echo ">Afficher les structures fermées<br>";
-    echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
+    echo " <input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     echo "<br>";
 
@@ -297,7 +296,7 @@
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
-                echo "<b style='font-size:18px;'>&nbsp;$sign</b>";
+                echo "<b class='symbolegestionstruct'>&nbsp;$sign</b>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
                     echo "(Date fermeture : " . $struct->datecloture() . ") ";
@@ -315,7 +314,7 @@
                     echo $gestionnaire->identitecomplete();
                     if (!$gestionnaire->isG2tUser())
                     {
-                        $style = " style='background-color : #f5b7b1 ;' ";
+                        $style = " class='kobackgroundtext' ";
                     }
                 }
                 echo "' size=40 $style />";
@@ -340,7 +339,7 @@
                 $style = '';
                 if (!$responsable->isG2tUser())
                 {
-                    $style = " style='background-color : #f5b7b1 ;' ";
+                    $style = " class='kobackgroundtext' ";
                 }
                 echo " size=40 $style/>";
                 //
@@ -432,7 +431,7 @@
                 echo "</tr>";
                 if ($infoagent != "")
                 {
-                    echo "<tr><td><b><div style='color:#6c3483'>$infoagent</div></b></td></tr>";
+                    echo "<tr><td><b><div class='infogeststruct'>$infoagent</div></b></td></tr>";
                 }
                 echo "<tr><td height=15></td></tr>";
             }
@@ -505,7 +504,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='structureid' value='" . $structureid . "'>";
-        echo "<input type='submit' name= 'Modif_struct' value='Enregistrer les modifications' >";
+        echo "<input type='submit' name= 'Modif_struct' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
         echo "</form>";
         echo "<br>";
     }

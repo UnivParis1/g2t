@@ -81,7 +81,7 @@
 	<br>
 	<!--  <input type='text' name='userid' >
  -->
-	<input type='submit' value='Se faire passer pour...'>
+	<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant'>
 </form>
 
 </body>

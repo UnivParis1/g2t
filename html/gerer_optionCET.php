@@ -194,7 +194,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
 
@@ -343,7 +343,6 @@
                         error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
                     }
                     echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur (création) = $erreur");
-                    //echo "<b><p style='color:red';>Erreur (création) = $erreur <br></p></b>";
                 }
                 else
                 {
@@ -788,7 +787,7 @@
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
 //            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"return confirm('Annuler la demande ?')\">";
-            echo "<input type='submit' class='cancel' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"click_element('esignature_delete'); return false; \">";
+            echo "<input type='submit' class='cancel g2tbouton g2tsupprbouton' name='esignature_delete' id='esignature_delete' value='Supprimer' onclick=\"click_element('esignature_delete'); return false; \">";
             echo "</form>";
             if (isset($error_suppr))
             {
@@ -818,9 +817,9 @@
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
 
-            echo "<input type=hidden placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-            echo "<input type=hidden placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-            echo "<input type=hidden placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+            echo "<input type=hidden placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly class='inputdataoptionCET' >";
+            echo "<input type=hidden placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=3 readonly class='inputdataoptionCET' >";
+            echo "<input type=hidden placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=3 readonly class='inputdataoptionCET' >";
             
             if ($mode == 'rh')
             {
@@ -833,41 +832,21 @@
             echo "<br>";
             if ($typeagent == 'titu')
             {
-                echo "Nombre de jours à prendre en compte au titre de la RAFP : <input type=text placeholder='Case I' name=valeur_i id=valeur_i size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";   //      <input type=text placeholder='Case I' name=valeur_i id=valeur_i value=$valeur_i size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+                echo "Nombre de jours à prendre en compte au titre de la RAFP : <input type=text placeholder='Case I' name=valeur_i id=valeur_i size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_i class='erroroptionCETlabel'></label>";
                 echo "<br>";
             }
             else
             {
-                echo "<input type='hidden' name=valeur_i id=valeur_i value='0' >"; //<label id=label_i style='color: red;font-weight: bold; margin-left:20px;'></label>";
+                echo "<input type='hidden' name=valeur_i id=valeur_i value='0' >"; 
             }
-            echo "Nombre de jours à indemniser : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_j style='color: red;font-weight: bold; margin-left:20px;'></label>";   //     <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+            echo "Nombre de jours à indemniser : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_j class='erroroptionCETlabel'></label>";
             echo "<br>";
-            echo "Nombre de jours à maintenir sur le CET sous forme de congés : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_k style='color: red;font-weight: bold; margin-left:20px;'></label>";
+            echo "Nombre de jours à maintenir sur le CET sous forme de congés : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly class='inputdataoptionCET' onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_k class='erroroptionCETlabel'></label>";
             echo "<br>";
-            echo "Solde du CET après option : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' ><label id=label_l style='color: red;font-weight: bold; margin-left:20px;'></label>";
-        
-            // On récupère le responsable du service de l'agent - Niveau 2
-            //echo "<br>------------------------------------------------------------- <br>";
-            //$structid = $agent->structureid();
-            //$struct = new structure($dbcon);
-            //$struct->load($structid);
-            //$code = null;
-            //if ($struct->responsable()->agentid() == $agent->agentid())
-            //{
-            //    error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans resp_envoyer_a"));
-            //    $resp = $struct->resp_envoyer_a($code);
-            //}
-            //else
-            //{
-            //    error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" passage dans agent_envoyer_a"));
-            //    $resp = $struct->agent_envoyer_a($code);
-            //}
-            //error_log(basename(__FILE__) . " " . $fonctions->stripAccents(" Le responsable de " . $agent->identitecomplete() . " est "  . $resp->identitecomplete()));
-            //echo "Le responsable de l'agent est " . $resp->identitecomplete() .  " (" .  $resp->mail() . ") <br>";
-
+            echo "Solde du CET après option : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=3 readonly class='inputdataoptionCET' ><label id=label_l class='erroroptionCETlabel'></label>";
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-            echo "<input type='submit' name='cree_option' id='cree_option' value='Soumettre' disabled>";
+            echo "<input type='submit' class='g2tbouton g2tvalidebouton' name='cree_option' id='cree_option' value='Enregistrer' disabled>";
             echo "</form>";
         }
         echo "<br><br>";
@@ -891,14 +870,14 @@
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;";
 
 ?>
                 <label id='labeltext'>Confirmez vous cette action ?</label>
             </p>
             <menu><center>
-              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
-              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
             </center></menu>
           </form>
         </dialog>

@@ -54,37 +54,6 @@
 
     echo "<br>";
 
-/*
-    function affichestructureliste($structure, $niveau = 0)
-    {
-        global $dbcon;
-        global $structureid;
-        global $fonctions;
-        global $showall;
-        // $fonctions = new fonctions($dbcon);
-        if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
-            echo "<option value='" . $structure->id() . "'";
-            if ($structure->id() == $structureid) {
-                echo " selected ";
-            }
-            if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-                echo " style='color:red;' ";
-            }
-            echo ">";
-            for ($cpt = 0; $cpt < $niveau; $cpt ++) {
-                echo "&nbsp;&nbsp;&nbsp;&nbsp;";
-            }
-            echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-            echo "</option>";
-
-            $sousstruclist = $structure->structurefille();
-            foreach ((array) $sousstruclist as $keystruct => $soustruct) {
-                affichestructureliste($soustruct, $niveau + 1);
-            }
-        }
-    }
-*/
-
     //echo "<br>" . print_r($_POST,true) . "<br>";
 
     ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
@@ -128,9 +97,9 @@
         }
         echo "</select>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='previous' value='no'>";
+        echo "<input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "<br>";
 
         if (!is_null($structureid))
@@ -239,7 +208,7 @@
         }
         echo "'>";
         echo "<br>";
-        echo "<input type='submit' name= 'valid_agent' value='Soumettre' >";
+        echo "<input type='submit' name= 'valid_agent' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         // Ligne de séparation
         echo "<hr>";
@@ -384,7 +353,7 @@
         }
         echo "'>";
         echo "<br>";
-        echo "<input type='submit' name= 'valid_agent' value='Soumettre' >";
+        echo "<input type='submit' name= 'valid_agent' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         // Ligne de séparation
         echo "<hr>";

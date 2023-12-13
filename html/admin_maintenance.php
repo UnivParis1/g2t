@@ -85,7 +85,7 @@ Gestion du mode maintenance...
     <INPUT type="radio" name="maintenance" value="on" <?php if (strcasecmp($etat,'n')==0) echo 'checked ' ?>> Activer le mode maintenance <br> 
     <INPUT type="radio" name="maintenance" value="off" <?php if (strcasecmp($etat,'o')==0) echo 'checked ' ?>> Désactiver le mode maintenance <br> 
     <br> 
-    <input type='submit' value='Soumettre'>
+    <input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer'>
 </form>
 
 </body>

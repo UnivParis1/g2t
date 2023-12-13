@@ -1465,7 +1465,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
-    echo "<input type='submit' name='valid_periode' value='Soumettre' >";
+    echo "<input type='submit' name='valid_periode' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
     /////////////////////////////////////////////////////////
@@ -1501,7 +1501,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
-    echo "<input type='submit' name='valid_nbjours' value='Soumettre' >";
+    echo "<input type='submit' name='valid_nbjours' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
     /////////////////////////////////////////////////////////
@@ -1536,7 +1536,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
-    echo "<input type='submit' name='valid_report' value='Soumettre' >";
+    echo "<input type='submit' name='valid_report' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
     ///////////////////////////////////////////////////////////////
@@ -1562,7 +1562,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
-    echo "<input type='submit' name='valid_synchroferies' value='Soumettre' >";
+    echo "<input type='submit' name='valid_synchroferies' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
 ?>
@@ -1621,7 +1621,7 @@
                 	<br>Paramétrage du calendrier de la campagne d'alimentation du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutalimcet()).' - '.$fonctions->formatdate($fonctions->finalimcet());?>)
                 	<table>
         	        	<tr>
-        		       		<td style='padding-left: 30px;'>Date d'ouverture de la campagne d'alimentation :</td>
+        		       		<td class='parampaddingleft'>Date d'ouverture de la campagne d'alimentation :</td>
 
 <?php
     // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
@@ -1658,7 +1658,7 @@
                 				id='<?php echo $calendrierid_deb_alim ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->debutalimcet()) ?>'></td>
         	    		</tr>
             			<tr>
-            				<td style='padding-left: 30px;'>Date de fermeture de la campagne d'alimentation :</td>
+            				<td class='parampaddingleft'>Date de fermeture de la campagne d'alimentation :</td>
                 			<td width=1px><input class="calendrier" type=text name='date_fin_alim'
                 				id='<?php echo $calendrierid_fin_alim ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->finalimcet()) ?>'></td>
         	    		</tr>
@@ -1670,7 +1670,7 @@
                 	<br>Paramétrage du calendrier de la campagne de droit d'option du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutoptioncet()).' - '.$fonctions->formatdate($fonctions->finoptioncet());?>)
                 	<table>
                 		<tr>
-                			<td style='padding-left: 30px;'>Date d'ouverture de la campagne de droit d'option :</td>
+                			<td class='parampaddingleft'>Date d'ouverture de la campagne de droit d'option :</td>
                 		
 <?php
     // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
@@ -1707,7 +1707,7 @@
                 				id='<?php echo $calendrierid_deb_option ?>' size="10" value='<?php echo $fonctions->formatdate($fonctions->debutoptioncet()) ?>'></td>
         	    		</tr>
         	    		<tr>
-            				<td style='padding-left: 30px;'>Date de fermeture de la campagne de droit d'option :</td>
+            				<td class='parampaddingleft'>Date de fermeture de la campagne de droit d'option :</td>
             				<td width=1px><input class="calendrier" type='text' name='date_fin_option'
             					id='<?php echo $calendrierid_fin_option ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->finoptioncet()) ?>'></td>
         	    		</tr>
@@ -1731,7 +1731,7 @@
 ?>
                     <input type='hidden' id='current_tab' name='current_tab' value='tab_cet'>
                     <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
-            		<input type='submit' name='valider_param_cet' id='valider_param_cet' value='Soumettre' <?php echo $disablebuttonsubmit;?>/>
+            		<input type='submit' name='valider_param_cet' id='valider_param_cet' class='g2tbouton g2tvalidebouton' value='Enregistrer' <?php echo $disablebuttonsubmit;?>/>
             </form>
             <br><br>
             <form name="frm_param_cet" method="post">
@@ -1906,8 +1906,8 @@
                       	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
                     	</script>
                     </center>
-                	<div id='div_structureid' hidden>  <!-- style=' width: 300px;' hidden>  -->
-					<select size='1' id='structureid' name='structureid' style='width: 700px;' value=''>
+                	<div id='div_structureid' hidden> 
+					<select size='1' id='structureid' name='structureid' class='selectstructure' value=''>
 					<option value=''>----- Veuillez sélectionner la structure -----</option>
 <?php
                     $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
@@ -1928,8 +1928,8 @@
 ?>
 					</select>
                 	</div>
-                	<div id='div_specialuserid' hidden>  <!-- style=' width: 300px;' hidden>  -->
-					<select size='1' id='specialuserid' name='specialuserid' value='' > <!--  style='width: 300px;' > -->
+                	<div id='div_specialuserid' hidden> 
+					<select size='1' id='specialuserid' name='specialuserid' value='' >
 					<option value=''>----- Veuillez sélectionner un utilisateur spécial -----</option>
 <?php 
                     $tab_specialuser = $fonctions->listeutilisateursspeciaux();
@@ -1990,7 +1990,7 @@
     		<br><br>
             <input type='hidden' id='current_tab' name='current_tab' value='tab_cet'>
             <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
-    		<input type='submit' name='valider_signataire_cet' id='valider_signataire_cet' value='Soumettre' />
+    		<input type='submit' name='valider_signataire_cet' id='valider_signataire_cet' class='g2tbouton g2tvalidebouton' value='Enregistrer' />
             
             </form>
 
@@ -2078,7 +2078,7 @@
     echo "</table>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
-    echo "<br><input type='submit' value='Soumettre' name='modification'/>";
+    echo "<br><input type='submit' name='modification' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
     echo "</form>";
 
     $datedebutindem = "";
@@ -2113,7 +2113,7 @@
 ?>
         <table>
 	        <tr>
-    		    <td style='padding-left: 30px;'>Date de début de l'indemnité de télétravail : </td>
+    		    <td class='parampaddingleft'>Date de début de l'indemnité de télétravail : </td>
 <?php         
         if ($fonctions->verifiedate($datedebutindem)) {
             $datedebutindem = $fonctions->formatdate($datedebutindem);
@@ -2129,7 +2129,7 @@
             	</td>
            </tr>
 	       <tr>
-    		    <td style='padding-left: 30px;'>Date de fin de l'indemnité de télétravail : </td>
+    		    <td class='parampaddingleft'>Date de fin de l'indemnité de télétravail : </td>
 <?php
     	if ($fonctions->verifiedate($datefinindem)) {
     	    $datefinindem = $fonctions->formatdate($datefinindem);
@@ -2146,7 +2146,7 @@
             	</td>
            </tr>
 		   <tr>
-				<td style='padding-left: 30px;'>Montant de l'indemnité télétravail : </td>
+				<td class='parampaddingleft'>Montant de l'indemnité télétravail : </td>
 				<td><input type='text' name='montantnew' value='' maxlength='5' size='5'></td>
 		   </tr>
 	   </table>
@@ -2154,7 +2154,7 @@
     	echo "<br>";
 	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
-	    echo "<input type='submit' value='Soumettre'  name='creation_indem'/>";
+	    echo "<input type='submit' name='creation_indem' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
 	    echo "</form>";
 	    
 ?>            
@@ -2252,7 +2252,7 @@
         echo "<br><br>";
     	echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
-	    echo "<input type='submit' value='Soumettre'  name='updateinfo_teletravail'/>";
+	    echo "<input type='submit' name='updateinfo_teletravail' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
 ?>        
         </form>
         <br><br>
@@ -2415,8 +2415,8 @@
                   	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
                 </center>
-            	<div id='div_structureid_tele_simple' hidden>  <!-- style=' width: 300px;' hidden>  -->
-				<select size='1' id='structureid_tele_simple' name='structureid_tele_simple' class='selectstructure' style='width: 700px;' value=''>
+            	<div id='div_structureid_tele_simple' hidden> 
+				<select size='1' id='structureid_tele_simple' name='structureid_tele_simple' class='selectstructure' value=''>
 				<option value=''>----- Veuillez sélectionner la structure -----</option>
 <?php
                 $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
@@ -2437,8 +2437,8 @@
 ?>
 				</select>
             	</div>
-            	<div id='div_specialuserid_tele_simple' hidden>  <!-- style=' width: 300px;' hidden>  -->
-				<select size='1' id='specialuserid_tele_simple' name='specialuserid_tele_simple' value='' > <!--  style='width: 300px;' > -->
+            	<div id='div_specialuserid_tele_simple' hidden>
+				<select size='1' id='specialuserid_tele_simple' name='specialuserid_tele_simple' value='' > 
 				<option value=''>----- Veuillez sélectionner un utilisateur spécial -----</option>
 <?php 
                 $tab_specialuser = $fonctions->listeutilisateursspeciaux();
@@ -2666,8 +2666,8 @@
                   	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
                 </center>
-            	<div id='div_structureid_tele_avance' hidden>  <!-- style=' width: 300px;' hidden>  -->
-				<select size='1' id='structureid_tele_avance' name='structureid_tele_avance' class='selectstructure' style='width: 700px;' value=''>
+            	<div id='div_structureid_tele_avance' hidden>
+				<select size='1' id='structureid_tele_avance' name='structureid_tele_avance' class='selectstructure' value=''>
 				<option value=''>----- Veuillez sélectionner la structure -----</option>
 <?php
                 $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
@@ -2688,8 +2688,8 @@
 ?>
 				</select>
             	</div>
-            	<div id='div_specialuserid_tele_avance' hidden>  <!-- style=' width: 300px;' hidden>  -->
-				<select size='1' id='specialuserid_tele_avance' name='specialuserid_tele_avance' value='' > <!--  style='width: 300px;' > -->
+            	<div id='div_specialuserid_tele_avance' hidden> 
+				<select size='1' id='specialuserid_tele_avance' name='specialuserid_tele_avance' value='' > 
 				<option value=''>----- Veuillez sélectionner un utilisateur spécial -----</option>
 <?php 
                 $tab_specialuser = $fonctions->listeutilisateursspeciaux();
@@ -2752,7 +2752,7 @@
     		
             <input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>
             <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
-    		<input type='submit' name='valider_signataire_teletravail' id='valider_signataire_teletravail' value='Soumettre' />
+    		<input type='submit' name='valider_signataire_teletravail' id='valider_signataire_teletravail' class='g2tbouton g2tvalidebouton' value='Enregistrer' />
             
             </form>
 
@@ -2807,7 +2807,7 @@
 ?>        
                     <tr>
                         <td class='cellulesimple'>
-                        	<input id="newuserrh" name="newuserrh" placeholder="Nom et/ou prenom" style='width: 300px;' autofocus/>
+                        	<input id="newuserrh" name="newuserrh" placeholder="Nom et/ou prenom" class='namefieldwidth' autofocus/>
                         	<input type='hidden' id="newiduserrh" name="newiduserrh" class="newuserrh" />
                             <script>
                           	    $( "#newuserrh" ).autocompleteUser(
@@ -2919,7 +2919,7 @@
 		        <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
         		<input type='hidden' id='current_tab' name='current_tab' value='tab_utilisateurs'>
     			<br>
-        		<input type='submit' name='valid_specialuser' value='Soumettre' >
+        		<input type='submit' name='valid_specialuser' class='g2tbouton g2tvalidebouton' value='Enregistrer' >
     		</form>
         </div>
 
@@ -3008,7 +3008,7 @@
 	    <br>
 	    <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
 	    <input type='hidden' id='current_tab' name='current_tab' value='tab_admin'>
-	    <input type='submit' value='Soumettre'  name='modif_adminform'/>
+	    <input type='submit' name='modif_adminform' class='g2tbouton g2tvalidebouton' value='Enregistrer' />
 	    </form>
 	    <br>
 	    <br>

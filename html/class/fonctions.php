@@ -916,7 +916,7 @@ class fonctions
         $tablegende = $this->legende($anneeref,$includeteletravail);
         $htmltext = "";
         $idlegende = "legendehtml_" . rand(1,10000);
-        $htmltext = $htmltext . "<table id='$idlegende' class='legendetableau' ><tbody><tr>";   //  style='height: 12px;'
+        $htmltext = $htmltext . "<table id='$idlegende' class='legendetableau' ><tbody><tr>";
         $index=0;
         foreach ($tablegende as $key => $legende)
         {
@@ -924,7 +924,7 @@ class fonctions
             {
                 if (($index % 5) == 0 and $index>0)
                 {
-                    $htmltext = $htmltext . "</tr><tr>";  //  style='height: 12px;'
+                    $htmltext = $htmltext . "</tr><tr>"; 
                 }
                 $htmltext = $htmltext . "<td class='maincell'><table class='elementlegende'><tbody><tr><td><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span></td><td class='legendetexte' >" . $legende["libelle"] . "</td></tr></tbody></table></td>";
                 //$htmltext = $htmltext . "<td class='maincell'><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span><span class='legendetexte' >" . $legende["libelle"] . "</span></td>";
@@ -2186,7 +2186,7 @@ class fonctions
         }
         else
         {
-            echo "<b style='color: red;' >ERROR time_elapsed : On demande à afficher un compteur qui n'existe pas (cpt $numcpt) </b><br>";
+            echo "<b class='redtext' >ERROR time_elapsed : On demande à afficher un compteur qui n'existe pas (cpt $numcpt) </b><br>";
         }
     }
 
@@ -2446,7 +2446,7 @@ class fonctions
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        $html = $html . "<img class='img". $type ."' src='" . $base64 . "'>";  //"' style='width:100px;height:100px;'>";
+        $html = $html . "<img class='img". $type ."' src='" . $base64 . "'>"; 
         $html = $html . "</td>";
         $html = $html . "<td class='cel" . $type  . " cellmsg'>";
         $html = $html . "$message";
@@ -2842,14 +2842,15 @@ class fonctions
             ////////////////////////////////////////////////////
             // On cherche le responsable n+2 de l'agent
             $arraysignataire_n2 = array();
-            $responsable_n2 = $agent->getsignataire_niveau2($respstruct,$codeinterne);
+            $responsable_n2 = $agent->getsignataire_niveau2($respdurespstruct,$codeinterne);
+            //var_dump($responsable_n2);
             if (!is_null($responsable_n2) and ($responsable_n2!==false))
             {
                 $arraysignataire_n2[$responsable_n2->agentid()] = $responsable_n2;
             }
-            if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+            if ($responsable_n2!==false and ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT))
             {
-                $respsiham_n2 = $respstruct->responsablesiham();
+                $respsiham_n2 = $respdurespstruct->responsablesiham();
                 if ($respsiham_n2->mail() . "" != "")
                 {
                     $arraysignataire_n2[$respsiham_n2->agentid()] = $respsiham_n2;                

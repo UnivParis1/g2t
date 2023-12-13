@@ -715,7 +715,7 @@ class structure
     function responsablesiham()
     {
         if (is_null($this->responsableid) or ($this->responsableid == '')) {
-            $errlog = "<B><div style='color:#FF0000'>Structure->Responsablesiham : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
+            $errlog = "<B><div class='redtext'>Structure->Responsablesiham : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
@@ -735,7 +735,7 @@ class structure
     {
         if (is_null($respid)) {
             if (is_null($this->responsableid) or ($this->responsableid == '')) {
-                $errlog = "<B><div style='color:#FF0000'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
+                $errlog = "<B><div class='redtext'>Structure->Responsable : Le responsable de la structure $this->nomcourt (Identifiant $this->structureid) n'est pas défini !!! </div></B>";
                 //echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
@@ -876,15 +876,15 @@ class structure
                     $nbcolonneaajouter = 1;
                 }
                 $htmltext = $htmltext . "<thead>";
-                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
+                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                 // echo "Nom du mois = " . $monthname . "<br>";
                 $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . "'>" . $monthname . "</td></tr>";
                 // echo "Nbre de jour = " . count($planningservice[$agentid]->planning()) . "<br>";
-                $htmltext = $htmltext . "<tr class='entete'><th class='cellulesimple cellulemultiligne' style='cursor: pointer;'>Agent<span class='sortindicator'> </span></th>";
+                $htmltext = $htmltext . "<tr class='entete'><th class='cellulesimple cellulemultiligne cursorpointer'>Agent<span class='sortindicator'> </span></th>";
                 if ($showstructcolonne)
                 {
-                    $htmltext = $htmltext . "<th class='cellulesimple' style='cursor: pointer;'>Structure<span class='sortindicator'> </span></th>";
+                    $htmltext = $htmltext . "<th class='cellulesimple cursorpointer'>Structure<span class='sortindicator'> </span></th>";
                 }
                 for ($indexjrs = 0; $indexjrs < (count($planningservice[$agentid]->planning()) / 2); $indexjrs ++) {
                     // echo "indexjrs = $indexjrs <br>";
@@ -1161,7 +1161,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                  */
                 // echo 'count(planning) = ' .count($planning) . '<br>';
                 if ($titre_a_ajouter) {
-                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planning) + 1) . " align=center ><div style='color:#BF3021'>Planning des responsables des sous-structures " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
+                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planning) + 1) . " align=center >Planning des responsables des sous-structures " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
                     $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                     // echo "Nom du mois = " . $monthname . "<br>";
                     $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planning) + 1) . "'>" . $monthname . "</td></tr>";
@@ -1233,7 +1233,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // return null;
         $htmltext = "<br>";
         $htmltext = "<table class='tableausimple'>";
-        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center ><div style='color:#BF3021'>Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</div></td></tr>";
+        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
         $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td><td class='cellulesimple'>Convention de télétravail</td></tr>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
@@ -1262,13 +1262,13 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 // echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
                 if ($membre->agentid() != $responsableid) {
                     $htmltext = $htmltext . "<tr>";
-                    $htmltext = $htmltext . "<center><td class='cellulesimple' style='text-align:center;'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
+                    $htmltext = $htmltext . "<center><td class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
                     
                     $complement = new complement($this->dbconnect);
                     $complement->load($membre->agentid(), "REPORTACTIF");
                     if ($complement->valeur() == "")
                         $complement->valeur("n"); // Si le complement n'est pas saisi, alors la valeur est "N" (non)
-                    $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>";
+                    $htmltext = $htmltext . "<td class='cellulesimple centeraligntext'>";
                     if ($pourmodif) {
                         $htmltext = $htmltext . "<select name=report[" . $membre->agentid() . "]>";
                         $htmltext = $htmltext . "<option value='n'";
@@ -1292,7 +1292,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     $htmltext = $htmltext . "<td class='cellulesimple' >";
                     if ($pourmodif)
                     {
-                        $htmltext = $htmltext . "<input type='text' style='text-align:center;' name=enfantmalade[" . $membre->agentid() . "] value='" . intval($complement->valeur()) . "'/>";
+                        $htmltext = $htmltext . "<input type='text' class='centeraligntext' name=enfantmalade[" . $membre->agentid() . "] value='" . intval($complement->valeur()) . "'/>";
                     }
                     else
                     {
@@ -1340,13 +1340,13 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                                 if (($this->fonctions->formatdatedb($convention->datefin()) > date('Ymd')) and ($datefinalerte < date('Ymd')))
                                 {
                                     // On est à moins d'un mois de la fin de la convention ===> On met un marqueur 
-                                    $styletexte = "style='color:#E9A33C;font-weight: bold;'";
+                                    $styletexte = "class='warningfinconvention' ";
                                     $extrainfo = "<span data-tip=" . chr(34) . "Cette convention se termine dans moins d'un mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
                                 }
                                 elseif (($this->fonctions->formatdatedb($convention->datefin()) < date('Ymd')) and ($datefinerreur > date('YMd')))
                                 {
                                     // On est à moins d'un mois de la fin de la convention ===> On met un marqueur
-                                    $styletexte = "style='color:red;font-weight: bold;'";
+                                    $styletexte = "class='alertfinconvention' ";
                                     $extrainfo = "<span data-tip=" . chr(34) . "Cette convention est terminée depuis moins de six mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
                                 }
                             }
@@ -1359,31 +1359,6 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                         $htmltext = $htmltext . $teletravailstring;
                     }
                     $htmltext = $htmltext . "</td>";
-                    
-                    
-                    // // --- Masquage des infos sur le CET
-                    // $cet = new cet($this->dbconnect);
-                    // $msg = $cet->load($membre->agentid());
-                    // $cumultotal = "";
-                    // $datedebut = "";
-                    // if ($msg == "")
-                    // {
-                    // $cumultotal = $cet->cumultotal();
-                    // $datedebut = $cet->datedebut();
-                    // }
-                    // unset($cet);
-                    // // Si on ne modifie rien ou si il y a déja un CET => On affiche en mode lecture seule
-                    // if (($msg == "") or (!$pourmodif))
-                    // {
-                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $cumultotal . "</td></center>";
-                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'>" . $datedebut . "</td></center>";
-                    // }
-                    // else
-                    // {
-                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input type='text' name=cumultotal[" . $membre->agentid() ."] value=''/></td></center>";
-                    // $htmltext = $htmltext . "<td class='cellulesimple' style='text-align:center;'><input class='calendrier' type='text' name=datedebutcet[" . $membre->agentid() ."] value=''/></td></center>";
-                    // }
-                    // // --- Fin masquage des infos sur le CET
                     $htmltext = $htmltext . "</tr>";
                 }
             }

@@ -162,7 +162,6 @@
             if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and $motif == "") {
                 $errlog = "Le motif de l'annulation est obligatoire.";
                 echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
-                //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } else {
                 $demande->statut(demande::DEMANDE_ANNULE);
@@ -171,7 +170,6 @@
                 if ($msgerreur != "") {
                     $errlog = "Pas de sauvegarde car " . $msgerreur;
                     echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
-                    //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 } else {
                     unset($demande);
@@ -215,11 +213,9 @@
                         }
                     }
 
-                    // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                     error_log($fonctions->stripAccents("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut())));
                     echo $fonctions->showmessage(fonctions::MSGINFO,"Votre demande a bien été annulée.");
                     
-                    //echo "<p style='color: green'>Votre demande a bien été annulée!!!</p><br>";
                 }
             }
 //        }
@@ -390,7 +386,7 @@
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
     if ($displaysubmit)
     {
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
     }
     echo "</form>";
 
@@ -407,14 +403,14 @@
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
 
 ?>
                 <label id='labeltext'>Confirmez vous cette action ?</label>
             </p>
             <menu><center>
-              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
-              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
             </center></menu>
           </form>
         </dialog>

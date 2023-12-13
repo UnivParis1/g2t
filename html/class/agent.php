@@ -1219,7 +1219,7 @@ class agent
 	            
 	            // if ($errormsg <> "")
 	            // {
-	            $msg .= "<br><br><p style='font-size:15px;'>La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</p>";
+	            $msg .= "<br><br><p class='fontsize15'>La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</p>";
 	            $msg .= "\r\n";
 	            $msg .= "--$boundary\r\n";
 	            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
@@ -1882,7 +1882,7 @@ class agent
          * $htmltext = $htmltext . " </tr>";
          */
         $htmltext = $htmltext . "      </table>";
-        $htmltext = $htmltext . "<div style='color:#EF4001'>Soldes de congés donnés sous réserve du respect des règles de gestion</div>";
+        $htmltext = $htmltext . "<div class='reglegestiontextcolor'>Soldes de congés donnés sous réserve du respect des règles de gestion</div>";
         $htmltext = $htmltext . "      </center>";
         $htmltext = $htmltext . "</div>";
         $htmltext = $htmltext . "<br>";
@@ -2457,18 +2457,18 @@ const modifymotif = (motif, motifid) =>
         //alert ('checked');
         if (motif.value == '')
         {
-            motif.style.backgroundColor = '#f5b7b1';
+            motif.classList.add('commentobligatoirebackground');
         }
         else
         {
-            motif.style.backgroundColor = '';
+            motif.classList.remove('commentobligatoirebackground');
         }
     }
     else
     {
         motif.disabled = true;
         //alert ('no checked');
-        motif.style.backgroundColor = '';
+        motif.classList.remove('commentobligatoirebackground');
     }
 }
 </script>";
@@ -2498,7 +2498,7 @@ const modifymotif = (motif, motifid) =>
                         {
                             $nbcolonne = 7;
                         }
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=$nbcolonne align=center ><div style='color:#BF3021'>Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
+                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=$nbcolonne align=center >Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
 /*
                         $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
@@ -2509,14 +2509,14 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "</tr>";
 */                                
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' style='cursor: pointer;'>Date de demande <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' style='cursor: pointer;'>Date de début <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' style='cursor: pointer;'>Date de fin <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' style='cursor: pointer;'>Type de demande <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' style='cursor: pointer;'>Nbre jours <span class='sortindicator'> </span></th>";
+                                                      <th class='cellulesimple' class='cursorpointer'>Date de demande <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' class='cursorpointer'>Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' class='cursorpointer'>Date de fin <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' class='cursorpointer'>Type de demande <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple' class='cursorpointer'>Nbre jours <span class='sortindicator'> </span></th>";
                         if (strcasecmp($mode, "agent") == 0)
                         {
-                            $htmltext = $htmltext . "<th class='cellulesimple' style='cursor: pointer;'>Statut<span class='sortindicator'> </span></th>";
+                            $htmltext = $htmltext . "<th class='cellulesimple' class='cursorpointer'>Statut<span class='sortindicator'> </span></th>";
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
                         }
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
@@ -2555,6 +2555,7 @@ const modifymotif = (motif, motifid) =>
                             $htmltext = $htmltext . "   <td class='cellulesimple cellulemultiligne'>" . $demande->commentaire() . "</td>";
 */                           
                         }
+                        $spanend = '';
                         if ((strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "agent") == 0))
                         {
                             $disable = "";
@@ -2562,11 +2563,16 @@ const modifymotif = (motif, motifid) =>
                             {
                                 $disable = " disabled ";
                             }
-                            $htmltext = $htmltext . "<td class='cellulesimple'><input class='cancelbutton' type='submit' $disable name=cancelbutton[" . $demande->id() . "] id=cancelbutton[" . $demande->id() . "] value='Demander l&apos;annulation' onclick='if (this.tagname!=\"OK\") {click_element(\"cancelbutton[" . $demande->id() . "]\"); return false; }'";
+                            $htmltext = $htmltext . "<td class='cellulesimple' "
+                                . " data-title=" . chr(34) . "Votre demande est validée.\nVous devez demander à votre responsable d'annuler votre demande.\nCette solicitation sera faite automatiquement par mail." . chr(34) . ">"
+                                . "<input type='submit' $disable name=cancelbutton[" . $demande->id() . "] id=cancelbutton[" . $demande->id() . "] class='cancelbutton g2tbouton g2tenvoibouton' value='Envoyer' onclick='if (this.tagname!=\"OK\") {click_element(\"cancelbutton[" . $demande->id() . "]\"); return false; }'";
+                            //$spanend = "</span>";
                         }
                         elseif ((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0))
                         {
-                            $htmltext = $htmltext . "<td class='cellulesimple'><input class='cancel' type='submit' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] value='Annuler la demande'  onclick='if (this.tagname!=\"OK\") {click_element(\"cancel[" . $demande->id() . "]\"); return false; }'";
+                            $htmltext = $htmltext . "<td class='cellulesimple' " 
+                                . " data-title=" . chr(34) . "Votre demande n'est pas validée. Vous pouvez annuler votre demande." . chr(34) . ">"
+                                . "<input type='submit' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick='if (this.tagname!=\"OK\") {click_element(\"cancel[" . $demande->id() . "]\"); return false; }'";
                         }
                         else // On est en mode responsable
                         {
@@ -2581,14 +2587,14 @@ const modifymotif = (motif, motifid) =>
                                 }
                             }
                         }
-                        $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' ></input></td>";
+                        $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' ></input> $spanend </td>";
                         if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
                         {
-                            $textareastyle = "style='line-height:20px; resize: none;";
+                            $textareastyle = " class='commenttextarea";
                             $disabletext = " disabled ";
                             if (isset($arraycancel[$demande->id()]))
                             {
-                                $textareastyle = $textareastyle . " style='background-color : #f5b7b1;' ";
+                                $textareastyle = $textareastyle . " commentobligatoirebackground";
                                 $disabletext = "";
                             }
                             $textareastyle = $textareastyle . "'";
@@ -2757,7 +2763,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     if ($todisplay) {
                         if ($premieredemande) {
                             $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
-                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center ><div style='color:#BF3021'>Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</div></td></tr>";
+                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
                             $htmltext = $htmltext . "   <tr align=center>
                                                             <td class='cellulesimple'>Date de demande</td>
                                                             <td class='cellulesimple'>Date de début</td>
@@ -2852,11 +2858,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         $htmltext = $htmltext . "      <select>";
                         $htmltext = $htmltext . "</td>";
                         
-                        $textareastyle = "style='line-height:20px; resize: none;";
+                        $textareastyle = " class='commenttextarea";
                         $disabletext = " disabled ";
                         if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_REFUSE)
                         {
-                            $textareastyle = $textareastyle . " background-color : #f5b7b1;' ";
+                            $textareastyle = $textareastyle . " commentobligatoirebackground";
                             $disabletext = "";
                         }
                         $textareastyle = $textareastyle . "'";

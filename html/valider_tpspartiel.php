@@ -57,7 +57,6 @@
                     // Pas de changement de statut de la demande => On ne sauvegarde rien !!!
                     $errlog = "Le statut de la demande de temps partiel est inchangé, donc pas de sauvegarde.";
                     echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-                    //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 }
                 else
@@ -70,7 +69,6 @@
                     if ($msgerreur != "") {
                         $errlog = "Pas de sauvegarde car " . $msgerreur;
                         echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-                        //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     } else {
                         $pdffilename = $declaration->pdf($user->agentid());
@@ -78,57 +76,12 @@
                         // $agent = new agent($dbcon);
                         // $agent->load($agentid);
                         $user->sendmail($declaration->agent(), "Validation d'un temps-partiel", "La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . mb_strtolower($fonctions->declarationTPstatutlibelle($declaration->statut()),'UTF-8') . ".", $pdffilename);
-                        // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                         error_log("Sauvegarde du temps-partiel " . $declaration->declarationTPid() . " avec le statut " . $declaration->statut());
                     }
                 }
             }
         }
     }
-
-    /*
-     *
-     * //print_r($_POST); echo "<br>";
-     * foreach ($_POST as $key => $value)
-     * {
-     * //echo "key = $key value = $value <br>";
-     * //echo "Substr => " . substr($key, 0, strlen("statut_")) . "<br>";
-     * $position = strpos($key, "_autodeclaid");
-     * if ($position !==FALSE)
-     * {
-     * //echo "On est dans un autodeclaid <br>";
-     * $autodeclaid = $value;
-     * $header = str_replace("_autodeclaid_". $autodeclaid, "", $key);
-     * //echo "header = $header autodeclaid = $autodeclaid <br>";
-     * $statut = $_POST[$header . "_statut_". $autodeclaid];
-     * //echo "statut = $statut <br>";
-     * if ($statut != declarationTP::DECLARATIONTP_ATTENTE and $statut != "")
-     * {
-     * $autodecla = new autodeclaration($dbcon);
-     * //echo "Avant le load... <br>";
-     * $autodecla->load($autodeclaid);
-     * //echo "Apres le load... <br>";
-     * $autodecla->statut($statut);
-     * //echo "Avant le store <br>";
-     * $msgerreur = $autodecla->store();
-     * //echo "Apres le store <br>";
-     * if ($msgerreur != "")
-     * echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
-     * else
-     * {
-     * $pdffilename = $autodecla->pdf($user->id());
-     * $agentid = $autodecla->agentid();
-     * $agent = new agent($dbcon);
-     * $agent->load($agentid);
-     * $user->sendmail($agent,"Validation d'une autodéclaration","Le statut de votre autodéclaration du " . $autodecla->datedebut() . " au " . $autodecla->datefin() . " est " . $autodecla->statut() . ".",$pdffilename);
-     * //echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
-     * error_log("Sauvegarde l'autodeclaration " . $autodecla->id() . " avec le statut " . $autodecla->statut());
-     * }
-     * }
-     * }
-     * }
-     *
-     */
 
     $structlist = null;
     if (strcasecmp($mode, "resp") == 0) {
@@ -183,7 +136,7 @@
                 }
             }
             echo "</table>";
-            echo "<input type='submit' value='Soumettre' />";
+            echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
             echo "<input type='hidden' name='mode' value='" . $mode . "' />";
             echo "</form>";

@@ -125,7 +125,7 @@
     }
     echo "</select>";
     echo "<br><br>";
-    echo "<input type='submit' value='Soumettre' >";
+    echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
 
     if (!is_null($agent)) {

@@ -163,7 +163,7 @@
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
         echo "<br>";
@@ -173,7 +173,6 @@
     {
         $display = $msg_bloquant . "  " . $msg_erreur;
         echo $fonctions->showmessage(fonctions::MSGERROR, $display);
-        //echo "<p style='color: red'>$display</p>";
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($display));
     }
 
@@ -189,7 +188,6 @@
         {
             $msg_bloquant = "Le CET de l'agent " . $agent->identitecomplete() . " existe déjà... Impossible d'en créer un nouveau.";
             echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_bloquant");
-            //echo "<p style='color: red'>" . $msg_bloquant . "</p>";
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msg_bloquant));
         } else {
             echo "Date d'ouverture du CET pour l'agent " . $agent->identitecomplete() . " : <input type=text name=date_ouv_cet id=date_ouv_cet size=12 placeholder='JJ/MM/AAAA'>";
@@ -204,7 +202,7 @@
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         }
         if ($msg_bloquant == "") {
-            echo "<br><input type='submit' value='Soumettre' >";
+            echo "<br><input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
         } else {
             $cet = null;
         }

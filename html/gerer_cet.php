@@ -98,8 +98,25 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-    // print_r($_POST); echo "<br><br>";
+    //print_r($_POST); echo "<br><br>";
 
+    $path = $fonctions->imagepath() . "/chargement.gif";
+    list($width, $height) = getimagesize("$path");
+    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+    $data = file_get_contents($path);
+    $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
+    if (ob_get_contents()!==false)
+    {
+        ob_end_flush();
+        @ob_flush();
+        flush();
+        ob_start();
+    }
+    // Fin du forçage de l'affichage de l'image d'attente
+
+    
     if (strcasecmp($mode, "gestrh") == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
@@ -132,14 +149,14 @@
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' name='btnselectagent' id='btnselectagent' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
         echo "<br>";
         echo "<form name='allagentcet'  method='post' >";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Tous les agents' >";
+        echo "<input type='submit' name='btnallagent' id='btnallagent' class='g2tbouton g2tsuivantbouton g2tboutonwidthauto' value='Tous les agents' >";
         echo "</form>";
         echo "<br>";
         echo "<br>";
@@ -172,15 +189,18 @@
         $optioncet = null;
     }
     
-    
+    $alimCETliste = array();
     echo "Liste des demandes d'alimentation de CET : <br>";
-    if (! is_null($agent)) 
+    if (isset($_POST["btnselectagent"]) or isset($_POST["btnallagent"]))
     {
-        $alimCETliste = $agent->getDemandesAlim('ann' . substr($fonctions->anneeref()-1,2,2));     //getDemandesOption
-    }
-    else
-    {
-        $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));
+        if (! is_null($agent)) 
+        {
+            $alimCETliste = $agent->getDemandesAlim('ann' . substr($fonctions->anneeref()-1,2,2));     //getDemandesOption
+        }
+        else
+        {
+            $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($fonctions->anneeref()-1,2,2));
+        }
     }
     //var_dump($alimCETliste);
     $htmltext = '';
@@ -253,7 +273,7 @@
             $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
         }
         $htmltext = $htmltext . "<input type='hidden' name='alimid' value='" . $alimcet->esignatureid() . "'>";
-        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' value='Générer le PDF'";
+        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
         if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
         {
             $htmltext = $htmltext . " disabled='disabled' ";
@@ -267,16 +287,19 @@
     //var_dump($alimCETliste);
     echo "<br><br>";
 
+    $optionCETliste=array();
     echo "Liste des demandes d'option sur CET : <br>";
-    if (! is_null($agent))
+    if (isset($_POST["btnselectagent"]) or isset($_POST["btnallagent"]))
     {
-        $optionCETliste = $agent->getDemandesOption($fonctions->anneeref());
+        if (! is_null($agent))
+        {
+            $optionCETliste = $agent->getDemandesOption($fonctions->anneeref());
+        }
+        else
+        {
+            $optionCETliste = $fonctions->get_optionCET_liste($fonctions->anneeref());
+        }
     }
-    else
-    {
-        $optionCETliste = $fonctions->get_optionCET_liste($fonctions->anneeref());
-    }
-
     $htmltext = '';
     foreach ($optionCETliste as $esignatureid)
     {
@@ -348,7 +371,7 @@
             $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
         }
         $htmltext = $htmltext . "<input type='hidden' name='optionid' value='" . $optioncet->esignatureid() . "'>";
-        $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' value='Générer le PDF' ";
+        $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer' ";
         if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optionCET::STATUT_REFUSE )
         {
             $htmltext = $htmltext . " disabled='disabled' ";
@@ -364,7 +387,20 @@
     echo "<br><br>";
     
  ?>
-
+    <script>
+        window.addEventListener("load", (event) => {
+            var waiting_img = document.getElementById('waiting_img');
+            if (waiting_img)
+            {
+                waiting_img.hidden=true;
+            }
+            var waiting_div = document.getElementById('waiting_div');
+            if (waiting_div)
+            {
+                waiting_div.hidden=true;
+            }
+        });
+    </script>
 <!--
 <a href=".">Retour à la page d'accueil</a>
 -->

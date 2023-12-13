@@ -206,7 +206,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
 
@@ -722,17 +722,17 @@
                 echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
                 echo "Solde actuel de votre CET : $valeur_a jour(s)";
                 echo "<br>";
-                echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond style='color: red;font-weight: bold; margin-left:20px;'></label>";
+                echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond class='erroralimCETlabel'></label>";
                 echo "<br>";
-                echo "Combien de jours souhaitez-vous ajouter à votre CET ? <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f style='color: red;font-weight: bold; margin-left:20px;'></label>";
+                echo "Combien de jours souhaitez-vous ajouter à votre CET ? <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
                 echo "<br>";
-                echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' > jour(s).";
-                echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-                echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-                echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-                echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";;
-                echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
-                echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=3 readonly style = 'border-top-style: hidden; border-right-style: hidden; border-left-style: hidden; border-bottom-style: hidden;' >";
+                echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=3 readonly class='inputdataalimCET' > jour(s).";
+                echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=3 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=3 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=3 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=3 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=3 readonly class='inputdataalimCET' >";
 /*                
                 //$code = null;
                 //if ($structure->responsable()->agentid() == $agent->agentid())
@@ -753,7 +753,7 @@
 <?php 
                 }
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-                echo "<input type='submit' name='cree_demande' id='cree_demande' value='Soumettre' disabled>";
+                echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' disabled>";
                 echo "</form>";
                 echo "<br>";
             }
@@ -783,7 +783,7 @@
                         $htmltext = '';
                         if (sizeof($listid) != 0)
                         {
-                            echo "Annulation d'une demande d'alimentation.<br>";
+                            echo "Suppression d'une demande d'alimentation.<br>";
                             echo "<form name='form_esignature_annule' id='form_esignature_annule' method='post' >";
                             echo "<input type='hidden' name='userid' value='" . $userid . "'>";
                             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
@@ -802,13 +802,13 @@
                             echo "<br><br>";
                             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
 //                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
-                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"click_element('annuler_demande'); return false; \">";
+                            echo "<input type='submit' name='annuler_demande' id='annuler_demande' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick=\"click_element('annuler_demande'); return false; \">";
 //                            echo "<button class='cancel' name='annuler_demande' id='annuler_demande' onclick='alert(\"plouf\"); if (this.tagname!=\"OK\") {alert(\"truc\"); click_element(\"annuler_demande\"); alert(\"toto\"); return false; } alert(\"zozo\");'>Annuler la demande</button>";
                             if (isset($error_suppr))
                             {
                                 echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
                             }
-                            echo "<br>";
+                            echo "<br><br>";
                             echo "</form>";
                         }
                     }
@@ -852,14 +852,14 @@
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
 
 ?>
                 <label id='labeltext'>Confirmez vous cette action ?</label>
             </p>
             <menu><center>
-              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
-              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
             </center></menu>
           </form>
         </dialog>
@@ -894,7 +894,7 @@
                     var submit_button = document.getElementById(elementid);
                     if (submit_button.classList.contains("cancel"))
                     {
-                        labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+                        labeltext.innerHTML = 'Confirmez vous la suppresion de cette demande ? ';
                     }
                     else
                     {

@@ -97,7 +97,6 @@
                     // Pas de changement de statut de la demande => On ne sauvegarde rien !!!
                     $errlog = "Le statut de la demande est inchangé, donc pas de sauvegarde.";
                     echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-                    //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 }
                 else
@@ -108,7 +107,6 @@
                     {
                         $errlog = "Le motif du refus est obligatoire.";
                         echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-                        //echo "<p style='color: red'>" . $errlog . "</p><br/>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     } else {
                         $msgerreur = "";
@@ -116,7 +114,6 @@
                         if ($msgerreur != "")
                         {
                             echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de sauvegarde car " . $msgerreur);
-                            //echo "<p style='color: red'>Pas de sauvegarde car " . $msgerreur . "</p><br>";
                         }
                         else {
                             $ics = null;
@@ -184,7 +181,6 @@
                                 }
                             }
                             
-                            // echo "<p style='color: green'>Super ca marche la sauvegarde !!!</p><br>";
                             error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
                         }
                     }
@@ -199,7 +195,7 @@
         $listestruct = $user->structrespliste();
         // print_r($listestruct); echo "<br>";
         echo "<form name='frm_validation_conge'  method='post' >";
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         foreach ($listestruct as $key => $structure) {
             $aumoinsunedemande = False;
             $cleelement = $structure->id();
@@ -311,7 +307,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
         echo "<br>";
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
     } elseif (! $user->estresponsable() and (strcasecmp($mode, "resp") == 0)) {
         echo "Vous n'êtes pas responsable, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
@@ -319,7 +315,7 @@
 
     if ($user->estgestionnaire() and (strcasecmp($mode, "gestion") == 0)) {
         echo "<form name='frm_validation_conge'  method='post' >";
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
         foreach ($listestruct as $key => $structure) {
             $aumoinsunedemande = FALSE;
@@ -452,7 +448,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
         echo "<br>";
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
     } elseif (! $user->estgestionnaire() and (strcasecmp($mode, "gestion") == 0)) {
         echo "Vous n'êtes pas gestionnaire, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";

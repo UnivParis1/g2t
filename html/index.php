@@ -178,10 +178,10 @@
     if (count($liste) > 0)
     {
         echo "<center>";
-        echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;color: #FF0000;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+        echo "<div class='periodeobligatoirebloc'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
         foreach ($liste as $element)
         {
-            echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
+            echo "<li class='leftaligntext' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
         }
         echo "</ul>";
         echo "Veuillez penser à poser vos congés en conséquence.";

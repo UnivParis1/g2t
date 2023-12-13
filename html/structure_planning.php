@@ -307,7 +307,7 @@
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;";
 
 ?>
                 <label id='labeltext'>Action à réaliser :</label>
@@ -316,8 +316,8 @@
                 </select>
             </p>
             <menu><center>
-              <button id="confirmBtn" value="" style="width:100px;">Ok</button>
-              <button id="cancelBtn" value="cancel" style="width:100px;">Annuler</button>
+              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
             </center></menu>
           </form>
         </dialog>    
@@ -645,13 +645,17 @@
     for ($indexcpt = 1; $indexcpt <= 12; $indexcpt ++) {
         echo "<option value='$index'";
         if ($index == $indexmois)
+        {
             echo " selected ";
+        }
         echo ">" . $fonctions->nommois("01/" . str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . date("Y")) . "  " . $anneemois . "</option>";
         // On calcule le modulo
         $index = ($index % 12) + 1;
         // Si le mois est > 12 ou égal à 1 alors c'est qu'on est passé à l'année suivante
         if ($index > 12 or $index == 1)
+        {
             $anneemois = $anneemois + 1;
+        }
     }
 
     echo "</select>";
@@ -667,7 +671,7 @@
     echo "<input type='hidden' name='action' id='action' value='' />";
     echo "<input type='hidden' name='check_showroot' id='check_showroot' value='" . $check_showroot . "' />";
     echo "<input type='hidden' name='rootid' id='rootid' value='" . $rootstruct . "' />";
-    echo "<input type='submit' value='Soumettre' /></center>";
+    echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Sélectionner'  /></center>";
     echo "</form>";
     
     if (strcasecmp($mode, "resp") == 0) 
@@ -730,7 +734,7 @@
                     
                     //echo "Afficher le document 'télétravail' pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
                     echo "Afficher le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
-                    echo "<input type='submit' name='teletravailPDF' id='teletravailPDF' value='Afficher un PDF'/>";
+                    echo "<input type='submit' name='teletravailPDF' id='teletravailPDF' class='g2tbouton g2tdocumentbouton g2tboutonwidthauto' value='Afficher un PDF'/>";
                     echo "</form>";
 
                     echo "<form name='form_teletravailmail' id='form_teletravailmail' method='post'>";
@@ -744,7 +748,7 @@
                     
                     //echo "Envoyer par mail le document 'télétravail' pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
                     echo "Envoyer par mail le document 'télétravail' pour la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ")<br>";
-                    echo "<input type='submit' name='teletravailmail' id='teletravailmail' value='Envoyer un PDF'/>";
+                    echo "<input type='submit' name='teletravailmail' id='teletravailmail' class='g2tbouton g2tenvoibouton g2tboutonwidthauto' value='Envoyer un PDF'/>";
                     echo "</form>";
                 }
             }

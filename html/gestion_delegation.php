@@ -165,7 +165,7 @@
     echo "</select>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br>";
-    echo " <input type='submit' name= 'Valid_struct' value='Soumettre' >";
+    echo " <input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     echo "<br>";
         
@@ -202,8 +202,8 @@
             echo $delegationuser->identitecomplete();
             if (!$delegationuser->isG2tUser())
             {
-                $style = " style='background-color : #f5b7b1 ;' ";
-                $extrainfo = "<b><span style='color:red'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
+                $style = " class='kobackgroundtext' ";
+                $extrainfo = "<b><span class='redtext'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
             }
         }
         echo "' size=40 $style/>$extrainfo";
@@ -246,8 +246,7 @@
         });
     </script>
 <?php
-        //echo "<tr><td style='padding-left:50px;'>";
-        echo "<p style='padding-left:50px;'>";
+        echo "<p class='delegpaddingleft'>";
         echo "Début de la période de délégation :";
         if ($fonctions->verifiedate($datedebutdeleg)) {
             $datedebutdeleg = $fonctions->formatdate($datedebutdeleg);
@@ -279,7 +278,7 @@
         echo "<input type='hidden' name='userid' value=" . $user->agentid() . ">";
         echo "<input type='hidden' name='structureid' value=" . $structureid . ">";
         echo "<br><br>";
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
     }
 ?>

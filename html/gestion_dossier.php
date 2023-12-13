@@ -441,7 +441,6 @@
     if ($msgerreur != "") {
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msgerreur));
         echo $fonctions->showmessage(fonctions::MSGERROR, "$msgerreur");
-        //echo "<B><P style='color: red'> $msgerreur </P></B>";
     }
     echo "<form name='frm_dossier'  method='post' >";
     if ($mode == 'resp') {
@@ -830,8 +829,8 @@
                     echo $gestionnaire->identitecomplete();
                     if (!$gestionnaire->isG2tUser())
                     {
-                        $style = " style='background-color : #f5b7b1 ;' ";
-                        $extrainfo = "<b><span style='color:red'> &#x1F828; Le gestionnaire défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
+                        $style = " class='kobackgroundtext' ";
+                        $extrainfo = "<b><span class='redtext'> &#x1F828; Le gestionnaire défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
                     }
                 }
                 echo "' size=40 $style/>$extrainfo";
@@ -880,8 +879,8 @@
                         echo $delegationuser->identitecomplete();
                         if (!$delegationuser->isG2tUser())
                         {
-                            $style = " style='background-color : #f5b7b1 ;' ";
-                            $extrainfo = "<b><span style='color:red'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
+                            $style = " class='kobackgroundtext' ";
+                            $extrainfo = "<b><span class='redtext'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
                         }
                     }
                     echo "' size=40 $style/>$extrainfo";
@@ -926,7 +925,7 @@
         });
         </script>
     <?php
-                    echo "<tr><td style='padding-left:50px;'>";
+                    echo "<tr><td class='delegpaddingleft'>";
                     echo "Début de la période de délégation :";
                     if ($fonctions->verifiedate($datedebutdeleg)) {
                         $datedebutdeleg = $fonctions->formatdate($datedebutdeleg);
@@ -971,7 +970,7 @@
 //    echo "<br><br>action = $action <br><br>";
     if ($action == 'modif')
     {
-        echo "<input type='submit' value='Soumettre' />";
+        echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
     }
     echo "</form>";
 

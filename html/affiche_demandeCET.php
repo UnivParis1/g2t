@@ -162,7 +162,7 @@
     //echo "<input id='esignatureid' name='esignatureid' placeholder='Id. eSignature' value='$esignatureid' size=40 />";
     echo "<br>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-    echo "<input type='submit' value='Soumettre' >";
+    echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     $optionCET = null;
     $alimCET = null;
@@ -316,7 +316,7 @@
                         $datesignature = "le $displaydate";
                         //echo "<br>" . print_r($response, true) . "<br>";
                         //var_dump($esignatureuser);
-                        echo " <span style='color:green'>";
+                        echo " <span class='greentext'>";
                         $signedstep = true;
                     }
                     echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature <br>";

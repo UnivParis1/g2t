@@ -1,99 +1,6 @@
 @charset "utf-8";
 /* @CHARSET "ISO-8859-1"; */
 
-/*<group=Navigation principale>*/
-
-#menuprincipal {
-	position: absolute;
-	top:  21px;
-	left:  25px; /* 123 */
-	width: 990px; /* 690 */
-	height: 17px;
-	z-index: 7;
-	float: left;
-	clear: right;
-	margin: 0px;
-	padding: 0px;
-   list-style-type: none;
-   font-family: Arial;
-}
-
-#menuprincipal a {
-	width: 500px; /* 500 */
-}
-
-#menuprincipal dl {
-	float: left;
-	width: 247px ;/* 190px; */
-   list-style-type: none;
-}
-
-#menuprincipal dt {
-   width: 247px;  /* 200 */
-	text-align: center;
-	background-color: #336699;   /* #EF001F;   */
-   list-style-type: none;
-}
-
-#menuprincipal dd {
-	display: none;
-	float: left; 
-	background-color: white; /* #D2D2D2 */
-	width: 247px; /* 257 */
-	border: 1px solid; /* ajout MS */
-	border-color: gray;  /* ajout MS */
-   list-style-type: none;
-}
-
-#smenuprincipal1, #smenuprincipal2, #smenuprincipal3, #smenuprincipal4, #smenuprincipal5 {
-	display: none;
-	text-align: left;
-	float: left;
-	font-size: 11px;
-	line-height: 15px;;
-	font-family: Arial;
-	padding: 0px;
-	margin: 0px;
-   list-style-type: none;
-}
-
-#smenuprincipal1 li, #smenuprincipal2 li, #smenuprincipal3 li, #smenuprincipal4 li, #smenuprincipal5 li,
-#smenuprincipal1 dl, #smenuprincipal2 dl, #smenuprincipal3 dl, #smenuprincipal4 dl, #smenuprincipal5 dl,
-#smenuprincipal1 dt, #smenuprincipal2 dt, #smenuprincipal3 dt, #smenuprincipal4 dt, #smenuprincipal5 dt,
-#smenuprincipal1 dd, #smenuprincipal2 dd, #smenuprincipal3 dd, #smenuprincipal4 dd, #smenuprincipal5 dd,
-#smenuprincipal1 ul, #smenuprincipal2 ul, #smenuprincipal3 ul, #smenuprincipal4 ul, #smenuprincipal5 ul
-{
-	width:  100%; 
-	float: left;
-   margin: 0px;
-   padding: 0px;
-   list-style-type: none;
-} 
-
-#smenuprincipal1 a, #smenuprincipal2 a, #smenuprincipal3 a, #smenuprincipal4 a, #smenuprincipal5 a {
-	text-decoration: none;
-	float:  left; 
-	font-size: 11px;
-	font-weight: bold;
-	text-align: center; /* left; */
-	padding: 0px;
-	margin: 0px;
-	padding-left: 0px; /*12px; */
-	width: 245px;  /* 245px; */
-	display: block;	
-  	/*background: url(images/accueil_btn.gif) 2px 5px no-repeat; */
-  	border-top: 1px solid; /* ajout MS */
-	border-color: gray;  /* ajout MS */
-   list-style-type: none;
-}
-#smenuprincipal1 a:hover, #smenuprincipal2 a:hover, #smenuprincipal3 a:hover, #smenuprincipal4 a:hover, #smenuprincipal5 a:hover {
-	color: #EF001F; /* white */
-	/* background: url(images/accueil_btn.gif) 2px 5px no-repeat; */
-	background-color: white; /* #EF001F */
-}
-
-/*</group>*/
-
 /*******************************************************/
 /* NOUVELLE VERSION DE LA CSS                          */
 /*******************************************************/
@@ -102,85 +9,85 @@
 /* DEFINITION DES MESSAGES D'ALERTE, WARNING ET INFO   */
 /*******************************************************/
 .tabmessage {
-	text-align: center;
-	vertical-align: middle;
-	border-collapse: collapse;
-/* 	border-spacing: 1; /* Removes the cell spacing via CSS */
-/* 	border: 1px solid white; */
-	margin-left : 5px; 	
-	margin-right : 5px; 	
+    text-align: center;
+    vertical-align: middle;
+    border-collapse: collapse;
+    /* 	border-spacing: 1; /* Removes the cell spacing via CSS */
+    /* 	border: 1px solid white; */
+    margin-left : 5px; 	
+    margin-right : 5px; 	
 }
 
 .celerror {
-	font-size : 15px;
-	background-color: #CA433B; /* fond rouge */
-	color : #FFFFFF;			
+    font-size : 15px;
+    background-color: #CA433B; /* fond rouge */
+    color : #FFFFFF;			
 }
 
 .imgerror {
-	width:40px;
-	height:40px;
+    width:40px;
+    height:40px;
 }
 
 .celwarning {
-	font-size : 15px;
-	background-color: #E9A33C; /* fond orange */
-	color : #FFFFFF;			
+    font-size : 15px;
+    background-color: #E9A33C; /* fond orange */
+    color : #FFFFFF;			
 }
 
 .imgwarning {
-	width:40px;
-	height:40px;
+    width:40px;
+    height:40px;
 }
 
 .celinfo {
-	font-size : 15px;
-	background-color: #77A248; /* fond vert */
-	color : #FFFFFF;			
+    font-size : 15px;
+    background-color: #77A248; /* fond vert */
+    color : #FFFFFF;			
 }
 
 .imginfo {
-	width:40px;
-	height:40px;
+    width:40px;
+    height:40px;
 }
 
 .celllogo {
     border-top-left-radius : 50px;
     border-bottom-left-radius : 50px;
-/*	padding-right : 20px; */
-	padding-left : 20px;
-	display:table-cell;
-	vertical-align: middle;
+    /*	padding-right : 20px; */
+    padding-left : 20px;
+    display:table-cell;
+    vertical-align: middle;
 }
 
 .cellmsg {
     border-top-right-radius : 50px;
     border-bottom-right-radius : 50px;
-	padding-right : 20px;
-	padding-left : 20px;
-	padding-top : 20px;
-	padding-bottom : 20px;
+    padding-right : 20px;
+    padding-left : 20px;
+    padding-top : 20px;
+    padding-bottom : 20px;
 }
 
 .imgquestion {
-	width:40px;
-	height:40px;
+    width:40px;
+    height:40px;
 }
 
 .resetfont {
-	font-size : unset; 
+    font-size : unset; 
 }
 
 /*******************************************************/
 /* DEFINITION DU BODY (Police, taille, couleur, ...)   */
 /*******************************************************/
 .bodyhtml {
-	FONT-SIZE: 14px; 
-	FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif; 
-	COLOR: #000000; 
-	background-color: white;
-	margin-left:10px;
-	margin-right:10px;
+    FONT-SIZE: 14px; 
+    FONT-FAMILY: arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
+    COLOR: #000000; 
+    background-color: white;
+    margin-left:10px;
+    margin-right:10px;
 }
 
 /*******************************************************/
@@ -188,35 +95,35 @@
 /*******************************************************/
 .legendetableau
 {
-	border-collapse : collapse; 
-	border-spacing : 0; 
-	border-width : 0;
- 	margin:0;
- 	padding:0;
+    border-collapse : collapse; 
+    border-spacing : 0; 
+    border-width : 0;
+    margin:0;
+    padding:0;
 }
 
 .legendecouleur
 {
-	cursor:pointer; 
-	border-left:1px solid black;
-	border-top:1px solid black;
-	border-right:1px solid black; 
-	border-bottom:1px solid black; 
-	height:14px; 
-	width:14px;
-	border-radius: 7px;
-	display:inline-block;
+    cursor:pointer; 
+    border-left:1px solid black;
+    border-top:1px solid black;
+    border-right:1px solid black; 
+    border-bottom:1px solid black; 
+    height:14px; 
+    width:14px;
+    border-radius: 7px;
+    display:inline-block;
 }
 
 .legendetexte
 {
-	padding-left:6px;	
-	height:12px; 
+    padding-left:6px;	
+    height:12px; 
 }
 
 .elementlegende
 {
-	height:12px; 
+    height:12px; 
 }
 
 /*******************************************************/
@@ -258,13 +165,12 @@
 /****************************************************/
 #mainmenu {
    FONT-WEIGHT: bold; 
-   FONT-SIZE: 12px; 
-   FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif; 
+   FONT-SIZE: 14px; 
+   FONT-FAMILY: arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
    border-collapse : collapse; 
    COLOR: #336699; 
 }
 #mainmenu UL UL {
-/*	BORDER-RIGHT: #888B8A 1px solid; BORDER-TOP: #888B8A 1px solid; BORDER-LEFT: #888B8A 1px solid; BORDER-BOTTOM: #888B8A 1px solid;*/ 
    PADDING-RIGHT: 0px; 
    DISPLAY: none; 
    PADDING-LEFT: 0px; 
@@ -274,15 +180,15 @@
    PADDING-TOP: 0px; 
    POSITION: absolute; 
    TOP: -1px;
-   Z-INDEX: 1
+   Z-INDEX: 2000;
 }
 #mainmenu LI {
    PADDING-RIGHT: 2px; 
    PADDING-LEFT: 2px; 
    PADDING-BOTTOM: 5px; 
-   MARGIN: 0px; 
-   WIDTH: 270px; 
    PADDING-TOP: 5px;
+   MARGIN: 0px;
+   WIDTH: 270px; 
    LIST-STYLE-TYPE: none; 
    POSITION: relative; 
    BACKGROUND-COLOR: #E5EAE9;  
@@ -301,30 +207,47 @@
    COLOR: #336699;
 /*   width: calc(100% - 30px); */
 }
+
+#mainmenu UL.niveau1 {
+   DISPLAY: block;
+}
 #mainmenu UL.niveau1 LI {
-/*   BACKGROUND-COLOR: #E5EAE9; */
-/* --  BACKGROUND-COLOR: #336699; -- */ 
-   BACKGROUND-COLOR: #D8D8D8; 
-   TEXT-DECORATION: none;  
-   BORDER-BOTTOM: #888B8A 1px solid;  
-   BORDER-TOP: #888B8A 1px solid; 
-   BORDER-LEFT: #888B8A 1px solid;  
-   BORDER-RIGHT: #888B8A 1px solid; 
+    BACKGROUND-COLOR: #D8D8D8; 
+    TEXT-DECORATION: none;  
+    BORDER-BOTTOM: #888B8A 1px solid;  
+    BORDER-TOP: #888B8A 1px solid; 
+    BORDER-LEFT: #888B8A 1px solid;  
+    BORDER-RIGHT: #888B8A 1px solid; 
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
 }
 
-#mainmenu UL.nivea1 LI:hover {
+#mainmenu UL.niveau1 LI:hover {
    BACKGROUND-COLOR: #ffff70; 
    cursor:pointer; /* COLOR: #A4405B !important;*/
 }
 
+#mainmenu LI:hover UL.niveau2 {
+   DISPLAY: block;  
+   FONT-SIZE: 11px; 
+   LEFT: -1px; 
+   TOP:27px;
+}
+
 #mainmenu UL.niveau2 LI {
-   BACKGROUND-COLOR: #E5EAE9;  
-/*   BACKGROUND-COLOR: #D8D8D8; */
-   TEXT-DECORATION: none; 
-   BORDER-BOTTOM: #888B8A 1px solid;  
-   BORDER-TOP: #888B8A 1px solid;  
-   BORDER-LEFT: #888B8A 1px solid;  
-   BORDER-RIGHT: #888B8A 1px solid; 
+    BACKGROUND-COLOR: #E5EAE9;  
+    /*   BACKGROUND-COLOR: #D8D8D8; */
+    TEXT-DECORATION: none; 
+    BORDER-BOTTOM: #888B8A 1px solid;  
+    BORDER-TOP: #888B8A 1px solid;  
+    BORDER-LEFT: #888B8A 1px solid;  
+    BORDER-RIGHT: #888B8A 1px solid; 
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
 }
 
 #mainmenu UL.niveau2 LI:hover {
@@ -346,15 +269,6 @@
    cursor:pointer; /* COLOR: #A4405B !important;*/
 }
 
-#mainmenu UL.niveau1 {
-   DISPLAY: block;
-}
-#mainmenu LI:hover UL.niveau2 {
-   DISPLAY: block;  
-   FONT-SIZE: 11px; 
-   LEFT: 0px; 
-   TOP:24px; /* TOP: 18px; */
-}
 /*
 #mainmenu ul.niveau1 li ul.niveau2 li:hover {
    BACKGROUND-COLOR: #ffff70; cursor:pointer; COLOR: #A4405B !important;
@@ -363,7 +277,6 @@
    BACKGROUND-COLOR: #ffff70; cursor:pointer; COLOR: #A4405B !important;
 }
 */
-
 
 #mainmenu LI LI:hover UL.niveau3 {
    DISPLAY: block;
@@ -388,114 +301,115 @@
 }
 
 LI.plus::after {
-	text-align: center;
-	content: "\25B6";  /* triangle vers la droite ▶ */
-	/* COLOR: red; */
-	position: absolute; 
-	right: 10px;
+    text-align: center;
+    content: "\25B6";  /* triangle vers la droite ▶ */
+    /* COLOR: red; */
+    position: absolute; 
+    right: 10px;
 }
 
 /****************************************************
 / TABLEAU DES SOLDES DE CONGES 
 /****************************************************/
 #soldeconges {
-   FONT-WEIGHT: normal ;
+    FONT-WEIGHT: normal ;
 }
 #soldeconges table {
-   border-collapse : collapse; 
-   border-spacing : 0px; 
-   text-align : center; 
+    border-collapse : collapse; 
+    border-spacing : 0px; 
+    text-align : center; 
 }
 #soldeconges TR.titre TD {
-	FONT-WEIGHT: bold ; 
-	color : #BF3021; 
-	BORDER-RIGHT: #888B8A 1px solid; 
-	PADDING-RIGHT: 4px; 
-	BORDER-TOP: #888B8A 1px solid; 
-	PADDING-LEFT: 4px; 
-	PADDING-BOTTOM: 2px; 
-	MARGIN: 0px; 
-	BORDER-LEFT: #888B8A 1px solid; 
-	PADDING-TOP: 2px; 
-	BORDER-BOTTOM: #888B8A 1px solid;
+    FONT-WEIGHT: bold ; 
+    color : #BF3021; 
+    BORDER-RIGHT: #888B8A 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: #888B8A 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: #888B8A 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: #888B8A 1px solid;
 }
 #soldeconges TR.entete TD, #soldeconges TR.element TD {
-   color: black; 
-   BORDER-RIGHT: #888B8A 1px solid; 
-   PADDING-RIGHT: 4px; 
-   BORDER-TOP: #888B8A 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: #888B8A 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: #888B8A 1px solid;
+    color: black; 
+    BORDER-RIGHT: #888B8A 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: #888B8A 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: #888B8A 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: #888B8A 1px solid;
 }
 
 /****************************************************
 / TABLEAU DE L'HISTORIQUE DES DEMANDES 
 /****************************************************/
 #demandeliste {
-   FONT-WEIGHT: normal ;
-   cursor : default;
+    FONT-WEIGHT: normal ;
+    cursor : default;
 }
 #demandeliste table {
-   border-collapse : collapse; 
-   border-spacing : 0px; 
-   text-align : center; 
-   column-width: auto;
-   table-layout: auto;
+    border-collapse : collapse; 
+    border-spacing : 0px; 
+    text-align : center; 
+    column-width: auto;
+    table-layout: auto;
 }
 #demandeliste TR.titre TD {
-   FONT-WEIGHT: bold ; 
-   color : #BF3021; 
-   BORDER-RIGHT: #888B8A 1px solid; 
-   PADDING-RIGHT: 4px; BORDER-TOP: #888B8A 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: #888B8A 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: #888B8A 1px solid;
+    MARGIN: 0px; 
+    FONT-WEIGHT: bold ; 
+    color : #BF3021; 
+    BORDER-RIGHT: #888B8A 1px solid; 
+    BORDER-TOP: #888B8A 1px solid; 
+    BORDER-LEFT: #888B8A 1px solid; 
+    BORDER-BOTTOM: #888B8A 1px solid;
+    PADDING-RIGHT: 4px; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    PADDING-TOP: 2px; 
 }
 #demandeliste TR.entete TD, #demandeliste TR.element TD {
-   color: black; 
-   BORDER-RIGHT: #888B8A 1px solid; 
-   PADDING-RIGHT: 4px; 
-   BORDER-TOP: #888B8A 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: #888B8A 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: #888B8A 1px solid;
+    color: black; 
+    BORDER-RIGHT: #888B8A 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: #888B8A 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: #888B8A 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: #888B8A 1px solid;
 }
 
 /****************************************************
 / PLANNING D'UN AGENT 
 /****************************************************/
 #planning {
-   FONT-WEIGHT: normal ;
+    FONT-WEIGHT: normal ;
 }
 
 #planning table.tableau {
-   border-collapse : collapse; 
-   border-spacing : 0px; 
-   cursor:pointer; 
+    border-collapse : collapse; 
+    border-spacing : 0px; 
+    cursor:pointer; 
 }
 
 #planning TR.entete TD {
-   color: black; 
-   BORDER-RIGHT: black 1px solid; 
-   PADDING-RIGHT: 4px;
-   BORDER-TOP: black 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: black 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: black 1px solid;  
-   text-align : center; 
+    color: black; 
+    BORDER-RIGHT: black 1px solid; 
+    PADDING-RIGHT: 4px;
+    BORDER-TOP: black 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: black 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: black 1px solid;  
+    text-align : center; 
 }
 
 #planning TR.ligneplanning {
@@ -504,213 +418,212 @@ LI.plus::after {
 
 
 #planning TR.ligneplanning TD {
-   color: black;
-   BORDER-RIGHT: black 1px solid; 
-   PADDING-RIGHT: 4px; 
-   BORDER-TOP: black 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: black 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: black 1px solid;  
-   text-align : left; 
-   height:15px;
+    color: black;
+    BORDER-RIGHT: black 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: black 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: black 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: black 1px solid;  
+    text-align : left; 
+    height:15px;
 }
 
 #planning TR.ligneplanning TD.planningelement_matin {
-   cursor:pointer; 
-   border-left:2px solid black; 
-   border-top:2px solid black; 
-   border-right:0px solid black; 
-   border-bottom:2px solid black; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
-/*	width:250px; */   
+    cursor:pointer; 
+    border-left:2px solid black; 
+    border-top:2px solid black; 
+    border-right:0px solid black; 
+    border-bottom:2px solid black; 
+    PADDING-RIGHT: 1px; 
+    PADDING-LEFT: 1px;
+    /*	width:250px; */   
 }
 
 #planning TR.ligneplanning TD.planningelement_aprem {
-   cursor:pointer; 
-   border-left:0px solid black; 
-   border-top:2px solid black; 
-   border-right:2px solid black; 
-   border-bottom:2px solid black;  
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
-/*	width:250px; */   
+    cursor:pointer; 
+    border-left:0px solid black; 
+    border-top:2px solid black; 
+    border-right:2px solid black; 
+    border-bottom:2px solid black;  
+    PADDING-RIGHT: 1px; 
+    PADDING-LEFT: 1px;
+    /*	width:250px; */   
 }
 
 #planning TR.ligneplanning TD.planningelement_jour_matin {
-   cursor:pointer; 
-   border-left:3px solid red; 
-   border-top:3px solid red; 
-   border-right:0px solid red; 
-   border-bottom:3px solid red; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
+    cursor:pointer; 
+    border-left:3px solid red; 
+    border-top:3px solid red; 
+    border-right:0px solid red; 
+    border-bottom:3px solid red; 
+    PADDING-RIGHT: 1px; 
+    PADDING-LEFT: 1px;
 }
 
 #planning TR.ligneplanning TD.planningelement_jour_aprem {
-   cursor:pointer; 
-   border-left:0px solid red; 
-   border-top:3px solid red; 
-   border-right:3px solid red; 
-   border-bottom:3px solid red; 
-   PADDING-RIGHT: 1px; 
-   PADDING-LEFT: 1px;
+    cursor:pointer; 
+    border-left:0px solid red; 
+    border-top:3px solid red; 
+    border-right:3px solid red; 
+    border-bottom:3px solid red; 
+    PADDING-RIGHT: 1px; 
+    PADDING-LEFT: 1px;
 }
 
 #planning TR.ligneplanning TD.hidde_tip
 {
-	pointer-events: none;
+    pointer-events: none;
 }
 /****************************************************
 / PLANNING D'UNE STRUCTURE
 /****************************************************/
 #structplanning {
-   FONT-WEIGHT: normal ;
+    FONT-WEIGHT: normal ;
 }
 #structplanning table.tableau {
-   /* border-collapse : collapse; */
-   border-spacing : 0px; 
+    border-spacing : 0px; 
 }
 #structplanning TR.entete TD {
-   color: black; 
-   BORDER-RIGHT: black 1px solid; 
-   PADDING-RIGHT: 4px; 
-   BORDER-TOP: black 1px solid;
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: black 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: black 1px solid;  
-   text-align : center; 
+    color: black; 
+    BORDER-RIGHT: black 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: black 1px solid;
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: black 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: black 1px solid;  
+    text-align : center; 
 }
 #structplanning TR.entete_mois TD {
-   color: black; 
-   FONT-WEIGHT: bold ; 
-   BORDER-RIGHT: black 1px solid; 
-   PADDING-RIGHT: 4px; 
-   BORDER-TOP: black 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px; 
-   MARGIN: 0px; 
-   BORDER-LEFT: black 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: black 1px solid;  
-   text-align : center; 
+    color: black; 
+    FONT-WEIGHT: bold ; 
+    BORDER-RIGHT: black 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: black 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px; 
+    MARGIN: 0px; 
+    BORDER-LEFT: black 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: black 1px solid;  
+    text-align : center; 
 }
 #structplanning TR.ligneplanning TD {
-   color: black; 
-   BORDER-RIGHT: black 1px solid; 
-   PADDING-RIGHT: 4px; 
-   BORDER-TOP: black 1px solid; 
-   PADDING-LEFT: 4px; 
-   PADDING-BOTTOM: 2px;
-   MARGIN: 0px; 
-   BORDER-LEFT: black 1px solid; 
-   PADDING-TOP: 2px; 
-   BORDER-BOTTOM: black 1px solid;  
-   text-align : left; 
+    color: black; 
+    BORDER-RIGHT: black 1px solid; 
+    PADDING-RIGHT: 4px; 
+    BORDER-TOP: black 1px solid; 
+    PADDING-LEFT: 4px; 
+    PADDING-BOTTOM: 2px;
+    MARGIN: 0px; 
+    BORDER-LEFT: black 1px solid; 
+    PADDING-TOP: 2px; 
+    BORDER-BOTTOM: black 1px solid;  
+    text-align : left; 
 }
 #structplanning TR.ligneplanning TD.planningelement_matin {
-   cursor:pointer; 
-   border-left:1px solid black; 
-   border-top:1px solid black; 
-   border-right:0px solid black; 
-   border-bottom:1px solid black; 
-   padding-right: 1px; 
-   padding-left: 1px;
+    cursor:pointer; 
+    border-left:1px solid black; 
+    border-top:1px solid black; 
+    border-right:0px solid black; 
+    border-bottom:1px solid black; 
+    padding-right: 1px; 
+    padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning TD.planningelement_jour_matin {
-   cursor:pointer; 
-   border-left:3px solid #3FC6FF; 
-   border-top:1px solid black; 
-   border-right:0px solid black; 
-   border-bottom:1px solid black; 
-   padding-right: 1px; 
-   padding-left: 1px;
+    cursor:pointer; 
+    border-left:3px solid #3FC6FF; 
+    border-top:1px solid black; 
+    border-right:0px solid black; 
+    border-bottom:1px solid black; 
+    padding-right: 1px; 
+    padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning TD.planningelement_aprem {
-   cursor:pointer; 
-   border-left:0px solid black; 
-   border-top:1px solid black; 
-   border-right:1px solid black; 
-   border-bottom:1px solid black; 
-   padding-right: 1px; 
-   padding-left: 1px;
+    cursor:pointer; 
+    border-left:0px solid black; 
+    border-top:1px solid black; 
+    border-right:1px solid black; 
+    border-bottom:1px solid black; 
+    padding-right: 1px; 
+    padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning TD.planningelement_jour_aprem {
-   cursor:pointer; 
-   border-left:0px solid black; 
-   border-top:1px solid black; 
-   border-right:3px solid #3FC6FF; 
-   border-bottom:1px solid black; 
-   padding-right: 1px; 
-   padding-left: 1px;
+    cursor:pointer; 
+    border-left:0px solid black; 
+    border-top:1px solid black; 
+    border-right:3px solid #3FC6FF; 
+    border-bottom:1px solid black; 
+    padding-right: 1px; 
+    padding-left: 1px;
 }
 
 #structplanning TR.ligneplanning:hover td {
-   /* BORDER-RIGHT: red 1px solid !important; */
-   /* BORDER-LEFT: red 1px solid !important; */
-   BORDER-TOP: #00ff00 2px solid; /* !important; /* #b1f5b9 */
-   BORDER-BOTTOM: #00ff00 2px solid; /* !important;  /* #b1f5b9 */
+    /* BORDER-RIGHT: red 1px solid !important; */
+    /* BORDER-LEFT: red 1px solid !important; */
+    BORDER-TOP: #00ff00 2px solid; /* !important; /* #b1f5b9 */
+    BORDER-BOTTOM: #00ff00 2px solid; /* !important;  /* #b1f5b9 */
 }
 
 .rayureplanning {
-  background: repeating-linear-gradient(
-    45deg,
-    #606dbc,
-    #606dbc 2px,
-    #465298 2px,
-    #465298 4px
-  );
+    background: repeating-linear-gradient(
+        45deg,
+        #606dbc,
+        #606dbc 2px,
+        #465298 2px,
+        #465298 4px
+    );
 }
 
 /****************************************************
 / BULLE D'INFORMATION
 /****************************************************/
 span[data-tip]{
-  display: inline-block;
-  position: relative;
-  width: 100%;
+    display: inline-block;
+    position: relative;
+    width: 100%;
 }
 
 span[data-tip]:hover:before{
-  content: attr(data-tip);
-  position: absolute;
-  padding: 0 8px;  
-  height: 28px;
-  line-height: 28px; 
-  background-color: rgba(0, 0, 0, 0.8);
-  left: -10px; 
-  top: -38px;
-/*  font-size: 14px; */
-  border-radius: 3px; 
-/*  border-radius: 15px; -- Permet d'arrondir les angles*/
-  white-space: nowrap;
-  color: #fff;
-  font-size: 11px;
+    content: attr(data-tip);
+    position: absolute;
+    padding: 0 8px;  
+    height: 28px;
+    line-height: 28px; 
+    background-color: rgba(0, 0, 0, 0.8);
+    left: -10px; 
+    top: -38px;
+    /*  font-size: 14px; */
+    border-radius: 3px; 
+    /*  border-radius: 15px; -- Permet d'arrondir les angles*/
+    white-space: nowrap;
+    color: #fff;
+    font-size: 11px;
 }
 
 span[data-tip]:hover:after {
-  content: "";
-  position: absolute;
-/*
-  border-top: 8px solid rgba(0, 0, 0, 0.8);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  left: 0; 
-*/
-  border-top: 8px solid rgba(0, 0, 0, 0.8);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  left: -5px; 
-  top: -10px;
+    content: "";
+    position: absolute;
+    /*
+    border-top: 8px solid rgba(0, 0, 0, 0.8);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    left: 0; 
+    */
+    border-top: 8px solid rgba(0, 0, 0, 0.8);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    left: -5px; 
+    top: -10px;
 }
 
 td[data-title]:hover:after {
@@ -744,7 +657,7 @@ td[data-title]:after {
     background-image: -o-linear-gradient(top, #f0eded, #bfbdbd);
 */
     opacity: 0;
-    z-index: 1;
+    z-index: 2000;
     visibility: hidden;
 }
 td[data-title] {
@@ -787,7 +700,7 @@ textarea:required {
 
 .tabs {
     color: #336699; /* rgb(255, 255, 255); */
-    FONT-FAMILY: trebuchet ms,arial,tahoma,verdana,sans-serif;
+    FONT-FAMILY: arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
     FONT-WEIGHT: bold;
     display: flex;
     margin: 0;
@@ -869,12 +782,329 @@ textarea:required {
 /*************************************************
 / CSS SIHAM pour affichage CET dans module agent de l'ENT
 /*************************************************/
-.siham_css {
-	font-family: Verdana;
-	font-size: 8pt;
-	text-align: left;
-	color: #616162; 
-	background: inherit; 
-	border-width: 0;
+.siham_body {
+    margin: 0 ; 
+    overflow: hidden;
 }
 
+.siham_css {
+    font-family: Verdana;
+    font-size: 8pt;
+    text-align: left;
+    color: #616162; 
+    background: inherit; 
+    border-width: 0;
+}
+
+/**************************************************
+/ CSS DES BOUTONS
+/**************************************************/
+.g2tbouton {
+    padding: 8px 8px 8px 38px;
+    margin: 2px;
+    font-size: 16px;
+    text-align: left;
+    font-family: inherit;
+    color: #00326e;
+
+    background-color : #dee4f0;   /* rgb(222, 228, 240);  */
+    border: 1px solid #00326e2b;
+    border-bottom-color: #00236e6c;
+    border-right-color: #00326e6c;
+    border-radius: 2px;
+
+    background-repeat: no-repeat;
+    background-position: top 8px left 8px;
+    background-size: 19px;
+}
+
+.g2tbouton:hover {  
+    background-color :#f5c95c; 
+}
+
+.g2tbouton:disabled,
+.g2tbouton:disabled:hover { 
+    background-color: #d0dade; 
+    opacity: 0.4; 
+}
+
+.g2tsupprbouton {
+    background-image: url("images/trash-alt-solid.svg");
+    width: 130px;
+    background-size: 17px;
+}
+
+.g2tvalidebouton {
+    background-image: url("images/saving.svg");
+    width: 130px;
+}
+
+.g2tsuivantbouton {
+    background-image: url("images/tango-right-arrow-blue.svg");
+    width: 130px;
+}
+
+.g2tenvoibouton {
+    background-image: url("images/paper-plane-solid.svg");
+    width: 130px;
+    background-size: 18px;
+}
+
+.g2tdocumentbouton {
+    background-image: url("images/documents.svg"); 
+    width: 130px;
+    background-size: 18px;
+}
+
+.g2tboutonwidthauto {
+    width : auto !important;
+}
+
+/**************************************************
+/ CSS DES SELECT, INPUT ET TEXTAREA
+/**************************************************/
+form select, form input, form textarea {
+  font-size: 14px;
+  color: #00326e;
+  border: 1px solid #00326e5c;
+  margin-bottom: 3px;
+}
+select {
+  background: #f3f6f9 !important;
+  border: 1px solid #ccc;
+  padding: 4px 3px;
+  font-family: inherit;
+}
+
+/**********************************************************
+/ SURCHARGE DE CERTAINES CLASSES DE LA CSS SELECT2-MIN.CSS
+/**********************************************************/
+.select2-container--default .select2-selection--single {
+  background-color: #f3f6f9 !important;
+  color: #00326e !important;
+}
+
+.select2-dropdown {
+  background-color: #f3f6f9 !important;
+  color: #00326e !important;
+}
+
+.select2-container--default .select2-results__option[aria-selected="true"] {
+  background-color: #E0E0E6 !important;
+  color: #00326e !important;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  border: 1px solid #aaa;
+  background-color: #f3f6f9 !important;
+  color: #00326e !important;  
+}
+
+.select2-container--open .select2-dropdown {
+  left: 10px;  
+  top : 8px;
+}
+
+.ui-autocomplete-input {
+  color: #00326e !important;
+}
+
+/********************************************
+/ CSS DU TEXTE
+/*******************************************/
+
+.greentext {
+    color:green;
+}
+
+.redtext {
+    color:red;
+}
+
+.blacktext {
+    color:black;
+}
+
+.reglegestiontextcolor {
+    color:#EF4001;
+}
+
+.infogeststruct {
+    color:#6c3483;
+}
+
+.kobackgroundtext {
+    background-color : #f1948a;
+}
+
+.okbackgroundtext {
+    background-color : #c5efbd;
+}
+
+.commentobligatoirebackground {
+    background-color : #f5b7b1;
+}
+
+.largerfontsize {
+    font-size: larger;
+}
+
+.largefontsize {
+    font-size: large;
+}
+
+.fontsize15 {
+    font-size:15px;
+}
+
+.fontsize25 {
+    font-size:25px;    
+}
+
+.ajoutcongesbloc {
+    border:solid 1px black; 
+    background:lightgreen; 
+    width:700px; 
+    display:block;
+}
+
+.supprcongesbloc {
+    border:solid 1px black; 
+    background:lightsteelblue; 
+    width:900px; 
+    display:block;
+}
+
+.commenttextarea {
+    line-height:20px;
+    resize: none;
+}
+
+.cursorpointer {
+    cursor: pointer;
+}
+
+.widthtd50 {
+    width:50px;
+}
+
+.widthtd90 {
+    width:90px;
+}
+
+.widthtd110 {
+    width:110px;
+}
+
+.centeraligntext {
+    text-align:center;
+}
+
+.leftaligntext {
+    text-align: left;
+}
+
+.warningfinconvention {
+    color:#E9A33C;
+    font-weight: bold;
+}
+
+.alertfinconvention {
+    color:red;
+    font-weight: bold;
+}
+
+.periodeobligatoirebloc {
+    DISPLAY: block;
+    width: 700px; 
+    padding-top:10px; 
+    padding-bottom:10px;
+    border: 3px solid #888B8A;
+    background: #E5EAE9;
+    color: red;  
+}
+
+.warningsitupart {
+    border:solid 1px black; 
+    background:orange; 
+    width:600px; 
+    display:block;
+}
+
+.delegpaddingleft,
+.parampaddingleft {
+    padding-left: 30px;
+}
+
+.namefieldwidth {
+    width: 300px;
+}
+
+.selectstructure {
+    width: 700px !important;
+}
+
+.erroroptionCETlabel,
+.erroralimCETlabel {
+    color: red;
+    font-weight: bold; 
+    margin-left:20px;
+}
+
+.inputdataoptionCET,
+.inputdataalimCET {
+    border-top-style: hidden; 
+    border-right-style: hidden; 
+    border-left-style: hidden; 
+    border-bottom-style: hidden; 
+}
+
+.ajoutcetbloc {
+    border:solid 1px black; 
+    background:lightgreen; 
+    width:600px; 
+    display:block;
+}
+
+.supprcetbloc {
+    border:solid 1px black; 
+    background:lightsteelblue; 
+    width:600px; 
+    display:block;
+}
+
+.symbolegestionstruct {
+    font-size:18px;
+}
+
+.barreseparation {
+    width:50px;
+    margin:0px;
+    visibility:hidden;
+}
+
+.motifraisonmedicalteletravail {
+    margin-left: 40px; 
+    margin-top: 5px; 
+    margin-bottom: 5px;
+}
+
+.noborder {
+    border:none;
+}
+
+.gestteletravaillabel {
+    margin-top: 10px;
+    display:inline-block;
+}
+
+.hiddenelement {
+    display:none;
+}
+
+.javaokbutton,
+.javaconfirmbutton,
+.javacancelbutton {
+    height:30px;
+    width:100px;
+}

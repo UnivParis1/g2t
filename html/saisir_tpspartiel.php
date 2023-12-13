@@ -332,7 +332,7 @@
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     } else {
         // echo "Avant le new agent <br>";
@@ -371,7 +371,6 @@
             if ($msg_erreur != "") 
             {
                 echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
-                //echo "<P style='color: red'>" . $msg_erreur . " </P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $msg_erreur);
             }
             echo "<br/>";
@@ -446,13 +445,13 @@
                         echo "<br>";
                         echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel. <br>";
                         echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
-                        echo "<b style='color:red'>ATTENTION : </b>Cette fonction est à utiliser avec prudence. Il convient de vérifier manuellement que la répartion est correcte.<br>";
+                        echo "<b class='redtext'>ATTENTION : </b>Cette fonction est à utiliser avec prudence. Il convient de vérifier manuellement que la répartion est correcte.<br>";
                     }
                     echo "<input type='hidden' name='nbredemiTP' value='" . $nbredemiTP . "'>";
                     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
                     echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
                     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-                    echo "<input type='submit' value='Soumettre' />";
+                    echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
 
                     echo "</form>";
                     echo "<br>";

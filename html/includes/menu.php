@@ -301,9 +301,11 @@
 <link rel="stylesheet" type="text/css"
     href="style/style.css?<?php echo filemtime('style/style.css')  ?>" media="screen">
 </link>
+<!------------------------------------
 <link rel="stylesheet" type="text/css" 
     href="style/jquery-ui.css?<?php echo filemtime('style/jquery-ui.css')  ?>" media="screen">
 </link>
+------------------------------->
 </head>
 
 <body class="bodyhtml"> 
@@ -317,15 +319,14 @@
         $typeimage = pathinfo($path, PATHINFO_EXTENSION);
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; // style='vertical-align:middle; width:50px;height:50px;'
+        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
 
 ?>
                 <label id='warninglabeltext'>Votre texte ne doit pas dépasser XXXX caractères! :</label>
             </p>
             <menu>
                 <center>
-<!--                    <button id="confirmBtn" value="" style="width:100px;">Ok</button>  -->
-                    <button value="cancel" style="width:100px;">Ok</button>
+                    <button value="cancel" class='javaokbutton'>Ok</button>
                 </center>
             </menu>
         </form>
@@ -508,7 +509,7 @@
                 echo " selected ";
             }
             if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-                echo " style='color:red;' ";
+                echo " class='redtext' ";
             }
             echo ">";
             for ($cpt = 0; $cpt < $niveau; $cpt ++) {
@@ -579,11 +580,11 @@
         {
             if (strcasecmp($maintenance, 'n') != 0)
             {
-                echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
+                echo "<CENTER><div class='redtext fontsize25' ><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
             }
             if (strcasecmp($synchro, 'n') != 0)
             {
-                echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : LE MODE SYNCHRONISATION EST ACTIV&Eacute; -- APPLICATION EN COURS DE SYNCHRO</U></B></div></CENTER><BR>";
+                echo "<CENTER><div class='redtext fontsize25'><B><U>ATTENTION : LE MODE SYNCHRONISATION EST ACTIV&Eacute; -- APPLICATION EN COURS DE SYNCHRO</U></B></div></CENTER><BR>";
             }
         }
         else // C'est un utilisateur simple => Affichage de la page de maintenance
@@ -598,7 +599,7 @@
 
     if (($user->agentid() != $realuser->agentid()) and $realuser->estadministrateur())
     {
-        echo "<CENTER><div style='color:#FF0000; font-size:25px;'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></div>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER><BR>";
+        echo "<CENTER><div class='redtext fontsize25'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></div>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER><BR>";
     }
     
     $arraystructpartielle = array();
@@ -627,12 +628,12 @@
         if (in_array(strtoupper($affectation->structureid()), $arraystructpartielle))
         {
             $structurepartielle = true;
-            $hidemenu = ' style="display:none;" ';
+            $hidemenu = " class='hiddenelement' ";
         }
     } 
     if ($structurepartielle == true)
     {
-        //echo "<P><CENTER><div style='color:#FF0000'><B><U>ATTENTION : Vous avez un accès partiel à l'application G2T !!!</U></B></div></CENTER></P><BR><BR>";
+        // L'accès est partiel
     }
     
     unset($arraystructpartielle);

@@ -496,7 +496,7 @@
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
         echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     } else {
 
@@ -506,10 +506,10 @@
             if (count($liste) > 0)
             {
                 echo "<center>";
-                echo "<div class='niveau1' style='width: 700px; padding-top:10px; padding-bottom:10px;border: 3px solid #888B8A ;background: #E5EAE9;color: #FF0000;'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+                echo "<div class='periodeobligatoirebloc'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
                 foreach ($liste as $element)
                 {
-                    echo "<li style='text-align: left;' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
+                    echo "<li class='leftaligntext' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
                 }
                 echo "</ul>";
                 echo "Veuillez penser à poser vos congés en conséquence.";
@@ -677,7 +677,6 @@
                     if ($msgerreur != "")
                     {
                         echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de validation automatique de la demande car " . $msgerreur . ".");
-//                        echo "<p style='color: red'>Pas de validation automatique de la demande car " . $msgerreur . "</p><br>";
                     }
                     else {
                         $ics = null;
@@ -784,7 +783,6 @@
                     $msgstore .= "Vous serez $absentlibele durant " . $demande->nbrejrsdemande() . " jour(s)";
                 }
                 echo $fonctions->showmessage(fonctions::MSGINFO, $msgstore . " sous réserve du respect des règles de gestion.");
-//                echo "<P style='color: green'>" . $msgstore . " sous réserve du respect des règles de gestion.</P>";
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
                 
                 // On réinitialise les variables qui servent à l'affichage en cas d'erreur
@@ -811,10 +809,9 @@
             }
         }
         echo $fonctions->showmessage(fonctions::MSGWARNING, $warninginfo);
-        //echo "<P style='color: red'><B>$warninginfo</B></P>";
         
-        echo "<span style='border:solid 1px black; background:orange; width:600px; display:block;'>";
-        echo "<P style='color: black'>";
+        echo "<span class='warningsitupart'>";
+        echo "<P class='blacktext'>";
         echo "Les situations particulières (notamment liées à des problèmes de santé) ne font pas l'objet d'un suivi dans G2T. Vous devez pour ces cas précis vous rapprocher de votre chef de service.<br>";
         echo "</P>";
         echo "</span>";
@@ -1114,7 +1111,7 @@
             }
             //echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
 //            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
-            echo "<textarea rows='4' cols='60' style='line-height:20px; resize: none;' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();' >$commentaire</textarea> <br>";
+            echo "<textarea rows='4' cols='60' class='commenttextarea' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();' >$commentaire</textarea> <br>";
             if ($commentaire == '')
             {
                 $disabledbutton = ' disabled ';
@@ -1144,7 +1141,7 @@
         {
             echo "<div id='warningcommoblig' hidden='hidden'>" . $fonctions->showmessage(fonctions::MSGWARNING, "Le commentaire est obligatoire pour ce type de demande.") . "</div>";
             echo "Commentaire<label id='warningcommfacult'> facultatif</label> (maximum : $longueurmaxcommentaire caractères - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
-            echo "<textarea rows='4' cols='60' style='line-height:20px; resize: none;' name='commentaire' id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();'>$commentaire</textarea> <br>";
+            echo "<textarea rows='4' cols='60' class='commenttextarea' name='commentaire' id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();'>$commentaire</textarea> <br>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<br>";            
         }
@@ -1160,7 +1157,7 @@
         }
         if (! $masquerboutonvalider)
         {
-            echo "<input type='submit' name='valider' id='valider' value='Soumettre' $disabledbutton />";
+            echo "<input type='submit' name='valider' id='valider' class='g2tbouton g2tvalidebouton' value='Enregistrer' $disabledbutton />";
         }
         echo "<br><br>";
 

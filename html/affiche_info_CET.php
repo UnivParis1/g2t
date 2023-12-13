@@ -12,8 +12,7 @@
 	media="screen"></link>
 <?php
     echo "</head>";
-    echo "<body style='margin: 0 ; overflow: hidden'>";
-    //echo "<p style='font-family: Verdana; font-size: 8pt; text-align: left; color: #616162; background: inherit; border-width: 0;'>";
+    echo "<body class='siham_body'>";
     echo "<p class='siham_css'>";
 
     //echo "L'agent connecté est : " . $uid . "<br>";

@@ -114,7 +114,6 @@
     $typeimage = pathinfo($path, PATHINFO_EXTENSION);
     $data = file_get_contents($path);
     $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-//    echo "<center><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' style='position: absolute; margin: 0 0 0 -" . ($width/2)  . "px;'></center>";
     echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
     // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
     if (ob_get_contents()!==false)
@@ -158,7 +157,7 @@
     echo "</div>";
     echo "<br>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-    echo "<input type='submit' value='Soumettre' name='selection_trim'/>";
+    echo "<input type='submit' name='selection_trim' class='g2tbouton g2tsuivantbouton' value='Suivant' />";
     echo "</form>";
 
     

@@ -131,17 +131,21 @@
                             $demande->statut($statut);
                             $resultat = $demande->store();
                             if ($resultat == "")
-                                echo "<span style='color:green'>Ok</span><br>";
+                            {
+                                echo "<span class='greentext'>Ok</span><br>";
+                            }
                             else
-                                echo "<span style='color:red'>Echec (Chgmt statut) => $resultat</span><br>";
+                            {
+                                echo "<span class='redtext'>Echec (Chgmt statut) => $resultat</span><br>";
+                            }
                         } else {
-                            echo "<span style='color:red'>Echec (ligne " . ($index + 1) . ") => $resultat</span><br>";
+                            echo "<span class='redtext'>Echec (ligne " . ($index + 1) . ") => $resultat</span><br>";
                         }
                     } else {
-                        echo "<span style='color:red'>Erreur(s) détectée(s) dans la ligne " . ($index + 1) . " : $msg_erreur </span><br>";
+                        echo "<span class='redtext'>Erreur(s) détectée(s) dans la ligne " . ($index + 1) . " : $msg_erreur </span><br>";
                     }
                 } else {
-                    echo "<span style='color:red'>Mauvaise structure dans la ligne " . ($index + 1) . " </span><br>";
+                    echo "<span class='redtext'>Mauvaise structure dans la ligne " . ($index + 1) . " </span><br>";
                 }
             }
         }
@@ -164,11 +168,11 @@
     <br>
     <form name='postconge_liste' method='post'>
 
-    	<textarea name="conge_liste" cols="60" rows="20" style='line-height:20px; resize: none;'><?php echo $liste_conges ?></textarea>
+    	<textarea name="conge_liste" cols="60" rows="20" class='commenttextarea'><?php echo $liste_conges ?></textarea>
     <?php
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 ?>
-<input type='submit' value='Soumettre'>
+<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer'>
 </form>
 
 <br>

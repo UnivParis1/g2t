@@ -117,8 +117,6 @@
             {
                 $erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
                 echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
-
-//                    echo "<P style='color: red'>" . $erreur . "</P>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
             }
             else
@@ -131,14 +129,12 @@
                     {
                         $erreur = "Impossible de supprimer l'ajout de congés supplémentaires (id = $id) : " . $erreur;
                         echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
-//                        echo "<P style='color: red'>" . $erreur . "</P>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                     }
                     else
                     {
                         $erreur = "Suppression de l'ajout de congés supplémentaires (id = $id) : Ok";
                         echo $fonctions->showmessage(fonctions::MSGINFO, $erreur);
-//                        echo "<P style='color: green'>" . $erreur . "</P>";
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
                     }
                 }
@@ -172,16 +168,14 @@
         echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
 ?>
         <script>
-                $("#agent").autocompleteUser(
-                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
-  	    </script>
+            $("#agent").autocompleteUser(
+                    '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                       wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
+        </script>
 <?php
-
-
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
     elseif ($agentid == "") // On est pas en mode rh ==> Donc on est en mode "resp"
@@ -222,7 +216,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>"; 
     } else {
         if (! is_null($nbr_jours_conges)) {
@@ -267,12 +261,10 @@
             if ($msg_erreur != "") {
                 $errlog = "Les jours supplémentaires n'ont pas été enregistrés... ==> MOTIF : " . $msg_erreur;
                 echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-//                echo "<P style='color: red'>" . $errlog . "</P>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             } elseif (! is_null($solde)) {
                 $errlog = "Les jours supplémentaires ont été enregistrés... Nouveau solde = " . ($solde->droitaquis() - $solde->droitpris());
                 echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
-//                echo "<P style='color: green'>" . $errlog . "</P>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
                 foreach ($agentrhlist as $agentrh) {
@@ -288,9 +280,6 @@
         else
         {
             // On est au premier affichage de l'écran apres la selection de l'agent ==> Pas de control de saisi
-            //$errlog = "Le motif de l'ajout est obligatoire";
-            //echo "<P style='color: red'>" . $errlog . "</P><br/>";
-            //error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
 
         // On charge le solde de congés complémentaires afin de pouvoir poster le nombre de jours déjà aquis ==> Objectif : Empécher le double post (F5 du navigateur)
@@ -309,12 +298,11 @@
             {
                 $msg_erreur = "Erreur lors du chargement du solde de congés complémentaires $lib_sup : " . $msg_erreur;
                 echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-//                echo "<P style='color: red'>" . $errlog . "</P><br/>";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             }
         }
         
-        echo "<span style='border:solid 1px black; background:lightgreen; width:600px; display:block;'>";
+        echo "<span class='ajoutcongesbloc'>";
         echo "Ajout de jours de congés complémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         echo "<br>";
         echo "Le solde de " . strtolower($solde->typelibelle()) . " est actuellement de " . ($solde->droitaquis()-$solde->droitpris()) . " jour(s) <br>";
@@ -322,15 +310,15 @@
         echo "<br>";
         echo "Nombre de jours complémentaires à ajouter : <input required type='text' name='nbr_jours_conges' id='nbr_jours_conges' size=3 value='$nbr_jours_conges'>";
         echo "<br>";
-        echo "<b style='color: red'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères  - Reste : <label id='motifrestant'>$longueurmaxcommentaire</label> car.) : </b>";
+        echo "<b class='redtext'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères  - Reste : <label id='motifrestant'>$longueurmaxcommentaire</label> car.) : </b>";
 //        echo "<input type='text' name='commentaire_supp' id='commentaire_supp' size=80 oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >";
-        echo "<textarea required rows='4' cols='80' style='line-height:20px; resize: none;' name='commentaire_supp' id='commentaire_supp' oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >$commentaire_supp</textarea>";
+        echo "<textarea required rows='4' cols='80' class='commenttextarea' name='commentaire_supp' id='commentaire_supp' oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >$commentaire_supp</textarea>";
         echo "<br>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
         echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
         echo "<br>";
-        echo "<input type='submit' value='Soumettre' name='button_ajout'>";
+        echo "<input type='submit' name='button_ajout' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
         echo "</form>";
         echo "<br>";
         echo "</span>";
@@ -347,14 +335,14 @@
         $htmlcommentaire = $agent->affichecommentairecongehtml(true,$fonctions->anneeref(),true);
         if (trim($htmlcommentaire) != "")
         {
-            echo "<span style='border:solid 1px black; background:lightsteelblue; width:900px; display:block;'>";
+            echo "<span class='supprcongesbloc'>";
             echo "<form name='frm_supprconge'  method='post' >";
             echo "Annulation d'un ajout de jours complémentaires :<br><br>";
             echo $htmlcommentaire;
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
-            echo "<input type='submit' value='Supprimer'  name='button_delete'>";
+            echo "<input type='submit' name='button_delete' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' >";
             echo "</form>";
             echo "<br>";
             echo "</span>";

@@ -243,7 +243,7 @@ class declarationTP
         $htmltext = $htmltext . "<td></td>";
         for ($indexjrs = 1; $indexjrs < 6; $indexjrs ++) {
             // echo "indexjrs = $indexjrs <br>";
-            $htmltext = $htmltext . "<td colspan='2' style='width:50px'>" . $this->fonctions->nomjourparindex($indexjrs) . "</td>";
+            $htmltext = $htmltext . "<td colspan='2' class='widthtd50'>" . $this->fonctions->nomjourparindex($indexjrs) . "</td>";
         }
         $htmltext = $htmltext . "</tr>";
         $checkboxname = null;
@@ -522,7 +522,7 @@ class declarationTP
         if ($this->fonctions->formatdatedb($this->datefin()) >= date("Ymd")) // Si la date de fin est postérieur à aujourd'hui
             $htmltext = $htmltext . $this->datefin();
         else // Si la date est inférieur à aujourd'hui, on modifie la tipographie (couleur, gras....)
-            $htmltext = $htmltext . "<B><div style='COLOR:#FF0000'>" . $this->datefin() . "</div></B>";
+            $htmltext = $htmltext . "<B><div class='redtext'>" . $this->datefin() . "</div></B>";
         $htmltext = $htmltext . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >";
         if ($pourmodif and strcasecmp($this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) {

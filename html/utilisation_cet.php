@@ -125,7 +125,6 @@
             if ($msg_erreur != "") 
             {
                 echo $fonctions->showmessage(fonctions::MSGERROR, "Agent = $agentid ==> Demande = " . $demande->id() . " : " . $msg_erreur);
-                //echo "<p style='color: red'>Agent = $agentid ==> Demande = " . $demande->id() . " : " . $msg_erreur . "</p><br>";
                 error_log(basename(__FILE__) . " " . $msg_erreur);
                 $msg_erreur = "";
             } else {
@@ -166,13 +165,13 @@
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-        echo "<input type='submit' value='Soumettre' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "<input type='hidden' name='selectall' value='no'>";
         echo "</form>";
         echo "<form name='selectall'  method='post' >";
         echo "<br>";
         echo "<br>";
-        echo "<input type='submit' value='Tout afficher' >";
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton g2tboutonwidthauto' value='Tout afficher' >";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='selectall' value='yes'>";
@@ -312,7 +311,7 @@
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             echo "<input type='hidden' name='selectall' value='". $selectall ."'>";
             echo "<br>";
-            echo "<input type='submit' value='Soumettre' >";
+            echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
             echo "</form>";
         }
 
