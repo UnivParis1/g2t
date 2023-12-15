@@ -146,7 +146,7 @@
 }
 .titresimple{
    FONT-WEIGHT: bold ; 
-   color : #BF3021; 
+   color : #BF3021 !important; 
    border-width:1px;
    border-style:solid; 
    border-color:#888B8A;
@@ -164,25 +164,28 @@
 / MENU PRINCIPAL
 /****************************************************/
 #mainmenu {
+   FONT-FAMILY: Arial;
    FONT-WEIGHT: bold; 
    FONT-SIZE: 14px; 
-   FONT-FAMILY: arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
-   border-collapse : collapse; 
+   border-collapse: collapse; 
    COLOR: #336699; 
 }
+
+/* Défini l'aspect des menus de niveau 1, 2 et 3*/
 #mainmenu UL UL {
-   PADDING-RIGHT: 0px; 
    DISPLAY: none; 
-   PADDING-LEFT: 0px; 
-   LEFT: 274px; 
-   PADDING-BOTTOM: 0px;
-   MARGIN: 0px; 
-   PADDING-TOP: 0px; 
    POSITION: absolute; 
+   PADDING-RIGHT: 0px; 
+   PADDING-LEFT: 0px; 
+   PADDING-BOTTOM: 0px;
+   PADDING-TOP: 0px; 
    TOP: -1px;
+   LEFT: 274px; 
+   MARGIN: 0px; 
    Z-INDEX: 2000;
 }
 #mainmenu LI {
+   POSITION: relative; 
    PADDING-RIGHT: 2px; 
    PADDING-LEFT: 2px; 
    PADDING-BOTTOM: 5px; 
@@ -190,27 +193,34 @@
    MARGIN: 0px;
    WIDTH: 270px; 
    LIST-STYLE-TYPE: none; 
-   POSITION: relative; 
    BACKGROUND-COLOR: #E5EAE9;  
    float: left; 
    text-align: center; 
 }
-#mainmenu LI a:hover {
-   cursor:pointer; /*  COLOR: #A4405B; */
-}
-#mainmenu LI:hover {
-   BACKGROUND-COLOR: #ffff70; 
-   cursor:pointer; /* COLOR: #A4405B !important;*/
-}
-#mainmenu LI A {
-   TEXT-DECORATION: none; 
-   COLOR: #336699;
-/*   width: calc(100% - 30px); */
+
+/* Défini l'aspect du menu lorsqu'on passe la souris au dessus */
+/* ATTENTION : La modification des ces propriétés impacte les niveau 2 et 3 */
+/*       sauf si elles sont définies dans le #mainmenu UL.niveau2 LI:hover, #mainmenu UL.niveau3 LI:hover */
+#mainmenu UL.niveau1 LI:hover 
+{
+   BACKGROUND-COLOR: #F9E1A4; /* #F2D99D; //#f5c95c; //#ffff70; */
+   cursor: pointer; 
 }
 
+/* Défini la couleur et l'aspect des liens HTML dans le menu principal */
+#mainmenu LI A {
+   TEXT-DECORATION: none; 
+   COLOR: inherit;
+}
+
+/* Tous les menu de niveau 1, 2 et 3 sont en mode block  */
 #mainmenu UL.niveau1 {
    DISPLAY: block;
 }
+
+/* Aspect du menu de niveau 1 */
+/* ATTENTION : La modification de ces propriétés impacte les niveau 2 et 3 */
+/*             Sauf si les valeurs sont définies dans #mainmenu UL.niveau2 LI, #mainmenu UL.niveau3 LI  */
 #mainmenu UL.niveau1 LI {
     BACKGROUND-COLOR: #D8D8D8; 
     TEXT-DECORATION: none;  
@@ -224,11 +234,14 @@
     margin-top: 0px;
 }
 
-#mainmenu UL.niveau1 LI:hover {
-   BACKGROUND-COLOR: #ffff70; 
-   cursor:pointer; /* COLOR: #A4405B !important;*/
+/* Aspect du menu de niveau 2 et de niveau 3 */
+/* Inutile de reprendre les autres propriétés, car elles sont héritées de niveau 1 */
+#mainmenu UL.niveau2 LI,
+#mainmenu UL.niveau3 LI {
+    BACKGROUND-COLOR: #E5EAE9;
 }
 
+/* Position du menu de niveau 2 */
 #mainmenu LI:hover UL.niveau2 {
    DISPLAY: block;  
    FONT-SIZE: 11px; 
@@ -236,74 +249,21 @@
    TOP:27px;
 }
 
-#mainmenu UL.niveau2 LI {
-    BACKGROUND-COLOR: #E5EAE9;  
-    /*   BACKGROUND-COLOR: #D8D8D8; */
-    TEXT-DECORATION: none; 
-    BORDER-BOTTOM: #888B8A 1px solid;  
-    BORDER-TOP: #888B8A 1px solid;  
-    BORDER-LEFT: #888B8A 1px solid;  
-    BORDER-RIGHT: #888B8A 1px solid; 
-    margin-bottom: 0px;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-top: 0px;
-}
-
-#mainmenu UL.niveau2 LI:hover {
-   BACKGROUND-COLOR: #ffff70; 
-   cursor:pointer; /* COLOR: #A4405B !important;*/
-}
-
-#mainmenu UL.niveau3 LI {
-   BACKGROUND-COLOR: #E5EAE9;  
-/*   BACKGROUND-COLOR: #D8D8D8; */
-   TEXT-DECORATION: none; 
-   BORDER-BOTTOM: #888B8A 1px solid;  
-   BORDER-TOP: #888B8A 1px solid;  
-   BORDER-LEFT: #888B8A 1px solid;  
-   BORDER-RIGHT: #888B8A 1px solid; 
-}
-#mainmenu UL.niveau3 LI:hover {
-   BACKGROUND-COLOR: #ffff70; 
-   cursor:pointer; /* COLOR: #A4405B !important;*/
-}
-
-/*
-#mainmenu ul.niveau1 li ul.niveau2 li:hover {
-   BACKGROUND-COLOR: #ffff70; cursor:pointer; COLOR: #A4405B !important;
-}
-#mainmenu ul.niveau1 li ul.niveau2 a.li:hover {
-   BACKGROUND-COLOR: #ffff70; cursor:pointer; COLOR: #A4405B !important;
-}
-*/
-
+/* Position du menu de niveau 3  */
 #mainmenu LI LI:hover UL.niveau3 {
    DISPLAY: block;
 }
-#mainmenu LI.sfhover UL.niveau2 {
-   DISPLAY: block;  
-   FONT-SIZE: 11px; 
-   LEFT: 0px; 
-   TOP: 18px;  
-}
-#mainmenu LI LI.sfhover UL.niveau3 {
-   DISPLAY: block;
-}
+
+/* Défini l'aspect et la position du marqueur de 'sous-menu' ▶ */
 #mainmenu LI.plus {
-   COLOR: #336699; 
+   COLOR: inherit; 
    BACKGROUND-POSITION: right 50%; 
-/*
-   BACKGROUND-IMAGE: url(../images/fdroite.gif); 
-*/
    BORDER-BOTTOM: #888B8A 1px solid; 
    BACKGROUND-REPEAT: no-repeat;
 }
-
-LI.plus::after {
+#mainmenu LI.plus::after {
     text-align: center;
     content: "\25B6";  /* triangle vers la droite ▶ */
-    /* COLOR: red; */
     position: absolute; 
     right: 10px;
 }
@@ -664,6 +624,8 @@ td[data-title] {
     position: relative;
 }
 
+.ui-menu .ui-menu-item a.ui-state-hover,
+.ui-menu .ui-menu-item a.ui-state-active,
 .bulleinfo:hover {
     background: #f5c95c8e;
     color: black;
@@ -872,13 +834,18 @@ form select, form input, form textarea {
 select {
   background: #f3f6f9 !important;
   border: 1px solid #ccc;
-  padding: 4px 3px;
+  padding: 3px 4px;
   font-family: inherit;
+}
+
+.selectpadding {
+  padding: 8px 8px;    
 }
 
 /**********************************************************
 / SURCHARGE DE CERTAINES CLASSES DE LA CSS SELECT2-MIN.CSS
 /**********************************************************/
+/*********************
 .select2-container--default .select2-selection--single {
   background-color: #f3f6f9 !important;
   color: #00326e !important;
@@ -900,14 +867,77 @@ select {
   color: #00326e !important;  
 }
 
-.select2-container--open .select2-dropdown {
-  left: 10px;  
-  top : 8px;
-}
+
+/.select2-container--open .select2-dropdown {
+/  left: 10px;
+/  top : 8px;
+/}
+
 
 .ui-autocomplete-input {
   color: #00326e !important;
 }
+*******/
+
+.ui-menu {
+    list-style:none;
+    padding: 2px;
+    margin: 0;
+    display:block;
+    float: left;
+}
+.ui-menu .ui-menu {
+    margin-top: -3px;
+}
+.ui-menu .ui-menu-divider
+{
+    font-family: Arial ;
+    font-size: 1em ;      
+}
+
+.ui-menu .kind { 
+    color: #2E5693; 
+    font-variant: small-caps;
+    font-weight: bold;
+    margin: 0.1em;
+    padding-top : 10px;
+    padding-bottom : 10px;
+    border-top: dotted 1px;
+    list-style: none;
+}
+.ui-menu .kind:first-child {
+    margin-top: 0;
+    border-top: none;
+    padding-top : 10px;
+    padding-bottom : 10px;
+}
+
+.ui-menu .ui-menu-item {
+    margin:0 ;
+    padding: 0 ;
+    zoom: 1 ;
+    float: left ;
+    clear: left ;
+    width: 100% ;
+    font-size: 1.2em;
+}
+.ui-menu .ui-menu-item a {
+    text-decoration:none ;
+    display:block ;
+    padding:.2em .4em ;
+    line-height:1.5 ;
+    zoom:1 ;
+}
+
+/*
+.ui-menu .ui-menu-item a.ui-state-hover,
+.ui-menu .ui-menu-item a.ui-state-active {
+    font-weight: normal ;
+    margin: -1px ;
+    // background-color : red ;
+    // border-color : yellow ;
+}
+*/
 
 /********************************************
 / CSS DU TEXTE
@@ -1029,6 +1059,8 @@ select {
     background:orange; 
     width:600px; 
     display:block;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 .delegpaddingleft,
@@ -1056,7 +1088,7 @@ select {
     border-top-style: hidden; 
     border-right-style: hidden; 
     border-left-style: hidden; 
-    border-bottom-style: hidden; 
+    border-bottom-style: hidden;
 }
 
 .ajoutcetbloc {

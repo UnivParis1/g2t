@@ -1048,9 +1048,20 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
     if (is_null($agentid) and ($mode!='resp' and $mode!='gestion'))
     {
-        echo "<form name='demandeforagent'  method='post' action='gestion_teletravail.php'>";
+        //echo "<form name='demandeforagent'  method='post' action='gestion_teletravail.php'>";
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentteletravail'  method='post' >";
+
+        $agentsliste = $fonctions->listeagentsg2t();
+        echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+        foreach ($agentsliste as $key => $identite)
+        {
+            echo "<option value='$key'>$identite</option>";
+        }
+        echo "</select>";
+        
+/*        
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
 ?>
@@ -1060,8 +1071,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
  <?php
+ */
         echo "<br>";
-        
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";        

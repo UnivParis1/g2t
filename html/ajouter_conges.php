@@ -153,7 +153,7 @@
     if ($agentid == "" and strcasecmp($mode, "gestrh") == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
-/*        
+        
         $agentsliste = $fonctions->listeagentsg2t();
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -162,8 +162,8 @@
             echo "<option value='$key'>$identite</option>";
         }
         echo "</select>";
-*/        
-
+        
+/*
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='' class='agent' /> ";
 ?>
@@ -173,6 +173,8 @@
                        wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
         </script>
 <?php
+ 
+ */
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";

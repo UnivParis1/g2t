@@ -311,7 +311,7 @@
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
-/*
+
             $agentsliste = $fonctions->listeagentsg2t();
             echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
             echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -320,8 +320,8 @@
                 echo "<option value='$key'>$identite</option>";
             }
             echo "</select>";
-*/
-            
+
+/*            
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
             echo "' size=40 />";
             echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -333,11 +333,7 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	    </script>
 <?php
-
-
-
-
-
+*/
         }
     } elseif ($mode == 'resp' or $mode == 'gest') {
         // => On est en mode "reponsable" et un agent est sélectionné

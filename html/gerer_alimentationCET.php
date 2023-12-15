@@ -179,7 +179,7 @@
         echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET.php'>";
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
-/*
+
         $agentsliste = $fonctions->listeagentsg2t();
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -188,8 +188,8 @@
             echo "<option value='$key'>$identite</option>";
         }
         echo "</select>";
-*/
-		
+
+/*		
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
         echo "' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -201,7 +201,7 @@
                      	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
   	</script>
 <?php
-
+*/
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -724,15 +724,16 @@
                 echo "<br>";
                 echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond class='erroralimCETlabel'></label>";
                 echo "<br>";
-                echo "Combien de jours souhaitez-vous ajouter à votre CET ? <input type=text placeholder='Case F' name=valeur_f id=valeur_f size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
+                echo "Combien de jours souhaitez-vous ajouter à votre CET ? ";
+                echo "<input type=text placeholder='Case F' name=valeur_f id=valeur_f size=4 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
                 echo "<br>";
-                echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=3 readonly class='inputdataalimCET' > jour(s).";
+                echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=4 readonly class='inputdataalimCET' > jour(s).";
                 echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=3 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=3 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=3 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=3 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=3 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=4 readonly class='inputdataalimCET' >";
 /*                
                 //$code = null;
                 //if ($structure->responsable()->agentid() == $agent->agentid())

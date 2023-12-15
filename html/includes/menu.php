@@ -20,88 +20,90 @@
         echo " - " . $user->identitecomplete(); 
     } 
 ?></title>
-<link rel="stylesheet"
-    href="<?php echo "$WSGROUPURL"?>/web-widget/jquery-ui.css"
-    type="text/css" media="all">
-</link>
-<link rel="stylesheet"
-    href="<?php echo "$WSGROUPURL"?>/web-widget/ui.theme.css"
-    type="text/css" media="all">
-</link>
-<link rel="stylesheet"
-    href="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.css"
-    type="text/css" media="all">
-</link>
+
+<!-----------------------------------
+-- JQuery-ui CSS local
+------------------------------------->
+<link rel="stylesheet" href="jquery-ui/jquery-ui.css?<?php echo filemtime('jquery-ui/jquery-ui.css') ?>" type="text/css" media="all"></link>
+<!-----------------------------------
+-- JQuery-ui CSS de l'établissement
+
+<link rel="stylesheet" href="<?php echo "$WSGROUPURL" ?>/web-widget/jquery-ui.css" type="text/css" media="all"></link>
+------------------------------------->
+<link rel="stylesheet" href="<?php echo "$WSGROUPURL" ?>/web-widget/ui.theme.css" type="text/css" media="all"></link>
+<!-----------------------------------
+-- JQuery-ui JS local
+------------------------------------->
+<script src="jquery-ui/jquery.js"></script>
+<script src="jquery-ui/jquery-ui.js"></script>
+
+<!-----------------------------------
+-- AutocompleteUser CSS + JS de l'établissement
+------------------------------------->
+<link rel="stylesheet" href="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.css" type="text/css" media="all"></link>
+<script src="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.js"></script>
+
+<!-----------------------
 <script type="text/javascript">
-<?php
-    if (is_null($user) or is_null($user->agentid())) {
-        echo "PROBLEME : L'utilisateur n'est pas renseigné ==> objet \$user!!!! <br>";
-        exit();
+    function montre(id)
+    {
+        var d = document.getElementById(id);
+        for (var i = 1; i<=10; i++)
+        {
+            if (document.getElementById('smenuprincipal'+i))
+            {
+                document.getElementById('smenuprincipal'+i).style.display='none';
+            }
+        }
+        if (d)
+        {
+            d.style.display='block';
+        }
     }
 
-?>
-
-	function montre(id)
-	{
-            var d = document.getElementById(id);
-            for (var i = 1; i<=10; i++)
-            {
-                if (document.getElementById('smenuprincipal'+i))
-                {
-                    document.getElementById('smenuprincipal'+i).style.display='none';
-                }
-            }
-            if (d)
-            {
-                d.style.display='block';
-            }
-	}
-
-	function cache(id, e)
-	{
-            var toEl;
-            var d = document.getElementById(id);
-            if (window.event)
-                toEl = window.event.toElement;
-            else if (e.relatedTarget)
-                toEl = e.relatedTarget;
-            if ( d != toEl && !estcontenupar(toEl, d) )
-                d.style.display="none";
-	}
+    function cache(id, e)
+    {
+        var toEl;
+        var d = document.getElementById(id);
+        if (window.event)
+            toEl = window.event.toElement;
+        else if (e.relatedTarget)
+            toEl = e.relatedTarget;
+        if ( d != toEl && !estcontenupar(toEl, d) )
+            d.style.display="none";
+    }
 
 // retourne true si oNode est contenu par oCont (conteneur)
-	function estcontenupar(oNode, oCont)
-	{
-            if (!oNode)
-                return; // ignore les alt-tab lors du hovering (empêche les erreurs)
-            while ( oNode.parentNode )
-            {
-                oNode = oNode.parentNode;
-                if ( oNode == oCont )
-                    return true;
-            }
-            return false;
-	}
+    function estcontenupar(oNode, oCont)
+    {
+        if (!oNode)
+            return; // ignore les alt-tab lors du hovering (empêche les erreurs)
+        while ( oNode.parentNode )
+        {
+            oNode = oNode.parentNode;
+            if ( oNode == oCont )
+                return true;
+        }
+        return false;
+    }
 
 /* Demande d'affichage d'une fenetre au niveau du front office */
-	function ouvrirFenetrePlan(url, nom) 
-	{
-            window.open(url, nom, "width=520,height=500,scrollbars=yes, status=yes");
-	}
+    function ouvrirFenetrePlan(url, nom) 
+    {
+        window.open(url, nom, "width=520,height=500,scrollbars=yes, status=yes");
+    }
 
 </script>
+----------------------------->
 <script type="text/javascript">window.bandeau_ENT={current:'g2t'};</script>
-<script type="text/javascript"
-    src="https://esup-data.univ-paris1.fr/esup/outils/postMessage-resize-iframe-in-parent.js">
-</script>
+<script type="text/javascript" src="https://esup-data.univ-paris1.fr/esup/outils/postMessage-resize-iframe-in-parent.js"></script>
+
+<!-------------------------------------------
 <script src="javascripts/jquery-1.8.3.js"></script>
 <script src="javascripts/jquery-ui.js"></script>
-
-<link
-    href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-<script
-    src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js">
-</script>
+-------------------------------------------->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 
 <script>
     $(document).ready(function() {
@@ -109,9 +111,37 @@
         $('#esignatureid').select2();
         $('.listeagentg2t').select2();
         $('.selectstructure').select2();
+
+        // On force le focus sur l'input de recherche lorsqu'on clique sur l'ouverture de la combo d'un select2
+        var select2containerlist = document.getElementsByClassName("select2-container");
+        // console.log(select2containerlist);
+        if (select2containerlist)
+        {
+            for (let index = 0; index < select2containerlist.length; index++)
+            {
+                let select2container = select2containerlist[index];
+                // console.log(select2container.classList);
+                select2container.addEventListener('click',select2setfocus);
+            }
+        }
+    
     });
+
+    function select2setfocus()
+    {
+        // console.log('select2setfocus inside');
+        var inputselect2list = document.getElementsByClassName("select2-search__field");
+        if (inputselect2list)
+        {
+            var inputselect2 = inputselect2list[0];
+            if (inputselect2)
+            {
+                inputselect2.focus();
+            }
+        }
+    }
+
 </script>
-<script src="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.js"></script>
 
 <script>
 
@@ -124,8 +154,13 @@
         form.find("[class='" + selectedInput.name + "']").val (ui.item.value);
         return false;
     };
-
+    
 <?php 
+    if (is_null($user) or is_null($user->agentid())) {
+        echo "PROBLEME : L'utilisateur n'est pas renseigné ==> objet \$user!!!! <br>";
+        exit();
+    }
+
     $planningelement = new planningelement($dbcon);
     $planningelement->type('teletrav');
     $couleur = $planningelement->couleur();
@@ -298,12 +333,10 @@
 
 <!-- On rend la CSS "dynamique" en lui passant en paramètre le timestamp Unix de dernière modification du fichier -->
 <!-- Donc à chaque changement de CSS, on force le chargement de la nouvelle CSS -->
-<link rel="stylesheet" type="text/css"
-    href="style/style.css?<?php echo filemtime('style/style.css')  ?>" media="screen">
-</link>
+<link rel="stylesheet" type="text/css" href="css-g2t/g2t.css?<?php echo filemtime('css-g2t/g2t.css') ?>" media="all"></link>
 <!------------------------------------
 <link rel="stylesheet" type="text/css" 
-    href="style/jquery-ui.css?<?php echo filemtime('style/jquery-ui.css')  ?>" media="screen">
+    href="style/jquery-ui.css?<? php echo filemtime('style/jquery-ui.css')  ?>" media="screen">
 </link>
 ------------------------------->
 </head>
@@ -663,7 +696,8 @@
 
 <div id="mainmenu">
     <ul class="niveau1">
-        <li onclick="">MENU AGENT
+<!--        <li onclick="">MENU AGENT -->
+            <li>MENU AGENT
             <ul class="niveau2">
                 <li onclick='document.accueil.submit();'>
                     <form name='accueil' method='post' action="index.php">
@@ -837,7 +871,8 @@
         }
 ?> 
     <ul class="niveau1">
-        <li onclick="">MENU RESPONSABLE
+<!--        <li onclick="">MENU RESPONSABLE -->
+            <li>MENU RESPONSABLE
             <ul class="niveau2">
 <?php
         if (!$estrespdebibliotheque)
@@ -1048,7 +1083,8 @@
     if ($user->estgestionnaire()) {
 ?>
     <ul class="niveau1">
-        <li onclick="">MENU GESTIONNAIRE
+<!--        <li onclick="">MENU GESTIONNAIRE -->
+            <li>MENU GESTIONNAIRE
             <ul class="niveau2">
                 <li onclick='document.gest_parametre_modif.submit();'>
                     <form name='gest_parametre_modif' method='post' action="gestion_dossier.php">
@@ -1220,7 +1256,8 @@
     if ($user->estprofilrh()) {
 ?>
     <ul class="niveau1">
-        <li onclick="">MENU GESTION RH
+<!--        <li onclick="">MENU GESTION RH  -->
+            <li>MENU GESTION RH
             <ul class="niveau2"> 
 <?php
                 // PROFIL RH ==> GESTIONNAIRE RH DE CET / GESTIONNAIRE RH DE CONGES / GESTIONNAIRE RH DE TELETRAVAIL
@@ -1430,7 +1467,8 @@
     if ($realuser->estadministrateur()) {
 ?>
     <ul class="niveau1">
-        <li onclick="">MENU ADMINISTRATEUR
+<!--        <li onclick="">MENU ADMINISTRATEUR -->
+        <li>MENU ADMINISTRATEUR
             <ul class="niveau2">
                 <li onclick='document.admin_mode_maintenance.submit();'>
                     <form name='admin_mode_maintenance' method='post' action="admin_maintenance.php">

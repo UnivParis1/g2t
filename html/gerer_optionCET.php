@@ -167,7 +167,7 @@
         echo "<form name='demandeforagent'  method='post' action='gerer_optionCET.php'>";
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
-/*
+
         $agentsliste = $fonctions->listeagentsg2t();
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -176,8 +176,8 @@
             echo "<option value='$key'>$identite</option>";
         }
         echo "</select>";
-*/        
         
+/*        
         echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
         echo "' size=40 />";
         echo "<input type='hidden' id='agentid' name='agentid' value='";
@@ -189,7 +189,7 @@
                        wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
         </script>
 <?php
-
+*/
         echo "<br>";
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -817,9 +817,9 @@
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
 
-            echo "<input type=hidden placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=3 readonly class='inputdataoptionCET' >";
-            echo "<input type=hidden placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=3 readonly class='inputdataoptionCET' >";
-            echo "<input type=hidden placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=3 readonly class='inputdataoptionCET' >";
+            echo "<input type=hidden placeholder='Case A' name=valeur_a id=valeur_a value='$valeur_a' size=4 readonly class='inputdataoptionCET' >";
+            echo "<input type=hidden placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=4 readonly class='inputdataoptionCET' >";
+            echo "<input type=hidden placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=4 readonly class='inputdataoptionCET' >";
             
             if ($mode == 'rh')
             {
@@ -832,18 +832,18 @@
             echo "<br>";
             if ($typeagent == 'titu')
             {
-                echo "Nombre de jours à prendre en compte au titre de la RAFP : <input type=text placeholder='Case I' name=valeur_i id=valeur_i size=3 onchange='update_case()' onkeyup='update_case()' ><label id=label_i class='erroroptionCETlabel'></label>";
+                echo "Nombre de jours à prendre en compte au titre de la RAFP : <input type=text placeholder='Case I' name=valeur_i id=valeur_i size=4 onchange='update_case()' onkeyup='update_case()' ><label id=label_i class='erroroptionCETlabel'></label>";
                 echo "<br>";
             }
             else
             {
                 echo "<input type='hidden' name=valeur_i id=valeur_i value='0' >"; 
             }
-            echo "Nombre de jours à indemniser : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=3 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_j class='erroroptionCETlabel'></label>";
+            echo "Nombre de jours à indemniser : <input type=text placeholder='Case J' name=valeur_j id=valeur_j size=4 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_j class='erroroptionCETlabel'></label>";
             echo "<br>";
-            echo "Nombre de jours à maintenir sur le CET sous forme de congés : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=3 readonly class='inputdataoptionCET' onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_k class='erroroptionCETlabel'></label>";
+            echo "Nombre de jours à maintenir sur le CET sous forme de congés : <input type=text placeholder='Case K' name=valeur_k id=valeur_k size=4 readonly class='inputdataoptionCET' onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_k class='erroroptionCETlabel'></label>";
             echo "<br>";
-            echo "Solde du CET après option : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=3 readonly class='inputdataoptionCET' ><label id=label_l class='erroroptionCETlabel'></label>";
+            echo "Solde du CET après option : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=4 readonly class='inputdataoptionCET' ><label id=label_l class='erroroptionCETlabel'></label>";
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             echo "<input type='submit' class='g2tbouton g2tvalidebouton' name='cree_option' id='cree_option' value='Enregistrer' disabled>";
