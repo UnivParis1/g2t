@@ -7,9 +7,7 @@
     echo "<html>";
     echo "<head>";
 ?>
-<link rel="stylesheet" type="text/css"
-	href="style/style.css?<?php echo filemtime('style/style.css')  ?>"
-	media="screen"></link>
+<link rel="stylesheet" type="text/css"	href="css-g2t/g2t.css?<?php echo filemtime('css-g2t/g2t.css')  ?>" media="screen"></link>
 <?php
     echo "</head>";
     echo "<body class='siham_body'>";
