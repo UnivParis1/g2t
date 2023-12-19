@@ -387,77 +387,51 @@
     echo "</form>";
 
 ?>
-        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
-        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+    <script>
+        var confirmdialog = document.getElementById('confirmdialog');
+        /*
+        var confirmBtn = document.getElementById('questionconfirmBtn');
+        var labeltext = document.getElementById('questionlabeltext');
+        var cancelBtn = document.getElementById('questioncancelBtn');        
+        */
+        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
+        var labeltext = confirmdialog.querySelector('#questionlabeltext');
+        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
 
-        <dialog id="confirmdialog" class="questiondialog">
-          <form method="dialog">
-            <p>
-<?php
-        $type = 'question';
-        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
-
-?>
-                <label id='labeltext'>Confirmez vous cette action ?</label>
-            </p>
-            <menu><center>
-              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
-              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
-            </center></menu>
-          </form>
-        </dialog>
-        
-        <script>
-            let confirmdialog = document.getElementById('confirmdialog');
-            let confirmBtn = document.getElementById('confirmBtn');
-            let labeltext = document.getElementById('labeltext');
-            let cancelBtn = document.getElementById('cancelBtn');        
-    
-            confirmdialog.addEventListener('close', function onClose() {
-//                alert ('On va close');
-                if (confirmdialog.returnValue!=='cancel')
-                {
-//                    alert('L id est ' + confirmBtn.value);
-                    // L'id du boutton en cours est dans la propertie value du bouton confirm
-                    var submit_button = document.getElementById(confirmBtn.value);
-//                    alert('Le button = ' + submit_button.id);
-                    submit_button.tagname = 'OK';
-//                    submit_button.value = 'yes';
-                    submit_button.click();
-//                    var submit_form = document.getElementById('frm_gest_demande');
-//                    alert('submit_form = ' + submit_form.id)
-//                    submit_form.submit();
-                }
-            });
-
-            var click_element = function(elementid)
+        confirmdialog.addEventListener('close', function onClose() {
+            if (confirmdialog.returnValue!=='cancel')
             {
-                if (typeof confirmdialog.showModal === "function") {
-                    var submit_button = document.getElementById(elementid);
-                    if (submit_button.classList.contains("cancelbutton"))
-                    {
-                        labeltext.innerHTML = 'Confirmez vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
-                    }
-                    else if (submit_button.classList.contains("cancel"))
-                    {
-                        labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
-                    }
-                    cancelBtn.textContent = "Non";
-                    cancelBtn.hidden = false;
-                    confirmBtn.textContent = "Oui";
-                    confirmBtn.hidden = false;
-                    confirmBtn.value = elementid;
-                    confirmdialog.showModal();
-                }        
-                else {
-                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                // L'id du boutton en cours est dans la propertie value du bouton confirm
+                var submit_button = document.getElementById(confirmBtn.value);
+                submit_button.tagname = 'OK';
+                submit_button.click();
+            }
+        });
+
+        var click_element = function(elementid)
+        {
+            if (typeof confirmdialog.showModal === "function") {
+                var submit_button = document.getElementById(elementid);
+                if (submit_button.classList.contains("cancelbutton"))
+                {
+                    labeltext.innerHTML = 'Confirmez vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
                 }
-            };
-        </script>
+                else if (submit_button.classList.contains("cancel"))
+                {
+                    labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+                }
+                cancelBtn.textContent = "Non";
+                cancelBtn.hidden = false;
+                confirmBtn.textContent = "Oui";
+                confirmBtn.hidden = false;
+                confirmBtn.value = elementid;
+                confirmdialog.showModal();
+            }        
+            else {
+                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+            }
+        };
+    </script>
 <?php
     
     

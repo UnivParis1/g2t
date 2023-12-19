@@ -343,17 +343,19 @@
 
 <body class="bodyhtml"> 
 
+    <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
+    <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
+
     <dialog id="warningdialog" class="warningdialog">
         <form method="dialog">
             <p>
 <?php
-        $type = 'warning';
-        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
-
+                $type = 'warning';
+                $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+                echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
 ?>
                 <label id='warninglabeltext'>Votre texte ne doit pas dépasser XXXX caractères! :</label>
             </p>
@@ -375,7 +377,55 @@
                 return false;
             }
         });
-    </script>        
+    </script>
+
+    <dialog id="confirmdialog" class="questiondialog">
+        <form method="dialog">
+            <p>
+<?php
+                $type = 'question';
+                $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+                echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
+?>
+                <label id='questionlabeltext'>Confirmez vous cette action ?</label>
+            </p>
+            <menu>
+                <center>
+                    <button id="questionconfirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+                    <button id="questioncancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
+                </center>
+            </menu>
+        </form>
+    </dialog>
+
+    <dialog id="reportdialog" class="questiondialog">
+        <form method="dialog">
+            <p>
+<?php
+                $type = 'question';
+                $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+                echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;";
+?>
+                <label id='reportlabeltext'>Action à réaliser :</label>
+                <select id='reportchoice' hidden='hidden'>
+                    <option value=''>Ne pas reporter</option>
+                </select>
+            </p>
+            <menu>
+                <center>
+                    <button id="reportconfirmBtn" value="" class='javaconfirmbutton'>Ok</button>
+                    <button id="reportcancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
+                </center>
+            </menu>
+        </form>
+    </dialog>
+    
     <script>
 
         var calculateContentHeight = function( ta, scanAmount ) {
@@ -448,7 +498,7 @@
         function checktextlength(textarea, maxlength, labelrestantname)
         {
             let warningdialog = document.getElementById('warningdialog');
-            let warninglabeltext = document.getElementById('warninglabeltext');
+            let warninglabeltext = warningdialog.querySelector('#warninglabeltext'); // document.getElementById('warninglabeltext');
             let labelrestanttext = document.getElementById(labelrestantname);
             if (textarea.value.length > maxlength) 
             {

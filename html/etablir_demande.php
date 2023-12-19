@@ -1099,7 +1099,7 @@
         if (! is_null($responsable)) 
         {
             echo "<div id='warningcommoblig'>" . $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.") . "</div>";
-            echo "Commentaire (maximum : $longueurmaxcommentaire caractères - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
+            echo "Commentaire (maximum : $longueurmaxcommentaire caractères et 4 lignes - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
 //            echo $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.");
             if (isset($_POST["responsable"]))
             {
@@ -1111,7 +1111,7 @@
             }
             //echo "<input type='hidden' name='responsable' value='" . $responsableid . "'>";
 //            echo "<textarea rows='4' cols='60' name='commentaire'  id='commentaire' oninput='modifycomment(this);' >$commentaire</textarea> <br>";
-            echo "<textarea rows='4' cols='60' class='commenttextarea' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();' >$commentaire</textarea> <br>";
+            echo "<textarea rows='4' cols='80' class='commenttextarea' name='commentaire'  id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();' >$commentaire</textarea> <br>";
             if ($commentaire == '')
             {
                 $disabledbutton = ' disabled ';

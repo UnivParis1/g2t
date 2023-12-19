@@ -293,50 +293,30 @@
     $planningelement = new planningelement($dbcon);
     $planningelement->type('teletrav');
     $couleur = $planningelement->couleur();
-    
-?>
-        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
-        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
-
-        <dialog id="reportdialog" class="questiondialog">
-          <form method="dialog">
-            <p>
-<?php
-        $type = 'question';
-        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;";
 
 ?>
-                <label id='labeltext'>Action à réaliser :</label>
-                <select id='reportchoice' hidden='hidden'>
-                    <option value=''>Ne pas reporter</option>
-                </select>
-            </p>
-            <menu><center>
-              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
-              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
-            </center></menu>
-          </form>
-        </dialog>    
-<script>
+    <script>
     
-        let selectEl = document.getElementById('reportchoice');
-        let confirmBtn = document.getElementById('confirmBtn');
-        let reportdialog = document.getElementById('reportdialog');
-        let labeltext = document.getElementById('labeltext');
-        let cancelBtn = document.getElementById('cancelBtn');        
+        var reportdialog = document.getElementById('reportdialog');
+        /*
+        var selectEl = document.getElementById('reportchoice');
+        var confirmBtn = document.getElementById('reportconfirmBtn');
+        var labeltext = document.getElementById('reportlabeltext');
+        var cancelBtn = document.getElementById('reportcancelBtn');
+        */
+        var selectEl = reportdialog.querySelector('#reportchoice');
+        var confirmBtn = reportdialog.querySelector('#reportconfirmBtn');
+        var labeltext = reportdialog.querySelector('#reportlabeltext');
+        var cancelBtn = reportdialog.querySelector('#reportcancelBtn');
         
         selectEl.addEventListener('change', function onSelect(e) {
-          confirmBtn.value = selectEl.value;
+            confirmBtn.value = selectEl.value;
         });
 
         reportdialog.addEventListener('close', function onClose() {
             if (reportdialog.returnValue!=='cancel')
             {
-                var report_info = reportdialog.returnValue.split('_');
+                var report_info = reportdialog.returnValue.split('_'); // <=> confirmBtn.value.split('_');
                 var input = document.getElementById('report_date');
                 input.value = report_info[0];
                 var input = document.getElementById('report_moment');
@@ -348,7 +328,6 @@
                 {
                     input.value = '';
                 }
-                
                 var submit_form = document.getElementById('select_mois');
                 submit_form.submit();
             }
@@ -361,7 +340,6 @@
                         selectEl.remove(cpt);
                     }
                 }
-                
                 var input = document.getElementById('date_selected');
                 input.value = '';
                 var input = document.getElementById('moment_selected');
@@ -372,7 +350,6 @@
                 input.value = '';
                 var input = document.getElementById('typeconvention');
                 input.value = '';
-                // alert ('La modification est annulée par l\'utilisateur.');
             }
         });
         
@@ -393,36 +370,27 @@
                 var matin = element.previousElementSibling; // Le matin est le noeud précédent
             }
             
-            // alert ('Matin couleur = ' + matin.bgColor);
-            // alert ('Après-midi couleur = ' + apresmidi.bgColor);
-            
             if ((matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>')) 
              && (apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>')))
             {
-                // alert ('Matin et après-midi sont du télétravail');
                 deplacement = 'jour';
             }
             else if (matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || matin.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>'))
             {
-                // alert ('Matin est du télétravail mais pas après-midi');
                 deplacement = '<?php echo fonctions::MOMENT_MATIN; ?>';
             }
             else if (apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') || apresmidi.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN); ?>'))
             {
-                // alert ('Après-midi est du télétravail mais pas matin');
                 deplacement = '<?php echo fonctions::MOMENT_APRESMIDI; ?>';
             }
             else
             {
-                // alert ('Ni le matin, ni l\'après-midi n\'est un jour de télétravail => Problème');
                 return;
             }
             
             if (tableau.classList.contains('<?php echo planningelement::JAVA_CLASS_TELETRAVAIL_HIDDEN; ?>'))
             {
                 // Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
-                //alert ('L\'affichage du télétravail est désactivé.');
-                //return;
                 if (typeof reportdialog.showModal === "function") {
                     labeltext.innerHTML = 'Impossible de déplacer ou d\'annuler un jour de télétravail car l\'affichage du télétravail est désactivé.';
                     selectEl.hidden = true;
@@ -495,21 +463,16 @@
                                 selectEl.remove(cpt);
                             }
                         }
-                        // alert('date = ' + date);
                         var jrs="dimanche,lundi,mardi,mercredi,jeudi,vendredi,samedi".split(",");
                         // On calcule la date du lundi de la semaine courante
                         
                         var elementdate = date.split('/'); 
                         var currentdate = new Date(elementdate[2], elementdate[1]-1, elementdate[0]);  // on fourni le format YYYY, MM, DD !! Le mois de janvier est 0
-                        //alert('currentdate = ' + currentdate.toLocaleDateString());
                         var dateref = new Date(currentdate.getFullYear(), currentdate.getMonth(),currentdate.getDate()-(currentdate.getDay()-1));
                         // dateref correspond au lundi de la semaine courante
-                        //alert('dateref (Lundi de la semaine) = ' + dateref.toLocaleDateString());
                         for (cpt=1 ; cpt <= 7 ; cpt++)
                         {
                             var frenchdate = dateref.getDate().toString().padStart(2, '0') + '/' + (dateref.getMonth()+1).toString().padStart(2, '0') + '/' + dateref.getFullYear();
-                            // alert(frenchdate);
-                            //alert('On traitre le ' + dateref + ' et frenchdate = ' + frenchdate);
                             if (dateref.getDay()>0 && dateref.getDay()<6)
                             {
                                 if (deplacement==='jour')
@@ -544,12 +507,10 @@
                             {
                                 break; // On sort de la boucle (car report uniquement sur la semaine en cours)
                             }
-                            //alert('frenchdate (avant le suivant)= ' + frenchdate);
                             var elementdate = frenchdate.split('/');
                             var currentdate = new Date(elementdate[2], elementdate[1]-1, elementdate[0]);  // on fourni le format YYYY, MM, DD !! Le mois de janvier est 0
                             var dateref = new Date(currentdate.getFullYear(), currentdate.getMonth(),currentdate.getDate()+1);
                             // dateref correspond au jour suivant
-                            //alert('dateref (<=> jour suivant) = ' + dateref.toLocaleDateString());
                         }
                         reportdialog.showModal();
                     } else {
@@ -595,37 +556,40 @@
                 }
                 ?>
             }
-            else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé
+            else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé => On veut le réactiver
             {
-                    if (typeof reportdialog.showModal === "function") {
-                        if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
-                        {
-                            labeltext.innerHTML = 'Réactiver le télétravail de la demie-journée du : ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?> pour l\'agent ' + identiteagent + ' ?';
-                        }
-                        else if (deplacement === '<?php echo fonctions::MOMENT_APRESMIDI; ?>')
-                        {
-                            labeltext.innerHTML = 'Réactiver le télétravail de la demie-journée du : ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?> pour l\'agent ' + identiteagent + ' ?';
-                        }
-                        else
-                        {
-                            labeltext.innerHTML = 'Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?';
-                        }
-                        selectEl.hidden = true;
-                        
-                        var input = document.getElementById('date_selected');
-                        input.value = date;
-                        var input = document.getElementById('moment_selected');
-                        input.value = moment;
-                        var input = document.getElementById('agentid_selected');
-                        input.value = agentid;
-                        var input = document.getElementById('action');
-                        input.value = 'reactive';
-                        var input = document.getElementById('typeconvention');
-                        input.value = typeconvention;
-                        reportdialog.showModal();
-                    } else {
-                        console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                if (typeof reportdialog.showModal === "function") 
+                {
+                    if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
+                    {
+                        labeltext.innerHTML = 'Réactiver le télétravail de la demie-journée du : ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_MATIN); ?> pour l\'agent ' + identiteagent + ' ?';
                     }
+                    else if (deplacement === '<?php echo fonctions::MOMENT_APRESMIDI; ?>')
+                    {
+                        labeltext.innerHTML = 'Réactiver le télétravail de la demie-journée du : ' + date + ' <?php echo $fonctions->nommoment(fonctions::MOMENT_APRESMIDI); ?> pour l\'agent ' + identiteagent + ' ?';
+                    }
+                    else
+                    {
+                        labeltext.innerHTML = 'Réactiver le télétravail de la journée du : ' + date + ' pour l\'agent ' + identiteagent + ' ?';
+                    }
+                    selectEl.hidden = true;
+
+                    var input = document.getElementById('date_selected');
+                    input.value = date;
+                    var input = document.getElementById('moment_selected');
+                    input.value = moment;
+                    var input = document.getElementById('agentid_selected');
+                    input.value = agentid;
+                    var input = document.getElementById('action');
+                    input.value = 'reactive';
+                    var input = document.getElementById('typeconvention');
+                    input.value = typeconvention;
+                    reportdialog.showModal();
+                } 
+                else 
+                {
+                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                }
             }
 	};
 

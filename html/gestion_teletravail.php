@@ -1312,50 +1312,24 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	    echo "</form>";
 
 ?>
-        <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
-        <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
-
-        <dialog id="confirmdialog" class="questiondialog">
-          <form method="dialog">
-            <p>
-<?php
-        $type = 'question';
-        $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-        $data = file_get_contents($path);
-        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-        echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
-
-?>
-                <label id='labeltext'>Confirmez vous cette action ?</label>
-            </p>
-            <menu><center>
-              <button id="confirmBtn" value="" class='javaconfirmbutton'>Ok</button>
-              <button id="cancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
-            </center></menu>
-          </form>
-        </dialog>
-        
         <script>
-            let confirmdialog = document.getElementById('confirmdialog');
-            let confirmBtn = document.getElementById('confirmBtn');
-            let labeltext = document.getElementById('labeltext');
-            let cancelBtn = document.getElementById('cancelBtn');        
-    
+            var confirmdialog = document.getElementById('confirmdialog');
+            /*
+            var confirmBtn = document.getElementById('questionconfirmBtn');
+            var labeltext = document.getElementById('questionlabeltext');
+            var cancelBtn = document.getElementById('questioncancelBtn');        
+            */
+            var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
+            var labeltext = confirmdialog.querySelector('#questionlabeltext');
+            var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
+           
             confirmdialog.addEventListener('close', function onClose() {
-//                alert ('On va close');
                 if (confirmdialog.returnValue!=='cancel')
                 {
-//                    alert('L id est ' + confirmBtn.value);
                     // L'id du boutton en cours est dans la propertie value du bouton confirm
                     var submit_button = document.getElementById(confirmBtn.value);
-//                    alert('Le button = ' + submit_button.id);
                     submit_button.tagname = 'OK';
-//                    submit_button.value = 'yes';
                     submit_button.click();
-//                    var submit_form = document.getElementById('frm_gest_demande');
-//                    alert('submit_form = ' + submit_form.id)
-//                    submit_form.submit();
                 }
             });
 
