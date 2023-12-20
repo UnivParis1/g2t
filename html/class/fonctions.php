@@ -4103,6 +4103,25 @@ WHERE  table_schema = Database()
             return $texte;
         }
     }
+    
+    function afficheperiodesobligatoires()
+    {
+        $periode = new periodeobligatoire($this->dbconnect);
+        $liste = $periode->load($this->anneeref());
+        if (count($liste) > 0)
+        {
+            echo "<center>";
+            echo "<div class='periodeobligatoirebloc'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
+            foreach ($liste as $element)
+            {
+                echo "<li class='leftaligntext' >Du " . $this->formatdate($element["datedebut"]) . " au " . $this->formatdate($element["datefin"]) . "</li>";
+            }
+            echo "</ul>";
+            echo "Veuillez penser à poser vos congés en conséquence.";
+            echo "</div></center>";
+            echo "<br><br>";
+        }
+    }
 
 }
 

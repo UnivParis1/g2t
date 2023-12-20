@@ -119,6 +119,21 @@
         $structure = new structure($dbcon);
         $structure->load($affectation->structureid());
         echo $structure->nomlong();
+        if (stripos($structure->id(),'DGH')===0)  // Ne fonctionne que pour la DSIUN et ses sous-structures dont le code commence par DGH
+        {
+            $currentmonth = date('m');
+            $currentday = date('d');
+            if ($currentmonth == 12 or ($currentmonth == 1 and $currentday <= 15))
+            {
+                echo "<br>";
+                $path = $fonctions->imagepath() . "/guirlande_noel.gif";
+                list($width, $height) = getimagesize("$path");
+                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+                echo "<div class='centeraligntext'><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+            }
+        }
     } 
     else
     {
@@ -173,6 +188,9 @@
         }
     }
 
+    $fonctions->afficheperiodesobligatoires();
+    
+    /*
     $periode = new periodeobligatoire($dbcon);
     $liste = $periode->load($fonctions->anneeref());
     if (count($liste) > 0)
@@ -188,6 +206,7 @@
         echo "</div></center>";
         echo "<br><br>";
     }
+    */
     echo $user->soldecongeshtml($fonctions->anneeref());
 
     echo $user->affichecommentairecongehtml();

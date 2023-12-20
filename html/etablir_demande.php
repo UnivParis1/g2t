@@ -501,6 +501,9 @@
     } else {
 
         if (strcasecmp($typedemande, "conges") == 0) {
+            $fonctions->afficheperiodesobligatoires();
+
+            /*
             $periode = new periodeobligatoire($dbcon);
             $liste = $periode->load($fonctions->anneeref());
             if (count($liste) > 0)
@@ -516,6 +519,7 @@
                 echo "</div></center>";
                 echo "<br><br>";
             }
+            */
 
             echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
             $solde = new solde($dbcon);
