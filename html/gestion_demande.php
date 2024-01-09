@@ -234,6 +234,7 @@
     // echo "structure->id() = " . $structure->id() . "<br>";
     //echo "noresponsableset = $noresponsableset <br> mode = $mode <br>";
     $displaysubmit = true;
+    $selectagentbutton = false;
     echo "<form name='frm_gest_demande' id='frm_gest_demande' method='post' >";
     if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
@@ -247,12 +248,13 @@
         }
         else
         {
-            echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
+            echo "<center>L'agent " . $agent->identitecomplete(true) . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
             $displaysubmit = false;
         }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-    } elseif ($noagentset) {
-
+    } 
+    elseif ($noagentset) 
+    {
         if ($mode == 'resp' or $mode == 'gest')
         {
             // => On est en mode "responsable" mais aucun agent n'est sélectionné
@@ -301,7 +303,10 @@
             {
                 if (!$membre->estutilisateurspecial())
                 {
-                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+//                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->identitecomplete(true) . "</OPTION>";
+                    $selectagentbutton = true;
+                    $displaysubmit = false;
                 }
             }
             echo "</SELECT>";
@@ -318,8 +323,11 @@
             foreach ($agentsliste as $key => $identite)
             {
                 echo "<option value='$key'>$identite</option>";
+                $selectagentbutton = true;
+                $displaysubmit = false;
             }
             echo "</select>";
+            echo "<br>";
 
 /*            
             echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
@@ -345,7 +353,7 @@
         }
         else
         {
-            echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
+            echo "<center>L'agent " . $agent->identitecomplete(true) . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
             $displaysubmit = false;
         }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
@@ -363,7 +371,7 @@
         }
         else
         {
-            echo "<center>L'agent " . $agent->civilite() . "  " . $agent->nom() . " " . $agent->prenom() . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</center><br>";
+            echo "<center>L'agent " . $agent->identitecomplete(true) . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</center><br>";
             $displaysubmit = false;
         }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
@@ -373,14 +381,22 @@
     if ($responsableid != "")
     {
         if ($mode == 'resp')
+        {
             echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
+        }
         elseif ($mode == 'gest')
+        {
             echo "<input type='hidden' name='gestionnaireid' value='" . $responsableid . "'>";
+        }
     }
     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-    if ($displaysubmit)
+    if ($selectagentbutton)
+    {
+        echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' />";
+    }
+    else if ($displaysubmit)
     {
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
     }

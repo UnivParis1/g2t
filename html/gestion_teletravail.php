@@ -228,6 +228,7 @@
             $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
         }
         $erreur = "Impossible de créer une convention de télétravail car <br>$errorcheckmailstr";
+        error_log(basename(__FILE__) . " : " . $fonctions->stripAccents($erreur));        
         $disablesubmit = true;
     }
     elseif (!is_null($agentid))
@@ -649,6 +650,7 @@
             {
                 $erreur = $erreur . "Vous n'avez pas d'affectation entre le $datedebutteletravail et le $datefinteletravail. Impossible de déclarer une convention de télétravail.";
                 $nbjoursmaxteletravailcalcule = 0;
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));            
                 $disablesubmit = true;
             }
             else
@@ -657,6 +659,7 @@
                 $nbjoursmaxteletravailcalcule = $_POST["nbjoursmaxteletravailcalcule"];
                 if ($nbjoursmaxteletravailcalcule == 0)
                 {
+                    error_log(basename(__FILE__) . " :  On recupere le nombre maximale de jour du POST => Il est nul");
                     $disablesubmit = true;
                 }
 
@@ -1093,6 +1096,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	}
         if ($mode!='gestrh' and !$esignatureactive)
         {
+            error_log(basename(__FILE__) . " : Pas en mode gestRH et l'interface eSignature n'est pas active");            
      	    $disablesubmit = true;
         }
     	$teletravailliste = $agent->teletravailliste('01/01/1900', '31/12/2100'); // On va récupérer toutes les demandes de télétravail de l'agent pour les afficher
@@ -1746,6 +1750,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             }
             if ($nbjoursmaxteletravailcalcule == 0)
             {
+                error_log(basename(__FILE__) . " : Le nombre de jour de télétravail calculé est nul");
                 $disablesubmit = true;
             }
             
@@ -2083,7 +2088,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
         
         $hiddentext = '';
-        if ($disablesubmit)
+        if ($disablesubmit and $mode!='gestrh')
         {
             $hiddentext = " hidden='hidden' ";
         }
