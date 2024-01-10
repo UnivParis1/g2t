@@ -36,8 +36,9 @@
 
     $mode = null;
     if (isset($_POST["mode"]))
+    {
        $mode = $_POST["mode"];
-
+    }
 
 
     if (isset($_POST["agentid"]))
@@ -57,10 +58,14 @@
        }
     }
     else
+    {
        $agentid = null;
+    }
 
     if (is_null($agentid) or $agentid == "")
+    {
         $noagentset = TRUE;
+    }
     else {
         // echo "AGENTID = " . $agentid . "<br>";
         $agent = new agent($dbcon);
@@ -94,13 +99,21 @@
     }
     
     if (isset($_POST["previous"]))
+    {
         $previoustxt = $_POST["previous"];
+    }
     else
+    {
         $previoustxt = null;
+    }
     if (strcasecmp($previoustxt, "yes") == 0)
+    {
         $previous = 1;
+    }
     else
+    {
         $previous = 0;
+    }
 
     // echo "Avant le include <br>";
     require ("includes/menu.php");
@@ -135,6 +148,8 @@
               . "<li>Nombre de jours : " . $demande->nbrejrsdemande() . "</li>"
               . "<li>Type de demande : " . $demande->typelibelle() . "</li>"
               . "</ul>\n");
+            $demande->datemailannulation(date('d/m/Y'));
+            $demande->store();
             echo $fonctions->showmessage(fonctions::MSGINFO, "La demande d'annulation a été envoyée à " . $resp->identitecomplete());
         }
     }
@@ -224,12 +239,18 @@
     $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
     // Si on est dans le mode "previous" alors on dit que la date de fin est l'année courante
     if ($previous == 1)
+    {
         $fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
+    }
     elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
+    {
         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
+    }
     else
+    {
         $fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-
+    }
+    
     // echo "Debut = $debut fin = $fin <br>";
     // echo "structure->id() = " . $structure->id() . "<br>";
     //echo "noresponsableset = $noresponsableset <br> mode = $mode <br>";

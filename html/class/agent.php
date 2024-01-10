@@ -2559,12 +2559,25 @@ const modifymotif = (motif, motifid) =>
                         if ((strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "agent") == 0))
                         {
                             $disable = "";
+                            $datetorepostmail = date('Y-m-d', strtotime($this->fonctions->formatdatedb($demande->datemailannulation()). ' + 7 days'));
+                            //var_dump($datetorepostmail);
+/***********************                            
                             if (isset($_POST["cancelbutton"]) and isset($_POST["cancelbutton"][$demande->id()]))
                             {
                                 $disable = " disabled ";
                             }
+ ************************/
+                            if ($datetorepostmail > date('Y-m-d'))
+                            {
+                                $disable = " disabled ";
+                                $datatitletxt = "Votre demande est validée et vous avez déjà solicité votre responsable.\nVous ne pourrez lui renvoyer un mail qu'à partir du " . $this->fonctions->formatdate($datetorepostmail)  . ".";                                
+                            }
+                            else
+                            {
+                                $datatitletxt = "Votre demande est validée.\nVous devez demander à votre responsable d'annuler votre demande.\nCette solicitation sera faite automatiquement par mail.";
+                            }
                             $htmltext = $htmltext . "<td class='cellulesimple' "
-                                . " data-title=" . chr(34) . "Votre demande est validée.\nVous devez demander à votre responsable d'annuler votre demande.\nCette solicitation sera faite automatiquement par mail." . chr(34) . ">"
+                                . " data-title=" . chr(34) . $datatitletxt . chr(34) . ">"
                                 . "<input type='submit' $disable name=cancelbutton[" . $demande->id() . "] id=cancelbutton[" . $demande->id() . "] class='cancelbutton g2tbouton g2tenvoibouton' value='Envoyer' onclick='if (this.tagname!=\"OK\") {click_element(\"cancelbutton[" . $demande->id() . "]\"); return false; }'";
                             //$spanend = "</span>";
                         }

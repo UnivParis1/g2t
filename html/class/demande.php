@@ -37,6 +37,8 @@ class demande
     private $dbconnect = null;
 
     private $heuredemande = null;
+    
+    private $datemailannulation = '1900-01-01';  // On met par défaut une date très loin dans le passé
 
     // Utilisé lors de la sauvegarde !!
     private $ancienstatut = null;
@@ -60,9 +62,12 @@ class demande
     function load($demandeid)
     {
         // if (is_null($this->$demandeid))
-        if (! isset($this->$demandeid)) {
-            $sql = "SELECT DEMANDEID,AGENTID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE)
-FROM DEMANDE WHERE DEMANDEID= ?";
+        if (! isset($this->$demandeid)) 
+        {
+            $sql = "SELECT DEMANDEID,AGENTID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,COMMENTAIRE,NBREJRSDEMANDE,
+                           DATE(DATEDEMANDE),DATESTATUT,STATUT,MOTIFREFUS,TIME(DATEDEMANDE),DATEMAILANNULATION 
+                    FROM DEMANDE 
+                    WHERE DEMANDEID= ?";
             // echo "Demande load sql = $sql <br>";
             $params = array($demandeid);
             $query = $this->fonctions->prepared_select($sql, $params);
@@ -93,6 +98,7 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             $this->statut = "$result[11]";
             $this->motifrefus = str_replace("'", "''", $result[12]);
             $this->heuredemande = "$result[13]";
+            $this->datemailannulation = "$result[14]";
             
             $this->ancienstatut = $this->statut;
         }
@@ -110,10 +116,16 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 $errlog = "Demande->type : Le type de demande n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->typeabsenceid;
-        } else
+            }
+        } 
+        else
+        {
             $this->typeabsenceid = $typeid;
+        }
     }
 
     function typelibelle()
@@ -154,7 +166,9 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             }
         } else {
             if (is_null($this->demandeid))
+            {
                 $this->datedebut = $this->fonctions->formatdatedb($date_debut);
+            }
             else {
                 $errlog = "Demande->datedebut : Impossible de modifier une date si la demande est enregistrée !!!";
                 echo $errlog . "<br/>";
@@ -175,7 +189,9 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             }
         } else {
             if (is_null($this->demandeid))
+            {
                 $this->datefin = $this->fonctions->formatdatedb($date_fin);
+            }
             else {
                 $errlog = "Demande->datefin : Impossible de modifier une date si la demande est enregistrée !!!";
                 echo $errlog . "<br/>";
@@ -193,11 +209,13 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
                 if ($this->momentdebut == fonctions::MOMENT_MATIN)
+                {
                     return fonctions::MOMENT_MATIN;
-                // return "matin";
+                }
                 elseif ($this->momentdebut == fonctions::MOMENT_APRESMIDI)
-                return fonctions::MOMENT_APRESMIDI;
-                // return "après-midi";
+                {
+                    return fonctions::MOMENT_APRESMIDI;
+                }
                 else {
                     $errlog = "Demande->moment_debut : le moment de début n'est pas connu [momentdebut = " . $this->momentdebut . "] !!!";
                     echo $errlog . "<br/>";
@@ -206,7 +224,9 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             }
         } else {
             if (is_null($this->demandeid))
+            {
                 $this->momentdebut = $moment_deb;
+            }
             else {
                 $errlog = "Demande->moment_debut : Impossible de modifier la demie-journée de début si la demande est enregistrée !!!";
                 echo $errlog . "<br/>";
@@ -224,12 +244,15 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             } else {
                 if ($this->momentfin == fonctions::MOMENT_MATIN)
+                {
                     return fonctions::MOMENT_MATIN;
-                // return "matin";
+                }
                 elseif ($this->momentfin == fonctions::MOMENT_APRESMIDI)
-                return fonctions::MOMENT_APRESMIDI;
-                // return "après-midi";
-                else {
+                {
+                    return fonctions::MOMENT_APRESMIDI;
+                }
+                else 
+                {
                     $errlog = "Demande->moment_fin : la demie-journée n'est pas connue [momentfin = $this->momentfin] !!!";
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -237,8 +260,11 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             }
         } else {
             if (is_null($this->demandeid))
+            {
                 $this->momentfin = $moment_fin;
-            else {
+            }
+            else 
+            {
                 $errlog = "Demande->moment_fin : Impossible de modifier la demie-journée de fin si la demande est enregistrée !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -249,9 +275,13 @@ FROM DEMANDE WHERE DEMANDEID= ?";
     function commentaire($comment = null)
     {
         if (is_null($comment))
+        {
             return str_replace("''", "'", $this->commentaire);
+        }
         else
+        {
             $this->commentaire = str_replace("'", "''", $comment);
+        }
     }
 
     function nbrejrsdemande($nbrejrs = null)
@@ -281,8 +311,11 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             $errlog = "Demande->date_demande : La demande n'est pas enregistrée, donc pas de date de demande !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else
+        } 
+        else
+        {
             return $this->fonctions->formatdate($this->datedemande);
+        }
     }
 
     function heure_demande()
@@ -293,9 +326,13 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         } else {
             if ($this->heuredemande == "00:00:00")
+            {
                 return "";
+            }
             else
+            {
                 return $this->heuredemande;
+            }
         }
     }
 
@@ -305,8 +342,11 @@ FROM DEMANDE WHERE DEMANDEID= ?";
             $errlog = "Demande->datestatut : La demande n'est pas enregistrée, donc pas de date de statut !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else
+        } 
+        else
+        {
             return $this->fonctions->formatdate($this->datestatut);
+        }
     }
 
     function statut($statut = null)
@@ -348,18 +388,40 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 $errlog = "Demande->motifrefus : La demande n'est pas enregistrée, donc pas de motif de refus !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return str_replace("''", "'", $this->motifrefus);
-        } else
+            }
+        } 
+        else
+        {
             $this->motifrefus = str_replace("'", "''", $motif);
+        }
     }
     
     function agentid($agentid = null)
     {
-        if (is_null($agentid)) {
+        if (is_null($agentid)) 
+        {
             return $this->agentid;
-        } else
+        } 
+        else
+        {
             $this->agentid = $agentid;
+        }
+    }
+    
+    function datemailannulation($datemailannulation = null)
+    {
+        if (is_null($datemailannulation)) 
+        {
+            return $this->fonctions->formatdate($this->datemailannulation);
+        } 
+        else
+        {
+            $this->datemailannulation = $this->fonctions->formatdatedb($datemailannulation);
+        }       
     }
 
     /**
@@ -520,11 +582,11 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 $sql = "SET AUTOCOMMIT = 0";
                 mysqli_query($this->dbconnect, $sql);
                 $sql = "INSERT INTO DEMANDE(AGENTID,TYPEABSENCEID,DATEDEBUT,MOMENTDEBUT,DATEFIN,MOMENTFIN,
-				        COMMENTAIRE,NBREJRSDEMANDE,DATEDEMANDE,DATESTATUT,STATUT,MOTIFREFUS) ";
+				        COMMENTAIRE,NBREJRSDEMANDE,DATEDEMANDE,DATESTATUT,STATUT,MOTIFREFUS,DATEMAILANNULATION) ";
                 $sql = $sql . "VALUES('" . $this->agentid . "','" . $this->typeabsenceid . "','" . $this->fonctions->formatdatedb($this->datedebut) . "',";
                 $sql = $sql . "'" . $this->momentdebut . "','" . $this->fonctions->formatdatedb($this->datefin) . "','" . $this->momentfin . "',";
                 $sql = $sql . "'" . $this->commentaire . "',";
-                $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '1900-01-01','" . demande::DEMANDE_ATTENTE . "','')";
+                $sql = $sql . "'" . $this->nbrejrsdemande . "', now(), '1900-01-01','" . demande::DEMANDE_ATTENTE . "', '', '" . $this->datemailannulation  . "')";
                 // echo "SQL = " . $sql . "<br>";
                 $params = array();
                 $query = $this->fonctions->prepared_query($sql, $params);
@@ -588,7 +650,8 @@ FROM DEMANDE WHERE DEMANDEID= ?";
                 $sql = "UPDATE DEMANDE
                         SET DATESTATUT='" . $this->fonctions->formatdatedb($this->datestatut) . "',
                             STATUT='" . $this->statut . "',
-                            MOTIFREFUS='" . $this->motifrefus . "'
+                            MOTIFREFUS='" . $this->motifrefus . "',
+                            DATEMAILANNULATION='" . $this->datemailannulation  . "'
                          WHERE DEMANDEID=" . $this->demandeid;
                 // echo "SQL = $sql <br>";
                 $params = array();
