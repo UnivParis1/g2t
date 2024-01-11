@@ -26,6 +26,11 @@ define('DB_NAME', 'g2t_db');
 // Nom du fichier logo établissement (dans le dossier <racine>/images)
 define('LOGO_FILENAME', 'logo_etab.png');
 
+// Image a afficher pour la période estivale (01/07 -> 31/08)
+define('IMAGE_ETE', '');
+// Image a afficher pour la période de fin d'année (01/12 -> 15/01)
+define('IMAGE_FIN_ANNEE', '');
+
 // Nom du fichier à joindre lors de l'utilisation du CET en congés (dans le dossier <racine>/documents)
 define('DOC_USAGE_CET', 'Utilisation_CET_Conges.pdf');
 

@@ -19,6 +19,8 @@
 !/config/*_exemple.php
 /images/logo_paris1_prod.png
 /images/logo_paris1_test.png
+/images/palmier_ete.webp
+/images/guirlande_noel.gif
 /images/chargement*.gif
 !/images/chargement.gif
 /nbproject/private/

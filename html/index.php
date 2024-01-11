@@ -121,18 +121,36 @@
         echo $structure->nomlong();
         if (stripos($structure->id(),'DGH')===0)  // Ne fonctionne que pour la DSIUN et ses sous-structures dont le code commence par DGH
         {
+            $imgfilename = '';
             $currentmonth = date('m');
             $currentday = date('d');
             if ($currentmonth == 12 or ($currentmonth == 1 and $currentday <= 15))
             {
-                echo "<br>";
-                $path = $fonctions->imagepath() . "/guirlande_noel.gif";
+                $dbconstante='IMAGE_FIN_ANNEE';
+                if ($fonctions->testexistdbconstante($dbconstante))
+                {
+                    $imgfilename = trim($fonctions->liredbconstante($dbconstante));
+                }
+            }
+            if ($currentmonth == 7 or $currentmonth == 8)
+            {
+                $dbconstante='IMAGE_ETE';
+                if ($fonctions->testexistdbconstante($dbconstante))
+                {
+                    $imgfilename = trim($fonctions->liredbconstante($dbconstante));
+                }
+            }
+            if ($imgfilename!= '')
+            {
+                $path = $fonctions->imagepath() . "/" . $imgfilename;
                 list($width, $height) = getimagesize("$path");
                 $typeimage = pathinfo($path, PATHINFO_EXTENSION);
                 $data = file_get_contents($path);
                 $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-                echo "<div class='centeraligntext'><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+                echo "<br>";
+                echo "<div class='centeraligntext'><img id='season_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
             }
+
         }
     } 
     else
