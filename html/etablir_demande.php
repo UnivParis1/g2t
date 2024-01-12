@@ -1157,7 +1157,7 @@
         echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
         if ($erreurCET != '')
         {
-            $fonctions->showmessage(fonctions::MSGWARNING, $erreurCET);
+            echo $fonctions->showmessage(fonctions::MSGWARNING, $erreurCET);
         }
         if (! $masquerboutonvalider)
         {
