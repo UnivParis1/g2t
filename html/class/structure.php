@@ -1460,7 +1460,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
         //$pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
-        $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
+        $pdf->Image($this->fonctions->etablissementimagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
         $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));
@@ -1686,7 +1686,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         $pdf->AddPage('L');
         // echo "Apres le addpage <br>";
         //$pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 10, 5, 60, 20);
-        $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
+        $pdf->Image($this->fonctions->etablissementimagepath() . '/' . LOGO_FILENAME, 10, 5, 60, 20);
         $pdf->SetFont('helvetica', 'B', 15, '', true);
         $pdf->Ln(15);
         $pdf->Cell(60, 10, $this->fonctions->utf8_decode('Service : ' . $this->nomlong() . ' (' . $this->nomcourt() . ')'));

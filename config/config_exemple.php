@@ -4,12 +4,12 @@
 define('G2T_WS_URL', "http://host_name:port/webservice_folder");
 // URL d'accès à G2T
 define('G2T_URL', 'http://host_name:port/appli_folder');
-// Défini le type d'environnement : 
-//  Valeurs autorisées : 
+// Défini le type d'environnement :
+//  Valeurs autorisées :
 //      * prod => environnement de production
 //      * n'importe quelle autre valeur pour les autres environnements (demo, test, recette, ...)
-// G2T teste toujours par rapport à la valeur 'PROD' 
-define('TYPE_ENVIRONNEMENT', 'test');   
+// G2T teste toujours par rapport à la valeur 'PROD'
+define('TYPE_ENVIRONNEMENT', 'test');
 
 //------------------------------------------------------
 // Force les adresses mails de agents à la valeur saisie ==> Utilisation recommandée UNIQUEMENT sur environnements de TEST ou de DEVELOPPEMENT
@@ -23,13 +23,95 @@ define('DB_USER', 'db_user');
 define('DB_PWD', 'db_password');
 define('DB_NAME', 'g2t_db');
 
-// Nom du fichier logo établissement (dans le dossier <racine>/images)
-define('LOGO_FILENAME', 'logo_etab.png');
+// Nom du fichier logo établissement (dans le dossier <racine>/images/etablissement)
+define('LOGO_FILENAME', 'logo_exemple.png');
 
-// Image a afficher pour la période estivale (01/07 -> 31/08)
-define('IMAGE_ETE', '');
-// Image a afficher pour la période de fin d'année (01/12 -> 15/01)
-define('IMAGE_FIN_ANNEE', '');
+/*
+ * -------------------------------------------------------------------------
+ * Tableau de représentation des différentes animations inclues dans G2T
+ * La valeur par défaut de la CSS est définie dans la clé DEFAULT_CSS
+ * Une animation est définie par une clé libre (FIN_ANNEE, ESTIVAL, RENTREE, ....)
+ * différente de DEFAULT_CSS et par la structure suivante :
+ *      DEBUT : Date de début de l'affichage de l'annimation au format Jour/Mois.
+ *      FIN : Date de fin de l'affichage de l'annimation au format Jour/Mois.
+ *      SCRIPT : Structure représentant l'image utilisée dans le JS script à afficher pour l'occasion
+ *          FICHIER : Nom du fichier de la bibliothèque d'images établissement de G2T à afficher => dossier <racine>/images/etablissement.
+ *          HAUTEUR : Hauteur de l'image à afficher
+ *          LARGEUR : Largeur de l'image à afficher
+ *          PLEINECRAN : Affiche le script en plein écran ou pas (valeurs : O/N - défaut : N)
+ *          NBELEMENTS : Nombre d'éléments (<=> fichiers) à afficher dans le script (défaut : 10)
+ *          DELAI : Délai (en millisecondes) entre deux mouvemens des éléments (Si délai grand => vitesse faible - défaut : 10)
+ *          DIRECTION : Direction du mouvement de l'animation (valeurs : H/V - défaut : V)
+ *      IMAGE : Structure représentant l'image à afficher pour l'occasion
+ *          FICHIER : Nom du fichier de la bibliothèque d'images établissement de G2T à afficher => dossier <racine>/images/etablissement.
+ *          HAUTEUR : Hauteur de l'image à afficher
+ *          LARGEUR : Largeur de l'image à afficher
+ *      TEXTE : Structure représentant le texte à afficher pour l'occasion
+ *          CHAINE : Chaine de caractères à afficher
+ *          CSS_STRING : Mise en forme spécifique du texte au format CSS
+ *
+ * Remarques :
+ *      * Tous les champs sont facultatifs. Ils peuvent être absents ou vide => Ils sont ignorés
+ *      * Si l'un des champs DEBUT ou FIN est absent ou vide, l'animation ne sera pas activée (car pas de date d'activation)
+ *      * Dans SCRIPT et IMAGE, si la largeur ou la hauteur de l'image est vide ou 0, la dimension réelle de l'image est utilisée
+ *      * Si une chaine contient les caractères YYYY, ils sont remplacés par l'année courante
+ *      * Si plusieurs SCRIPT sont actifs à la date du jour, seul le premier sera activé
+ *      * Si un script n'est pas en plein écran, il est incrusté sur l'image. S'il n'y a pas d'image, le script est désactivé.
+* ------------------------------------------------------------------------
+ */
+define('TAB_ANIMATION',array(
+    'DEFAULT_CSS' => 'color:#00AA00;font-size:30px;font-family:Arial',
+    'FIN_ANNEE' => array(
+            'DEBUT' => '01/12',
+            'FIN' => '15/01',
+            'SCRIPT' => array(
+                'FICHIER' => 'image_flocon_exemple.png',
+                'HAUTEUR' => 0,
+                'LARGEUR' => 0,
+                'PLEINECRAN' => 'O',
+                'NBELEMENTS' => 40,
+                'DELAI' => 20,
+                'DIRECTION' => 'V'
+            ),
+            'IMAGE' => array(
+                'FICHIER' => 'deco_exemple.jpg',
+                'HAUTEUR' => 0,
+                'LARGEUR' => 0
+            ),
+            'TEXTE' => array(
+                'CHAINE' => 'Bonnes fêtes',
+                'CSS_STRING' => 'color:#ffb3ff;font-size:80px;font-family:Brush Script MT;transform: translate(0, -120px);'
+            )
+        ),
+    'ESTIVAL' => array(
+            'DEBUT' => '01/07',
+            'FIN' => '31/08',
+            'SCRIPT' => array(
+                'FICHIER' => '',
+                'HAUTEUR' => 0,
+                'LARGEUR' => 0
+            ),
+            'IMAGE' => array(
+                'FICHIER' => 'palmier_exemple.webp',
+                'HAUTEUR' => 0,
+                'LARGEUR' => 0
+            )
+        ),
+    'RENTREE' => array(
+            'DEBUT' => '01/09',
+            'FIN' => '15/09',
+            'IMAGE' => array(
+                'FICHIER' => '',
+                'HAUTEUR' => 0,
+                'LARGEUR' => 0
+            ),
+            'TEXTE' => array(
+                'CHAINE' => 'Bonne rentée YYYY',
+                'CSS_STRING' => ''
+            )
+        )
+    )
+);
 
 // Nom du fichier à joindre lors de l'utilisation du CET en congés (dans le dossier <racine>/documents)
 define('DOC_USAGE_CET', 'Utilisation_CET_Conges.pdf');

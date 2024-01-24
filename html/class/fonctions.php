@@ -1868,6 +1868,11 @@ class fonctions
         return $basepath . '/images/';
     }
 
+    public function etablissementimagepath()
+    {
+        return $this->imagepath() . '/etablissement/';
+    }
+
     public function pdfpath()
     {
         $basepath = $this->g2tbasepath();

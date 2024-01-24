@@ -594,7 +594,7 @@ class declarationTP
         //$pdf->Open();
         $pdf->AddPage();
         //$pdf->Image($this->fonctions->imagepath() . '/logo_papeterie.png', 70, 25, 60, 20);
-        $pdf->Image($this->fonctions->imagepath() . '/' . LOGO_FILENAME, 70, 25, 60, 20);
+        $pdf->Image($this->fonctions->etablissementimagepath() . '/' . LOGO_FILENAME, 70, 25, 60, 20);
         // echo "Apres l'image... <br>";
         $pdf->SetFont('helvetica', 'B', 14, '', true);
         $pdf->Ln(50);
