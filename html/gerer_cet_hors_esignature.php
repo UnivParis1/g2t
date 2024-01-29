@@ -87,6 +87,7 @@
         $nocheck = $_POST["nocheck"];
 
 
+    $warnlog = "";
     $msg_erreur = "";
 
     require ("includes/menu.php");
@@ -187,19 +188,21 @@
                         // 20 jours obligatoires
                         // Base de calcul = 45 jours
                         // ==> 45 - 20 = 25 jours maxi
+                        // Suite ticket 160901 => Le message n'est plus bloquant. C'est juste un warning
                         if ($cumul > 25) {
-                            $errlog = "Le nombre de jour de cumul annuel est supérieur à 25. Vous ne pouvez pas mettre autant de jours dans le CET. ";
-                            $msg_erreur .= $errlog . "<br/>";
-                            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
-                        } else {
-                            $cet->cumulannuel($fonctions->anneeref(), $cumul);
-                            $cumul = ($cet->cumultotal());
-                            $cumul = $cumul + $nbr_jours_cet;
-                            $cet->cumultotal($cumul);
-                            // echo "Avant le store <br>";
-                            $msg_erreur = $cet->store();
-                            // echo "Apres le store <br>";
+//                            $warnlog = "Le nombre de jour de cumul annuel est supérieur à 25. Vous ne pouvez pas mettre autant de jours dans le CET. ";
+                            $warnlog = "INFORMATION : Le nombre de jours de cumul annuel est supérieur à 25.";
+                            error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($warnlog));
+//                        } else {
                         }
+                        $cet->cumulannuel($fonctions->anneeref(), $cumul);
+                        $cumul = ($cet->cumultotal());
+                        $cumul = $cumul + $nbr_jours_cet;
+                        $cet->cumultotal($cumul);
+                        // echo "Avant le store <br>";
+                        $msg_erreur = $cet->store();
+                        // echo "Apres le store <br>";
+//                        }
                     }
                     // Si tout s'est bien passé dans le store du CET (création d'un nouveau CET ou ajout de jour dans un CET existant)
                     if ($msg_erreur == "") {
@@ -265,6 +268,10 @@
         echo $fonctions->showmessage(fonctions::MSGERROR, "$msg_erreur");
         error_log(basename(__FILE__) . " " . $msg_erreur);
         $msg_erreur = "";
+    }
+    else if ($warnlog != "")
+    {
+        echo $fonctions->showmessage(fonctions::MSGWARNING, "$warnlog");
     }
 
     if (! is_null($agent)) {
