@@ -27,7 +27,6 @@
 <link rel="stylesheet" href="jquery-ui/jquery-ui.css?<?php echo filemtime('jquery-ui/jquery-ui.css') ?>" type="text/css" media="all"></link>
 <!-----------------------------------
 -- JQuery-ui CSS de l'établissement
-
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL" ?>/web-widget/jquery-ui.css" type="text/css" media="all"></link>
 ------------------------------------->
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL" ?>/web-widget/ui.theme.css" type="text/css" media="all"></link>
@@ -40,6 +39,7 @@
 <!-----------------------------------
 -- AutocompleteUser CSS + JS de l'établissement
 ------------------------------------->
+<script src="<?php echo "$WSGROUPURL"?>/web-widget/kraaden.github.io-autocomplete.js"></script>
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.css" type="text/css" media="all"></link>
 <script src="<?php echo "$WSGROUPURL"?>/web-widget/autocompleteUser.js"></script>
 
