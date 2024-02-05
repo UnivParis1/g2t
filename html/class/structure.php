@@ -165,6 +165,39 @@ class structure
         }
         return true;
     }
+    
+    function loadfromldapid($ldapstructid)
+    {
+
+        // Initialisation du LDAP
+        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAP_STRUCT_SEARCH_BASE");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $dn = $LDAP_SEARCH_BASE;
+        $LDAP_SUPANNREFID_ATTR = 'supannrefid'; //$fonctions->liredbconstante("LDAP_FONCTION_POIDS_ATTR");
+        $restriction = array("$LDAP_SUPANNREFID_ATTR");
+        $filtre = "supannCodeEntite=" . trim($ldapstructid);
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        //echo "Info = " . print_r($info,true) . "\n";
+
+        //var_dump($info);
+        
+        foreach($info[0]["$LDAP_SUPANNREFID_ATTR"] as $value)
+        {
+            if (stristr($value,'{SIHAM.UO}')!==false)
+            {
+                $sihamstructid = str_ireplace('{SIHAM.UO}','',$value);
+                return $this->load($sihamstructid);
+            }
+        }
+        // Si le code SIHAM n'est pas trouvé, on ne peut pas faire la correspondance
+        return false;
+    }
 
     function id()
     {
@@ -1816,11 +1849,15 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         }
     }
     
-    function structureinclue()
+    function structureinclue($excludeclosed = false)
     {
         $structureliste = array();
         if (! is_null($this->structureid)) {
-            $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT=? AND ISINCLUDED <> 0";
+            $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT=? AND ISINCLUDED <> 0 ";
+            if ($excludeclosed)
+            {
+                $sql = $sql . " AND DATECLOTURE > NOW()";
+            }
             $params = array($this->structureid);
             $query = $this->fonctions->prepared_select($sql, $params);
             $erreur = mysqli_error($this->dbconnect);

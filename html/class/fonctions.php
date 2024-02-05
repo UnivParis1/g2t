@@ -2665,6 +2665,31 @@ class fonctions
         }
         return $signatairestring;
     }
+    
+    public function listeadministrateursg2t()
+    {
+        $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID = ? AND UPPER(VALEUR) = ?";
+        $params = array('ESTADMIN','O');
+        $adminlist = array();
+        $query = $this->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+
+        if ($erreur != "") {
+            $errlog = "Fonctions->listeadministrateursg2t : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $agentid = trim($result[0]);
+            $admin = new agent($this->dbconnect);
+            if ($admin->load($agentid))
+            {
+                $adminlist[$agentid] = $admin;
+            }
+        }
+        return $adminlist;
+    }
 
     public function listeutilisateursspeciaux()
     {
