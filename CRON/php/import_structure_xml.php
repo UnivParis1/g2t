@@ -192,10 +192,27 @@
                 {
                     if (array_key_exists($code_struct, (array) $tabfonctions))
                     {
-                        if (array_key_exists("#1087", (array) $tabfonctions[$code_struct]) and in_array($type_struct, $type_struct_RA))
+//                        if (array_key_exists("#1087", (array) $tabfonctions[$code_struct]) and in_array($type_struct, $type_struct_RA))
+                        // 1087 => Responsable administratif de composante
+                        // 2212 => Responsable administratif par intérim
+                        // ATTENTION : Mettre la valeur à non-vide ("Prioritaire" ou autre) si la fonction doit surpasser toutes les fonctions d'exceptions
+                        //             La première fonction avec une valeur non vide est prioritaire sur les autres => arret du parcours
+                        $tab_fonctions_except = array("#1087" => "", "#2212" => "Prioritaire");
+                        $fonctions_speciales = array_intersect_key((array) $tabfonctions[$code_struct], $tab_fonctions_except);
+                        if (count($fonctions_speciales)>0 and in_array($type_struct, $type_struct_RA))
                         {
-                            $resp_struct = $tabfonctions[$code_struct]["#1087"]; // Responsable Administratif de Composante => Il est prioritaire pour ce type de structure
-                            echo "Structure de type RA avec la fonction #1087 definie \n";
+                            echo "Des fonctions speciales ont ete trouvees : " . print_r($fonctions_speciales,true) . "\n";
+                            foreach ($fonctions_speciales as $key => $value)
+                            {
+                                $resp_struct = $tabfonctions[$code_struct][$key];
+                                echo "Structure de type RA avec la fonction $key definie \n";
+                                
+                                if (strlen(trim($tab_fonctions_except[$key]))!=0)
+                                {
+                                    echo "La fonction speciale $key a une valeur " . $tab_fonctions_except[$key] . " => On arrete le parcours des fonctions speciales \n";
+                                    break;
+                                }
+                            }
                         }
                         else
                         {
