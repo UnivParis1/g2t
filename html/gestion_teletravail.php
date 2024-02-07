@@ -301,11 +301,18 @@
                         $demandeur = new agent($dbcon);
                         $demandeur->load($demandeurid);
                         $resp = $demandeur->getsignataire();
-                        $cronuser = new agent($dbcon);
-                        $cronuser->load(SPECIAL_USER_IDCRONUSER);
-                        $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $demandeur->identitecomplete(), "Une demande de convention de télétravail pour " . $demandeur->identitecomplete() . " a été annulée/refusée.<br>"
-                                . "Ceci est un message informatif. Vous n'avez aucune action à réaliser. <br>");
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Le mail au responsable (" . $resp->identitecomplete() . " " . $resp->mail() . ") a été envoyé (id G2T = " . $teletravail->teletravailid() . ")"));
+                        if (is_null($resp) or $resp===false)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Aucun mail au responsable car il n'est pas défini (id G2T = " . $teletravail->teletravailid() . ")"));
+                        }
+                        else
+                        {
+                            $cronuser = new agent($dbcon);
+                            $cronuser->load(SPECIAL_USER_IDCRONUSER);
+                            $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $demandeur->identitecomplete(), "Une demande de convention de télétravail pour " . $demandeur->identitecomplete() . " a été annulée/refusée.<br>"
+                                    . "Ceci est un message informatif. Vous n'avez aucune action à réaliser. <br>");
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Le mail au responsable (" . $resp->identitecomplete() . " " . $resp->mail() . ") a été envoyé (id G2T = " . $teletravail->teletravailid() . ")"));
+                        }
                     }
                 }
             }

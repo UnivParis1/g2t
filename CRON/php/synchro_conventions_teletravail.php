@@ -149,8 +149,15 @@
                 //    $responsable = $structure->agent_envoyer_a($codeinterne);
                 //}
  */
-                echo "On envoie un rappel au responsable de l'agent => Reponsable = " . $responsable->identitecomplete() . " \n";
-                $tabdestinataireg2t[$responsable->agentid()] = $responsable;
+                if (is_null($responsable) or $responsable===false)
+                {
+                    echo "On n'envoie pas de rappel au responsable de l'agent => car il n'est pas défini \n";
+                }
+                else
+                {
+                    echo "On envoie un rappel au responsable de l'agent => Reponsable = " . $responsable->identitecomplete() . " \n";
+                    $tabdestinataireg2t[$responsable->agentid()] = $responsable;
+                }
             }
             else
             {
