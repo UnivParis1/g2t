@@ -133,6 +133,7 @@
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
@@ -281,9 +282,19 @@
         $solde = new solde($dbcon);
         // echo "Annee de recherche = " . substr($fonctions->anneeref()-1,2,2) . "<br>";
         $msg_bloquant = "" . $solde->load($agentid, "ann" . substr($fonctions->anneeref() - 1, 2, 2));
+        
+        $alimCETenattente = $agent->getDemandesAlim('',array(alimentationCET::STATUT_EN_COURS,alimentationCET::STATUT_PREPARE));
+        $optionCETenattente = $agent->getDemandesOption('',array(optionCET::STATUT_EN_COURS,optionCET::STATUT_PREPARE));
+        
+        if (count($alimCETenattente)>0 or count($optionCETenattente)>0)
+        {
+            $msg_bloquant = $msg_bloquant . "<br>Il y a au moins une demande d'alimentation ou d'option en cours pour cet agent.";
+        }
+        
         $soldelibelle = "";
         // echo "Avant le test msg bloquant..." . $msg_bloquant . "<br>";
-        if ($msg_bloquant == "" or is_null($msg_bloquant)) {
+        if ($msg_bloquant == "" or is_null($msg_bloquant)) 
+        {
             // echo "Tout Ok.... MsgBloquant est vide <br>" ;
             $nbrejoursdispo = $solde->droitaquis() - $solde->droitpris();
             $soldelibelle = $solde->typelibelle();
@@ -311,13 +322,14 @@
         elseif ($msg_bloquant != "") 
         {
             $errlog = "Impossible de saisir un CET pour cet agent.";
-            echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+            echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog<br>$msg_bloquant");
             //echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $errlog);
+            error_log(basename(__FILE__) . " " . $errlog . " => " . $msg_bloquant);
         }
 
         echo "<br>";
-        if ($nbrejoursdispo > 0) {
+        if (intval($nbrejoursdispo)>0 and $msg_bloquant=="") 
+        {
             echo "<span class='ajoutcetbloc'>";
             echo "<form name='frm_ajoutcet'  method='post' >";
             echo "Nombre de jours à ajouter au CET : <input type=text name=nbr_jours_cet id=nbr_jours_cet size=3 > déduit du solde " . $soldelibelle . "<br>";
@@ -336,12 +348,14 @@
             echo "</form>";
             echo "</span>";
             echo "<br>";
-        } else {
-            echo "Le solde $soldelibelle est nul ==> impossible d'alimenter le CET....<br>";
+        } 
+        elseif (($soldelibelle.'') !='') 
+        {
+            echo $fonctions->showmessage(fonctions::MSGERROR, "Le solde $soldelibelle est nul ==> Impossible d'alimenter le CET....<br>");
         }
         // echo 'Avant le test null(CET) <br>';
 
-        if (! is_null($cet)) {
+        if (!is_null($cet) and $msg_bloquant=="") {
             // Seuls les jours au delà de 20 jours de CET peuvent être indemnisés ou ajoutés à la RAFP
             // echo 'Cumul total = ' . $cet->cumultotal() . ' JrsPris = ' . $cet->jrspris() . '<br>';
             $nbrejoursdispo = (($cet->cumultotal() - $cet->jrspris()));
@@ -375,7 +389,7 @@
                 echo "</form>";
                 echo "</span>";
             } else {
-                echo " Le solde du CET de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est nul ==> Impossible de faire une indemnisation<br>";
+                echo $fonctions->showmessage(fonctions::MSGERROR, "Le solde du CET de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est nul ==> Impossible de faire une indemnisation<br>");
             }
         }
         // Affichage du solde de l'année précédente

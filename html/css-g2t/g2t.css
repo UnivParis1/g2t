@@ -1085,6 +1085,7 @@ select {
     background:lightgreen; 
     width:600px; 
     display:block;
+    padding: 8px;
 }
 
 .supprcetbloc {
@@ -1092,6 +1093,7 @@ select {
     background:lightsteelblue; 
     width:600px; 
     display:block;
+    padding: 8px;
 }
 
 .symbolegestionstruct {
