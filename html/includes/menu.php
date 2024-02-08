@@ -28,8 +28,8 @@
 <!-----------------------------------
 -- JQuery-ui CSS de l'établissement
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL" ?>/web-widget/jquery-ui.css" type="text/css" media="all"></link>
-------------------------------------->
 <link rel="stylesheet" href="<?php echo "$WSGROUPURL" ?>/web-widget/ui.theme.css" type="text/css" media="all"></link>
+------------------------------------->
 <!-----------------------------------
 -- JQuery-ui JS local
 ------------------------------------->
