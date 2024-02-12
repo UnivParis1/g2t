@@ -67,6 +67,8 @@
        $mode = $_POST["mode"];
     }
     
+    $nbmonthsprevious = 6;
+    
     if ($mode=='')
     {
         $agentid = $userid;
@@ -93,6 +95,7 @@
         {
             $agentid = null;
         }
+        $nbmonthsprevious = 12;
     }
     elseif ($mode=='resp' or $mode=='gestion')
     {
@@ -436,7 +439,7 @@
         }
         else
         {
-            $datedebutminconv = date('d/m/Y',strtotime('-6 month'));
+            $datedebutminconv = date('d/m/Y',strtotime('-' . $nbmonthsprevious . ' month'));
         }
         if (isset($_POST["datedebutminconv"]))
         {
@@ -455,7 +458,7 @@
         }
         else
         {
-            $datefinminconv = date('d/m/Y',strtotime('-6 month'));
+            $datefinminconv = date('d/m/Y',strtotime('-' . $nbmonthsprevious . ' month'));
         }
         if (isset($_POST["datefinminconv"]))
         {
@@ -663,7 +666,10 @@
             else
             {
                 $affectation = reset($affectationliste);
-                $nbjoursmaxteletravailcalcule = $_POST["nbjoursmaxteletravailcalcule"];
+                if (isset($_POST["nbjoursmaxteletravailcalcule"]))
+                {
+                    $nbjoursmaxteletravailcalcule = $_POST["nbjoursmaxteletravailcalcule"];
+                }
                 if ($nbjoursmaxteletravailcalcule == 0)
                 {
                     error_log(basename(__FILE__) . " :  On recupere le nombre maximale de jour du POST => Il est nul");
@@ -1208,7 +1214,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
     	        {
                     // On peut modifier la date de début de la convention dans une période de 6 mois avant la date saisie
-                    $datedebutminconv_tab = date("d/m/Y", strtotime("-6 month", strtotime($fonctions->formatdatedb($datedebutteletravail))));
+                    $datedebutminconv_tab = date("d/m/Y", strtotime("-" . $nbmonthsprevious . " month", strtotime($fonctions->formatdatedb($datedebutteletravail))));
                     
 ?>
         <input class="calendrier" type=text
@@ -1633,7 +1639,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
         else
         {
-        	$datedebutminconv = date('d/m/Y',strtotime('-6 month'));
+        	$datedebutminconv = date('d/m/Y',strtotime('-' . $nbmonthsprevious . ' month'));
         }
     	$datedebutmaxconv = date('d/m/') . (date('Y')+1);
         if ($esignatureactive)
@@ -1642,7 +1648,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
         else
         {
-        	$datefinminconv = date('d/m/Y',strtotime('-6 month'));
+        	$datefinminconv = date('d/m/Y',strtotime('-' . $nbmonthsprevious . ' month'));
         }
     	$datefinmaxconv = date('d/m/') . (date('Y')+2);
 
