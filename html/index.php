@@ -604,5 +604,7 @@
 ?>
     };
 </script>
+<?php
+?>
 </body>
 </html>

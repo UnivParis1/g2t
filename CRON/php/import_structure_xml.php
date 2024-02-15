@@ -105,45 +105,92 @@
             {
                 $responsableid = trim($node->xpath('RESPID')[0]);
             }
+            // On met NULL car la valeur peut-être vide dans le fichier XML
+            $externalid = null;
+            if (count($node->xpath('EXTERNALID'))>0)
+            {
+                $externalid = trim($node->xpath('EXTERNALID')[0]);
+                echo "externalid est trouve dans le fichier d'interface : $externalid \n";
 
-
-            // On interroge LDAP pour récupérer les extra-infos
+            }
+            // On met NULL car la valeur peut-être vide dans le fichier XML
+            $isincluded = null;
+            if (count($node->xpath('ISINCLUDED'))>0)
+            {
+                $isincluded = trim($node->xpath('ISINCLUDED')[0]);
+                echo "isincluded est trouve dans le fichier d'interface : $isincluded \n";
+            }
+            // On met NULL car la valeur peut-être vide dans le fichier XML
+            $businesscategory = null;
+            if (count($node->xpath('BUSINESSCATEG'))>0)
+            {
+                $businesscategory = trim($node->xpath('BUSINESSCATEG')[0]);
+                echo "businesscategory est trouve dans le fichier d'interface : $businesscategory \n";
+            }
+            
+            
+            // On Prépare la requête LDAP pour récupérer les extra-infos si absente du fichier d'interface
             $filtre = "supannRefId={SIHAM.UO}" . $code_struct;
             $dn = $LDAP_SEARCH_BASE;
-            $LDAP_CODE_STRUCT_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_CODE_ENTITE_ATTR");
-            $LDAP_IS_INCLUDED_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_IS_INCLUDED_ATTR");
-            $LDAP_BUSINESSCATE_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_BUSINESSCATE_ATTR");
 
-            $restriction = array("$LDAP_CODE_STRUCT_ATTR", "$LDAP_IS_INCLUDED_ATTR", "$LDAP_BUSINESSCATE_ATTR");
-            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-            $info = ldap_get_entries($con_ldap, $sr);
-            //echo "Info = " . print_r($info,true) . "\n";
-
-            // Récupération du code de l'ancienne structure
-            $oldstructid = '';
-            if (isset($info[0]["$LDAP_CODE_STRUCT_ATTR"][0]))
+            // Si la valeur est NULL (donc non récupérée du fichier XML) => récupération du code LDAP de la structure
+            if (is_null($externalid))
             {
-                $oldstructid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
+                $externalid = '';
+                $LDAP_CODE_STRUCT_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_CODE_ENTITE_ATTR");
+                $restriction = array("$LDAP_CODE_STRUCT_ATTR");
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                if (isset($info[0]["$LDAP_CODE_STRUCT_ATTR"][0]))
+                {
+                    $externalid = $info[0]["$LDAP_CODE_STRUCT_ATTR"][0];
+                    echo "externalid est trouve dans LDAP : $externalid \n";
+                }
             }
-            // Récupération du code d'inclusion de la structure dans la parente
-            $isincluded = 0;
-            if (isset($info[0]["$LDAP_IS_INCLUDED_ATTR"][0]))
+            // Si la valeur est NULL (donc non récupérée du fichier XML) => récupération du code d'inclusion de la structure dans la parente
+            if (is_null($isincluded))
             {
-                $isincluded = (int)(in_array("included",$info[0]["$LDAP_IS_INCLUDED_ATTR"])); // On regarde si 'included' est dans la tableau des valeurs
+                $isincluded = 0;
+                $LDAP_IS_INCLUDED_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_IS_INCLUDED_ATTR");
+                $restriction = array("$LDAP_IS_INCLUDED_ATTR");
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                if (isset($info[0]["$LDAP_IS_INCLUDED_ATTR"][0]))
+                {
+                    $isincluded = (int)(in_array("included",$info[0]["$LDAP_IS_INCLUDED_ATTR"])); // On regarde si 'included' est dans la tableau des valeurs
+                    echo "isincluded est trouve dans LDAP : $isincluded \n";
+                }
             }
-            $businesscategory = '';
-            if (isset($info[0]["$LDAP_BUSINESSCATE_ATTR"][0]))
+            // Si la valeur est NULL (donc non récupérée du fichier XML) => récupération du type de structure
+            if (is_null($businesscategory))
             {
-                $businesscategory = $info[0]["$LDAP_BUSINESSCATE_ATTR"][0]; 
+                $businesscategory = '';
+                $LDAP_BUSINESSCATE_ATTR = $fonctions->liredbconstante("LDAP_STRUCT_BUSINESSCATE_ATTR");
+                $restriction = array("$LDAP_BUSINESSCATE_ATTR");
+                $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+                $info = ldap_get_entries($con_ldap, $sr);
+                if (isset($info[0]["$LDAP_BUSINESSCATE_ATTR"][0]))
+                {
+                    $businesscategory = $info[0]["$LDAP_BUSINESSCATE_ATTR"][0]; 
+                    echo "businesscategory est trouve dans LDAP : $businesscategory \n";
+                }
             }
 
             echo "La structure $code_struct est inclue dans la structure parente (1 = true, 0 = false) : $isincluded \n";
-            echo "L'identifiant de l'ancienne structure est : " . $oldstructid . " correspondant à la nouvelle structure : $code_struct \n";
+            echo "L'identifiant de l'ancienne structure est : " . $externalid . " correspondant à la nouvelle structure : $code_struct \n";
             echo "La categorie de la structure est $businesscategory \n";
 
-            $type_struct_RA = array(
-                ''
-            );
+            // -----------------------------
+            //$type_struct_RA = array('');
+            // -----------------------------
+            // UFR = Les UFR
+            // EDO = Les Ecoles Doctorales
+            // SCO = Service commun
+            // UFO = Les Unités de formation
+            // UNR = Les Unités de recherche ??
+            // INT = Les instituts
+            // SEG = Les services généraux
+            // DFEDS = Départements (formation) de l'EDS (ticket GLPI 142772)
             $type_struct_RA = array(
                 'UFR',
                 'EDO',
@@ -156,14 +203,6 @@
                 'DFEDS'
             );
 
-            // UFR = Les UFR
-            // EDO = Les Ecoles Doctorales
-            // SCO = Service commun
-            // UFO = Les Unités de formation
-            // UNR = Les Unités de recherche ??
-            // INT = Les instituts
-            // SEG = Les services généraux
-            // DFEDS = Départements (formation) de l'EDS (ticket GLPI 142772)
             $codefonction = "";
             $resp_struct = "";
             // Si la structure est active on cherche le responsable.
@@ -404,7 +443,8 @@
                                                           DATECLOTURE,
                                                           TYPESTRUCT,
                                                           ISINCLUDED,
-                                                          ESTBIBLIOTHEQUE)
+                                                          ESTBIBLIOTHEQUE,
+                                                          EXTERNALID)
                                     VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')", 
                                         $fonctions->my_real_escape_utf8($code_struct), 
                                         $fonctions->my_real_escape_utf8($nom_long_struct), 
@@ -414,7 +454,8 @@
                                         $fonctions->my_real_escape_utf8($date_cloture), 
                                         $fonctions->my_real_escape_utf8($type_struct), 
                                         $isincluded,
-                                        $estbibliotheque
+                                        $estbibliotheque,
+                                        $fonctions->my_real_escape_utf8($externalid)
                             );
                 } 
                 else 
@@ -427,7 +468,8 @@
                                                          DATECLOTURE='%s', 
                                                          TYPESTRUCT='%s', 
                                                          ISINCLUDED='%s',
-                                                         ESTBIBLIOTHEQUE='%s'
+                                                         ESTBIBLIOTHEQUE='%s',
+                                                         EXTERNALID='%s'
                                     WHERE STRUCTUREID='%s'",
                                         $fonctions->my_real_escape_utf8($nom_long_struct), 
                                         $fonctions->my_real_escape_utf8($nom_court_struct), 
@@ -437,6 +479,7 @@
                                         $fonctions->my_real_escape_utf8($type_struct), 
                                         $isincluded,
                                         $estbibliotheque,
+                                        $fonctions->my_real_escape_utf8($externalid),
                                         $fonctions->my_real_escape_utf8($code_struct)
                             );
                     // echo $sql."\n";
@@ -465,7 +508,7 @@
                 // Fin Si (structure ouverte)
                 // Fin Si (Correspondance existe)
 
-                if ($oldstructid == $code_struct) 
+                if ($externalid == $code_struct) 
                 {
                     echo "On detecte une boucle ancienne struct = nouvelle struct => On ne ferme pas la structure....\n";
                 } 
@@ -484,7 +527,7 @@
 //                                      DATECLOTURE,
 //                                      AFFICHERESPSOUSSTRUCT 
 //                               FROM STRUCTURE
-//                               WHERE STRUCTUREID = '$oldstructid' ";
+//                               WHERE STRUCTUREID = '$externalid' ";
                     $oldsql = "SELECT STRUCTUREID,
                                       NOMLONG,
                                       NOMCOURT,
@@ -497,7 +540,7 @@
                                       DEST_MAIL_AGENT,
                                       DATECLOTURE
                                FROM STRUCTURE
-                               WHERE STRUCTUREID = '$oldstructid' ";
+                               WHERE STRUCTUREID = '$externalid' ";
                     $oldquery = mysqli_query($dbcon, $oldsql);
                     $erreur_requete = mysqli_error($dbcon);
                     if ($erreur_requete != "")
@@ -506,7 +549,7 @@
                     }
                     if (mysqli_num_rows($oldquery) == 0) // Structure manquante
                     {
-                        echo "Pas de correspondance avec l'ancienne structure $oldstructid \n";
+                        echo "Pas de correspondance avec l'ancienne structure $externalid \n";
                     } 
                     else 
                     {
@@ -553,7 +596,7 @@
                             } 
                             else 
                             {
-                                $sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$oldstructid'";
+                                $sql = "UPDATE STRUCTURE SET DATECLOTURE = '20151231' WHERE STRUCTUREID = '$externalid'";
                                 mysqli_query($dbcon, $sql);
                                 $erreur_requete = mysqli_error($dbcon);
                                 if ($erreur_requete != "") 
@@ -563,13 +606,13 @@
                                 } 
                                 else 
                                 {
-                                    echo "==> Fermeture de l'ancienne structure '$oldstructid' a la date du 31/12/2015\n";
+                                    echo "==> Fermeture de l'ancienne structure '$externalid' a la date du 31/12/2015\n";
                                 }
                             }
                         } 
                         else 
                         {
-                            echo "L'ancienne structure $oldstructid est deja fermee => Pas de recuperation de donnees \n";
+                            echo "L'ancienne structure $externalid est deja fermee => Pas de recuperation de donnees \n";
                         }
                     }
                 }

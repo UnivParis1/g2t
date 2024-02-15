@@ -53,6 +53,8 @@ class structure
     private $isincluded = null;
     
     private $islibrary = null;
+    
+    private $externalid = null;
 
     function __construct($db)
     {
@@ -103,7 +105,8 @@ class structure
                            ISINCLUDED,
                            ESTBIBLIOTHEQUE,
                            RESPAFFSOLDESOUSSTRUCT,
-                           RESPAFFDEMANDESOUSSTRUCT
+                           RESPAFFDEMANDESOUSSTRUCT,
+                           EXTERNALID
                     FROM STRUCTURE 
                     WHERE STRUCTUREID=?";
             $params = array($structureid);
@@ -145,6 +148,7 @@ class structure
             $this->islibrary = "$result[14]";
             $this->respaffsoldesousstruct = "$result[15]";
             $this->respaffdemandesousstruct = "$result[16]";
+            $this->externalid = "$result[17]";
             
             // Prise en compte du cas de la délégation
             $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID=? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
@@ -166,9 +170,32 @@ class structure
         return true;
     }
     
+    function loadfromexternalid($externalid)
+    {
+        $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE EXTERNALID = ?";
+        $params = array($externalid);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") 
+        {
+            $errlog = "Structure->loadfromexternalid (STRUCTURE) : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        if (mysqli_num_rows($query) != 1) {
+            $this->nomcourt = "$externalid";
+            $this->nomlong = "Structure inconnue ou selection multiple";
+            return false;
+        }
+        $result = mysqli_fetch_row($query);
+        return $this->load("$result[0]");
+    }
+    
     function loadfromldapid($ldapstructid)
     {
-
+        return $this->loadfromexternalid($ldapstructid);
+        
+/****************************************************
         // Initialisation du LDAP
         $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
@@ -197,11 +224,19 @@ class structure
         }
         // Si le code SIHAM n'est pas trouvé, on ne peut pas faire la correspondance
         return false;
+************************************************/
+        
     }
+
 
     function id()
     {
         return $this->structureid;
+    }
+    
+    function externalid()
+    {
+        return $this->externalid;
     }
 
     function nomlong($name = null)
