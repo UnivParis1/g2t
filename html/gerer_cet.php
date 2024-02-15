@@ -208,9 +208,22 @@
     {
         if ($htmltext == '')
         {
-            $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td><td class='titresimple'>PDF</td>";
+            $htmltext = $htmltext . "<table class='tableausimple' id='table_alimentation'>";
+            $htmltext = $htmltext . "<thead>";
+            $htmltext = $htmltext . "<tr>"
+                    . "<th class='titresimple cursorpointer'>Agent <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Identifiant <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Date création <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Type de demande <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Nombre de jours <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Statut <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Date Statut <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple'>Motif</th>"
+                    . "<th class='titresimple'>Consulter</th>"
+                    . "<th class='titresimple'>PDF</th>";
             $htmltext = $htmltext . "</tr>";
+            $htmltext = $htmltext . "</thead>";
+            $htmltext = $htmltext . "<tbody>";
         }
         
         $alimcet = new alimentationCET($dbcon);
@@ -255,11 +268,29 @@
             {
                 $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
             }
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
+            $htmltext = $htmltext . "<tr>"
+                    . "<td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->esignatureid() . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($alimcet->datecreation(), 0, 10)) . "_" . substr($alimcet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->typeconges() . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>"
+                    . "<td class='cellulesimple'>" . $statut . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
+                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
         else
         {
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td><td class='cellulesimple'>" . $alimcet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
+            $htmltext = $htmltext . "<tr>"
+                    . "<td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->esignatureid() . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($alimcet->datecreation(), 0, 10)) . "_" . substr($alimcet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->typeconges() . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->statut() . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
+                    . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
+                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
         $htmltext = $htmltext . "<td class='cellulesimple'><form name='alim_" . $alimcet->esignatureid() . "'  method='post' >";
         $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -282,7 +313,7 @@
         $htmltext = $htmltext . "</form></td>";
         $htmltext = $htmltext . "</tr>";
     }
-    $htmltext = $htmltext . "</table><br>";
+    $htmltext = $htmltext . "</tbody></table><br>";
     echo $htmltext;
     //var_dump($alimCETliste);
     echo "<br><br>";
@@ -307,9 +338,23 @@
         $optioncet->load($esignatureid);
         if ($htmltext == '')
         {
-            $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Agent</td><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>RAFP</td><td class='titresimple'>Indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td><td class='titresimple'>PDF</td>";
+            $htmltext = $htmltext . "<table class='tableausimple' id='table_option'>";
+            $htmltext = $htmltext . "<thead>";
+            $htmltext = $htmltext . "<tr>"
+                    . "<th class='titresimple cursorpointer'>Agent <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Identifiant <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Date création <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Année de référence <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>RAFP <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Indemnisation <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Statut <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple cursorpointer'>Date Statut <span class='sortindicator'> </span></th>"
+                    . "<th class='titresimple'>Motif</th>"
+                    . "<th class='titresimple'>Consulter</th>"
+                    . "<th class='titresimple'>PDF</th>";
             $htmltext = $htmltext . "</tr>";
+            $htmltext = $htmltext . "</thead>";
+            $htmltext = $htmltext . "<tbody>";
         }
         
         if (!is_null($agent))
@@ -352,12 +397,31 @@
             {
                 $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
             }
-            
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $statut . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
+            $htmltext = $htmltext . "<tr>"
+                    . "<td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->esignatureid() . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($optioncet->datecreation(), 0, 10)) . "_" . substr($optioncet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->anneeref() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->valeur_i() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->valeur_j() . "</td>"
+                    . "<td class='cellulesimple'>" . $statut . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
+                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
         else
         {
-            $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td><td class='cellulesimple'>" . $optioncet->esignatureid() . "</td><td class='cellulesimple'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
+            $htmltext = $htmltext . "<tr>"
+                    . "<td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->esignatureid() . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($optioncet->datecreation(), 0, 10)) . "_" . substr($optioncet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->anneeref() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->valeur_i() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->valeur_j() . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->statut() . "</td>"
+                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
+                    . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
+                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
         $htmltext = $htmltext . "<td class='cellulesimple'><form name='option_" . $optioncet->esignatureid() . "'  method='post' >";
         $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -380,7 +444,7 @@
         $htmltext = $htmltext . "</form></td>";
         $htmltext = $htmltext . "</tr>";
     }
-    $htmltext = $htmltext . "</table><br>";
+    $htmltext = $htmltext . "</tbody></table><br>";
     echo $htmltext;
  
     //var_dump($optionCETliste);
@@ -388,6 +452,128 @@
     
  ?>
     <script>
+        var table_alimentation = document.getElementById('table_alimentation');
+        if (table_alimentation)
+        {
+                table_alimentation.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+                const currentsortindicator = th.querySelector('.sortindicator')
+
+                if (currentsortindicator!==null)
+                {
+                    const table = th.closest('table');
+                    const tbody = table.querySelector('tbody');
+                    //alert (table.id);
+
+                    if (currentsortindicator.innerText.trim().length>0)
+                    {
+                        th.asc = !th.asc
+                    }
+
+                    Array.from(tbody.querySelectorAll('tr'))
+                        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+                        .forEach(tr => tbody.appendChild(tr) );
+                    theader = table.querySelector('theader');
+
+                    //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+
+                    for (var thindex = 0 ; thindex < table_alimentation.querySelectorAll('th').length; thindex++)
+                    {
+                        //alert (thindex);
+                        if (th.parentNode.children[thindex]!==null)
+                        {
+                            //alert (th.parentNode.children[thindex].innerHTML);
+                            var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                            if (thsortindicator!==null)
+                            {
+                                //alert (thsortindicator.innerText);
+                                thsortindicator.innerText = ' ';
+                                //alert (thsortindicator.innerText);
+                            }
+                        }
+                    }
+
+                    if (currentsortindicator!==null)
+                    {
+                        if (th.asc)
+                        {
+                            //alert ('plouf');
+                            currentsortindicator.innerHTML = '&darr;'; // flêche qui descend
+                        }
+                        else
+                        {
+                            //alert ('ploc');
+                            currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+                        }
+                    }
+                }
+            })));
+
+            table_alimentation.querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+            table_alimentation.querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
+        }
+        
+        var table_option = document.getElementById('table_option');
+        if (table_option)
+        {
+            table_option.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+                const currentsortindicator = th.querySelector('.sortindicator')
+
+                if (currentsortindicator!==null)
+                {
+                    const table = th.closest('table');
+                    const tbody = table.querySelector('tbody');
+                    //alert (table.id);
+
+                    if (currentsortindicator.innerText.trim().length>0)
+                    {
+                        th.asc = !th.asc
+                    }
+
+                    Array.from(tbody.querySelectorAll('tr'))
+                        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+                        .forEach(tr => tbody.appendChild(tr) );
+                    theader = table.querySelector('theader');
+
+                    //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+
+                    for (var thindex = 0 ; thindex < table_option.querySelectorAll('th').length; thindex++)
+                    {
+                        //alert (thindex);
+                        if (th.parentNode.children[thindex]!==null)
+                        {
+                            //alert (th.parentNode.children[thindex].innerHTML);
+                            var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                            if (thsortindicator!==null)
+                            {
+                                //alert (thsortindicator.innerText);
+                                thsortindicator.innerText = ' ';
+                                //alert (thsortindicator.innerText);
+                            }
+                        }
+                    }
+
+                    if (currentsortindicator!==null)
+                    {
+                        if (th.asc)
+                        {
+                            //alert ('plouf');
+                            currentsortindicator.innerHTML = '&darr;'; // flêche qui descend
+                        }
+                        else
+                        {
+                            //alert ('ploc');
+                            currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+                        }
+                    }
+                }
+            })));
+
+            table_option.querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+            table_option.querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
+        }
+
         window.addEventListener("load", (event) => {
             var waiting_img = document.getElementById('waiting_img');
             if (waiting_img)
@@ -401,9 +587,6 @@
             }
         });
     </script>
-<!--
-<a href=".">Retour à la page d'accueil</a>
--->
 </body>
 </html>
 

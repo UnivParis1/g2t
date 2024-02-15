@@ -2509,14 +2509,14 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "</tr>";
 */                                
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' class='cursorpointer'>Date de demande <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' class='cursorpointer'>Date de début <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' class='cursorpointer'>Date de fin <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' class='cursorpointer'>Type de demande <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple' class='cursorpointer'>Nbre jours <span class='sortindicator'> </span></th>";
+                                                      <th class='cellulesimple cursorpointer'>Date de demande <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer'>Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer'>Date de fin <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer'>Type de demande <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer'>Nbre jours <span class='sortindicator'> </span></th>";
                         if (strcasecmp($mode, "agent") == 0)
                         {
-                            $htmltext = $htmltext . "<th class='cellulesimple' class='cursorpointer'>Statut<span class='sortindicator'> </span></th>";
+                            $htmltext = $htmltext . "<th class='cellulesimple cursorpointer'>Statut<span class='sortindicator'> </span></th>";
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
                         }
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
