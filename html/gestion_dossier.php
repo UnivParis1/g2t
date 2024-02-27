@@ -842,11 +842,11 @@
                 }
                 echo "' class='infouser[" . $structure->id() . "]' /> ";
 ?>
-			    <script>
+		    <script>
     		    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-    		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
-    	   		</script>
+    		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|researcher" } });
+                    </script>
 <?php
                 echo "</tr>";
 

@@ -7,9 +7,30 @@
     
     echo "Début de l'import des structures " . date("d/m/Y H:i:s") . "\n";
     
+    $tabpoidsfonct = array();
+    // On regarde si le fichier des priorites de fonctions est present
+    $filename = $fonctions->inputfilepath() . "/priorite_fonctions_$date.xml";
+    if (!file_exists($filename)) 
+    {
+        echo "Le fichier des priorites de fonctions $filename n'existe pas ....\n";
+    }
+    else 
+    {
+        echo "Le fichier $filename est présent. \n";
+	$xml = simplexml_load_file("$filename");
+	$fctpriorite = $xml->xpath('FCT_PRIORITE');
+	foreach ($fctpriorite as $node)
+	{
+            $priorite = trim($node->xpath('PRIORITE')[0]);
+            $code_fonction = "#" . intval(trim($node->xpath('CODEFONCT')[0]));
+            $tabpoidsfonct["$code_fonction"] = $priorite;
+        }
+    }
+    
+    //echo "tabpoidsfonct = " . print_r($tabpoidsfonct, true) . " \n";
+    
     // On regarde si le fichier des fonctions est present
     $filename = $fonctions->inputfilepath() . "/siham_fonctions_$date.xml";
-    $tabpoidsfonct = array();
     if (!file_exists($filename)) 
     {
         echo "Le fichier des fonctions $filename n'existe pas ....\n";
@@ -44,8 +65,9 @@
                 $code_struct = trim($node->xpath('STRUCTID')[0]);
                 $tabfonctions[$code_struct]["#" . intval("$code_fonction")] = $agentid;
                 // Pour chaque fonction dans le tableau des fonctions on va chercher son poids dans LDAP
-                if (!isset($tabpoidsfonct[intval("$code_fonction")]))
+                if (!isset($tabpoidsfonct["#" . intval("$code_fonction")]))
                 {
+                    echo "La priorite de la fonction " . intval("$code_fonction") . " est manquante => On va voir LDAP \n";
                     $filtre = "supannRefId={SIHAM:FCT}" . $code_fonction;
                     $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
                     $info = ldap_get_entries($con_ldap, $sr);
@@ -445,7 +467,7 @@
                                                           ISINCLUDED,
                                                           ESTBIBLIOTHEQUE,
                                                           EXTERNALID)
-                                    VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s')", 
+                                    VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')", 
                                         $fonctions->my_real_escape_utf8($code_struct), 
                                         $fonctions->my_real_escape_utf8($nom_long_struct), 
                                         $fonctions->my_real_escape_utf8($nom_court_struct), 
