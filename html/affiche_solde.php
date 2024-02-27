@@ -127,11 +127,14 @@
     }
     elseif (strcasecmp($mode, "resp") == 0) 
     {
+        $structureliste = $user->structrespliste();
+        //var_dump("Avant appel enleverstructuresinclues_soldes");
+        $structureliste = $fonctions->enleverstructuresinclues_soldes($structureliste);
+        //var_dump("Apres appel enleverstructuresinclues_soldes");
         echo "Veuillez selectionner un agent :<br>";
         echo "<form name='formselect'  method='post'>";
         echo "<select id='agentselect' name='agentselect'>";
         echo "<option value=''>Tous les agents</option>";
-        $structureliste = $user->structrespliste();
         foreach ($structureliste as $structkey => $structure)
         {
 //            error_log(basename(__FILE__) . " : La structure est " . $structure->nomcourt());
@@ -218,6 +221,7 @@
             if ($agentselect == '')
             {
                 $structureliste = $user->structrespliste();
+                $structureliste = $fonctions->enleverstructuresinclues_soldes($structureliste);
                 foreach ($structureliste as $structkey => $structure) 
                 {
                     echo "<br>";

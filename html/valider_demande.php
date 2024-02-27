@@ -193,6 +193,7 @@
 
     if ($user->estresponsable() and (strcasecmp($mode, "resp") == 0)) {
         $listestruct = $user->structrespliste();
+        $listestruct = $fonctions->enleverstructuresinclues_demandes($listestruct);
         // print_r($listestruct); echo "<br>";
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";

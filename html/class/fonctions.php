@@ -4159,7 +4159,78 @@ WHERE  table_schema = Database()
             echo "<br><br>";
         }
     }
+    
+    /**
+     * Recherche dans la liste des structures passées en paramètre si elles sont inclues les unes dans les autres
+     * et si pour la structure englobante, le responsable a accès aux soldes de tous les agents des sous-structures
+     * 
+     * @param array $structarray
+     *            Liste des structures à simplifier
+     * @return array liste des structures simplifiée
+     */
+    function enleverstructuresinclues_soldes($structarray)
+    {
+        foreach ($structarray as $structkey => $struct)
+        {
+            $racinestruct = $struct->structureenglobante();
+            //var_dump("La structure englobante de " . $struct->nomcourt() . " est " . $racinestruct->nomcourt());
+            // Si la structure racine n'est pas la structure qu'on est en train d'analyser
+            if ($racinestruct->id() != $struct->id())
+            {
+                //var_dump("La structure englobante n'est pas la strucuture courante");
+                // Si la structure racine est définie dans liste des structures
+                if (isset($structarray[$racinestruct->id()]))
+                {
+                    //var_dump("La structure englobante est définie dans la liste des structures en parametre");
+                    // Le responsable peut afficher tous les soldes des sous-structures
+                    if (strcasecmp($racinestruct->respaffsoldesousstruct(), "o") == 0)
+                    {
+                        // On peut enlever la structure inclue en cours
+                        //var_dump("On enleve la structure " . $struct->nomcourt() . " de la liste.");
+                        unset($structarray[$structkey]);
+                    }
+                }
+            }
+        }
+        //var_dump($structarray);
+        return $structarray;
+    }
 
+    /**
+     * Recherche dans la liste des structures passées en paramètre si elles sont inclues les unes dans les autres
+     * et si pour la structure englobante, le responsable a accès aux demandes de tous les agents des sous-structures
+     * 
+     * @param array $structarray
+     *            Liste des structures à simplifier
+     * @return array liste des structures simplifiée
+     */
+    function enleverstructuresinclues_demandes($structarray)
+    {
+        foreach ($structarray as $structkey => $struct)
+        {
+            $racinestruct = $struct->structureenglobante();
+            //var_dump("La structure englobante de " . $struct->nomcourt() . " est " . $racinestruct->nomcourt());
+            // Si la structure racine n'est pas la structure qu'on est en train d'analyser
+            if ($racinestruct->id() != $struct->id())
+            {
+                //var_dump("La structure englobante n'est pas la strucuture courante");
+                // Si la structure racine est définie dans liste des structures
+                if (isset($structarray[$racinestruct->id()]))
+                {
+                    //var_dump("La structure englobante est définie dans la liste des structures en parametre");
+                    // Le responsable peut afficher toutes les demandes des sous-structures
+                    if (strcasecmp($racinestruct->respaffdemandesousstruct(), "o") == 0)
+                    {
+                        // On peut enlever la structure inclue en cours
+                        //var_dump("On enleve la structure " . $struct->nomcourt() . " de la liste.");
+                        unset($structarray[$structkey]);
+                    }
+                }
+            }
+        }
+        //var_dump($structarray);
+        return $structarray;
+    }
 }
 
 ?>
