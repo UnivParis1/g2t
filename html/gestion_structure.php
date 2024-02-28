@@ -360,11 +360,12 @@
                 if ($struct->responsable()->agentid() != $responsable->agentid()) {
                     echo "<tr>";
                     echo "<td>";
-                    $delegueid = "";
-                    $datedebutdeleg = "";
-                    $datefindeleg = "";
-                    $continuesendtoresp = "n";
-                    $struct->getdelegation($delegueid, $datedebutdeleg, $datefindeleg, $continuesendtoresp);
+                    $delegation = $struct->getdelegation();
+                    $delegueid = $delegation->delegationuserid;
+                    $datedebutdeleg = $delegation->datedebutdeleg;
+                    $datefindeleg = $delegation->datefindeleg;
+                    $continuesendtoresp = $delegation->continuesendtoresp;
+
                     $delegue = new agent($dbcon);
                     $delegue->load($delegueid);
                     $info = "Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg."; 

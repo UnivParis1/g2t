@@ -1,5 +1,16 @@
 <?php
 
+class delegation
+{
+    public $delegationuserid = "";
+    public $datedebutdeleg = "";
+    public $datefindeleg = "";
+    public $continuesendtoresp = 'n';
+    public $auteurmodifdeleg = "";
+    public $datemodifdeleg = NULL;
+}
+
+
 use Fpdf\Fpdf as FPDF;
 
 class structure
@@ -151,21 +162,27 @@ class structure
             $this->externalid = "$result[17]";
             
             // Prise en compte du cas de la délégation
-            $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID=? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
-            $params = array($structureid);
-            $query = $this->fonctions->prepared_select($sql, $params);
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                $errlog = "Structure->Load (STRUCTURE DELEGUE) : " . $erreur;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            $delegation = $this->getdelegation(true);
+            if ($delegation->delegationuserid . "" != "")
+            {
+                $this->delegueid = $delegation->delegationuserid;
             }
-            if (mysqli_num_rows($query) != 0) {
-                $result = mysqli_fetch_row($query);
-                if ("$result[0]" != "") {
-                    $this->delegueid = "$result[0]";
-                }
-            }
+            
+//            $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID=? AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
+//            $params = array($structureid);
+//            $query = $this->fonctions->prepared_select($sql, $params);
+//            $erreur = mysqli_error($this->dbconnect);
+//            if ($erreur != "") {
+//                $errlog = "Structure->Load (STRUCTURE DELEGUE) : " . $erreur;
+//                echo $errlog . "<br/>";
+//                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+//            }
+//            if (mysqli_num_rows($query) != 0) {
+//                $result = mysqli_fetch_row($query);
+//                if ("$result[0]" != "") {
+//                    $this->delegueid = "$result[0]";
+//                }
+//            }
         }
         return true;
     }
@@ -1647,14 +1664,15 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
     }
 
-    function getdelegation(&$delegationuserid, &$datedebutdeleg, &$datefindeleg, &$continuesendtoresp)
+    function getdelegation($activeonly = false) 
     {
-        $delegationuserid = "";
-        $datedebutdeleg = "";
-        $datefindeleg = "";
-        $continuesendtoresp = "n";
-        
-        $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG,MAILRESPDELEG FROM STRUCTURE WHERE STRUCTUREID = ? AND IDDELEG <> ''";
+        $delegation = new delegation;
+               
+        $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG,MAILRESPDELEG FROM STRUCTURE WHERE STRUCTUREID = ? AND IDDELEG <> '' ";
+        if ($activeonly)
+        {
+            $sql = $sql . " AND CURDATE() BETWEEN DATEDEBUTDELEG AND DATEFINDELEG ";
+        }
         $params = array($this->id());
         $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
@@ -1665,28 +1683,30 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         }
         if (mysqli_num_rows($query) > 0) {
             $result = mysqli_fetch_row($query);
-            $delegationuserid = "$result[0]";
+            $delegation->delegationuserid = "$result[0]";
             if ("$result[1]" != "") {
-                $datedebutdeleg = $this->fonctions->formatdate("$result[1]");
+                $delegation->datedebutdeleg = $this->fonctions->formatdate("$result[1]");
             }
             if ("$result[2]" != "") {
-                $datefindeleg = $this->fonctions->formatdate("$result[2]");
+                $delegation->datefindeleg = $this->fonctions->formatdate("$result[2]");
             }
-            $continuesendtoresp = "$result[3]";
+            $delegation->continuesendtoresp = "$result[3]";
         }
+        return $delegation;
     }
 
-    function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="", $continuesendtoresp='n')
+    function setdelegation($delegation)
+    //        $delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="", $continuesendtoresp='n')
     {
-        if ($datedebutdeleg != "") {
-            $datedebutdeleg = $this->fonctions->formatdatedb($datedebutdeleg);
+        if ($delegation->datedebutdeleg != "") {
+            $delegation->datedebutdeleg = $this->fonctions->formatdatedb($delegation->datedebutdeleg);
         }
-        if ($datefindeleg != "") {
-            $datefindeleg = $this->fonctions->formatdatedb($datefindeleg);
+        if ($delegation->datefindeleg != "") {
+            $delegation->datefindeleg = $this->fonctions->formatdatedb($delegation->datefindeleg);
         }
-        $datemodifdeleg = NULL;
-        if ($idmodifdeleg != "") {
-            $datemodifdeleg = $this->fonctions->formatdatedb(date("d/m/Y"));
+        $delegation->datemodifdeleg = NULL;
+        if ($delegation->auteurmodifdeleg != "") {
+            $delegation->datemodifdeleg = $this->fonctions->formatdatedb(date("d/m/Y"));
         }
         $sql = "UPDATE STRUCTURE 
                 SET IDDELEG=?, 
@@ -1697,12 +1717,12 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     MAILRESPDELEG=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
-        $params = array($delegationuserid,
-                        $datedebutdeleg,
-                        $datefindeleg,
-                        $datemodifdeleg,
-                        $idmodifdeleg,
-                        $continuesendtoresp,
+        $params = array($delegation->delegationuserid,
+                        $delegation->datedebutdeleg,
+                        $delegation->datefindeleg,
+                        $delegation->datemodifdeleg,
+                        $delegation->auteurmodifdeleg,
+                        $delegation->continuesendtoresp,
                         $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
@@ -1713,7 +1733,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             $msgerreur = $msgerreur . $erreur;
         }
-        $this->delegueid = $delegationuserid;
+        $this->delegueid = $delegation->delegationuserid;
         return $msgerreur;
     }
         

@@ -338,7 +338,13 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid, 'n');
+                $delegation = new delegation;
+                $delegation->delegationuserid = "";
+                $delegation->datedebutdeleg = "1900-01-01";
+                $delegation->datefindeleg = "1900-01-01";
+                $delegation->continuesendtoresp = "n";
+                $delegation->auteurmodifdeleg = $userid;
+                $structure->setdelegation($delegation);
             } else {
                 // echo "Dans le else avant le filtre LDAP <br>";
                 //echo "\$valeur est soit un uid soit un numéro agent : $valeur <br>";
@@ -397,7 +403,12 @@
                             $continuesendtoresptostore = 'o';
                         }
                         
-                        $structure->getdelegation($delegationuserid, $datedebutdelegbd, $datefindelegbd, $continuesendtoresp);
+                        $delegation = $structure->getdelegation();
+                        $delegationuserid = $delegation->delegationuserid;
+                        $datedebutdelegbd = $delegation->datedebutdeleg;
+                        $datefindelegbd = $delegation->datefindeleg;
+                        $continuesendtoresp = $delegation->continuesendtoresp;
+
                         //var_dump("J'ai récup la délégation => $continuesendtoresp");
                         if ($datedebutdelegbd == "")
                         {
@@ -426,7 +437,13 @@
                         {
                             
                             // echo "On enregistre la delegation.... <br>";
-                            $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid, $continuesendtoresptostore);
+                            $delegation = new delegation;
+                            $delegation->delegationuserid = $agentid;
+                            $delegation->datedebutdeleg = $datedebutdeleg;
+                            $delegation->datefindeleg = $datefindeleg;
+                            $delegation->continuesendtoresp = $continuesendtoresptostore;
+                            $delegation->auteurmodifdeleg = $userid;
+                            $structure->setdelegation($delegation);
                             $errlog = "Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
                             echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
                             $errlog = $user->identitecomplete() . " : " . $errlog;
@@ -876,7 +893,11 @@
                     // $delegationuserid = "";
                     // $datedebutdeleg = "";
                     // $datefindeleg = "";
-                    $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $continuesendtoresp);
+                    $delegation = $structure->getdelegation();
+                    $delegationuserid = $delegation->delegationuserid;
+                    $datedebutdeleg = $delegation->datedebutdeleg;
+                    $datefindeleg = $delegation->datefindeleg;
+                    $continuesendtoresp = $delegation->continuesendtoresp;
 
                     //var_dump ("delegationuserid = $delegationuserid, datedebutdeleg = $datedebutdeleg, datefindeleg = $datefindeleg continuesendtoresp = $continuesendtoresp");
                     $delegationuser = null;

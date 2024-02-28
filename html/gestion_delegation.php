@@ -94,7 +94,13 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid, 'n');
+                $delegation = new delegation;
+                $delegation->delegationuserid = "";
+                $delegation->datedebutdeleg = "1900-01-01";
+                $delegation->datefindeleg = "1900-01-01";
+                $delegation->continuesendtoresp = "n";
+                $delegation->auteurmodifdeleg = $userid;
+                $structure->setdelegation($delegation);
             } 
             else 
             {
@@ -156,7 +162,13 @@
                             }
                             
                             // echo "On enregistre la delegation.... <br>";
-                            $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid, $continuesendtoresp);
+                            $delegation = new delegation;
+                            $delegation->delegationuserid = $agentid;
+                            $delegation->datedebutdeleg = $datedebutdeleg;
+                            $delegation->datefindeleg = $datefindeleg;
+                            $delegation->continuesendtoresp = $continuesendtoresp;
+                            $delegation->auteurmodifdeleg = $userid;
+                            $structure->setdelegation($delegation);
                             $errlog = "Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
                             echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
                             $errlog = $resp->identitecomplete() . " : " . $errlog;
@@ -199,10 +211,13 @@
     {
         $structure = new structure($dbcon);
         $structure->load($structureid);
-        $continuesendtoresp = "n";
-        $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg,$continuesendtoresp);
-        $resp = $structure->responsablesiham();
+        $delegation = $structure->getdelegation();
+        $delegationuserid = $delegation->delegationuserid;
+        $datedebutdeleg = $delegation->datedebutdeleg;
+        $datefindeleg = $delegation->datefindeleg;
+        $continuesendtoresp = $delegation->continuesendtoresp;
         
+        $resp = $structure->responsablesiham();
         echo 'Le responsable de la structure "' . $structure->nomlong() . ' (' . $structure->nomcourt()  . ')" est ' . $resp->identitecomplete() . '<br><br>';
         // echo "delegationuserid = $delegationuserid, datedebutdeleg = $datedebutdeleg, datefindeleg = $datefindeleg <br>";
         $delegationuser = null;
