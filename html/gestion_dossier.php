@@ -52,7 +52,7 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-//     print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
+    //print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
 
     $reportlist = null;
     if (isset($_POST['report']))
@@ -88,7 +88,7 @@
     {
         $datedebutcetlist = $_POST['datedebutcet'];
     }
-
+    
     if (is_array($reportlist)) {
         foreach ($reportlist as $agentid => $reportvalue) {
             $complement = new complement($dbcon);
@@ -320,6 +320,13 @@
         $arraydatefin = $_POST["date_fin"];
     }
 
+    $arraycontinuesendtoresp = null;
+    if (isset($_POST['continuesendtoresp']))
+    {
+        $arraycontinuesendtoresp = $_POST['continuesendtoresp'];
+    }
+    
+
     if (is_array($arraydelegation)) 
     {
         // ATTENTION : La $valeur est soit le AGENTID soit le UID si on vient de le modifier !!
@@ -331,7 +338,7 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid);
+                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid, 'n');
             } else {
                 // echo "Dans le else avant le filtre LDAP <br>";
                 //echo "\$valeur est soit un uid soit un numéro agent : $valeur <br>";
@@ -364,6 +371,7 @@
                             $resp_est_delegue = true;
                         }
                     }
+                    
 
                     if ($resp_est_delegue) 
                     {
@@ -381,7 +389,16 @@
                             $datefindeleg = $arraydatefin[$structure->id()];
                         }
 
-                        $structure->getdelegation($delegationuserid, $datedebutdelegbd, $datefindelegbd);
+                        $continuesendtoresptostore = 'n';
+                        //var_dump($continuesendtoresptostore);
+                        if (isset($arraycontinuesendtoresp[$structure->id()]))
+                        {
+                            //var_dump("Le flag arraycontinuesendtoresp pour la structure " . $structure->id() . " est présent " );
+                            $continuesendtoresptostore = 'o';
+                        }
+                        
+                        $structure->getdelegation($delegationuserid, $datedebutdelegbd, $datefindelegbd, $continuesendtoresp);
+                        //var_dump("J'ai récup la délégation => $continuesendtoresp");
                         if ($datedebutdelegbd == "")
                         {
                             $datedebutdelegbd = "01/01/1900";
@@ -398,7 +415,8 @@
                         } 
                         elseif (($delegationuserid == $agentid)
                             and ($fonctions->formatdate($datedebutdelegbd) == $fonctions->formatdate($datedebutdeleg))
-                            and $fonctions->formatdate($datefindelegbd) == $fonctions->formatdate($datefindeleg))
+                            and $fonctions->formatdate($datefindelegbd) == $fonctions->formatdate($datefindeleg)
+                            and $continuesendtoresp == $continuesendtoresptostore)
                         {
                             // On a donné les mêmes paramétres que ceux de la base de données => On ne fait rien
                             $errlog = "Pas d'enregistrement de la délégation car les données sont identiques à celles en base de données pour " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
@@ -406,11 +424,12 @@
                         }
                         else 
                         {
+                            
                             // echo "On enregistre la delegation.... <br>";
-                        	$structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid);
-                        	$errlog = "Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
-                        	echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
-                        	$errlog = $user->identitecomplete() . " : " . $errlog;
+                            $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid, $continuesendtoresptostore);
+                            $errlog = "Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
+                            echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
+                            $errlog = $user->identitecomplete() . " : " . $errlog;
                             // echo $errlog."<br/>";
                             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                         }
@@ -857,9 +876,9 @@
                     // $delegationuserid = "";
                     // $datedebutdeleg = "";
                     // $datefindeleg = "";
-                    $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg);
+                    $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $continuesendtoresp);
 
-                    // echo "delegationuserid = $delegationuserid, datedebutdeleg = $datedebutdeleg, datefindeleg = $datefindeleg <br>";
+                    //var_dump ("delegationuserid = $delegationuserid, datedebutdeleg = $datedebutdeleg, datefindeleg = $datefindeleg continuesendtoresp = $continuesendtoresp");
                     $delegationuser = null;
                     if ($delegationuserid != "") {
                         $delegationuser = new agent($dbcon);
@@ -952,6 +971,17 @@
     	maxperiode='<?php echo $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode()); ?>'
     	value='<?php echo $datefindeleg ?>'>
     <?php
+                    echo "</td>";
+                    echo "</tr>";
+                    
+                    echo "<tr>";
+                    echo "<td class='delegpaddingleft'>";
+                    $checked = '';
+                    if (strcasecmp($continuesendtoresp, 'o')==0)
+                    {
+                        $checked = ' checked ';
+                    }
+                    echo "<input type='checkbox' $checked name='continuesendtoresp[" . $structure->id() . "]' id='continuesendtoresp[" . $structure->id() . "]'>En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de recevoir les notifications des demandes de congés/d'absences par mail durant la délégation.</input>";
                     echo "</td>";
                     echo "</tr>";
                 }

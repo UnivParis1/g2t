@@ -1647,13 +1647,14 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // $pdf->Output('demande_pdf/autodeclaration_num'.$ID_AUTODECLARATION.'.pdf');
     }
 
-    function getdelegation(&$delegationuserid, &$datedebutdeleg, &$datefindeleg)
+    function getdelegation(&$delegationuserid, &$datedebutdeleg, &$datefindeleg, &$continuesendtoresp)
     {
         $delegationuserid = "";
         $datedebutdeleg = "";
         $datefindeleg = "";
+        $continuesendtoresp = "n";
         
-        $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG FROM STRUCTURE WHERE STRUCTUREID = ? AND IDDELEG <> ''";
+        $sql = "SELECT IDDELEG,DATEDEBUTDELEG,DATEFINDELEG,MAILRESPDELEG FROM STRUCTURE WHERE STRUCTUREID = ? AND IDDELEG <> ''";
         $params = array($this->id());
         $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
@@ -1671,10 +1672,11 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             if ("$result[2]" != "") {
                 $datefindeleg = $this->fonctions->formatdate("$result[2]");
             }
+            $continuesendtoresp = "$result[3]";
         }
     }
 
-    function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="")
+    function setdelegation($delegationuserid, $datedebutdeleg, $datefindeleg, $idmodifdeleg="", $continuesendtoresp='n')
     {
         if ($datedebutdeleg != "") {
             $datedebutdeleg = $this->fonctions->formatdatedb($datedebutdeleg);
@@ -1684,17 +1686,24 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         }
         $datemodifdeleg = NULL;
         if ($idmodifdeleg != "") {
-        	$datemodifdeleg = $this->fonctions->formatdatedb(date("d/m/Y"));
+            $datemodifdeleg = $this->fonctions->formatdatedb(date("d/m/Y"));
         }
         $sql = "UPDATE STRUCTURE 
                 SET IDDELEG=?, 
                     DATEDEBUTDELEG=?,
                     DATEFINDELEG=?,
                     DATEMODIFDELEG=?,
-                    IDMODIFDELEG=?  
+                    IDMODIFDELEG=?,
+                    MAILRESPDELEG=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
-        $params = array($delegationuserid,$datedebutdeleg,$datefindeleg,$datemodifdeleg,$idmodifdeleg,$this->id());
+        $params = array($delegationuserid,
+                        $datedebutdeleg,
+                        $datefindeleg,
+                        $datemodifdeleg,
+                        $idmodifdeleg,
+                        $continuesendtoresp,
+                        $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         $msgerreur = '';

@@ -363,7 +363,8 @@
                     $delegueid = "";
                     $datedebutdeleg = "";
                     $datefindeleg = "";
-                    $struct->getdelegation($delegueid, $datedebutdeleg, $datefindeleg);
+                    $continuesendtoresp = "n";
+                    $struct->getdelegation($delegueid, $datedebutdeleg, $datefindeleg, $continuesendtoresp);
                     $delegue = new agent($dbcon);
                     $delegue->load($delegueid);
                     $info = "Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg."; 

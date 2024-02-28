@@ -40,27 +40,43 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
     
+    $structureid = null;
     if (isset($_POST["structureid"]))
+    {
         $structureid = $_POST["structureid"];
-    else
-        $structureid = null;
+    }
             
     $arraydelegation = null;
     if (isset($_POST["delegation"]))
+    {
         $arraydelegation = $_POST["delegation"];
+    }
     
     $arrayinfodelegation = null;
     if (isset($_POST["infodelegation"]))
+    {
         $arrayinfodelegation = $_POST["infodelegation"];
+    }
             
     $arraydatedebut = null;
     if (isset($_POST["date_debut"]))
+    {
         $arraydatedebut = $_POST["date_debut"];
+    }
                 
     $arraydatefin = null;
     if (isset($_POST["date_fin"]))
+    {
         $arraydatefin = $_POST["date_fin"];
+    }
     
+    $arraycontinuesendtoresp = null;
+    if (isset($_POST['continuesendtoresp']))
+    {
+        $arraycontinuesendtoresp = $_POST['continuesendtoresp'];
+    }
+
+
     $showall = false;
             
     
@@ -78,7 +94,7 @@
                 // echo "On supprime la personne déléguée....<br>";
                 $structure = new structure($dbcon);
                 $structure->load($structureid);
-                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid);
+                $structure->setdelegation("", "1900-01-01", "1900-01-01", $userid, 'n');
             } 
             else 
             {
@@ -133,8 +149,14 @@
                             $error = "Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide.<br>La délégation n'est pas enregistrée.";
                             echo $fonctions->showmessage(fonctions::MSGERROR, $error);
                         } else {
+                            $continuesendtoresp = 'n';
+                            if (isset($arraycontinuesendtoresp[$structure->id()]))
+                            {
+                                $continuesendtoresp = 'o';
+                            }
+                            
                             // echo "On enregistre la delegation.... <br>";
-                            $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid);
+                            $structure->setdelegation($agentid, $datedebutdeleg, $datefindeleg, $userid, $continuesendtoresp);
                             $errlog = "Enregistrement d'une délégation sur " . $structure->nomlong() . " (" . $structure->nomcourt() . ") : Agent délégué => $agentid   Date de début => $datedebutdeleg   Date de fin => $datefindeleg";
                             echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
                             $errlog = $resp->identitecomplete() . " : " . $errlog;
@@ -177,7 +199,8 @@
     {
         $structure = new structure($dbcon);
         $structure->load($structureid);
-        $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg);
+        $continuesendtoresp = "n";
+        $structure->getdelegation($delegationuserid, $datedebutdeleg, $datefindeleg,$continuesendtoresp);
         $resp = $structure->responsablesiham();
         
         echo 'Le responsable de la structure "' . $structure->nomlong() . ' (' . $structure->nomcourt()  . ')" est ' . $resp->identitecomplete() . '<br><br>';
@@ -274,7 +297,16 @@
         	value='<?php echo $datefindeleg ?>'>
 <?php
         echo "</p>";
-    
+
+        echo "<p class='delegpaddingleft'>";
+        $checked = '';
+        if (strcasecmp($continuesendtoresp, 'o')==0)
+        {
+            $checked = ' checked ';
+        }
+        echo "<input type='checkbox' $checked name='continuesendtoresp[" . $structure->id() . "]' id='continuesendtoresp[" . $structure->id() . "]'>En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de recevoir les notifications des demandes de congés/d'absences par mail durant la délégation.</input>";
+        echo "</p>";
+        
         echo "<input type='hidden' name='userid' value=" . $user->agentid() . ">";
         echo "<input type='hidden' name='structureid' value=" . $structureid . ">";
         echo "<br><br>";

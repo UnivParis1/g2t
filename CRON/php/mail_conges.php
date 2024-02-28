@@ -117,6 +117,16 @@ Merci de contrôler son dossier.\n");
                 } 
                 elseif (in_array($codeinterne, array(structure::MAIL_AGENT_ENVOI_RESP_COURANT,structure::MAIL_RESP_ENVOI_RESP_PARENT))) // On envoie le mail au responsable
                 {
+                    $continuesendtoresp = 'n';
+                    $sihamresp = $structresp->responsablesiham();
+                    $listuserspeciaux = $fonctions->listeutilisateursspeciaux();
+                    if ($sihamresp->agentid() != $destinatairemail->agentid() and $sihamresp->agentid() != "" and !array_key_exists($sihamresp->agentid(),$listuserspeciaux))
+                    {
+                        // Si le responsable SIHAM n'est pas le responsable de la structure, c'est qu'il y a délégation de responsabilité
+                        $structresp->getdelegation($deleguserid, $datedebutdeleg, $datefindeleg, $continuesendtoresp);
+                        echo "On a récupéré la délégation pour la structure " . $structresp->nomcourt() . " et le flag d'envoi au responsable est $continuesendtoresp \n";
+                    }
+                    
                     if (isset($mail_resp[$destinatairemail->agentid()]))
                     {
                         $mail_resp[$destinatairemail->agentid()] = $mail_resp[$destinatairemail->agentid()] . $demande->id() . ',';
@@ -124,6 +134,19 @@ Merci de contrôler son dossier.\n");
                     else
                     {
                         $mail_resp[$destinatairemail->agentid()] = $demande->id() . ',';
+                    }
+                    
+                    if (strcasecmp($continuesendtoresp, 'o')==0 )
+                    {
+                        echo "On ajoute le responsable SIHAM (" . $sihamresp->identitecomplete()  . ") dans les destinataires. \n";
+                        if (isset($mail_resp[$sihamresp->agentid()]))
+                        {
+                            $mail_resp[$sihamresp->agentid()] = $mail_resp[$sihamresp->agentid()] . $demande->id() . ',';
+                        }
+                        else
+                        {
+                            $mail_resp[$sihamresp->agentid()] = $demande->id() . ',';
+                        }
                     }
                 }
                 else
