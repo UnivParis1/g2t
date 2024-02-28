@@ -4231,6 +4231,38 @@ WHERE  table_schema = Database()
         //var_dump($structarray);
         return $structarray;
     }
+
+    /**
+     * Recherche dans la liste des structures passées en paramètre si elles sont inclues les unes dans les autres
+     * et si pour la structure englobante, le responsable a accès aux demandes de tous les agents des sous-structures
+     * 
+     * @param array $structarray
+     *            Liste des structures à simplifier
+     * @return array liste des structures simplifiée
+     */
+    function enleverstructuresinclues_planning($structarray)
+    {
+        foreach ($structarray as $struct)
+        {
+            // Si on autorise l'affichage du planning des sous-structures
+            if (strcasecmp($struct->sousstructure(), "o") == 0)
+            {
+                // On récupère les structures inclues
+                $structincluesliste = $struct->structureinclue(true);
+                // On parcourt toutes les structures inclues et on l'enlève de la liste (même si elle n'existe pas)
+                foreach ($structincluesliste as $structkey => $structinclue)
+                {
+                    // On peut enlever la structure inclue car on affiche déjà les agents dans une structure parente
+                    //var_dump("On enleve la structure " . $struct->nomcourt() . " de la liste.");
+                    unset($structarray[$structkey]);
+                }
+            }
+        }
+        //var_dump($structarray);
+        return $structarray;
+    }
+    
+    
 }
 
 ?>
