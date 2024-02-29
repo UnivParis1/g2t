@@ -4262,6 +4262,31 @@ WHERE  table_schema = Database()
         return $structarray;
     }
     
+    function afficherlistestructureindentee($structarray, $showclosedstruct = false, $selectedstructid = null)
+    {
+        foreach($structarray as $structure)
+        {
+            if ($showclosedstruct or ($this->formatdatedb($structure->datecloture()) >= $this->formatdatedb(date("Ymd")))) 
+            {
+                echo "<option value='" . $structure->id() . "' ";
+                if ($structure->id() == $selectedstructid) {
+                    echo " selected ";
+                }
+                if ($this->formatdatedb($structure->datecloture()) < $this->formatdatedb(date("Ymd"))) {
+                    echo " class='redtext' ";
+                }
+                echo ">";
+                echo str_pad('', strlen('&nbsp;')*4*$structure->profondeurrelative(), '&nbsp;', STR_PAD_LEFT);
+                if ($structure->profondeurrelative()>0)
+                {
+                    echo " &#x21AA; "; // &#x21B3; ";
+                }
+                echo $structure->nomlong() . " (" . $structure->nomcourt() . ")";
+                echo "</option>";
+            }
+        }
+        
+    }
     
 }
 

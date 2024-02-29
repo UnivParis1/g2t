@@ -66,6 +66,8 @@ class structure
     private $islibrary = null;
     
     private $externalid = null;
+    
+    private $profondeurrelative = null;
 
     function __construct($db)
     {
@@ -160,6 +162,8 @@ class structure
             $this->respaffsoldesousstruct = "$result[15]";
             $this->respaffdemandesousstruct = "$result[16]";
             $this->externalid = "$result[17]";
+            
+            $this->profondeurrelative = 0;
             
             // Prise en compte du cas de la délégation
             $delegation = $this->getdelegation(true);
@@ -503,7 +507,7 @@ class structure
             $this->affichesousstruct = $sousstruct;
     }
 
-    function structurefille()
+    function structurefille($recursif = false, $profondeurcourante = 0)
     {
         $structureliste = null;
         if (! is_null($this->structureid)) {
@@ -519,10 +523,16 @@ class structure
             if (mysqli_num_rows($query) == 0) {
                 // echo "Structure->structurefille : La structure $this->structureid n'a pas de structure fille<br>";
             }
+            $profondeurcourante++;
             while ($result = mysqli_fetch_row($query)) {
                 $structure = new structure($this->dbconnect);
                 $structure->load("$result[0]");
+                $structure->profondeurrelative($profondeurcourante);
                 $structureliste[$structure->id()] = $structure;
+                if ($recursif)
+                {
+                    $structureliste = $structureliste + (array)$structure->structurefille($recursif,$profondeurcourante);
+                }
                 unset($structure);
             }
             return $structureliste;
@@ -796,6 +806,27 @@ class structure
     {
         return $this->fonctions->formatdate($this->datecloture);
     }
+    
+    /**
+     * Défini la profondeur d'une structure dans la hierarchie par rapport à une autre
+     * ==> propriété initialisée dans les fonctions structurefille et structureinclue sinon vaut 0
+     * 
+     * @param int $profondeur
+     *            Défini la profondeur d'une structure
+     * @return int Profondeur définie sinon 0
+     */
+    function profondeurrelative($profondeur = null)
+    {
+        if (is_null($profondeur)) 
+        {
+            return intval($this->profondeurrelative);
+        }
+        else
+        {
+            $this->profondeurrelative = intval($profondeur);
+        }
+        
+    }
 
     function responsablesiham()
     {
@@ -845,7 +876,9 @@ class structure
                 }
             }
         } else
+        {
             $this->responsableid = $respid;
+        }
     }
 
     function gestionnaire($gestid = null)
@@ -1913,7 +1946,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         }
     }
     
-    function structureinclue($excludeclosed = false)
+    function structureinclue($excludeclosed = false, $profondeurcourante = 0)
     {
         $structureliste = array();
         if (! is_null($this->structureid)) {
@@ -1933,12 +1966,15 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             if (mysqli_num_rows($query) == 0) {
                 // echo "Structure->structureinclue : La structure $this->structureid n'a pas de structure inclue<br>";
             }
+            $profondeurcourante++;
             while ($result = mysqli_fetch_row($query)) {
                 $structure = new structure($this->dbconnect);
                 $structure->load("$result[0]");
+                $structure->profondeurrelative($profondeurcourante);
                 $structureliste[$structure->id()] = $structure;
                 // On fait le parcours récursif pour remonter toutes les structures filles 
-                $structureliste = array_merge($structureliste, (array) $structure->structureinclue());
+                //$structureliste = array_merge($structureliste, (array) $structure->structureinclue());
+                $structureliste = $structureliste + (array) $structure->structureinclue($excludeclosed, $profondeurcourante);
                 unset($structure);
             }
             return $structureliste;

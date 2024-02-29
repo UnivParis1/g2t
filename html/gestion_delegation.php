@@ -190,12 +190,17 @@
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     }
     echo "<form name='selectstructure'  method='post' >";
-    echo "<select size='1' id='structureid' name='structureid'>";
-    while ($result = mysqli_fetch_row($query)) {
+    $structliste = array();
+    while ($result = mysqli_fetch_row($query)) 
+    {
         $struct = new structure($dbcon);
         $struct->load($result[0]);
-        affichestructureliste($struct, 0);
+        $structliste[$result[0]] = $struct;
+        $structliste = $structliste + (array)$struct->structurefille(true,0);
     }
+    echo "<select size='1' id='structureid' name='structureid'>";
+    $fonctions->afficherlistestructureindentee($structliste, false, $structureid);
+    unset($structliste);
     echo "</select>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br>";

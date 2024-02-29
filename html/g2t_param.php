@@ -1919,12 +1919,17 @@
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                     }
                     $structureid=null;
+
+                    $structliste = array();
                     while ($result = mysqli_fetch_row($query)) 
                     {
                         $struct = new structure($dbcon);
                         $struct->load($result[0]);
-                        affichestructureliste($struct, 0);
+                        $structliste[$result[0]] = $struct;
+                        $structliste = $structliste + (array)$struct->structurefille(true,0);
                     }
+                    $fonctions->afficherlistestructureindentee($structliste,false, null);
+                    unset($structliste);
 ?>
 					</select>
                 	</div>
@@ -2428,12 +2433,17 @@
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 }
                 $structureid=null;
+
+                $structliste = array();
                 while ($result = mysqli_fetch_row($query)) 
                 {
                     $struct = new structure($dbcon);
                     $struct->load($result[0]);
-                    affichestructureliste($struct, 0);
+                    $structliste[$result[0]] = $struct;
+                    $structliste = $structliste + (array)$struct->structurefille(true,0);
                 }
+                $fonctions->afficherlistestructureindentee($structliste, false, null);
+                unset($structliste);
 ?>
 				</select>
             	</div>
@@ -2679,12 +2689,17 @@
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
                 }
                 $structureid=null;
+
+                $structliste = array();
                 while ($result = mysqli_fetch_row($query)) 
                 {
                     $struct = new structure($dbcon);
                     $struct->load($result[0]);
-                    affichestructureliste($struct, 0);
+                    $structliste[$result[0]] = $struct;
+                    $structliste = $structliste + (array)$struct->structurefille(true,0);
                 }
+                $fonctions->afficherlistestructureindentee($structliste, false, null);
+                unset($structliste);
 ?>
 				</select>
             	</div>

@@ -579,12 +579,21 @@
 
 <?php
 
+
+    /****************************
+     * 
+     * @deprecated
+     * 
+     ****************************/
     function affichestructureliste($structure, $niveau = 0)
     {
         global $dbcon;
         global $structureid;
         global $fonctions;
         global $showall;
+        
+        trigger_error('Method ' . __METHOD__ . ' is deprecated => use fonctions::afficherlistestructureindentee method instead', E_USER_DEPRECATED);
+
         // $fonctions = new fonctions($dbcon);
         if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
             echo "<option value='" . $structure->id() . "'";
@@ -595,9 +604,11 @@
                 echo " class='redtext' ";
             }
             echo ">";
+            //echo str_pad('', strlen('&nbsp;')*4*$structure->profondeurrelative(), '&nbsp;', STR_PAD_LEFT);
             for ($cpt = 0; $cpt < $niveau; $cpt ++) {
                 echo "&nbsp;&nbsp;&nbsp;&nbsp;";
             }
+            
             echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
             echo "</option>";
             

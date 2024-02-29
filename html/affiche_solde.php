@@ -59,24 +59,35 @@
     ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
     $mode = $_POST["mode"];
     if ($mode == "")
+    {
         $mode = "resp";
+    }
 
+    $structureid = null;
     if (isset($_POST["structureid"]))
+    {
         $structureid = $_POST["structureid"];
-    else
-        $structureid = null;
+    }
 
     $previous = "";
     if (isset($_POST["previous"]))
+    {
         $previous = $_POST["previous"];
+    }
     if ($previous == 'yes')
+    {
         $previous = 1;
+    }
     else
+    {
         $previous = 0;
+    }
     
     $agentselect = '';
     if (isset($_POST["agentselect"]))
+    {
         $agentselect = $_POST["agentselect"];
+    }
 
     if ($mode == 'rh')
     {
@@ -89,13 +100,20 @@
             error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
         }
         echo "<form name='selectstructure'  method='post' >";
-        echo "<select size='1' id='structureid' name='structureid'>";
-        while ($result = mysqli_fetch_row($query)) {
+
+        $structliste = array();
+        while ($result = mysqli_fetch_row($query)) 
+        {
             $struct = new structure($dbcon);
             $struct->load($result[0]);
-            affichestructureliste($struct, 0);
+            $structliste[$result[0]] = $struct;
+            $structliste = $structliste + (array)$struct->structurefille(true,0);
         }
+        echo "<select size='1' id='structureid' name='structureid'>";
+        $fonctions->afficherlistestructureindentee($structliste, false, $structureid);
+        unset($structliste);
         echo "</select>";
+
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='previous' value='no'>";

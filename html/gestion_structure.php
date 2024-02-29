@@ -89,10 +89,15 @@
     }
        
     $showall = false;
-    if (isset($_POST['showall'])) {
-        if ($_POST['showall'] == 'true')
-            $showall = true;
+    if (isset($_POST['showall']) and $_POST['showall'] == 'true') {
+        $showall = true;
     }
+    
+    $showallsubstruct = false;
+    if (isset($_POST['showallsubstruct']) and $_POST['showallsubstruct'] == 'true') {
+        $showallsubstruct = true;
+    }
+    
 
     // print_r ($_POST); echo "<br>";
 
@@ -191,12 +196,17 @@
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     }
     echo "<form name='selectstructure'  method='post' >";
-    echo "<select size='1' id='structureid' name='structureid'>";
-    while ($result = mysqli_fetch_row($query)) {
+    $structliste = array();
+    while ($result = mysqli_fetch_row($query)) 
+    {
         $struct = new structure($dbcon);
         $struct->load($result[0]);
-        affichestructureliste($struct, 0);
+        $structliste[$result[0]] = $struct;
+        $structliste = $structliste + (array)$struct->structurefille(true,0);
     }
+    echo "<select size='1' id='structureid' name='structureid'>";
+    $fonctions->afficherlistestructureindentee($structliste,$showall,$structureid);
+    unset($structliste);
     echo "</select>";
 
     /*
@@ -229,28 +239,36 @@
         echo " checked ";
     }
     echo ">Afficher les structures fermées<br>";
+    echo "<input type='checkbox' name='showallsubstruct' value='true'";
+    if ($showallsubstruct == true)
+    {
+        echo " checked ";
+    }
+    echo ">Afficher toutes les sous-structures<br>";
     echo " <input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     echo "<br>";
 
+    $structureliste = array();
     if (! is_null($structureid)) {
 
         // echo "Le structureid = $structureid <br>";
         $structure = new structure($dbcon);
         $structure->load($structureid);
-
-        // On utilise la liste des structures filles pour afficher la structure courante et les structures filles
-        $structureliste = $structure->structurefille();
         // On ajoute la structure courante au tableau
-        // ATTENTION : On met la clé à -1 pour qu'elle soit la première lors du tri !!!!
-        $structureliste[- 1] = $structure;
-        // On trie par la clé => La clé de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
-        ksort($structureliste);
-        // echo "Le tableau des structures files : " . print_r($structureliste, true) . "<br>";
+        $structureliste[$structure->id()] = $structure;
+        $structureliste = $structureliste + $structure->structurefille($showallsubstruct,0);
+//        // On trie par la clé => La clé de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
+//        foreach($structureliste as $keystruc => $struct)
+//        {
+//            $structureliste[str_replace("_"," ",$keystruc)] = $struct;
+//            unset($structureliste[$keystruc]);
+//        }
+//        ksort($structureliste,SORT_STRING);
+//        var_dump ("Le tableau des structures filles : "); foreach ($structureliste as $keystruc => $struct) {var_dump("Key = $keystruc  Profondeur = " . $struct->profondeurrelative()); }
 
         echo "<form name='paramstructure' id='paramstructure' method='post' >";
         foreach ($structureliste as $keystruc => $struct) {
-            echo "<table>";
 
             // echo "REsponsable = " . $struct->responsable()->identitecomplete() . "<br>";
             // $agentliste = $structure->agentlist(date('Ymd'),date('Ymd'),'o');
@@ -259,6 +277,7 @@
             // echo "Date cloture (Structure : " . $struct->id() . ") = " . $struct->datecloture() . "<br>";
             // echo "On est dans la boucle => " . $struct->nomlong() ."<br>";
             if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true)) {
+                echo "<table style='margin-left: " . 30*$struct->profondeurrelative() . "px; border: black;border-left-style: solid;border-width: 2px; padding-left: 10px;'>";
                 $gestionnaire = $struct->gestionnaire();
                 // echo "Apres recup du gestionnaire.... <br>";
                 
@@ -299,8 +318,9 @@
                 echo "<b class='symbolegestionstruct'>&nbsp;$sign</b>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
+                {
                     echo "(Date fermeture : " . $struct->datecloture() . ") ";
-
+                }
                 echo "</span>";
                     
                 echo "</td>";
@@ -321,7 +341,9 @@
                 //
                 echo "<input type='hidden' id='gestion[" . $struct->id() . "]' name='gestion[" . $struct->id() . "]' value='";
                 if (! is_null($gestionnaire))
+                {
                     echo $gestionnaire->agentid();
+                }
                 echo "' class='infouser[" . $struct->id() . "]' /> ";
 ?>
 			    <script>
@@ -436,8 +458,8 @@
                     echo "<tr><td><b><div class='infogeststruct'>$infoagent</div></b></td></tr>";
                 }
                 echo "<tr><td height=15></td></tr>";
+                echo "</table>";
             }
-            echo "</table>";
 
 ?>
 <script>
@@ -487,18 +509,23 @@
         }
     }
     var select_tag = document.getElementById('agent_mail[<?php echo $struct->id()?>]');
-    select_tag.addEventListener('change', () =>
-        user_mode_change_<?php echo $struct->id(); ?>()
-        );
-    var e = new Event("change");
-    select_tag.dispatchEvent(e);
-
+    if (select_tag)
+    {
+        select_tag.addEventListener('change', () =>
+            user_mode_change_<?php echo $struct->id(); ?>()
+            );
+        var e = new Event("change");
+        select_tag.dispatchEvent(e);
+    }
     var select_tag = document.getElementById('resp_mail[<?php echo $struct->id()?>]');
-    select_tag.addEventListener('change', () =>
-        resp_mode_change_<?php echo $struct->id(); ?>()
-        );
-    var e = new Event("change");
-    select_tag.dispatchEvent(e);
+    if (select_tag)
+    {
+        select_tag.addEventListener('change', () =>
+            resp_mode_change_<?php echo $struct->id(); ?>()
+            );
+        var e = new Event("change");
+        select_tag.dispatchEvent(e);
+    }
 </script>
 <?php
 
