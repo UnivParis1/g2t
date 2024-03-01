@@ -256,24 +256,37 @@
 //                        if (array_key_exists("#1087", (array) $tabfonctions[$code_struct]) and in_array($type_struct, $type_struct_RA))
                         // 1087 => Responsable administratif de composante
                         // 2212 => Responsable administratif par intérim
+                        // 2213 => Adjoint au responsable administratif
+                        // 2214 => Responsable administratif général
+                        // 2215 => Adjoint au responsable administratif général
                         // ATTENTION : Mettre la valeur à non-vide ("Prioritaire" ou autre) si la fonction doit surpasser toutes les fonctions d'exceptions
                         //             La première fonction avec une valeur non vide est prioritaire sur les autres => arret du parcours
-                        $tab_fonctions_except = array("#1087" => "", "#2212" => "Prioritaire");
+                        $tab_fonctions_except = array("#1087" => "", "#2212" => "", "#2213" => "", "#2214" => "", "#2215" => "");
                         $fonctions_speciales = array_intersect_key((array) $tabfonctions[$code_struct], $tab_fonctions_except);
                         if (count($fonctions_speciales)>0 and in_array($type_struct, $type_struct_RA))
                         {
+                            //echo "Les fonctions de la structure : " . print_r($tabfonctions[$code_struct], true) . "\n";
                             echo "Des fonctions speciales ont ete trouvees : " . print_r($fonctions_speciales,true) . "\n";
+                            $code_fonct_RA = "";
                             foreach ($fonctions_speciales as $key => $value)
                             {
-                                $resp_struct = $tabfonctions[$code_struct][$key];
-                                echo "Structure de type RA avec la fonction $key definie \n";
-                                
-                                if (strlen(trim($tab_fonctions_except[$key]))!=0)
+                                if ($code_fonct_RA == "")
                                 {
-                                    echo "La fonction speciale $key a une valeur " . $tab_fonctions_except[$key] . " => On arrete le parcours des fonctions speciales \n";
-                                    break;
+                                    $code_fonct_RA = $key;
+                                    echo "Structure de type RA => la fonction $code_fonct_RA est definie (initialisation) - priorite = " . $tabpoidsfonct[$code_fonct_RA] . "\n";
+                                }
+                                elseif (isset($tabpoidsfonct[$key]) and $tabpoidsfonct[$key] < $tabpoidsfonct[$code_fonct_RA])
+                                {
+                                    $code_fonct_RA = $key;
+                                    echo "Structure de type RA => la fonction $code_fonct_RA est definie (poids inférieur) - priorite = " . $tabpoidsfonct[$code_fonct_RA] . "\n";
+                                }
+                                else
+                                {
+                                    echo "Structure de type RA => La priorité de la fonction $key (" . $tabpoidsfonct[$key] . ") est plus élevée que la fonction $code_fonct_RA (" . $tabpoidsfonct[$code_fonct_RA] . ") => Aucun changement \n";                                    
                                 }
                             }
+                            $resp_struct = $tabfonctions[$code_struct][$code_fonct_RA];
+                            echo "Structure de type RA => la fonction $code_fonct_RA est definie comme responsable\n";
                         }
                         else
                         {
