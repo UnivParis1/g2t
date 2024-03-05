@@ -194,6 +194,10 @@
     if ($user->estresponsable() and (strcasecmp($mode, "resp") == 0)) {
         $listestruct = $user->structrespliste();
         $listestruct = $fonctions->enleverstructuresinclues_demandes($listestruct);
+        if (is_array($listestruct))
+        {
+            uasort($listestruct,"triparprofondeurabsolue");
+        }
         // print_r($listestruct); echo "<br>";
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
@@ -318,6 +322,10 @@
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
+        if (is_array($listestruct))
+        {
+            uasort($listestruct,"triparprofondeurabsolue");
+        }
         foreach ($listestruct as $key => $structure) {
             $aumoinsunedemande = FALSE;
             $cleelement = $structure->id();

@@ -183,6 +183,15 @@
     
     require ("includes/menu.php");
     
+/*    
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+    $erreur = "En raison d'un disfonctionnement dans la gestion des conventions de télétravail,<br>
+cette fonction est momentanément désactivée.<br>
+Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
+    echo $fonctions->showmessage(fonctions::MSGWARNING, $erreur);
+    exit();
+*/
+    
     // echo "<br>" . print_r($_POST, true) . "<br><br>";
     
     //echo "$cancelteletravailarray = ";
@@ -946,6 +955,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                             ];
                             curl_setopt_array($curl, $opts);
                             curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                            //curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
                             $json = "";
                             $error = "";
                             if ($esignatureactive)
@@ -2234,6 +2244,10 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             //var_dump('Je suis en mode gestionnaire');
             $structliste = $user->structgestliste();   
             //var_dump($structliste);
+        }
+        if (is_array($structliste))
+        {
+            uasort($structliste,"triparprofondeurabsolue");
         }
         $agentliste = array();
         $teletravailtrouve = false;

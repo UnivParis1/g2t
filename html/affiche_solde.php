@@ -148,6 +148,11 @@
         $structureliste = $user->structrespliste();
         //var_dump("Avant appel enleverstructuresinclues_soldes");
         $structureliste = $fonctions->enleverstructuresinclues_soldes($structureliste);
+        if (is_array($structureliste))
+        {
+            uasort($structureliste,"triparprofondeurabsolue");
+        }
+        
         //var_dump("Apres appel enleverstructuresinclues_soldes");
         echo "Veuillez selectionner un agent :<br>";
         echo "<form name='formselect'  method='post'>";
@@ -240,6 +245,10 @@
             {
                 $structureliste = $user->structrespliste();
                 $structureliste = $fonctions->enleverstructuresinclues_soldes($structureliste);
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
                 foreach ($structureliste as $structkey => $structure) 
                 {
                     echo "<br>";
@@ -342,6 +351,10 @@
         echo "<select id='agentselect' name='agentselect'>";
         echo "<option value=''>Tous les agents</option>";
         $structureliste = $user->structgestliste();
+        if (is_array($structureliste))
+        {
+            uasort($structureliste,"triparprofondeurabsolue");
+        }
         foreach ($structureliste as $structkey => $structure)
         {
             $annerecherche = ($fonctions->anneeref() - $previous);
@@ -385,6 +398,10 @@
             if ($agentselect == '')
             {
                 $structureliste = $user->structgestliste();
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
                 foreach ($structureliste as $structkey => $structure) {
                     echo "<br>";
                     echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";

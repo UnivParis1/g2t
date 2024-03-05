@@ -427,6 +427,10 @@
             if (isset($_POST["responsable"]))
             {
                 $structureliste = $responsable->structrespliste();
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
                 // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
                 $agentlistefull = array();
                 foreach ($structureliste as $structure) {
@@ -450,6 +454,10 @@
                 // On verifie que le code est 3  dans resp_envoyer_a
                 // Si oui, on n'ajoute que le responsable dans la liste
                 $structureliste = $responsable->structgestliste();
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
                 // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
                 $agentlistefull = array();
                 foreach ($structureliste as $structure) 

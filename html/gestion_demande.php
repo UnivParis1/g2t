@@ -283,6 +283,10 @@
             if ($mode == 'resp')
             {
                 $structureliste = $responsable->structrespliste();
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
                 // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
                 $agentlistefull = array();
                 foreach ($structureliste as $structure) {
@@ -306,6 +310,10 @@
             else // $mode == gest
             {
                 $structureliste = $responsable->structgestliste();
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
                 $agentlistefull = array();
                 foreach ($structureliste as $structure) 
                 {

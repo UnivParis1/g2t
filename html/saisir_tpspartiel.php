@@ -310,6 +310,10 @@
         echo "<form name='autodeclarationforagent'  method='post' >";
 
         $structureliste = $user->structrespliste();
+        if (is_array($structureliste))
+        {
+            uasort($structureliste,"triparprofondeurabsolue");
+        }
         // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
         $agentlistefull = array();
         foreach ($structureliste as $structure) {

@@ -68,6 +68,8 @@ class structure
     private $externalid = null;
     
     private $profondeurrelative = null;
+    
+    private $profondeurabsolue = null;
 
     function __construct($db)
     {
@@ -826,6 +828,15 @@ class structure
             $this->profondeurrelative = intval($profondeur);
         }
         
+    }
+    
+    function profondeurabsolue()
+    {
+        if (is_null($this->profondeurabsolue))
+        {
+            $this->profondeurabsolue = substr_count($this->nomcompletcet(true,false,true),'/');
+        }
+        return $this->profondeurabsolue;
     }
 
     function responsablesiham()

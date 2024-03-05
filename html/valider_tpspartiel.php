@@ -91,6 +91,10 @@
     if (strcasecmp($mode, "gestion") == 0) {
         $structlist = $user->structgestliste();
     }
+    if (is_array($structlist))
+    {
+        uasort($structlist,"triparprofondeurabsolue");
+    }
 
     if (is_array($structlist)) {
         echo "Remarque : Les personnes affectées à temps plein ne sont pas affichées dans cet écran.<br><br>";

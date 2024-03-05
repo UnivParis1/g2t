@@ -1513,6 +1513,10 @@ class agent
             // echo "Je suis gestionnaire...<br>";
             // Liste des structures donc je suis gestionnaire
             $structgestliste = $this->structgestliste();
+            if (is_array($structgestliste))
+            {
+                uasort($structgestliste,"triparprofondeurabsolue");
+            }
             // echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
             foreach ((array) $structgestliste as $structid => $structure) {
                 // Pour chaque structure fille, on regarde si je gère les demandes du responsable
@@ -3602,122 +3606,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	return $htmltext;
     }
     
-   /* function afficheAlimCetHtmlPourSuppr($anneeref = '', $statuts = array(), $mode = 'agent', $userid = '')
-    {
-    	$alimcet = new alimentationCET($this->dbconnect);
-    	$listid = $this->getDemandesAlim($anneeref, $statuts);
-    	$htmltext = '';
-    	if ($userid == '')
-    	{
-    		$userid = $this->agentid();
-    	}
-    	if (sizeof($listid) != 0)
-    	{    		
-    		echo "<br>Annulation d'une demande d'alimentation.<br>";
-    		echo "<form name='form_esignature_annule'  method='post' >";
-    		echo "<input type='hidden' name='userid' value='" . $userid . "'>";
-    		echo "<input type='hidden' name='agentid' value='" . $this->agentid() . "'>";
-    		echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
-    		foreach ($listid as $id)
-    		{
-    			$alimcet->load($id);
-    			echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
-    		}
-    		
-    		echo "</select>";
-    		echo "<br><br>";
-    		echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-    		echo "<input type='submit' name='annuler_demande' id='annuler_demande' value='Annuler la demande'>";
-    		echo "</form>";
-    		echo "<br>";
-    	}
-    	return $htmltext;
-    }
-    
-    function supprimeDemandeAlimentation()
-    {
-    	if (isset($_POST['annuler_demande']))
-    	{
-    		$esignatureid_annule = $_POST['esignatureid_annule'];
-    		$alimentationCET = new alimentationCET($this->dbconnect);
-    		$alimentationCET->load($esignatureid_annule);
-    		// récupérer statut si validée réalimenter le reliquat, déduire du CET et alerter la DRH
-    		$statut_actuel = $alimentationCET->statut();
-    		if ($statut_actuel == alimentationCET::STATUT_VALIDE)
-    		{
-    			// réattribution des reliquats
-    			$solde = new solde($this->dbconnect);
-    			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
-    			$solde->load($this->agentid(), $alimentationCET->typeconges());
-    			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
-    			$new_solde = $solde->droitpris()-$alimentationCET->valeur_f();
-    			$solde->droitpris($new_solde);
-    			//error_log(basename(__FILE__) . $fonctions->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
-    			error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
-    			$solde->store();
-    			
-    			// Ajouter dans la table des commentaires la trace de l'opération
-    			$this->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()),"Annulation de demande d'alimentation CET");
-    			
-    			// déduction du CET
-    			
-    			$cet = new cet($this->dbconnect);
-    			$erreur = $cet->load($this->agentid);
-    			if ($erreur == "") {
-    				$cet->cumultotal($cet->cumultotal() - $alimentationCET->valeur_f());
-    				$cumulannuel = $cet->cumulannuel($this->fonctions->anneeref());
-    				$cumulannuel = $cumulannuel - $alimentationCET->valeur_f();
-    				$cet->cumulannuel($this->fonctions->anneeref(),$cumulannuel);
-    				$cet->store();
-    			}
-    			
-    			// alerter la DRH
-    			
-    			$arrayagentrh = $this->fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
-    			foreach ($arrayagentrh as $gestrh) {
-    				$this->sendmail($gestrh, "Annulation d'une demande d'alimentation de CET validée", "L'agent " .$this->nom()." ".$this->prenom()." a demandé l'annulation de sa demande d'alimentation n°". $esignatureid_annule . ".\n");
-    			}
-    		}
-    		
-    		// purger esignature
-    		
-    		$eSignature_url = "https://esignature-test.univ-paris1.fr";
-    		$url = $eSignature_url.'/ws/signrequests/'.$esignatureid_annule;
-    		$params = array('id' => $esignatureid_annule);
-    		$walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-    			is_array( $item )
-    			? array_walk( $item, $walk, $key )
-    			: $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-    			
-    		};
-    		array_walk( $params, $walk );
-    		$json = implode( '&', $output );
-    		$ch = curl_init();
-    		curl_setopt($ch, CURLOPT_URL, $url);
-    		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-    		curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-    		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    		curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    		$result = curl_exec($ch);
-    		$result = json_decode($result);
-    		$error = curl_error ($ch);
-    		curl_close($ch);
-    		$errlog = '';
-    		if ($error != "")
-    		{
-    			$errlog = "Erreur Curl = " . $error . "<br><br>";
-    		}
-    		
-    		// Abandon dans G2T
-    		$alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
-    		$alimentationCET->motif("Annulation à la demande de l'agent");
-    		$alimentationCET->store();
-    		$errlog .= "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") a supprimé la demande d'alimentation du CET (esignatureid = ".$esignatureid_annule.")";
-    		error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    	}
-    }*/
-
     function afficheOptionCetHtml($anneeref = '', $statuts = array())
     {
 /*

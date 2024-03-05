@@ -642,6 +642,10 @@
     {
         $structureliste = $user->structrespliste();
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
+        if (is_array($structureliste))
+        {
+            uasort($structureliste,"triparprofondeurabsolue");
+        }
         foreach ($structureliste as $structkey => $structure) 
         {
             if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
@@ -730,6 +734,10 @@
     } elseif (strcasecmp($mode, "gestion") == 0) {
         $structureliste = $user->structgestliste();
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
+        if (is_array($structureliste))
+        {
+            uasort($structureliste,"triparprofondeurabsolue");
+        }
         foreach ($structureliste as $structkey => $structure)
         {
             if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))

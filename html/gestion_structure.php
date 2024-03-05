@@ -257,7 +257,7 @@
         $structure->load($structureid);
         // On ajoute la structure courante au tableau
         $structureliste[$structure->id()] = $structure;
-        $structureliste = $structureliste + $structure->structurefille($showallsubstruct,0);
+        $structureliste = $structureliste + (array)$structure->structurefille($showallsubstruct,0);
 //        // On trie par la clé => La clé de la structure parente est plus petite (car 3 lettres) donc elle est en tete du tableau !!
 //        foreach($structureliste as $keystruc => $struct)
 //        {

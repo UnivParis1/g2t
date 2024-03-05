@@ -487,9 +487,12 @@
         $structliste = $user->structgestliste();
         $structrespliste = array();
     }
+    if (is_array($structliste))
+    {
+        uasort($structliste,"triparprofondeurabsolue");
+    }
     // echo "Structure liste = "; print_r($structliste); echo "<br>";
     foreach ($structliste as $key => $structure) {
-        
         $responsableliste = array();
         // On ajoute les responsables de structures filles
         if ($mode == 'resp')

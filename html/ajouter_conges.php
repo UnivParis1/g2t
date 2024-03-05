@@ -186,6 +186,10 @@
         
         $structureliste = $user->structrespliste();
         // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+        if (is_array($structureliste))
+        {
+            uasort($structureliste,"triparprofondeurabsolue");
+        }
         $agentlistefull = array();
         foreach ($structureliste as $structure) 
         {

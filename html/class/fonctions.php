@@ -3413,44 +3413,6 @@ class fonctions
                 case 'pending' :
                 case 'signed' :
                 case 'checked' :
-/*************************************************
-                // On récupère les niveaux signés et si il y a plus de 2 signataires, on passe le statut à TELETRAVAIL_VALIDE
-                // car la convention commence dès que le responsable a signé.
-                $curl = curl_init();
-                $params_string = "";
-                $opts = [
-                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/audit-trail/' . $esignatureid,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_PROXY => ''
-                ];
-                curl_setopt_array($curl, $opts);
-                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                $json = curl_exec($curl);
-                $error = curl_error ($curl);
-                curl_close($curl);
-                if ($error != "")
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup signataires) =>  " . $error));
-                }
-                $response = json_decode($json, true);
-                error_log(basename(__FILE__) . $this->stripAccents(" La réponse (recup signataires) => " . print_r($response,true)));
-
-                if (isset($response['auditSteps']) and count($response['auditSteps'])>=2)
-                {
-                    $datesignatureresponsable = $response['auditSteps'][1]['timeStampDate'];
-                    $datesignatureresponsable = date('Ymd', strtotime($datesignatureresponsable));
-                    error_log(basename(__FILE__) . $this->stripAccents(" La date de la signature du responsable est : " .$datesignatureresponsable));
-                    $status = teletravail::TELETRAVAIL_VALIDE;
-                    $identitéresponsable = $response['auditSteps'][1]['firstname'] . " " . $response['auditSteps'][1]['name'];
-                    $reason = "Votre responsable " . $identitéresponsable . " a signé votre convention. Votre convention est active mais le circuit de validation n'est pas terminé.";
-                }
-                else
-                {
-                    $status = teletravail::TELETRAVAIL_ATTENTE;
-                }
-                break;
- ***************************************************/
                     $status = teletravail::TELETRAVAIL_ATTENTE;
                     break;
 
@@ -3752,6 +3714,7 @@ class fonctions
         ];
         curl_setopt_array($curl, $opts);
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        //curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
         $json = curl_exec($curl);
         $error = curl_error ($curl);
         curl_close($curl);
