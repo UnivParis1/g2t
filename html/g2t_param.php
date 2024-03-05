@@ -503,6 +503,14 @@
                 $newidsignataire = trim($_POST['specialuserid']);
             }
             
+            if ($newidsignataire != '')
+            {
+                $newidsignataire = $fonctions->getagentidfromldapuid($newidsignataire);
+                if ($newidsignataire===false)
+                {
+                    $newidsignataire = '';
+                }
+            }
             //var_dump($newlevelsignataire);
             //var_dump($newtypesignataire);
             //var_dump($newidsignataire);
@@ -971,6 +979,15 @@
                 $newidsignataire = trim($_POST['specialuserid_tele_simple']);
             }
             
+            if ($newidsignataire != '')
+            {
+                $newidsignataire = $fonctions->getagentidfromldapuid($newidsignataire);
+                if ($newidsignataire === false)
+                {
+                    $newidsignataire = '';
+                }
+            }
+            
             if ($newlevelsignataire!='' and $newtypesignataire != '' and $newidsignataire == '' and $structureid == '' and !isset($_POST['supprsignataire_tele_simple']))
             {
                 // On n'a pas les infos nécessaires => Error
@@ -1086,6 +1103,15 @@
             {
                 $newidsignataire = trim($_POST['specialuserid_tele_avance']);
             }
+            
+            if ($newidsignataire != '')
+            {
+                $newidsignataire = $fonctions->getagentidfromldapuid($newidsignataire);
+                if ($newidsignataire === false)
+                {
+                    $newidsignataire = '';
+                }
+            }
 
             if ($newlevelsignataire != '' and $newtypesignataire != '' and $newidsignataire == '' and $structureid == '' and !isset($_POST['supprsignataire_tele_avance']))
             {
@@ -1189,6 +1215,8 @@
             if (isset($_POST['newprofilCONGES'])) $newprofilCONGES = trim($_POST['newprofilCONGES']);
             if (isset($_POST['newprofilTELETRAVAIL'])) $newprofilTELETRAVAIL = trim($_POST['newprofilTELETRAVAIL']);
             $newiduserrh = trim($_POST['newiduserrh']);
+            
+            $newiduserrh = $fonctions->getagentidfromldapuid($newiduserrh);
             
             $tabprofilrh = array();
             if (strpos($newprofileCET, agent::PROFIL_RHCET)!==false)
@@ -1902,8 +1930,8 @@
                     	<script>
                     	    //var input_elt = $( ".token-autocomplete input" );
                       	    $( "#usersignataire" ).autocompleteUser(
-                        	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-                      	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                        	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                      	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
                     	</script>
                     </center>
                 	<div id='div_structureid' hidden> 
@@ -2416,8 +2444,8 @@
                 	<script>
                 	    //var input_elt = $( ".token-autocomplete input" );
                   	    $( "#usersignataire_tele_simple" ).autocompleteUser(
-                    	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-                  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                    	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
                 </center>
             	<div id='div_structureid_tele_simple' hidden> 
@@ -2672,8 +2700,8 @@
                 	<script>
                 	    //var input_elt = $( ".token-autocomplete input" );
                   	    $( "#usersignataire_tele_avance" ).autocompleteUser(
-                    	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-                  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                    	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
                 </center>
             	<div id='div_structureid_tele_avance' hidden>
@@ -2826,8 +2854,8 @@
                         	<input type='hidden' id="newiduserrh" name="newiduserrh" class="newuserrh" />
                             <script>
                           	    $( "#newuserrh" ).autocompleteUser(
-                            	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-                          	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
+                            	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                          	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
                         	</script>
             
                         </td>

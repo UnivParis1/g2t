@@ -144,10 +144,14 @@
                     } else {
                         $datedebutdeleg = "";
                         if (isset($arraydatedebut[$structure->id()]))
+                        {
                             $datedebutdeleg = $arraydatedebut[$structure->id()];
+                        }
                         $datefindeleg = "";
                         if (isset($arraydatefin[$structure->id()]))
+                        {
                             $datefindeleg = $arraydatefin[$structure->id()];
+                        }
                                 
                         // echo "datedebutdeleg = $datedebutdeleg datefindeleg = $datefindeleg <br>";
                         if ($datedebutdeleg == "" or $datefindeleg == "") 
@@ -259,7 +263,7 @@
 	    <script>
         	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
       	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-      	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+      	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee" } });
     	</script>
 <?php
         

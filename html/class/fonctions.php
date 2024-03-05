@@ -2049,33 +2049,14 @@ class fonctions
 
     public function useridfromCAS($CASuid)
     {
-        //error_log(basename(__FILE__) . $this->stripAccents(" CASuid = $CASuid"));
-
-        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $this->liredbconstante("LDAPATTRIBUTE");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_UID_AGENT_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
-        $filtre = "($LDAP_UID_AGENT_ATTR=$CASuid)";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array(
-            "$LDAP_CODE_AGENT_ATTR"
-        );
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
         $user = new agent($this->dbconnect);
-        if (!isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+        $userid = $this->getagentidfromldapuid($CASuid);
+        if ($userid===false)
         {
             $errlog = "useridfromCAS : L'agent $CASuid n'a pas pu être identifié dans LDAP.";
             error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             return false;
         }
-        $userid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
         if (! $user->existe($userid))
         {
             $errlog = "useridfromCAS : L'agent $CASuid (id = " . $userid . " ) n'est pas dans la base de données.";
@@ -4250,6 +4231,197 @@ WHERE  table_schema = Database()
         }
         
     }
+    
+    function createldapagentfromuid($uid)
+    {
+        $agentid = $this->getagentidfromldapuid($uid);
+        if ($agentid===false)
+        {
+            $errlog = "createldapagentfromuid : L'agent $uid n'a pas pu être identifié dans LDAP. \n";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            if ($this->executionbatch())
+            {
+                echo "$errlog";
+            }
+            return false;            
+        }
+        $agent=$this->createldapagentfromagentid($agentid);
+        if ($agent===false)
+        {
+            $errlog = "createldapagentfromuid : L'agent $uid n'a pas pu être créé dans la base de données. \n";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            if ($this->executionbatch())
+            {
+                echo "$errlog";
+            }
+            return false;            
+        }
+        else
+        {
+            return $agent;
+        }
+    }
+    
+    function createldapagentfromagentid($agentid)
+    {
+        $typepopulation = "Import automatique LDAP";
+        $newagent = new agent($this->dbconnect);
+        if ($newagent->existe($agentid))
+        {
+            if ($newagent->load($agentid))
+            {
+                $errlog = "createldapagentfromagentid : L'agent $agentid existe et a été chargé depuis la base de données. \n";
+                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                if ($this->executionbatch())
+                {
+                    echo "$errlog";
+                }
+                return $newagent;
+            }
+            else
+            {
+                $errlog = "createldapagentfromagentid : L'agent $agentid existe mais n'a pas pu être chargé depuis la base de données. \n";
+                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                if ($this->executionbatch())
+                {
+                    echo "$errlog";
+                }
+                return false;
+            }
+        }
+        // L'agent n'existe pas => On interroge LDAP et on crée l'agent avec un minimum d'informations
+        // On interroge LDAP pour récupérer le nom, le prénom, l'adrese mail
+        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
+
+        $LDAP_AGENT_NOM = $this->liredbconstante("LDAP_AGENT_NOM_ATTR");
+        $LDAP_AGENT_PRENOM = $this->liredbconstante("LDAP_AGENT_PRENOM_ATTR");
+        $LDAP_AGENT_MAIL = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+        $LDAP_AGENT_CIVILITE = $this->liredbconstante("LDAP_AGENT_CIVILITE_ATTR");
+
+        $LDAP_CODE_AGENT_ATTR = $this->liredbconstante("LDAPATTRIBUTE");
+
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $filtre = "($LDAP_CODE_AGENT_ATTR=" . $agentid . ")";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL", "$LDAP_AGENT_CIVILITE");
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        $nomagent = null;
+        if (isset($info[0]["$LDAP_AGENT_NOM"][0])) 
+        {
+            $nomagent = $info[0]["$LDAP_AGENT_NOM"][0];
+        }
+        $prenomagent = null;
+        if (isset($info[0]["$LDAP_AGENT_PRENOM"][0])) 
+        {
+            $prenomagent = $info[0]["$LDAP_AGENT_PRENOM"][0];
+        }
+        $mailagent = null;
+        if (isset($info[0]["$LDAP_AGENT_MAIL"][0])) 
+        {
+            $mailagent = $info[0]["$LDAP_AGENT_MAIL"][0];
+        }
+        $civiliteagent = null;
+        if (isset($info[0]["$LDAP_AGENT_CIVILITE"][0])) 
+        {
+            $civiliteagent = $info[0]["$LDAP_AGENT_CIVILITE"][0];
+        }
+
+        if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent) and !is_null($civiliteagent))
+        {
+            $newagent = new agent($this->dbconnect);
+            $newagent->civilite($civiliteagent);
+            $newagent->nom(strtoupper($nomagent));
+            $newagent->prenom(strtoupper($prenomagent));
+            $newagent->mail($mailagent);
+            $newagent->typepopulation($typepopulation);
+            $newagent->structureid('');  // On force sa structure à 'vide'
+            if (!$newagent->store($agentid)) 
+            {
+                $errlog = "createldapagentfromagentid : L'agent $agentid ($civiliteagent $nomagent $prenomagent) => mail = $mailagent n'a pas pu être créé dans la base de données. \n";
+                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                if ($this->executionbatch())
+                {
+                    echo "$errlog";
+                }
+                return false;
+            }
+            else
+            {
+                $errlog = "createldapagentfromagentid : L'agent $agentid ($civiliteagent $nomagent $prenomagent) a été ajouté (mail = $mailagent) \n";
+                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                if ($this->executionbatch())
+                {
+                    echo "$errlog";
+                }
+                return $newagent;
+            }
+        }
+        else
+        {
+            $errlog = "createldapagentfromagentid : Au moins une information obligatoire manquante dans LDAP => agentid = $agentid  civiliteagent = $civiliteagent  nomagent = $nomagent  prenomagent = $prenomagent  mail = $mailagent \n";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            if ($this->executionbatch())
+            {
+                echo "$errlog";
+            }
+            return false;
+        }
+        
+    }
+    
+    function executionbatch()
+    {
+        global $uid;
+        if (!isset($uid) or $uid == "")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    function getagentidfromldapuid($uid)
+    {
+        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
+        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
+        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
+        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
+        $LDAP_CODE_AGENT_ATTR = $this->liredbconstante("LDAPATTRIBUTE");
+        $con_ldap = ldap_connect($LDAP_SERVER);
+        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+        $LDAP_UID_AGENT_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
+        $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
+        $dn = $LDAP_SEARCH_BASE;
+        $restriction = array(
+            "$LDAP_CODE_AGENT_ATTR"
+        );
+        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+        $info = ldap_get_entries($con_ldap, $sr);
+        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
+        if (!isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0]))
+        {
+            $errlog = "getagentidfromldapuid : L'agent $uid n'a pas pu être identifié dans LDAP. \n";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            if ($this->executionbatch())
+            {
+                // On est en mode batch car pas d'utilisateur défini
+                echo "$errlog";
+            }
+            return false;
+        }
+        $agentid = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];       
+        return $agentid;
+    }
+
     
 }
 

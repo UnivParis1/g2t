@@ -153,15 +153,33 @@
                 if (! is_numeric($gestionnaireid))
                 {
                     // On va chercher dans le LDAP la correspondance UID => AGENTID
-                    $agentid = $fonctions->useridfromCAS($gestionnaireid);
-                    if ($agentid === false)
+                    //$agentid = $fonctions->useridfromCAS($gestionnaireid);
+                    //if ($agentid === false)
+                    //{
+                    //    $agentid = null;
+                    //}
+                    $agentgest = $fonctions->createldapagentfromuid($gestionnaireid);
+                    if ($agentgest===false)
                     {
                         $agentid = null;
+                    }
+                    else
+                    {
+                        $agentid = $agentgest->agentid();
                     }
                 }
                 else
                 {
-                    $agentid = $gestionnaireid;
+                    //$agentid = $gestionnaireid;
+                    $agentgest = $fonctions->createldapagentfromagentid($gestionnaireid);
+                    if ($agentgest===false)
+                    {
+                        $agentid = null;
+                    }
+                    else
+                    {
+                        $agentid = $agentgest->agentid();
+                    }
                 }
                 
                 // Si le agentid n'est pas vide ou null
@@ -208,28 +226,6 @@
     $fonctions->afficherlistestructureindentee($structliste,$showall,$structureid);
     unset($structliste);
     echo "</select>";
-
-    /*
-     * $sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE WHERE length(STRUCTUREID)<='3' ORDER BY NOMCOURT"; //NOMLONG
-     * //$sql="SELECT STRUCTUREID,NOMCOURT,NOMLONG FROM STRUCTURE ORDER BY NOMCOURT"; //NOMLONG
-     * $query=mysqli_query ($dbcon, $sql);
-     * $erreur=mysqli_error($dbcon);
-     * if ($erreur != "") {
-     * $errlog = "Gestion Structure : " . $erreur;
-     * echo $errlog."<br/>";
-     * error_log(basename(__FILE__)." ".$fonctions->stripAccents($errlog));
-     * }
-     * echo "<form name='selectstructure' method='post' >";
-     * echo "<select name='structureid'>";
-     * while ($result = mysqli_fetch_row($query))
-     * {
-     * echo "<option value='" . $result[0] . "'";
-     * if ($result[0] == $structureid)
-     * echo " selected ";
-     * echo ">" . $result[2] . " (" . $result[1] . ")" . "</option>";
-     * }
-     * echo "</select>";
-     */
 
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
@@ -349,7 +345,7 @@
 			    <script>
     		    	$('[id="<?php echo "infouser[". $struct->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-    		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+    		  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|researcher" } });
     	   		</script>
 
 <?php
@@ -370,7 +366,7 @@
     			<script>
     		    	$('[id="<?php echo "responsableinfo[". $struct->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-    		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+    		  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee" } });
     	   		</script>
 
 <?php

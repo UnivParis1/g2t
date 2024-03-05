@@ -62,22 +62,6 @@
     }
     echo "</select>";
 ?>
-    
-<!-- 
-	<input id="user" name="user" placeholder="Nom et/ou prenom" autofocus/> <input
-		type='hidden' id="userid" name="userid" class='user' />
-
-	<script>
-	    //var input_elt = $( ".token-autocomplete input" );
-	    $( "#user" ).autocompleteUser(
-  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "supannEmpId",
-  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|staff" } });
-
-
-
-	</script>
- -->
-
 	<br>
 	<!--  <input type='text' name='userid' >
  -->

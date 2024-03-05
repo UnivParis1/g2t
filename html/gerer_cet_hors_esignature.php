@@ -109,28 +109,6 @@
         }
         echo "</select>";
 
-/*        
-        echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
-        if (isset($_POST["agent"]))
-        {
-            echo $_POST["agent"];
-        }
-        echo "' size=40 />";
-        echo "<input type='hidden' id='agentid' name='agentid' value='";
-        if (isset($_POST["agentid"]))
-        {
-            echo $_POST["agentid"];
-        }
-        echo "' class='agent' /> ";
-?>
-        <script>
-                $("#agent").autocompleteUser(
-                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
-  	 </script>
-<?php
-*/
-
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<br>";

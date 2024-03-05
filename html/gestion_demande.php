@@ -357,20 +357,6 @@
             }
             echo "</select>";
             echo "<br>";
-
-/*            
-            echo "<input id='agent' name='agent' placeholder='Nom et/ou prenom' value='";
-            echo "' size=40 />";
-            echo "<input type='hidden' id='agentid' name='agentid' value='";
-            echo "' class='agent' /> ";
-?>
-        <script>
-                $("#agent").autocompleteUser(
-                        '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                     	   wsParams: { allowInvalidAccounts: 1, showExtendedInfo: 1, filter_supannEmpId: '*'  } });
-  	    </script>
-<?php
-*/
         }
     } elseif ($mode == 'resp' or $mode == 'gest') {
         // => On est en mode "reponsable" et un agent est sélectionné

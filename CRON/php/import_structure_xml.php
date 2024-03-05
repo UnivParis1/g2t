@@ -732,71 +732,9 @@
                 
                 if (is_numeric($agentid))
                 {
-                    // On interroge LDAP pour récupérer le nom, le prénom, l'adrese mail
-                    $LDAP_SERVER = $fonctions->liredbconstante("LDAPSERVER");
-                    $LDAP_BIND_LOGIN = $fonctions->liredbconstante("LDAPLOGIN");
-                    $LDAP_BIND_PASS = $fonctions->liredbconstante("LDAPPASSWD");
-                    $LDAP_SEARCH_BASE = $fonctions->liredbconstante("LDAPSEARCHBASE");
-                    
-                    $LDAP_AGENT_NOM = $fonctions->liredbconstante("LDAP_AGENT_NOM_ATTR");
-                    $LDAP_AGENT_PRENOM = $fonctions->liredbconstante("LDAP_AGENT_PRENOM_ATTR");
-                    $LDAP_AGENT_MAIL = $fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
-                    $LDAP_AGENT_CIVILITE = $fonctions->liredbconstante("LDAP_AGENT_CIVILITE_ATTR");
-                    
-                    $LDAP_CODE_AGENT_ATTR = $fonctions->liredbconstante("LDAPATTRIBUTE");
-                    
-                    $con_ldap = ldap_connect($LDAP_SERVER);
-                    ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-                    $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-                    $filtre = "($LDAP_CODE_AGENT_ATTR=" . $agentid . ")";
-                    $dn = $LDAP_SEARCH_BASE;
-                    $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL", "$LDAP_AGENT_CIVILITE");
-                    $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-                    $info = ldap_get_entries($con_ldap, $sr);
-                    $nomagent = null;
-                    if (isset($info[0]["$LDAP_AGENT_NOM"][0])) 
+                    if ($fonctions->createldapagentfromagentid($agentid)===false)
                     {
-                        $nomagent = $info[0]["$LDAP_AGENT_NOM"][0];
-                    }
-                    $prenomagent = null;
-                    if (isset($info[0]["$LDAP_AGENT_PRENOM"][0])) 
-                    {
-                        $prenomagent = $info[0]["$LDAP_AGENT_PRENOM"][0];
-                    }
-                    $mailagent = null;
-                    if (isset($info[0]["$LDAP_AGENT_MAIL"][0])) 
-                    {
-                        $mailagent = $info[0]["$LDAP_AGENT_MAIL"][0];
-                    }
-                    $civiliteagent = null;
-                    if (isset($info[0]["$LDAP_AGENT_CIVILITE"][0])) 
-                    {
-                        $civiliteagent = $info[0]["$LDAP_AGENT_CIVILITE"][0];
-                    }
-                    
-                    if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent) and !is_null($civiliteagent))
-                    {
-                        $newagent = new agent($dbcon);
-                        $newagent->civilite($civiliteagent);
-                        $newagent->nom(strtoupper($nomagent));
-                        $newagent->prenom(strtoupper($prenomagent));
-                        $newagent->mail($mailagent);
-                        $newagent->typepopulation($typepopulation);
-                        $newagent->structureid('');  // On force sa structure à 'vide'
-                        if (!$newagent->store($agentid)) 
-                        {
-                            echo "Erreur lors de l'ajout de l'agent $agentid ($civiliteagent $nomagent $prenomagent) => mail = $mailagent \n";
-                        }
-                        else
-                        {
-                            echo "L'agent $agentid ($civiliteagent $nomagent $prenomagent) a ete ajoute (mail = $mailagent) \n";
-                        }
-                    }
-                    else
-                    {
-                        echo "Au moins une information obligatoire manquante dans LDAP => agentid = $agentid  civiliteagent = $civiliteagent  nomagent = $nomagent  prenomagent = $prenomagent  mail = $mailagent \n";
-                        echo "infos LDAP = " . print_r($info,true) . " \n";
-                        echo "L'agent $agentid n'est pas ajoute dans la base G2T \n";
+                        echo "Impossible d'ajouter l'agent $agentid dans la base \n";
                     }
                 }
                 else

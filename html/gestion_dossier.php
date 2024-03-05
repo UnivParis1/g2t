@@ -270,15 +270,34 @@
                 //echo "\$valeur est soit un uid soit un numéro agent : $valeur <br>";
                 if (! is_numeric($valeur))
                 {
-                    $agentid = $fonctions->useridfromCAS($valeur);
-                    if ($agentid === false)
+                    // Cas de l'UID
+                    //$agentid = $fonctions->useridfromCAS($valeur);
+                    //if ($agentid === false)
+                    //{
+                    //    $agentid = null;
+                    //}
+                    $agentgest = $fonctions->createldapagentfromuid($valeur);
+                    if ($agentgest===false)
                     {
                         $agentid = null;
+                    }
+                    else
+                    {
+                        $agentid = $agentgest->agentid();
                     }
                 }
                 else
                 {
-                    $agentid = $valeur;
+                    //$agentid = $valeur;
+                    $agentgest = $fonctions->createldapagentfromagentid($valeur);
+                    if ($agentgest===false)
+                    {
+                        $agentid = null;
+                    }
+                    else
+                    {
+                        $agentid = $agentgest->agentid();
+                    }
                 }
                 //echo "Agentid pour le gestionnaire vaut : $agentid <br>";
                 // Si le agentid n'est pas vide ou null
@@ -884,7 +903,7 @@
 		    <script>
     		    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-    		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee|researcher" } });
+    		  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|researcher" } });
                     </script>
 <?php
                 echo "</tr>";
@@ -938,7 +957,7 @@
 				    <script>
         		    	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
         		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-        		  	                          wsParams: { allowInvalidAccounts: 0, showExtendedInfo: 1, filter_eduPersonAffiliation: "employee" } });
+        		  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee" } });
         	   		</script>
 <?php
 

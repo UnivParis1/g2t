@@ -72,12 +72,12 @@ class agent
     function __construct($db)
     {
         $this->dbconnect = $db;
+        $this->fonctions = new fonctions($db);
         if (is_null($this->dbconnect)) {
             $errlog = "Agent->construct : La connexion à la base de donnée est NULL !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        $this->fonctions = new fonctions($db);
     }
 
     /**
@@ -5631,7 +5631,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         return $tabteletravail;
     }
-    
+        
 }
 
 ?> 
