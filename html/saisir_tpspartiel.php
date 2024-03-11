@@ -433,7 +433,7 @@
                         echo "<br>Veuillez cocher les demi-journées où vous êtes absente au titre du temps partiel.";
                     else    
                         echo "<br>Veuillez cocher les demi-journées où vous êtes absent au titre du temps partiel.";
-                    echo "<br> Validez votre saisie en cliquant sur le bouton 'Soumettre'.";
+                    echo "<br> Validez votre saisie en cliquant sur le bouton 'Enregistrer'.";
                     echo "<br>Au regard de votre quotité de travail, vous devez cocher $nbredemiTP demi-journée(s) par semaine<br><br>";
 
                     echo "<div id='planning'>";
