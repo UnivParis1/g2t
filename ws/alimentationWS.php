@@ -214,6 +214,11 @@
                         error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
                     }
                     //echo "<br>" . print_r($json,true) . "<br>";
+                    //////////////////////////////////////////////////////
+                    // PATCH JSON GET-DATAS DE ESIGNATURE
+                    $json=str_ireplace('"recipient":', '',$json);
+                    $json=str_ireplace(',"action"', '',$json);
+                    /////////////////////////////////////////////////////
                     $response = json_decode($json, true);
                     
                     error_log(basename(__FILE__) . $fonctions->stripAccents(" Le json est =>  " . var_export($json,true)));
@@ -247,7 +252,8 @@
 	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
 	                        foreach((array)$response as $key => $value)
 	                        {
-	                        	if (preg_match("/form_data_d.+cision/i",$key))
+	                        	//if (preg_match("/form_data_d.+cision/i",$key))
+	                                if (stristr(strtolower($key),"form_data_d")!==false and stristr(strtolower($key),"cision")!==false) //   preg_match("/form_data_d.+cision/i",$key))
 	                        	{
 	                        		error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
 	                        		if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')

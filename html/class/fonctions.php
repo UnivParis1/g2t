@@ -1653,6 +1653,10 @@ class fonctions
     public function synchro_g2t_eSignature($full_g2t_ws_url, $id)
     {
         // On appelle le WS G2T en GET pour demander à G2T de mettre à jour la demande
+        if ($this->executionbatch())
+        {
+            error_log(basename(__FILE__) . $this->stripAccents("On va synchroniser le document esignature $id "));
+        }
         $curl = curl_init();
         $params_string = "";
         $opts = [
@@ -3500,6 +3504,11 @@ class fonctions
                         {
                             error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info date dernier signataire) =>  " . $error));
                         }
+                        //////////////////////////////////////////////////////
+                        // PATCH JSON GET-DATAS DE ESIGNATURE
+                        $json=str_ireplace('"recipient":', '',$json);
+                        $json=str_ireplace(',"action"', '',$json);
+                        /////////////////////////////////////////////////////
                         $responsedata = json_decode($json, true);
 
                         if (isset($responsedata["sign_step_5_date"]))
@@ -3703,6 +3712,11 @@ class fonctions
         {
             error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info matériel télétravail) =>  " . $error));
         }
+        //////////////////////////////////////////////////////
+        // PATCH JSON GET-DATAS DE ESIGNATURE
+        $json=str_ireplace('"recipient":', '',$json);
+        $json=str_ireplace(',"action"', '',$json);
+        /////////////////////////////////////////////////////
         $response = json_decode($json, true);
         //var_dump($response);
 
@@ -4422,6 +4436,30 @@ WHERE  table_schema = Database()
         return $agentid;
     }
 
+    function convertvaluetobool($value)
+    {
+        switch (trim(strtoupper($value . '')))
+        {
+            case '':
+                return false;
+            case 'Y':
+            case 'YES':
+            case 'O':
+            case 'OUI':
+            case '1':
+                return true;
+                break;
+            case 'N':
+            case 'NO':
+            case 'NON':
+            case '0':
+                return false;
+                break;
+            default:
+                echo "Valeur non reconnue ($value) => On retourne FALSE";
+                return false;
+        }        
+    }
     
 }
 

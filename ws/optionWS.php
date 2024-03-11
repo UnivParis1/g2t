@@ -204,8 +204,17 @@
 	                    else // Tout va bien !
 	                    {
 	                        //echo "<br>" . print_r($json,true) . "<br>";
+                                //////////////////////////////////////////////////////
+                                // PATCH JSON GET-DATAS DE ESIGNATURE
+                                $json=str_ireplace('"recipient":', '',$json);
+                                $json=str_ireplace(',"action"', '',$json);
+                                /////////////////////////////////////////////////////
+	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json (avant conversion) est : " . var_export($json,true)));
 	                    	$response = json_decode($json, true);
+	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La dernière erreur JSON : " . json_last_error_msg()));
+                                error_log(basename(__FILE__) . " " . var_export($response,true));
 	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json est : " . var_export($response,true)));
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre élément dans reponse = " .count((array)$response)));
 	                        /*if (is_null($response))
 	                        {
 	                            $erreur = "La réponse json est NULL ==> On doit retourner une erreur ; la demande n'existe plus !";
@@ -234,7 +243,8 @@
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
 	                            foreach((array)$response as $key => $value)
 	                            {
-	                                if (preg_match("/form_data_d.+cision/i",$key))
+	                                //if (preg_match("/form_data_d.+cision/i",$key))
+	                                if (stristr(strtolower($key),"form_data_d")!==false and stristr(strtolower($key),"cision")!==false) //   preg_match("/form_data_d.+cision/i",$key))
 	                                {
 	                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
 	                                    if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')

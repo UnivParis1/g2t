@@ -5,6 +5,7 @@
 /CRON/php/import_affectation_siham.php
 /CRON/php/import_agent.php
 /CRON/php/import_structure.php
+/CRON/php/obsolete/
 /CRON/log/
 /CRON/specific/*.php
 !/CRON/specific/*_exemple.php
