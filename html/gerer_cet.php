@@ -260,6 +260,11 @@
                     . "<td class='cellulesimple'>" . $statut . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
                     . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
+//                    .'<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
+//                    .'<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">'
+//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
+//                    .'</form>'
+//                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $alimcet->esignatureid() . "\"].submit(); return false;'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
                     . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
         else
@@ -273,27 +278,44 @@
                     . "<td class='cellulesimple'>" . $alimcet->statut() . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
                     . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
+//                    .'<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
+//                    .'<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">'
+//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
+//                    .'</form>'
+//                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $alimcet->esignatureid() . "\"].submit(); return false;'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
                     . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
-        $htmltext = $htmltext . "<td class='cellulesimple'><form name='alim_" . $alimcet->esignatureid() . "'  method='post' >";
-        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
-        if (isset($_POST["agentid"]))
-        {
-            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
-        }
-        if (isset($_POST["agent"]))
-        {
-            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
-        }
-        $htmltext = $htmltext . "<input type='hidden' name='alimid' value='" . $alimcet->esignatureid() . "'>";
-        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
+//        $htmltext = $htmltext . "<td class='cellulesimple'><form name='alim_" . $alimcet->esignatureid() . "'  method='post' >";
+//        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+//        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
+//        if (isset($_POST["agentid"]))
+//        {
+//            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
+//        }
+//        if (isset($_POST["agent"]))
+//        {
+//            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
+//        }
+//        $htmltext = $htmltext . "<input type='hidden' name='alimid' value='" . $alimcet->esignatureid() . "'>";
+//        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
+//        if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
+//        {
+//            $htmltext = $htmltext . " disabled='disabled' ";
+//        }
+//        $htmltext = $htmltext . ">";
+//        $htmltext = $htmltext . "</form></td>";
+        $htmltext = $htmltext . "<td class='cellulesimple'>";
+        $htmltext = $htmltext . '<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
+        $htmltext = $htmltext . '<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">';
+        $htmltext = $htmltext . '<input type="hidden" name="esignaturePDF" value="ok">';
+        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid() . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
         if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
         {
             $htmltext = $htmltext . " disabled='disabled' ";
         }
         $htmltext = $htmltext . ">";
-        $htmltext = $htmltext . "</form></td>";
+        $htmltext = $htmltext . '</form>';
+        $htmltext = $htmltext . '</td>';
         $htmltext = $htmltext . "</tr>";
     }
     $htmltext = $htmltext . "</tbody></table><br>";
@@ -390,6 +412,11 @@
                     . "<td class='cellulesimple'>" . $statut . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
                     . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
+//                    .'<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
+//                    .'<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">'
+//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
+//                    .'</form>'
+//                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $optioncet->esignatureid() . "\"].submit(); return false;'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
                     . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
         else
@@ -404,27 +431,44 @@
                     . "<td class='cellulesimple'>" . $optioncet->statut() . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
                     . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
+//                    .'<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
+//                    .'<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">'
+//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
+//                    .'</form>'
+//                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $optioncet->esignatureid() . "\"].submit(); return false;'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
                     . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
-        $htmltext = $htmltext . "<td class='cellulesimple'><form name='option_" . $optioncet->esignatureid() . "'  method='post' >";
-        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
-        if (isset($_POST["agentid"]))
-        {
-            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
-        }
-        if (isset($_POST["agent"]))
-        {
-            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
-        }
-        $htmltext = $htmltext . "<input type='hidden' name='optionid' value='" . $optioncet->esignatureid() . "'>";
-        $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer' ";
-        if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optionCET::STATUT_REFUSE )
+//        $htmltext = $htmltext . "<td class='cellulesimple'><form name='option_" . $optioncet->esignatureid() . "'  method='post' >";
+//        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+//        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
+//        if (isset($_POST["agentid"]))
+//        {
+//            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
+//        }
+//        if (isset($_POST["agent"]))
+//        {
+//            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
+//        }
+//        $htmltext = $htmltext . "<input type='hidden' name='optionid' value='" . $optioncet->esignatureid() . "'>";
+//        $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer' ";
+//        if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optionCET::STATUT_REFUSE )
+//        {
+//            $htmltext = $htmltext . " disabled='disabled' ";
+//        }
+//        $htmltext = $htmltext . ">";
+//        $htmltext = $htmltext . "</form></td>";
+        $htmltext = $htmltext . "<td class='cellulesimple'>";
+        $htmltext = $htmltext . '<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
+        $htmltext = $htmltext . '<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">';
+        $htmltext = $htmltext . '<input type="hidden" name="esignaturePDF" value="ok">';
+        $htmltext = $htmltext . "<input type='submit' name='alim_" . $optioncet->esignatureid() . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
+        if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optioncet::STATUT_REFUSE)
         {
             $htmltext = $htmltext . " disabled='disabled' ";
         }
         $htmltext = $htmltext . ">";
-        $htmltext = $htmltext . "</form></td>";
+        $htmltext = $htmltext . '</form>';
+        $htmltext = $htmltext . '</td>';
         $htmltext = $htmltext . "</tr>";
     }
     $htmltext = $htmltext . "</tbody></table><br>";

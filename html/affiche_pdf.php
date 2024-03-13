@@ -131,26 +131,80 @@
     }
     
 
-     if (isset($_POST["teletravailPDF"]))
-     {
-         //header('Content-Disposition: attachment; filename="agent_télétravail.pdf"');
-         // On va éditer le document PDF de télétravail
-         
-         $structureid = null;
-         if (isset($_POST['structureid']))
-            $structureid = $_POST['structureid'];
-         
-        if (isset($_POST['datedebut']))
-            $datedebut = $_POST['datedebut'];
-        if (isset($_POST['datefin']))
-            $datefin = $_POST['datefin'];
-                
-          
-         //echo "<br>L'id de la structure est : " . $structureid . "<br>";
-         $structure = new structure($dbcon);
-         $structure->load($structureid);
-         $structure->teletravailpdf($datedebut,$datefin);
-     }
+    if (isset($_POST["teletravailPDF"]))
+    {
+        //header('Content-Disposition: attachment; filename="agent_télétravail.pdf"');
+        // On va éditer le document PDF de télétravail
+
+        $structureid = null;
+        if (isset($_POST['structureid']))
+           $structureid = $_POST['structureid'];
+
+       if (isset($_POST['datedebut']))
+           $datedebut = $_POST['datedebut'];
+       if (isset($_POST['datefin']))
+           $datefin = $_POST['datefin'];
+
+
+        //echo "<br>L'id de la structure est : " . $structureid . "<br>";
+        $structure = new structure($dbcon);
+        $structure->load($structureid);
+        $structure->teletravailpdf($datedebut,$datefin);
+    }
+     
+    if (isset($_POST["esignaturePDF"]))
+    {
+        if (isset($_POST["esignatureid"]))
+        {
+            $esignatureid = trim($_POST["esignatureid"]);
+            $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+            $error = '';
+
+            // On appelle le WS eSignature pour récupérer le document final
+            $curl = curl_init();
+            $opts = [
+                CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $esignatureid,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_PROXY => ''
+            ];
+            curl_setopt_array($curl, $opts);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            $pdf = curl_exec($curl);
+            $error = curl_error ($curl);
+            curl_close($curl);
+            if ($error != "")
+            {
+                $error = "Erreur Curl (récup PDF) =>  " . $error;
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));
+                $pdfdoc = new FPDF();
+                $pdfdoc->AddPage('L');
+                $pdfdoc->SetFont('helvetica', 'B', 14, '', true);
+                $pdfdoc->Text(10, 10, $fonctions->utf8_decode($error));
+                $pdfdoc->Output("", "PDF_Error.pdf");
+                //echo $error . "<br>";
+                //echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
+            }
+            else if (stristr(substr($pdf,0,10),'PDF') === false)
+            {
+                $error = "Erreur Curl (récup PDF) =>  Le document retourné n'est pas un PDF";
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));
+                $pdfdoc = new FPDF();
+                $pdfdoc->AddPage('L');
+                $pdfdoc->SetFont('helvetica', 'B', 14, '', true);
+                $pdfdoc->Text(10, 10, $fonctions->utf8_decode($error));
+                $pdfdoc->Ln();
+                $pdfdoc->Text(10,30, $fonctions->utf8_decode($pdf));
+                $pdfdoc->Output("", "PDF_Error.pdf");
+                //echo $error . "<br>";
+            }
+            else
+            {
+                //error_log(basename(__FILE__) . $fonctions->stripAccents(" $pdf"));
+                echo $pdf;
+            }
+        }
+    }
 
     
 ?>

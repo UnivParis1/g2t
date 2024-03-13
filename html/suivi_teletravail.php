@@ -193,7 +193,13 @@
         echo "    <td class='cellulesimple'>" . $teletravail->libelletabteletravail() . "</td>";
         echo "    <td class='cellulesimple $extraclass'>" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . $enattente . "</td>";
         // echo "    <td class='cellulesimple'>" . $teletravail->commentaire() . "</td>";
-        echo "    <td class='cellulesimple'><a href='" . $teletravail->esignatureurl() . "' target='_blank'>". $teletravail->esignatureurl()."</a></td>";
+        
+        echo '<form name="showesignaturePDF_' . $teletravail->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
+        echo '<input type="hidden" name="esignatureid" value="' . $teletravail->esignatureid() . '">';
+        echo '<input type="hidden" name="esignaturePDF" value="ok">';
+        echo '</form>';
+        
+        echo "    <td class='cellulesimple'><a href='affiche_pdf.php' target='_blank' onClick='document.forms[\"showesignaturePDF_" . $teletravail->esignatureid() . "\"].submit(); return false;'>". $teletravail->esignatureurl()."</a></td>";
         echo "</tr>";
     }
     echo "</table>";
