@@ -1531,6 +1531,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	echo "</select>";
 ?>
 <script>
+    var oldsubmitstatus = null;
     function displayhidewarning(valeur)
     {
 /*
@@ -1540,14 +1541,22 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         const labelmaxjrs = document.getElementById('labelmaxjrs');
         const labeljrsmedical = document.getElementById('labeljrsmedical');
  */
+
         var divttnormal = document.getElementById('divttnormal');
         var divttmedical = document.getElementById('divttmedical');
+        var submitbutton = document.getElementById('creation');
         
         if (divttnormal && divttmedical)
         {
             if (valeur=='<?php echo teletravail::CODE_CONVENTION_MEDICAL ?>')
             {
                 divttnormal.hidden = true;
+                // console.debug('Medical : ' + valeur + '  oldsubmitstatus = ' + oldsubmitstatus);
+                
+                if (submitbutton)
+                {
+                    submitbutton.hidden = false;
+                }
 /*                
                 warningtext.hidden = false;
                 tabttnormal.hidden = true;
@@ -1556,6 +1565,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             else
             {
                 divttnormal.hidden = false;
+                // console.debug('Pas médical : ' + valeur + '  oldsubmitstatus = ' + oldsubmitstatus);
+                if (submitbutton && (oldsubmitstatus!==null))
+                {
+                    submitbutton.hidden = oldsubmitstatus;
+                }
+
 /*
                 warningtext.hidden = true;
                 tabttnormal.hidden = false;
@@ -2100,11 +2115,19 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
         
         $hiddentext = '';
-        if ($disablesubmit and $mode!='gestrh')
+        if ($disablesubmit and $mode!='gestrh' and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL )
         {
             $hiddentext = " hidden='hidden' ";
         }
         echo "<input type='submit' id='creation' name='creation' class='g2tbouton g2tvalidebouton' value='Enregistrer' $hiddentext />";
+        if ($disablesubmit and $mode!='gestrh')
+        {
+            echo "
+                <script>
+                    oldsubmitstatus = true;
+                </script>
+                ";
+        }
         echo "</form>";        
 
         if (isset($formdisabled) and $formdisabled != '')
