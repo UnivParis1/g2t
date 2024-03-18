@@ -907,9 +907,10 @@ class teletravail
          // création du fichier
          //$pdffilename = '/tmp/mon_fichier_test.pdf';
          $path = dirname("$pdffilename");
+         error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Path (télétravail) : $path"));
          if (!file_exists($path))
          {
-             mkdir("$path");
+             mkdir("$path",0777,true);
              chmod("$path", 0777);
          }
          

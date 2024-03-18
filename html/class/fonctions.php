@@ -1334,7 +1334,8 @@ class fonctions
         $path = dirname("$filename");
         if (!file_exists($path))
         {
-            mkdir("$path");
+            mkdir("$path",0777,true);
+            //mkdir("$path");
             chmod("$path", 0777);
         }
         $pdf->Output($filename, 'F');
@@ -1682,7 +1683,7 @@ class fonctions
         }
         //echo "<br>Le json (synchro_g2t_eSignature) " . print_r($json,true) . "<br>";
         error_log(basename(__FILE__) . $this->stripAccents(" Le json (synchro_g2t_eSignature) " . print_r($json,true)));
-        $response = json_decode($json, true);
+        $response = (array)json_decode($json, true);
         //echo "<br>La reponse (synchro_g2t_eSignature) " . print_r($response,true) . "<br>";
         error_log(basename(__FILE__) . $this->stripAccents(" Le response (synchro_g2t_eSignature) " . print_r($response,true)));
         if (isset($response['description']))
@@ -3271,51 +3272,73 @@ class fonctions
             return $erreur;
         }
         $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
-        $url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
-/*
-        $params = array('id' => $teletravail->esignatureid());
-        $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
-            is_array( $item )
-            ? array_walk( $item, $walk, $key )
-            : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-
-        };
-        array_walk( $params, $walk );
-        $json = implode( '&', $output );
-*/
-        $json = '';
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $json = curl_exec($ch);
-        $result = json_decode($json);
-        error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE SUPPRESSION DOCUMENT -- " . var_export($result, true));
-        $error = curl_error ($ch);
-        //var_dump($error);
-        curl_close($ch);
-        if ($error != "")
+        //$url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
+        $url = $eSignature_url.'/ws/signrequests/soft/'.$esignatureid;
+        $tryagain = true;
+        $nbretry = 0;
+        while ($tryagain)
         {
-            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-            $erreur = $erreur . "Erreur dans la suppression du document : Erreur Curl " . $error;
-            error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
+            $json = '';
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $json = curl_exec($ch);
+            $result = json_decode($json);
+            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE SUPPRESSION DOCUMENT -- " . var_export($result, true));
+            $error = curl_error ($ch);
+            //var_dump($error);
+            curl_close($ch);
+            if ($error != "")
+            {
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "Erreur dans la suppression du document : Erreur Curl " . $error;
+                error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
+                $tryagain = false;
+            }
+            elseif (!is_null($result))
+            {
+                ///////////////////////////////////////////
+                //// IMPORTANT => $result est un objet de classe stdClass
+                //// On le force comme un array
+                $result = (array)$result;
+                ///////////////////////////////////////////
+                $debuginfo = " Erreur dans la suppression du document (Réponse JSON) : " . var_export($result, true);    
+                error_log(basename(__FILE__) . $this->stripAccents($debuginfo));
+                // On vérifie que l'on est pas déjà dans l'ancien WS ($nbretry!=0) => Si c'est la cas on sort (on évite la boucle infinie)
+                if (isset($result['status']) and trim($result['status'])=='404' and $nbretry == 0)
+                {
+                    // Le WS /ws/signrequests/soft/$esignatureid n'existe pas => On passe dans l'ancien mode
+                    error_log(basename(__FILE__) . " On passe a l'ancien WS pour supprimer le document");
+                    $url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
+                    $nbretry++;
+                    $tryagain = true;
+                }
+                else
+                {
+                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                    $erreur = $erreur . $debuginfo;
+                    error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
+                    $tryagain = false;
+                }
+            }
+            elseif (stristr(substr($json,0,20),'HTML') !== false) // On a trouvé HTML dans le json
+            {
+                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                $erreur = $erreur . "Erreur dans la suppression du document (Réponse HTML) : " . var_export($json, true);
+                error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
+                $tryagain = false;
+            }
+            else
+            {
+                // Tout s'est bien passé => On sort
+                error_log(basename(__FILE__) . " " . $this->stripAccents("Suppression OK => On sort"));
+                $tryagain = false;
+            }
         }
-        elseif (!is_null($result))
-        {
-            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-            $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($result, true);
-            error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
-        }
-        elseif (stristr(substr($json,0,20),'HTML') !== false) // On a trouvé HTML dans le json
-        {
-            if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-            $erreur = $erreur . "Erreur dans la suppression du document : " . var_export($json, true);
-            error_log(basename(__FILE__) . " " . $this->stripAccents($erreur));
-        }
-
         return $erreur;
     }
 
@@ -3383,8 +3406,8 @@ class fonctions
         }
         else
         {
-            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
-            error_log(basename(__FILE__) . " " . var_export($json,true));
+            //error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
+            //error_log(basename(__FILE__) . " " . var_export($json,true));
             $current_status = str_replace("'", "", $json);  // json_decode($json, true);
 
             error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests/status"));
@@ -3485,71 +3508,99 @@ class fonctions
                     // Si le status est VALIDE alors on va mettre la date du dernier signataire comme date de début de la convention
                     if ($status==teletravail::TELETRAVAIL_VALIDE)
                     {
-                        $curl = curl_init();
-                        $params_string = "";
-                        $opts = [
-                            CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
-                            CURLOPT_POST => true,
-                            CURLOPT_POSTFIELDS => $params_string,
-                            CURLOPT_RETURNTRANSFER => true,
-                            CURLOPT_SSL_VERIFYPEER => false,
-                            CURLOPT_PROXY => ''
-                        ];
-                        curl_setopt_array($curl, $opts);
-                        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                        $json = curl_exec($curl);
-                        $error = curl_error ($curl);
-                        curl_close($curl);
-                        if ($error != "")
+                        $tryagain = true;
+                        $nbretry = 0;
+                        $postcall = false;
+                        while ($tryagain)
                         {
-                            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info date dernier signataire) =>  " . $error));
-                        }
-                        //////////////////////////////////////////////////////
-                        // PATCH JSON GET-DATAS DE ESIGNATURE
-                        $json=str_ireplace('"recipient":', '',$json);
-                        $json=str_ireplace(',"action"', '',$json);
-                        /////////////////////////////////////////////////////
-                        $responsedata = json_decode($json, true);
+                            $curl = curl_init();
+                            $params_string = "";
+                            $opts = [
+                                CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
+                                CURLOPT_RETURNTRANSFER => true,
+                                CURLOPT_SSL_VERIFYPEER => false,
+                                CURLOPT_PROXY => ''
+                            ];
+                            if ($postcall)
+                            {
+                                $opts[CURLOPT_POST] = true;
+                                $opts[CURLOPT_POSTFIELDS] = $params_string;
+                            }
+                            //error_log(basename(__FILE__) . $this->stripAccents(" opts = " . var_export($opts,true)));
+                            curl_setopt_array($curl, $opts);
+                            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                            $json = curl_exec($curl);
+                            $error = curl_error ($curl);
+                            curl_close($curl);
+                            if ($error != "")
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info date dernier signataire) =>  " . $error));
+                                $tryagain = false;
+                            }
+                            //////////////////////////////////////////////////////
+                            // PATCH JSON GET-DATAS DE ESIGNATURE
+                            if (($count=substr_count(strtolower($json),'"recipient":'))==substr_count(strtolower($json),',"action"') and $count>1)
+                            {
+                                $json=str_ireplace('"recipient":', '',$json);
+                                $json=str_ireplace(',"action"', '',$json);
+                            }
+                            /////////////////////////////////////////////////////
+                            $responsedata = (array)json_decode($json, true);
 
-                        if (isset($responsedata["sign_step_5_date"]))
-                        {
-                            // On récupère la date de signature du niveau 5
-                            $splitdate = explode(" ",$responsedata["sign_step_5_date"]);
-                            // On vérifie que le format de la date est ok
-                            if (strtotime($splitdate[0])===false)
+                            if (isset($responsedata['status']) and trim($responsedata['status'])=='405' and $nbretry == 0)
                             {
-                                // Le format n'est pas ok
-                                $datesignatureresponsable = '19000101';
-                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 5 : Format incorrect => " . $splitdate[0]));
+                                error_log(basename(__FILE__) . $this->stripAccents(" Le WS get-datas est en mode (0=GET/1=POST) => " . intval($postcall) . " et on a reçu un statut " . $responsedata['status'] . " => " . $responsedata['error']));
+                                // Le WS /ws/forms/get-datas/ en mode GET n'existe pas => On passe dans l'ancien mode => Mode POST
+                                error_log(basename(__FILE__) . $this->stripAccents(" On passe en mode POST pour le WS get-datas pour obtenir les données du document"));
+                                $postcall = true;
+                                $nbretry++;
+                                $tryagain = true;
+                            }
+                            elseif (isset($responsedata["sign_step_5_date"]))
+                            {
+                                // On récupère la date de signature du niveau 5
+                                $splitdate = explode(" ",$responsedata["sign_step_5_date"]);
+                                // On vérifie que le format de la date est ok
+                                if (strtotime($splitdate[0])===false)
+                                {
+                                    // Le format n'est pas ok
+                                    $datesignatureresponsable = '19000101';
+                                    error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 5 : Format incorrect => " . $splitdate[0]));
+                                    $tryagain = false;
+                                }
+                                else
+                                {
+                                    // C'est une date
+                                    $datesignatureresponsable = $splitdate[0];
+                                    $tryagain = false;
+                                }
+                            }
+                            elseif (isset($responsedata["sign_step_4_date"]))
+                            {
+                                // On récupère la date de signature du niveau 4
+                                $splitdate = explode(" ",$responsedata["sign_step_4_date"]);
+                                if (strtotime($splitdate[0])===false)
+                                {
+                                    // Le format n'est pas ok
+                                    $datesignatureresponsable = '19000101';
+                                    error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 4 : Format incorrect => " . $splitdate[0]));
+                                    $tryagain = false;
+                                }
+                                else
+                                {
+                                    // C'est une date
+                                    $datesignatureresponsable = $splitdate[0];
+                                    $tryagain = false;
+                                }
                             }
                             else
                             {
-                                // C'est une date
-                                $datesignatureresponsable = $splitdate[0];
-                            }
-                        }
-                        else if (isset($responsedata["sign_step_4_date"]))
-                        {
-                            // On récupère la date de signature du niveau 4
-                            $splitdate = explode(" ",$responsedata["sign_step_4_date"]);
-                            if (strtotime($splitdate[0])===false)
-                            {
-                                // Le format n'est pas ok
+                                // On n'a aucune information sur la date de signature
                                 $datesignatureresponsable = '19000101';
-                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 4 : Format incorrect => " . $splitdate[0]));
+                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du dernier signataire"));
+                                error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
+                                $tryagain = false;
                             }
-                            else
-                            {
-                                // C'est une date
-                                $datesignatureresponsable = $splitdate[0];
-                            }
-                        }
-                        else
-                        {
-                            // On n'a aucune information sur la date de signature
-                            $datesignatureresponsable = '19000101';
-                            error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du dernier signataire"));
-                            error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
                         }
                         error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
                     }
@@ -3681,116 +3732,144 @@ class fonctions
 
     function creation_ticketGLPI_materiel($esignatureid)
     {
-        $constante = 'MAINTENANCE';
-        $maintenance = $this->liredbconstante($constante);
-        if (strcasecmp($maintenance, 'n') != 0)
-        {
-            // Si on est en mode maintenance => On ne fait rien
-            error_log(basename(__FILE__) . $this->stripAccents(" Création du ticket GLPI => Mode maintenance activé. On ne fait rien."));
-            return "";
-        }
-        
         $eSignature_url = $this->liredbconstante("ESIGNATUREURL");
-
-        $curl = curl_init();
-        $params_string = "";
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $params_string,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        //curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        $json = curl_exec($curl);
-        $error = curl_error ($curl);
-        curl_close($curl);
-        if ($error != "")
+        $tryagain = true;
+        $nbretry = 0;
+        $postcall = false;
+        while ($tryagain)
         {
-            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info matériel télétravail) =>  " . $error));
-        }
-        //////////////////////////////////////////////////////
-        // PATCH JSON GET-DATAS DE ESIGNATURE
-        $json=str_ireplace('"recipient":', '',$json);
-        $json=str_ireplace(',"action"', '',$json);
-        /////////////////////////////////////////////////////
-        $response = json_decode($json, true);
-        //var_dump($response);
-
-        //$key_materiel = "form_data_Equipement";
-        $dbconstante = 'ESIGNATURE_MATERIEL_KEY';
-        $key_materiel = "form_data_Equipement";
-        if ($this->testexistdbconstante($dbconstante))
-        {
-            $key_materiel = $this->liredbconstante($dbconstante);
-        }
-        /*
-            "form_data_EquipementOrdinateur": "on",
-            "form_data_EquipementSouris": "off",
-            "form_data_EquipementBase": "off",
-            "form_data_EquipementSac": "off",
-            "form_data_EquipementCasque": "off",
-        */
-        $tab_materiel = array_intersect_key($response, array_flip(preg_grep("/^$key_materiel/i", array_keys($response), 0)));
-        if ($tab_materiel!==false and !is_null($tab_materiel))
-        {
-            $dbconstante = 'GLPI_COLLECTEUR';
-            $mail_glpi = "";
-            if ($this->testexistdbconstante($dbconstante))
+            $curl = curl_init();
+            $params_string = "";
+            $opts = [
+                CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_PROXY => ''
+            ];
+            if ($postcall)
             {
-                $mail_glpi = $this->liredbconstante($dbconstante);
+                $opts[CURLOPT_POST] = true;
+                $opts[CURLOPT_POSTFIELDS] = $params_string;
             }
-            if ($mail_glpi <> '')
+            curl_setopt_array($curl, $opts);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            //curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            $json = curl_exec($curl);
+            $error = curl_error ($curl);
+            curl_close($curl);
+            if ($error != "")
             {
-                $demandeur = new agent($this->dbconnect);
-                $teletravail = new teletravail($this->dbconnect);
-                $teletravail->loadbyesignatureid($esignatureid);
-                $demandeur->load($teletravail->agentid());
-                //var_dump($tab_materiel);
-                $besoin = "";
-                $materieldemande = false;
-                foreach($tab_materiel as $key => $value)
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info matériel télétravail) =>  " . $error));
+            }
+            //////////////////////////////////////////////////////
+            // PATCH JSON GET-DATAS DE ESIGNATURE
+            if (($count=substr_count(strtolower($json),'"recipient":'))==substr_count(strtolower($json),',"action"') and $count>1)
+            {
+                $json=str_ireplace('"recipient":', '',$json);
+                $json=str_ireplace(',"action"', '',$json);
+            }
+            /////////////////////////////////////////////////////
+            $response = (array)json_decode($json, true);
+            //var_dump($response);
+
+            if (isset($response['status']) and trim($response['status'])=='405' and $nbretry == 0)
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Le WS get-datas est en mode (0=GET/1=POST) => " . intval($postcall) . " et on a reçu un statut " . $response['status'] . " => " . $response['error']));
+                // Le WS /ws/forms/get-datas/ en mode GET n'existe pas => On passe dans l'ancien mode => Mode POST
+                error_log(basename(__FILE__) . $this->stripAccents(" On passe en mode POST pour le WS get-datas pour obtenir les données du document"));
+                $postcall = true;
+                $nbretry++;
+                $tryagain = true;
+            }
+            else        
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Le WS get-datas a retourné les infos du document (mode 0=GET/1=POST => " . intval($postcall) . ")"));
+                $tryagain = false;
+                //$key_materiel = "form_data_Equipement";
+                $dbconstante = 'ESIGNATURE_MATERIEL_KEY';
+                $key_materiel = "form_data_Equipement";
+                if ($this->testexistdbconstante($dbconstante))
                 {
-                    $typemateriel = str_ireplace($key_materiel,'',$key);
-                    $besoin = $besoin . "&nbsp;&nbsp;&bull; ";
-                    if (strcasecmp($value,'on')==0) // L'agent a demandé => valeur ON
-                    {
-                        $besoin = $besoin . "J'ai demandé ";
-                        $materieldemande = true;
-                    }
-                    else
-                    {
-                        $besoin = $besoin . "Je n'ai pas demandé ";
-                    }
-                    $besoin = $besoin . ": un(e) " . strtolower($typemateriel) . " \n";
+                    $key_materiel = $this->liredbconstante($dbconstante);
                 }
-
-                // On construit le destinataire car il n'est pas dans la base
-                //$destinataire = new agent($this->dbconnect);
-                //$destinataire->nom('GLPI');
-                //$destinataire->prenom('COLLECTEUR');
-                //$destinataire->mail($mail_glpi);
-
-                //$destinataire = "pascal.comte@univ-paris1.fr";
-                $destinataire = $mail_glpi;
-                if ($materieldemande==true)
+                /*
+                    "form_data_EquipementOrdinateur": "on",
+                    "form_data_EquipementSouris": "off",
+                    "form_data_EquipementBase": "off",
+                    "form_data_EquipementSac": "off",
+                    "form_data_EquipementCasque": "off",
+                */
+                $tab_materiel = array_intersect_key($response, array_flip(preg_grep("/^$key_materiel/i", array_keys($response), 0)));
+                if ($tab_materiel!==false and !is_null($tab_materiel))
                 {
-                    $destinataire = $mail_glpi;
-                    //echo "Le destinataire : $destinataire <br>";
+                    $dbconstante = 'GLPI_COLLECTEUR';
+                    $mail_glpi = "";
+                    if ($this->testexistdbconstante($dbconstante))
+                    {
+                        $mail_glpi = $this->liredbconstante($dbconstante);
+                    }
+                    if ($mail_glpi <> '')
+                    {
+                        $demandeur = new agent($this->dbconnect);
+                        $teletravail = new teletravail($this->dbconnect);
+                        $teletravail->loadbyesignatureid($esignatureid);
+                        $demandeur->load($teletravail->agentid());
+                        //var_dump($tab_materiel);
+                        $besoin = "";
+                        $materieldemande = false;
+                        foreach($tab_materiel as $key => $value)
+                        {
+                            $typemateriel = str_ireplace($key_materiel,'',$key);
+                            $besoin = $besoin . "&nbsp;&nbsp;&bull; ";
+                            if (strcasecmp($value,'on')==0) // L'agent a demandé => valeur ON
+                            {
+                                $besoin = $besoin . "J'ai demandé ";
+                                $materieldemande = true;
+                            }
+                            else
+                            {
+                                $besoin = $besoin . "Je n'ai pas demandé ";
+                            }
+                            $besoin = $besoin . ": un(e) " . strtolower($typemateriel) . " \n";
+                        }
 
-                    $objet = "Demande de matériel suite à validation de convention télétravail";
-                    $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : \n";
-                    $corps = $corps . "\n" . $besoin . "\n Cordialement, \n" . $demandeur->identitecomplete() . " \n";
-                    $demandeur->sendmail($destinataire, $objet, $corps);
-                    error_log(basename(__FILE__) . $this->stripAccents(" Envoi du mail pour la demande de materiel : " . str_replace(array("\n","&nbsp;","&bull;"), ' ', $besoin) . " => $destinataire"));
-                    //echo "Après l'envoie du mail \n";
-                }
-                else
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" Pas de materiel demande pour la convention " . $teletravail->teletravailid() . " => Pas d'envoi de mail à $destinataire"));
+                        // On construit le destinataire car il n'est pas dans la base
+                        //$destinataire = new agent($this->dbconnect);
+                        //$destinataire->nom('GLPI');
+                        //$destinataire->prenom('COLLECTEUR');
+                        //$destinataire->mail($mail_glpi);
+
+                        //$destinataire = "pascal.comte@univ-paris1.fr";
+                        $destinataire = $mail_glpi;
+                        if ($materieldemande==true)
+                        {
+                            $destinataire = $mail_glpi;
+                            //echo "Le destinataire : $destinataire <br>";
+
+                            $objet = "Demande de matériel suite à validation de convention télétravail";
+                            $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : \n";
+                            $corps = $corps . "\n" . $besoin . "\n Cordialement, \n" . $demandeur->identitecomplete() . " \n";
+                            error_log(basename(__FILE__) . $this->stripAccents(" Les besoins en matériel sont : " . str_replace(array("\n","&nbsp;","&bull;"), '', $besoin) . " => $destinataire"));
+                            
+                            $constante = 'MAINTENANCE';
+                            $maintenance = $this->liredbconstante($constante);
+                            if (strcasecmp($maintenance, 'n') != 0)
+                            {
+                                // Si on est en mode maintenance => On ne fait rien
+                                error_log(basename(__FILE__) . $this->stripAccents(" Création du ticket GLPI => Mode maintenance activé. On ne fait rien."));
+                            }
+                            else
+                            {
+                                $demandeur->sendmail($destinataire, $objet, $corps);
+                                //error_log(basename(__FILE__) . $this->stripAccents(" Envoi du mail pour la demande de materiel : " . str_replace(array("\n","&nbsp;","&bull;"), ' ', $besoin) . " => $destinataire"));
+                                //echo "Après l'envoie du mail \n";
+                            }
+                        }
+                        else
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Pas de materiel demande pour la convention " . $teletravail->teletravailid() . " => Pas d'envoi de mail à $destinataire"));
+                        }
+                    }
                 }
             }
         }

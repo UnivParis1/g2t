@@ -170,33 +170,42 @@
                     }
                     //echo "<br>" . print_r($json,true) . "<br>";
                     
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests en json"));
-                    error_log(basename(__FILE__) . " " . var_export($json,true));
+                    //error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests en json"));
+                    //error_log(basename(__FILE__) . " " . var_export($json,true));
                     $response3 = json_decode($json, true);
                     
                     error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du WS signrequests"));
                     error_log(basename(__FILE__) . " " . var_export($response3,true));
  
                     // On appelle le WS eSignature pour récupérer les infos du document
-                    $curl = curl_init();
-                    $params_string = "";
-                    $opts = [
-                         CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
-                         CURLOPT_POST => true,
-                         CURLOPT_POSTFIELDS => $params_string,
-                         CURLOPT_RETURNTRANSFER => true,
-                         CURLOPT_SSL_VERIFYPEER => false,
-                         CURLOPT_PROXY => ''
-                    ];
-                    curl_setopt_array($curl, $opts);
-                    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                    $json = curl_exec($curl);
-                    $error = curl_error ($curl);
-                    curl_close($curl);
-                    if (stristr(substr($json,0,20),'HTML') === false)
+                    $tryagain = true;
+                    $nbretry = 0;
+                    $postcall = false;
+                    while ($tryagain)
                     {
+                        $curl = curl_init();
+                        $params_string = "";
+                        $opts = [
+                             CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
+                             CURLOPT_RETURNTRANSFER => true,
+                             CURLOPT_SSL_VERIFYPEER => false,
+                             CURLOPT_PROXY => ''
+                        ];
+                        if ($postcall)
+                        {
+                            $opts[CURLOPT_POST] = true;
+                            $opts[CURLOPT_POSTFIELDS] = $params_string;
+                        }
+                        curl_setopt_array($curl, $opts);
+                        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                        $json = curl_exec($curl);
+                        $error = curl_error ($curl);
+                        curl_close($curl);
+                        if (stristr(substr($json,0,20),'HTML') === false)
+                        {
 	                    if ($error != "")
 	                    {
+                                $tryagain = false;
 	                        $erreur = "Erreur Curl =>  " . $error;
 	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
 	                        $result_json = array('status' => 'Error', 'description' => $erreur);
@@ -206,29 +215,35 @@
 	                        //echo "<br>" . print_r($json,true) . "<br>";
                                 //////////////////////////////////////////////////////
                                 // PATCH JSON GET-DATAS DE ESIGNATURE
-                                $json=str_ireplace('"recipient":', '',$json);
-                                $json=str_ireplace(',"action"', '',$json);
+                                if (($count=substr_count(strtolower($json),'"recipient":'))==substr_count(strtolower($json),',"action"') and $count>1)
+                                {
+                                    $json=str_ireplace('"recipient":', '',$json);
+                                    $json=str_ireplace(',"action"', '',$json);
+                                }
                                 /////////////////////////////////////////////////////
-	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json (avant conversion) est : " . var_export($json,true)));
-	                    	$response = json_decode($json, true);
-	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La dernière erreur JSON : " . json_last_error_msg()));
-                                error_log(basename(__FILE__) . " " . var_export($response,true));
-	                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json est : " . var_export($response,true)));
-                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre élément dans reponse = " .count((array)$response)));
-	                        /*if (is_null($response))
+	                        //error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse json (avant conversion) est : " . var_export($json,true)));
+	                    	$response = (array)json_decode($json, true);
+                                
+                                if (isset($response['status']) and trim($response['status'])=='405' and $nbretry == 0)
+                                {
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le WS get-datas est en mode (0=GET/1=POST) => " . intval($postcall) . " et on a reçu un statut " . $response['status'] . " => " . $response['error']));
+                                    // Le WS /ws/forms/get-datas/ en mode GET n'existe pas => On passe dans l'ancien mode => Mode POST
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On passe en mode POST pour le WS get-datas pour obtenir les données du document"));
+                                    $postcall = true;
+                                    $nbretry++;
+                                    $tryagain = true;
+                                }
+                                elseif (isset($response['error']))
 	                        {
-	                            $erreur = "La réponse json est NULL ==> On doit retourner une erreur ; la demande n'existe plus !";
-	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-	                            $result_json = array('status' => 'Error', 'description' => $erreur);
-	                        }
-	                        else*/if (isset($response['error']))
-	                        {
+                                    $tryagain = false;
 	                            $erreur = "La réponse json est une erreur ==> On doit la retourner : " . $response['error'];
 	                            error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
 	                            $result_json = array('status' => 'Error', 'description' => $erreur);
 	                        }
 	                        else // Tout semble ok !
 	                        {
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le WS get-datas a retourné les infos du document (mode 0=GET/1=POST => " . intval($postcall) . ")"));
+                                    $tryagain = false;
 	                            if (isset($response3["parentSignBook"]["status"]))
 	                            {
 	                                $current_status = $response3["parentSignBook"]["status"];
@@ -455,12 +470,14 @@
 	                            }
 	                        }
 	                    }
-                    }
-                    else
-                    {
-                    	$erreur = "Erreur dans eSignature : \n\t |  ".$json;
-                    	error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-                    	$result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            $tryagain = false;
+                            $erreur = "Erreur dans eSignature : \n\t |  ".$json;
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
                     }
                 }
             }

@@ -585,7 +585,8 @@ class optionCET
         $path = dirname("$pdffilename");
         if (!file_exists($path))
         {
-            mkdir("$path");
+            mkdir("$path",0777,true);
+            //mkdir("$path");
             chmod("$path", 0777);
         }
         
