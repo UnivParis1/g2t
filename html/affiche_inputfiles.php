@@ -576,7 +576,14 @@
             foreach ($nodelist as $node)
             {
                 $inputagentid = trim($node->xpath('AGENTID')[0]);
-                $numligne = trim($node->xpath('NUMLINGE')[0]);
+                if (isset($node->xpath('NUMLIGNE')[0]))
+                {
+                    $numligne = trim($node->xpath('NUMLIGNE')[0]);
+                }
+                elseif (isset($node->xpath('NUMLINGE')[0]))
+                {
+                    $numligne = trim($node->xpath('NUMLINGE')[0]);
+                }
                 $codecontrat = trim($node->xpath('TYPECONTRAT')[0]);
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);

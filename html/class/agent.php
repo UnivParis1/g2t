@@ -4354,16 +4354,21 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     {
                         echo " RAPPEL : Le solde de l'agent actuellement est : $solde_agent \n";
                     }
+                    
+                    ///////
+                    // On défini que 10 mois converti en jours => 305 jours <=> (365*10) / 12
+                    $dixmoisenjours = 305;
+                    
                     // L'agent est présent depuis plus d'un an à la fin de son affectation, donc on va calculer son solde avec les régles standards
                     // Attention cependant, il faut calculer le solde pour la période avant les 365 jours
-                    if ($NbreJoursTotalAff > $nbre_jour_periode) 
+                    if ($NbreJoursTotalAff > $dixmoisenjours) 
                     {
                         if ($loginfo == true) { 
-                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent a plus de 365 jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... "));
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent a plus de $dixmoisenjours jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... "));
                         }
                         if ($displayinfo == true)
                         {
-                            echo " L'agent a plus de 365 jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... \n";
+                            echo " L'agent a plus de $dixmoisenjours jours de présence en continue depuis le $DatePremAff jusqu'au $datefinaff.... \n";
                         }
                         
                         // Si le début de l'affectation est avant le début de la période, on la force au début de la période
@@ -4391,7 +4396,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         // $NbreJours = $nbre_jour_periode - $NbreJours;
                         // echo "dateDebAff = $dateDebAff datefinaff = $datefinaff dif_date = " . $fonctions->nbjours_deux_dates ($dateDebAff, $datefinaff ) . " NbreJours = $NbreJours <br>";
                         // $NbreJours = $fonctions->nbjours_deux_dates ($dateDebAff, $datefinaff ) - $NbreJours;
-                        $NbreJours = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period) - $NbreJours;
+                        //$NbreJours = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period) - $NbreJours;
+                        $NbreJours = $dixmoisenjours - $NbreJours;
                         if ($NbreJours < 0)
                         {
                             $NbreJours = 0;
@@ -4441,14 +4447,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                             }
                         }
                     }
-                    else  // Le nombre de jours est < à 365 jours (donc l'agent n'est pas présent depuis plus d'un an)
+                    else  // Le nombre de jours est < à $dixmoisenjours (donc l'agent n'est pas présent depuis plus de 10 mois)
                     {
                         if ($loginfo == true) { 
-                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent n'a pas atteint les 365 jours consécutifs => On calcule à 2,5 jours par mois "));
+                            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" L'agent n'a pas atteint les $dixmoisenjours jours consécutifs => On calcule à 2,5 jours par mois "));
                         }
                         if ($displayinfo == true)
                         {
-                            echo " L'agent n'a pas atteint les 365 jours consécutifs => On calcule à 2,5 jours par mois \n";
+                            echo " L'agent n'a pas atteint les $dixmoisenjours jours consécutifs => On calcule à 2,5 jours par mois \n";
                         }
                         // Si le début de l'affectation est avant le début de la période, on la force au début de la période
                         if ($this->fonctions->formatdatedb($dateDebAff) < $this->fonctions->formatdatedb($date_deb_period)) 
