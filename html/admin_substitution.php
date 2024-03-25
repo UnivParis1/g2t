@@ -53,7 +53,7 @@
     echo "<br>";
     echo "<form name='subst_agent' method='post' action='index.php'>";
 
-    $agentsliste = $fonctions->listeagentsg2t();
+    $agentsliste = $fonctions->listeagentsg2t(true,true);
     echo "<select class='listeagentg2t' size='1' id='userid' name='userid'>";
     echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
     foreach ($agentsliste as $key => $identite)

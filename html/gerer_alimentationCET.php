@@ -180,7 +180,7 @@
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
 
-        $agentsliste = $fonctions->listeagentsg2t();
+        $agentsliste = $fonctions->listeagentsg2t(true,false);
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
         foreach ($agentsliste as $key => $identite)
@@ -329,9 +329,31 @@
                 $agent_eppn = 'system';
                 //-----------------------------------------------------------------
 
+                $tabinfos = $fonctions->alimentationCETjsonresponse($alimentationCET,false);
+                //var_dump($tabinfos);
+
+                $formsdata = array();
+                $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
+                $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
+                $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
+                $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
+                $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
+                $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
+                $formsdata["annee_ref"] = $tabinfos["agent"]["ref_year"];
+                $formsdata["cellule_a"] = $tabinfos["informations"]["0"]["value"];
+                $formsdata["cellule_b"] = $tabinfos["informations"]["1"]["value"];
+                $formsdata["cellule_c"] = $tabinfos["informations"]["2"]["value"];
+                $formsdata["cellule_d"] = $tabinfos["informations"]["3"]["value"];
+                $formsdata["cellule_e"] = $tabinfos["informations"]["4"]["value"];
+                $formsdata["cellule_f"] = $tabinfos["informations"]["5"]["value"];
+                $formsdata["cellule_g"] = $tabinfos["informations"]["6"]["value"];
+
+                //echo "formsdata = <br>"; var_dump($formsdata);
+
                 $params = array
                 (
                     'eppn' => "$agent_eppn",
+                    'createByEppn' => "$agent_eppn",
                     'targetEmails' => array
                     (
                         "$agent_mail"
@@ -340,7 +362,7 @@
                     //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
                     'targetUrl' => "$full_g2t_ws_url",
                     'targetUrls' => array("$full_g2t_ws_url"),
-                    'formDatas' => "{}"
+                    'formDatas' =>  json_encode($formsdata)
                 );
 	            	            	
                 $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
@@ -358,6 +380,8 @@
             	}
             	else
             	{
+                    $params = $fonctions->createesignaturestepsJson($params);
+
                     $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) 
                     {
                         is_array( $item )
@@ -365,8 +389,9 @@
                         : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
                     };
     	            array_walk( $params, $walk );
+                    //echo "Output = <br>"; var_dump($output);
     	            $params_string = implode( '&', $output );
-    	            // var_dump ("Output = " . $params_string);
+                    //echo "params_string = <br>"; var_dump ($params_string);
     	            
     	            $opts = [
     	                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',

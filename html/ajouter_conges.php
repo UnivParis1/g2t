@@ -154,7 +154,7 @@
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
         
-        $agentsliste = $fonctions->listeagentsg2t();
+        $agentsliste = $fonctions->listeagentsg2t(true,false);
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
         foreach ($agentsliste as $key => $identite)

@@ -59,74 +59,77 @@
                 }
                 else
                 {
-                    $valeur_a = $optionCET->valeur_a();
-                    $valeur_g = $optionCET->valeur_g();
-                    $valeur_h = $optionCET->valeur_h();
-                    $valeur_i = $optionCET->valeur_i();
-                    $valeur_j = $optionCET->valeur_j();
-                    $valeur_k = $optionCET->valeur_k();
-                    $valeur_l = $optionCET->valeur_l();
-                    $information_A = array('name' => "A", 'description' => "Solde du CET avant versement", 'value' => $valeur_a);
-                    $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
-                    $information_H = array('name' => "H", 'description' => "Nombre de jours dépassant le seuil de 15 jours", 'value' => $valeur_h);
-                    $information_I = array('name' => "I", 'description' => "Nombre de jours à prendre en compte au titre du RAFP", 'value' => $valeur_i);
-                    $information_J = array('name' => "J", 'description' => "Nombre de jours à indemniser", 'value' => $valeur_j);
-                    $information_K = array('name' => "K", 'description' => "Nombre de jours à maintenir sur le CET sous forme de congés", 'value' => $valeur_k);
-                    $information_L = array('name' => "L", 'description' => "Solde du CET après option", 'value' => $valeur_l);
-                    
-                    $agent = new agent($dbcon);
-                    $agent->load($optionCET->agentid());
-                    $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
-                    if (count(array($affectationliste)) > 0)
-                    {
-                        $affectation = current($affectationliste);
-                        $structure = new structure($dbcon);
-                        $structure->load($affectation->structureid());
-                    }
-                    
-                    $anneeref = "Année universitaire " . $optionCET->anneeref() . "/" . ($optionCET->anneeref()+1);
-                    
-                    if ($errlog != "")
-                    {
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos du droit d'option " . $esignatureid . " => Erreur = " . $errlog));
-                        $result_json = array('status' => 'Error', 'description' => $errlog);
-                    }
-                    else
-                    {
-                        $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
-                        if (count(array($affectationliste)) > 0)
-                        {
-                            $affectation = new affectation($dbcon);
-                            $affectation = current($affectationliste);
-                            $infosLdap = $agent->getInfoDocCet();
-                            $nameStructComplete = $structure->nomcompletcet();
-                            // quotité sur la période 01/09/N-1 - 31/08/N
-                            $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
-                            $datefin = $fonctions->anneeref().$fonctions->finperiode();
-                            $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
-                            
-                            $agent = array('uid' => $agent->agentid(),
-                                'email' => $agent->mail(),
-                                'name' => $agent->nom(),
-                                'firstname' => $agent->prenom(),
-                                'service' => array('name' => $nameStructComplete,
-                                    'id' => $structure->id(),
-                                    'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
-                                    'type' => $structure->typestruct()),
-                                'ref_year' => $anneeref,
-                                'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
-                                'corps' => $agent->typepopulation()
-                            );
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos du droit d'option " . $esignatureid . " => Pas d'erreur"));
-                            $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_G, $information_H, $information_I, $information_J, $information_K, $information_L));
-                            //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le json resutat => " . print_r($result_json,true)));
-                        }
-                        else
-                        {
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos du droit d'option " . $esignatureid . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
-                            $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
-                        }
-                    }
+                    // On crée la réponse JSon correspondant à l'option CET
+                    $result_json = $fonctions->optionCETjsonresponse($optionCET);
+                   
+//                    $valeur_a = $optionCET->valeur_a();
+//                    $valeur_g = $optionCET->valeur_g();
+//                    $valeur_h = $optionCET->valeur_h();
+//                    $valeur_i = $optionCET->valeur_i();
+//                    $valeur_j = $optionCET->valeur_j();
+//                    $valeur_k = $optionCET->valeur_k();
+//                    $valeur_l = $optionCET->valeur_l();
+//                    $information_A = array('name' => "A", 'description' => "Solde du CET avant versement", 'value' => $valeur_a);
+//                    $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
+//                    $information_H = array('name' => "H", 'description' => "Nombre de jours dépassant le seuil de 15 jours", 'value' => $valeur_h);
+//                    $information_I = array('name' => "I", 'description' => "Nombre de jours à prendre en compte au titre du RAFP", 'value' => $valeur_i);
+//                    $information_J = array('name' => "J", 'description' => "Nombre de jours à indemniser", 'value' => $valeur_j);
+//                    $information_K = array('name' => "K", 'description' => "Nombre de jours à maintenir sur le CET sous forme de congés", 'value' => $valeur_k);
+//                    $information_L = array('name' => "L", 'description' => "Solde du CET après option", 'value' => $valeur_l);
+//                    
+//                    $agent = new agent($dbcon);
+//                    $agent->load($optionCET->agentid());
+//                    $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+//                    if (count(array($affectationliste)) > 0)
+//                    {
+//                        $affectation = current($affectationliste);
+//                        $structure = new structure($dbcon);
+//                        $structure->load($affectation->structureid());
+//                    }
+//                    
+//                    $anneeref = "Année universitaire " . $optionCET->anneeref() . "/" . ($optionCET->anneeref()+1);
+//                    
+//                    if ($errlog != "")
+//                    {
+//                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos du droit d'option " . $esignatureid . " => Erreur = " . $errlog));
+//                        $result_json = array('status' => 'Error', 'description' => $errlog);
+//                    }
+//                    else
+//                    {
+//                        $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+//                        if (count(array($affectationliste)) > 0)
+//                        {
+//                            $affectation = new affectation($dbcon);
+//                            $affectation = current($affectationliste);
+//                            $infosLdap = $agent->getInfoDocCet();
+//                            $nameStructComplete = $structure->nomcompletcet();
+//                            // quotité sur la période 01/09/N-1 - 31/08/N
+//                            $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
+//                            $datefin = $fonctions->anneeref().$fonctions->finperiode();
+//                            $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
+//                            
+//                            $agent = array('uid' => $agent->agentid(),
+//                                'email' => $agent->mail(),
+//                                'name' => $agent->nom(),
+//                                'firstname' => $agent->prenom(),
+//                                'service' => array('name' => $nameStructComplete,
+//                                    'id' => $structure->id(),
+//                                    'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
+//                                    'type' => $structure->typestruct()),
+//                                'ref_year' => $anneeref,
+//                                'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
+//                                'corps' => $agent->typepopulation()
+//                            );
+//                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos du droit d'option " . $esignatureid . " => Pas d'erreur"));
+//                            $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_G, $information_H, $information_I, $information_J, $information_K, $information_L));
+//                            //error_log(basename(__FILE__) . $fonctions->stripAccents(" Le json resutat => " . print_r($result_json,true)));
+//                        }
+//                        else
+//                        {
+//                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos du droit d'option " . $esignatureid . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
+//                            $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
+//                        }
+//                    }
                 }
             }
             elseif (array_key_exists("signRequestId", $_GET))  // Synchronisation d'une demande G2T avec le statut de eSignature

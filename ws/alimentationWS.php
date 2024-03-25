@@ -57,91 +57,94 @@
                 }
                 else
                 {
-                    $valeur_a = $alimentationCET->valeur_a();
-                    $valeur_b = $alimentationCET->valeur_b();
-                    $valeur_c = $alimentationCET->valeur_c();
-                    $valeur_d = $alimentationCET->valeur_d();
-                    $valeur_e = $alimentationCET->valeur_e();
-                    $valeur_f = $alimentationCET->valeur_f();
-                    $valeur_g = $alimentationCET->valeur_g();
-                    $information_A = array('name' => "A", 'description' => "Solde du CET avant versement", 'value' => $valeur_a);
-                    $information_B = array('name' => "B", 'description' => "Droits à congés (en jours) au titre de l’année de référence", 'value' => $valeur_b);
-                    $information_C = array('name' => "C", 'description' => "Nombre de jours de congés utilisés au titre de l’année de référence", 'value' => $valeur_c);
-                    $information_D = array('name' => "D", 'description' => "Solde de jours de congés non pris au titre de l’année de référence", 'value' => $valeur_d);
-                    $information_E = array('name' => "E", 'description' => "Nombre de jours de congés reportés sur l’année suivante", 'value' => $valeur_e);
-                    $information_F = array('name' => "F", 'description' => "Alimentation du CET", 'value' => $valeur_f);
-                    $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
+                    // On crée la réponse JSon correspondant à l'alimentation CET
+                    $result_json = $fonctions->alimentationCETjsonresponse($alimentationCET);
                     
-                    $agent = new agent($dbcon);
-                    $agent->load($alimentationCET->agentid());
-                    $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
-                    if (count(array($affectationliste)) > 0)
-                    {
-                        $affectation = current($affectationliste);
-                        $structure = new structure($dbcon);
-                        $structure->load($affectation->structureid());
-                    }
-                    
-                    $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $alimentationCET->typeconges()  . "'";
-                    $query = mysqli_query($dbcon, $sql);
-                    $erreur = mysqli_error($dbcon);
-                    if ($erreur != "")
-                    {
-                        $errlog = "Problème SQL dans le chargement de l'année de reférence : " . $erreur;
-                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                    }
-                    elseif (mysqli_num_rows($query) == 0)
-                    {
-                        //echo "<br>load => pas de ligne dans la base de données<br>";
-                        $errlog = "Impossible de déterminer l'année de référence pour le type " . $alimentationCET->typeconges();
-                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                    }
-                    else
-                    {
-                        $result = mysqli_fetch_row($query);
-                        $anneeref = "Année universitaire " . $result["0"] . "/" . ($result["0"]+1);
-                    }
-                    
-                    
-                    if ($errlog != "")
-                    {
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = " . $errlog));
-                        $result_json = array('status' => 'Error', 'description' => $errlog);
-                    }
-                    else
-                    {
-                        $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
-                        if (count(array($affectationliste)) > 0)
-                        {
-                            $affectation = new affectation($dbcon);
-                            $affectation = current($affectationliste);
-                            $infosLdap = $agent->getInfoDocCet();
-                            $nameStructComplete = $structure->nomcompletcet();
-                            // quotité sur la période 01/09/N-1 - 31/08/N
-                            $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
-                            $datefin = $fonctions->anneeref().$fonctions->finperiode();
-                            $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
-                            $agent = array('uid' => $agent->agentid(),
-                                'email' => $agent->mail(),
-                                'name' => $agent->nom(),
-                                'firstname' => $agent->prenom(),
-                                'service' => array('name' => $nameStructComplete,
-                                                   'id' => $structure->id(),
-                                                   'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
-                                                   'type' => $structure->typestruct()),
-                                'ref_year' => $anneeref,
-                                'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
-                                'corps' => $agent->typepopulation()
-                            );
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos de la demande " . $esignatureid . " => Erreur = "));
-                            $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_B, $information_C, $information_D, $information_E, $information_F, $information_G));
-                        }
-                        else
-                        {
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
-                            $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
-                        }
-                    }
+//                    $valeur_a = $alimentationCET->valeur_a();
+//                    $valeur_b = $alimentationCET->valeur_b();
+//                    $valeur_c = $alimentationCET->valeur_c();
+//                    $valeur_d = $alimentationCET->valeur_d();
+//                    $valeur_e = $alimentationCET->valeur_e();
+//                    $valeur_f = $alimentationCET->valeur_f();
+//                    $valeur_g = $alimentationCET->valeur_g();
+//                    $information_A = array('name' => "A", 'description' => "Solde du CET avant versement", 'value' => $valeur_a);
+//                    $information_B = array('name' => "B", 'description' => "Droits à congés (en jours) au titre de l’année de référence", 'value' => $valeur_b);
+//                    $information_C = array('name' => "C", 'description' => "Nombre de jours de congés utilisés au titre de l’année de référence", 'value' => $valeur_c);
+//                    $information_D = array('name' => "D", 'description' => "Solde de jours de congés non pris au titre de l’année de référence", 'value' => $valeur_d);
+//                    $information_E = array('name' => "E", 'description' => "Nombre de jours de congés reportés sur l’année suivante", 'value' => $valeur_e);
+//                    $information_F = array('name' => "F", 'description' => "Alimentation du CET", 'value' => $valeur_f);
+//                    $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
+//                    
+//                    $agent = new agent($dbcon);
+//                    $agent->load($alimentationCET->agentid());
+//                    $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+//                    if (count(array($affectationliste)) > 0)
+//                    {
+//                        $affectation = current($affectationliste);
+//                        $structure = new structure($dbcon);
+//                        $structure->load($affectation->structureid());
+//                    }
+//                    
+//                    $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $alimentationCET->typeconges()  . "'";
+//                    $query = mysqli_query($dbcon, $sql);
+//                    $erreur = mysqli_error($dbcon);
+//                    if ($erreur != "")
+//                    {
+//                        $errlog = "Problème SQL dans le chargement de l'année de reférence : " . $erreur;
+//                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+//                    }
+//                    elseif (mysqli_num_rows($query) == 0)
+//                    {
+//                        //echo "<br>load => pas de ligne dans la base de données<br>";
+//                        $errlog = "Impossible de déterminer l'année de référence pour le type " . $alimentationCET->typeconges();
+//                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+//                    }
+//                    else
+//                    {
+//                        $result = mysqli_fetch_row($query);
+//                        $anneeref = "Année universitaire " . $result["0"] . "/" . ($result["0"]+1);
+//                    }
+//                    
+//                    
+//                    if ($errlog != "")
+//                    {
+//                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = " . $errlog));
+//                        $result_json = array('status' => 'Error', 'description' => $errlog);
+//                    }
+//                    else
+//                    {
+//                        $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+//                        if (count(array($affectationliste)) > 0)
+//                        {
+//                            $affectation = new affectation($dbcon);
+//                            $affectation = current($affectationliste);
+//                            $infosLdap = $agent->getInfoDocCet();
+//                            $nameStructComplete = $structure->nomcompletcet();
+//                            // quotité sur la période 01/09/N-1 - 31/08/N
+//                            $datedebut = ($fonctions->anneeref() - 1).$fonctions->debutperiode();
+//                            $datefin = $fonctions->anneeref().$fonctions->finperiode();
+//                            $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
+//                            $agent = array('uid' => $agent->agentid(),
+//                                'email' => $agent->mail(),
+//                                'name' => $agent->nom(),
+//                                'firstname' => $agent->prenom(),
+//                                'service' => array('name' => $nameStructComplete,
+//                                                   'id' => $structure->id(),
+//                                                   'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
+//                                                   'type' => $structure->typestruct()),
+//                                'ref_year' => $anneeref,
+//                                'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
+//                                'corps' => $agent->typepopulation()
+//                            );
+//                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Lecture OK des infos de la demande " . $esignatureid . " => Erreur = "));
+//                            $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_B, $information_C, $information_D, $information_E, $information_F, $information_G));
+//                        }
+//                        else
+//                        {
+//                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
+//                            $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
+//                        }
+//                    }
                 }
             }
             elseif (array_key_exists("signRequestId", $_GET))  // Synchronisation d'une demande G2T avec le statut de eSignature

@@ -891,16 +891,50 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $agent_eppn = 'system';
                     //-----------------------------------------------------------------
 
+                    //$teletravail = new teletravail($dbcon);
+                    //$teletravail->load($idconvention);
+                    
+                    $tabinfos = $fonctions->teletravailjsonresponse($teletravail);
+                    //var_dump($tabinfos);
+                    
+                    $formsdata = array();
+                    $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
+                    $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
+                    $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
+                    $formsdata["fonction_agent"] = $tabinfos["agent"]["rifseep"];
+                    $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
+                    $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
+                    $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
+                    $formsdata["convention_libelle"] = $tabinfos["infosconvention"]["value"];
+                    $formsdata["convention_code"] = $tabinfos["infosconvention"]["code"];
+                    $formsdata["convention_debut"] = $tabinfos["informations"][1]["value"];
+                    $formsdata["convention_fin"] = $tabinfos["informations"][2]["value"];
+                    $nbjrs = $tabinfos["informations"][0]["value"];
+                    $formsdata["convention_nbjrs"] = "$nbjrs";
+                    for ($index=0 ; $index<$nbjrs ; $index++)
+                    {
+                        $formsdata["convention_jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
+                    }
+                    $formsdata["motif_sante"] = $tabinfos["infosconvention"]["sante"];
+                    $formsdata["motif_grossesse"] = $tabinfos["infosconvention"]["grossesse"];
+                    $formsdata["motif_aidant"] = $tabinfos["infosconvention"]["aidant"];
+                    $formsdata["activites"] = $tabinfos["infosconvention"]["activiteteletravail"];
+                    $formsdata["exclusions"] = $tabinfos["infosconvention"]["periodeexclusion"];
+                    $formsdata["adaptations"] = $tabinfos["infosconvention"]["periodeadaptation"];
+                    
+                    //echo "formsdata = <br>"; var_dump($formsdata);
+                    
                     $params = array
                     (
                         'eppn' => "$agent_eppn",
+                        'createByEppn' => "$agent_eppn",
                         'targetEmails' => array
                         (
                             "$agent_mail"
                         ),
                         'targetUrl' => "$full_g2t_ws_url",
                         'targetUrls' => array("$full_g2t_ws_url"),
-                        'formDatas' => "{}",
+                        'formDatas' => json_encode($formsdata),
                         'title' => "Convention de télétravail de " . $agent->prenom() . " " . $agent->nom()
                     );
 
@@ -908,7 +942,9 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     if ($esignatureactive)
                     {
                         //echo "Avant la vérification du circuit => numéro 2 <br>";
+                        //echo "Param Avant = <br>"; var_dump($params);
                         $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
+                        //echo "Param Après = <br>"; var_dump($params);
                     }
                     if (count($taberrorcheckmail) > 0)
                     {
@@ -936,15 +972,19 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         }
                         else
                         {
+                            $params = $fonctions->createesignaturestepsJson($params);
+                            
                             $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
                             {
                                 is_array( $item )
                                 ? array_walk( $item, $walk, $key )
                                 : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
                             };
+                            echo "Param = <br>"; var_dump($params);
                             array_walk( $params, $walk );
+                            //echo "Output = <br>"; var_dump($output);
                             $params_string = implode( '&', $output );
-                            // var_dump ("Output = " . $params_string);
+                            //echo "params_string = <br>"; var_dump ($params_string);
 
                             $opts = [
                                 CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
@@ -1078,7 +1118,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentteletravail'  method='post' >";
 
-        $agentsliste = $fonctions->listeagentsg2t();
+        $agentsliste = $fonctions->listeagentsg2t(true,false);
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
         foreach ($agentsliste as $key => $identite)

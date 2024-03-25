@@ -3218,7 +3218,7 @@ class fonctions
     }
 
 
-    public function listeagentsg2t($namefirst = true)
+    public function listeagentsg2t($namefirst = true, $fulllist = true)
     {
         $listeagent = array();
         $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT ";
@@ -3235,6 +3235,10 @@ class fonctions
             $sql = $sql . ") ";
 
         }
+        if (!$fulllist)
+        {
+            $sql = $sql . " AND AGENTID IN (SELECT AGENTID FROM AFFECTATION WHERE DATEFIN > CURDATE()- INTERVAL 3 YEAR)";
+        }
         $sql = $sql . " ORDER BY NOM,PRENOM,AGENTID";
         //var_dump($sql);
         $query_agent = mysqli_query($this->dbconnect, $sql);
@@ -3249,11 +3253,11 @@ class fonctions
             {
                 if ($namefirst)
                 {
-                    $listeagent[$result[0]] = $result[1] . " " . $result[2];
+                    $listeagent[$result[0]] = $result[1] . " " . $result[2] . " (" . $result[0] . ")";
                 }
                 else
                 {
-                    $listeagent[$result[0]] = $result[1] . " " . $result[2];
+                    $listeagent[$result[0]] = $result[1] . " " . $result[2] . " (" . $result[0] . ")";
                 }
             }
         }
@@ -4539,7 +4543,423 @@ WHERE  table_schema = Database()
                 return false;
         }        
     }
+
+    function createesignaturestepsJson($tabparam)
+    {
+        $stepsJsonArray = array();
+        $currentsteps = array();
+        if (!isset($tabparam['recipientEmails']))
+        {
+            return $tabparam;
+        }
+        
+        // On trie sur les clés pour avoir les niveaux dans le bon ordre (tous les niveaux 1, puis les niveaux 2, ....)
+        ksort($tabparam['recipientEmails']);
+        //var_dump($tabparam['recipientEmails']);
+        foreach ($tabparam['recipientEmails'] as $infos)
+        {
+            $splitinfos = explode('*',$infos);
+            if (count($splitinfos)!=2)
+            {
+                $errlog = "createesignaturestepsJson : Le format des infos n'est pas conforme => split sur '*' => On ignore \n";
+                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            }
+            else
+            {
+                if (isset($currentsteps["stepNumber"]) and ($currentsteps["stepNumber"] != $splitinfos[0]))
+                {
+                    // On ajoute le currentstep dans le stepsJsonArray
+                    //echo "currentsteps = <br>"; var_dump($currentsteps);
+                    $stepsJsonArray[] = $currentsteps;
+                    // On réinitialise le currentstep à un tableau vide
+                    $currentsteps = array();
+                }
+                if (!isset($currentsteps["stepNumber"]))
+                {
+                    $currentsteps = array("stepNumber" => $splitinfos[0]);
+                }
+                $currentsteps["recipients"][] = array("email" => $splitinfos[1]);
+            }
+        }
+        // On ajoute le dernier step que l'on vient de créer
+        if (isset($currentsteps["stepNumber"]))
+        {
+            //echo "currentsteps (final) = <br>"; var_dump($currentsteps);
+            $stepsJsonArray[] = $currentsteps;
+        }
+        if (count($stepsJsonArray)>0)
+        {
+            $tabparam["stepsJsonString"] = json_encode($stepsJsonArray);
+            unset($tabparam["recipientEmails"]);
+        }
+        return $tabparam;
+    }
     
+    function teletravailjsonresponse($teletravail, $verifinit = true)
+    {
+        if (!($teletravail instanceof teletravail))
+        {
+            $errlog = "L'objet passé en paramètre n'est pas un teletravail";
+            error_log(basename(__FILE__) . $this->stripAccents(" teletravailjsonresponse error => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+            return $result_json;
+        }
+        if ($verifinit and trim($teletravail->teletravailid().'') == '')
+        {
+            $errlog = "L'objet teletravail passé en paramètre n'est pas initialisé";
+            error_log(basename(__FILE__) . $this->stripAccents(" teletravailjsonresponse error => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+            return $result_json;
+        }
+        $somme = 0;
+        $indexjour = 0;
+        $errlog = "";
+        $esignatureid = $teletravail->esignatureid();
+        $nbjoursdemande = (substr_count($teletravail->tabteletravail(),1)/2);  // On compte le nombre de 1 dans le tableau de télétravail et on divise par 2 (1 = 1/2 journée)
+        for ($index = 0 ; $index < strlen($teletravail->tabteletravail()) ; $index ++)
+        {
+            $demijrs = substr($teletravail->tabteletravail(),$index,1);
+            if ($demijrs>0) // Si dans le tableau la valeur est > 0
+            {
+                if (($index % 2) == 0)  // Si c'est le matin => On ajoute 1 à la somme
+                {
+                    $somme = $somme + 1;
+                }
+                elseif (($index % 2) == 1)  // Si c'est l'après-midi => On ajoute 2 à la somme
+                {
+                    $somme = $somme + 2;
+                }
+            }
+            if (($index % 2) == 1)
+            {
+                if ($somme > 0) // Si pas de télétravail => On affiche rien
+                {
+                    if ($somme == 1)  // Que le matin
+                    {
+                        $infojour = $this->nomjourparindex(intdiv($index,2)+1) . " " . $this->nommoment(fonctions::MOMENT_MATIN); // => intdiv($index,2)+1 car pour PHP 0 = dimanche et nous 0 = lundi
+                    }
+                    elseif ($somme == 2) // Que l'après-midi
+                    {
+                        $infojour = $this->nomjourparindex(intdiv($index,2)+1) . " " . $this->nommoment(fonctions::MOMENT_APRESMIDI);
+                    }
+                    elseif ($somme == 3) // Toute la journée
+                    {
+                        $infojour = $this->nomjourparindex(intdiv($index,2)+1) . " toute la journée";
+                    }
+                    else // Là, on ne sait pas !!
+                    {
+                        $infojour = "Problème => index = $index  demijrs = $demijrs   somme = $somme";
+                    }
+
+                    $indexjour++;
+                    $information_jourteletravail[$indexjour] = array('name' => "jour" . $indexjour, 'description' => "Jour $indexjour de télétravail", 'value' => $infojour);
+                }
+                $somme = 0;
+            }
+        }
+
+        $agent = new agent($this->dbconnect);
+        if (!$agent->load($teletravail->agentid()))
+        {
+            $errlog = 'Agent inconnu';
+        }
+        else
+        {
+            // On calcule le nombre de jours de télétravail auquel l'agent à droit :
+            $affectation = null;
+            $affectationliste = $agent->affectationliste(date('d/m/Y'), date('d/m/Y'));
+            if (count(array($affectationliste)) == 0)
+            {
+                $errlog = "Pas d'affectation pour cet agent";
+            }
+            else
+            {
+                $affectation = current($affectationliste);
+                $information_typeconvention = array(
+                    'name' => "typeconvention", 
+                    'description' => "Type de convention de télétravail", 
+                    'value' => $teletravail->libelletypeconvention($teletravail->typeconvention()), 
+                    'code' => $teletravail->typeconvention(),
+                    "sante" => "" . $this->convert_int_to_on_off($teletravail->motifmedicalsante()),
+                    "grossesse" => "" . $this->convert_int_to_on_off($teletravail->motifmedicalgrossesse()), 
+                    "aidant" => "" . $this->convert_int_to_on_off($teletravail->motifmedicalaidant()),
+                    "activiteteletravail" => "" . $teletravail->activiteteletravail(),
+                    "periodeexclusion" => "" . $teletravail->periodeexclusion(),
+                    "periodeadaptation" => "" . $teletravail->periodeadaptation(),
+                    "creationg2t" => "" . $teletravail->creationg2t(),
+                    "creationesignature" => "" . $teletravail->creationesignature()
+                );
+                $information_nombrejours = array(
+                    'name' => "nombrejours", 
+                    'description' => "Nombre de jours de télétravail demandé", 
+                    'value' => "$nbjoursdemande"
+                );
+                $information_datedebut = array(
+                    'name' => "datedebut", 
+                    'description' => "Date de début de la convention télétravail", 
+                    'value' => $this->formatdate($teletravail->datedebut())
+                );
+                $information_datefin = array(
+                    'name' => "datefin", 
+                    'description' => "Date de fin de la convention télétravail", 
+                    'value' => $this->formatdate($teletravail->datefin())
+                );
+                $structure = new structure($this->dbconnect);
+                if (!$structure->load($affectation->structureid()))
+                {
+                    $errorlog = "Structure introuvable";
+                }
+            }
+        }
+        $anneeref = "";
+        if ($errlog != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos de la convention télétravail " . $esignatureid . " => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+        }
+        else
+        {
+            $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+            if (count(array($affectationliste)) > 0)
+            {
+                $affectation = current($affectationliste);
+                $infosLdap = $agent->getpersonnaladdress();
+                $nameStructComplete = $structure->nomcompletcet();
+                // quotité sur la période 01/09/N-1 - 31/08/N
+                $quotite = $affectation->quotite();
+
+                $agent = array('uid' => $agent->agentid(),
+                    'email' => $agent->mail(),
+                    'name' => $agent->nom(),
+                    'firstname' => $agent->prenom(),
+                    'service' => array('name' => $nameStructComplete,
+                        'id' => $structure->id(),
+                        'addr' => strtoupper($infosLdap[LDAP_AGENT_PERSO_ADDRESS_ATTR].""),
+                        'type' => $structure->typestruct()),
+                    'ref_year' => $anneeref,
+                    'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
+                    'corps' => $agent->typepopulation(),
+                    'rifseep' => $agent->fonctionRIFSEEP()
+                );
+                error_log(basename(__FILE__) . $this->stripAccents(" Lecture OK des infos de convention télétravail " . $esignatureid . " => Pas d'erreur"));
+//                            $result_json = array('agent' => $agent, 'infosconvention' => $information_typeconvention, 'informations' => array('nbjours' => $information_nombrejours, 'infosjours' => $information_jourteletravail));
+                $result_json = array(
+                    'agent' => $agent, 
+                    'infosconvention' => $information_typeconvention, 
+                    'informations' => array_merge(
+                            array($information_nombrejours), 
+                            array($information_datedebut), 
+                            array($information_datefin), 
+                            $information_jourteletravail
+                            )
+                );
+                //error_log(basename(__FILE__) . $this->stripAccents(" Le json resutat => " . print_r($result_json,true)));
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos de convention télétravail " . $esignatureid . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
+                $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
+            }
+        }
+        return $result_json;
+    }
+    
+    function alimentationCETjsonresponse($alimentationCET, $verifinit = true)
+    {
+        if (!($alimentationCET instanceof alimentationCET))
+        {
+            $errlog = "L'objet passé en paramètre n'est pas une alimentation de CET";
+            error_log(basename(__FILE__) . $this->stripAccents(" alimentationCETjsonresponse error => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+            return $result_json;
+        }
+        if ($verifinit and trim($alimentationCET->alimentationid().'') == '')
+        {
+            $errlog = "L'objet alimentationCET passé en paramètre n'est pas initialisé";
+            error_log(basename(__FILE__) . $this->stripAccents(" alimentationCETjsonresponse error => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+            return $result_json;
+        }
+        
+        $errlog = "";
+        
+        $valeur_a = $alimentationCET->valeur_a();
+        $valeur_b = $alimentationCET->valeur_b();
+        $valeur_c = $alimentationCET->valeur_c();
+        $valeur_d = $alimentationCET->valeur_d();
+        $valeur_e = $alimentationCET->valeur_e();
+        $valeur_f = $alimentationCET->valeur_f();
+        $valeur_g = $alimentationCET->valeur_g();
+        $information_A = array('name' => "A", 'description' => "Solde du CET avant versement", 'value' => $valeur_a);
+        $information_B = array('name' => "B", 'description' => "Droits à congés (en jours) au titre de l’année de référence", 'value' => $valeur_b);
+        $information_C = array('name' => "C", 'description' => "Nombre de jours de congés utilisés au titre de l’année de référence", 'value' => $valeur_c);
+        $information_D = array('name' => "D", 'description' => "Solde de jours de congés non pris au titre de l’année de référence", 'value' => $valeur_d);
+        $information_E = array('name' => "E", 'description' => "Nombre de jours de congés reportés sur l’année suivante", 'value' => $valeur_e);
+        $information_F = array('name' => "F", 'description' => "Alimentation du CET", 'value' => $valeur_f);
+        $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
+
+        $agent = new agent($this->dbconnect);
+        $agent->load($alimentationCET->agentid());
+        $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+        if (count(array($affectationliste)) > 0)
+        {
+            $affectation = current($affectationliste);
+            $structure = new structure($this->dbconnect);
+            $structure->load($affectation->structureid());
+        }
+
+        $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = '" .  $alimentationCET->typeconges()  . "'";
+        $query = mysqli_query($this->dbconnect, $sql);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Problème SQL dans le chargement de l'année de reférence : " . $erreur;
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        elseif (mysqli_num_rows($query) == 0)
+        {
+            //echo "<br>load => pas de ligne dans la base de données<br>";
+            $errlog = "Impossible de déterminer l'année de référence pour le type " . $alimentationCET->typeconges();
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+        }
+        else
+        {
+            $result = mysqli_fetch_row($query);
+            $anneeref = "Année universitaire " . $result["0"] . "/" . ($result["0"]+1);
+        }
+
+
+        if ($errlog != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos de la demande d'alimentation " . $alimentationCET->alimentationid() . " => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+        }
+        else
+        {
+            $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+            if (count(array($affectationliste)) > 0)
+            {
+                $affectation = new affectation($this->dbconnect);
+                $affectation = current($affectationliste);
+                $infosLdap = $agent->getInfoDocCet();
+                $nameStructComplete = $structure->nomcompletcet();
+                // quotité sur la période 01/09/N-1 - 31/08/N
+                $datedebut = ($this->anneeref() - 1).$this->debutperiode();
+                $datefin = $this->anneeref().$this->finperiode();
+                $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
+                $agent = array('uid' => $agent->agentid(),
+                    'email' => $agent->mail(),
+                    'name' => $agent->nom(),
+                    'firstname' => $agent->prenom(),
+                    'service' => array('name' => $nameStructComplete,
+                                       'id' => $structure->id(),
+                                       'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
+                                       'type' => $structure->typestruct()),
+                    'ref_year' => $anneeref,
+                    'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
+                    'corps' => $agent->typepopulation()
+                );
+                error_log(basename(__FILE__) . $this->stripAccents(" Lecture OK des infos de la demande d'alimentation " . $alimentationCET->alimentationid() . " => Pas d'erreur"));
+                $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_B, $information_C, $information_D, $information_E, $information_F, $information_G));
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos de la demande d'alimentation " . $alimentationCET->alimentationid() . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
+                $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
+            }
+        }
+        return $result_json;
+    }
+    
+    function optionCETjsonresponse($optionCET, $verifinit = true)
+    {
+        if (!($optionCET instanceof optionCET))
+        {
+            $errlog = "L'objet passé en paramètre n'est pas une option de CET";
+            error_log(basename(__FILE__) . $this->stripAccents(" optionCETjsonresponse error => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+            return $result_json;
+        }
+        if ($verifinit and trim($optionCET->optionid().'') == '')
+        {
+            $errlog = "L'objet optionCET passé en paramètre n'est pas initialisé";
+            error_log(basename(__FILE__) . $this->stripAccents(" optionCETjsonresponse error => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+            return $result_json;
+        }
+
+        $errlog = "";
+        
+        $valeur_a = $optionCET->valeur_a();
+        $valeur_g = $optionCET->valeur_g();
+        $valeur_h = $optionCET->valeur_h();
+        $valeur_i = $optionCET->valeur_i();
+        $valeur_j = $optionCET->valeur_j();
+        $valeur_k = $optionCET->valeur_k();
+        $valeur_l = $optionCET->valeur_l();
+        $information_A = array('name' => "A", 'description' => "Solde du CET avant versement", 'value' => $valeur_a);
+        $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
+        $information_H = array('name' => "H", 'description' => "Nombre de jours dépassant le seuil de 15 jours", 'value' => $valeur_h);
+        $information_I = array('name' => "I", 'description' => "Nombre de jours à prendre en compte au titre du RAFP", 'value' => $valeur_i);
+        $information_J = array('name' => "J", 'description' => "Nombre de jours à indemniser", 'value' => $valeur_j);
+        $information_K = array('name' => "K", 'description' => "Nombre de jours à maintenir sur le CET sous forme de congés", 'value' => $valeur_k);
+        $information_L = array('name' => "L", 'description' => "Solde du CET après option", 'value' => $valeur_l);
+
+        $agent = new agent($this->dbconnect);
+        $agent->load($optionCET->agentid());
+        $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+        if (count(array($affectationliste)) > 0)
+        {
+            $affectation = current($affectationliste);
+            $structure = new structure($this->dbconnect);
+            $structure->load($affectation->structureid());
+        }
+
+        $anneeref = "Année universitaire " . $optionCET->anneeref() . "/" . ($optionCET->anneeref()+1);
+
+        if ($errlog != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos du droit d'option " . $optionCET->optionid() . " => Erreur = " . $errlog));
+            $result_json = array('status' => 'Error', 'description' => $errlog);
+        }
+        else
+        {
+            $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
+            if (count(array($affectationliste)) > 0)
+            {
+                $affectation = new affectation($this->dbconnect);
+                $affectation = current($affectationliste);
+                $infosLdap = $agent->getInfoDocCet();
+                $nameStructComplete = $structure->nomcompletcet();
+                // quotité sur la période 01/09/N-1 - 31/08/N
+                $datedebut = ($this->anneeref() - 1).$this->debutperiode();
+                $datefin = $this->anneeref().$this->finperiode();
+                $quotite = round($agent->getQuotiteMoyPeriode($datedebut, $datefin), 0, PHP_ROUND_HALF_EVEN).'%';
+
+                $agent = array('uid' => $agent->agentid(),
+                    'email' => $agent->mail(),
+                    'name' => $agent->nom(),
+                    'firstname' => $agent->prenom(),
+                    'service' => array('name' => $nameStructComplete,
+                        'id' => $structure->id(),
+                        'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
+                        'type' => $structure->typestruct()),
+                    'ref_year' => $anneeref,
+                    'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
+                    'corps' => $agent->typepopulation()
+                );
+                error_log(basename(__FILE__) . $this->stripAccents(" Lecture OK des infos du droit d'option " . $optionCET->optionid() . " => Pas d'erreur"));
+                $result_json = array('agent' => $agent, 'informations' => array($information_A, $information_G, $information_H, $information_I, $information_J, $information_K, $information_L));
+                //error_log(basename(__FILE__) . $this->stripAccents(" Le json resutat => " . print_r($result_json,true)));
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos du droit d'option " . $optionCET->optionid() . " => Erreur = Impossible de déterminer la quotité de travail de l'agent."));
+                $result_json = array('status' => 'Error', 'description' => "Impossible de déterminer la quotité de travail de l'agent.");
+            }
+        }
+        return $result_json;
+    }
 }
 
 ?>
