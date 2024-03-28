@@ -2,6 +2,7 @@
     // require_once ('CAS.php');
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
+    ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 
     // Initialisation de l'utilisateur
     $userid = null;
@@ -98,8 +99,48 @@
         $showallsubstruct = true;
     }
     
+    
+    if (isset($_POST['isdeployed']) and trim($_POST['isdeployed']) != '') 
+    {
+        $structure = new structure($dbcon);
+        $structure->load($_POST['isdeployed']);
+        $olddeployvalue = $_POST['olddeployvalue'];
+        $allsubstructure = $_POST['allsubstructure'];
+        
+        if (trim($olddeployvalue . "")!= "")
+        {
+            if ($fonctions->convertvaluetobool($olddeployvalue))
+            {
+                $structure->isdeployed('N');
+            }
+            else
+            {
+                $structure->isdeployed('O');
+            }
+            $structure->store();
+            if ($fonctions->convertvaluetobool($allsubstructure))
+            {
+                $substructlist = $structure->structureinclue();
+                foreach ((array)$substructlist as $substruct)
+                {
+                    if ($fonctions->convertvaluetobool($olddeployvalue))
+                    {
+                        $substruct->isdeployed('N');
+                    }
+                    else
+                    {
+                        $substruct->isdeployed('O');
+                    }
+                    $substruct->store();
+                }
+            }
+        }
+        unset($substruct);
+        unset($structure);
+        
+    }
 
-    // print_r ($_POST); echo "<br>";
+    //print_r ($_POST); echo "<br>";
 
     // echo "Responsable Liste = " . print_r($responsableliste,true) . "<br>";
     // echo "Gestionnaire Liste = " . print_r($gestionnaireliste,true) . "<br>";
@@ -124,10 +165,14 @@
             if (! is_numeric($responsableliste[$structid]))
             {
                 // On va chercher dans le LDAP la correspondance UID => AGENTID
-                $agentid = $fonctions->useridfromCAS($responsableliste[$structid]);
-                if ($agentid === false)
+                $respagent = $fonctions->createldapagentfromuid($responsableliste[$structid]); //$fonctions->useridfromCAS($responsableliste[$structid]);
+                if ($respagent === false)
                 {
                     $agentid = null;
+                }
+                else
+                {
+                    $agentid = $respagent->agentid();
                 }
             }
             else
@@ -283,15 +328,25 @@
                 $infoagent = "";
                 $nbprobleme = 0;
                 $sign = '&#128077;';
-                // Pour chaque agent de la structure, on regarde si c'est un G2Tuser
+                
+                // On construit le tableau des agentid pour vérifier en masse les utilisateurs G2T
+                $arrayagentid = array();
                 foreach ((array)$agentliste as $structagent)
                 {
-//                    if ($structagent->agentid() > 0)
-//                    {
-                        if (!$structagent->isG2tUser())
+                    $arrayagentid[] = $structagent->agentid();
+                }
+                if (count($arrayagentid)>0)
+                {
+                    $arrayagentid = $fonctions->listeg2tuser($arrayagentid);
+                }
+                if (count($arrayagentid) != count((array)$agentliste) and count((array)$agentliste)>0)
+                {
+                    // On a perdu au moins un agent => Au moins un des agent n'est pas utilisateur G2T
+                    foreach($agentliste as $structagent)
+                    {
+                        if (!isset($arrayagentid[$structagent->agentid()]))
                         {
                             $nbprobleme = $nbprobleme + 1;
-
                             $infoagent = $infoagent . "L'agent " . $structagent->identitecomplete() . " n'est pas un utilisateur G2T valide.<br>";
                             $sign = "&#9888;";
                         }
@@ -299,19 +354,59 @@
                         {
                             error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : L'agent " . $structagent->identitecomplete() . " est ok."));
                         }
-//                    }
+                    }
                 }
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : J'ai " . count((array)$agentliste) . " agents dans la structure et $nbprobleme sont erronés."));
-                if (count((array)$agentliste) == $nbprobleme)
+                if (count((array)$agentliste) == 0)
                 {
-                    $infoagent = "Aucun agent n'est dans un groupe valide.<br>";
+                    $infoagent = "Aucun agent n'est affecté à cette structure.<br>";
+                }
+                elseif (count($arrayagentid) == 0)
+                {
+                    $infoagent = "Aucun agent n'est un utilisateur G2T valide => Structure non déployée ?<br>";
                     $sign = "&#128711;";
                 }
+                
+//                // Pour chaque agent de la structure, on regarde si c'est un G2Tuser
+//                foreach ((array)$agentliste as $structagent)
+//                {
+//                    if (!$structagent->isG2tUser())
+//                    {
+//                        $nbprobleme = $nbprobleme + 1;
+//
+//                        $infoagent = $infoagent . "L'agent " . $structagent->identitecomplete() . " n'est pas un utilisateur G2T valide.<br>";
+//                        $sign = "&#9888;";
+//                    }
+//                    else
+//                    {
+//                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : L'agent " . $structagent->identitecomplete() . " est ok."));
+//                    }
+//                }
+//                error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : J'ai " . count((array)$agentliste) . " agents dans la structure et $nbprobleme sont erronés."));
+//                if (count((array)$agentliste) == $nbprobleme)
+//                {
+//                    $infoagent = "Aucun agent n'est dans un groupe valide.<br>";
+//                    $sign = "&#128711;";
+//                }
                 
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
-                echo "<b class='symbolegestionstruct'>&nbsp;$sign</b>";
+                echo "<span class='symbolegestionstruct cursorpointer' ";
+                if ($mode != 'gestrh')
+                {
+                    echo "ondblclick='if (this.tagname!=\"OK\") {click_element(\"" . $struct->id()  .  "\",\"". $struct->isdeployed() . "\");}'";
+                }
+                echo ">&nbsp;$sign";
+                if ($fonctions->convertvaluetobool($struct->isdeployed()))
+                {
+                    echo " <b class='greentext fontsize15'>DEPLOYEE</b>";
+                }
+                else
+                {
+                    echo " <b class='redtext fontsize15'>NON DEPLOYEE</b>";
+                }
+                echo "</span>";
                 // echo "Apres affichage du nom... <br>";
                 if ($showall)
                 {
@@ -529,7 +624,10 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='structureid' value='" . $structureid . "'>";
-        echo "<input type='submit' name= 'Modif_struct' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+        echo "<input type='hidden' name='isdeployed' id='isdeployed' value=''>";
+        echo "<input type='hidden' name='allsubstructure' id='allsubstructure' value=''>";
+        echo "<input type='hidden' name='olddeployvalue' id='olddeployvalue' value=''>";
+        echo "<input type='submit' name= 'Modif_struct' id='Modif_struct' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
         echo "</form>";
         echo "<br>";
     }
@@ -548,12 +646,61 @@
                     formcreationteletravail.elements[champ].disabled = true;
                 }
             }
-
+            
         </script>
 <?php
     }
 ?>
 
+        <script>
+            var confirmdialog = document.getElementById('confirmdialog');
+            var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
+            var labeltext = confirmdialog.querySelector('#questionlabeltext');
+            var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
+            
+            confirmdialog.addEventListener('close', function onClose() {
+                document.getElementById("isdeployed").value = confirmBtn.value;
+                document.getElementById("olddeployvalue").value = labeltext.tag;
+                if (confirmdialog.returnValue!=='cancel')
+                {
+                    document.getElementById("allsubstructure").value = 'O';
+                }
+                else
+                {
+                    document.getElementById("allsubstructure").value = 'N';
+                }
+                var submit_button = document.getElementById("Modif_struct");
+                submit_button.click();
+            });
+
+            var click_element = function(elementid,oldvalue)
+            {
+                if (typeof confirmdialog.showModal === "function") 
+                {
+                    var statuttext = '';
+                    if (oldvalue.toUpperCase() === 'O')
+                    {
+                        statuttext = 'la désactivation';
+                    }
+                    else
+                    {
+                        statuttext = "l'activation";
+                    }
+                    labeltext.innerHTML = 'Appliquer ' + statuttext + ' à toutes les sous-structures ? ';
+                    labeltext.tag = oldvalue;
+                    cancelBtn.textContent = "Non";
+                    cancelBtn.hidden = false;
+                    confirmBtn.textContent = "Oui";
+                    confirmBtn.hidden = false;
+                    confirmBtn.value = elementid;
+                    confirmdialog.showModal();
+                }        
+                else 
+                {
+                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                }
+            };
+        </script>
 
 <!--
 <a href=".">Retour à la page d'accueil</a>

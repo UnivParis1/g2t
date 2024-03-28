@@ -70,6 +70,8 @@ class structure
     private $profondeurrelative = null;
     
     private $profondeurabsolue = null;
+    
+    private $isdeployed = null;
 
     function __construct($db)
     {
@@ -121,7 +123,8 @@ class structure
                            ESTBIBLIOTHEQUE,
                            RESPAFFSOLDESOUSSTRUCT,
                            RESPAFFDEMANDESOUSSTRUCT,
-                           EXTERNALID
+                           EXTERNALID,
+                           ISDEPLOYED
                     FROM STRUCTURE 
                     WHERE STRUCTUREID=?";
             $params = array($structureid);
@@ -164,6 +167,7 @@ class structure
             $this->respaffsoldesousstruct = "$result[15]";
             $this->respaffdemandesousstruct = "$result[16]";
             $this->externalid = "$result[17]";
+            $this->isdeployed = "$result[18]";
             
             $this->profondeurrelative = 0;
             
@@ -336,6 +340,21 @@ class structure
     function typestruct()
     {
     	return $this->typestruct;
+    }
+    
+    function isdeployed($isdeployed = null)
+    {
+        if (is_null($isdeployed)) {
+            if (is_null($this->isdeployed)) 
+            {
+                $this->isdeployed = 'N';
+            } 
+            return $this->isdeployed;
+        } 
+        else
+        {
+            $this->isdeployed = $isdeployed;
+        }
     }
     
     function isincluded()
@@ -1526,7 +1545,8 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     AFFICHEPLANNINGTOUTAGENT=?, 
                     GESTVALIDAGENT=?,
                     RESPAFFSOLDESOUSSTRUCT=?,
-                    RESPAFFDEMANDESOUSSTRUCT=?
+                    RESPAFFDEMANDESOUSSTRUCT=?,
+                    ISDEPLOYED=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
         $params = array($this->sousstructure(),
@@ -1534,6 +1554,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                         $this->gestvalidagent(),
                         $this->respaffsoldesousstruct(),
                         $this->respaffdemandesousstruct(),
+                        $this->isdeployed(),
                         $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);

@@ -3434,43 +3434,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     
     function isG2tUser()
     {
-    	// On verifie que la personne est dans le groupe G2T du LDAP
-    	$LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
-    	$LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
-    	$LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
-    	$LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
-    	$LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
-    	$LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
-    	$LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
-    	$retour = FALSE;
-    	// Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
-    	if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
-            $con_ldap = ldap_connect($LDAP_SERVER);
-            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-            $filtre = "(&(".$LDAP_CODE_AGENT_ATTR."=".$this->agentid().")(".$LDAP_MEMBER_ATTR."=".$LDAP_GROUP_NAME."))";
-            $dn = $LDAP_SEARCH_BASE;
-            // 1.1 => ldap ne demande aucun attribut
-            $restriction = array(
-                            "1.1"
-            );
-            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-            $info = ldap_get_entries($con_ldap, $sr);
-
-            if (!$r || !$sr || !$info) // La connexion, l'interrogation ou la lecture des résultat LDAP a échoué
-                    $retour = TRUE;
-            // Si l'utilisateur est dans le groupe 
-            if (isset($info["count"]) && $info["count"] > 0) 
-            {
-                    $retour = TRUE;
-            }
-            else
-            {
-                $errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") ne fait parti du groupe LDAP : $LDAP_GROUP_NAME";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            }
-    	}
-    	return $retour;
+        $arrayresult = $this->fonctions->listeg2tuser($this->agentid);
+        if (count($arrayresult)==1)
+        {
+            return true;
+        }
+        return false;
     }
     
     function getInfoDocCet()

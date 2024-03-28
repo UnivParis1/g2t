@@ -163,6 +163,8 @@
     else
     {
         echo "Le fichier $filename est présent. \n";
+        
+        $listestructcrees = array();
 
 	$xml = simplexml_load_file("$filename");
 	$agentnode = $xml->xpath('STRUCTURE');
@@ -428,6 +430,7 @@
                                         $estbibliotheque,
                                         $fonctions->my_real_escape_utf8($XMLstructure->externalid)
                             );
+                    $listestructcrees["$XMLstructure->code_struct"] = $XMLstructure->code_struct;
                 }
                 else
                 {
@@ -588,6 +591,19 @@
                 echo "La structure : $XMLstructure->nom_long_struct (Id = $XMLstructure->code_struct) a un statut dans SIHAM non reconnu par G2T (statut = $XMLstructure->statut_struct)...\n";
             }
         }
+        
+        foreach ($listestructcrees as $structid)
+        {
+            $structure = new structure($dbcon);
+            $structure->load($structid);
+            $structureenglobante = $structure->structureenglobante();
+            if ($fonctions->convertvaluetobool($structureenglobante->isdeployed()))
+            {
+                $structure->isdeployed($structureenglobante->isdeployed());
+                $structure->store();
+            }
+        }
+        
 
         ///////////////////////////////////////////////////
         // On ajoute les responsables / les gestionnaires à partir de LDAP s'il n'existent pas dans la base
@@ -609,6 +625,8 @@
                         SELECT DISTINCT RESPONSABLEID AGENTID, DATECLOTURE FROM STRUCTURE WHERE RESPONSABLEID NOT IN (SELECT AGENTID FROM AGENT)
                         UNION
                         SELECT DISTINCT GESTIONNAIREID AGENTID, DATECLOTURE FROM STRUCTURE WHERE GESTIONNAIREID NOT IN (SELECT AGENTID FROM AGENT)
+                        UNION
+                        SELECT DISTINCT IDDELEG AGENTID, DATECLOTURE FROM STRUCTURE WHERE IDDELEG NOT IN (SELECT AGENTID FROM AGENT) AND DATEFINDELEG > CURDATE()
                     ) AS SUBREQ
                     WHERE SUBREQ.DATECLOTURE > '" . $fonctions->formatdatedb(date('d/m/Y')) .  "' AND SUBREQ.AGENTID != '' ";
             //echo "SQL = $sql \n";

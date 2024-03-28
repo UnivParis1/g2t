@@ -4960,6 +4960,58 @@ WHERE  table_schema = Database()
         }
         return $result_json;
     }
+    
+    function listeg2tuser($restriction = null)
+    {
+        $returnlist = array();
+        $sql = "
+            SELECT DISTINCT AGENT.AGENTID, AGENT.ADRESSEMAIL 
+            FROM AGENT,STRUCTURE, AFFECTATION
+            WHERE ((TRIM(IFNULL(AGENT.STRUCTUREID,'')) != '') 
+                AND AGENT.AGENTID > 0 
+                AND TRIM(IFNULL(AGENT.STRUCTUREID,'')) = STRUCTURE.STRUCTUREID
+                AND STRUCTURE.ISDEPLOYED = 'O' 
+                AND AGENT.AGENTID = AFFECTATION.AGENTID
+                AND AFFECTATION.DATEFIN >= CURDATE())
+                ###RESTRICTION###
+            UNION
+            SELECT DISTINCT AGENT.AGENTID, AGENT.ADRESSEMAIL 
+            FROM AGENT,STRUCTURE
+            WHERE (
+                    (AGENT.AGENTID = TRIM(IFNULL(STRUCTURE.RESPONSABLEID,'')) AND AGENT.AGENTID > 0 AND STRUCTURE.ISDEPLOYED = 'O')
+                 OR (AGENT.AGENTID = TRIM(IFNULL(STRUCTURE.GESTIONNAIREID,'')) AND AGENT.AGENTID > 0 AND STRUCTURE.ISDEPLOYED = 'O')
+                 OR (AGENT.AGENTID = TRIM(IFNULL(STRUCTURE.IDDELEG,'')) AND DATEFINDELEG > CURDATE() AND AGENT.AGENTID > 0 AND STRUCTURE.ISDEPLOYED = 'O')
+                  )
+                ###RESTRICTION###
+        ";
+        
+        if (is_null($restriction))
+        {
+            $sql = str_replace("###RESTRICTION###","",$sql);
+        }
+        elseif (is_string($restriction) or is_numeric($restriction))
+        {
+            $sql = str_replace("###RESTRICTION###","AND AGENT.AGENTID = '$restriction' ",$sql);
+        }
+        elseif (is_array($restriction))
+        {
+            $sql = str_replace("###RESTRICTION###","AND AGENT.AGENTID IN ('" . implode("','",$restriction) . "')",$sql);
+        }
+        //var_export($sql);
+        $params = array();
+        $query = $this->prepared_select($sql, $params);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            error_log(basename(__FILE__) . " " . $erreur_requete);
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $returnlist["$result[0]"] = "$result[1]";
+        }
+        return $returnlist;
+
+    }
 }
 
 ?>

@@ -108,11 +108,21 @@
                 if (! is_numeric($valeur)) 
                 {
                     // On va chercher dans le LDAP la correspondance UID => AGENTID
-                    $agentid = $fonctions->useridfromCAS($valeur);
-                    if ($agentid === false)
+                    $delegagent = $fonctions->createldapagentfromuid($valeur);
+                    if ($delegagent === false)
                     {
                         $agentid = null;
                     }
+                    else
+                    {
+                        $agentid = $delegagent->agentid();
+                    }
+                    
+//                    $agentid = $fonctions->useridfromCAS($valeur);
+//                    if ($agentid === false)
+//                    {
+//                        $agentid = null;
+//                    }
                 }
                 else
                 {
