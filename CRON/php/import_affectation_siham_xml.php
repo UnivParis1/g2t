@@ -15,7 +15,7 @@
 
     $date = date("Ymd");
 
-    echo "Début de la création des affectations " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de la création des affectations " . date("d/m/Y H:i:s") . "\n";
 
     $modalitefile = $fonctions->inputfilepath() . "/siham_affectations_modalite_$date.xml";
     $statutfile = $fonctions->inputfilepath() . "/siham_affectations_status_$date.xml";
@@ -127,10 +127,10 @@
                 }
                 ////////////////////////////////////////////////////////////////////////////
 
-                if (! isset($debug) or $debug == false)
-                {
-                    echo "agentid = $agentid   numligne=$numligne   quotite=$numquotite   datedebut=$datedebut   datefin=$datefin\n";
-                }
+                //if (! isset($debug) or $debug == false)
+                //{
+                echo "agentid = $agentid   numligne=$numligne   quotite=$numquotite   datedebut=$datedebut   datefin=$datefin\n";
+                //}
                 $sql = sprintf("INSERT INTO QUOTITE (AGENTID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) 
                                 VALUES('%s','%s','%s','%s','%s')", 
                        $fonctions->my_real_escape_utf8($agentid), 
@@ -305,7 +305,7 @@
             }
         }
 
-        echo "Import des STATUTS D'AFFECTATION (NUMERO DE CONTRAT/TITULAIRE)\n";
+        echo "Import des STATUTS D'AFFECTATION (NUMERO DE CONTRAT/TITULAIRE) - " . date("d/m/Y H:i:s") . "\n";
         // Import des affectations-statut.txt
         $sql = "DELETE FROM STATUT";
         mysqli_query($dbcon, $sql);
@@ -338,10 +338,7 @@
                 $codecontrat = trim($node->xpath('TYPECONTRAT')[0]);
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);
-                if (! isset($debug) or $debug == false)
-                {
-                    echo "agentid = $agentid   numligne=$numligne   codecontrat=$codecontrat   datedebut=$datedebut   datefin=$datefin\n";
-                }
+                //echo "agentid = $agentid   numligne=$numligne   codecontrat=$codecontrat   datedebut=$datedebut   datefin=$datefin\n";
 
                 $agent = new agent($dbcon);
                 if (!$agent->load($agentid))
@@ -368,7 +365,7 @@
             }
         }
 
-        echo "Import des situations administratives \n";
+        echo "Import des situations administratives - " . date("d/m/Y H:i:s") . "\n";
         // Import des affectations-statut.txt
         $sql = "DELETE FROM SITUATIONADMIN";
         mysqli_query($dbcon, $sql);
@@ -394,10 +391,7 @@
                 $codesituation = trim($node->xpath('CODE')[0]);
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);
-                if (! isset($debug) or $debug == false)
-                {
-                    echo "agentid = $agentid   numligne=$numligne   codesituation=$codesituation   datedebut=$datedebut   datefin=$datefin\n";
-                }
+                //echo "agentid = $agentid   numligne=$numligne   codesituation=$codesituation   datedebut=$datedebut   datefin=$datefin\n";
 
                 $agent = new agent($dbcon);
                 if (!$agent->load($agentid))
@@ -424,7 +418,7 @@
             }
         }
             
-        echo "Import des STRUCTURES D'AFFECTATION \n";
+        echo "Import des STRUCTURES D'AFFECTATION - " . date("d/m/Y H:i:s") . "\n";
         // Import des affectations-structure.txt
         
         // On charge la table des structures avec le fichier
@@ -451,10 +445,7 @@
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);
 
-                if (! isset($debug) or $debug == false)
-                {
-                    echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
-                }
+                //echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
 
                 /*
                  * CREATE TABLE `HISTORIQUEAFFECTATION` (
@@ -502,12 +493,13 @@
                 }
                 else
                 {
-                    echo "La date du jour n'est pas dans la période $datedebut ==> $datefin : On ignore la ligne. \n";
+                    echo "Agent : $agentid => La date du jour n'est pas dans la période $datedebut ==> $datefin : On ignore la ligne. \n";
                 }
             }
         }
     }
     
+    echo "Création des timelines - " . date("d/m/Y H:i:s") . "\n";
     $sql = "DELETE FROM AFFECTATION";
     mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);

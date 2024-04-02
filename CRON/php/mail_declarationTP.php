@@ -6,7 +6,7 @@
 
     $date = date("Ymd");
 
-    echo "Début de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
 
     // On selectionne les demandes en attente de validation
     $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = '" . declarationTP::DECLARATIONTP_ATTENTE . "' AND AGENTID IN (SELECT AGENTID FROM AGENT)";

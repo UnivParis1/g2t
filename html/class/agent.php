@@ -42,6 +42,8 @@ class agent
         
     
     private $agentid = null;
+    
+    private $eppn = null;
 
     private $nom = null;
 
@@ -96,7 +98,7 @@ class agent
                 return false;
             }
             
-            $sql = "SELECT AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION, STRUCTUREID FROM AGENT WHERE AGENTID= ? ";
+            $sql = "SELECT AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID,EPPN FROM AGENT WHERE AGENTID= ? ";
             $params = array($this->fonctions->my_real_escape_utf8($agentid));
             $query = $this->fonctions->prepared_select($sql, $params);
             
@@ -125,6 +127,7 @@ class agent
 
             $this->typepopulation = "$result[5]";
             $this->structureid = "$result[6]";
+            $this->eppn = "$result[7]";
             return true;
         }
         // echo "Fin...";
@@ -241,7 +244,7 @@ class agent
             if ($this->existe($agentid))
             {
                 // Mise à jour de l'agent
-                $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ?, TYPEPOPULATION = ?, STRUCTUREID = ? WHERE AGENTID = ?";
+                $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ?, TYPEPOPULATION = ?, STRUCTUREID = ?, EPPN = ? WHERE AGENTID = ?";
                 $params = array(
                     $this->civilite,
                     $this->nom,
@@ -249,13 +252,14 @@ class agent
                     $this->adressemail,
                     $this->typepopulation,
                     $this->structureid,
+                    $this->eppn . "",
                     $agentid
                 );
             }
             else
             {
                 // Ajout manuel de l'agent
-                $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID) VALUES(?,?,?,?,?,?,?)";
+                $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID,EPPN) VALUES(?,?,?,?,?,?,?,?)";
                 $params = array(
                     $agentid,
                     $this->civilite,
@@ -263,7 +267,8 @@ class agent
                     $this->prenom,
                     $this->adressemail,
                     $this->typepopulation,
-                    $this->structureid
+                    $this->structureid,
+                    $this->eppn . ""
                 );
             }
         }
@@ -570,38 +575,31 @@ class agent
         }
     }
     
-    /**
-     *
-     * @param 
-     * @return string eppn of the current agent 
-     */
-    function eppn()
+    function eppn($eppn = null)
     {
-        $agent_eppn = "";
-        $LDAP_SERVER = $this->fonctions->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_EPPN_ATTR");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
-        $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
-        //echo "Filtre = $filtre <br>";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array(
-            "$LDAP_CODE_AGENT_ATTR"
-        );
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        //echo "Info = " . print_r($info,true) . "<br>";
-        //echo "L'EPPN de l'agent sélectionné est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0] . "<br>";
-        if (isset($info[0]["$LDAP_CODE_AGENT_ATTR"][0])) {
-            $agent_eppn = $info[0]["$LDAP_CODE_AGENT_ATTR"][0];
-            //echo "Agent EPPN = $agent_eppn <br>";
+        if (is_null($eppn)) {
+            if (is_null($this->eppn)) {
+                $errlog = "Agent->eppn : L'eppn de l'agent n'est pas définie !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } 
+            else
+            {
+                //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("L'EPPN de " . $this->agentid . " est " . $this->eppn));
+                return $this->eppn;
+            }
+        } 
+        else
+        {
+            if (mb_detect_encoding($eppn, 'UTF-8', true))
+            {
+                $this->eppn = $eppn;
+            }
+            else
+            {
+                $this->eppn = $this->fonctions->utf8_encode($eppn);
+            }
         }
-        return $agent_eppn;
     }
     
     function fonctionRIFSEEP()
@@ -674,10 +672,10 @@ class agent
         $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
         $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
         $LDAP_AGENT_MAIL_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_SUPANNEMPID_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
         $filtre = "($LDAP_SUPANNEMPID_ATTR=" . $this->agentid . ")";
         $dn = $LDAP_SEARCH_BASE;
         $restriction = array("$LDAP_AGENT_MAIL_ATTR");
@@ -3442,7 +3440,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return false;
     }
     
-    function getInfoDocCet()
+    function getprofessionaladdress()
     {
     	// On récupère les infos pour la demande d'alimentation du CET
     	// adresse postale
@@ -3450,35 +3448,39 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
     	$LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
     	$LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
-    	$LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
-    	$LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
     	$LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
     	$LDAP_POSTAL_ADDRESS_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_ADDRESS_ATTR");
-    	$retour = array();
+    	$retour = "";
     	// Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
-    	if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
-    		$con_ldap = ldap_connect($LDAP_SERVER);
-    		ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-    		$r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-    		$filtre = "(".$LDAP_CODE_AGENT_ATTR."=".$this->agentid().")";
-    		$dn = $LDAP_SEARCH_BASE;
-    		$restriction = array(
-    				"$LDAP_POSTAL_ADDRESS_ATTR"
-    		);
-    		$sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-    		$info = ldap_get_entries($con_ldap, $sr); 
-    		
-    		if (isset($info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]))
-    		{
-    		    $retour[LDAP_AGENT_ADDRESS_ATTR] = str_replace('$', ', ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
-    		}
-    		else
-    		{
-    			$errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") n'a pas de postalAddress....";
-    			error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-    		}
+    	if (trim("$LDAP_POSTAL_ADDRESS_ATTR") != "")
+        {
+            $con_ldap = ldap_connect($LDAP_SERVER);
+            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+            $filtre = "(".$LDAP_CODE_AGENT_ATTR."=".$this->agentid().")";
+            $dn = $LDAP_SEARCH_BASE;
+            $restriction = array("$LDAP_POSTAL_ADDRESS_ATTR");
+            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+            $info = ldap_get_entries($con_ldap, $sr); 
+
+            if (isset($info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]))
+            {
+                $retour = str_replace('$', ', ',$info[0]["$LDAP_POSTAL_ADDRESS_ATTR"][0]);
+            }
+            else
+            {
+                $errlog = "L'utilisateur " . $this->identitecomplete() . " (identifiant = " . $this->agentid() . ") n'a pas de postalAddress....";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
     	}
     	return $retour;
+    }
+
+    function getInfoDocCet()
+    {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated. Use getprofessionaladdress instead.', E_USER_DEPRECATED);
+        
+        return $this->getprofessionaladdress();
     }
     
     function getpersonnaladdress()
@@ -3491,13 +3493,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $LDAP_BIND_LOGIN = $this->fonctions->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->fonctions->liredbconstante("LDAPPASSWD");
         $LDAP_SEARCH_BASE = $this->fonctions->liredbconstante("LDAPSEARCHBASE");
-        $LDAP_MEMBER_ATTR = $this->fonctions->liredbconstante("LDAPMEMBERATTR");
-        $LDAP_GROUP_NAME = $this->fonctions->liredbconstante("LDAPGROUPNAME");
         $LDAP_CODE_AGENT_ATTR = $this->fonctions->liredbconstante("LDAPATTRIBUTE");
         $LDAP_AGENT_PERSO_ADDRESS_ATTR = $this->fonctions->liredbconstante("LDAP_AGENT_PERSO_ADDRESS_ATTR");
-        $retour = array();
+        $retour = "";
         // Si les constantes sont définies et non vides on regarde si l'utilisateur est dans le groupe
-        if ((trim("$LDAP_MEMBER_ATTR") != "" and trim("$LDAP_GROUP_NAME") != "")) {
+        if (trim("$LDAP_AGENT_PERSO_ADDRESS_ATTR") != "")
+        {
             $con_ldap = ldap_connect($LDAP_SERVER);
             ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
             $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
@@ -3509,7 +3510,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             
             if (isset($info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]))
             {
-                $retour[LDAP_AGENT_PERSO_ADDRESS_ATTR] = str_replace('$', ', ',$info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]);
+                $retour = str_replace('$', ', ',$info[0]["$LDAP_AGENT_PERSO_ADDRESS_ATTR"][0]);
             }
             else
             {

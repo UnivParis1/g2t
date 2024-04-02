@@ -4,7 +4,7 @@
     
     $fonctions = new fonctions($dbcon);
     
-    echo "Début du calcul des soldes " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut du calcul des soldes " . date("d/m/Y H:i:s") . "\n";
     
     $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT ORDER BY AGENTID";
     $query_agent = mysqli_query($dbcon, $sql);

@@ -123,6 +123,7 @@ define('SMTPSERVER', 'smtp.etab.fr');
 define('LDAPSERVER', 'ldap://ldap1.etab.fr ldap://ldap2.etab.fr ldap://ldap3.etab.fr');
 define('LDAPLOGIN', 'cn=user_id,ou=admin,dc=etab,dc=fr');
 define('LDAPPASSWD', 'ldap_password');
+define('LDAP_ETAB_SEARCHBASE','dc=etab,dc=fr');
 define('LDAPSEARCHBASE', 'ou=people,dc=etab,dc=fr');
 define('LDAPATTRIBUTE', 'supannempid');
 define('LDAP_AGENT_CIVILITE_ATTR', 'supanncivilite');
@@ -131,23 +132,23 @@ define('LDAP_AGENT_PRENOM_ATTR', 'givenname');
 define('LDAP_AGENT_MAIL_ATTR', 'mail');
 define('LDAP_AGENT_ADDRESS_ATTR', 'postaladdress');
 define('LDAP_AGENT_PERSO_ADDRESS_ATTR', 'homepostaladdress');
-define('LDAP_AGENT_EPPN_ATTR', 'edupersonprincipalname');
 define('LDAP_AGENT_UID_ATTR', 'uid');
-define('LDAP_AGENT_RIFSEEP_ATTR', 'supannactivite');
-define('LDAPMEMBERATTR', 'memberof');
-define('LDAPGROUPNAME', 'cn=applications.g2t.users,ou=groups,dc=etab,dc=fr');
-define('LDAP_STRUCT_SEARCH_BASE', 'ou=structures,dc=etab,dc=fr');
-define('LDAP_STRUCT_CODE_ENTITE_ATTR', 'supanncodeentite');
-define('LDAP_STRUCT_IS_INCLUDED_ATTR', 'up1flags');
-define('LDAP_STRUCT_BUSINESSCATE_ATTR', 'businesscategory');
-define('LDAP_FONCTION_SEARCH_BASE', 'ou=supannrolegenerique,ou=tables,dc=etab,dc=fr');
-define('LDAP_FONCTION_POIDS_ATTR', 'up1flags');
-define('LDAP_RIFSEEP_SEARCH_BASE','ou=supannActivite,ou=tables,dc=etab,dc=fr');
-define('LDAP_RIFSEEP_NAME_ATTR','up1tablekey');
-define('LDAP_RIFSEEP_LIBELLE_ATTR','displayname');
-define('LDAP_GROUP_SEARCHBASE','ou=groups,dc=etab,dc=fr');
-define('LDAP_GROUP_CN_ATTR','cn');
-define('LDAP_ETAB_SEARCHBASE','dc=etab,dc=fr');
+
+define('LDAP_AGENT_EPPN_ATTR', 'edupersonprincipalname'); /* OBSOLETE */
+define('LDAP_AGENT_RIFSEEP_ATTR', 'supannactivite'); /* OBSOLETE */
+define('LDAPMEMBERATTR', 'memberof'); /* OBSOLETE */
+define('LDAPGROUPNAME', 'cn=applications.g2t.users,ou=groups,dc=etab,dc=fr'); /* OBSOLETE */
+define('LDAP_STRUCT_SEARCH_BASE', 'ou=structures,dc=etab,dc=fr'); /* OBSOLETE */
+define('LDAP_STRUCT_CODE_ENTITE_ATTR', 'supanncodeentite'); /* OBSOLETE */
+define('LDAP_STRUCT_IS_INCLUDED_ATTR', 'up1flags'); /* OBSOLETE */
+define('LDAP_STRUCT_BUSINESSCATE_ATTR', 'businesscategory'); /* OBSOLETE */
+define('LDAP_FONCTION_SEARCH_BASE', 'ou=supannrolegenerique,ou=tables,dc=etab,dc=fr'); /* OBSOLETE */
+define('LDAP_FONCTION_POIDS_ATTR', 'up1flags'); /* OBSOLETE */
+define('LDAP_RIFSEEP_SEARCH_BASE','ou=supannActivite,ou=tables,dc=etab,dc=fr'); /* OBSOLETE */
+define('LDAP_RIFSEEP_NAME_ATTR','up1tablekey'); /* OBSOLETE */
+define('LDAP_RIFSEEP_LIBELLE_ATTR','displayname'); /* OBSOLETE */
+define('LDAP_GROUP_SEARCHBASE','ou=groups,dc=etab,dc=fr'); /* OBSOLETE */
+define('LDAP_GROUP_CN_ATTR','cn'); /* OBSOLETE */
 
 // Connexion au serveur CAS
 define('CASSERVER', 'cas.etab.fr');

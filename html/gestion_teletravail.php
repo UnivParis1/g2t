@@ -864,32 +864,20 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     //// DEBUT SAUVETGARDE ESIGNATURE     ///////////////
                     /////////////////////////////////////////////////////
 
-                    $agent_eppn = $agent->eppn();
+                    //$agent_eppn = $agent->eppn();
+                    // ----------------------------------------------------------------
+                    // On force l'EPPN avec le compte système de eSignature
+                    $agent_eppn = 'system';
+                    //-----------------------------------------------------------------
 
                     // On récupère le mail de l'agent en cours
                     $agent_mail = $agent->mail(); // $agent->ldapmail();
 
-    /*                
-                    if (!is_null($agentid))
-                    {
-                        // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
-                        $agent = new agent($dbcon);
-                        $agent->load($agentid);
-                        $agent_eppn = $agent->eppn();
-
-                        // On récupère le mail de l'agent en cours
-                        $agent_mail = $agent->mail(); // $agent->ldapmail();
-                    }
-    */
                     $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
                     $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/teletravailWS.php";
                     $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
 
                     $curl = curl_init();
-                    // ----------------------------------------------------------------
-                    // On force l'EPPN avec le compte système de eSignature
-                    $agent_eppn = 'system';
-                    //-----------------------------------------------------------------
 
                     //$teletravail = new teletravail($dbcon);
                     //$teletravail->load($idconvention);
@@ -980,7 +968,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                                 ? array_walk( $item, $walk, $key )
                                 : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
                             };
-                            echo "Param = <br>"; var_dump($params);
+                            //echo "Param = <br>"; var_dump($params);
                             array_walk( $params, $walk );
                             //echo "Output = <br>"; var_dump($output);
                             $params_string = implode( '&', $output );

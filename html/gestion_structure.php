@@ -331,8 +331,10 @@
                 
                 // On construit le tableau des agentid pour vérifier en masse les utilisateurs G2T
                 $arrayagentid = array();
+                $textlisteagent = '';
                 foreach ((array)$agentliste as $structagent)
                 {
+                    $textlisteagent = $textlisteagent . "<span class='delegpaddingleft'><B>&#8901;</B> " . $structagent->identitecomplete() . "</span><br>";
                     $arrayagentid[] = $structagent->agentid();
                 }
                 if (count($arrayagentid)>0)
@@ -547,6 +549,11 @@
                 if ($infoagent != "")
                 {
                     echo "<tr><td><b><div class='infogeststruct'>$infoagent</div></b></td></tr>";
+                }
+                if (trim($textlisteagent)!= "")
+                {
+                    $nbagents = substr_count(strtoupper($textlisteagent), "<SPAN"); // Ob compte le nombre de chaine ouvrante SPAN
+                    echo "<tr><td class='greentext'>Liste des agents de la structure  - $nbagents agent(s) :<br>$textlisteagent</td></tr>";
                 }
                 echo "<tr><td height=15></td></tr>";
                 echo "</table>";

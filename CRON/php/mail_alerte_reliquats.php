@@ -6,7 +6,7 @@
 
     $date = date("Ymd");
 
-    echo "Début de l'envoi des mail des alertes de reliquats " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'envoi des mail des alertes de reliquats " . date("d/m/Y H:i:s") . "\n";
 
     $force = false;
     if (isset($argv[1])) {

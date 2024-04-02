@@ -6,7 +6,7 @@
     
     $date = date("Ymd");
     
-    echo "Début de l'import des absences de l'application RH " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'import des absences de l'application RH " . date("d/m/Y H:i:s") . "\n";
     
     // On charge la table des absences avec le fichier
     $filename = $fonctions->inputfilepath() . "/siham_absence_$date.xml";
@@ -35,7 +35,7 @@
             $datefin = trim($node->xpath('DATEFIN')[0]);
             $typeabsence = trim($node->xpath('LIBELLE')[0]);
             $datedebutformate = $fonctions->formatdatedb(str_replace('/','-',$datedebut));
-            echo "agentid = $agentid   datedebut=$datedebut   datefin=$datefin   typeabsence=$typeabsence  datedebutformate = $datedebutformate \n";
+            //echo "agentid = $agentid   datedebut=$datedebut   datefin=$datefin   typeabsence=$typeabsence  datedebutformate = $datedebutformate \n";
 
             $agent = new agent($dbcon);
             if (!$agent->existe($agentid))

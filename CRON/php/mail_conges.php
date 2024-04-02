@@ -6,7 +6,7 @@
 
     $date = date("Ymd");
 
-    echo "Début de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n";
 
     // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente) mais qui ne sont pas postérieure à la période en cours (< Anneeref +1 + debut_période)
     // Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.

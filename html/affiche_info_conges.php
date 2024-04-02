@@ -139,7 +139,7 @@
         }
         
         $htmlstring = $htmlstring . "<tr class='element'>";
-        $htmlstring = $htmlstring . "<td class='cellulesimple'>UP1" . str_pad($agent->agentid(),9,'0', STR_PAD_LEFT) . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde_precedent->droitaquis()  ."</td>"; 
+        $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $agent->sihamid() . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde_precedent->droitaquis()  ."</td>"; 
         $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_precedente", "20" . ($annee_precedente-1) . "0901", "20" . $annee_courante . "0831");
 //        echo "nbjrsconsommes 2020 = $nbjrsconsommes <br>";
         $htmlstring = $htmlstring . "<td class='cellulesimple'>" . ($solde_precedent->droitaquis() - $nbjrsconsommes) . "</td>";

@@ -6,7 +6,7 @@
 
     $date = date("Y-m-d");
 
-    echo "Début de l'envoi des mail des alertes de fin de convention de télétravail " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'envoi des mail des alertes de fin de convention de télétravail " . date("d/m/Y H:i:s") . "\n";
     
     echo "La date du jour est : $date \n";
     $datefinconvention = date("Y-m-d",strtotime($date."+ 1 months"));

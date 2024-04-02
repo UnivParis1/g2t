@@ -635,10 +635,9 @@
         $realuser->load($realuserid);
     }
         
-    // On verifie que la personne est dans le groupe G2T du LDAP
+    // On verifie que la personne est autorisé à ce connecter à G2T
     if (!$realuser->isG2tUser())
     {
-        $LDAP_GROUP_NAME = $fonctions->liredbconstante("LDAPGROUPNAME");
         
         $errlog = "Vous n'êtes pas autorisé à vous connecter à cette application.";
         $errlog = $errlog . "<br>";
@@ -650,7 +649,6 @@
         $techlog = "Informations techniques :";
         $techlog = $techlog . "<br><ul>";
         $techlog = $techlog . "<li>Identité de l'utilisateur : " . $realuser->identitecomplete() . " (identifiant = " . $realuser->agentid() . ")</li>";
-        $techlog = $techlog . "<li>Groupe LDAP recherché : $LDAP_GROUP_NAME </li>";
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents(strip_tags($techlog)));
         
         $errlog = "<h3>Plusieurs raisons peuvent être à l'origine de cette limitation d'accès :";

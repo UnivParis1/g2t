@@ -310,10 +310,14 @@
                 // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours
                 $agent = new agent($dbcon);
                 $agent->load($agentid);
-                $agent_eppn = $agent->eppn();
+                //$agent_eppn = $agent->eppn();
+                // ----------------------------------------------------------------
+                // On force l'EPPN avec le compte système de eSignature
+                $agent_eppn = 'system';
+                //-----------------------------------------------------------------
                 
                 // On récupère le mail de l'agent en cours
-                $agent_mail = $agent->mail(); // $agent->ldapmail();
+                $agent_mail = $agent->mail(); 
             }
             
             if ((sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) == 0)
@@ -323,11 +327,6 @@
                 $curl = curl_init();
                 //echo "EPPN de l'agent => " . $agent_eppn . ". <br>";
                 //$params = ['eppn' => "$agent_eppn"]; //, 'recipientEmails' => array("0*pacomte@univ-paris1.fr") , 'targetEmails' => array("pacomte@univ-paris1.fr", "pascal.comte@univ-paris1.fr")];  ///  exemple multi paramètre => $params = ['param1' => 'valeur1', 'param2' => 'valeur2', 'param3' => 'valeur3'];
-
-                // ----------------------------------------------------------------
-                // On force l'EPPN avec le compte système de eSignature
-                $agent_eppn = 'system';
-                //-----------------------------------------------------------------
 
                 $tabinfos = $fonctions->alimentationCETjsonresponse($alimentationCET,false);
                 //var_dump($tabinfos);

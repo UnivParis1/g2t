@@ -4,7 +4,7 @@
     
     $fonctions = new fonctions($dbcon);
 
-    echo "Début des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut des controles post mise à jour de la base...." . date("d/m/Y H:i:s") . "\n";
 
     // récupération des gestionnaires RH des anomalies
     //$gestrhanolist = $fonctions->listeprofilrh(agent::PROFIL_RHANOMALIE); // 3 = Profil RHANOMALIE

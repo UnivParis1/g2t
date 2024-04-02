@@ -2074,57 +2074,49 @@ class fonctions
 
     public function mailexistedansldap($adressemail)
     {
-        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAP_ETAB_SEARCHBASE");    // 'dc=univ-paris1,dc=fr';
-        $LDAP_AGENT_UID_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_AGENT_MAIL_ATTR = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
-        $filtre = "($LDAP_AGENT_MAIL_ATTR=$adressemail)";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array("$LDAP_AGENT_UID_ATTR");
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
-        if (!isset($info[0]["$LDAP_AGENT_UID_ATTR"][0]))
+        // On considère que si l'agent a un EPPN, c'est que son compte est disponible dans LDAP => Donc pas besoin d'interroger LDAP.
+        // Si l'EPPN est vide => On interroge LDAP car il peut s'agir d'un groupe ou d'un utilisateur spécial (donc sans EPPN)
+        $agent = new agent($this->dbconnect);
+        if (!$agent->loadbyemail($adressemail))
         {
-            $errlog = "mailexistedansldap : L'adresse mail $adressemail n'a pas pu être identifié dans LDAP.";
+            $errlog = "mailexistedansldap : Chargement de l'agent par adresse mail $adressemail impossible.";
             error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             return false;
+        }
+        if (trim($agent->eppn()."")=="")
+        {
+            $errlog = "mailexistedansldap : L'EPPN de l'agent est vide => Donc on interroge LDAP.";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+
+            // La base de la recherche est l'ensemble du LDAP de l'établissement "LDAP_ETAB_SEARCHBASE" car l'adresse peut-être
+            //  - un agent (ou=people)
+            //  - un groupe (ou=group)
+            //  - une liste (ou=mailingLists)
+            //  .....
+            $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
+            $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
+            $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
+            $LDAP_SEARCH_BASE = $this->liredbconstante("LDAP_ETAB_SEARCHBASE");
+            $LDAP_AGENT_UID_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
+            $LDAP_AGENT_MAIL_ATTR = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
+            $con_ldap = ldap_connect($LDAP_SERVER);
+            ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+            $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
+            $filtre = "($LDAP_AGENT_MAIL_ATTR=$adressemail)";
+            $dn = $LDAP_SEARCH_BASE;
+            $restriction = array("$LDAP_AGENT_UID_ATTR");
+            $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
+            $info = ldap_get_entries($con_ldap, $sr);
+            if (!isset($info[0]["$LDAP_AGENT_UID_ATTR"][0]))
+            {
+                $errlog = "mailexistedansldap : L'adresse mail $adressemail n'a pas pu être identifiée dans LDAP.";
+                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                return false;
+            }
         }
         return true;
     }
     
-    function getcnfromldap($adressemail)
-    {
-        $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
-        $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
-        $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
-        $LDAP_SEARCH_BASE = $this->liredbconstante("LDAP_GROUP_SEARCHBASE");
-        $LDAP_GROUP_CN_ATTR = $this->liredbconstante("LDAP_GROUP_CN_ATTR");
-        $con_ldap = ldap_connect($LDAP_SERVER);
-        ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_AGENT_MAIL_ATTR = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
-        $filtre = "($LDAP_AGENT_MAIL_ATTR=" . $adressemail . ")";
-        $dn = $LDAP_SEARCH_BASE;
-        $restriction = array("$LDAP_GROUP_CN_ATTR");
-        $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
-        $info = ldap_get_entries($con_ldap, $sr);
-        // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
-        $cn = '';
-        if (isset($info[0]["$LDAP_GROUP_CN_ATTR"][0]))
-        {
-            $cn = $info[0]["$LDAP_GROUP_CN_ATTR"][0];
-            $errlog = "Le CN est trouvé dans LDAP => cn=" . $cn . ".";
-            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-        }
-        return $cn;
-    }
-
     public function prepared_query($sql, $params, $types = "")
     {
         //$stmt = $this->dbconnect->prepare($sql);
@@ -4392,7 +4384,6 @@ WHERE  table_schema = Database()
         $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
         $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
-
         $LDAP_AGENT_NOM = $this->liredbconstante("LDAP_AGENT_NOM_ATTR");
         $LDAP_AGENT_PRENOM = $this->liredbconstante("LDAP_AGENT_PRENOM_ATTR");
         $LDAP_AGENT_MAIL = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
@@ -4492,15 +4483,13 @@ WHERE  table_schema = Database()
         $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");
         $LDAP_SEARCH_BASE = $this->liredbconstante("LDAPSEARCHBASE");
         $LDAP_CODE_AGENT_ATTR = $this->liredbconstante("LDAPATTRIBUTE");
+        $LDAP_UID_AGENT_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
         $con_ldap = ldap_connect($LDAP_SERVER);
         ldap_set_option($con_ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
-        $LDAP_UID_AGENT_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
         $filtre = "($LDAP_UID_AGENT_ATTR=$uid)";
         $dn = $LDAP_SEARCH_BASE;
-        $restriction = array(
-            "$LDAP_CODE_AGENT_ATTR"
-        );
+        $restriction = array("$LDAP_CODE_AGENT_ATTR");
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
         // error_log(basename(__FILE__) . $this->stripAccents(" Le numéro AGENT de l'utilisateur issu de LDAP est : " . $info[0]["$LDAP_CODE_AGENT_ATTR"][0]));
@@ -4723,7 +4712,7 @@ WHERE  table_schema = Database()
             if (count(array($affectationliste)) > 0)
             {
                 $affectation = current($affectationliste);
-                $infosLdap = $agent->getpersonnaladdress();
+                $agentadresse = $agent->getpersonnaladdress();
                 $nameStructComplete = $structure->nomcompletcet();
                 // quotité sur la période 01/09/N-1 - 31/08/N
                 $quotite = $affectation->quotite();
@@ -4734,7 +4723,7 @@ WHERE  table_schema = Database()
                     'firstname' => $agent->prenom(),
                     'service' => array('name' => $nameStructComplete,
                         'id' => $structure->id(),
-                        'addr' => strtoupper($infosLdap[LDAP_AGENT_PERSO_ADDRESS_ATTR].""),
+                        'addr' => strtoupper($agentadresse), //$infosLdap[LDAP_AGENT_PERSO_ADDRESS_ATTR].""),
                         'type' => $structure->typestruct()),
                     'ref_year' => $anneeref,
                     'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
@@ -4841,7 +4830,7 @@ WHERE  table_schema = Database()
             {
                 $affectation = new affectation($this->dbconnect);
                 $affectation = current($affectationliste);
-                $infosLdap = $agent->getInfoDocCet();
+                $agentadresse = $agent->getprofessionaladdress(); //$agent->getInfoDocCet();
                 $nameStructComplete = $structure->nomcompletcet();
                 // quotité sur la période 01/09/N-1 - 31/08/N
                 $datedebut = ($this->anneeref() - 1).$this->debutperiode();
@@ -4851,10 +4840,12 @@ WHERE  table_schema = Database()
                     'email' => $agent->mail(),
                     'name' => $agent->nom(),
                     'firstname' => $agent->prenom(),
-                    'service' => array('name' => $nameStructComplete,
+                    'service' => array(
+                                       'name' => $nameStructComplete,
                                        'id' => $structure->id(),
-                                       'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
-                                       'type' => $structure->typestruct()),
+                                       'addr' => $agentadresse, //$infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
+                                       'type' => $structure->typestruct()
+                                      ),
                     'ref_year' => $anneeref,
                     'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
                     'corps' => $agent->typepopulation()
@@ -4929,7 +4920,7 @@ WHERE  table_schema = Database()
             {
                 $affectation = new affectation($this->dbconnect);
                 $affectation = current($affectationliste);
-                $infosLdap = $agent->getInfoDocCet();
+                $agentadresse = $agent->getprofessionaladdress(); // $agent->getInfoDocCet();
                 $nameStructComplete = $structure->nomcompletcet();
                 // quotité sur la période 01/09/N-1 - 31/08/N
                 $datedebut = ($this->anneeref() - 1).$this->debutperiode();
@@ -4940,10 +4931,12 @@ WHERE  table_schema = Database()
                     'email' => $agent->mail(),
                     'name' => $agent->nom(),
                     'firstname' => $agent->prenom(),
-                    'service' => array('name' => $nameStructComplete,
-                        'id' => $structure->id(),
-                        'addr' => $infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
-                        'type' => $structure->typestruct()),
+                    'service' => array(
+                                       'name' => $nameStructComplete,
+                                       'id' => $structure->id(),
+                                       'addr' => $agentadresse, //$infosLdap[LDAP_AGENT_ADDRESS_ATTR]."",
+                                       'type' => $structure->typestruct()
+                                      ),
                     'ref_year' => $anneeref,
                     'activity' => $quotite == '100%' ? 'Temps complet' : $quotite,
                     'corps' => $agent->typepopulation()

@@ -8,7 +8,7 @@
     
     $fonctions = new fonctions($dbcon);
     
-    echo "Debut du switch synchronisation " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDebut du switch synchronisation " . date("d/m/Y H:i:s") . "\n";
     
     $constante = "SYNCHRONISATION";
     $valeur = '';

@@ -34,7 +34,7 @@
         public $isRAstruct = '';
     }
 
-    echo "Début de l'import des structures " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'import des structures " . date("d/m/Y H:i:s") . "\n";
 
     $tab_infos_fonct = array();
     $tab_fonctions_RA = array();

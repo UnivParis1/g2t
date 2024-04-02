@@ -6,7 +6,7 @@
 
     $date = date("Ymd");
 
-    echo "Début de l'import des agents " . date("d/m/Y H:i:s") . "\n";
+    echo "\nDébut de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 
     $filename = $fonctions->inputfilepath() . "/siham_agents_$date.xml";
     if (! file_exists($filename)) {
@@ -34,8 +34,13 @@
             $prenom = trim($node->xpath('PRENOM')[0]);
             $adressemail = trim($node->xpath('MAIL')[0]);
             $typepop = trim($node->xpath('CATEGORIE')[0]);
+            $eppn = "";
+            if (isset($node->xpath('EPPN')[0]))
+            {
+                $eppn = trim($node->xpath('EPPN')[0]);
+            }
 
-            echo "agentid = $agentid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
+            //echo "agentid = $agentid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
 
             $agent = new agent($dbcon);
             $agent->civilite($civilite);
@@ -43,10 +48,11 @@
             $agent->prenom($prenom);
             $agent->mail($adressemail);
             $agent->typepopulation($typepop);
+            $agent->eppn($eppn);
             $agent->structureid(''); // On force sa structure à 'vide' car elle sera initialisée plus tard
             if (!$agent->store($agentid))
             {
-                echo "INSERT/UPDATE AGENT => Une erreur s'est produit dans la mise à jour/l'insertion des agents \n";
+                echo "INSERT/UPDATE AGENT => Une erreur s'est produit dans la mise à jour/l'insertion de l'agent $nom $prenom - id : $agentid \n";
             }
         }
     }

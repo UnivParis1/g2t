@@ -14,6 +14,8 @@
     // Génération du PDF => Sauvegarde
     // Envoi par mail du fichier PDF
 
+    echo "\nHistorique des soldes - " . date("d/m/Y H:i:s") . "\n";
+    
     $jour = date('j');
     $mois = date('m');
     $annee = date('Y');
@@ -79,7 +81,7 @@
             }
         }
     }
-    echo "Fin de la génération .... \n";
+    echo "Historique des soldes - Fin de la génération " . date("d/m/Y H:i:s") . "\n";
     // }
     // else
     // {
