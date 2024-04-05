@@ -149,14 +149,14 @@ class agent
         if (mysqli_num_rows($query) == 0) 
         {
             $errlog = "Agent->loadbyemail (AGENT) : Aucune adresse mail ($email) trouvée.";
-            echo $errlog . "<br/>";
+            //echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return false;
         }
         if (mysqli_num_rows($query) > 1) 
         {
             $errlog = "Agent->loadbyemail (AGENT) : Plusieurs adresses mail ($email) trouvées.";
-            echo $errlog . "<br/>";
+            //echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return false;
         }
