@@ -4542,6 +4542,7 @@ WHERE  table_schema = Database()
             return $tabparam;
         }
         
+        $tabmaildemandeur = array();
         // On trie sur les clés pour avoir les niveaux dans le bon ordre (tous les niveaux 1, puis les niveaux 2, ....)
         ksort($tabparam['recipientEmails']);
         //var_dump($tabparam['recipientEmails']);
@@ -4555,6 +4556,12 @@ WHERE  table_schema = Database()
             }
             else
             {
+                // On memorise l'adresse du/des demandeur(s) 
+                // => En théorie il n'y en a qu'un mais dans la perspective d'une évolution on peut imaginer qu'il y en a plusieurs
+                if ($splitinfos[0]==1)
+                {
+                    $tabmaildemandeur[] = strtolower($splitinfos[1]);
+                }
                 if (isset($currentsteps["stepNumber"]) and ($currentsteps["stepNumber"] != $splitinfos[0]))
                 {
                     // On ajoute le currentstep dans le stepsJsonArray
@@ -4578,9 +4585,61 @@ WHERE  table_schema = Database()
         }
         if (count($stepsJsonArray)>0)
         {
+            //var_dump("Avant le foreach stepsJsonArray");
+            $errlog = "On va supprimer le demandeur du circuit de validation";
+            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+            foreach ($stepsJsonArray as $curentstepkey => $currentsteps)
+            {
+                // Si on est dans un niveau > 1 et qu'il y a plus d'un recipient (<=> donc plus d'une adresse mail de validation)
+                //var_dump("Avant le test du niveau et le count : Step = " . $currentsteps["stepNumber"] . "  Nbre recipients = " . count($currentsteps["recipients"]));
+                if ($currentsteps["stepNumber"]>1 and count($currentsteps["recipients"])>1)
+                {
+                    $keytoremove = array();
+                    //var_dump("Avant le foreach recipients");
+                    foreach ($currentsteps["recipients"] as $keymail => $mail)
+                    {
+                        //var_dump("keymail = "); var_dump($keymail);
+                        //var_dump("mail = "); var_dump($mail['email']);
+                        if (in_array(strtolower($mail['email']),$tabmaildemandeur)===true)
+                        {
+                            $errlog = "Il y a égalité dans le step " . $currentsteps["stepNumber"] . " => On enregistre la clé du recipient à supprimer => $keymail";
+                            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                            $keytoremove[] = $keymail;
+                        }
+                    }
+                    //var_dump("Avant le count keytoremove => " . count($keytoremove) . "  Nbre de recipient => "  . count($currentsteps["recipients"]));
+                    // Si il y a des clés à enlever et qu'il en restera au moins une dans les recipients
+                    if (count($keytoremove)>0 and count($keytoremove) < count($currentsteps["recipients"]))
+                    {
+                        $errlog = "On doit enlever au moins une clé";
+                        error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                        //var_dump("currentsteps (avant) = "); var_dump($currentsteps);
+                        foreach ($keytoremove as $keymail)
+                        {
+                            $errlog = "On unset la clé $keymail";
+                            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                            unset($currentsteps["recipients"][$keymail]);
+                        }
+                        //var_dump("currentsteps (apres) = "); var_dump($currentsteps);
+                        $stepsJsonArray[$curentstepkey] = $currentsteps;
+                    }
+                    else
+                    {
+                        $errlog = "On ne fait rien sur le step " . $currentsteps["stepNumber"] . " => car soit aucune clé à enlever (count=" . count($keytoremove) . ") soit devrait enlever tous les signataires.";
+                        error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                    }
+                }
+                else
+                {
+                    $errlog = "On ne fait rien car soit c'est le step 1 (step=" . $currentsteps["stepNumber"] . "), soit il n'y a qu'un signataire (=>count=". count($currentsteps["recipients"]) .")";
+                    error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                }
+            }
+
             $tabparam["stepsJsonString"] = json_encode($stepsJsonArray);
             unset($tabparam["recipientEmails"]);
         }
+        //var_dump("tabparam = "); var_dump($tabparam);
         return $tabparam;
     }
     

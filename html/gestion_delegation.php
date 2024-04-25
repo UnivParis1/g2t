@@ -273,7 +273,7 @@
 	    <script>
         	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
       	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-      	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee" } });
+      	                          wsParams: { filter_eduPersonAffiliation: "employee" } });
     	</script>
 <?php
         

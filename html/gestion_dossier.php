@@ -912,7 +912,7 @@
 		    <script>
     		    	$('[id="<?php echo "infouser[". $structure->id() ."]" ?>"]').autocompleteUser(
     		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-    		  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|researcher" } });
+    		  	                          wsParams: { filter_eduPersonAffiliation: "employee|researcher" } });
                     </script>
 <?php
                 echo "</tr>";
@@ -966,7 +966,7 @@
 				    <script>
         		    	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
         		  	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-        		  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee" } });
+        		  	                          wsParams: { filter_eduPersonAffiliation: "employee" } });
         	   		</script>
 <?php
 

@@ -1931,7 +1931,7 @@
                     	    //var input_elt = $( ".token-autocomplete input" );
                       	    $( "#usersignataire" ).autocompleteUser(
                         	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                      	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
+                      	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                     	</script>
                     </center>
                 	<div id='div_structureid' hidden> 
@@ -2445,7 +2445,7 @@
                 	    //var input_elt = $( ".token-autocomplete input" );
                   	    $( "#usersignataire_tele_simple" ).autocompleteUser(
                     	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
+                  	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
                 </center>
             	<div id='div_structureid_tele_simple' hidden> 
@@ -2701,7 +2701,7 @@
                 	    //var input_elt = $( ".token-autocomplete input" );
                   	    $( "#usersignataire_tele_avance" ).autocompleteUser(
                     	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                  	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
+                  	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
                 </center>
             	<div id='div_structureid_tele_avance' hidden>
@@ -2855,7 +2855,7 @@
                             <script>
                           	    $( "#newuserrh" ).autocompleteUser(
                             	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                          	                          wsParams: { showExtendedInfo: 0, filter_eduPersonAffiliation: "employee|staff" } });
+                          	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                         	</script>
             
                         </td>
