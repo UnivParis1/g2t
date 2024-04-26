@@ -220,7 +220,7 @@
                 // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
                 $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
             }
-
+            
             // On récupère les responsables des sous-structures pour les inclures dans la liste des soldes à afficher
             $structurefilleliste = $structure->structurefille();
             if (is_array($structurefilleliste)) {
@@ -241,6 +241,12 @@
                     }
                 }
             }
+            //echo "<br>agentliste = " . print_r($agentliste,true) . "<br>";
+            $respsiham = $structure->responsablesiham();
+            if ($respsiham->agentid() != SPECIAL_USER_IDCRONUSER) {
+                unset($agentliste[$respsiham->nom() . " " . $respsiham->prenom() . " " . $respsiham->agentid()]);
+            }
+            //echo "<br>agentliste = " . print_r($agentliste,true) . "<br>";
             
             echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             echo "<form name='frm_validation_conge'  method='post' >";
@@ -288,7 +294,9 @@
                             if (is_array($agentliste)) {
                                 // On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
                                 if (array_key_exists($responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid(), $agentliste))
+                                {
                                     $oktodisplay = false;
+                                }
                             }
                             if ($oktodisplay) {
                                 $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structfille->id(), $cleelement);
@@ -384,43 +392,6 @@
                     }
                 }
             }
-
-            // A Voir si on affiche les structures filles lorsque l'on est Gestionnaire
-            /*
-             * $sousstructureliste=$structure->structurefille();
-             * if (is_array($sousstructureliste))
-             * {
-             * //echo "Je suis dans la boucle des sousstructures <br>";
-             * foreach ($sousstructureliste as $ssstructkey => $structfille)
-             * {
-             * //echo "Dans le echo des structFille... <br>";
-             * $agentliste = $structfille->agentlist(date("d/m/Y"),date("d/m/Y"),'n');
-             * foreach ($agentliste as $membrekey => $membre)
-             * {
-             * $debut = $fonctions->formatdate(($fonctions->anneeref()-$previous) . $fonctions->debutperiode());
-             *
-             * // Si on est en mode "previous" alors on considère que la fin est l'année courante
-             * if ($previous == 1)
-             * $fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-             * // Si on ne limite pas les congés a la date de fin de la période, il faut prendre plus large que la fin de période
-             * // On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
-             * elseif ($fonctions->liredbconstante("LIMITE_CONGE_PERIODE") == "n")
-             * $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-             * else
-             * $fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-             *
-             * //echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structfille->id(), $cleelement);
-             * $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structfille->id(), $cleelement);
-             * if ($htmltodisplay != "")
-             * {
-             * echo $htmltodisplay;
-             * echo "<br>";
-             * $aumoinsunedemande = TRUE;
-             * }
-             * }
-             * }
-             * }
-             */
             if (! $aumoinsunedemande) {
                 echo "Aucune demande en attente pour cette structure...<br>";
             }

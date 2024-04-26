@@ -1577,20 +1577,34 @@ class fonctions
 
     public function getidmodelteletravail($maxniveau, $agent)
     {
-        // echo "<br>On est dans le cas d'un niveau $maxniveau<br>";
-        $resp_n2 = $agent->getsignataire_niveau2();
+//        // echo "<br>On est dans le cas d'un niveau $maxniveau<br>";
+//        $resp_n2 = $agent->getsignataire_niveau2();
+//
+//        if ($maxniveau == 4 and $resp_n2===false)
+//        {
+//            $dbconstante='IDMODELTELETRAVAIL';
+//        }
+//        elseif ($maxniveau == 5 and $resp_n2!==false)
+//        {
+//            $dbconstante='IDMODELTELETRAVAIL_EVOLUE';
+//        }
+//        else
+//        {
+//            echo $this->showmessage(fonctions::MSGERROR, "Incohérence entre le nombre de niveau et la situation de l'agent (nombre de niveau = $maxniveau et l'agent " . (($resp_n2===false)?" n'a pas de ":" a un ")  . "responsable).");
+//            return "";
+//        }
 
-        if ($maxniveau == 4 and $resp_n2===false)
+        if ($maxniveau == 4)
         {
             $dbconstante='IDMODELTELETRAVAIL';
         }
-        elseif ($maxniveau == 5 and $resp_n2!==false)
+        elseif ($maxniveau == 5)
         {
             $dbconstante='IDMODELTELETRAVAIL_EVOLUE';
         }
         else
         {
-            echo $this->showmessage(fonctions::MSGERROR, "Incohérence entre le nombre de niveau et la situation de l'agent (nombre de niveau = $maxniveau et l'agent " . (($resp_n2===false)?" n'a pas de ":" a un ")  . "responsable).");
+            echo $this->showmessage(fonctions::MSGERROR, "Impossible de déterminer le modèle de circuit de télétravail (nombre de niveau = $maxniveau)");
             return "";
         }
 
@@ -2873,7 +2887,7 @@ class fonctions
             }
             else
             {
-                // On n'a pas trouvé de responsable n+2
+                // On a trouvé de responsable n+2
                 $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
             }
 
@@ -2986,6 +3000,63 @@ class fonctions
             ksort($params['recipientEmails']);
             
             //var_dump($params['recipientEmails']);
+            
+            ///////////////////////////////////////////
+            // Si on est dans le cas d'un circuit N+2
+            if ($constantename == 'TELETRAVAILSIGNATAIRE_EVOLUE')
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" On est dans le cadre d'une demande de télétravail avec N+2 "));
+                // Si le niveau N+2 est le même que le niveau N+1 => On supprime le niveau N+2
+                // Le circuit devient alors un niveau N+1
+                $nbn2trouve = 0;
+                $nbn2total = 0;
+                $tabkeytoremove = array();
+                foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+                {
+                    $tabinforecipient = explode('*',$recipientstring);
+                    // Si on a 2 parties et que le niveau (donc l'index 0) est 3 (donc N+2)
+                    if (count($tabinforecipient)==2 and $tabinforecipient[0]=='3')
+                    {
+                        $nbn2total++;
+                        // On cherche dans le niveau précédent (donc le niveau 2) si l'adresse existe
+                        if (in_array(($tabinforecipient[0]-1). '*' . $tabinforecipient[1],$params['recipientEmails']))
+                        {
+                            // On l'a trouvé dans le niveau précédent => N+1
+                            $nbn2trouve++;
+                            // On mémorise la clé du niveau 3 à supprimer en cas de besoin
+                            $tabkeytoremove[] = $recipientkey;
+                        }
+                    }
+                }
+                // Si toutes les adresses de niveau 3 sont dans le niveau 2 (on les a toutes trouvées)
+                if ($nbn2trouve == $nbn2total and $nbn2total>0)
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Les signataires du niveau 3 sont les mêmes que le niveau 2 => On va supprimer le niveau 3 "));
+                    foreach($tabkeytoremove as $recipientkey)
+                    {
+                        unset($params['recipientEmails'][$recipientkey]);
+                    }
+                    foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+                    {
+                        //var_dump("dans le foreach => Key = " . $recipientkey . "   String = " . $recipientstring);
+                        $tabinforecipient = explode('*',$recipientstring);
+                        // Si on a 2 parties et que le niveau (donc l'index 0) est supérieur à 3
+                        // On doit descendre le niveau de 1 de tous les niveaux suivants
+                        if (count($tabinforecipient)==2 and $tabinforecipient[0]>'3')
+                        {
+                            //var_dump("Je renumérote...");
+                            unset($params['recipientEmails'][$recipientkey]);
+                            $params['recipientEmails'][($tabinforecipient[0]-1). '*' . $tabinforecipient[1]] = ($tabinforecipient[0]-1). '*' . $tabinforecipient[1];
+                        }
+                    }
+                    $maxniveau--;
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le niveau maximal est maintenant : $maxniveau => On est dans un circuit télétravail sans N+2"));
+                    //var_dump("Le niveau est maintenant : $maxniveau");
+                }
+            }
+            
+            //var_dump($params['recipientEmails']);
+            //////////////////////////////////////////
             
             $taberrorcheckmail = array();
             $tabniveauok = array();

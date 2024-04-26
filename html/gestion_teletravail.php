@@ -1131,7 +1131,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
     	if ($erreur != "")
     	{
-    	    echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible de synchroniser une ou plusieurs convention : $erreur");
+    	    echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible de synchroniser une ou plusieurs conventions : $erreur");
     	    $disablesubmit = true;
     	}
         if ($mode!='gestrh' and !$esignatureactive)
