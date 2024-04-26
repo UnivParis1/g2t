@@ -758,7 +758,7 @@
                 echo "<table>";
                 echo "<tr>";
                 echo "<td>";
-                echo "Envoyer les demandes de congés des agents au : ";
+                echo "Envoyer les demandes des agents au : ";
                 echo "<SELECT id='agent_mail[" . $structure->id() . "]' name='agent_mail[" . $structure->id() . "]' size='1' onchange='user_mode_change_" . $structure->id() . "()'>";
                 //echo "<OPTION value=1";
                 echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
@@ -786,7 +786,7 @@
                 $structure->resp_envoyer_a($codeinterne);
                 echo "<tr>";
                 echo "<td>";
-                echo "Envoyer les demandes de congés du responsable G2T au : ";
+                echo "Envoyer les demandes du responsable G2T au : ";
                 echo "<SELECT id='resp_mail[" . $structure->id() . "]'  name='resp_mail[" . $structure->id() . "]' size='1' onchange='resp_mode_change_" . $structure->id() . "()'>";
                 if (! is_null($parentstruct)) {
 //                    echo "<OPTION value=1";

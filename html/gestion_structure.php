@@ -491,7 +491,7 @@
                 $struct->agent_envoyer_a($codeinterne);
                 echo "<tr>";
                 echo "<td>";
-                echo "Envoyer les demandes de congés des agents au : ";
+                echo "Envoyer les demandes des agents au : ";
                 echo "<SELECT id='agent_mail[" . $struct->id() . "]' name='agent_mail[" . $struct->id() . "]' size='1'>";
 //                echo "<OPTION value=1";
                 echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
@@ -516,7 +516,7 @@
                 $parentstruct = $struct->parentstructure();
                 echo "<tr>";
                 echo "<td>";
-                echo "Envoyer les demandes de congés du responsable G2T au : ";
+                echo "Envoyer les demandes du responsable G2T au : ";
                 echo "<SELECT id='resp_mail[" . $struct->id() . "]' name='resp_mail[" . $struct->id() . "]' size='1'>";
                 if (! is_null($parentstruct)) {
                     $struct->resp_envoyer_a($codeinterne);
