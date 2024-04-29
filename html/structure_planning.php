@@ -811,22 +811,26 @@
                 
                 if (trim($planninghtml) != "") // and $structure->id() <> $rootstruct)
                 {
-                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
-                    echo "<br>";
-                    echo "<form name='form_showroot' id='form_showroot' method='post'>";
-                    echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
-                    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
-                    echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-                    echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
-                    echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
-                    echo "<input type='hidden' name='structureid' value='" . $affstructureid .  "' />";
-                    
-                    echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
-                    if ($check_showroot == 'on')
-                        echo " checked ";
-                    echo "/>";
-                    echo "Voir l'intégralité du planning de la structure \"racine\" => " . $structparent->nomcourt();
-                    echo "</form>";
+                    if ($fonctions->convertvaluetobool($structparent->agentaffplanningdirection()))
+                    {
+                        // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
+                        echo "<br>";
+                        echo "<form name='form_showroot' id='form_showroot' method='post'>";
+                        echo "<input type='hidden' name='indexmois' value='" . $indexmois  . "' />";
+                        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                        echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                        echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+                        echo "<input type='hidden' name='rootid' value='" . $structparent->id() .  "' />";
+                        echo "<input type='hidden' name='structureid' value='" . $affstructureid .  "' />";
+
+                        echo "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
+                        if ($check_showroot == 'on')
+                            echo " checked ";
+                        echo "/>";
+                        //echo "Voir l'intégralité du planning de la structure \"racine\" => " . $structparent->nomcourt();
+                        echo "Voir l'intégralité du planning de la structure <b>" . $structparent->nomcourt() . "</b>";
+                        echo "</form>";
+                    }
                 }
             }
         }

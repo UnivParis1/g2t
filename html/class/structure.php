@@ -53,6 +53,8 @@ class structure
     
     private $respaffdemandesousstruct = null; // le responsable de la structure courante valide les congés des agents des structures inclues 
     
+    private $agentaffplanningdirection = null; // Dans le planing de la structure (Menu Agent), autorise ou non l'affichage de toute la direction
+    
     private $datecloture = null;
 
     private $delegueid = null;
@@ -87,25 +89,6 @@ class structure
     function load($structureid)
     {
         if (is_null($this->structureid)) {
-//            $sql = "SELECT STRUCTUREID,
-//                           NOMLONG,
-//                           NOMCOURT,
-//                           STRUCTUREIDPARENT,
-//                           RESPONSABLEID,
-//                           GESTIONNAIREID,
-//                           AFFICHESOUSSTRUCT,
-//                           AFFICHEPLANNINGTOUTAGENT,
-//                           DATECLOTURE,
-//                           AFFICHERESPSOUSSTRUCT,
-//                           RESPVALIDSOUSSTRUCT,
-//                           GESTVALIDAGENT, 
-//                           TYPESTRUCT, 
-//                           ISINCLUDED,
-//                           ESTBIBLIOTHEQUE,
-//                           RESPAFFSOLDESOUSSTRUCT,
-//                           RESPAFFDEMANDESOUSSTRUCT
-//                    FROM STRUCTURE 
-//                    WHERE STRUCTUREID=?";
             $sql = "SELECT STRUCTUREID,
                            NOMLONG,
                            NOMCOURT,
@@ -124,7 +107,8 @@ class structure
                            RESPAFFSOLDESOUSSTRUCT,
                            RESPAFFDEMANDESOUSSTRUCT,
                            EXTERNALID,
-                           ISDEPLOYED
+                           ISDEPLOYED,
+                           AGENTAFFPLANNINGDIRECTION
                     FROM STRUCTURE 
                     WHERE STRUCTUREID=?";
             $params = array($structureid);
@@ -168,6 +152,7 @@ class structure
             $this->respaffdemandesousstruct = "$result[16]";
             $this->externalid = "$result[17]";
             $this->isdeployed = "$result[18]";
+            $this->agentaffplanningdirection = "$result[19]";
             
             $this->profondeurrelative = 0;
             
@@ -423,6 +408,25 @@ class structure
         else
         {
             $this->respaffdemandesousstruct = $valide;
+        }
+    }
+    
+    function agentaffplanningdirection($valide = null)
+    {
+        if (is_null($valide)) {
+            if (is_null($this->agentaffplanningdirection)) {
+                $errlog = "Structure->agentaffplanningdirection : Le paramètre agentaffplanningdirection de la structure n'est pas défini !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } 
+            else
+            {
+                return $this->agentaffplanningdirection;
+            }
+        } 
+        else
+        {
+            $this->agentaffplanningdirection = $valide;
         }
     }
     
@@ -1516,7 +1520,8 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     GESTVALIDAGENT=?,
                     RESPAFFSOLDESOUSSTRUCT=?,
                     RESPAFFDEMANDESOUSSTRUCT=?,
-                    ISDEPLOYED=?
+                    ISDEPLOYED=?,
+                    AGENTAFFPLANNINGDIRECTION=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
         $params = array($this->sousstructure(),
@@ -1525,6 +1530,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                         $this->respaffsoldesousstruct(),
                         $this->respaffdemandesousstruct(),
                         $this->isdeployed(),
+                        $this->agentaffplanningdirection(),
                         $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);

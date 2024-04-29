@@ -241,6 +241,20 @@
         }
     }
     
+    $agentaffplanningdirection = null;
+    if (isset($_POST["agentaffplanningdirection"]))
+    {
+        $agentaffplanningdirection = $_POST["agentaffplanningdirection"];
+    }
+    if (is_array($agentaffplanningdirection)) {
+        foreach ($agentaffplanningdirection as $structureid => $valeur) {
+            $structureid = str_replace("'", "", $structureid);
+            $structure = new structure($dbcon);
+            $structure->load($structureid);
+            $structure->agentaffplanningdirection($valeur);
+            $structure->store();
+        }
+    }
 
     $arraygestionnaire = null;
     if (isset($_POST["gestion"]))
@@ -635,6 +649,32 @@
                     else
                     {
                         echo $fonctions->ouinonlibelle($structure->respaffdemandesousstruct());
+                    }
+                    echo "</td>";
+                    echo "</tr>";
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Dans le planning de la structure (menu Agent), permettre de voir le planning des agents de la structure <b>" . $structure->nomcourt()  . "</b> : ";
+                    echo "</td><td>";
+                    if ($action == 'modif') {
+                        echo "<select name=agentaffplanningdirection['" . $structure->id() . "']>";
+                        echo "<option value='o'";
+                        if (strcasecmp($structure->agentaffplanningdirection(), "o") == 0)
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Oui</option>";
+                        echo "<option value='n'";
+                        if (strcasecmp($structure->agentaffplanningdirection(), "n") == 0)
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Non</option>";
+                        echo "</select>";
+                    } 
+                    else
+                    {
+                        echo $fonctions->ouinonlibelle($structure->agentaffplanningdirection());
                     }
                     echo "</td>";
                     echo "</tr>";
