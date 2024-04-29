@@ -886,29 +886,53 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     //var_dump($tabinfos);
                     
                     $formsdata = array();
-                    $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
-                    $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
-                    $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
-                    $formsdata["fonction_agent"] = $tabinfos["agent"]["rifseep"];
-                    $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
-                    $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
-                    $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
-                    $formsdata["convention_libelle"] = $tabinfos["infosconvention"]["value"];
-                    $formsdata["convention_code"] = $tabinfos["infosconvention"]["code"];
-                    $formsdata["convention_debut"] = $tabinfos["informations"][1]["value"];
-                    $formsdata["convention_fin"] = $tabinfos["informations"][2]["value"];
+
+//                    $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
+//                    $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
+//                    $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
+//                    $formsdata["fonction_agent"] = $tabinfos["agent"]["rifseep"];
+//                    $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
+//                    $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
+//                    $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
+//                    $formsdata["convention_libelle"] = $tabinfos["infosconvention"]["value"];
+//                    $formsdata["convention_code"] = $tabinfos["infosconvention"]["code"];
+//                    $formsdata["convention_debut"] = $tabinfos["informations"][1]["value"];
+//                    $formsdata["convention_fin"] = $tabinfos["informations"][2]["value"];
+//                    $nbjrs = $tabinfos["informations"][0]["value"];
+//                    $formsdata["convention_nbjrs"] = "$nbjrs";
+//                    for ($index=0 ; $index<$nbjrs ; $index++)
+//                    {
+//                        $formsdata["convention_jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
+//                    }
+//                    $formsdata["motif_sante"] = $tabinfos["infosconvention"]["sante"];
+//                    $formsdata["motif_grossesse"] = $tabinfos["infosconvention"]["grossesse"];
+//                    $formsdata["motif_aidant"] = $tabinfos["infosconvention"]["aidant"];
+//                    $formsdata["activites"] = $tabinfos["infosconvention"]["activiteteletravail"];
+//                    $formsdata["exclusions"] = $tabinfos["infosconvention"]["periodeexclusion"];
+//                    $formsdata["adaptations"] = $tabinfos["infosconvention"]["periodeadaptation"];
+
+                    $formsdata["NomPrenom"] = $tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"];
+                    $formsdata["Corps"] = $tabinfos["agent"]["corps"];
+                    $formsdata["Fonction"] = $tabinfos["agent"]["rifseep"];
+                    $formsdata["QuotiteTravail"] = $tabinfos["agent"]["activity"];
+                    $formsdata["LieuTele"] = $tabinfos["agent"]["service"]["addr"];
+                    $formsdata["DirectCompServ"] = $tabinfos["agent"]["service"]["name"];
+                    $formsdata["TypeDemande"] = $tabinfos["infosconvention"]["value"];
+                    $formsdata["infosconventioncode"] = $tabinfos["infosconvention"]["code"];
+                    $formsdata["DatedebutTele"] = $tabinfos["informations"][1]["value"];
+                    $formsdata["DatefinTele"] = $tabinfos["informations"][2]["value"];
                     $nbjrs = $tabinfos["informations"][0]["value"];
-                    $formsdata["convention_nbjrs"] = "$nbjrs";
+                    $formsdata["NbJourTravaille"] = "$nbjrs";
                     for ($index=0 ; $index<$nbjrs ; $index++)
                     {
-                        $formsdata["convention_jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
+                        $formsdata["jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
                     }
-                    $formsdata["motif_sante"] = $tabinfos["infosconvention"]["sante"];
-                    $formsdata["motif_grossesse"] = $tabinfos["infosconvention"]["grossesse"];
-                    $formsdata["motif_aidant"] = $tabinfos["infosconvention"]["aidant"];
-                    $formsdata["activites"] = $tabinfos["infosconvention"]["activiteteletravail"];
-                    $formsdata["exclusions"] = $tabinfos["infosconvention"]["periodeexclusion"];
-                    $formsdata["adaptations"] = $tabinfos["infosconvention"]["periodeadaptation"];
+                    $formsdata["Raisonsante"] = $tabinfos["infosconvention"]["sante"];
+                    $formsdata["Grossesse"] = $tabinfos["infosconvention"]["grossesse"];
+                    $formsdata["ProcheAidant"] = $tabinfos["infosconvention"]["aidant"];
+                    $formsdata["ActivitesTelletravaillables"] = $tabinfos["infosconvention"]["activiteteletravail"];
+                    $formsdata["PeriodeExclusion"] = $tabinfos["infosconvention"]["periodeexclusion"];
+                    $formsdata["PeriodeAdaptation"] = $tabinfos["infosconvention"]["periodeadaptation"];
                     
                     //echo "formsdata = <br>"; var_dump($formsdata);
                     
