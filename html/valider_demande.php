@@ -312,7 +312,7 @@
         $listestruct = $user->structgestliste();
         // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
         $listegeststruct = $user->structgestcongeliste();
-        //foreach((array)$listegeststruct as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
+        //foreach((array)$listegeststruct as $tmpstruct) { var_dump($tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
         $listestruct = array_merge((array)$listestruct,(array)$listegeststruct);
         if (is_array($listestruct))
         {

@@ -631,6 +631,18 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='structureid' value='" . $structureid . "'>";
+        echo "<input type='hidden' name='showall' value='";
+        if (isset($_POST['showall']))
+        { 
+            echo $_POST['showall'];
+        }
+        echo "'>";
+        echo "<input type='hidden' name='showallsubstruct' value='";
+        if (isset($_POST['showallsubstruct']))
+        { 
+            echo $_POST['showallsubstruct'];
+        }
+        echo "'>";
         echo "<input type='hidden' name='isdeployed' id='isdeployed' value=''>";
         echo "<input type='hidden' name='allsubstructure' id='allsubstructure' value=''>";
         echo "<input type='hidden' name='olddeployvalue' id='olddeployvalue' value=''>";

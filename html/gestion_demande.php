@@ -311,7 +311,7 @@
             //echo "<br>"; print_r($agentlistefull); echo "<br>";
             if (count($agentlistefull)==0)
             {
-                echo "Vous n'avez aucun agent en gestion.<br>";
+                echo "Vous n'avez aucun agent en gestion ou vous n'êtes pas autorisé(e) à modifier des demandes de congés.<br>";
                 $selectagentbutton = false;
                 $displaysubmit = false;
             }

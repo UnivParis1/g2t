@@ -337,11 +337,12 @@
         foreach ($structureliste as $structkey => $structure)
         {
             $annerecherche = ($fonctions->anneeref() - $previous);
-            //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
-            $agentliste = $user->listeagentengestion($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
-            ksort($agentliste);
+            $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+            //$agentliste = $user->listeagentengestion($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+            
             if (is_array($agentliste))
             {
+                ksort($agentliste);
                 echo "<optgroup label='". $structure->nomcourt() ."'>";
                 foreach ($agentliste as $agentkey => $agent)
                 {
@@ -387,10 +388,9 @@
                     echo "<br>";
                     echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
                     $annerecherche = ($fonctions->anneeref() - $previous);
-                    $agentliste = $user->listeagentengestion($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
-                    ksort($agentliste);
+                    $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+                    //$agentliste = $user->listeagentengestion($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
 
-                    //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
                     // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
                     // $agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
         
@@ -416,11 +416,14 @@
                     echo "<br>";
         
                     if (is_array($agentliste)) {
+                        ksort($agentliste);
                         foreach ($agentliste as $agentkey => $agent) {
                             // echo "NOM de l'agent = " . $agent->nom() . "<br>";
                             echo $agent->soldecongeshtml($fonctions->anneeref() - $previous, TRUE);
                             if ($previous == 0)
+                            {
                                 echo $agent->affichecommentairecongehtml(true);
+                            }
                             // echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
                             echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
                             echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
