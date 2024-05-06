@@ -1077,7 +1077,7 @@
                     {
                         $checked = ' checked ';
                     }
-                    echo "<input type='checkbox' $checked name='continuesendtoresp[" . $structure->id() . "]' id='continuesendtoresp[" . $structure->id() . "]'>En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de recevoir les notifications des demandes de congés/d'absences par mail durant la délégation.</input>";
+                    echo "<input type='checkbox' $checked name='continuesendtoresp[" . $structure->id() . "]' id='continuesendtoresp[" . $structure->id() . "]'>En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de recevoir les notifications des demandes de congés/d'absences et de télétravail par mail durant la délégation.</input>";
                     echo "</td>";
                     echo "</tr>";
                 }
