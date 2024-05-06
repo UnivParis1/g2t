@@ -172,30 +172,32 @@
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
         
-        $structureliste = $user->structrespliste();
-        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-        if (is_array($structureliste))
-        {
-            uasort($structureliste,"triparprofondeurabsolue");
-        }
-        $agentlistefull = array();
-        foreach ($structureliste as $structure) 
-        {
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $structure->sousstructure());
-            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-            // echo "fin du select <br>";
-            $structurefille = $structure->structurefille();
-            foreach ((array) $structurefille as $structure) {
-                $responsable = $structure->responsable();
-                if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
-                    $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
-                }
-            }
-        }
-        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
-            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
-        }
+        $agentlistefull = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
+        
+//        $structureliste = $user->structrespliste();
+//        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+//        if (is_array($structureliste))
+//        {
+//            uasort($structureliste,"triparprofondeurabsolue");
+//        }
+//        $agentlistefull = array();
+//        foreach ($structureliste as $structure) 
+//        {
+//            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $structure->sousstructure());
+//            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+//            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+//            // echo "fin du select <br>";
+//            $structurefille = $structure->structurefille();
+//            foreach ((array) $structurefille as $structure) {
+//                $responsable = $structure->responsable();
+//                if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
+//                    $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
+//                }
+//            }
+//        }
+//        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
+//            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
+//        }
         ksort($agentlistefull);
         echo "<SELECT name='agentid'>";
         foreach ($agentlistefull as $keyagent => $membre) 

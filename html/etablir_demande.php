@@ -412,56 +412,11 @@
             //var_dump("on est dans le else...");
             if (isset($_POST["responsable"]))
             {
-                $structureliste = $responsable->structrespliste();
-                if (is_array($structureliste))
-                {
-                    uasort($structureliste,"triparprofondeurabsolue");
-                }
-                // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-                $agentlistefull = array();
-                foreach ($structureliste as $structure) {
-                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-                    // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                    // echo "fin du select <br>";
-                    $structurefille = $structure->structurefille();
-                    foreach ((array) $structurefille as $structure) {
-                        $responsable = $structure->responsable();
-                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
-                            $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
-                        }
-                    }
-                }
+                $agentlistefull = $responsable->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
             }
             elseif (isset($_POST["gestionnaire"]))
             {
-                // En mode gestionnaire on ne permet de saisir des conges/absences que pour le responsable de la structure
-                // dont le gestionnaire gère les conges.
-                // On verifie que le code est 3  dans resp_envoyer_a
-                // Si oui, on n'ajoute que le responsable dans la liste
-                $structureliste = $responsable->structgestliste();
-                if (is_array($structureliste))
-                {
-                    uasort($structureliste,"triparprofondeurabsolue");
-                }
-                // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-                $agentlistefull = array();
-                foreach ($structureliste as $structure) 
-                {
-                    $resp = $structure->resp_envoyer_a($code);
-                    if ($code ==structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
-                    {
-                        $responsable = $structure->responsable();
-                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) 
-                        {
-                            $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
-                        }
-                    }
-                }
-            }
-            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) 
-            {
-                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
+                $agentlistefull = $responsable->listeagentengestion(date("d/m/Y"), date("d/m/Y"));
             }
             ksort($agentlistefull);
             echo "<SELECT name='agentid'>";

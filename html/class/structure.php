@@ -1364,11 +1364,15 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             // On ajoute les responsables de structures filles
             $structureliste = $this->structurefille();
             $responsableliste = array();
-            if (is_array($structureliste)) {
-                foreach ($structureliste as $key => $structure) {
-                    if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
+            if (is_array($structureliste)) 
+            {
+                foreach ($structureliste as $key => $structure) 
+                {
+                    if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) 
+                    {
                         $responsable = $structure->responsable();
-                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
+                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) 
+                        {
                             // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
                             $responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
                             // /$responsableliste[$responsable->agentid()] = $responsable;

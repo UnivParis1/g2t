@@ -309,19 +309,22 @@
     if ($agentid == "") {
         echo "<form name='autodeclarationforagent'  method='post' >";
 
-        $structureliste = $user->structrespliste();
-        if (is_array($structureliste))
-        {
-            uasort($structureliste,"triparprofondeurabsolue");
-        }
-        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-        $agentlistefull = array();
-        foreach ($structureliste as $structure) {
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-            // echo "fin du select <br>";
-        }
+        $agentlistefull = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
+        
+        
+//        $structureliste = $user->structrespliste();
+//        if (is_array($structureliste))
+//        {
+//            uasort($structureliste,"triparprofondeurabsolue");
+//        }
+//        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+//        $agentlistefull = array();
+//        foreach ($structureliste as $structure) {
+//            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
+//            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+//            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+//            // echo "fin du select <br>";
+//        }
         ksort($agentlistefull);
         echo "<SELECT name='agentid'>";
         foreach ($agentlistefull as $keyagent => $membre) 

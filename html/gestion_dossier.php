@@ -540,11 +540,15 @@
         if ($mode == 'resp')
         {
             $structurefilleliste = $structure->structurefille();
-            if (is_array($structurefilleliste)) {
-                foreach ($structurefilleliste as $key => $structurefille) {
-                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
+            if (is_array($structurefilleliste)) 
+            {
+                foreach ($structurefilleliste as $key => $structurefille) 
+                {
+                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+                    {
                         $respstructfille = $structurefille->responsable();
-                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
+                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) 
+                        {
                             // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
                             $responsableliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
                             // /$responsableliste[$responsable->agentid()] = $responsable;

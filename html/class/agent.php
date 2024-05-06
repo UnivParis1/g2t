@@ -1502,32 +1502,60 @@ class agent
     /**
      *
      * @param
-     * @return array list of objects structure where the agent manage the lower structure query
+     * @return Liste des structures où l'agent est membre du circuit de validation comme gestionnaire
      */
     function structgestcongeliste()
     {
-        $structliste = null;
-        if ($this->estgestionnaire()) {
-            // echo "Je suis gestionnaire...<br>";
-            // Liste des structures donc je suis gestionnaire
+        $structliste = array();
+        if ($this->estgestionnaire()) 
+        {
+            //echo "Je suis gestionnaire...<br>";
+            // Liste des structures où je suis gestionnaire
             $structgestliste = $this->structgestliste();
             if (is_array($structgestliste))
             {
                 uasort($structgestliste,"triparprofondeurabsolue");
             }
-            // echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
-            foreach ((array) $structgestliste as $structid => $structure) {
-                // Pour chaque structure fille, on regarde si je gère les demandes du responsable
+            //echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
+            //var_dump('Liste des structures où je suis gestionnaire : '); foreach((array)$structgestliste as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
+
+            foreach ((array) $structgestliste as $structid => $structure) 
+            {
+                // Si le signataire des demandes des agents ou du responsable de la structure courante est le gestionnaire
+                
+                // Si le signataire des congés des agents est le gestionnaire
+                $codeinterne = null;
+                $agent = $structure->agent_envoyer_a($codeinterne);
+                if (! is_null($agent) and $codeinterne==structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+                {
+                    if ($agent->agentid() == $this->agentid)
+                    {
+                        $structliste[$structure->id()] = $structure;
+                    }
+                }
+                // Si le signataire des congés du responsable est le gestionnaire
+                $codeinterne = null;
+                $agent = $structure->resp_envoyer_a($codeinterne);
+                if (! is_null($agent) and $codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT) 
+                {
+                    if ($agent->agentid() == $this->agentid) 
+                    {
+                        $structliste[$structure->id()] = $structure;
+                    }
+                }
+                // Pour chaque structure fille, on regarde si le gestionnaire gère les demandes du responsable
                 $structfilleliste = $structure->structurefille();
-                // echo "<br>structfilleliste = "; print_r((array) $structfilleliste) ; echo "<br>";
-                foreach ((array) $structfilleliste as $structfilleid => $structfille) {
+                foreach ((array) $structfilleliste as $structfilleid => $structfille) 
+                {
                     // Si la structure est encore ouverte...
-                    if ($this->fonctions->formatdatedb($structfille->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) {
-                        // echo "<br>structfilleid = " . $structfilleid . "<br>";
-                        // echo "structfille->resp_envoyer_a() = "; print_r($structfille->resp_envoyer_a()); echo "<br>";
-                        $agent = $structfille->resp_envoyer_a();
-                        if (! is_null($agent)) {
-                            if ($agent->agentid() == $this->agentid) {
+                    if ($this->fonctions->formatdatedb($structfille->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) 
+                    {
+                        $codeinterne = null;
+                        $agent = $structfille->resp_envoyer_a($codeinterne);
+                        if (! is_null($agent) and $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT) 
+                        {
+                            if ($agent->agentid() == $this->agentid) 
+                            {
                                 $structliste[$structfilleid] = $structfille;
                             }
                         }
@@ -1535,6 +1563,7 @@ class agent
                 }
             }
         }
+        // var_dump('Liste des structures où je suis gère les congés (comme gestionnaire) : '); foreach((array)$structliste as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
         return $structliste;
     }
 
@@ -5607,7 +5636,176 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         return $tabteletravail;
     }
-        
+    
+    function listeagentengestion($datedebut,$datefin, $structure = null)
+    {
+        $agentlistefull = array();
+        if ($this->estgestionnaire())
+        {
+            if (is_null($structure))
+            {
+                // On récupère la liste des structures en gestion
+                $structureliste = $this->structgestliste();
+                // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
+                $listegeststruct = $this->structgestcongeliste();
+                //foreach((array)$listegeststruct as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
+                $structureliste = array_merge((array)$structureliste,(array)$listegeststruct);
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
+            }
+            else
+            {
+                // On ne traite que la structure passée en paramètre
+                $structureliste[] = $structure;
+                // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
+                $listegeststruct = $this->structgestcongeliste();
+            }
+            foreach ($structureliste as $structure) 
+            {
+                // Si on ne doit pas gérer les demandes des agents de cette structure
+                if (strcasecmp($structure->gestvalidagent(),'n')==0
+                        and array_key_exists($structure->id(),(array)$listegeststruct)===false)
+                {
+                    // On passe à la structure suivante
+                    //var_dump("On passe à la structure suivante => Struct courante : " . $structure->nomcourt());
+                    continue;
+                }
+                $gestionnaire = $structure->gestionnaire();
+                if (is_null($gestionnaire))
+                {
+                    // Si on n'a pas de gestionnaire => On charge l'utilisateur CRON comme gestionnaire
+                    $gestionnaire = new agent($this->dbconnect);
+                    $gestionnaire->load(SPECIAL_USER_IDCRONUSER);
+                }
+                $codeinterne = null;
+                $destinataire = $structure->agent_envoyer_a($codeinterne);
+                if (is_null($destinataire))
+                {
+                    // Si on n'a pas de destinataire => On charge l'utilisateur CRON comme destinataire
+                    $destinataire = new agent($this->dbconnect);
+                    $destinataire->load(SPECIAL_USER_IDCRONUSER);
+                }
+                // Si le gestionnaire courant gère les agents de la structure (gestvalidagent=O) => On charge tous les agents de la structure et on enlève les responsables (SIHAM + responsable)
+                // En effet, un gestionnaire ne peut pas valider les demandes de son responsable - Ticket GLPI 147328 et 166498 (sauf s'il est dans le circuit => voir test suivant)
+                // Il peut aussi gérer le circuit des agents de la structure courante => C'est la même façon d'alimenter les agents
+                if ((strcasecmp($structure->gestvalidagent(),'o')==0 and $gestionnaire->agentid()==$this->agentid()) or 
+                    (array_key_exists($structure->id(),(array)$listegeststruct)===true 
+                     and $codeinterne==structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+                     and $destinataire->agentid()==$this->agentid())
+
+                {
+                    $agentliste = $structure->agentlist($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin),'n');
+                    // On doit enlever les responsables (SIHAM + responsable) car par défaut ils ne sont pas gérés
+                    $resp = $structure->responsable();
+                    unset($agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()]);
+                    $resp = $structure->responsablesiham();
+                    unset($agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()]);
+                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                }
+                $codeinterne = null;
+                $destinataire = $structure->resp_envoyer_a($codeinterne);
+                if (is_null($destinataire))
+                {
+                    // Si on n'a pas de destinataire => On charge l'utilisateur CRON comme destinataire
+                    $destinataire = new agent($this->dbconnect);
+                    $destinataire->load(SPECIAL_USER_IDCRONUSER);
+                }
+                // Si la structure est dans le tableau des structures gérées par le gestionnaire et qu'il doit gérer le responsable de la structure courante
+                if (array_key_exists($structure->id(),(array)$listegeststruct)===true
+                    and $destinataire->agentid()==$this->agentid()
+                    and ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT))
+                {
+                    // On récupère les responsables de la structure (titulaire + délégué) si le gestionnaire doit gérer ce circuit
+                    $resp = $structure->responsable();
+                    // ATTENTION : Le gestionnaire ne gère le responsable que s'il est affecté à la structure courante => Sinon ce n'est pas lui qui valide les congés
+                    if ($resp->structureid()==$structure->id())
+                    {
+                        $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                    }
+                    $resp = $structure->responsablesiham();
+                    // ATTENTION : Le gestionnaire ne gère le responsable que s'il est affecté à la structure courante => Sinon ce n'est pas lui qui valide les congés
+                    if ($resp->structureid()==$structure->id())
+                    {
+                        $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                    }
+                }
+            }
+        }
+        unset($agentlistefull[$this->nom() . " " . $this->prenom() . " " . $this->agentid()]);
+        return $agentlistefull;
+    }
+ 
+    function listeagentenresponsabilite($datedebut,$datefin, $structure = null)
+    {
+
+        $agentlistefull = array();
+        if ($this->estresponsable())
+        {
+            if (is_null($structure))
+            {
+                // On récupère la liste des structures en responsabilité
+                $structureliste = $this->structrespliste();
+                if (is_array($structureliste))
+                {
+                    uasort($structureliste,"triparprofondeurabsolue");
+                }
+            }
+            else
+            {
+                // On ne traite que la structure passée en paramètre
+                $structureliste[] = $structure;
+            }
+
+            // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
+            foreach ($structureliste as $structure) 
+            {
+                $agentliste = $structure->agentlist($datedebut,$datefin,$structure->respaffdemandesousstruct());
+                //echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
+                // echo "fin du select <br>";
+                $structfille = $structure->structurefille();
+                if (! is_null($structfille)) 
+                {
+                    foreach ($structfille as $fille) 
+                    {
+                        if ($this->fonctions->formatdatedb($fille->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) 
+                        {
+                            $respstructfille = $fille->responsable();
+                            // On verifie que le responsable est bien défini et que son affectation est bien la strucuture fille courante
+                            if ($respstructfille->agentid()!=SPECIAL_USER_IDCRONUSER and $respstructfille->structureid()==$fille->id()) 
+                            {
+                                // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                                $agentlistefull[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                                // /$responsableliste[$responsable->agentid()] = $responsable;
+                            }
+                            $respstructfille = $fille->responsablesiham();
+                            // On verifie que le responsable est bien défini et que son affectation est bien la strucuture fille courante
+                            if ($respstructfille->agentid()!=SPECIAL_USER_IDCRONUSER and $respstructfille->structureid()==$fille->id()) 
+                            {
+                                // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                                $agentlistefull[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+                                // /$responsableliste[$responsable->agentid()] = $responsable;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // On doit enlever l'utilisateur courant (qui est un responsable au sens large => SIHAM ou délégué)
+        unset($agentlistefull[$this->nom() . " " . $this->prenom() . " " . $this->agentid()]);
+        $respsiham = $structure->responsablesiham();
+        // On doit aussi enlever le responsable SIHAM de la structure, car le délégué ne peut pas valider les congés du responsable SIHAM
+        if ($respsiham->agentid() != SPECIAL_USER_IDCRONUSER) 
+        {
+            unset($agentliste[$respsiham->nom() . " " . $respsiham->prenom() . " " . $respsiham->agentid()]);
+        }
+
+        return $agentlistefull;
+
+    }
+    
 }
 
 ?> 

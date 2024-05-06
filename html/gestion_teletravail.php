@@ -2314,55 +2314,63 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             uasort($structliste,"triparprofondeurabsolue");
         }
         $agentliste = array();
-        $teletravailtrouve = false;
         foreach ($structliste as $structure)
         {
+            $teletravailtrouve = false;
             if ($mode=='resp')
             {
-                $agentliste = $structure->agentlist(date('Ymd'), date('Ymd'), 'n');
-                $structliste = $structure->structurefille();
-                //$structliste = $this->structureinclue();
-                if (! is_null($structliste)) {
-                    foreach ($structliste as $key => $sousstruct) 
-                    {
-                        if ($fonctions->formatdatedb($sousstruct->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
-                        {
-                            $resp = $sousstruct->responsable();
-                            $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
-                        }
-                    }
-                }
+                ////////////////////////////////
+                // ATTENTION : On force l'affichage des demandes des sous-structure à 'N' pour n'afficher que les agents en responsabilité de la structure (et pas les sous-structures)
+                $structure->respaffdemandesousstruct('n');
+                $agentliste = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
+
+//                $agentliste = $structure->agentlist(date('Ymd'), date('Ymd'), 'n');
+//                $structliste = $structure->structurefille();
+//                //$structliste = $this->structureinclue();
+//                if (! is_null($structliste)) {
+//                    foreach ($structliste as $key => $sousstruct) 
+//                    {
+//                        if ($fonctions->formatdatedb($sousstruct->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+//                        {
+//                            $resp = $sousstruct->responsable();
+//                            $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+//                        }
+//                    }
+//                }
             }
             else if ($mode=='gestion')
             {
-                // On récupère les demandes des agents que si le gestionnaire signe aussi les congés des agents
-                $codeinterne=null;
-                $respsignataire = $structure->agent_envoyer_a($codeinterne,false);
-                // Si le signataire du responsable est l'utilisateur courant
-                if ($respsignataire->agentid() == $user->agentid())
-                {
-                    if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
-                    {
-                        foreach($structure->agentlist(date("d/m/Y"), date("d/m/Y")) as $membre)
-                        {
-                            $agentliste[$membre->nom() . " " . $membre->prenom() . " " . $membre->agentid()] = $membre;
-                        }
-                    }
-                }
+                $agentliste = $user->listeagentengestion(date("d/m/Y"), date("d/m/Y"),$structure);
                 
-                // On récupère les demandes du responsable dont le gestionnaire signe les demandes 
-                $codeinterne=null;                
-                $respsignataire = $structure->resp_envoyer_a($codeinterne,false);
-                // Si le signataire du responsable est l'utilisateur courant
-                if ($respsignataire->agentid() == $user->agentid())
-                {
-                    if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
-                    {
-                        $resp = $structure->responsable();
-                        $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
-                    }
-                }
+//                // On récupère les demandes des agents que si le gestionnaire signe aussi les congés des agents
+//                $codeinterne=null;
+//                $respsignataire = $structure->agent_envoyer_a($codeinterne,false);
+//                // Si le signataire du responsable est l'utilisateur courant
+//                if ($respsignataire->agentid() == $user->agentid())
+//                {
+//                    if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+//                    {
+//                        foreach($structure->agentlist(date("d/m/Y"), date("d/m/Y")) as $membre)
+//                        {
+//                            $agentliste[$membre->nom() . " " . $membre->prenom() . " " . $membre->agentid()] = $membre;
+//                        }
+//                    }
+//                }
+//                
+//                // On récupère les demandes du responsable dont le gestionnaire signe les demandes 
+//                $codeinterne=null;                
+//                $respsignataire = $structure->resp_envoyer_a($codeinterne,false);
+//                // Si le signataire du responsable est l'utilisateur courant
+//                if ($respsignataire->agentid() == $user->agentid())
+//                {
+//                    if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+//                    {
+//                        $resp = $structure->responsable();
+//                        $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+//                    }
+//                }
             }
+            ksort($agentliste);
             //var_dump($agentliste);
             
             foreach ((array)$agentliste as $agent)
@@ -2426,10 +2434,10 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }                    
                 }
             }
-        }
-        if ($teletravailtrouve===true)
-        {
-            echo "</table>";
+            if ($teletravailtrouve===true)
+            {
+                echo "</table><br>";
+            }
         }
         if (!$teletravailtrouve)
         {

@@ -164,46 +164,22 @@
             
             $annerecherche = ($fonctions->anneeref() - $previous);
 
-            //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
-            if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues 
+            if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
             {
                 if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                 {
-                        continue;
+                     continue;
                 }
-                $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'o');
-//                error_log(basename(__FILE__) . " : On est là !");
+                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
             }
             else
             {
-                $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure->respaffsoldesousstruct());
-//                error_log(basename(__FILE__) . " : On est ici !");
+                // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
 
+                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
             }
-            
-            // On récupère les responsables des sous-structures pour les inclures dans la liste des soldes à afficher
-            $structurefilleliste = $structure->structurefille();
-            if (is_array($structurefilleliste)) {
-                foreach ($structurefilleliste as $key => $structurefille) {
-                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                        $respstructfille = $structurefille->responsable();
-                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
-                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                            // /$responsableliste[$responsable->agentid()] = $responsable;
-                        }
-                        $respstructfille = $structurefille->responsablesiham();
-                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
-                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                            // /$responsableliste[$responsable->agentid()] = $responsable;
-                        }
-                    }
-                }
-            }
-            
-            
-            
+            ksort($agentliste);
+                        
 //            error_log(basename(__FILE__) . " : La liste des agents est " . print_r($agentliste,true));
             if (is_array($agentliste))
             {
@@ -263,12 +239,15 @@
                         {
                                 continue;
                         }
-                        $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'o');
+                        $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                        //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'o');
                     }
                     else
                     {
-                        $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure->respaffsoldesousstruct());
+                        $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                        //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure->respaffsoldesousstruct());
                     }
+                    ksort($agentliste);
 
                     //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()));
                     // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
@@ -344,7 +323,7 @@
             echo "<br>"; 
         }
     } 
-    else 
+    else // On est en mode gestionnaire
     {
         echo "Veuillez selectionner un agent :<br>";
         echo "<form name='formselect'  method='post'>";
@@ -358,7 +337,9 @@
         foreach ($structureliste as $structkey => $structure)
         {
             $annerecherche = ($fonctions->anneeref() - $previous);
-            $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+            //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+            $agentliste = $user->listeagentengestion($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+            ksort($agentliste);
             if (is_array($agentliste))
             {
                 echo "<optgroup label='". $structure->nomcourt() ."'>";
@@ -406,7 +387,10 @@
                     echo "<br>";
                     echo "Solde des agents de la structure : " . $structure->nomlong() . " (" . $structure->nomcourt() . ") <br>";
                     $annerecherche = ($fonctions->anneeref() - $previous);
-                    $agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
+                    $agentliste = $user->listeagentengestion($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                    ksort($agentliste);
+
+                    //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'n');
                     // $agentliste = $structure->agentlist(date("d/m/").$annerecherche,date("d/m/").$annerecherche);
                     // $agentliste = $structure->agentlist(date("d/m/Y"),date("d/m/Y"));
         

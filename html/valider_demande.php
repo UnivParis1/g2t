@@ -22,8 +22,8 @@
             }
         }
     }
-    
-    if (is_null($userid) or ($userid == "")) 
+
+    if (is_null($userid) or ($userid == ""))
     {
         error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ")");
         echo "<script>alert('Votre session a expirée.\\nAucune donnée n\'est modifiée.\\nVous allez être redirigé vers l\'accueil de l\'application.'); window.location.replace('index.php');</script>";
@@ -46,7 +46,7 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
-    
+
     //$longueurmaxmotif = $fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
 
 
@@ -56,7 +56,7 @@
         $mode = "resp";
         echo "Le mode n'est pas précisé ==> on met le mode responsable <br>";
     }
-    
+
     $statutliste = null;
     $motifliste = null;
     if (isset($_POST['statut'])) {
@@ -65,19 +65,19 @@
     if (isset($_POST['motif'])) {
         $motifliste = $_POST['motif'];
     }
-    
-/*    
+
+/*
      echo "_POST = "; print_r($_POST); echo "<br>";
      var_dump($statutliste);
      var_dump($motifliste);
-*/     
- 
-    if (is_array($statutliste)) 
+*/
+
+    if (is_array($statutliste))
     {
-        foreach ($statutliste as $demandeid => $statut) 
+        foreach ($statutliste as $demandeid => $statut)
         {
             //echo "Le statut est $statut <br>";
-            if (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0) 
+            if (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0)
             {
                 //echo "On est après le test statut <br>";
                 $motif = '';
@@ -103,7 +103,7 @@
                 {
                     $demande->statut($statut);
     //                if (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 and $motif == "") {
-                    if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "") 
+                    if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
                     {
                         $errlog = "Le motif du refus est obligatoire.";
                         echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
@@ -119,7 +119,7 @@
                             $ics = null;
                             $pdffilename[0] = $demande->pdf($user->agentid());
                             $agent = $demande->agent();
-                            //echo "<br>Le statut de la demande est : $statut <br><br>"; 
+                            //echo "<br>Le statut de la demande est : $statut <br><br>";
                             if ((strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) or (strcmp($statut, demande::DEMANDE_ANNULE) == 0)) {
                                 $ics = $demande->ics($agent->mail());
                             }
@@ -128,7 +128,7 @@
                                 $ics = $demande->ics($agent->mail());
                             }
                             $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
-    
+
                             if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                             {
                                 /*
@@ -139,7 +139,7 @@
                                 // On ajoute le fichier PDF d'utilisation du CET en congés
                                 $pdffilename[1] = $basepdfpath . '/../../documents/Utilisation_CET_Conges.pdf';
                                 */
-    
+
                                 // On ajoute le fichier PDF d'utilisation du CET en congés
                                 $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
                                 $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
@@ -148,10 +148,10 @@
                                     $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "\n";
                                 }
                             }
-    
+
                             $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
                             // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
-                            if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) 
+                            if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
                             {
                                 $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                                 foreach ($arrayagentrh as $gestrh) {
@@ -180,7 +180,7 @@
                                     $user->sendmail($gestrh, "Changement de statut d'une demande de 'Télétravail pour raison de santé'", $corpmail);
                                 }
                             }
-                            
+
                             error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
                         }
                     }
@@ -204,51 +204,24 @@
         foreach ($listestruct as $key => $structure) {
             $aumoinsunedemande = False;
             $cleelement = $structure->id();
-            
+
             //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
-            if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues 
+            if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
             {
                 if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                 {
                      continue;
                 }
-                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'o');
+                $agentliste = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
             }
             else
             {
-                $validsousstruct = strtolower($structure->respaffdemandesousstruct());  // strtolower($structure->respvalidsousstruct());
                 // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
-                $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
+                
+                $agentliste = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
             }
-            
-            // On récupère les responsables des sous-structures pour les inclures dans la liste des soldes à afficher
-            $structurefilleliste = $structure->structurefille();
-            if (is_array($structurefilleliste)) {
-                foreach ($structurefilleliste as $key => $structurefille) {
-                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                        $respstructfille = $structurefille->responsable();
-                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
-                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                            // /$responsableliste[$responsable->agentid()] = $responsable;
-                        }
-                        $respstructfille = $structurefille->responsablesiham();
-                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) {
-                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                            $agentliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                            // /$responsableliste[$responsable->agentid()] = $responsable;
-                        }
-                    }
-                }
-            }
-            //echo "<br>agentliste = " . print_r($agentliste,true) . "<br>";
-            $respsiham = $structure->responsablesiham();
-            if ($respsiham->agentid() != SPECIAL_USER_IDCRONUSER) {
-                unset($agentliste[$respsiham->nom() . " " . $respsiham->prenom() . " " . $respsiham->agentid()]);
-            }
-            //echo "<br>agentliste = " . print_r($agentliste,true) . "<br>";
-            
-            echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
+
+            echo "<center><p>Liste des demandes des agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             echo "<form name='frm_validation_conge'  method='post' >";
             ////$validsousstruct = strtolower($structure->respvalidsousstruct());
             ////// echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
@@ -279,39 +252,46 @@
                 }
             }
 
-            $sousstructureliste = $structure->structurefille();
-            // echo "On passe aux reponsables....<br>";
-            if (is_array($sousstructureliste)) {
-                foreach ($sousstructureliste as $ssstructkey => $structfille) {
-                    if ($fonctions->formatdatedb($structfille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                        $htmltodisplay = "";
-                        $responsable = $structfille->responsable();
-                        $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
-                        $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
-                        // echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-                        if (! is_null($responsable)) {
-                            $oktodisplay = true;
-                            if (is_array($agentliste)) {
-                                // On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
-                                if (array_key_exists($responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid(), $agentliste))
-                                {
-                                    $oktodisplay = false;
-                                }
-                            }
-                            if ($oktodisplay) {
-                                $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structfille->id(), $cleelement);
-                                // On ajoute le responsable dans la liste des agents à afficher
-                                $agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
-                            }
-                        }
-                        if ($htmltodisplay != "") {
-                            echo $htmltodisplay;
-                            echo "<br>";
-                            $aumoinsunedemande = TRUE;
-                        }
-                    }
-                }
-            }
+//////////////////////////////////////////////////////////
+// Ce code semble inutil car les responsables des sous structures sont déjà gérés dans la boucle précédente
+//            $sousstructureliste = $structure->structurefille();
+//            // echo "On passe aux reponsables....<br>";
+//            if (is_array($sousstructureliste)) 
+//            {
+//                foreach ($sousstructureliste as $ssstructkey => $structfille) 
+//                {
+//                    if ($fonctions->formatdatedb($structfille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+//                    {
+//                        $htmltodisplay = "";
+//                        $responsable = $structfille->responsable();
+//                        $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
+//                        $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
+//                        // echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
+//                        if (! is_null($responsable) and $responsable->structureid()==$structfille->id()) {
+//                            $oktodisplay = true;
+//                            if (is_array($agentliste)) {
+//                                // On regarde si l'agent est déja affiché !!! Si il est dans la liste des agentliste alors on ne l'affiche pas
+//                                if (array_key_exists($responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid(), $agentliste))
+//                                {
+//                                    $oktodisplay = false;
+//                                }
+//                            }
+//                            if ($oktodisplay) {
+//                                $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structfille->id(), $cleelement);
+//                                // On ajoute le responsable dans la liste des agents à afficher
+//                                $agentliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
+//                            }
+//                        }
+//                        if ($htmltodisplay != "") {
+//                            echo $htmltodisplay;
+//                            echo "<br>";
+//                            $aumoinsunedemande = TRUE;
+//                        }
+//                    }
+//                }
+//            }
+/////////////////////////////////////////////////////////////////
+            
             if (! $aumoinsunedemande) {
                 echo "Aucune demande en attente pour cette structure...<br>";
             }
@@ -330,97 +310,135 @@
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
+        // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
+        $listegeststruct = $user->structgestcongeliste();
+        //foreach((array)$listegeststruct as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
+        $listestruct = array_merge((array)$listestruct,(array)$listegeststruct);
         if (is_array($listestruct))
         {
             uasort($listestruct,"triparprofondeurabsolue");
         }
-        foreach ($listestruct as $key => $structure) {
+        foreach ($listestruct as $key => $structure)
+        {
+            echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
             $aumoinsunedemande = FALSE;
             $cleelement = $structure->id();
-            echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
-            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'n');
-            if (is_array($agentliste)) {
-                $codeinterne = null;
-                $structure->resp_envoyer_a($codeinterne);
-                foreach ($agentliste as $membrekey => $membre) {
-                    $todisplay = true;
-                    
-                    // Si le responsable de la structure est l'agent (membre) courant et que le responsable n'est pas géré par le gestionnaire de la structure courante
-                    // Ticket GLPI 147328
-                    // Correction pour les responsables des sous-structures (ticket GLPI 148635)
-                    if ($structure->responsable()->agentid() == $membre->agentid() 
-                            and $codeinterne!=structure::MAIL_RESP_ENVOI_GEST_COURANT  // 3 = Gestionnaire de la structure courante
-                            and $structure->id() == $user->structureid())
+            // Si le gestionnaire ne doit pas gérer les agents et qu'il n'est pas destinataire des notifications des demandes de congés
+            if (strcasecmp($structure->gestvalidagent(),'n')==0
+                    and array_key_exists($structure->id(),(array)$listegeststruct)===false)
+            {
+                // Il n'est pas autorisé à voir les agents de cette structure
+                echo "Vous n'êtes pas autorisé(e) à modifier les demandes sur la structure <b>" . $structure->nomcourt() . "</b><br>";
+            }
+            else
+            {
+                $gestionnaire = $structure->gestionnaire();
+                if (is_null($gestionnaire))
+                {
+                    // Si on n'a pas de gestionnaire => On charge l'utilisateur CRON comme gestionnaire
+                    $gestionnaire = new agent($dbcon);
+                    $gestionnaire->load(SPECIAL_USER_IDCRONUSER);
+                }
+
+                $agentliste = $gestionnaire->listeagentengestion(date("d/m/Y"), date("d/m/Y"), $structure);
+                
+//                $agentliste = array();
+//                // Soit le gestionnaire peut afficher les agents de la structure,
+//                // Soit il gère un circuit de validation des demandes de congés
+//                $codeinterne = null;
+//                $destinataire = $structure->agent_envoyer_a($codeinterne);
+//                if (is_null($destinataire))
+//                {
+//                    // Si on n'a pas de destinataire => On charge l'utilisateur CRON comme destinataire
+//                    $destinataire = new agent($dbcon);
+//                    $destinataire->load(SPECIAL_USER_IDCRONUSER);
+//                }
+//
+//                // Si le gestionnaire courant gère les agents de la structure (gestvalidagent=O) => On charge tous les agents de la structure et on enlève les responsables (SIHAM + responsable)
+//                // En effet, un gestionnaire ne peut pas valider les demandes de son responsable - Ticket GLPI 147328 et 166498 (sauf s'il est dans le circuit => voir test suivant)
+//                // Il peut aussi gérer le circuit des agents de la structure courante => C'est la même façon d'alimenter les agents
+//                if ((strcasecmp($structure->gestvalidagent(),'o')==0 and $gestionnaire->agentid()==$user->agentid()) or 
+//                        (array_key_exists($structure->id(),(array)$listegeststruct)===true 
+//                         and $codeinterne==structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+//                         and $destinataire->agentid()==$user->agentid())
+//                {
+//                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'n');
+//                    $resp = $structure->responsable();
+//                    unset($agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()]);
+//                    $resp = $structure->responsablesiham();
+//                    unset($agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()]);
+//                }
+//                $codeinterne = null;
+//                $destinataire = $structure->resp_envoyer_a($codeinterne);
+//                if (is_null($destinataire))
+//                {
+//                    // Si on n'a pas de destinataire => On charge l'utilisateur CRON comme destinataire
+//                    $destinataire = new agent($dbcon);
+//                    $destinataire->load(SPECIAL_USER_IDCRONUSER);
+//                }
+//                // Si la structure est dans le tableau des structures gérées par le gestionnaire et qu'il doit gérer le responsable de la structure courante
+//                if (array_key_exists($structure->id(),(array)$listegeststruct)===true
+//                    and $destinataire->agentid()==$user->agentid()
+//                    and ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT))
+//                {
+//                    // On récupère les responsables de la structure (titulaire + délégué) si le gestionnaire doit gérer ce circuit
+//                    $resp = $structure->responsable();
+//                    // ATTENTION : Le gestionnaire ne gère le responsable que s'il est affecté à la structure courante => Sinon ce n'est pas lui qui valide les congés
+//                    if ($resp->structureid()==$structure->id())
+//                    {
+//                        $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+//                    }
+//                    $resp = $structure->responsablesiham();
+//                    // ATTENTION : Le gestionnaire ne gère le responsable que s'il est affecté à la structure courante => Sinon ce n'est pas lui qui valide les congés
+//                    if ($resp->structureid()==$structure->id())
+//                    {
+//                        $agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+//                    }
+//                }
+//                // On supprime l'utilisateur du tableau au cas où il est présent car il ne peut en aucun cas s'auto-valider ses demandes
+//                unset($agentliste[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
+
+                
+                
+                foreach ((array)$agentliste as $membrekey => $membre) 
+                {
+                    // echo "boucle => " .$membre->nom() . "<br>";
+                    $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
+                    // Si on est en mode "previous" alors on considère que la fin est l'année courante
+                    if ($previous == 1)
                     {
-                        $todisplay = false;
+                        $fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
                     }
-                    elseif (strcasecmp($structure->gestvalidagent(), "n") == 0) // Si le gestionnaire ne peux valider que les responsables
+                    // Si on ne limite pas les congés a la date de fin de la période, il faut prendre plus large que la fin de période
+                    // On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
+                    elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
                     {
-                        if ($membre->estresponsable() == false) // Si le membre n'est pas un responsable ==> On n'affiche pas
-                        {
-                            $todisplay = false;
-                        }
+                        $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
                     }
-                    if ($todisplay) {
-                        // echo "boucle => " .$membre->nom() . "<br>";
-                        $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
-                        // Si on est en mode "previous" alors on considère que la fin est l'année courante
-                        if ($previous == 1)
-                            $fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
-                        // Si on ne limite pas les congés a la date de fin de la période, il faut prendre plus large que la fin de période
-                        // On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
-                        elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
-                            $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
-                        else
-                            $fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-                        // echo "Debut = $debut fin = $fin <br>";
-                        // echo "structure->id() = " . $structure->id() . "<br>";
-                        // echo "Membre = " . $membre->nom() . "<br>";
+                    else
+                    {
+                        $fin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
+                    }
+                    // echo "Debut = $debut fin = $fin <br>";
+                    // echo "structure->id() = " . $structure->id() . "<br>";
+                    // echo "Membre = " . $membre->nom() . "<br>";
 
-                        // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
-                        // -------------------------------------------------------------
-                        // Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->agentid()) car il doit pouvoir valider ses propres congés ??
-                        // $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
-                        $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null, $structure->id(), $cleelement);
-                        // -------------------------------------------------------------
-                        // echo "htmltodisplay = $htmltodisplay <br>";
-                        if ($htmltodisplay != "") {
-                            echo $htmltodisplay;
-                            echo "<br>";
-                            $aumoinsunedemande = TRUE;
-                        }
+                    // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
+                    // -------------------------------------------------------------
+                    // Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->agentid()) car il doit pouvoir valider ses propres congés ??
+                    // $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
+                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null, $structure->id(), $cleelement);
+                    // -------------------------------------------------------------
+                    // echo "htmltodisplay = $htmltodisplay <br>";
+                    if ($htmltodisplay != "") {
+                        echo $htmltodisplay;
+                        echo "<br>";
+                        $aumoinsunedemande = true;
                     }
                 }
-            }
-            if (! $aumoinsunedemande) {
-                echo "Aucune demande en attente pour cette structure...<br>";
-            }
-        }
-
-        $listestruct = $user->structgestcongeliste();
-        // echo "<br>listestruct = "; print_r((array) $listestruct) ; echo "<br>";
-        if (! is_null($listestruct)) {
-            foreach ($listestruct as $key => $structure) {
-                $htmltodisplay = "";
-                $aumoinsunedemande = FALSE;
-                $cleelement = $structure->id();
-                echo "<center><p>Tableau pour le responsable de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
-
-                $responsable = $structure->responsable();
-                $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
-                $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
-                // echo $responsable->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-                if (! is_null($responsable)) {
-                    $htmltodisplay = $responsable->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structure->id(), $cleelement);
+                if (! $aumoinsunedemande) {
+                    echo "Aucune demande en attente pour cette structure...<br>";
                 }
-                if ($htmltodisplay != "") {
-                    echo $htmltodisplay;
-                    echo "<br>";
-                    $aumoinsunedemande = TRUE;
-                }
-            }
-            if (! $aumoinsunedemande) {
-                echo "Aucune demande en attente pour cette structure...<br>";
             }
         }
 

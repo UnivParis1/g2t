@@ -86,65 +86,119 @@
     $structlist = null;
     if (strcasecmp($mode, "resp") == 0) {
         $structlist = $user->structrespliste();
+        $structlist = $fonctions->enleverstructuresinclues_demandes($structlist);
     }
 
     if (strcasecmp($mode, "gestion") == 0) {
         $structlist = $user->structgestliste();
+        // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
+        $listegeststruct = $user->structgestcongeliste();
+        //foreach((array)$listegeststruct as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
+        $structlist = array_merge((array)$structlist,(array)$listegeststruct);
     }
     if (is_array($structlist))
     {
         uasort($structlist,"triparprofondeurabsolue");
     }
 
-    if (is_array($structlist)) {
+    if (is_array($structlist)) 
+    {
         echo "Remarque : Les personnes affectées à temps plein ne sont pas affichées dans cet écran.<br><br>";
-        foreach ($structlist as $keystruct => $structure) {
-            $agentlist = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-            if (strcasecmp($mode, "resp") == 0) // Si on est en mode responsable, on charge aussi les responsables des sous structures
+        foreach ($structlist as $keystruct => $structure) 
+        {
+            if (strcasecmp($mode, "resp") == 0) // Si on est en mode responsable, on charge les agents en responsabilité
             {  
-                $sousstructliste = $structure->structurefille();
-                foreach((array) $sousstructliste as $sousstruct)
+                if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
                 {
-                    $respsousstruct = $sousstruct->responsable();
-                    if ($respsousstruct->agentid() != "" and $respsousstruct->agentid() > "0")
+                    if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                     {
-                        $agentlist[$respsousstruct->nom() . " " . $respsousstruct->prenom() . " " . $respsousstruct->agentid()] = $respsousstruct;
+                         continue;
                     }
+                    $agentlist = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
+                }
+                else
+                {
+                    // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
+
+                    $agentlist = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
                 }
             }
-            if (! is_array($agentlist)) {
+            elseif (strcasecmp($mode, "gestion") == 0)
+            {
+                // Si le gestionnaire ne doit pas gérer les agents et qu'il n'est pas destinataire des notifications des demandes de congés
+                if (strcasecmp($structure->gestvalidagent(),'n')==0
+                        and array_key_exists($structure->id(),(array)$listegeststruct)===false)
+                {
+                    // Il n'est pas autorisé à voir les agents de cette structure
+                    echo "Vous n'êtes pas autorisé(e) à modifier les demandes sur la structure <b>" . $structure->nomcourt() . "</b><br>";
+                    $agentlist = null;
+                }
+                else
+                {
+                    $gestionnaire = $structure->gestionnaire();
+                    if (is_null($gestionnaire))
+                    {
+                        // Si on n'a pas de gestionnaire => On charge l'utilisateur CRON comme gestionnaire
+                        $gestionnaire = new agent($dbcon);
+                        $gestionnaire->load(SPECIAL_USER_IDCRONUSER);
+                    }
+                    $agentlist = $gestionnaire->listeagentengestion(date("d/m/Y"), date("d/m/Y"), $structure);
+                }
+            }
+            if (! is_array($agentlist) or count($agentlist)==0) 
+            {
                 continue;
             }
-            echo "<form name='frm_validation_autodecla'  method='post' >";
-            echo "<table class='tableausimple'>";
-            echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong() . "</td></tr>";
-            echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Etat de la demande</td><td class='cellulesimple'>Jours de temps partiel</td></tr>";
-            foreach ($agentlist as $key => $membre) {
+            $premiereligne=true;
+            foreach ($agentlist as $key => $membre) 
+            {
                 $affectationliste = $membre->affectationliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 1) . $fonctions->finperiode());
-                if (is_array($affectationliste)) {
-                    foreach ($affectationliste as $key => $affectation) {
+                if (is_array($affectationliste)) 
+                {
+                    foreach ($affectationliste as $key => $affectation) 
+                    {
                         // echo "quotitevaleur=" . $affectation->quotitevaleur() . "   Quotite=" . $affectation->quotite() . "   <br> " ;
                         // echo "Calcul = " . round($affectation->quotite(),2) . "<br>";
-                        if ($affectation->quotitevaleur() < 1) {  // Les affectations à 100% ne sont pas affichées
+                        if ($affectation->quotitevaleur() < 1)  // Les affectations à 100% ne sont pas affichées
+                        { 
                             // BugFix : Ticket GLPI 76387
                             // On met +99 et non +1, afin de permettre aux demandes futures de s'afficher (année de référence + 99 ans)
                             $declaTPliste = $affectation->declarationTPliste($fonctions->anneeref() . $fonctions->debutperiode(), ($fonctions->anneeref() + 99) . $fonctions->finperiode());
-                            if (is_array($declaTPliste)) {
-                                foreach ($declaTPliste as $declaration) {
+                            if (is_array($declaTPliste)) 
+                            {
+                                foreach ($declaTPliste as $declaration) 
+                                {
                                     if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
+                                    {
+                                        if ($premiereligne)
+                                        {
+                                            echo "<form name='frm_validation_autodecla'  method='post' >";
+                                            echo "<table class='tableausimple'>";
+                                            echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong() . "</td></tr>";
+                                            echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Etat de la demande</td><td class='cellulesimple'>Jours de temps partiel</td></tr>";
+                                            $premiereligne = false;
+                                        }
                                         echo $declaration->html(TRUE, $structure->id());
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            echo "</table>";
-            echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
-            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
-            echo "<input type='hidden' name='mode' value='" . $mode . "' />";
-            echo "</form>";
-            echo "<br>";
+            if (!$premiereligne)
+            {
+                echo "</table>";
+                echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
+                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+                echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                echo "</form>";
+                echo "<br>";
+            }
+            else
+            {
+                echo "Aucun agent en temps partiel pour la structure <b>" . $structure->nomcourt() . "</b><br><br>";
+            }
         }
     }
 

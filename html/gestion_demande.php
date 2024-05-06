@@ -282,63 +282,73 @@
             // echo "Avant le chargement structure responsable <br>";
             if ($mode == 'resp')
             {
-                $structureliste = $responsable->structrespliste();
-                if (is_array($structureliste))
-                {
-                    uasort($structureliste,"triparprofondeurabsolue");
-                }
-                // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-                $agentlistefull = array();
-                foreach ($structureliste as $structure) {
-                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-                    // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                    // echo "fin du select <br>";
-                    $structfille = $structure->structurefille();
-                    if (! is_null($structfille)) {
-                        foreach ($structfille as $fille) {
-                            if ($fonctions->formatdatedb($fille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) {
-                                $agentliste = null;
-                                $respfille = $fille->responsable();
-                                $agentliste[$respfille->nom() . " " . $respfille->prenom() . " " . $respfille->agentid()] = $respfille;
-                                $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                            }
-                        }
-                    }
-                }
+                $agentlistefull = $responsable->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
             }
             else // $mode == gest
             {
-                $structureliste = $responsable->structgestliste();
-                if (is_array($structureliste))
-                {
-                    uasort($structureliste,"triparprofondeurabsolue");
-                }
-                $agentlistefull = array();
-                foreach ($structureliste as $structure) 
-                {
-                    $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"),'n');
-                    // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-                    $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                }
+                // Attention : En mode GEST, le responsable est le gestionnaire (!! Pas top !!)
+                $agentlistefull = $responsable->listeagentengestion(date("d/m/Y"), date("d/m/Y"));
             }
-            ksort($agentlistefull);
-            //echo "<br>"; print_r($agentlistefull); echo "<br>";
-            if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
-                unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
-            }
-            echo "<SELECT name='agentid'>";
-            foreach ($agentlistefull as $keyagent => $membre) 
+            
+            // Il faut trier les agents par structure puis par ordre alphabétique
+            $tmpagentlistefull = array();
+            foreach ($agentlistefull as $keyagent => $membre)
             {
-                if (!$membre->estutilisateurspecial())
-                {
-//                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
-                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->identitecomplete(true) . "</OPTION>";
-                    $selectagentbutton = true;
-                    $displaysubmit = false;
-                }
+                // Astuce : On ajoute la longueur du nom pour que le plus petit soit en premier
+                $tmpagentlistefull[strlen($membre->structureid()) . '#' . $membre->structureid()][$keyagent] = $membre;
             }
-            echo "</SELECT>";
+            // On trie les structures par ordre naturel
+            ksort($tmpagentlistefull,SORT_NATURAL);
+            $agentlistefull = array();
+            foreach ($tmpagentlistefull as $tmpstruct)
+            {
+                // On trie les agents par ordre naturel
+                ksort($tmpstruct,SORT_STRING);
+                $agentlistefull = array_merge($agentlistefull,$tmpstruct);
+            }
+            
+            //ksort($agentlistefull);
+            //echo "<br>"; print_r($agentlistefull); echo "<br>";
+            if (count($agentlistefull)==0)
+            {
+                echo "Vous n'avez aucun agent en gestion.<br>";
+                $selectagentbutton = false;
+                $displaysubmit = false;
+            }
+            else
+            {
+                $tmpstruct = null;
+                echo "<SELECT name='agentid'>";
+                foreach ($agentlistefull as $keyagent => $membre) 
+                {
+                    if (!$membre->estutilisateurspecial())
+                    {
+    //                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                        if (is_null($tmpstruct))
+                        {
+                            echo "<OPTION value=''>--- Sélectionnez un agent ---</OPTION>";
+                            $tmpstruct = new structure($dbcon);
+                            $tmpstruct->load($membre->structureid());
+                            echo "<optgroup label='" . $tmpstruct->nomcourt() . "'>";
+                        }
+                        elseif ($tmpstruct->id()!=$membre->structureid())
+                        {
+                            $tmpstruct = new structure($dbcon);
+                            $tmpstruct->load($membre->structureid());
+                            echo "</optgroup>";
+                            echo "<optgroup label='" . $tmpstruct->nomcourt() . "'>";
+                        }
+                        echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->identitecomplete(true) . "</OPTION>";
+                        $selectagentbutton = true;
+                        $displaysubmit = false;
+                    }
+                }
+                if (!is_null($tmpstruct))
+                {
+                    echo "</optgroup>";
+                }
+                echo "</SELECT>";
+            }
             echo "<br>";
         }
         else // $mode = 'rh'
