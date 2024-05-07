@@ -320,7 +320,7 @@
         }
         foreach ($listestruct as $key => $structure)
         {
-            echo "<center><p>Tableau pour les agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
+            echo "<center><p>Liste des agents de <b>" . $structure->nomlong() . " (" . $structure->nomcourt() . ")</b></p></center>";
             $aumoinsunedemande = FALSE;
             $cleelement = $structure->id();
             // Si le gestionnaire ne doit pas gérer les agents et qu'il n'est pas destinataire des notifications des demandes de congés

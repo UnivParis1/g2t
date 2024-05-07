@@ -2807,7 +2807,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     if ($todisplay) {
                         if ($premieredemande) {
                             $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
-                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Tableau des demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
                             $htmltext = $htmltext . "   <tr align=center>
                                                             <td class='cellulesimple'>Date de demande</td>
                                                             <td class='cellulesimple'>Date de début</td>
