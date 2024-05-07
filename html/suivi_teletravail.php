@@ -95,6 +95,7 @@
         $enattente = "";
         $enattente = $enattente . " de : ";
         $extraclass = "";
+        $spantext = '';
         if ($teletravail->esignatureid()<>"")
         {
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
@@ -132,6 +133,44 @@
             else
             {
                 $enattente = $enattente . "Impossible de déterminer l'acteur";
+            }
+
+            foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
+            {
+                $signedstep = false;
+                $spantext = $spantext . "Etape " . ($numstep+1) . " : \n";
+                foreach ($step["recipients"] as $esignatureuser)
+                {
+                    $datesignature = '';
+                    if ($esignatureuser["signed"])
+                    {
+                        $esignaturetimestamp = $response["auditTrail"]["auditSteps"][$numstep]["timeStampDate"];
+                        if (!is_int($esignaturetimestamp))
+                        {
+                            $date = new DateTime($esignaturetimestamp);
+                            $displaydate = $date->format("d/m/Y H:i:s");
+                        }
+                        elseif (strlen($esignaturetimestamp)>10)
+                        {
+                            $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
+                            //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
+                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+                        }
+                        else // C'est un timestamp sur 10 caractères
+                        {
+                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+                        }
+                        $datesignature = "le $displaydate";
+                        //echo "<br>" . print_r($response, true) . "<br>";
+                        //var_dump($esignatureuser);
+                        $signedstep = true;
+                    }
+                    $spantext = $spantext . "   " . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature \n";
+                }
+                if ($signedstep==false and is_null($nextstep))
+                {
+                    $nextstep = $numstep;
+                }
             }
         }
         elseif($teletravail->statutresponsable()==teletravail::TELETRAVAIL_ATTENTE)
@@ -187,11 +226,18 @@
             {
                 $openspan = "<span data-tip=" . chr(34) . htmlentities(substr(trim($motifmedical),0,strlen($motifmedical)-1)) . chr(34) . ">";
                 $closespan = "</span>";
+                $extraclass = $extraclass . " cursorpointer ";
             }
         }
-        echo "    <td class='cellulesimple'> $openspan " . $teletravail->libelletypeconvention() . "$closespan</td>";
+        echo "    <td class='cellulesimple $extraclass '> $openspan " . $teletravail->libelletypeconvention() . " $closespan</td>";
         echo "    <td class='cellulesimple'>" . $teletravail->libelletabteletravail() . "</td>";
-        echo "    <td class='cellulesimple $extraclass'>" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . $enattente . "</td>";
+        $datatitle = "";
+        if (trim($spantext . "") != "")
+        {
+            $datatitle = " data-title=" . chr(34) . $spantext . chr(34) . " ";
+            $extraclass = $extraclass . " cursorpointer ";
+        }
+        echo "    <td class='cellulesimple $extraclass' $datatitle> " . $fonctions->teletravailstatutlibelle($teletravail->statut()) . $enattente . " </td>";
         // echo "    <td class='cellulesimple'>" . $teletravail->commentaire() . "</td>";
         
         echo '<form name="showesignaturePDF_' . $teletravail->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
