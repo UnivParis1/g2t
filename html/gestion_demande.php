@@ -318,7 +318,7 @@
             else
             {
                 $tmpstruct = null;
-                echo "<SELECT name='agentid'>";
+                echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
                 foreach ($agentlistefull as $keyagent => $membre) 
                 {
                     if (!$membre->estutilisateurspecial())
@@ -357,7 +357,7 @@
             echo "<form name='selectagentcet'  method='post' >";
 
             $agentsliste = $fonctions->listeagentsg2t(true,false);
-            echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+            echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
             echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
             foreach ($agentsliste as $key => $identite)
             {

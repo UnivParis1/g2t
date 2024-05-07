@@ -199,7 +199,7 @@
 //            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
 //        }
         ksort($agentlistefull);
-        echo "<SELECT name='agentid'>";
+        echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
         foreach ($agentlistefull as $keyagent => $membre) 
         {
             if (!$membre->estutilisateurspecial())

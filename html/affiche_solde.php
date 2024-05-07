@@ -156,7 +156,7 @@
         //var_dump("Apres appel enleverstructuresinclues_soldes");
         echo "Veuillez selectionner un agent :<br>";
         echo "<form name='formselect'  method='post'>";
-        echo "<select id='agentselect' name='agentselect'>";
+        echo "<select id='agentselect' name='agentselect' class='listeagentg2t' size='1' style='width: 350px;'>";
         echo "<option value=''>Tous les agents</option>";
         foreach ($structureliste as $structkey => $structure)
         {
@@ -327,7 +327,7 @@
     {
         echo "Veuillez selectionner un agent :<br>";
         echo "<form name='formselect'  method='post'>";
-        echo "<select id='agentselect' name='agentselect'>";
+        echo "<select id='agentselect' name='agentselect' class='listeagentg2t' size='1' style='width: 350px;'>";
         echo "<option value=''>Tous les agents</option>";
         $structureliste = $user->structgestliste();
         if (is_array($structureliste))
