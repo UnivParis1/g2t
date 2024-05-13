@@ -933,6 +933,11 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $formsdata["ActivitesTelletravaillables"] = $tabinfos["infosconvention"]["activiteteletravail"];
                     $formsdata["PeriodeExclusion"] = $tabinfos["infosconvention"]["periodeexclusion"];
                     $formsdata["PeriodeAdaptation"] = $tabinfos["infosconvention"]["periodeadaptation"];
+                    // $formsdata["PiedPage1"] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
+                    for ($index=0 ; $index<6 ; $index++)
+                    {
+                        $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
+                    }
                     
                     //echo "formsdata = <br>"; var_dump($formsdata);
                     
