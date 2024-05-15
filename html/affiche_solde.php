@@ -164,19 +164,19 @@
             
             $annerecherche = ($fonctions->anneeref() - $previous);
 
-            if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
+            if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit afficher le solde des agents des structures inclues
             {
                 if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                 {
                      continue;
                 }
-                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure, agent::FILTRE_SOLDE);
             }
             else
             {
                 // echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
 
-                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure, agent::FILTRE_SOLDE);
             }
             ksort($agentliste);
                         
@@ -233,18 +233,18 @@
                     $annerecherche = ($fonctions->anneeref() - $previous);
                     
                     //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
-                    if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues 
+                    if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit afficher le solde des agents des structures inclues 
                     {
                         if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                         {
                                 continue;
                         }
-                        $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                        $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure, agent::FILTRE_SOLDE);
                         //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),'o');
                     }
                     else
                     {
-                        $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure);
+                        $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure, agent::FILTRE_SOLDE);
                         //$agentliste = $structure->agentlist($fonctions->formatdate($annerecherche . $fonctions->debutperiode()), $fonctions->formatdate(($annerecherche + 1) . $fonctions->finperiode()),$structure->respaffsoldesousstruct());
                     }
                     ksort($agentliste);

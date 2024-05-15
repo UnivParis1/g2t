@@ -39,6 +39,9 @@ class agent
     const PROFIL_RHCONGE = 'RHCONGE';
     const PROFIL_RHTELETRAVAIL = 'RHTELETRAVAIL';
     const PROFIL_RHANOMALIE = 'RHANOMALIE'; // OBSOLETE => NE PLUS UTILISER
+    
+    const FILTRE_DEMANDE = 'DEMANDE';
+    const FILTRE_SOLDE  = 'SOLDE';
         
     
     private $agentid = null;
@@ -5737,7 +5740,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return $agentlistefull;
     }
  
-    function listeagentenresponsabilite($datedebut,$datefin, $structure = null)
+    function listeagentenresponsabilite($datedebut,$datefin, $structure = null, $criterefiltre = agent::FILTRE_DEMANDE)
     {
 
         $agentlistefull = array();
@@ -5761,7 +5764,19 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
             foreach ($structureliste as $structure) 
             {
-                $agentliste = $structure->agentlist($datedebut,$datefin,$structure->respaffdemandesousstruct());
+                if ($criterefiltre == agent::FILTRE_DEMANDE)
+                {
+                    $agentliste = $structure->agentlist($datedebut,$datefin,$structure->respaffdemandesousstruct());
+                }
+                else if ($criterefiltre == agent::FILTRE_SOLDE)
+                {
+                    $agentliste = $structure->agentlist($datedebut,$datefin,$structure->respaffsoldesousstruct());
+                }
+                else
+                {
+                    echo $this->fonctions->showmessage(fonctions::MSGERROR, "Fonction agent::listeagentenresponsabilite => Le type de filtre n'est pas connu : $criterefiltre");
+                }
+                
                 //echo "Liste de agents = "; print_r($agentliste); echo "<br>";
                 $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
                 // echo "fin du select <br>";
