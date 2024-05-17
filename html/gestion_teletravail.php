@@ -667,6 +667,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
             $affectationliste = $agent->affectationliste($datedebutteletravail, $datefinteletravail, true);
             if (count((array)$affectationliste)==0)
             {
+                if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
                 $erreur = $erreur . "Vous n'avez pas d'affectation entre le $datedebutteletravail et le $datefinteletravail. Impossible de déclarer une convention de télétravail.";
                 $nbjoursmaxteletravailcalcule = 0;
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));            
@@ -713,11 +714,12 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 {
                     if (is_null($declaration) and $mode!='gestrh')
                     {
+                        if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
                         $erreur = $erreur . "Vous n'avez pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.<br>Impossible de saisir une convention de télétravail";
                     }
                     elseif (is_null($declaration) and $mode=='gestrh')
                     {
-                        $erreur = $erreur . "L'agent " . $agent->identitecomplete() . " pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.";
+                        $alerte = $alerte . "L'agent " . $agent->identitecomplete() . " pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.<br>";
                     }
                 }
             }
@@ -740,7 +742,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
             //var_dump($listeconventionchevauche);
             if (count($listeconventionchevauche)>0)
             {
-                $alerte = $alerte . "Attention : Plusieurs conventions se chevauchent. Les dates seront automatiquement adapatées à la fin du circuit de validation si nécessaire.";
+                $alerte = $alerte . "Attention : Plusieurs conventions se chevauchent. Les dates seront automatiquement adapatées à la fin du circuit de validation si nécessaire.<br>";
             }
         }
 
@@ -774,7 +776,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
             {
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
             }
-            elseif($esignatureactive)
+            elseif($esignatureactive) // Tout est ok et eSignature est disponible
             {
                 $agent->synchroteletravail();
                 $responsable = $agent->getsignataire();
@@ -793,6 +795,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 $erreur = "";
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => Id G2T = " . $teletravail->teletravailid() ));
             }
+            elseif (!$esignatureactive) // Tout Ok est eSignature n'est pas disponible 
+            {
+                $info = "La création de la convention est réussie.";
+                $erreur = "";
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => Id G2T = " . $teletravail->teletravailid() . " et pas de circuit eSignature"));
+            }
         }
     }
     
@@ -800,11 +808,13 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     {
         if (trim($activitetele) == "" and $statutresp==teletravail::TELETRAVAIL_VALIDE)
         {
+            if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
             $erreur = $erreur . "La description des activités télétravaillables est obligatoire";
             error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
         }
         elseif ($motifrefus == "" and $statutresp==teletravail::TELETRAVAIL_REFUSE)
         {
+            if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
             $erreur = $erreur . "Le motif du refus est obligatoire";
             error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
         }
@@ -819,6 +829,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             
             if ($teletravail->statutresponsable() == $statutresp and trim($statutresp) != '') // Sans doute un cas de re-post de la page
             {
+                if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
                 $erreur = $erreur . "La convention de télétravail a déjà été " . strtolower($fonctions->teletravailstatutlibelle($teletravail->statutresponsable())) ;
                 error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
                 // On reset toutes les variables car la convention n'est plus disponible
@@ -854,6 +865,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 }
                 else
                 {
+                    if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
                     $erreur = $erreur . "Le statut responsable de la demande de télétravail est inconnu ou n'a pas été sélectionné " . $statutresp;
                     error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
                 }
@@ -1110,7 +1122,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     {
         if (isset($teletravail))
         {
-            $erreur = $erreur . "<br>La convention de télétravail n'a pas pu être enregistrée.";
+            if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
+            $erreur = $erreur . "La convention de télétravail n'a pas pu être enregistrée.";
         }
         echo $fonctions->showmessage(fonctions::MSGERROR, $erreur);
         $inputtypeconv = $typeconv;
@@ -1926,7 +1939,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         $fermespan = '';
                         $tmpcellule  = '';
                         $tmpcellule = $tmpcellule . "    <td class='cellulesimple' ";
-                        if ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false))
+                        if (!is_null($declaration) and ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false)))
                         {
                             $fermespan = "</span>";
                             $tmpcellule .= " style='background: " . TABCOULEURPLANNINGELEMENT['tppar']['couleur']  . " ;' >";
