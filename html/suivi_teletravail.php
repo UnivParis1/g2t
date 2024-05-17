@@ -135,41 +135,44 @@
                 $enattente = $enattente . "Impossible de déterminer l'acteur";
             }
 
-            foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
+            if (isset($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"]))
             {
-                $signedstep = false;
-                $spantext = $spantext . "Etape " . ($numstep+1) . " : \n";
-                foreach ($step["recipients"] as $esignatureuser)
+                foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
                 {
-                    $datesignature = '';
-                    if ($esignatureuser["signed"])
+                    $signedstep = false;
+                    $spantext = $spantext . "Etape " . ($numstep+1) . " : \n";
+                    foreach ($step["recipients"] as $esignatureuser)
                     {
-                        $esignaturetimestamp = $response["auditTrail"]["auditSteps"][$numstep]["timeStampDate"];
-                        if (!is_int($esignaturetimestamp))
+                        $datesignature = '';
+                        if ($esignatureuser["signed"])
                         {
-                            $date = new DateTime($esignaturetimestamp);
-                            $displaydate = $date->format("d/m/Y H:i:s");
+                            $esignaturetimestamp = $response["auditTrail"]["auditSteps"][$numstep]["timeStampDate"];
+                            if (!is_int($esignaturetimestamp))
+                            {
+                                $date = new DateTime($esignaturetimestamp);
+                                $displaydate = $date->format("d/m/Y H:i:s");
+                            }
+                            elseif (strlen($esignaturetimestamp)>10)
+                            {
+                                $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
+                                //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
+                                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+                            }
+                            else // C'est un timestamp sur 10 caractères
+                            {
+                                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
+                            }
+                            $datesignature = "le $displaydate";
+                            //echo "<br>" . print_r($response, true) . "<br>";
+                            //var_dump($esignatureuser);
+                            $signedstep = true;
                         }
-                        elseif (strlen($esignaturetimestamp)>10)
-                        {
-                            $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
-                            //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
-                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-                        }
-                        else // C'est un timestamp sur 10 caractères
-                        {
-                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-                        }
-                        $datesignature = "le $displaydate";
-                        //echo "<br>" . print_r($response, true) . "<br>";
-                        //var_dump($esignatureuser);
-                        $signedstep = true;
+                        $spantext = $spantext . "   " . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature \n";
                     }
-                    $spantext = $spantext . "   " . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature \n";
-                }
-                if ($signedstep==false and is_null($nextstep))
-                {
-                    $nextstep = $numstep;
+                    if ($signedstep==false and is_null($nextstep))
+                    {
+                        $nextstep = $numstep;
+                    }
                 }
             }
         }
