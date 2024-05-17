@@ -985,6 +985,8 @@ select {
     background:lightgreen; 
     width:700px; 
     display:block;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .supprcongesbloc {
@@ -992,6 +994,8 @@ select {
     background:lightsteelblue; 
     width:900px; 
     display:block;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .commenttextarea {

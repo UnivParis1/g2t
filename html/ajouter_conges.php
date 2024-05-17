@@ -136,6 +136,25 @@
                         $erreur = "Suppression de l'ajout de congés supplémentaires (id = $id) : Ok";
                         echo $fonctions->showmessage(fonctions::MSGINFO, $erreur);
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+
+                        $ancien_solde = $solde->droitaquis() - $solde->droitpris();
+                        $solde = new solde($dbcon);
+                        $solde->load($agentid,$lib_sup);
+                        $nouveau_solde = $solde->droitaquis() - $solde->droitpris();
+                        
+                        // Envoi du mail à l'agent
+                        $corpmail = $user->identitecomplete() . " vient d'annuler " . ($ancien_solde - $nouveau_solde) . " jour(s) complémentaire(s).\n";
+                        $corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . $nouveau_solde . " jour(s).\n";
+                        $user->sendmail($agent, "Annulation de jours complémentaires", $corpmail);
+
+                        // Envoi du mail à tous les agents RHCONGE
+                        $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
+                        foreach ($agentrhlist as $agentrh) {
+                            $corpmail = $user->identitecomplete() . " vient d'annuler " . ($ancien_solde - $nouveau_solde) . " jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
+                            $corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . $nouveau_solde . " jour(s).\n";
+                            $user->sendmail($agentrh, "Annulation de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
+                        }
+
                     }
                 }
             }
@@ -262,6 +281,14 @@
                 $errlog = "Les jours supplémentaires ont été enregistrés... Nouveau solde = " . ($solde->droitaquis() - $solde->droitpris());
                 echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+
+                // Envoi du mail à l'agent
+                $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) complémentaire(s).\n";
+                $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
+                $corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                $user->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
+
+                // Envoi du mail à tous les agents RHCONGE
                 $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
                 foreach ($agentrhlist as $agentrh) {
                     $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
@@ -310,6 +337,8 @@
 //        echo "<input type='text' name='commentaire_supp' id='commentaire_supp' size=80 oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >";
         echo "<textarea required rows='4' cols='80' class='commenttextarea' name='commentaire_supp' id='commentaire_supp' oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >$commentaire_supp</textarea>";
         echo "<br>";
+        echo "<label>Merci de préciser clairement le motif de cet ajout.<br><br>La direction des ressources humaines sera informée de cette action (nombre de jours + commentaire).<br>Elle pourra vous contacter en cas de nécessité.</label>";
+        echo "<br>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
         echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
@@ -335,6 +364,8 @@
             echo "<form name='frm_supprconge'  method='post' >";
             echo "Annulation d'un ajout de jours complémentaires :<br><br>";
             echo $htmlcommentaire;
+            echo "<label>La direction des ressources humaines sera informée de cette action.<br>Elle pourra vous contacter en cas de nécessité.</label>";
+            echo "<br><br>";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
