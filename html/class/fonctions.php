@@ -4050,6 +4050,14 @@ WHERE  table_schema = Database()
         return $longueurmax;
     }
 
+    /**
+     * Affiche ou enregistre dans le fichier de trace, le texte en fonction des paramètres loginfo et displayinfo
+     * 
+     * @param boolean $loginfo
+     * @param boolean $displayinfo
+     * @param string  $texttolog
+     * @return null
+     */
     function log_traces($loginfo,$displayinfo,$texttolog)
     {
         if ($loginfo == true)
@@ -4078,8 +4086,19 @@ WHERE  table_schema = Database()
         }
     }
 
+    /**
+     *
+     * @deprecated
+     * 
+     * @param date $datefinprecedente
+     * @param date $datedebutsuivante
+     * @param integer $nbre_jour_periode
+     * @return boolean 
+     */
     function affectation_continue($datefinprecedente,$datedebutsuivante,$nbre_jour_periode)
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
+        
         $NBREMOIS = 4;
 
         $this->log_traces(true, false, "datefinprecedente => $datefinprecedente");
@@ -5215,6 +5234,24 @@ WHERE  table_schema = Database()
         }
         return $returnlist;
 
+    }
+    
+    function premierjourdumoissuivant($date)
+    {
+        $date = strtotime($this->formatdatedb($date));
+        $mois = date("m",$date);
+        $annee = date("Y",$date);
+        
+        return date("Ymd",strtotime($annee.$mois."01" . " + 1 month"));
+    }
+    
+    function dernierjourmoisprecedent($date)
+    {
+        $date = strtotime($this->formatdatedb($date));
+        $mois = date("m",$date);
+        $annee = date("Y",$date);
+        
+        return date("Ymd",strtotime($annee.$mois."01" . " - 1 day"));
     }
 }
 

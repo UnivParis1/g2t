@@ -605,6 +605,33 @@
     };
 </script>
 <?php
+
+/*
+    $user = new agent($dbcon);
+    $user->load(12615);
+    $nvsolde = $user->newcalculsoldeannuel($fonctions->anneeref(), false, true, false);
+
+    $user = new agent($dbcon);
+    $user->load(9328);
+    $nvsolde = $user->newcalculsoldeannuel($fonctions->anneeref(), false, true, false);
+
+    $user = new agent($dbcon);
+    $user->load(95283);
+    $nvsolde = $user->newcalculsoldeannuel($fonctions->anneeref(), false, true, false);
+
+    $user = new agent($dbcon);
+    $user->load(85688);
+    $nvsolde = $user->newcalculsoldeannuel($fonctions->anneeref(), false, true, false);
+
+    $user = new agent($dbcon);
+    $user->load(3944);
+    $nvsolde = $user->newcalculsoldeannuel($fonctions->anneeref(), false, true, false);
+
+    $user = new agent($dbcon);
+    $user->load(95800);
+    $nvsolde = $user->newcalculsoldeannuel($fonctions->anneeref(), false, true, false);
+ */
+
 ?>
 </body>
 </html>

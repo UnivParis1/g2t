@@ -364,7 +364,7 @@ class planning
         // echo "<br><br>fin 1er while => "; print_r ($this->listeelement); echo "<br>";
         // echo "Fin premier while ... <br>";
         
-        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN,TYPEABSENCE
+        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN,LIBELLE
                 FROM ABSENCERH
                 WHERE AGENTID = ?
                   AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($datedebut) . "')

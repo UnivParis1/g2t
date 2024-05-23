@@ -500,6 +500,7 @@ class demande
         $nbrejrscalcule = 0;
         $agent = $this->agent();
         // echo "identite de l'agent => " . $agent->identitecomplete() . "<br>";
+        // echo "Le statut de la demande est : " . $this->statut() . " \n";
         if (($this->statut() == demande::DEMANDE_VALIDE) or ($this->statut() == demande::DEMANDE_ATTENTE)) {
             $planning = new planning($this->dbconnect);
             $planning->load($agent->agentid(), $this->datedebut(), $this->datefin());
@@ -638,7 +639,6 @@ class demande
                 $errlog = "Impossible de changer le statut d'une demande 'refusée'.";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return $errlog . "<br/>";
-                ;
             } else {
                 // Si la date est null ou si elle est < 1900-01-01 (<=> Non initialisée)
                 if (is_null($this->datestatut) or $this->fonctions->formatdatedb($this->datestatut)<'19000101') 
