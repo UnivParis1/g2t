@@ -2332,9 +2332,10 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             uasort($structliste,"triparprofondeurabsolue");
         }
         $agentliste = array();
+        $teletravailtrouve = false;
         foreach ($structliste as $structure)
         {
-            $teletravailtrouve = false;
+            $teletravailtrouvestruct = false;
             if ($mode=='resp')
             {
                 ////////////////////////////////
@@ -2398,7 +2399,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $tabdemandeteletravail = $agent->listedemandeteletravailenattente();
                     foreach($tabdemandeteletravail as $teletravail)
                     {
-                        if ($teletravailtrouve===false)
+                        if ($teletravailtrouvestruct===false)
                         {
                             echo "<table class='tableausimple'>";
                             echo "<tr>";
@@ -2412,6 +2413,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                             echo "<td class='cellulesimple'>Répartition souhaitée</td>";
                             echo "<td class='cellulesimple'>Compléter la demande</td>";
                             echo "</tr>";
+                            $teletravailtrouvestruct = true;
                             $teletravailtrouve = true;
                         }
                         $debutspan = "";
@@ -2452,7 +2454,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }                    
                 }
             }
-            if ($teletravailtrouve===true)
+            if ($teletravailtrouvestruct===true)
             {
                 echo "</table><br>";
             }
