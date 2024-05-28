@@ -4108,6 +4108,29 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             $anneeref = $this->fonctions->anneeref();
         }
+        
+        $agentcomplement = new complement($this->dbconnect);
+        $agentcomplement->load($this->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
+        // Si le complément existe et qu'on a réussi à le chager
+        if ($agentcomplement->agentid()==$this->agentid())
+        {
+            if ($loginfo == true) 
+            { 
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde $anneeref de l'agent " . $this->identitecomplete() . " est forcé => On ne fait pas de calcul."));
+            }
+            $solde = new solde($this->dbconnect);
+            $msg_erreur = $solde->load($this->agentid(),"ann" . substr($anneeref,-2,2));
+            if ($msg_erreur <> "")
+            {
+                echo $msg_erreur;
+            }
+            if ($loginfo == true) 
+            { 
+                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Le solde acquis est conservé à " . $solde->droitaquis() . " jours"));
+            }
+            return $solde->droitaquis();
+        }
+
         // Construction des date de début et de fin de période (typiquement : 01/09/YYYY et 31/08/YYYY+1)
         $date_deb_period = $anneeref . $this->fonctions->debutperiode();
         $date_fin_period = ($anneeref + 1) . $this->fonctions->finperiode();
@@ -4913,6 +4936,25 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             $anneeref = $this->fonctions->anneeref();
         }
+        
+        $agentcomplement = new complement($this->dbconnect);
+        $agentcomplement->load($this->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
+        // Si le complément existe et qu'on a réussi à le chager
+        if ($agentcomplement->agentid()==$this->agentid())
+        {
+            $this->fonctions->log_traces($loginfo,$displayinfo,"Le solde $anneeref de l'agent " . $this->identitecomplete() . " est forcé => On ne fait pas de calcul.");
+            $solde = new solde($this->dbconnect);
+            $msg_erreur = $solde->load($this->agentid(),"ann" . substr($anneeref,-2,2));
+            if ($msg_erreur <> "")
+            {
+                echo $msg_erreur;
+            }
+            $this->fonctions->log_traces($loginfo,$displayinfo,"Le solde acquis est conservé à " . $solde->droitaquis() . " jours");
+            $this->fonctions->log_traces($loginfo,$displayinfo,"###########################################");
+            return $solde->droitaquis();
+        }
+        
+        
         // Construction des date de début et de fin de période (typiquement : 01/09/YYYY et 31/08/YYYY+1)
         $date_deb_period = $anneeref . $this->fonctions->debutperiode();
         $date_fin_period = ($anneeref + 1) . $this->fonctions->finperiode();
@@ -5609,6 +5651,40 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     unset($agentliste[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()]);
                     $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
                 }
+                
+                //////////////////////////////////////////////////
+                // On va ajouter les responsables des structures filles si le gestionnaire peut valider les demandes ds responsables filles
+                // Attention : On doit vérifier que le responsable de la structure fille est bien affecté dans la structure
+                // Sinon, ce n'est pas à lui de gérer les congés.
+                if ($this->fonctions->convertvaluetobool($structure->gestvalidrespstructfille()))
+                {
+                    $structfilleliste = $structure->structurefille();
+                    foreach ((array)$structfilleliste as $fille)
+                    {
+                        $codeinterne = null;
+                        $destinataire = $fille->resp_envoyer_a($codeinterne);
+                        if ($codeinterne==structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                        {
+                            $resp = $fille->responsable();
+                            if (trim($resp->civilite())!='' and !$resp->estutilisateurspecial())
+                            {
+                                if ($resp->structureid()==$fille->id())
+                                {
+                                    $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                                }
+                            }
+                            $resp = $fille->responsablesiham();
+                            if (trim($resp->civilite())!='' and !$resp->estutilisateurspecial())
+                            {
+                                if ($resp->structureid()==$fille->id())
+                                {
+                                    $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 $codeinterne = null;
                 $destinataire = $structure->resp_envoyer_a($codeinterne);
                 if (is_null($destinataire))

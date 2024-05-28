@@ -3530,6 +3530,15 @@ class fonctions
 
         error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut de la convention télétravail =>  " . $esignatureid));
 
+        if (trim($esignatureid . "")=="")
+        {
+            $error = "Pas de synchronisation sur la convention " . $esignatureid . " => Pas dans eSignature";
+            error_log(basename(__FILE__) . $this->stripAccents(" " . $error));
+            $result_json = array('status' => 'Ok', 'description' => '');
+            error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
+            return $result_json;
+        }
+        
         $curl = curl_init();
         $params_string = "";
         $opts = [

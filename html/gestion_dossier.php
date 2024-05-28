@@ -211,6 +211,21 @@
         }
     }
     
+    $gestvalidrespstructfille = null;
+    if (isset($_POST["gestvalidrespstructfille"]))
+    {
+        $gestvalidrespstructfille = $_POST["gestvalidrespstructfille"];
+    }
+    if (is_array($gestvalidrespstructfille)) {
+        foreach ($gestvalidrespstructfille as $structureid => $valeur) {
+            $structureid = str_replace("'", "", $structureid);
+            $structure = new structure($dbcon);
+            $structure->load($structureid);
+            $structure->gestvalidrespstructfille($valeur);
+            $structure->store();
+        }
+    }
+
     $respaffsoldesousstruct = null;
     if (isset($_POST["respaffsoldesousstruct"]))
     {
@@ -578,13 +593,13 @@
             {
                 echo "<select name=displaysousstruct['" . $structure->id() . "']>";
                 echo "<option value='o'";
-                if (strcasecmp($structure->sousstructure(), "o") == 0)
+                if ($fonctions->convertvaluetobool($structure->sousstructure()))
                 {
                     echo " selected ";
                 }
                 echo ">Oui</option>";
                 echo "<option value='n'";
-                if (strcasecmp($structure->sousstructure(), "n") == 0)
+                if (!$fonctions->convertvaluetobool($structure->sousstructure()))
                 {
                     echo " selected ";
                 }
@@ -611,13 +626,13 @@
                     if ($action == 'modif') {
                         echo "<select name=respaffsoldesousstruct['" . $structure->id() . "']>";
                         echo "<option value='o'";
-                        if (strcasecmp($structure->respaffsoldesousstruct(), "o") == 0)
+                        if ($fonctions->convertvaluetobool($structure->respaffsoldesousstruct()))
                         {
                             echo " selected ";
                         }
                         echo ">Oui</option>";
                         echo "<option value='n'";
-                        if (strcasecmp($structure->respaffsoldesousstruct(), "n") == 0)
+                        if (!$fonctions->convertvaluetobool($structure->respaffsoldesousstruct()))
                         {
                             echo " selected ";
                         }
@@ -637,13 +652,13 @@
                     if ($action == 'modif') {
                         echo "<select name=respaffdemandesousstruct['" . $structure->id() . "']>";
                         echo "<option value='o'";
-                        if (strcasecmp($structure->respaffdemandesousstruct(), "o") == 0)
+                        if ($fonctions->convertvaluetobool($structure->respaffdemandesousstruct()))
                         {
                             echo " selected ";
                         }
                         echo ">Oui</option>";
                         echo "<option value='n'";
-                        if (strcasecmp($structure->respaffdemandesousstruct(), "n") == 0)
+                        if (!$fonctions->convertvaluetobool($structure->respaffdemandesousstruct()))
                         {
                             echo " selected ";
                         }
@@ -663,13 +678,13 @@
                     if ($action == 'modif') {
                         echo "<select name=agentaffplanningdirection['" . $structure->id() . "']>";
                         echo "<option value='o'";
-                        if (strcasecmp($structure->agentaffplanningdirection(), "o") == 0)
+                        if ($fonctions->convertvaluetobool($structure->agentaffplanningdirection()))
                         {
                             echo " selected ";
                         }
                         echo ">Oui</option>";
                         echo "<option value='n'";
-                        if (strcasecmp($structure->agentaffplanningdirection(), "n") == 0)
+                        if (!$fonctions->convertvaluetobool($structure->agentaffplanningdirection()))
                         {
                             echo " selected ";
                         }
@@ -718,13 +733,13 @@
             {
                 echo "<select name=displayallagent['" . $structure->id() . "']>";
                 echo "<option value='o'";
-                if (strcasecmp($structure->affichetoutagent(), "o") == 0)
+                if ($fonctions->convertvaluetobool($structure->affichetoutagent()))
                 {
                     echo " selected ";
                 }
                 echo ">Oui</option>";
                 echo "<option value='n'";
-                if (strcasecmp($structure->affichetoutagent(), "n") == 0)
+                if (!$fonctions->convertvaluetobool($structure->affichetoutagent()))
                 {
                     echo " selected ";
                 }
@@ -772,13 +787,13 @@
                 if ($action == 'modif') {
                     echo "<select name=gestvalidagent['" . $structure->id() . "']>";
                     echo "<option value='o'";
-                    if (strcasecmp($structure->gestvalidagent(), "o") == 0)
+                    if ($fonctions->convertvaluetobool($structure->gestvalidagent()))
                     {
                         echo " selected ";
                     }
                     echo ">Oui</option>";
                     echo "<option value='n'";
-                    if (strcasecmp($structure->gestvalidagent(), "n") == 0)
+                    if (!$fonctions->convertvaluetobool($structure->gestvalidagent()))
                     {
                         echo " selected ";
                     }
@@ -791,6 +806,38 @@
                 }
                 echo "</td>";
                 echo "</tr>";
+
+                // Si la structure n'a pas de structures filles => On n'affiche pas ce paramétrage
+                $structlistefille = $structure->structurefille();
+                if (count((array)$structlistefille)>0 and false)
+                {
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Autoriser la validation des demandes du responsable des structures filles par le gestionnaire G2T de <b>" . $structure->nomcourt() . "</b> :";
+                    echo "</td><td>";
+                    if ($action == 'modif') {
+                        echo "<select name=gestvalidrespstructfille['" . $structure->id() . "']>";
+                        echo "<option value='o'";
+                        if ($fonctions->convertvaluetobool($structure->gestvalidrespstructfille()))
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Oui</option>";
+                        echo "<option value='n'";
+                        if (!$fonctions->convertvaluetobool($structure->gestvalidrespstructfille()))
+                        {
+                            echo " selected ";
+                        }
+                        echo ">Non</option>";
+                        echo "</select>";
+                    } 
+                    else
+                    {
+                        echo $fonctions->ouinonlibelle($structure->gestvalidrespstructfille());
+                    }
+                    echo "</td>";
+                    echo "</tr>";
+                }
             }
 
             echo "</table>";
@@ -1073,7 +1120,7 @@
                     echo "<tr>";
                     echo "<td class='delegpaddingleft'>";
                     $checked = '';
-                    if (strcasecmp($continuesendtoresp, 'o')==0)
+                    if ($fonctions->convertvaluetobool($continuesendtoresp))
                     {
                         $checked = ' checked ';
                     }

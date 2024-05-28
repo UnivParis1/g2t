@@ -241,21 +241,41 @@
             //var_dump($tabinfos);
 
             $formsdata = array();
-            $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
-            $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
-            $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
-            $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
-            $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
-            $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
-            $formsdata["annee_ref"] = $tabinfos["agent"]["ref_year"];
-            $formsdata["cellule_a"] = $tabinfos["informations"]["0"]["value"];
-            $formsdata["cellule_g"] = $tabinfos["informations"]["1"]["value"];
-            $formsdata["cellule_h"] = $tabinfos["informations"]["2"]["value"];
-            $formsdata["cellule_i"] = $tabinfos["informations"]["3"]["value"];
-            $formsdata["cellule_j"] = $tabinfos["informations"]["4"]["value"];
-            $formsdata["cellule_k"] = $tabinfos["informations"]["5"]["value"];
-            $formsdata["cellule_l"] = $tabinfos["informations"]["6"]["value"];
-
+            
+//            $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
+//            $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
+//            $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
+//            $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
+//            $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
+//            $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
+//            $formsdata["annee_ref"] = $tabinfos["agent"]["ref_year"];
+//            $formsdata["cellule_a"] = $tabinfos["informations"]["0"]["value"];
+//            $formsdata["cellule_g"] = $tabinfos["informations"]["1"]["value"];
+//            $formsdata["cellule_h"] = $tabinfos["informations"]["2"]["value"];
+//            $formsdata["cellule_i"] = $tabinfos["informations"]["3"]["value"];
+//            $formsdata["cellule_j"] = $tabinfos["informations"]["4"]["value"];
+//            $formsdata["cellule_k"] = $tabinfos["informations"]["5"]["value"];
+//            $formsdata["cellule_l"] = $tabinfos["informations"]["6"]["value"];
+            
+            $formsdata["Nom"] = $tabinfos["agent"]["name"];
+            $formsdata["Prenom"] = $tabinfos["agent"]["firstname"];
+            $formsdata["Corps"] = $tabinfos["agent"]["corps"];
+            $formsdata["Quotite"] = $tabinfos["agent"]["activity"];
+            $formsdata["Affectation"] = $tabinfos["agent"]["service"]["name"];
+            $formsdata["Adresse"] = $tabinfos["agent"]["service"]["addr"];
+            $formsdata["AnneeRef"] = $tabinfos["agent"]["ref_year"];
+            $formsdata["CETA"] = $tabinfos["informations"]["0"]["value"];
+            $formsdata["CETG"] = $tabinfos["informations"]["1"]["value"];
+            $formsdata["CETH"] = $tabinfos["informations"]["2"]["value"];
+            $formsdata["CETI"] = $tabinfos["informations"]["3"]["value"];
+            $formsdata["CETJ"] = $tabinfos["informations"]["4"]["value"];
+            $formsdata["CETK"] = $tabinfos["informations"]["5"]["value"];
+            $formsdata["CETL"] = $tabinfos["informations"]["6"]["value"];
+            for ($index=0 ; $index<6 ; $index++)
+            {
+                $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
+            }
+            
             //echo "formsdata = <br>"; var_dump($formsdata);
 
             $params = array

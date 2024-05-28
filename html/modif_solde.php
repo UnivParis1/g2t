@@ -55,7 +55,7 @@
         $agent = null;
     }
 
-    $anneeref = $fonctions->anneeref()-1;
+    $anneeref = $fonctions->anneeref();
     if (isset($_POST["annee_ref"]))
     {
         $anneeref = $_POST["annee_ref"];
@@ -68,47 +68,25 @@
 
     $msg_erreur = "";
     $info = "";
-    if (isset($_POST["newsolde"]))   //if (isset($_POST["solde"]))
+    if (isset($_POST["newsolde"]))
     {
-/*
-        $newsolde=$_POST["solde"];
-        $newsolde = str_replace(",", ".", $newsolde);
-        //echo "int => " . intval($newsolde * 2) . "   et l'autre => " . ($newsolde * 2) . "<br>";
-        if (! is_numeric($newsolde))
+        $newacquis = $_POST["droitaquis"];
+        if (isset($_POST["droitpris"]))
         {
-            $msg_erreur = "Vous n'avez pas saisi une valeur nunérique correcte.<br>";
-            $newsolde = "";
-        }
-        elseif (intval($newsolde * 2) <> ($newsolde * 2)) // On vérifie que newsolde est soit un entier soit un multiple de 1/2 journée
-        {
-            $msg_erreur = "Vous ne pouvez saisir qu'un nombre entier ou un multiple de 1/2 journée.<br>";
-            $newsolde = "";
-        }
-        elseif ($newsolde == "" or $newsolde < 0) {
-            $msg_erreur = "Vous n'avez pas saisi de solde ou il est négatif.<br>";
+            $newpris = $_POST["droitpris"];
         }
         else
         {
-            $typeconges = "ann" . substr($anneeref,-2,2);
+            // Si on ne doit pas modifier le droit pris car la zone est disabled
+            // on charge le droit droit pris actuel et on le force dans la variable
             $solde = new solde($dbcon);
-            $msg_erreur = $solde->load($agent->agentid(),$typeconges);
-            if ($msg_erreur=="")
+            $msg_erreur = $solde->load($agent->agentid(),"ann" . substr($anneeref,-2,2));
+            if ($msg_erreur <> "")
             {
-                $anciensolde = $solde->solde();
-                if (floatval($anciensolde) <> floatval($newsolde))
-                {
-                    $pris=$solde->droitpris();
-                    $solde->droitaquis($pris + $newsolde);
-                    $solde->store();
-                    
-                    $agent->ajoutecommentaireconge($typeconges, $solde->solde()-$anciensolde, "Modification du solde par " . $user->identitecomplete() . " (Ancien solde = $anciensolde / Nouveau solde = " . $solde->solde() .")");
-                    $info = "La modification du solde est bien prise en compte.";
-                }
+                echo $msg_erreur;
             }
+            $newpris = $solde->droitpris();
         }
-*/
-        $newacquis = $_POST["droitaquis"];
-        $newpris = $_POST["droitpris"];
         if (! is_numeric($newacquis))
         {
             $msg_erreur = "Vous n'avez pas saisi une valeur nunérique correcte dans le champs 'Droit acquis'.<br>";
@@ -153,6 +131,11 @@
                     $solde->droitaquis($newacquis);
                     $solde->droitpris($newpris);
                     $solde->store();
+                    $complement = new complement($dbcon);
+                    $complement->agentid($agent->agentid());
+                    $complement->complementid(complement::FORCE_SOLDE_LABEL . $anneeref);
+                    $complement->valeur('YES');
+                    $complement->store();
                     if (floatval($ancienacquis) <> floatval($newacquis))
                     {
                         $agent->ajoutecommentaireconge($typeconges, '0', "Modification du droit acquis (Ancien droit acquis = $ancienacquis / Nouveau droit acquis = " . $solde->droitaquis() .")", $userid);
@@ -164,14 +147,23 @@
                     $info = "La modification du droit acquis et/ou droit pris est bien prise en compte.";
                 }
             }
-            
         }
     }
     
     if (isset($_POST["calculdroit"]))
     {
+        // On supprime le forçage du solde => On peut relancer le calcul automatique
+        $complement = new complement($dbcon);
+        $complement->load($agent->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
+        // Si le complément existe et qu'on a réussi à le chager
+        if ($complement->agentid()==$agent->agentid())
+        {
+            $info = $info . "Le forçage du solde $anneeref/" . ($anneeref+1) . " a été désactivé.<br>";
+        }
+        $complement->delete($agent->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
         $droitacquis = $agent->calculsoldeannuel($anneeref, true, true, false);
-        $info = "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
+        //$droitacquis = $agent->newcalculsoldeannuel($anneeref, true, true, false);
+        $info = $info . "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
     }
     
     echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
@@ -189,7 +181,12 @@
     echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
     foreach ($agentsliste as $key => $identite)
     {
-        echo "<option value='$key'>$identite</option>";
+        echo "<option value='$key'";
+        if (!is_null($agent) and $key == $agent->agentid())
+        {
+            echo " selected ";
+        }
+        echo ">$identite</option>";
     }
     echo "</select>";
     
@@ -197,11 +194,13 @@
     echo "<br><br>";
     echo "Période d'affichage : ";
     echo "<select name='annee_ref' id='annee_ref'>";
-    for ($annee=$fonctions->anneeref()-1;$annee>=$fonctions->anneeref()-3;$annee--)
+    for ($annee=$fonctions->anneeref();$annee>=$fonctions->anneeref()-3;$annee--)
     {
         echo "<option value='$annee'";
         if ($annee==$anneeref)
+        {
             echo " selected ";
+        }
         echo ">Année " . $annee . "/" . ($annee+1) . "</option>";
     }
     echo "</select>";
@@ -254,9 +253,22 @@
             echo "Veuillez saisir le nouveau droit acquis pour " . $solde->typelibelle() . " : ";
             echo "<input type='text' name='droitaquis' value='" . $solde->droitaquis() .  "'>";
             echo "<br><br>";
+            //var_dump("anneeref = " . $anneeref . "   fonctions->anneeref() = " . $fonctions->anneeref()) ;
             echo "Veuillez saisir le nouveau droit pris pour " . $solde->typelibelle() . " : ";
-            echo "<input type='text' name='droitpris' value='" . $solde->droitpris() .  "'>";
+            echo "<input type='text' name='droitpris' value='" . $solde->droitpris() .  "'";
+            if ($anneeref == $fonctions->anneeref())
+            {
+                echo " disabled='true' ";
+            }
+            echo ">";
             echo "<br><br>";
+            $agentcomplement = new complement($dbcon);
+            $agentcomplement->load($agent->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
+            // Si le complément existe et qu'on a réussi à le chager
+            if ($agentcomplement->agentid()==$agent->agentid())
+            {
+                echo "<label class='redtext'>Le solde " . $solde->typelibelle() . " de l'agent est déjà forcé.<br>Appuyez sur le bouton 'Recalculer' pour annuler le forçage du solde.</label><br><br>";
+            }
             echo "<input type='submit' id='newsolde' name='newsolde' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
             echo "</form>";
         }

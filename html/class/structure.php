@@ -48,6 +48,8 @@ class structure
     // private $respvalidsousstruct = null; // permet au responsable de la structure de valider les demandes des agents d'une structure fille -- OBSOLETE --
 
     private $gestvalidagent = null; // autorise le gestionnaire à valider les demandes des congés des agents
+    
+    private $gestvalidrespstructfille = null; // autorise le gestionnaire à valider les demandes de congés des responsables des structures filles
 
     private $respaffsoldesousstruct = null; // le responsable de la structure courante visualise le solde des agents des structures inclues 
     
@@ -108,7 +110,8 @@ class structure
                            RESPAFFDEMANDESOUSSTRUCT,
                            EXTERNALID,
                            ISDEPLOYED,
-                           AGENTAFFPLANNINGDIRECTION
+                           AGENTAFFPLANNINGDIRECTION,
+                           GESTVALIDRESPSTRUCTFILLE
                     FROM STRUCTURE 
                     WHERE STRUCTUREID=?";
             $params = array($structureid);
@@ -153,6 +156,7 @@ class structure
             $this->externalid = "$result[17]";
             $this->isdeployed = "$result[18]";
             $this->agentaffplanningdirection = "$result[19]";
+            $this->gestvalidrespstructfille = "$result[20]";
             
             $this->profondeurrelative = 0;
             
@@ -483,12 +487,37 @@ class structure
                 $errlog = "Structure->gestvalidagent : Le paramètre gestvalidagent de la structure n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {    
                 return $this->gestvalidagent;
-        } else
+            }
+        } 
+        else
+        {
             $this->gestvalidagent = $valide;
+        }
     }
 
+    function gestvalidrespstructfille($valide = null)
+    {
+        if (is_null($valide)) {
+            if (is_null($this->gestvalidrespstructfille)) {
+                $errlog = "Structure->gestvalidrespstructfille : Le paramètre gestvalidrespstructfille de la structure n'est pas défini !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            } 
+            else
+            {
+                return $this->gestvalidrespstructfille;
+            }
+        } 
+        else
+        {
+            $this->gestvalidrespstructfille = $valide;
+        }
+    }
+    
     function sousstructure($sousstruct = null)
     {
         if (is_null($sousstruct)) {
@@ -1525,7 +1554,8 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     RESPAFFSOLDESOUSSTRUCT=?,
                     RESPAFFDEMANDESOUSSTRUCT=?,
                     ISDEPLOYED=?,
-                    AGENTAFFPLANNINGDIRECTION=?
+                    AGENTAFFPLANNINGDIRECTION=?,
+                    GESTVALIDRESPSTRUCTFILLE=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
         $params = array($this->sousstructure(),
@@ -1535,6 +1565,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                         $this->respaffdemandesousstruct(),
                         $this->isdeployed(),
                         $this->agentaffplanningdirection(),
+                        $this->gestvalidrespstructfille(),
                         $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);

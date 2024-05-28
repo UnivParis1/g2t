@@ -72,7 +72,7 @@
             
             //echo "datefinformate = $datefinformate   Date J - 2 ans = " . (date('Y')-2) . date("md") . " typeabsence = $typeabsence \n";
             // Si l'arret s'est terminé il y a moins de 2 ans et que c'est un type d'absence M (<=> maladie)
-            if ($datefinformate > (date('Y')-2) . date("md") and strcasecmp($typeabsence,'M')==0 and true==false)
+            if ($datefinformate > (date('Y')-2) . date("md") and strcasecmp($typeabsence,'M')==0 and false)
             {
                 echo "L'arret date de moins de 2 ans et c'est une maladie (typeabsence = $typeabsence) \n";
                 $agent = new agent($dbcon);
