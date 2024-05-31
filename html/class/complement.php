@@ -15,6 +15,7 @@ class complement
 {
     public const TT_EXCLU_LABEL = 'TT_EXCLU_';
     public const FORCE_SOLDE_LABEL = 'FORCE_SOLDE_';
+    public const AVIS_CONGES_LABEL = 'AVISCONGES';
 
     private $agentid = null;
 

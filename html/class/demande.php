@@ -9,6 +9,7 @@ class demande
     public const DEMANDE_REFUSE = "r";
     public const DEMANDE_ATTENTE = "a";
     public const DEMANDE_ANNULE = "x";
+    public const DEMANDE_AVIS = "c";
 
     private $demandeid = null;
 

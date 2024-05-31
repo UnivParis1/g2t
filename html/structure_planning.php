@@ -76,7 +76,7 @@
     $mode = "resp";
     if (isset($_POST["mode"]))
     {
-        $mode = $_POST["mode"]; // Mode = resp ou agent
+        $mode = $_POST["mode"]; // Mode = resp ou agent ou consult
     }
                                             
     $date_selected = '';
@@ -607,12 +607,20 @@
     $anneemois = $fonctions->anneeref() - $previous;
     // echo "index = $index <br>";
     for ($indexcpt = 1; $indexcpt <= 12; $indexcpt ++) {
-        echo "<option value='$index'";
-        if ($index == $indexmois)
+        // Si on est en mode consultant et que la date calculée (annee + mois) est inférieure à la date du jour => on n'affiche pas
+        if (strcasecmp($mode,"consult")==0 and ($anneemois . str_pad($index, 2, "0", STR_PAD_LEFT)<date("Ym")))
         {
-            echo " selected ";
+            // On ne fait rien
         }
-        echo ">" . $fonctions->nommois("01/" . str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . date("Y")) . "  " . $anneemois . "</option>";
+        else
+        {
+            echo "<option value='$index'";
+            if ($index == $indexmois)
+            {
+                echo " selected ";
+            }
+            echo ">" . $fonctions->nommois("01/" . str_pad($index, 2, "0", STR_PAD_LEFT) . "/" . date("Y")) . "  " . $anneemois . "</option>";
+        }
         // On calcule le modulo
         $index = ($index % 12) + 1;
         // Si le mois est > 12 ou égal à 1 alors c'est qu'on est passé à l'année suivante
@@ -778,7 +786,17 @@
                 $structparent = $structure->structureenglobante();
             }
         }
-    } 
+    }
+    elseif (strcasecmp($mode, "consult") == 0)
+    {
+        //var_dump("Je suis en mode consultant");
+        $structure = new structure($dbcon);
+        $agentconsultliste = $user->agentconsultantliste();
+        //var_dump($agentconsultliste);
+        $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'n',true,true,false,true,$agentconsultliste);
+        echo "<br>";
+        echo $planninghtml;
+    }
     else 
     {
         $affstructureid = $user->structureid();

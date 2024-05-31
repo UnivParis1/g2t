@@ -52,7 +52,7 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-    //print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
+    print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
 
     $reportlist = null;
     if (isset($_POST['report']))
@@ -340,6 +340,82 @@
             }
         }
     }
+    
+    $arrayinputavisuser = null;
+    if (isset($_POST["inputavisuser"]))
+    {
+        $arrayinputavisuser = $_POST["inputavisuser"];
+    }
+    $arrayavisuser = null;
+    if (isset($_POST["avisuser"]))
+    {
+        $arrayavisuser = $_POST["avisuser"];
+    }
+    if (is_array($arrayavisuser))
+    {
+        foreach ($arrayavisuser as $membreid => $valeur) 
+        {
+            // Si on n'a pas de nom dans la zone de saisie du consultant => On doit effacer le consultant
+            if (trim($arrayinputavisuser[$membreid] . "") == "") {
+                $complement = new complement($dbcon);
+                $complement->delete($membreid, complement::AVIS_CONGES_LABEL);
+            }
+            else 
+            {
+                //var_dump("\$valeur est soit un uid soit un numéro agent : $valeur");
+                if (! is_numeric($valeur))
+                {
+                    $agentavis = $fonctions->createldapagentfromuid($valeur);
+                    if ($agentavis===false)
+                    {
+                        $agentavisid = null;
+                    }
+                    else
+                    {
+                        $agentavisid = $agentavis->agentid();
+                    }
+                }
+                else
+                {
+                    //$agentid = $valeur;
+                    $agentavis = $fonctions->createldapagentfromagentid($valeur);
+                    if ($agentavis===false)
+                    {
+                        $agentavisid = null;
+                    }
+                    else
+                    {
+                        $agentavisid = $agentavis->agentid();
+                    }
+                }
+                // Si le $agentavisid n'est pas vide ou null
+                if ($agentavisid != '' and (! is_null($agentavisid))) 
+                {
+                    $membre = new agent($dbcon);
+                    $membre->load($membreid);
+                    if ($agentavisid == $membreid)
+                    {
+                        if (strlen(trim($msgerreur))>0) { $msgerreur = $msgerreur . "<br>"; }
+                        $msgerreur = $msgerreur . $membre->identitecomplete() . " : Vous ne pouvez pas demander la consultation de l'agent lui-même.";
+                    }
+                    elseif ($agentavisid == $userid)
+                    {
+                        if (strlen(trim($msgerreur))>0) { $msgerreur = $msgerreur . "<br>"; }
+                        $msgerreur = $msgerreur . $membre->identitecomplete() . " : Etant le responsable de cette personne, vous ne pouvez pas demander votre propre avis.";
+                    }
+                    else
+                    {
+                        $complement = new complement($dbcon);
+                        $complement->agentid($membreid);
+                        $complement->complementid(complement::AVIS_CONGES_LABEL);
+                        $complement->valeur($agentavisid);
+                        $complement->store();
+                    }
+                }
+            }
+        }
+    }
+    
 
     // ///////////////////////////////////////////////////
     // ---- PARTIE GESTION DE LA DELEGATION -------- //
@@ -1006,7 +1082,7 @@
     		  	                          wsParams: { filter_eduPersonAffiliation: "employee|researcher" } });
                     </script>
 <?php
-                echo "</tr>";
+                echo "</td></tr>";
 
                 // si la structure est dans la liste des structures ou l'agent est responsable (au sens strict)
                 if (isset($structrespliste[$structure->id()])) {

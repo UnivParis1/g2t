@@ -764,7 +764,7 @@
 <div id="mainmenu">
     <ul class="niveau1">
 <!--        <li onclick="">MENU AGENT -->
-            <li>MENU AGENT
+        <li>MENU AGENT
             <ul class="niveau2">
                 <li onclick='document.accueil.submit();'>
                     <form name='accueil' method='post' action="index.php">
@@ -923,7 +923,30 @@
             </ul>
         </li>
     </ul>
+    
 <?php
+    if ($user->estconsultant()) 
+    {
+?>
+    <ul class="niveau1">
+        <li>MENU CONSULTANT
+            <ul class="niveau2">
+                <li onclick='document.consult_struct_planning.submit();'>
+                    <form name='consult_struct_planning' method='post' action="structure_planning.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                        <input type="hidden" name="mode" value="consult"> <input type="hidden" name="previous" value="no">
+                    </form> 
+                    <a href="javascript:document.consult_struct_planning.submit();">Planning</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+   
+<?php
+    }
+    // Fin du menu Consultant
+    
+    
     if ($user->estresponsable()) 
     {
         $structrespliste = $user->structrespliste();
@@ -939,7 +962,7 @@
 ?> 
     <ul class="niveau1">
 <!--        <li onclick="">MENU RESPONSABLE -->
-            <li>MENU RESPONSABLE
+        <li>MENU RESPONSABLE
             <ul class="niveau2">
 <?php
         if (!$estrespdebibliotheque)

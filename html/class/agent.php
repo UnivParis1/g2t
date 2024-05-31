@@ -859,6 +859,23 @@ class agent
         $complement->load($this->agentid, "ESTADMIN");
         return (strcasecmp($complement->valeur(), "O") == 0);
     }
+    
+    function estconsultant()
+    {
+        $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID = ? AND VALEUR = ?";
+        $params = array($this->fonctions->my_real_escape_utf8(complement::AVIS_CONGES_LABEL), $this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
+        // echo "sql = " . $sql . "<br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Agent->estconsultant (AGENT) : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return FALSE;
+        }
+        return (mysqli_num_rows($query) != 0);
+    }
+    
 
     /**
      *
@@ -1206,7 +1223,18 @@ class agent
                 // => Pas de référence à l'application
                 if (is_object($destinataire))
                 {
-                    $msg .= "Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>" . ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8') . "\r\n";
+                    $msg .= "Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>";
+                    // Si l'expéditeur n'est pas le CRON de G2T
+                    if (strcasecmp($this->agentid(), SPECIAL_USER_IDCRONUSER)!=0)
+                    {
+                        $msg .= ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8');
+                    }
+                    else
+                    {
+                        $msg .= "<label style='font-size: 0.75em;'>Ce message est envoyé automatiquement par l'application G2T.<br>";
+                        $msg .= "Merci de ne pas répondre à cet e-mail.<br>La boîte aux lettres qui a généré cet e-mail ne traite pas les réponses.</label><br>";
+                    }
+                    $msg .= "\r\n";
                 }
 
 	        // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
@@ -1500,6 +1528,32 @@ class agent
             }
         }
         return $structliste;
+    }
+
+    function agentconsultantliste() :array
+    {
+        $agentliste = array();
+        if ($this->estconsultant()) {
+            // echo "Je suis consultant...<br>";
+            $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID = ? AND VALEUR = ?";
+            $params = array($this->fonctions->my_real_escape_utf8(complement::AVIS_CONGES_LABEL), $this->fonctions->my_real_escape_utf8($this->agentid));
+            $query = $this->fonctions->prepared_select($sql, $params);
+            // echo "sql = " . $sql . "<br>";
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "Agent->agentconsultantliste (AGENT) : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            while ($result = mysqli_fetch_row($query)) {
+                // echo "Je charge la structure " . $result[0] . " <br>";
+                $agent = new agent($this->dbconnect);
+                $agent->load("$result[0]");
+                $agentliste[$agent->agentid()] = $agent;
+                unset($agent);
+            }
+        }
+        return $agentliste;
     }
 
     /**
@@ -2766,7 +2820,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      *            optional deprecated parameter => not used in code
      * @return string the html text of the array
      */
-    function demandeslistehtmlpourvalidation($debut_interval, $fin_interval, $agentid = null, $structureid = null, $cleelement = null)
+    function demandeslistehtmlpourvalidation($debut_interval, $fin_interval, $agentid = null, $mode = 'resp')
     {
         $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
 
@@ -2870,6 +2924,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         }
                         $htmltext = $htmltext . "   <td class='cellulesimple' $datatitle>" . $demande->nbrejrsdemande() . $datatitleindicator . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>";
+                        
+                        // Si on a demandé l'avis => On force le statut à "En attente" pour éviter de reposter la demande d'avis 
+                        // en cas d'enregistrement d'une modification sur une autre demande
+                        // En théorie déjà fait dans la page 'valider_demande.php' mais par sécurité on le remet ici
+                        if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_AVIS)
+                        {
+                            $statutliste[$demande->id()] = demande::DEMANDE_ATTENTE;
+                        }
+                        
                         $htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]' id='statut[" . $demande->id() . "]' onchange='demandestatutchange(this," . $demande->id() . ");'>";
                         $htmltext = $htmltext . "         <option ";
                         if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_VALIDE)
@@ -2892,6 +2955,24 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                             $htmltext = $htmltext . " selected ";
                         }
                         $htmltext = $htmltext . " value='" . demande::DEMANDE_REFUSE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_REFUSE) . "</option>";
+
+                        $complement = new complement($this->dbconnect);
+                        $complement->load($this->agentid,complement::AVIS_CONGES_LABEL);
+                        if ($complement->agentid()==$this->agentid and $complement->valeur()!="")
+                        {
+                            $htmltext = $htmltext . "         <option ";
+                            if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_AVIS)
+                            {
+                                $htmltext = $htmltext . " selected ";
+                            }
+                            elseif (!isset($statutliste[$demande->id()]) and strcasecmp($demande->statut(), demande::DEMANDE_AVIS) == 0)
+                            {
+                                $htmltext = $htmltext . " selected ";
+                            }
+                            $htmltext = $htmltext . " value='" . demande::DEMANDE_AVIS ."'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_AVIS) . "</option>";
+                        }
+
+
                         $htmltext = $htmltext . "         <option ";
                         if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_ATTENTE)
                         {

@@ -694,13 +694,32 @@
                 }
                 else
                 {
-                    // On met la tentative dans l'agenda de l'agent
                     $demandeid = $demande->id();
                     unset($demande);
                     $demande = new demande($dbcon);
                     $demande->load($demandeid);
                     $agent = $demande->agent();
+
+                    // On envoie un mail au consultant s'il est défini
+                    $complement = new complement($dbcon);
+                    $complement->load($agent->agentid(),complement::AVIS_CONGES_LABEL);
+                    if ($complement->agentid()==$agent->agentid() and $complement->valeur()!="")
+                    {
+                        $consultant = new agent($dbcon);
+                        if ($consultant->load($complement->valeur()))
+                        {
+                            $cronuser = new agent($dbcon);
+                            $cronuser->load(SPECIAL_USER_IDCRONUSER);
+                            $corpmail = $fonctions->mailbody_avis($demande);
+                            if ($corpmail!='')
+                            {
+                                $cronuser->sendmail($consultant, "Demande d'avis sur une demande de congés ou d'absence" , $corpmail);
+                            }
+                        }
+                    }
+
                     
+                    // On met la tentative dans l'agenda de l'agent
                     $ics = $demande->ics($agent->mail());
                     //echo "ics = " . $ics . "<br><br>";
                     $errormsg = $agent->updatecalendar($ics);

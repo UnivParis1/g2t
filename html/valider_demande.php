@@ -74,12 +74,36 @@
 
     if (is_array($statutliste))
     {
+        $cronuser = new agent($dbcon);
+        $cronuser->load(SPECIAL_USER_IDCRONUSER);
         foreach ($statutliste as $demandeid => $statut)
         {
             //echo "Le statut est $statut <br>";
-            if (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0)
+            if (strcasecmp($statut, demande::DEMANDE_AVIS) == 0 )
             {
-                //echo "On est après le test statut <br>";
+                $demande = new demande($dbcon);
+                $demande->load($demandeid);
+                $complement = new complement($dbcon);
+                $complement->load($demande->agent()->agentid(),complement::AVIS_CONGES_LABEL);
+                if ($complement->agentid()==$demande->agent()->agentid() and $complement->valeur()!="")
+                {
+                    $consultant = new agent($dbcon);
+                    if ($consultant->load($complement->valeur()))
+                    {
+                        $corpmail = $fonctions->mailbody_avis($demande);
+                        if ($corpmail!='')
+                        {
+                            $cronuser->sendmail($consultant, "Demande d'avis sur une demande de congés ou d'absence" , $corpmail);
+                        }
+                    }
+                }
+                // On repasse le statut de la demande à "EN ATTENTE" pour éviter que l'on reposte une demande d'avis
+                $_POST['statut'][$demandeid] = demande::DEMANDE_ATTENTE;
+                $statutliste[$demandeid] = demande::DEMANDE_ATTENTE;
+            }
+            elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0 )
+            {
+                var_dump("On est après le test statut");
                 $motif = '';
                 if (isset($motifliste["$demandeid"]))
                 {
@@ -243,7 +267,8 @@
                     // echo "Membre = " . $membre->nom() . "<br>";
 
                     // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
-                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structure->id(), $cleelement);
+                    //$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structure->id(), $cleelement);
+                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(),$mode);
                     if ($htmltodisplay != "") {
                         echo $htmltodisplay;
                         echo "<br>";
@@ -303,7 +328,7 @@
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
     } elseif (! $user->estresponsable() and (strcasecmp($mode, "resp") == 0)) {
-        echo "Vous n'êtes pas responsable, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
+        echo "Vous n'êtes pas responsable, vous ne pouvez pas valider les demandes de congés/d'absence <br>";
     }
 
     if ($user->estgestionnaire() and (strcasecmp($mode, "gestion") == 0)) {
@@ -427,7 +452,8 @@
                     // -------------------------------------------------------------
                     // Dans le mode GESTIONNAIRE on ne passe pas le code du gestionnaire ($user->agentid()) car il doit pouvoir valider ses propres congés ??
                     // $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->agentid(),$structure->id(), $cleelement);
-                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null, $structure->id(), $cleelement);
+                    // $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null, $structure->id(), $cleelement);
+                    $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null,$mode);
                     // -------------------------------------------------------------
                     // echo "htmltodisplay = $htmltodisplay <br>";
                     if ($htmltodisplay != "") {

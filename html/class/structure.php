@@ -969,7 +969,7 @@ class structure
         return $planningservice;
     }
 
-    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false, $dbclickable = false, $includecongeabsence = true) // mois_annee_debut => Le format doit être MM/YYYY
+    function planninghtml($mois_annee_debut, $showsousstruct = null, $noiretblanc = false, $includeteletravail = false, $dbclickable = false, $includecongeabsence = true, $agentlist = null) // mois_annee_debut => Le format doit être MM/YYYY
     {
         // echo "Je debute planninghtml <br>";
         //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
@@ -979,9 +979,23 @@ class structure
             echo $this->fonctions->showmessage(fonctions::MSGWARNING, "Les informations antérieures à la date du jour ont été masquées.");
         }
         
-        $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail,$includecongeabsence);
+        if (is_null($agentlist) or count((array)$agentlist)==0)
+        {
+            $planningservice = $this->planning($mois_annee_debut, $mois_annee_debut, $showsousstruct,$includeteletravail,$includecongeabsence);
+        }
+        else
+        {
+            //var_dump("J'ai une liste d'agent");
+            $planningservice = array();
+            foreach($agentlist as $membre)
+            {
+                //var_dump("L'agent est " . $membre->identitecomplete());
+                $planningservice[] = $membre->planning('01/' . $mois_annee_debut, $this->fonctions->nbr_jours_dans_mois($indexmois, $annee). "/" . $mois_annee_debut, $includeteletravail, $includecongeabsence);
+            }
+            //var_dump("Il y a " . count($planningservice) . " éléments dans planningservice");
+        }
         
-        if (! is_array($planningservice)) {
+        if (! is_array($planningservice) or count((array)$planningservice)==0) {
             return ""; // Si aucun élément du planning => On retourne vide
         }
         
@@ -1027,7 +1041,14 @@ class structure
                     $nbcolonneaajouter = 1;
                 }
                 $htmltext = $htmltext . "<thead>";
-                $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
+                if (is_null($agentlist) or count((array)$agentlist)==0)
+                {
+                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
+                }
+                else // On a indiquer une liste d'agent spécifique
+                {
+                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Planning des agents</td></tr>";
+                }
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                 // echo "Nom du mois = " . $monthname . "<br>";
                 $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . "'>" . $monthname . "</td></tr>";
@@ -1217,28 +1238,31 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         }
         
         $htmltext = $htmltext . "<br>";
-        $htmltext = $htmltext . "<form name='structplanningpdf_" . $this->structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
-        if ($includeteletravail and !$noiretblanc)
+        // Si on n'a pas précisé une liste d'agent => On affiche le lien pour le PDF
+        if (is_null($agentlist) or count((array)$agentlist)==0)
         {
-            $htmltext = $htmltext . "<input type='checkbox' id='hide_teletravail_". $this->id() . "' name='hide_teletravail_". $this->id() . "' onclick='hide_teletravail(\"struct_plan_" . $this->id() . "\");' >Masquer le télétravail</input>";
-            $htmltext = $htmltext . "<br><br>";
+            $htmltext = $htmltext . "<form name='structplanningpdf_" . $this->structureid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
+            if ($includeteletravail and !$noiretblanc)
+            {
+                $htmltext = $htmltext . "<input type='checkbox' id='hide_teletravail_". $this->id() . "' name='hide_teletravail_". $this->id() . "' onclick='hide_teletravail(\"struct_plan_" . $this->id() . "\");' >Masquer le télétravail</input>";
+                $htmltext = $htmltext . "<br><br>";
+            }
+            $htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid . "'>";
+            $htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
+            $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
+            if ($noiretblanc)
+                $htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='yes'>";
+            else
+                $htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
+            $htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut . "'>";
+            if ($includeteletravail)
+                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+            else
+                $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
+
+            $htmltext = $htmltext . "<a href='javascript:document.structplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF</a>";
+            $htmltext = $htmltext . "</form>";
         }
-        $htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid . "'>";
-        $htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
-        $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
-        if ($noiretblanc)
-            $htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='yes'>";
-        else
-            $htmltext = $htmltext . "<input type='hidden' name='noiretblanc' value='no'>";
-        $htmltext = $htmltext . "<input type='hidden' name='mois_annee' value='" . $mois_annee_debut . "'>";
-        if ($includeteletravail)
-            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
-        else
-            $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
-            
-        $htmltext = $htmltext . "<a href='javascript:document.structplanningpdf_" . $this->structureid . ".submit();'>Planning en PDF</a>";
-        $htmltext = $htmltext . "</form>";
-        
         // $htmltext = $htmltext . "<form name='structpreviousplanningpdf_" . $this->structureid . "' method='post' action='affiche_pdf.php' target='_blank'>";
         // $htmltext = $htmltext . "<input type='hidden' name='structid' value='" . $this->structureid ."'>";
         // $htmltext = $htmltext . "<input type='hidden' name='structpdf' value='yes'>";
@@ -1382,10 +1406,19 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         
         // echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
         // return null;
+        $WSGROUPURL = $this->fonctions->liredbconstante("WSGROUPURL");
+        
         $htmltext = "<br>";
         $htmltext = "<table class='tableausimple'>";
-        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=4 align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
-        $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Agent</td><td class='cellulesimple'>Report des congés</td><td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td><td class='cellulesimple'>Convention de télétravail</td></tr>";
+        $nbcolonne = 5;
+        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
+        $htmltext = $htmltext . "<tr align=center>"
+                                    . "<td class='cellulesimple'>Agent</td>"
+                                    . "<td class='cellulesimple'>Report des congés</td>"
+                                    . "<td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td>"
+                                    . "<td class='cellulesimple'>Convention de télétravail</td>"
+                                    . "<td class='cellulesimple'>Soliciter un avis pour les demandes de congés/d'absence</td>"
+                                . "</tr>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
         // Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
@@ -1514,7 +1547,60 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                         $htmltext = $htmltext . $teletravailstring;
                     }
                     $htmltext = $htmltext . "</td>";
+                    
+                    // Ajout des conventions "télétravail"
+                    $htmltext = $htmltext . "<td class='cellulesimple' >";
+                    $aviscomplement = new complement($this->dbconnect);
+                    $aviscomplement->load($membre->agentid(),complement::AVIS_CONGES_LABEL);
+
+                    $htmltext = $htmltext . "<input id='inputavisuser[" . $membre->agentid() . "]' name='inputavisuser[" . $membre->agentid() . "]' placeholder='Nom et/ou prenom' value='";
+                    $style = '';
+                    $extrainfo = '';
+                    $useravis = null;
+                    if ($aviscomplement->agentid()==$membre->agentid() and $aviscomplement->valeur()!='')
+                    {
+                        $useravis = new agent($this->dbconnect);
+                        $useravis->load($aviscomplement->valeur());
+                        $htmltext = $htmltext .  $useravis->identitecomplete();
+                        if (!$useravis->isG2tUser())
+                        {
+                            $style = " class='kobackgroundtext' ";
+                            $extrainfo = "<b><span class='redtext'> &#x1F828; L'utilisateur défini n'a pas accès à l'application G2T. Veuillez le modifier.</span></b>";
+                        }
+                    }
+                    $htmltext = $htmltext . "' size=40 $style/>$extrainfo";
+                    //
+                    $htmltext = $htmltext . "<input type='hidden' id='avisuser[" . $membre->agentid() . "]' name='avisuser[" . $membre->agentid() . "]' value='";
+                    if (! is_null($useravis))
+                    {
+                        $htmltext = $htmltext . $useravis->agentid();
+                    }
+                    $htmltext = $htmltext . "' class='inputavisuser[" . $membre->agentid() . "]' /> ";
+                    $htmltext = $htmltext . "
+                        <script>
+                            $('[id=\"inputavisuser[". $membre->agentid() ."]\"]').autocompleteUser(
+                                   '" . $WSGROUPURL . "/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: 'uid',
+                                                      wsParams: { filter_eduPersonAffiliation: 'employee|researcher' } });
+                        </script>
+                    ";
+                    
+                    
+//                    $htmltext = $htmltext .  "<select class='listeagentg2t' size='1' id='avisuserid[" . $membre->agentid()  . "]' name='avisuserid[" . $membre->agentid()  . "]'>";
+//                    $htmltext = $htmltext .  "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+//                    foreach ($agentsg2tliste as $key => $identite)
+//                    {
+//                        $htmltext = $htmltext .  "<option value='$key'";
+//                        if ($aviscomplement->agentid()==$membre->agentid() and $aviscomplement->valeur()==$key)
+//                        {
+//                            $htmltext = $htmltext .  " selected ";
+//                        }
+//                        $htmltext = $htmltext .  ">$identite</option>";
+//                    }
+//                    $htmltext = $htmltext .  "</select>";
+
+                    $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "</tr>";
+
                 }
             }
         }

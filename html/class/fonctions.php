@@ -1078,29 +1078,53 @@ class fonctions
     public function demandestatutlibelle($statut = null)
     {
         if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
+        {
             return "Validée";
+        }
         elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
+        {
             return "Refusée";
+        }
         elseif (strcmp($statut, demande::DEMANDE_ANNULE) == 0)
+        {
             return "Annulée";
+        }
         elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
+        {
             return "En attente";
+        }
+        elseif (strcasecmp($statut, demande::DEMANDE_AVIS) == 0)
+        {
+            return "Demande d'avis";
+        }
         else
+        {
             echo "Demandestatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+        }
     }
 
     public function teletravailstatutlibelle($statut = null)
     {
         if (strcasecmp($statut, teletravail::TELETRAVAIL_VALIDE) == 0)
+        {
             return "Validée";
-            elseif (strcmp($statut, teletravail::TELETRAVAIL_REFUSE) == 0)
+        }
+        elseif (strcmp($statut, teletravail::TELETRAVAIL_REFUSE) == 0)
+        {
             return "Refusée";
-            elseif (strcmp($statut, teletravail::TELETRAVAIL_ANNULE) == 0)
+        }
+        elseif (strcmp($statut, teletravail::TELETRAVAIL_ANNULE) == 0)
+        {
             return "Annulée";
-            elseif (strcasecmp($statut, teletravail::TELETRAVAIL_ATTENTE) == 0)
+        }
+        elseif (strcasecmp($statut, teletravail::TELETRAVAIL_ATTENTE) == 0)
+        {
             return "En attente";
-            else
-                echo "teletravailstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+        }
+        else
+        {
+            echo "teletravailstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+        }
     }
 
     /**
@@ -5261,6 +5285,37 @@ WHERE  table_schema = Database()
         $annee = date("Y",$date);
         
         return date("Ymd",strtotime($annee.$mois."01" . " - 1 day"));
+    }
+    
+    function mailbody_avis(demande $demande) : string
+    {
+        $corpmail = "";
+        $agent = $demande->agent();
+        $resp = $agent->getsignataire();
+        if (!is_null($resp) and ($resp!==false))
+        {
+            $corpmail = "Une demande";
+            if ($this->estunconge($demande->type()))
+            {
+                $corpmail = $corpmail . " de congés ";
+            }
+            else
+            {
+                $corpmail = $corpmail . " d'absence ";
+            }
+            $corpmail = $corpmail . "(" . $demande->typelibelle() . ") de  " . $agent->identitecomplete() . " du "  . $demande->datedebut() . " au " . $demande->datefin() . " (" . $demande->nbrejrsdemande();
+            if ($demande->nbrejrsdemande()>1)
+            {
+                $corpmail = $corpmail . " jours";
+            }
+            else
+            {
+                $corpmail = $corpmail . " jour";
+            }
+            $corpmail = $corpmail . ") nécessite votre attention.";
+            $corpmail = $corpmail . "\n\nMerci d'indiquer à " . $resp->identitecomplete() . " votre avis.\n"; 
+        }
+        return $corpmail;
     }
 }
 
