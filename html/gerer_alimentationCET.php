@@ -133,7 +133,7 @@
     if (isset($_POST["responsable"]))
         $responsable = $_POST["responsable"];
     
-    $mode = "agent";
+    $mode = MODE_AGENT;
     if (isset($_POST["mode"]))
     	$mode = $_POST["mode"];
     
@@ -173,8 +173,8 @@
 //    echo "<br><br><br>";
 
     
-    // Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
-    if (is_null($agentid) and $mode == 'rh')
+    // Si on est en mode MODE_RH et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
+    if (is_null($agentid) and $mode == MODE_RH)
     {
         echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET.php'>";
         echo "Personne à rechercher : <br>";
@@ -782,7 +782,7 @@
                 //}
  */
                 echo "<br><br>";
-                if ($mode == 'rh')
+                if ($mode == MODE_RH)
                 {
                     echo "<p id='check_plafond'><input type='checkbox' id='no_verify' name='no_verify' value='on'>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
 ?>

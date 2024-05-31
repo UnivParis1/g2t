@@ -73,7 +73,7 @@
     {
         $agentid = $userid;
     }
-    elseif ($mode=='gestrh')
+    elseif ($mode==MODE_RH)
     {
         if (isset($_POST["agentid"]))
         {
@@ -97,7 +97,7 @@
         }
         $nbmonthsprevious = 12;
     }
-    elseif ($mode=='resp' or $mode=='gestion')
+    elseif ($mode==MODE_RESPONSABLE or $mode==MODE_GESTION)
     {
         $agentid = null;
 /*
@@ -517,7 +517,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
         }
         // Si on est en mode RH et que le tableau des jours n'esr pas défini et que le tableau des 1/2 journée est défini alors on prend le tableau des 1/2 journée
         // En fait en mode RH, il n'y a pas de controle. Donc on peut mettre autant de 1/2 journée que l'on veut.
-         if ($mode=='gestrh' and is_null($jours) and !is_null($demijours))
+         if ($mode==MODE_RH and is_null($jours) and !is_null($demijours))
         {
             foreach((array)$demijours as $numdemijour) // numdemijour => [1-10] où 1 = lundi matin, 2 = lundi après-midi, ...
             {
@@ -710,14 +710,14 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 }
 
                 // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
-                if (is_null($declaration) or $mode=='gestrh')
+                if (is_null($declaration) or $mode==MODE_RH)
                 {
-                    if (is_null($declaration) and $mode!='gestrh')
+                    if (is_null($declaration) and $mode!=MODE_RH)
                     {
                         if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
                         $erreur = $erreur . "Vous n'avez pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.<br>Impossible de saisir une convention de télétravail";
                     }
-                    elseif (is_null($declaration) and $mode=='gestrh')
+                    elseif (is_null($declaration) and $mode==MODE_RH)
                     {
                         $alerte = $alerte . "L'agent " . $agent->identitecomplete() . " pas de déclaration de temps partiel active entre le $datedebutteletravail et le $datefinteletravail.<br>";
                     }
@@ -1142,7 +1142,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     }
     echo "<br><br>";
 
-    if (is_null($agentid) and ($mode!='resp' and $mode!='gestion'))
+    if (is_null($agentid) and ($mode!=MODE_RESPONSABLE and $mode!=MODE_GESTION))
     {
         //echo "<form name='demandeforagent'  method='post' action='gestion_teletravail.php'>";
         echo "Personne à rechercher : <br>";
@@ -1164,7 +1164,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
-    elseif (!is_null($agentid) and ($mode!='resp' and $mode!='gestion'))
+    elseif (!is_null($agentid) and ($mode!=MODE_RESPONSABLE and $mode!=MODE_GESTION))
     {
         $erreur = '';
         if ($esignatureactive)
@@ -1176,7 +1176,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	    echo $fonctions->showmessage(fonctions::MSGERROR, "Impossible de synchroniser une ou plusieurs conventions : $erreur");
     	    $disablesubmit = true;
     	}
-        if ($mode!='gestrh' and !$esignatureactive)
+        if ($mode!=MODE_RH and !$esignatureactive)
         {
             error_log(basename(__FILE__) . " : Pas en mode gestRH et l'interface eSignature n'est pas active");            
      	    $disablesubmit = true;
@@ -1185,7 +1185,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	if (count($teletravailliste) > 0)
     	{
             $displayPDFbutton = false;
-            if ($mode=='gestrh')
+            if ($mode==MODE_RH)
             {
                 $displayPDFbutton = true;
             }            
@@ -1205,7 +1205,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                       <td class='titresimple'>URL eSignature</td>
                  ";
             }
-            if ($mode=='gestrh' or $esignatureactive)
+            if ($mode==MODE_RH or $esignatureactive)
             {
                 echo "<td class='titresimple'>Annuler</td>";
             }
@@ -1280,7 +1280,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     </script>
 <?php     	        
     	        echo "    <td class='cellulesimple'><center>";
-    	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
+    	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode==MODE_RH)
     	        {
                     // On peut modifier la date de début de la convention dans une période de 6 mois avant la date saisie
                     $datedebutminconv_tab = date("d/m/Y", strtotime("-" . $nbmonthsprevious . " month", strtotime($fonctions->formatdatedb($datedebutteletravail))));
@@ -1300,7 +1300,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        }
     	        echo "</center></td>";
     	        echo "    <td class='cellulesimple'><center>";
-    	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode=='gestrh')
+    	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode==MODE_RH)
     	        {
 //                    $datefinminconv_tab = date("d/m/Y", strtotime("-6 month", strtotime($fonctions->formatdatedb($datefinteletravail))));
                     $datefinminconv_tab = $datedebutminconv_tab;
@@ -1360,15 +1360,15 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         	        echo "<td class='cellulesimple'>" . $teletravail->esignatureid() . "</td>";
         	        echo "<td class='cellulesimple'><a href='" . $teletravail->esignatureurl() . "' target='_blank'>".(($teletravail->statut() == teletravail::TELETRAVAIL_ANNULE) ? '':$teletravail->esignatureurl())."</a></td>";
                 }
-                if ($mode=='gestrh' or $esignatureactive)
+                if ($mode==MODE_RH or $esignatureactive)
                 {
 //                    echo "<td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
                     echo "<td class='cellulesimple'><center><button type='submit' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' class='cancel g2tbouton g2tsupprbouton' ";
-                    if ($mode=='gestrh' and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE))) // and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
+                    if ($mode==MODE_RH and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE))) // and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
                     {
                         echo " disabled='disabled' ";
                     }
-                    elseif ($mode!='gestrh' and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE)))
+                    elseif ($mode!=MODE_RH and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE)))
                     {
                         echo " disabled='disabled' ";
                     }
@@ -1551,7 +1551,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             $formdisabled = " disabled='disabled' ";
         }
 
-        if (!$esignatureactive and $mode!='gestrh')
+        if (!$esignatureactive and $mode!=MODE_RH)
         {
             $formhidden = " hidden='hidden' ";
             $formdisabled = " disabled='disabled' ";
@@ -1877,19 +1877,19 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             }
             
             // A ce niveau $declaration est soit NULL soit il vaut la declaration de TP active
-            if (is_null($declaration) or $mode=='gestrh')
+            if (is_null($declaration) or $mode==MODE_RH)
             {
-                if (is_null($declaration) and $mode!='gestrh')
+                if (is_null($declaration) and $mode!=MODE_RH)
                 {
                     echo $fonctions->showmessage(fonctions::MSGERROR, "Vous n'avez pas de déclaration de temps partiel active.<br>Impossible de saisir une convention de télétravail");
                     $nbjoursmaxteletravailcalcule = 0;
                     $disablesubmit = true;
                 }
-                elseif (is_null($declaration) and $mode=='gestrh')
+                elseif (is_null($declaration) and $mode==MODE_RH)
                 {
                     echo $fonctions->showmessage(fonctions::MSGWARNING, "L'agent " . $agent->identitecomplete() . " pas de déclaration de temps partiel active.");
                 }
-                if ($mode=='gestrh')
+                if ($mode==MODE_RH)
                 {
                     $hidden = '';
                     if ($inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL)
@@ -2185,12 +2185,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
         
         $hiddentext = '';
-        if ($disablesubmit and $mode!='gestrh' and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL )
+        if ($disablesubmit and $mode!=MODE_RH and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL )
         {
             $hiddentext = " hidden='hidden' ";
         }
         echo "<input type='submit' id='creation' name='creation' class='g2tbouton g2tvalidebouton' value='Enregistrer' $hiddentext />";
-        if ($disablesubmit and $mode!='gestrh')
+        if ($disablesubmit and $mode!=MODE_RH)
         {
             echo "
                 <script>
@@ -2218,7 +2218,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 <?php
         }
     }
-    elseif ($mode=='resp' or $mode=='gestion')
+    elseif ($mode==MODE_RESPONSABLE or $mode==MODE_GESTION)
     {
 ?>
         <script>
@@ -2316,7 +2316,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         </script>
 <?php
 
-        if ($mode=='resp')
+        if ($mode==MODE_RESPONSABLE)
         {
         //echo "<br>On est en mode responsable ==> On va modifier les demandes de télétravail de la structure dont on est responsable.<br>";
             $structliste = $user->structrespliste(true);
@@ -2336,7 +2336,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         foreach ($structliste as $structure)
         {
             $teletravailtrouvestruct = false;
-            if ($mode=='resp')
+            if ($mode==MODE_RESPONSABLE)
             {
                 ////////////////////////////////
                 // ATTENTION : On force l'affichage des demandes des sous-structure à 'N' pour n'afficher que les agents en responsabilité de la structure (et pas les sous-structures)
@@ -2357,7 +2357,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 //                    }
 //                }
             }
-            else if ($mode=='gestion')
+            else if ($mode==MODE_GESTION)
             {
                 $agentliste = $user->listeagentengestion(date("d/m/Y"), date("d/m/Y"),$structure);
                 
@@ -2394,7 +2394,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             
             foreach ((array)$agentliste as $agent)
             {
-                if ($agent->agentid()!=$user->agentid() or $mode!='resp')
+                if ($agent->agentid()!=$user->agentid() or $mode!=MODE_RESPONSABLE)
                 {
                     $tabdemandeteletravail = $agent->listedemandeteletravailenattente();
                     foreach($tabdemandeteletravail as $teletravail)

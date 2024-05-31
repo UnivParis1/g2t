@@ -84,12 +84,12 @@
     }
 
     $structlist = null;
-    if (strcasecmp($mode, "resp") == 0) {
+    if (strcasecmp($mode, MODE_RESPONSABLE) == 0) {
         $structlist = $user->structrespliste();
         $structlist = $fonctions->enleverstructuresinclues_demandes($structlist);
     }
 
-    if (strcasecmp($mode, "gestion") == 0) {
+    if (strcasecmp($mode, MODE_GESTION) == 0) {
         $structlist = $user->structgestliste();
         // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
         $listegeststruct = $user->structgestcongeliste();
@@ -106,7 +106,7 @@
         echo "Remarque : Les personnes affectées à temps plein ne sont pas affichées dans cet écran.<br><br>";
         foreach ($structlist as $keystruct => $structure) 
         {
-            if (strcasecmp($mode, "resp") == 0) // Si on est en mode responsable, on charge les agents en responsabilité
+            if (strcasecmp($mode, MODE_RESPONSABLE) == 0) // Si on est en mode responsable, on charge les agents en responsabilité
             {  
                 if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
                 {
@@ -123,7 +123,7 @@
                     $agentlist = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
                 }
             }
-            elseif (strcasecmp($mode, "gestion") == 0)
+            elseif (strcasecmp($mode, MODE_GESTION) == 0)
             {
                 // Si le gestionnaire ne doit pas gérer les agents et qu'il n'est pas destinataire des notifications des demandes de congés
                 if (strcasecmp($structure->gestvalidagent(),'n')==0

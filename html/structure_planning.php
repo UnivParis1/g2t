@@ -73,7 +73,7 @@
     }
     // echo "annee (apres) = $annee <br>";
                                     
-    $mode = "resp";
+    $mode = MODE_RESPONSABLE;
     if (isset($_POST["mode"]))
     {
         $mode = $_POST["mode"]; // Mode = resp ou agent ou consult
@@ -607,8 +607,10 @@
     $anneemois = $fonctions->anneeref() - $previous;
     // echo "index = $index <br>";
     for ($indexcpt = 1; $indexcpt <= 12; $indexcpt ++) {
-        // Si on est en mode consultant et que la date calculée (annee + mois) est inférieure à la date du jour => on n'affiche pas
-        if (strcasecmp($mode,"consult")==0 and ($anneemois . str_pad($index, 2, "0", STR_PAD_LEFT)<date("Ym")))
+        // Si on est en mode consultant ou agent et que la date calculée (annee + mois) est inférieure à la date du jour => on n'affiche pas
+        
+        //if (strcasecmp($mode,MODE_CONSULTANT)==0 and ($anneemois . str_pad($index, 2, "0", STR_PAD_LEFT) < date("Ym")))
+        if (in_array($mode,array(MODE_CONSULTANT,MODE_AGENT)) and ($anneemois . str_pad($index, 2, "0", STR_PAD_LEFT) < date("Ym")))
         {
             // On ne fait rien
         }
@@ -646,7 +648,7 @@
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Sélectionner'  /></center>";
     echo "</form>";
     
-    if (strcasecmp($mode, "resp") == 0) 
+    if (strcasecmp($mode, MODE_RESPONSABLE) == 0) 
     {
         $structureliste = $user->structrespliste();
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
@@ -730,16 +732,7 @@
                 }
             }
         }
-        
-        
-        
-/*
-        $structincluelist = $fonctions->listestructurenoninclue();
-        echo "Liste des id de structures non inclue :" ;
-        var_dump($structincluelist);
-        echo "<br>";
-*/
-    } elseif (strcasecmp($mode, "gestion") == 0) {
+    } elseif (strcasecmp($mode, MODE_GESTION) == 0) {
         $structureliste = $user->structgestliste();
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
         if (is_array($structureliste))
@@ -787,7 +780,7 @@
             }
         }
     }
-    elseif (strcasecmp($mode, "consult") == 0)
+    elseif (strcasecmp($mode, MODE_CONSULTANT) == 0)
     {
         //var_dump("Je suis en mode consultant");
         $structure = new structure($dbcon);

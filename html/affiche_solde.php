@@ -60,7 +60,7 @@
     $mode = $_POST["mode"];
     if ($mode == "")
     {
-        $mode = "resp";
+        $mode = MODE_RESPONSABLE;
     }
 
     $structureid = null;
@@ -89,7 +89,7 @@
         $agentselect = $_POST["agentselect"];
     }
 
-    if ($mode == 'rh')
+    if ($mode == MODE_RH)
     {
         $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
         $query = mysqli_query($dbcon, $sql);
@@ -143,7 +143,7 @@
         echo "<br>";
 
     }
-    elseif (strcasecmp($mode, "resp") == 0) 
+    elseif (strcasecmp($mode, MODE_RESPONSABLE) == 0) 
     {
         $structureliste = $user->structrespliste();
         //var_dump("Avant appel enleverstructuresinclues_soldes");

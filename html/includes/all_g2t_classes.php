@@ -12,6 +12,7 @@
     require_once (dirname(__FILE__,2) . "/class/cet.php");
     require_once (dirname(__FILE__,2) . "/class/affectation.php");
     require_once (dirname(__FILE__,2) . "/class/complement.php");
+    require_once (dirname(__FILE__,2) . "/class/demandecomplement.php");
     require_once (dirname(__FILE__,2) . "/class/periodeobligatoire.php");
     require_once (dirname(__FILE__,2) . "/class/alimentationCET.php");
     require_once (dirname(__FILE__,2) . "/class/optionCET.php");
@@ -27,6 +28,27 @@
         $tabcouleurelement = $fonctions->typeabsencelistecomplete();
         define('TABCOULEURPLANNINGELEMENT', $tabcouleurelement);
         //var_dump(TABCOULEURPLANNINGELEMENT);
+    }
+    
+    if (!defined('MODE_CONSULTANT'))
+    {
+        define('MODE_CONSULTANT', 'consult');
+    }
+    if (!defined('MODE_RH'))
+    {
+        define('MODE_RH', 'rh');
+    }
+    if (!defined('MODE_GESTION'))
+    {
+        define('MODE_GESTION', 'gest');
+    }
+    if (!defined('MODE_RESPONSALBE'))
+    {
+        define('MODE_RESPONSABLE', 'resp');
+    }
+    if (!defined('MODE_AGENT'))
+    {
+        define('MODE_AGENT', 'agent');
     }
 
 /*    

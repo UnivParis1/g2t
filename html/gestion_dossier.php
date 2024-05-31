@@ -43,7 +43,7 @@
     $mode = $_POST["mode"]; // Action = gestion ou resp
     if (is_null($action) or $action == "")
     {
-        $action = 'resp';
+        $action = MODE_RESPONSABLE;
     }
 
     // echo "Apres le chargement du user !!! <br>";
@@ -52,7 +52,7 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
-    print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
+    //print_r ( $_POST); echo "<br>"; echo "action = $action <br>";
 
     $reportlist = null;
     if (isset($_POST['report']))
@@ -612,11 +612,11 @@
         echo $fonctions->showmessage(fonctions::MSGERROR, "$msgerreur");
     }
     echo "<form name='frm_dossier'  method='post' >";
-    if ($mode == 'resp') {
+    if ($mode == MODE_RESPONSABLE) {
         $structliste = $user->structrespliste();
         $structrespliste = $user->structrespliste(false);
     }
-    if ($mode == 'gestion') {
+    if ($mode == MODE_GESTION) {
         $structliste = $user->structgestliste();
         $structrespliste = array();
     }
@@ -628,7 +628,7 @@
     foreach ($structliste as $key => $structure) {
         $responsableliste = array();
         // On ajoute les responsables de structures filles
-        if ($mode == 'resp')
+        if ($mode == MODE_RESPONSABLE)
         {
             $structurefilleliste = $structure->structurefille();
             if (is_array($structurefilleliste)) 
@@ -651,7 +651,7 @@
         
         if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n')) or count($responsableliste)>0) 
         {
-            if ($mode == 'resp')
+            if ($mode == MODE_RESPONSABLE)
             {
                 echo $structure->dossierhtml(($action == 'modif'), $userid);
             }
@@ -689,7 +689,7 @@
             echo "</td>";
             echo "</tr>";
             
-            if ($mode == 'resp') 
+            if ($mode == MODE_RESPONSABLE) 
             {
                 // La possibilité de gérer tous les agents des structures inclues n'est offerte que si on est dans la strcuture "racine" (<=> non inclue)
                 if (!$structure->isincluded())
@@ -853,7 +853,7 @@
 //                echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
 //            }
 
-            if ($mode == 'resp') 
+            if ($mode == MODE_RESPONSABLE) 
             {
 //                echo "<br>";
                 echo "<tr>";
@@ -920,7 +920,7 @@
             echo "<br>";
 
 
-            if ($mode == 'resp') {
+            if ($mode == MODE_RESPONSABLE) {
                 $structure->agent_envoyer_a($codeinterne);
                 echo "<table>";
                 echo "<tr>";

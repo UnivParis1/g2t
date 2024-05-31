@@ -229,6 +229,15 @@
         }
         
         /////////////////////////////////////////////
+        // Mise à jour de la fonction de demande d'avis sur congés et absence
+        if (isset($_POST['valid_avisfonction']))
+        {
+            $avisfonction = $_POST['avisfonction'];
+            $constantename = "FONCTIONAVIS";
+            $msg_erreur = $fonctions->enregistredbconstante($constantename, $avisfonction);
+        }
+        
+        /////////////////////////////////////////////
         // Mise à jour de la date des reports de congés
         if (isset($_POST['valid_report']))
         {
@@ -1532,6 +1541,42 @@
     echo "<input type='submit' name='valid_nbjours' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
+    /////////////////////////////////////////////////////////
+    // Activation/Désactivation fonctions demande d'avis pour une demande
+    echo "<br>";
+    echo "<form name='avisform'  method='post' >";
+    $dbconstante = 'FONCTIONAVIS';
+    $avisfonction = 'n';
+    echo "Activer la fonction de demande d'avis pour les congés et les absences : ";
+    if ($fonctions->testexistdbconstante($dbconstante)) { $avisfonction = $fonctions->liredbconstante($dbconstante); }
+    echo "<select id='avisfonction' name='avisfonction'>";
+    echo "<option value='o'";
+    //if (strcasecmp($reportteletravail, "o") == 0)
+    if ($fonctions->convertvaluetobool($avisfonction))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('o');
+    echo "</option>";
+    echo "<option value='n'";
+    //if (strcasecmp($reportteletravail, "n") == 0)
+    if (!$fonctions->convertvaluetobool($avisfonction))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('n');
+    echo "</option>";
+    echo "</select>";
+
+    echo "<br>";
+
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
+    echo "<br>";
+    echo "<input type='submit' name='valid_avisfonction' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+    echo "</form>";
+
+
     /////////////////////////////////////////////////////////
     // Affichage de la date de fin de report des congés
     echo "<br>";

@@ -130,7 +130,7 @@
     echo "Si vous souhaitez transférer des reliquats de congés, vous devez utiliser la fonction 'Alimentation / Indemnisation des CET'.<br>";
     echo "<br>";
 
-    if (strcasecmp($mode, "gestrh") == 0) {
+    if (strcasecmp($mode, MODE_RH) == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
         

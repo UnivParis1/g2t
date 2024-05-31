@@ -395,7 +395,7 @@
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
                 echo "<span class='symbolegestionstruct cursorpointer' ";
-                if ($mode != 'gestrh')
+                if ($mode != MODE_RH)
                 {
                     echo "ondblclick='if (this.tagname!=\"OK\") {click_element(\"" . $struct->id()  .  "\",\"". $struct->isdeployed() . "\");}'";
                 }
@@ -651,7 +651,7 @@
         echo "<br>";
     }
     
-    if ($mode == 'gestrh')
+    if ($mode == MODE_RH)
     {
 ?>
         <script>

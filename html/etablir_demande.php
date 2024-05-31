@@ -523,8 +523,8 @@
 
             if (strcasecmp($rh_mode, "yes") == 0)
             {
-                // On est en mode "RH" donc on ignore la présence/absence de l'agent
-                //echo 'On est en mode "RH" donc on ignore la présence/absence de l agent <br>';
+                // On est en mode MODE_RH donc on ignore la présence/absence de l'agent
+                //echo 'On est en mode MODE_RH donc on ignore la présence/absence de l agent <br>';
                 $ignoreabsenceautodecla = TRUE;
             }
 

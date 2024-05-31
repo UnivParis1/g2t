@@ -83,7 +83,7 @@
             $responsable = new agent($dbcon);
             $responsable->load($responsableid);
             $noresponsableset = FALSE;
-            $mode='resp';
+            $mode = MODE_RESPONSABLE;
         }
     }
     if (isset($_POST["gestionnaireid"])) {
@@ -260,7 +260,7 @@
     if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
         //echo "Pas de responsable.... C'est un agent qui veut gérer ses demandes<br>";
-        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "agent", null);
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), MODE_AGENT, null);
         if ($htmltext != "")
         {
             echo $htmltext;
@@ -276,11 +276,11 @@
     } 
     elseif ($noagentset) 
     {
-        if ($mode == 'resp' or $mode == 'gest')
+        if ($mode == MODE_RESPONSABLE or $mode == 'gest')
         {
             // => On est en mode "responsable" mais aucun agent n'est sélectionné
             // echo "Avant le chargement structure responsable <br>";
-            if ($mode == 'resp')
+            if ($mode == MODE_RESPONSABLE)
             {
                 $agentlistefull = $responsable->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
             }
@@ -351,7 +351,7 @@
             }
             echo "<br>";
         }
-        else // $mode = 'rh'
+        else // $mode = MODE_RH
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
@@ -368,10 +368,10 @@
             echo "</select>";
             echo "<br>";
         }
-    } elseif ($mode == 'resp' or $mode == 'gest') {
+    } elseif ($mode == MODE_RESPONSABLE or $mode == 'gest') {
         // => On est en mode "reponsable" et un agent est sélectionné
         //echo "Avant le mode responsable <br>";
-        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "resp", null);
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), MODE_RESPONSABLE, null);
         if ($htmltext != "")
         {
             echo $htmltext;
@@ -389,7 +389,7 @@
         // On élargie de période de début de recherche des demades de CET pour l'agent à -2 ans.
         //echo "Mode RH <br>";
         $debut = $fonctions->formatdate(($fonctions->anneeref() - 2) . $fonctions->debutperiode());
-        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), "resp", 'cet');
+        $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), MODE_RESPONSABLE, 'cet');
         if ($htmltext != "")
         {
             echo $htmltext;
@@ -405,7 +405,7 @@
 
     if ($responsableid != "")
     {
-        if ($mode == 'resp')
+        if ($mode == MODE_RESPONSABLE)
         {
             echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
         }

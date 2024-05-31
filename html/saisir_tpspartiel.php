@@ -448,7 +448,7 @@
                     echo "</div>";
 
                     echo "<br>";
-                    if (strcasecmp($mode, "resp") == 0) {
+                    if (strcasecmp($mode, MODE_RESPONSABLE) == 0) {
                         echo "<br>";
                         echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel. <br>";
                         echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";

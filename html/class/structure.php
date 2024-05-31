@@ -1407,18 +1407,29 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
         // return null;
         $WSGROUPURL = $this->fonctions->liredbconstante("WSGROUPURL");
-        
+
+        $nbcolonne = 5;
+        $dbconstante = 'FONCTIONAVIS';
+        $avisfonction = 'n';
+        if ($this->fonctions->testexistdbconstante($dbconstante)) { $avisfonction = $this->fonctions->liredbconstante($dbconstante); }
+        if (!$this->fonctions->convertvaluetobool($avisfonction))
+        {
+                // la fonction est désactivée
+                $nbcolonne--;
+        }
         $htmltext = "<br>";
         $htmltext = "<table class='tableausimple'>";
-        $nbcolonne = 5;
         $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
         $htmltext = $htmltext . "<tr align=center>"
                                     . "<td class='cellulesimple'>Agent</td>"
                                     . "<td class='cellulesimple'>Report des congés</td>"
                                     . "<td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td>"
-                                    . "<td class='cellulesimple'>Convention de télétravail</td>"
-                                    . "<td class='cellulesimple'>Soliciter un avis pour les demandes de congés/d'absence</td>"
-                                . "</tr>";
+                                    . "<td class='cellulesimple'>Convention de télétravail</td>";
+        if ($this->fonctions->convertvaluetobool($avisfonction))
+        {
+            $htmltext = $htmltext . "<td class='cellulesimple'>Solliciter un avis pour les demandes de congés/d'absences</td>";
+        }
+        $htmltext = $htmltext . "</tr>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
         // Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
@@ -1548,57 +1559,45 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     }
                     $htmltext = $htmltext . "</td>";
                     
-                    // Ajout des conventions "télétravail"
-                    $htmltext = $htmltext . "<td class='cellulesimple' >";
-                    $aviscomplement = new complement($this->dbconnect);
-                    $aviscomplement->load($membre->agentid(),complement::AVIS_CONGES_LABEL);
-
-                    $htmltext = $htmltext . "<input id='inputavisuser[" . $membre->agentid() . "]' name='inputavisuser[" . $membre->agentid() . "]' placeholder='Nom et/ou prenom' value='";
-                    $style = '';
-                    $extrainfo = '';
-                    $useravis = null;
-                    if ($aviscomplement->agentid()==$membre->agentid() and $aviscomplement->valeur()!='')
+                    // Ajout de la fonction de demande d'avis
+                    if ($this->fonctions->convertvaluetobool($avisfonction))
                     {
-                        $useravis = new agent($this->dbconnect);
-                        $useravis->load($aviscomplement->valeur());
-                        $htmltext = $htmltext .  $useravis->identitecomplete();
-                        if (!$useravis->isG2tUser())
+                        $htmltext = $htmltext . "<td class='cellulesimple' >";
+                        $aviscomplement = new complement($this->dbconnect);
+                        $aviscomplement->load($membre->agentid(),complement::AVIS_CONGES_LABEL);
+
+                        $htmltext = $htmltext . "<input id='inputavisuser[" . $membre->agentid() . "]' name='inputavisuser[" . $membre->agentid() . "]' placeholder='Nom et/ou prenom' value='";
+                        $style = '';
+                        $extrainfo = '';
+                        $useravis = null;
+                        if ($aviscomplement->agentid()==$membre->agentid() and $aviscomplement->valeur()!='')
                         {
-                            $style = " class='kobackgroundtext' ";
-                            $extrainfo = "<b><span class='redtext'> &#x1F828; L'utilisateur défini n'a pas accès à l'application G2T. Veuillez le modifier.</span></b>";
+                            $useravis = new agent($this->dbconnect);
+                            $useravis->load($aviscomplement->valeur());
+                            $htmltext = $htmltext .  $useravis->identitecomplete();
+                            if (!$useravis->isG2tUser())
+                            {
+                                $style = " class='kobackgroundtext' ";
+                                $extrainfo = "<b><span class='redtext'> &#x1F828; L'utilisateur défini n'a pas accès à l'application G2T. Veuillez le modifier.</span></b>";
+                            }
                         }
+                        $htmltext = $htmltext . "' size=40 $style/>$extrainfo";
+                        //
+                        $htmltext = $htmltext . "<input type='hidden' id='avisuser[" . $membre->agentid() . "]' name='avisuser[" . $membre->agentid() . "]' value='";
+                        if (! is_null($useravis))
+                        {
+                            $htmltext = $htmltext . $useravis->agentid();
+                        }
+                        $htmltext = $htmltext . "' class='inputavisuser[" . $membre->agentid() . "]' /> ";
+                        $htmltext = $htmltext . "
+                            <script>
+                                $('[id=\"inputavisuser[". $membre->agentid() ."]\"]').autocompleteUser(
+                                       '" . $WSGROUPURL . "/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: 'uid',
+                                                          wsParams: { filter_eduPersonAffiliation: 'employee|researcher' } });
+                            </script>
+                        ";
+                        $htmltext = $htmltext . "</td>";
                     }
-                    $htmltext = $htmltext . "' size=40 $style/>$extrainfo";
-                    //
-                    $htmltext = $htmltext . "<input type='hidden' id='avisuser[" . $membre->agentid() . "]' name='avisuser[" . $membre->agentid() . "]' value='";
-                    if (! is_null($useravis))
-                    {
-                        $htmltext = $htmltext . $useravis->agentid();
-                    }
-                    $htmltext = $htmltext . "' class='inputavisuser[" . $membre->agentid() . "]' /> ";
-                    $htmltext = $htmltext . "
-                        <script>
-                            $('[id=\"inputavisuser[". $membre->agentid() ."]\"]').autocompleteUser(
-                                   '" . $WSGROUPURL . "/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: 'uid',
-                                                      wsParams: { filter_eduPersonAffiliation: 'employee|researcher' } });
-                        </script>
-                    ";
-                    
-                    
-//                    $htmltext = $htmltext .  "<select class='listeagentg2t' size='1' id='avisuserid[" . $membre->agentid()  . "]' name='avisuserid[" . $membre->agentid()  . "]'>";
-//                    $htmltext = $htmltext .  "<option value=''>----- Veuillez sélectionner un agent -----</option>";
-//                    foreach ($agentsg2tliste as $key => $identite)
-//                    {
-//                        $htmltext = $htmltext .  "<option value='$key'";
-//                        if ($aviscomplement->agentid()==$membre->agentid() and $aviscomplement->valeur()==$key)
-//                        {
-//                            $htmltext = $htmltext .  " selected ";
-//                        }
-//                        $htmltext = $htmltext .  ">$identite</option>";
-//                    }
-//                    $htmltext = $htmltext .  "</select>";
-
-                    $htmltext = $htmltext . "</td>";
                     $htmltext = $htmltext . "</tr>";
 
                 }

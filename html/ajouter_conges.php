@@ -73,7 +73,7 @@
     $commentaire_supp = null;
     $ancienacquis_supp = null;
     $remove_array = null;
-    $mode = 'resp';
+    $mode = MODE_RESPONSABLE;
     if (isset($_POST["nbr_jours_conges"]))
     {
         $nbr_jours_conges = $_POST["nbr_jours_conges"];
@@ -169,7 +169,7 @@
         //echo "Ce n'est pas un tableau<br>";
     }
     
-    if ($agentid == "" and strcasecmp($mode, "gestrh") == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
+    if ($agentid == "" and strcasecmp($mode, MODE_RH) == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
         
@@ -187,7 +187,7 @@
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
-    elseif ($agentid == "") // On est pas en mode rh ==> Donc on est en mode "resp"
+    elseif ($agentid == "") // On est pas en mode rh ==> Donc on est en mode MODE_RESPONSABLE
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
         

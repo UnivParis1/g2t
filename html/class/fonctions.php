@@ -1103,6 +1103,31 @@ class fonctions
         }
     }
 
+    public function demandeavislibelle($statut = null)
+    {
+        if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
+        {
+            return "Favorable";
+        }
+        elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
+        {
+            return "Défavorable";
+        }
+        elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
+        {
+            return "En attente";
+        }
+        elseif (strcasecmp($statut, demande::DEMANDE_AVIS) == 0)
+        {
+            return "Demande d'avis";
+        }
+        else
+        {
+            echo "Demandeavislibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
+        }
+    }
+
+
     public function teletravailstatutlibelle($statut = null)
     {
         if (strcasecmp($statut, teletravail::TELETRAVAIL_VALIDE) == 0)
@@ -5303,7 +5328,7 @@ WHERE  table_schema = Database()
             {
                 $corpmail = $corpmail . " d'absence ";
             }
-            $corpmail = $corpmail . "(" . $demande->typelibelle() . ") de  " . $agent->identitecomplete() . " du "  . $demande->datedebut() . " au " . $demande->datefin() . " (" . $demande->nbrejrsdemande();
+            $corpmail = $corpmail . "(" . $demande->typelibelle() . ") de  " . mb_convert_case($agent->identitecomplete(), MB_CASE_TITLE) . " du "  . $demande->datedebut() . " au " . $demande->datefin() . " (" . $demande->nbrejrsdemande();
             if ($demande->nbrejrsdemande()>1)
             {
                 $corpmail = $corpmail . " jours";
@@ -5313,7 +5338,7 @@ WHERE  table_schema = Database()
                 $corpmail = $corpmail . " jour";
             }
             $corpmail = $corpmail . ") nécessite votre attention.";
-            $corpmail = $corpmail . "\n\nMerci d'indiquer à " . $resp->identitecomplete() . " votre avis.\n"; 
+            $corpmail = $corpmail . "\n\nMerci d'indiquer à " . mb_convert_case($resp->identitecomplete(), MB_CASE_TITLE) . " votre avis.\n"; 
         }
         return $corpmail;
     }

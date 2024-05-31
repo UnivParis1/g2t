@@ -862,6 +862,16 @@ class agent
     
     function estconsultant()
     {
+        $dbconstante = 'FONCTIONAVIS';
+        $avisfonction = 'n';
+        if ($this->fonctions->testexistdbconstante($dbconstante)) { $avisfonction = $this->fonctions->liredbconstante($dbconstante); }
+        if (!$this->fonctions->convertvaluetobool($avisfonction))
+        {
+            // la fonction est désactivée => On retourne systématiquement false
+            return false;
+        }
+
+
         $sql = "SELECT AGENTID FROM COMPLEMENT WHERE COMPLEMENTID = ? AND VALEUR = ?";
         $params = array($this->fonctions->my_real_escape_utf8(complement::AVIS_CONGES_LABEL), $this->fonctions->my_real_escape_utf8($this->agentid));
         $query = $this->fonctions->prepared_select($sql, $params);
@@ -1209,7 +1219,7 @@ class agent
 	        $msg .= "\r\n";
                 if (is_object($destinataire))
                 {
-                    $msg .= "Bonjour " . $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+                    $msg .= "Bonjour " . mb_convert_case($destinataire->identitecomplete(), MB_CASE_TITLE) . ",<br><br>"; // $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
                 }
                 else
                 {
@@ -1227,12 +1237,12 @@ class agent
                     // Si l'expéditeur n'est pas le CRON de G2T
                     if (strcasecmp($this->agentid(), SPECIAL_USER_IDCRONUSER)!=0)
                     {
-                        $msg .= ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8');
+                        $msg .= mb_convert_case($this->prenom . " " . $this->nom, MB_CASE_TITLE); // ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8');
                     }
                     else
                     {
-                        $msg .= "<label style='font-size: 0.75em;'>Ce message est envoyé automatiquement par l'application G2T.<br>";
-                        $msg .= "Merci de ne pas répondre à cet e-mail.<br>La boîte aux lettres qui a généré cet e-mail ne traite pas les réponses.</label><br>";
+                        $msg .= "<p style='font-size: 0.75em;'>Ce message est envoyé automatiquement par l'application G2T.<br>";
+                        $msg .= "Merci de ne pas répondre à cet e-mail.<br>La boîte aux lettres qui a généré cet e-mail ne traite pas les réponses.</p><br>";
                     }
                     $msg .= "\r\n";
                 }
@@ -1248,7 +1258,7 @@ class agent
 	            
 	            // if ($errormsg <> "")
 	            // {
-	            $msg .= "<br><br><p class='fontsize15'>La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</p>";
+	            $msg .= "<br><br><p style='font-size: 0.75em;'>La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</p>";
 	            $msg .= "\r\n";
 	            $msg .= "--$boundary\r\n";
 	            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
@@ -2517,7 +2527,7 @@ class agent
      *            optional type de demande à gérer (cet, ann20, ....)
      * @return string the html text of the array
      */
-    function demandeslistehtmlpourgestion($debut_interval, $fin_interval, $agentid = null, $mode = "agent", $cleelement = null)
+    function demandeslistehtmlpourgestion($debut_interval, $fin_interval, $agentid = null, $mode = MODE_AGENT, $cleelement = null)
     {
         $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
 
@@ -2571,14 +2581,14 @@ const modifymotif = (motif, motifid) =>
             foreach ($liste as $key => $demande) 
             {
                 // echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
-                // if (($demande->statut() == "a" and $mode == "agent") or ($demande->statut() == "v" and $mode == "resp"))
-                if (((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) and strcasecmp($mode, "agent") == 0) 
-                  or (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)) 
+                // if (($demande->statut() == "a" and $mode == MODE_AGENT) or ($demande->statut() == "v" and $mode == MODE_RESPONSABLE))
+                if (((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) and strcasecmp($mode, MODE_AGENT) == 0) 
+                  or (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, MODE_RESPONSABLE) == 0)) 
                 {
                     if ($premieredemande) {
                         $htmltext = $htmltext . "<table id='tabledemande_" . $this->agentid() . "' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
-                        if ($mode=='agent')
+                        if ($mode==MODE_AGENT)
                         {
                             $nbcolonne = 8;
                         }
@@ -2589,10 +2599,10 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=$nbcolonne align=center >Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
 /*
                         $htmltext = $htmltext . "   <tr align=center><td class='cellulesimple'>Date de demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td class='cellulesimple'>Type de demande</td><td class='cellulesimple'>Nbre jours</td>";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, MODE_AGENT) == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Commentaire</td>";
                         $htmltext = $htmltext . "<td class='cellulesimple'>Annuler</td>";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, MODE_RESPONSABLE) == 0)
                             $htmltext = $htmltext . "<td class='cellulesimple'>Motif (obligatoire si le congé est annulé)</td>";
                         $htmltext = $htmltext . "</tr>";
 */                                
@@ -2602,13 +2612,13 @@ const modifymotif = (motif, motifid) =>
                                                       <th class='cellulesimple cursorpointer'>Date de fin <span class='sortindicator'> </span></th>
                                                       <th class='cellulesimple cursorpointer'>Type de demande <span class='sortindicator'> </span></th>
                                                       <th class='cellulesimple cursorpointer'>Nbre jours <span class='sortindicator'> </span></th>";
-                        if (strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($mode, MODE_AGENT) == 0)
                         {
                             $htmltext = $htmltext . "<th class='cellulesimple cursorpointer'>Statut<span class='sortindicator'> </span></th>";
                             $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
                         }
                         $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, MODE_RESPONSABLE) == 0)
                         {
                             $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé) - maximum $longueurmaxmotif caractères</th>";
                         }
@@ -2627,7 +2637,7 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
-                        if (strcasecmp($mode, "agent") == 0)
+                        if (strcasecmp($mode, MODE_AGENT) == 0)
                         {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</td>";
 
@@ -2644,7 +2654,7 @@ const modifymotif = (motif, motifid) =>
 */                           
                         }
                         $spanend = '';
-                        if ((strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "agent") == 0))
+                        if ((strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, MODE_AGENT) == 0))
                         {
                             $disable = "";
                             $datetorepostmail = date('Y-m-d', strtotime($this->fonctions->formatdatedb($demande->datemailannulation()). ' + 7 days'));
@@ -2669,7 +2679,7 @@ const modifymotif = (motif, motifid) =>
                                 . "<input type='submit' $disable name=cancelbutton[" . $demande->id() . "] id=cancelbutton[" . $demande->id() . "] class='cancelbutton g2tbouton g2tenvoibouton' value='Envoyer' onclick='if (this.tagname!=\"OK\") {click_element(\"cancelbutton[" . $demande->id() . "]\"); return false; }'";
                             //$spanend = "</span>";
                         }
-                        elseif ((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, "agent") == 0))
+                        elseif ((strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0 and strcasecmp($mode, MODE_AGENT) == 0))
                         {
                             $htmltext = $htmltext . "<td class='cellulesimple' " 
                                 . " data-title=" . chr(34) . "Votre demande n'est pas validée. Vous pouvez annuler votre demande." . chr(34) . ">"
@@ -2689,7 +2699,7 @@ const modifymotif = (motif, motifid) =>
                             }
                         }
                         $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' ></input> $spanend </td>";
-                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, "resp") == 0)
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, MODE_RESPONSABLE) == 0)
                         {
                             $textareastyle = " class='commenttextarea";
                             $disabletext = " disabled ";
@@ -2814,91 +2824,116 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      *            date of the ending of the interval
      * @param string $agentid
      *            optional the structure's responsable identifier
-     * @param string $structureid
-     *            optional deprecated parameter => not used in code
-     * @param string $cleelement
+     * @param string $mode
      *            optional deprecated parameter => not used in code
      * @return string the html text of the array
      */
-    function demandeslistehtmlpourvalidation($debut_interval, $fin_interval, $agentid = null, $mode = 'resp')
+    function demandeslistehtmlpourvalidation($debut_interval, $fin_interval, $agentid = null, $mode = MODE_RESPONSABLE)
     {
-        $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
 
-        $liste = null;
-        $liste = $this->demandesliste($debut_interval, $fin_interval);
-        $debut_interval = $this->fonctions->formatdatedb($debut_interval);
-        $fin_interval = $this->fonctions->formatdatedb($fin_interval);
-        
-        // $liste=$this->demandesliste($debut_interval,$fin_interval);
-        // foreach ($this->structure()->structurefille() as $key => $value)
-        // {
-        // echo "Structure fille = " . $value->nomlong() . "<br>";
-        // $listerespsousstruct = $value->responsable()->demandesliste($debut_interval,$fin_interval);
-        // $liste = array_merge($liste,$listerespsousstruct);
-        // }
-        
-        // echo "#######liste (Count=" . count($liste) .") = "; print_r($liste); echo "<br>";
-        
         $statutliste = array();
         if (isset($_POST["statut"]))
         {
            $statutliste = $_POST['statut'];
         }
         
+        if (isset($_POST["mode"]))
+        {
+           $mode = $_POST['mode'];
+        }
+
+        $dbconstante = 'FONCTIONAVIS';
+        $avisfonction = 'n';
+        if ($this->fonctions->testexistdbconstante($dbconstante)) { $avisfonction = $this->fonctions->liredbconstante($dbconstante); }
+
         
+        // Si on est en mode MODE_CONSULTANT => Le motif est enregistré dans la colonne VALEUR de la table COMPLEMENTDEMANDE
+        if (strcasecmp($mode,MODE_CONSULTANT)==0)
+        {
+            $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDECOMPLEMENT','VALEUR');
+        }
+        // SInon on demande la taille de la colonne MOTIFREFUS de la table DEMANDE
+        else
+        {
+            $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
+        }
+        
+        $liste = null;
+        $liste = $this->demandesliste($debut_interval, $fin_interval);
+        $debut_interval = $this->fonctions->formatdatedb($debut_interval);
+        $fin_interval = $this->fonctions->formatdatedb($fin_interval);
+        
+        // echo "#######liste (Count=" . count($liste) .") = "; print_r($liste); echo "<br>";
+
         $htmltext = "";
         // $htmltext = "<br>";
         if (count($liste) == 0) {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
-        } else {
+        } 
+        else 
+        {
             $premieredemande = TRUE;
             foreach ($liste as $key => $demande) {
                 if (strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0) 
                 {
                     $todisplay = true;
+                    // Si on est en mode MODE_CONSULTANT
+                    if (strcasecmp($mode,MODE_CONSULTANT)==0)
+                    {
+                        $demandecomplement  = new demandecomplement($this->dbconnect);
+                        $demandecomplement->load($demande->id(),demandecomplement::DEMANDE_AVIS_STATUT_LABEL);
+                        // Si on a déjà un avis du consultant => On n'affiche pas la demande
+                        if ($demandecomplement->demandeid()==$demande->id())
+                        {
+                            $todisplay = false;
+                        }
+                    }
                     // On n'affiche pas les demandes du responsable !!!!
-                    if ($agentid == $this->agentid) {
+                    elseif ($agentid == $this->agentid) {
                         $todisplay = false;
                     }
                     // echo "todisplay = $todisplay <br>";
                     if ($todisplay) {
                         if ($premieredemande) {
                             $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
-                            $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+                            // Si on est en mode MODE_CONSULTANT
+                            if (strcasecmp($mode,MODE_CONSULTANT)==0)
+                            {
+                                $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Avis à donner pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+                            }
+                            else
+                            {
+                                $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+                            }
                             $htmltext = $htmltext . "   <tr align=center>
                                                             <td class='cellulesimple'>Date de demande</td>
                                                             <td class='cellulesimple'>Date de début</td>
                                                             <td class='cellulesimple'>Date de fin</td>
                                                             <td class='cellulesimple'>Type de demande</td>
                                                             <td class='cellulesimple'>Nbre jours</td>
-                                                            <td class='cellulesimple'>Etat de la demande</td>
-                                                            <td class='cellulesimple'>Motif (obligatoire si le congé est refusé) - maximum $longueurmaxmotif caractères</td>
-                                                        </tr>";
+                                                            <td class='cellulesimple'>Etat de la demande</td>";
+                            // Si on est en mode MODE_CONSULTANT
+                            if (strcasecmp($mode,MODE_CONSULTANT)==0)
+                            {
+                                $htmltext = $htmltext . "   <td class='cellulesimple'>Motif (obligatoire si l'avis est défavorable) - maximum $longueurmaxmotif caractères</td>";
+                            }
+                            else
+                            {
+                                $htmltext = $htmltext . "   <td class='cellulesimple'>Motif (obligatoire si la demande est refusée) - maximum $longueurmaxmotif caractères</td>";
+                            }
+                            $htmltext = $htmltext . "   </tr>";
                             $premieredemande = FALSE;
                         }
                         
                         $htmltext = $htmltext . "<tr align=center class='bulleinfo'>";
                         // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
-                        
+                                                
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datedebut()) . " " . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datefin()) . " " . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         if ($demande->type() == 'enmal') {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ")</td>";
                         }
-/*                        
-*                        elseif ($this->fonctions->absencecommentaireoblig($demande->type()))
-*                        {
-*                            $datatitle = '';
-*                            if (strlen($demande->commentaire()) != 0) 
-*                            {
-*                                $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);  
-*                            }
-*                            $htmltext = $htmltext . "   <td class='cellulesimple'>";
-*                            $htmltext = $htmltext . $demande->typelibelle();
-*                            $htmltext = $htmltext . "</td>";
-*                        } 
-*/
                         else 
                         {
                             $libelledemande = $this->fonctions->tronque_chaine($demande->typelibelle(),40, true);
@@ -2923,7 +2958,38 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                             $datatitleindicator = " &#128195;";
                         }
                         $htmltext = $htmltext . "   <td class='cellulesimple' $datatitle>" . $demande->nbrejrsdemande() . $datatitleindicator . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>";
+                        
+                        $datatitle = '';
+                        if (strcasecmp($mode,MODE_CONSULTANT)!=0 and $this->fonctions->convertvaluetobool($avisfonction))
+                        {
+                            $texteavis = '';
+                            // On cherche le statut de l'avis
+                            $demandecomplement  = new demandecomplement($this->dbconnect);
+                            $demandecomplement->load($demande->id(),demandecomplement::DEMANDE_AVIS_STATUT_LABEL);
+                            if ($demandecomplement->demandeid()==$demande->id())
+                            {
+                                if (strcasecmp($demandecomplement->valeur(),demande::DEMANDE_REFUSE)==0)
+                                {
+                                    $texteavis = $texteavis . "Avis défavorable : ";
+                                    $demandecomplement  = new demandecomplement($this->dbconnect);
+                                    $demandecomplement->load($demande->id(),demandecomplement::DEMANDE_AVIS_MOTIF_LABEL);
+                                    if ($demandecomplement->demandeid()==$demande->id())
+                                    {
+                                        $texteavis = $texteavis . $demandecomplement->valeur();
+                                    }
+                                }
+                                else
+                                {
+                                    $texteavis = $texteavis . "Avis favorable";                                    
+                                }
+                            }
+                            if (trim($texteavis) != '')
+                            {
+                                $datatitle = " data-title=" . chr(34) . htmlentities($texteavis) . chr(34);
+                            }
+                        }
+
+                        $htmltext = $htmltext . "   <td class='cellulesimple' $datatitle >";
                         
                         // Si on a demandé l'avis => On force le statut à "En attente" pour éviter de reposter la demande d'avis 
                         // en cas d'enregistrement d'une modification sur une autre demande
@@ -2935,6 +3001,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         
                         $htmltext = $htmltext . "      <select name='statut[" . $demande->id() . "]' id='statut[" . $demande->id() . "]' onchange='demandestatutchange(this," . $demande->id() . ");'>";
                         $htmltext = $htmltext . "         <option ";
+                        
                         if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_VALIDE)
                         {
                             $htmltext = $htmltext . " selected ";
@@ -2943,7 +3010,17 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         {
                             $htmltext = $htmltext . " selected ";
                         }
-                        $htmltext = $htmltext . " value='" . demande::DEMANDE_VALIDE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_VALIDE) . "</option>";
+                        $htmltext = $htmltext . " value='" . demande::DEMANDE_VALIDE . "'>";
+                        // Si on est en mode MODE_CONSULTANT
+                        if (strcasecmp($mode,MODE_CONSULTANT)==0)
+                        {
+                            $htmltext = $htmltext . $this->fonctions->demandeavislibelle(demande::DEMANDE_VALIDE);
+                        }
+                        else
+                        {
+                            $htmltext = $htmltext . $this->fonctions->demandestatutlibelle(demande::DEMANDE_VALIDE);
+                        }
+                        $htmltext = $htmltext . "</option>";
                         $htmltext = $htmltext . "         <option ";
                         //if (strcasecmp($demande->statut(), demande::DEMANDE_REFUSE) == 0)
                         if (isset($statutliste[$demande->id()]) and ($statutliste[$demande->id()] == demande::DEMANDE_REFUSE or $statutliste[$demande->id()] == demande::DEMANDE_ANNULE))
@@ -2954,25 +3031,47 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         {
                             $htmltext = $htmltext . " selected ";
                         }
-                        $htmltext = $htmltext . " value='" . demande::DEMANDE_REFUSE . "'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_REFUSE) . "</option>";
-
-                        $complement = new complement($this->dbconnect);
-                        $complement->load($this->agentid,complement::AVIS_CONGES_LABEL);
-                        if ($complement->agentid()==$this->agentid and $complement->valeur()!="")
+                        $htmltext = $htmltext . " value='" . demande::DEMANDE_REFUSE . "'>";
+                        // Si on est en mode MODE_CONSULTANT
+                        if (strcasecmp($mode,MODE_CONSULTANT)==0)
                         {
-                            $htmltext = $htmltext . "         <option ";
-                            if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_AVIS)
-                            {
-                                $htmltext = $htmltext . " selected ";
-                            }
-                            elseif (!isset($statutliste[$demande->id()]) and strcasecmp($demande->statut(), demande::DEMANDE_AVIS) == 0)
-                            {
-                                $htmltext = $htmltext . " selected ";
-                            }
-                            $htmltext = $htmltext . " value='" . demande::DEMANDE_AVIS ."'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_AVIS) . "</option>";
+                            $htmltext = $htmltext . $this->fonctions->demandeavislibelle(demande::DEMANDE_REFUSE);
                         }
+                        else
+                        {
+                            $htmltext = $htmltext . $this->fonctions->demandestatutlibelle(demande::DEMANDE_REFUSE);
+                        }
+                        $htmltext = $htmltext . "</option>";
 
+                        if ($this->fonctions->convertvaluetobool($avisfonction))
+                        {
+                            $complement = new complement($this->dbconnect);
+                            $complement->load($this->agentid,complement::AVIS_CONGES_LABEL);
+                            if ($complement->agentid()==$this->agentid and $complement->valeur()!="" and strcasecmp($mode,MODE_CONSULTANT)!=0)
+                            {
+                                // Si le statut de l'avis n'existe pas => On demande l'avis. Sinon l'avis est déjà donné, donc on ne le redemande pas.
+                                $demandecomplement  = new demandecomplement($this->dbconnect);
+                                $demandecomplement->load($demande->id(),demandecomplement::DEMANDE_AVIS_STATUT_LABEL);
+                                if ($demandecomplement->demandeid()!=$demande->id())
+                                {
+                                    $htmltext = $htmltext . "         <option ";
+                                    if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_AVIS)
+                                    {
+                                        $htmltext = $htmltext . " selected ";
+                                    }
+                                    elseif (!isset($statutliste[$demande->id()]) and strcasecmp($demande->statut(), demande::DEMANDE_AVIS) == 0)
+                                    {
+                                        $htmltext = $htmltext . " selected ";
+                                    }
+                                    $htmltext = $htmltext . " value='" . demande::DEMANDE_AVIS ."'>";
+                                    // On sait qu'on n'est pas en mode MODE_CONSULTANT => donc c'est forcément le libellé du statut 
+                                    $htmltext = $htmltext . $this->fonctions->demandestatutlibelle(demande::DEMANDE_AVIS);
+                                    $htmltext = $htmltext . "</option>";
 
+                                }
+                            }
+                        }
+                        
                         $htmltext = $htmltext . "         <option ";
                         if (isset($statutliste[$demande->id()]) and $statutliste[$demande->id()] == demande::DEMANDE_ATTENTE)
                         {
@@ -2982,7 +3081,17 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         {
                             $htmltext = $htmltext . " selected ";
                         }
-                        $htmltext = $htmltext . " value='" . demande::DEMANDE_ATTENTE ."'>" . $this->fonctions->demandestatutlibelle(demande::DEMANDE_ATTENTE) . "</option>";
+                        $htmltext = $htmltext . " value='" . demande::DEMANDE_ATTENTE ."'>";
+                        // Si on est en mode MODE_CONSULTANT
+                        if (strcasecmp($mode,MODE_CONSULTANT)==0)
+                        {
+                            $htmltext = $htmltext . $this->fonctions->demandeavislibelle(demande::DEMANDE_ATTENTE);
+                        }
+                        else
+                        {
+                            $htmltext = $htmltext . $this->fonctions->demandestatutlibelle(demande::DEMANDE_ATTENTE);
+                        }
+                        $htmltext = $htmltext . "</option>";
                         $htmltext = $htmltext . "      <select>";
                         $htmltext = $htmltext . "</td>";
                         
@@ -2997,8 +3106,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                         
 //                        $htmltext = $htmltext . "   <td class='cellulesimple'><input type=text name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' value='" . $demande->motifrefus() . "' $backgroundtext size='80' oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext></td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>"
-                                . "<textarea name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' rows='2' cols='80' $textareastyle oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext>" . $demande->motifrefus() . "</textarea>"
-                                . "</td>";
+                                              . "      <textarea name='motif[" . $demande->id() . "]' id='motif[" . $demande->id() . "]' rows='2' cols='80' $textareastyle oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $demande->id() . ");' $disabletext>";
+                        $htmltext = $htmltext . $demande->motifrefus();
+                        $htmltext = $htmltext . trim(" </textarea>")
+                                              . "   </td>";
                         $htmltext = $htmltext . "</tr>";
                     }
                 }

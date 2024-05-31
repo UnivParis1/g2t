@@ -815,7 +815,7 @@
                     <form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                         <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="agent">
+                        <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
                     </form>
                     <a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
                 </li>
@@ -834,7 +834,7 @@
                 <li onclick='document.agent_struct_planning.submit();' <?php echo $hidemenu; ?> >
                     <form name='agent_struct_planning' method='post' action="structure_planning.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                        <input type="hidden" name="mode" value="agent">
+                        <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
                         <input type="hidden" name="previous" value="no">
                     </form>
                     <a href="javascript:document.agent_struct_planning.submit();">Planning de la structure</a>
@@ -931,10 +931,19 @@
     <ul class="niveau1">
         <li>MENU CONSULTANT
             <ul class="niveau2">
+                <li onclick='document.consult_valid_conge.submit();'>
+                    <form name='consult_valid_conge' method='post' action="valider_demande.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                        <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>"> 
+                        <input type="hidden" name="previous" value="no">
+                    </form> 
+                    <a href="javascript:document.consult_valid_conge.submit();">Avis sur des demandes en attente</a>
+                </li>
                 <li onclick='document.consult_struct_planning.submit();'>
                     <form name='consult_struct_planning' method='post' action="structure_planning.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="consult"> <input type="hidden" name="previous" value="no">
+                        <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>">
+                        <input type="hidden" name="previous" value="no">
                     </form> 
                     <a href="javascript:document.consult_struct_planning.submit();">Planning</a>
                 </li>
@@ -972,7 +981,7 @@
                     <form name='resp_parametre' method='post' action="gestion_dossier.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                         <input type="hidden" name="action" value="modif"> 
-                        <input type="hidden" name="mode" value="resp">
+                        <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                     </form> 
                     <a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
                 </li>
@@ -982,7 +991,7 @@
                 <li onclick='document.resp_gest_teletravail.submit();'>
                     <form name='resp_gest_teletravail' method='post' action="gestion_teletravail.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="resp">
+                        <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                     </form>
                     <a href="javascript:document.resp_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
                 </li>
@@ -995,14 +1004,15 @@
                         <li onclick='document.resp_struct_planning.submit();'>
                             <form name='resp_struct_planning' method='post' action="structure_planning.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp"> <input type="hidden" name="previous" value="no">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                <input type="hidden" name="previous" value="no">
                             </form> 
                             <a href="javascript:document.resp_struct_planning.submit();">Planning de la structure</a>
                         </li>
                         <li onclick='document.resp_valid_conge.submit();'>
                             <form name='resp_valid_conge' method='post' action="valider_demande.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                 <input type="hidden" name="previous" value="no">
                             </form> 
                             <a href="javascript:document.resp_valid_conge.submit();">Validation des demandes en attente</a>
@@ -1039,7 +1049,7 @@
                         <li onclick='document.resp_ajout_conge.submit();'>
                             <form name='resp_ajout_conge' method='post' action="ajouter_conges.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="resp"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                             </form> 
                             <a href="javascript:document.resp_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
                         </li>
@@ -1068,14 +1078,14 @@
                         <li onclick='document.resp_valid_tpspartiel.submit();'>
                             <form name='resp_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                             </form>
                             <a href="javascript:document.resp_valid_tpspartiel.submit();">Validation des temps partiels</a>
                         </li>
                         <li onclick='document.resp_tpspartiel.submit();'>
                             <form name='resp_tpspartiel' method='post' action="saisir_tpspartiel.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                             </form> <a href="javascript:document.resp_tpspartiel.submit();">Saisir le temps partiel pour un agent</a>
                         </li>
 <?php
@@ -1085,7 +1095,7 @@
                         <li onclick='document.resp_aff_solde.submit();'>
                             <form name='resp_aff_solde' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                                 <input type="hidden" name="previous" value="no">
                             </form> 
                             <a href="javascript:document.resp_aff_solde.submit();">Affichage du solde des agents de la structure</a>
@@ -1104,7 +1114,7 @@
                         <li onclick='document.resp_struct_planning_previous.submit();'>
                             <form name='resp_struct_planning_previous' method='post' action="structure_planning.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                 <input type="hidden" name="previous" value="yes">
                             </form> 
                             <a href="javascript:document.resp_struct_planning_previous.submit();">Planning de la structure</a>
@@ -1112,7 +1122,7 @@
                         <li onclick='document.resp_valid_conge_previous.submit();'>
                             <form name='resp_valid_conge_previous' method='post' action="valider_demande.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                 <input type="hidden" name="previous" value="yes">
                             </form> 
                             <a href="javascript:document.resp_valid_conge_previous.submit();">Validation des demandes en attente</a>
@@ -1149,7 +1159,7 @@
                         <li onclick='document.resp_aff_solde_previous.submit();'>
                             <form name='resp_aff_solde_previous' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="resp"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                 <input type="hidden" name="previous" value="yes">
                             </form> 
                             <a href="javascript:document.resp_aff_solde_previous.submit();">Affichage du solde des agents de la structure</a>
@@ -1180,14 +1190,14 @@
                     <form name='gest_parametre_modif' method='post' action="gestion_dossier.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                         <input type="hidden" name="action" value="modif"> 
-                        <input type="hidden" name="mode" value="gestion">
+                        <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                     </form>
                     <a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
                 </li>
                 <li onclick='document.gest_gest_teletravail.submit();'>
                     <form name='gest_gest_teletravail' method='post' action="gestion_teletravail.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="gestion">
+                        <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                     </form>
                     <a href="javascript:document.gest_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
                 </li>
@@ -1196,7 +1206,7 @@
                         <li onclick='document.gest_struct_planning.submit();'>
                             <form name='gest_struct_planning' method='post' action="structure_planning.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                 <input type="hidden" name="previous" value="no">
                             </form> 
                             <a href="javascript:document.gest_struct_planning.submit();">Planning de la structure</a>
@@ -1243,7 +1253,7 @@
                         <li onclick='document.gest_valid_conge.submit();'>
                             <form name='gest_valid_conge' method='post' action="valider_demande.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion">
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                             </form> 
                             <a href="javascript:document.gest_valid_conge.submit();">Validation des demandes en attente</a>
                         </li>
@@ -1258,14 +1268,14 @@
                         <li onclick='document.gest_valid_tpspartiel.submit();'>
                             <form name='gest_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion">
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                             </form> 
                             <a href="javascript:document.gest_valid_tpspartiel.submit();">Validation des temps partiels</a>
                         </li>
                         <li onclick='document.gest_aff_solde.submit();'>
                             <form name='gest_aff_solde' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion">
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                             </form>
                             <a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
                         </li>
@@ -1276,7 +1286,7 @@
                         <li onclick='document.gest_struct_planning_previous.submit();'>
                             <form name='gest_struct_planning_previous' method='post' action="structure_planning.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                 <input type="hidden" name="previous" value="yes">
                             </form> 
                             <a href="javascript:document.gest_struct_planning_previous.submit();">Planning de la structure</a>
@@ -1323,7 +1333,7 @@
                         <li onclick='document.gest_valid_conge_prev.submit();'>
                             <form name='gest_valid_conge_prev' method='post' action="valider_demande.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                 <input type="hidden" name="previous" value="yes">
                             </form> 
                             <a href="javascript:document.gest_valid_conge_prev.submit();">Validation des demandes en attente</a>
@@ -1331,7 +1341,7 @@
                         <li onclick='document.gest_aff_solde_ant.submit();'>
                             <form name='gest_aff_solde_ant' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestion"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                 <input type="hidden" name="previous" value="yes">
                             </form> 
                             <a href="javascript:document.gest_aff_solde_ant.submit();">Affichage du solde des agents de la structure</a>
@@ -1363,7 +1373,7 @@
                 <li onclick='document.rh_struct_gest.submit();'>
                     <form name='rh_struct_gest' method='post' action="gestion_structure.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                        <input type="hidden" name="mode" value="gestrh">
+                        <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                     </form> 
                     <a href="javascript:document.rh_struct_gest.submit();">Paramétrage des structures</a>
                 </li>
@@ -1376,7 +1386,7 @@
                         <li onclick='document.rh_gest_teletravail_noesignature.submit();'>
                             <form name='rh_gest_teletravail_noesignature' method='post' action="gestion_teletravail.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestrh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                                 <input type="hidden" name="noesignature" value="yes">
                             </form>
                             <a href="javascript:document.rh_gest_teletravail_noesignature.submit();">Gestion des conventions de télétravail<br>(hors eSignature)</a>
@@ -1384,7 +1394,7 @@
                         <li onclick='document.rh_gest_teletravail.submit();'>
                             <form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestrh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form>
                             <a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail<br>(avec eSignature)</a>
                         </li>
@@ -1418,42 +1428,42 @@
                         <li onclick='document.gestrh_utilisationcet.submit();'>
                             <form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestrh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form> 
                             <a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
                         </li>
                         <li onclick='document.gestrh_gestcet.submit();'>
                             <form name='gestrh_gestcet' method='post' action="gerer_cet.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestrh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form> 
                             <a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
                         </li>
                         <li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
                             <form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestrh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form> 
                             <a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
                         </li>
                         <li onclick='document.gestrh_creercet.submit();'>
                             <form name='gestrh_creercet' method='post' action="creer_cet.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="gestrh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form> 
                             <a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
                         </li>
                         <li onclick='document.rh_alimentation_cet.submit();'>
                             <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="rh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form>
                             <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
                         </li>          
                         <li onclick='document.rh_option_cet.submit();'>
                             <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="rh">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form>
                             <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
                         </li>
@@ -1491,7 +1501,7 @@
                         <li onclick='document.rh_gest_conge.submit();'>
                             <form name='rh_gest_conge' method='post' action="gestion_demande.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="rh"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
                                 <input type="hidden" name="previous" value="no">
                             </form> 
                             <a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
@@ -1511,14 +1521,14 @@
                         <li onclick='document.rh_ajout_conge.submit();'>
                             <form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            <input type="hidden" name="mode" value="gestrh">
+                            <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form> 
                             <a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
                         </li>
                         <li onclick='document.rh_aff_solde.submit();'>
                             <form name='rh_aff_solde' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="rh"> 
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
                                 <input type="hidden" name="previous" value="no">
                             </form>
                             <a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>

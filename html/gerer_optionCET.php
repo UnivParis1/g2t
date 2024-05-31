@@ -138,7 +138,7 @@
         $esignatureid_delete = $_POST["esignatureid_delete"];
     }
     
-    $mode = "agent";
+    $mode = MODE_AGENT;
     if (isset($_POST["mode"]))
     {
         $mode = $_POST["mode"];
@@ -161,8 +161,8 @@
     
     $anneeref = $fonctions->anneeref();
     
-    // Si on est en mode 'rh' et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
-    if (is_null($agentid) and $mode == 'rh')
+    // Si on est en mode MODE_RH et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
+    if (is_null($agentid) and $mode == MODE_RH)
     {
         echo "<form name='demandeforagent'  method='post' action='gerer_optionCET.php'>";
         echo "Personne à rechercher : <br>";
@@ -852,7 +852,7 @@
             echo "<input type=hidden placeholder='Case G' name=valeur_g id=valeur_g value='$valeur_g' size=4 readonly class='inputdataoptionCET' >";
             echo "<input type=hidden placeholder='Case H' name=valeur_h id=valeur_h value='$valeur_h' size=4 readonly class='inputdataoptionCET' >";
             
-            if ($mode == 'rh')
+            if ($mode == MODE_RH)
             {
                 echo "L'agent " . $agent->identitecomplete() . " a $valeur_h jour(s) à répartir.";
             }

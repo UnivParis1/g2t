@@ -117,7 +117,7 @@
     // Fin du forçage de l'affichage de l'image d'attente
 
     
-    if (strcasecmp($mode, "gestrh") == 0) {
+    if (strcasecmp($mode, MODE_RH) == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
 
