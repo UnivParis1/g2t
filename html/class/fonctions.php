@@ -1340,19 +1340,29 @@ class fonctions
 //    }
 
 
-    public function CETaverifier($datedebut)
+    public function CETaverifier($datedebut,$agentid = null)
     {
         $sql = "SELECT DISTINCT DEMANDEID,AGENTID, DATEDEBUT,DATESTATUT
     				FROM DEMANDE
     				WHERE TYPEABSENCEID = 'cet'
     				  AND (DATEDEBUT >= ?
-    				    OR DATESTATUT >= ? )
-    			    ORDER BY AGENTID, DATEDEBUT,DATESTATUT";
-        $params = array($this->formatdatedb($datedebut),$this->formatdatedb($datedebut));
+    				    OR DATESTATUT >= ? ) ";
+        if (!is_null($agentid))
+        {
+            $sql = $sql . " AND AGENTID = ? ";
+            $params = array($this->formatdatedb($datedebut),$this->formatdatedb($datedebut),$agentid);
+        }
+        else
+        {
+            $params = array($this->formatdatedb($datedebut),$this->formatdatedb($datedebut));
+        }
+    	$sql = $sql . " ORDER BY AGENTID, DATEDEBUT, DATESTATUT";
         $query = $this->prepared_select($sql, $params);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
+        {
             error_log(basename(__FILE__) . " " . $erreur_requete);
+        }
         $demandeliste = array();
         // Si pas de demande de CET, on retourne le tableau vide
         if (mysqli_num_rows($query) == 0) {

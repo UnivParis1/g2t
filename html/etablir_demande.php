@@ -700,10 +700,14 @@
                     $demande->load($demandeid);
                     $agent = $demande->agent();
 
-                    // On envoie un mail au consultant s'il est défini
+                    $dbconstante = 'FONCTIONAVIS';
+                    $avisfonction = 'n';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $avisfonction = $fonctions->liredbconstante($dbconstante); }
+                    
+                    // On envoie un mail au consultant s'il est défini et que la fonction de demande d'avis est déployée
                     $complement = new complement($dbcon);
                     $complement->load($agent->agentid(),complement::AVIS_CONGES_LABEL);
-                    if ($complement->agentid()==$agent->agentid() and $complement->valeur()!="")
+                    if ($complement->agentid()==$agent->agentid() and $complement->valeur()!="" and $fonctions->convertvaluetobool($avisfonction))
                     {
                         $consultant = new agent($dbcon);
                         if ($consultant->load($complement->valeur()))

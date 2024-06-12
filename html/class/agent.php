@@ -3614,43 +3614,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 
     function CETaverifier($datedebut)
     {
-        $sql = "SELECT DISTINCT DEMANDEID ,DATEDEBUT,DATESTATUT
-				FROM DEMANDE 
-				WHERE AGENTID = ? 
-				  AND TYPEABSENCEID = 'cet' 
-				  AND (DATEDEBUT >= ?
-				    OR DATESTATUT >= ? )
-			    ORDER BY DATEDEBUT,DATESTATUT";
-        $params = array($this->agentid,$this->fonctions->formatdatedb($datedebut),$this->fonctions->formatdatedb($datedebut));
-        $query = $this->fonctions->prepared_select($sql, $params);
-        $erreur_requete = mysqli_error($this->dbconnect);
-        if ($erreur_requete != "")
-        {
-            error_log(basename(__FILE__) . " " . $erreur_requete);
-        }
-        $demandeliste = array();
-        // Si pas de demande de CET, on retourne le tableau vide
-        if (mysqli_num_rows($query) == 0) {
-            return $demandeliste;
-        }
-        while ($result = mysqli_fetch_row($query)) {
-            $demandeid = $result[0];
-            $demande = new demande($this->dbconnect);
-            $demande->load($demandeid);
-            
-            $complement = new complement($this->dbconnect);
-            $complement->load($this->agentid(), 'DEM_CET_' . $demandeid);
-            
-            if ($demande->statut() == demande::DEMANDE_VALIDE and $complement->agentid() == '') // Si la demande est validée mais que le complément n'existe pas => On doit le controler
-            {
-                $demandeliste[] = $demande;
-            }
-            if ($demande->statut() == demande::DEMANDE_ANNULE and $complement->valeur() == demande::DEMANDE_VALIDE) // Si la demande est annulée mais que le complément est toujours valide => On doit le contrôler
-            {
-                $demandeliste[] = $demande;
-            }
-        }
-        return $demandeliste;
+        return $this->fonctions->CETaverifier($datedebut, $this->agentid);
     }
     
     function isG2tUser()
