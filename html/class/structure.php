@@ -1560,13 +1560,18 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     $htmltext = $htmltext . "</td>";
                     
                     // Ajout de la fonction de demande d'avis
+                    $inputactive = '';
+                    if (is_null($responsableid))
+                    {
+                        $inputactive = ' disabled ';
+                    }
                     if ($this->fonctions->convertvaluetobool($avisfonction))
                     {
                         $htmltext = $htmltext . "<td class='cellulesimple' >";
                         $aviscomplement = new complement($this->dbconnect);
                         $aviscomplement->load($membre->agentid(),complement::AVIS_CONGES_LABEL);
 
-                        $htmltext = $htmltext . "<input id='inputavisuser[" . $membre->agentid() . "]' name='inputavisuser[" . $membre->agentid() . "]' placeholder='Nom et/ou prenom' value='";
+                        $htmltext = $htmltext . "<input $inputactive id='inputavisuser[" . $membre->agentid() . "]' name='inputavisuser[" . $membre->agentid() . "]' placeholder='Nom et/ou prenom' value='";
                         $style = '';
                         $extrainfo = '';
                         $useravis = null;

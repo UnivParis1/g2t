@@ -393,15 +393,26 @@
                 {
                     $membre = new agent($dbcon);
                     $membre->load($membreid);
+                    $signataire = $membre->getsignataire();
+                    if ($signataire===false)
+                    {
+                        $signataire = new agent($dbcon);
+                        $signataire->load(SPECIAL_USER_IDCRONUSER);
+                    }
                     if ($agentavisid == $membreid)
                     {
                         if (strlen(trim($msgerreur))>0) { $msgerreur = $msgerreur . "<br>"; }
                         $msgerreur = $msgerreur . $membre->identitecomplete() . " : Vous ne pouvez pas demander la consultation de l'agent lui-même.";
                     }
+                    elseif ($agentavisid == $signataire->agentid())
+                    {
+                        if (strlen(trim($msgerreur))>0) { $msgerreur = $msgerreur . "<br>"; }
+                        $msgerreur = $msgerreur . $membre->identitecomplete() . " : " . $signataire->identitecomplete() . " est le responsable de cette personne, il ne peut pas demander son propre avis.";
+                    }
                     elseif ($agentavisid == $userid)
                     {
                         if (strlen(trim($msgerreur))>0) { $msgerreur = $msgerreur . "<br>"; }
-                        $msgerreur = $msgerreur . $membre->identitecomplete() . " : Etant le responsable de cette personne, vous ne pouvez pas demander votre propre avis.";
+                        $msgerreur = $msgerreur . $membre->identitecomplete() . " : Vous ne pouvez pas vous octroyer ce droit.";
                     }
                     else
                     {

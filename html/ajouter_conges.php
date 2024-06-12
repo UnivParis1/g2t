@@ -219,6 +219,7 @@
 //        }
         ksort($agentlistefull);
         echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
+        echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
         foreach ($agentlistefull as $keyagent => $membre) 
         {
             if (!$membre->estutilisateurspecial())
