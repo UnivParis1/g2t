@@ -1029,10 +1029,10 @@
             echo "<SELECT name='listetype' id='listetype' onchange='updatedisplay()' class='abssencecommfacultatif'>";
             $listecateg = $fonctions->listecategorieabsence();
             echo "<OPTION class='abssencecommfacultatif' value=''>-- Veuillez sélectionner un type d'absence --</OPTION>";
-            foreach ($listecateg as $keycateg => $nomcateg) {
+            foreach ((array)$listecateg as $keycateg => $nomcateg) {
                 echo "<optgroup class='abssencecommfacultatif' label='" . str_replace("_", " ", $nomcateg) . " &nbsp;'>";
                 $listeabs = $fonctions->listeabsence($keycateg);
-                foreach ($listeabs as $keyabs => $nomabs)
+                foreach ((array)$listeabs as $keyabs => $nomabs)
                 {
                     echo "<OPTION value='" . $keyabs . "' ";
                     if ($keyabs == $listetype)
