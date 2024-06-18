@@ -201,6 +201,7 @@ class solde
 
     function creersolde($codeconge = null, $codeagent = null)
     {
+        $msgerreur = '';
         if (is_null($codeconge)) {
             $errlog = "Solde->creersolde : Le code de congé est NULL !!!";
             $msgerreur = $msgerreur . $errlog . "<br/>";

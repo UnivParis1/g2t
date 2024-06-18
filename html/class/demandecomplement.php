@@ -38,7 +38,7 @@ class demandecomplement
         if (is_null($this->dbconnect)) {
             $errlog = "DemandeComplement->construct : La connexion à la base de donnée est NULL !!!";
             echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         $this->fonctions = new fonctions($db);
     }

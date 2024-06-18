@@ -189,10 +189,9 @@
             //alert(indexcellule);
             var currenttd = tableau.querySelectorAll('.teletravail')[indexcellule];
 
-            if (checkboxvalue || currenttd.classList.contains('<?php 
-               // ATTENTION : On TRIM la classe exclusion car il ne faut pas les espaces quand on vérifie si la classe est là
-               echo trim(planningelement::HTML_CLASS_EXCLUSION); 
-            ?>'))  // Soit on a demander à le masquer, soit c'est une date exclue (<=> classe exclusion)
+            // ATTENTION : On TRIM la classe exclusion car il ne faut pas les espaces quand on vérifie si la classe est là
+            // Soit on a demander à le masquer, soit c'est une date exclue (<=> classe exclusion)
+            if (checkboxvalue || currenttd.classList.contains('<?php echo trim(planningelement::HTML_CLASS_EXCLUSION); ?>'))  
             {
                 //alert('Suppression de la couleur');
                 // C'est du télétravail et on doit le masquer ou la date est exclue
@@ -335,9 +334,7 @@
 <!-- Donc à chaque changement de CSS, on force le chargement de la nouvelle CSS -->
 <link rel="stylesheet" type="text/css" href="css-g2t/g2t.css?<?php echo filemtime('css-g2t/g2t.css') ?>" media="all"></link>
 <!------------------------------------
-<link rel="stylesheet" type="text/css" 
-    href="style/jquery-ui.css?<? php echo filemtime('style/jquery-ui.css')  ?>" media="screen">
-</link>
+<link rel="stylesheet" type="text/css" href="style/jquery-ui.css?<?php echo filemtime('style/jquery-ui.css')  ?>" media="screen"></link>
 ------------------------------->
 </head>
 
@@ -1518,6 +1515,25 @@
                             </form> 
                             <a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
                         </li>
+<?php
+                    $dbconstante = "FONCTIONCONGSUP";
+                    $congessuppfonction = 'n';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $congessuppfonction = $fonctions->liredbconstante($dbconstante); }
+                    // Si la fonction de demande de validation par la DRH n'est pas activée => On fait comme d'habitude
+                    if ($fonctions->convertvaluetobool($congessuppfonction))
+                    {
+?>
+                        <li onclick='document.rh_valid_congesup.submit();'>
+                            <form name='rh_valid_congesup' method='post' action="valider_jourscomplementaires.php">
+                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
+                                <input type="hidden" name="previous" value="no">
+                            </form> 
+                            <a href="javascript:document.rh_valid_congesup.submit();">Validation des jours complémentaires</a>
+                        </li>
+<?php
+                    }
+?>
                         <li onclick='document.rh_ajout_conge.submit();'>
                             <form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">

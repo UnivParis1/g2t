@@ -368,7 +368,7 @@
             echo "</select>";
             echo "<br>";
         }
-    } elseif ($mode == MODE_RESPONSABLE or $mode == 'gest') {
+    } elseif ($mode == MODE_RESPONSABLE or $mode == MODE_GESTION) {
         // => On est en mode "reponsable" et un agent est sélectionné
         //echo "Avant le mode responsable <br>";
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), MODE_RESPONSABLE, null);
@@ -386,7 +386,7 @@
     else
     {
         // On est en mode rh et un agent est sélectionné
-        // On élargie de période de début de recherche des demades de CET pour l'agent à -2 ans.
+        // On élargie de période de début de recherche des demandes de CET pour l'agent à -2 ans.
         //echo "Mode RH <br>";
         $debut = $fonctions->formatdate(($fonctions->anneeref() - 2) . $fonctions->debutperiode());
         $htmltext = $agent->demandeslistehtmlpourgestion($debut, $fin, $user->agentid(), MODE_RESPONSABLE, 'cet');
@@ -409,7 +409,7 @@
         {
             echo "<input type='hidden' name='responsableid' value='" . $responsableid . "'>";
         }
-        elseif ($mode == 'gest')
+        elseif ($mode == MODE_GESTION)
         {
             echo "<input type='hidden' name='gestionnaireid' value='" . $responsableid . "'>";
         }

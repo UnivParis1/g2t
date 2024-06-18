@@ -661,7 +661,7 @@ class fonctions
      *
      * @param string $constante
      *            the constant identifier to read from the database
-     * @return string the constant value readed from the database
+     * @return string|array the constant value readed from the database
      */
     public function liredbconstante($constante)
     {
@@ -1387,6 +1387,62 @@ class fonctions
         }
         return $demandeliste;
     }
+
+    public function congessuppaverifier($datedebut,$agentid = null)
+    {
+        $sql = "SELECT COMMENTAIRECONGE.COMMENTAIRECONGEID, 
+                       COMMENTAIRECONGE.AGENTID, 
+                       COMMENTAIRECONGE.TYPEABSENCEID, 
+                       COMMENTAIRECONGE.DATEAJOUTCONGE,
+                       COMMENTAIRECONGE.COMMENTAIRE,
+                       COMMENTAIRECONGE.NBRJRSAJOUTE,
+                       COMMENTAIRECONGE.AUTEURID,
+                       TYPEABSENCE.LIBELLE
+                FROM COMPLEMENT, COMMENTAIRECONGE , TYPEABSENCE
+                WHERE COMPLEMENT.COMPLEMENTID LIKE '" . complement::AVISRH_CONGES_SUP_LABEL . "%'
+                  AND COMMENTAIRECONGE.COMMENTAIRECONGEID = REPLACE(COMPLEMENT.COMPLEMENTID,'" . complement::AVISRH_CONGES_SUP_LABEL . "','')
+    			  AND COMMENTAIRECONGE.DATEAJOUTCONGE >= ? 
+                  AND COMMENTAIRECONGE.AGENTID = COMPLEMENT.AGENTID 
+                  AND TYPEABSENCE.TYPEABSENCEID = COMMENTAIRECONGE.TYPEABSENCEID";
+        if (!is_null($agentid))
+        {
+            $sql = $sql . " AND COMPLEMENT.AGENTID = ? ";
+            $params = array($this->formatdatedb($datedebut),$agentid);
+        }
+        else
+        {
+            $params = array($this->formatdatedb($datedebut));
+        }
+    	$sql = $sql . " ORDER BY COMPLEMENT.AGENTID, COMMENTAIRECONGE.DATEAJOUTCONGE";
+        //echo "<br>"; print_r($sql); echo "<br>";
+        $query = $this->prepared_select($sql, $params);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            error_log(basename(__FILE__) . " " . $erreur_requete);
+        }
+        $congessuppliste = array();
+        // Si pas de demande de CET, on retourne le tableau vide
+        if (mysqli_num_rows($query) == 0) {
+            return $congessuppliste;
+        }
+        while ($result = mysqli_fetch_row($query)) {
+            $commentaireconge = new commentaireconge();
+
+            $commentaireconge->commentaireid = $result[0];
+            $commentaireconge->agentid = $result[1];
+            $commentaireconge->typeabsenceid = $result[2];
+            $commentaireconge->dateajout = $result[3];
+            $commentaireconge->commentaire = $result[4];
+            $commentaireconge->nbjoursajoute = $result[5];
+            $commentaireconge->auteurid = $result[6];
+            $commentaireconge->libelleabsence = $result[7];
+        
+            $congessuppliste[] = $commentaireconge;
+        }
+        return $congessuppliste;
+    }
+
 
     public function savepdf($pdf, $filename)
     {
@@ -2755,7 +2811,7 @@ class fonctions
         return $tab_special_users;
     }
 
-    public function checksignatairecetliste(&$params, $agent)
+    public function checksignatairecetliste(&$params, agent $agent)
     {
 
         $maxniveau = 0;
@@ -2886,7 +2942,7 @@ class fonctions
 
     }
 
-    public function checksignataireteletravailliste(&$params, $agent, &$maxniveau)
+    public function checksignataireteletravailliste(&$params, agent $agent, &$maxniveau)
     {
 
         $maxniveau = 0;
@@ -4158,8 +4214,8 @@ WHERE  table_schema = Database()
      *
      * @deprecated
      * 
-     * @param date $datefinprecedente
-     * @param date $datedebutsuivante
+     * @param string $datefinprecedente
+     * @param string $datedebutsuivante
      * @param integer $nbre_jour_periode
      * @return boolean 
      */
@@ -5352,6 +5408,45 @@ WHERE  table_schema = Database()
         }
         return $corpmail;
     }
+
+    function lirecommentaire(string $commentaireid): null|commentaireconge
+    {
+        $commentaireconge = null;
+        $sql = "SELECT COMMENTAIRECONGE.COMMENTAIRECONGEID,
+                       COMMENTAIRECONGE.AGENTID,
+                       COMMENTAIRECONGE.TYPEABSENCEID,
+                       COMMENTAIRECONGE.DATEAJOUTCONGE,
+                       COMMENTAIRECONGE.COMMENTAIRE,
+                       COMMENTAIRECONGE.NBRJRSAJOUTE,
+                       COMMENTAIRECONGE.AUTEURID,
+                       TYPEABSENCE.LIBELLE
+                FROM COMMENTAIRECONGE, TYPEABSENCE
+                WHERE COMMENTAIRECONGE.COMMENTAIRECONGEID= ? 
+                AND TYPEABSENCE.TYPEABSENCEID = COMMENTAIRECONGE.TYPEABSENCEID";
+
+        $params = array($commentaireid);
+        $query = $this->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") 
+        {
+            echo "Functions->lirecommentaire : " . $erreur . "<br>";
+            error_log(basename(__FILE__) . " Functions->lirecommentaire : " . $erreur);
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $commentaireconge = new commentaireconge();
+            $commentaireconge->commentaireid = $result[0];
+            $commentaireconge->agentid = $result[1];
+            $commentaireconge->typeabsenceid = $result[2];
+            $commentaireconge->dateajout = $result[3];
+            $commentaireconge->commentaire = $result[4];
+            $commentaireconge->nbjoursajoute = $result[5];
+            $commentaireconge->auteurid = $result[6] . "";
+            $commentaireconge->libelleabsence = $result[7];
+        }
+        return $commentaireconge;
+    }
+
 }
 
 ?>

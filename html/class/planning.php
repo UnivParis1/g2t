@@ -582,7 +582,7 @@ class planning
         // On charge toutes les absences dans un tableau
         $listecateg = $this->fonctions->listecategorieabsence();
         $listeabs = array();
-        foreach ($listecateg as $keycateg => $nomcateg)
+        foreach ((array)$listecateg as $keycateg => $nomcateg)
         {
             $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
         }
@@ -853,7 +853,7 @@ class planning
         // On charge toutes les absences dans un tableau
         $listecateg = $this->fonctions->listecategorieabsence();
         $listeabs = array();
-        foreach ($listecateg as $keycateg => $nomcateg)
+        foreach ((array)$listecateg as $keycateg => $nomcateg)
         {
             $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
         }

@@ -373,7 +373,8 @@
 }
 
 #planning TR.ligneplanning {
-/*	cursor:pointer; */
+    font-size: inherit;
+	/* cursor:pointer; */
 }
 
 
@@ -644,10 +645,15 @@ textarea:required {
     display: block;
 }
 
+
 .tab-content {
-    /* font-weight: bold; */
-    /* color: rgb(82, 75, 75); */
+    font-size: inherit;
+/*    
+    font-weight: bold;
+    color: rgb(82, 75, 75);
+*/
 }
+
 
 .tabs {
     color: #336699; /* rgb(255, 255, 255); */
@@ -983,7 +989,7 @@ select {
 .ajoutcongesbloc {
     border:solid 1px black; 
     background:lightgreen; 
-    width:700px; 
+    width:fit-content; 
     display:block;
     padding-left: 5px;
     padding-right: 5px;
@@ -992,7 +998,7 @@ select {
 .supprcongesbloc {
     border:solid 1px black; 
     background:lightsteelblue; 
-    width:900px; 
+    width:fit-content; 
     display:block;
     padding-left: 5px;
     padding-right: 5px;
@@ -1031,6 +1037,13 @@ select {
     color:#E9A33C;
     font-weight: bold;
 }
+
+.attentevalid {
+    color:#000000;
+    /*font-weight: bold; */
+    background: #e7c7a7;
+}
+
 
 .alertfinconvention {
     color:red;

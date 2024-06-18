@@ -229,12 +229,16 @@
         }
         
         /////////////////////////////////////////////
-        // Mise à jour de la fonction de demande d'avis sur congés et absence
-        if (isset($_POST['valid_avisfonction']))
+        // Mise à jour de l'activations de fonctions (demande d'avis sur congés et absence, double validation congés complémentaires, ...)
+        if (isset($_POST['valid_activationfonction']))
         {
             $avisfonction = $_POST['avisfonction'];
             $constantename = "FONCTIONAVIS";
             $msg_erreur = $fonctions->enregistredbconstante($constantename, $avisfonction);
+
+            $congessuppfonction = $_POST['congessuppfonction'];
+            $constantename = 'FONCTIONCONGSUP';
+            $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $congessuppfonction);
         }
         
         /////////////////////////////////////////////
@@ -1542,7 +1546,7 @@
     echo "</form>";
     
     /////////////////////////////////////////////////////////
-    // Activation/Désactivation fonctions demande d'avis pour une demande
+    // Activation/Désactivation de fonctions (demande d'avis pour une demande, double validation congés complémentaires,...)
     echo "<br>";
     echo "<form name='avisform'  method='post' >";
     $dbconstante = 'FONCTIONAVIS';
@@ -1551,7 +1555,6 @@
     if ($fonctions->testexistdbconstante($dbconstante)) { $avisfonction = $fonctions->liredbconstante($dbconstante); }
     echo "<select id='avisfonction' name='avisfonction'>";
     echo "<option value='o'";
-    //if (strcasecmp($reportteletravail, "o") == 0)
     if ($fonctions->convertvaluetobool($avisfonction))
     {
         echo " selected ";
@@ -1559,8 +1562,29 @@
     echo ">" . $fonctions->ouinonlibelle('o');
     echo "</option>";
     echo "<option value='n'";
-    //if (strcasecmp($reportteletravail, "n") == 0)
     if (!$fonctions->convertvaluetobool($avisfonction))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('n');
+    echo "</option>";
+    echo "</select>";
+
+    echo "<br>";
+    $dbconstante = 'FONCTIONCONGSUP';
+    $congessuppfonction = 'n';
+    echo "Activer la fonction de demande de validation par la DRH lors d'ajout de congés complémentaires : ";
+    if ($fonctions->testexistdbconstante($dbconstante)) { $congessuppfonction = $fonctions->liredbconstante($dbconstante); }
+    echo "<select id='congessuppfonction' name='congessuppfonction'>";
+    echo "<option value='o'";
+    if ($fonctions->convertvaluetobool($congessuppfonction))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('o');
+    echo "</option>";
+    echo "<option value='n'";
+    if (!$fonctions->convertvaluetobool($congessuppfonction))
     {
         echo " selected ";
     }
@@ -1573,7 +1597,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
-    echo "<input type='submit' name='valid_avisfonction' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+    echo "<input type='submit' name='valid_activationfonction' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
 
 

@@ -61,16 +61,19 @@
 
     $cetaverifier = null;
     if (isset($_POST["CETaverifier"]))
+    {
         $cetaverifier = $_POST["CETaverifier"];
+    }
 
     $selectall = 'no';
     if (isset($_POST["selectall"]))
+    {
         $selectall = $_POST["selectall"];
-
+    }
     $msg_erreur = "";
 
     require ("includes/menu.php");
-    echo '<html><body class="bodyhtml">';
+    //echo '<html><body class="bodyhtml">';
     echo "<br>";
 
     //print_r($_POST); echo "<br>";

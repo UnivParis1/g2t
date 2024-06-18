@@ -35,6 +35,11 @@
             $datefin = trim($node->xpath('DATEFIN')[0]);
             $libelle = trim($node->xpath('LIBELLE')[0]);
             $typeabsence = trim($node->xpath('TYPEABSENCE')[0]);
+            $codeabsence = "";
+            if (isset($node->xpath('CODEABSENCE')[0]))
+            {
+                $codeabsence = trim($node->xpath('CODEABSENCE')[0]);
+            }
             $datedebutformate = $fonctions->formatdatedb(str_replace('/','-',$datedebut));
             $datefinformate = $fonctions->formatdatedb(str_replace('/','-',$datefin));
             
@@ -55,13 +60,14 @@
                 continue;
             }
 
-            $sql = sprintf("INSERT INTO ABSENCERH (AGENTID,DATEDEBUT,DATEFIN,LIBELLE,TYPEABSENCE) "
-                         . "VALUES('%s','%s','%s','%s', '%s')", 
+            $sql = sprintf("INSERT INTO ABSENCERH (AGENTID,DATEDEBUT,DATEFIN,LIBELLE,TYPEABSENCE,CODEABSENCE) "
+                         . "VALUES('%s', '%s', '%s', '%s', '%s', '%s')", 
                          $fonctions->my_real_escape_utf8($agentid), 
                          $fonctions->my_real_escape_utf8($datedebut), 
                          $fonctions->my_real_escape_utf8($datefin), 
                          $fonctions->my_real_escape_utf8($libelle),
-                         $fonctions->my_real_escape_utf8($typeabsence));
+                         $fonctions->my_real_escape_utf8($typeabsence),
+                         $fonctions->my_real_escape_utf8($codeabsence));
 
             mysqli_query($dbcon, $sql);
             $erreur_requete = mysqli_error($dbcon);

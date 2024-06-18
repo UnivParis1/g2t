@@ -73,6 +73,7 @@
     $commentaire_supp = null;
     $ancienacquis_supp = null;
     $remove_array = null;
+    $nbrecommentairesupp = null;
     $mode = MODE_RESPONSABLE;
     if (isset($_POST["nbr_jours_conges"]))
     {
@@ -94,11 +95,18 @@
     {
         $remove_array = $_POST["remove_compl_id"];
     }
+     if (isset($_POST["nbrecommentairesupp"]))
+    {
+        $nbrecommentairesupp = $_POST["nbrecommentairesupp"];
+    }
+
     $msg_erreur = "";
     $annee = substr($fonctions->anneeref(), 2, 2);
     $lib_sup = "sup$annee";
-    
-    
+
+    $cronuser = new agent($dbcon);
+    $cronuser->load(SPECIAL_USER_IDCRONUSER);
+
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml">';
     //echo "POST = " . print_r($_POST,true) . "<br>";
@@ -133,7 +141,7 @@
                     }
                     else
                     {
-                        $erreur = "Suppression de l'ajout de congés supplémentaires (id = $id) : Ok";
+                        $erreur = "La demande d'ajout de congés supplémentaires a bien été supprimée (id = $id).";
                         echo $fonctions->showmessage(fonctions::MSGINFO, $erreur);
                         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
 
@@ -143,16 +151,17 @@
                         $nouveau_solde = $solde->droitaquis() - $solde->droitpris();
                         
                         // Envoi du mail à l'agent
-                        $corpmail = $user->identitecomplete() . " vient d'annuler " . ($ancien_solde - $nouveau_solde) . " jour(s) complémentaire(s).\n";
+                        $corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) complémentaire(s).\n";
                         $corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . $nouveau_solde . " jour(s).\n";
-                        $user->sendmail($agent, "Annulation de jours complémentaires", $corpmail);
+                        $cronuser->sendmail($agent, "Annulation de jours complémentaires", $corpmail);
 
                         // Envoi du mail à tous les agents RHCONGE
                         $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
-                        foreach ($agentrhlist as $agentrh) {
-                            $corpmail = $user->identitecomplete() . " vient d'annuler " . ($ancien_solde - $nouveau_solde) . " jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
+                        foreach ($agentrhlist as $agentrh) 
+                        {
+                            $corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
                             $corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . $nouveau_solde . " jour(s).\n";
-                            $user->sendmail($agentrh, "Annulation de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
+                            $cronuser->sendmail($agentrh, "Annulation de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
                         }
 
                     }
@@ -192,31 +201,6 @@
         echo "<form name='selectagentcongessupp'  method='post' >";
         
         $agentlistefull = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
-        
-//        $structureliste = $user->structrespliste();
-//        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-//        if (is_array($structureliste))
-//        {
-//            uasort($structureliste,"triparprofondeurabsolue");
-//        }
-//        $agentlistefull = array();
-//        foreach ($structureliste as $structure) 
-//        {
-//            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $structure->sousstructure());
-//            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-//            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-//            // echo "fin du select <br>";
-//            $structurefille = $structure->structurefille();
-//            foreach ((array) $structurefille as $structure) {
-//                $responsable = $structure->responsable();
-//                if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) {
-//                    $agentlistefull[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
-//                }
-//            }
-//        }
-//        if (isset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()])) {
-//            unset($agentlistefull[$user->nom() . " " . $user->prenom() . " " . $user->agentid()]);
-//        }
         ksort($agentlistefull);
         echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
@@ -260,17 +244,41 @@
                     $msg_erreur = $msg_erreur . $solde->load($agentid, $lib_sup);
                     // echo "msg_erreur = $msg_erreur <br>";
                 }
-                if ($ancienacquis_supp == $solde->droitaquis())
+                $listcongessupp = $agent->listecommentaireconge($lib_sup);
+
+
+                if ($ancienacquis_supp == $solde->droitaquis() and count($listcongessupp)==$nbrecommentairesupp)
                 {
                     $commentaire_supp_complet = $commentaire_supp ; //. " (par " . $user->prenom() . " " . $user->nom() . ")";
                     $nouv_solde = ($solde->droitaquis() + $nbr_jours_conges);
                     $solde->droitaquis($nouv_solde);
-                    $msg_erreur = $msg_erreur . $solde->store();
-                    $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet,$userid);
+
+                    $dbconstante = "FONCTIONCONGSUP";
+                    $congessuppfonction = 'n';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $congessuppfonction = $fonctions->liredbconstante($dbconstante); }
+                    // Si la fonction de demande de validation par la DRH n'est pas activée => On fait comme d'habitude
+                    if (!$fonctions->convertvaluetobool($congessuppfonction))
+                    {
+                        $msg_erreur = $msg_erreur . $solde->store();
+                        $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet,$userid);
+                    }
+                    else
+                    {
+                        // Si la fonction est activée => On sauvegarde le commentaire et on récupère le numéro du commentaire
+                        $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge($lib_sup, $nbr_jours_conges, $commentaire_supp_complet,$userid,$commentaireid);
+                        // On construit un complément pour indiquer que cette demande doit être vérifiée par la DRH
+                        $complement = new complement($dbcon);
+                        $complement->agentid($agentid);
+                        $complement->complementid(complement::AVISRH_CONGES_SUP_LABEL . $commentaireid);
+                        $complement->valeur('TODO');
+                        $complement->store();
+                    }
+
                 }
                 else
                 {
-                    $msg_erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
+//                    $msg_erreur = "Le solde de droit acquis n'est pas cohérent (Ancien droit acquis : $ancienacquis_supp Droit acquis en base : " . $solde->droitaquis().")";
+                    $msg_erreur = "Une incohérence a été détectée. Aucune opération n'est réalisée.";
                 }
                 // echo "msg_erreur = $msg_erreur <br>";
             }
@@ -278,24 +286,56 @@
                 $errlog = "Les jours supplémentaires n'ont pas été enregistrés... ==> MOTIF : " . $msg_erreur;
                 echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-            } elseif (! is_null($solde)) {
-                $errlog = "Les jours supplémentaires ont été enregistrés... Nouveau solde = " . ($solde->droitaquis() - $solde->droitpris());
-                echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
-                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            } 
+            elseif (! is_null($solde)) 
+            {
+                $dbconstante = "FONCTIONCONGSUP";
+                $congessuppfonction = 'n';
+                if ($fonctions->testexistdbconstante($dbconstante)) { $congessuppfonction = $fonctions->liredbconstante($dbconstante); }
+                // Si la fonction de demande de validation par la DRH n'est pas activée => On affiche le nouveau solde
+                if (!$fonctions->convertvaluetobool($congessuppfonction))
+                {
+                    $errlog = "L'ajout de jours complémentaires a été enregistré.<br>Le nouveau solde de " . $agent->identitecomplete() . " est maintenant de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).";
+                    echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
 
-                // Envoi du mail à l'agent
-                $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) complémentaire(s).\n";
-                $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
-                $corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                $user->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
-
-                // Envoi du mail à tous les agents RHCONGE
-                $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
-                foreach ($agentrhlist as $agentrh) {
-                    $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
+                    // Envoi du mail à l'agent
+                    $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) complémentaire(s).\n";
                     $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
-                    $corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                    $user->sendmail($agentrh, "Ajout de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
+                    $corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                    $cronuser->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
+
+                    // Envoi du mail à tous les agents RHCONGE
+                    $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
+                    foreach ($agentrhlist as $agentrh) {
+                        $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
+                        $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
+                        $corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                        $cronuser->sendmail($agentrh, "Ajout de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
+                    }
+                }
+                else
+                {
+                    $errlog = "La demande d'ajout de jours complémentaires a été enregistrée.<br>Elle doit maintenant être validée par la Direction des Ressources Humaines.";
+                    echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+
+                    // Envoi du mail à l'agent
+                    $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) complémentaire(s).\n";
+                    $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
+                    $corpmail = $corpmail . "Cette demande de jours complémentaires doit maintenant être validée par la Direction des Ressources Humaines.\n";
+                    $corpmail = $corpmail . "Suite à cette validation, votre solde de jours compléméntaires sera actualisé.\nDans l'intervalle, votre solde est inchangé.\n";
+                    $cronuser->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
+
+                    // Envoi du mail à tous les agents RHCONGE
+                    $agentrhlist = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Le profil 2 est le profil de gestion des congés
+                    foreach ($agentrhlist as $agentrh) {
+                        $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
+                        $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
+                        $corpmail = $corpmail . "Vous devez maintenant valider cette demande d'ajout à partir du menu 'Gestion RH/Gestion des congés/Validation des jours complémentaires'.\n";
+                        $cronuser->sendmail($agentrh, "Ajout de jours complémentaires en attente de validation pour " . $agent->identitecomplete(), $corpmail);
+                    }
+
                 }
                 $nbr_jours_conges = null;
                 $commentaire_supp = null;
@@ -325,7 +365,8 @@
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
             }
         }
-        
+        $listcongessupp = $agent->listecommentaireconge($lib_sup);
+
         echo "<span class='ajoutcongesbloc'>";
         echo "Ajout de jours de congés complémentaires pour l'agent : " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         echo "<br>";
@@ -334,7 +375,7 @@
         echo "<br>";
         echo "Nombre de jours complémentaires à ajouter : <input required type='text' name='nbr_jours_conges' id='nbr_jours_conges' size=3 value='$nbr_jours_conges'>";
         echo "<br>";
-        echo "<b class='redtext'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères  - Reste : <label id='motifrestant'>$longueurmaxcommentaire</label> car.) : </b>";
+        echo "<b class='redtext'>Motif (Obligatoire) - maximum $longueurmaxcommentaire caractères  - Reste : <label id='motifrestant'>$longueurmaxcommentaire</label> car.) : </b><br>";
 //        echo "<input type='text' name='commentaire_supp' id='commentaire_supp' size=80 oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >";
         echo "<textarea required rows='4' cols='80' class='commenttextarea' name='commentaire_supp' id='commentaire_supp' oninput='checktextlength(this,$longueurmaxcommentaire,\"motifrestant\");' >$commentaire_supp</textarea>";
         echo "<br>";
@@ -343,6 +384,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
         echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
+        echo "<input type='hidden' name='nbrecommentairesupp' value='" . count($listcongessupp) . "'>";
         echo "<br>";
         echo "<input type='submit' name='button_ajout' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
         echo "</form>";
@@ -370,6 +412,7 @@
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
+            echo "<input type='hidden' name='nbrecommentairesupp' value='" . count($listcongessupp) . "'>";
             echo "<input type='submit' name='button_delete' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' >";
             echo "</form>";
             echo "<br>";

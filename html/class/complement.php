@@ -16,6 +16,7 @@ class complement
     public const TT_EXCLU_LABEL = 'TT_EXCLU_';
     public const FORCE_SOLDE_LABEL = 'FORCE_SOLDE_';
     public const AVIS_CONGES_LABEL = 'AVISCONGES';
+    public const AVISRH_CONGES_SUP_LABEL = 'AVISRH_SUP_';
 
     private $agentid = null;
 
@@ -45,7 +46,7 @@ class complement
         if (is_null($this->dbconnect)) {
             $errlog = "Complement->construct : La connexion à la base de donnée est NULL !!!";
             echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         $this->fonctions = new fonctions($db);
     }

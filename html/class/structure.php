@@ -434,11 +434,11 @@ class structure
         }
     }
     
-    /****************************
-     * 
-     * @deprecated
-     * 
-     ****************************/
+//    /****************************
+//     * 
+//     * @deprecated
+//     * 
+//     ****************************/
 //    function respvalidsousstruct($valide = null)
 //    {
 //        trigger_error('Method ' . __METHOD__ . ' is deprecated => use respaffsoldesousstruct method instead', E_USER_DEPRECATED);
@@ -460,11 +460,11 @@ class structure
 //        }
 //    }
 
-    /****************************
-     * 
-     * @deprecated
-     * 
-     ****************************/
+//    /****************************
+//     * 
+//     * @deprecated
+//     * 
+//     ****************************/
 //    function afficherespsousstruct($respsousstruct = null)
 //    {
 //        trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
@@ -1002,7 +1002,7 @@ class structure
         // On charge toutes les absences dans un tableau
         $listecateg = $this->fonctions->listecategorieabsence();
         $listeabs = array();
-        foreach ($listecateg as $keycateg => $nomcateg) 
+        foreach ((array)$listecateg as $keycateg => $nomcateg) 
         {
             $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
         }
@@ -1303,7 +1303,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // On charge toutes les absences dans un tableau
         $listecateg = $this->fonctions->listecategorieabsence();
         $listeabs = array();
-        foreach ($listecateg as $keycateg => $nomcateg)
+        foreach ((array)$listecateg as $keycateg => $nomcateg)
         {
             $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
         }
@@ -1361,7 +1361,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 {
                     // echo "Boucle sur l'element <br>";
                     $htmltext = $htmltext . $element->html(false, null, false, $dbclickable);
-                    if (!in_array($element->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
+                    if (!in_array($element->couleur(), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
                     {
                         if (array_key_exists($element->type(),$listeabs))
                         {
@@ -1736,7 +1736,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // On charge toutes les absences dans un tableau
         $listecateg = $this->fonctions->listecategorieabsence();
         $listeabs = array();
-        foreach ($listecateg as $keycateg => $nomcateg)
+        foreach ((array)$listecateg as $keycateg => $nomcateg)
         {
             $listeabs = array_merge((array)$this->fonctions->listeabsence($keycateg),$listeabs);
         }

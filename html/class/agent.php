@@ -561,7 +561,7 @@ class agent
         {
             if (is_null($this->adressemail))
             {
-                $errlog = "Agent->mailforspecialagent : Le mail de l'agent special " . $this-agentid() . " n'est pas défini !!!";
+                $errlog = "Agent->mailforspecialagent : Le mail de l'agent special " . $this->agentid() . " n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
@@ -572,7 +572,7 @@ class agent
         }
         else
         {
-            $errlog = "Agent->mailforspecialagent : L'agent " . $this-agentid() . " n'est pas un utilisateur spécial !!!";
+            $errlog = "Agent->mailforspecialagent : L'agent " . $this->agentid() . " n'est pas un utilisateur spécial !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
@@ -1320,7 +1320,16 @@ class agent
 	        
 	        if (strcasecmp($this->fonctions->liredbconstante('MAINTENANCE'), 'n') != 0) 
 	        {   // On est en mode maintenance ==> Pas d'envoi de mail
-	            $errlog = "Le mode MAINTENANCE est activé. Il n'y a pas d'envoi de mail";
+	            $errlog = "Le mode MAINTENANCE est activé. Il n'y a pas d'envoi de mail (destinataire : ";
+                if (is_object($destinataire))
+                {
+                    $errlog = $errlog . $destinataire->identitecomplete();
+                }
+                else
+                {
+                    $errlog = $errlog . $destinataire;
+                }
+            $errlog = $errlog . ")";
                     echo "$errlog ";
                     global $uid;
                     if (isset($uid) and $uid<>"")
@@ -2863,11 +2872,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
-        // echo "#######liste (Count=" . count($liste) .") = "; print_r($liste); echo "<br>";
-
         $htmltext = "";
         // $htmltext = "<br>";
-        if (count($liste) == 0) {
+        if (count($liste) == 0) 
+        {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
         } 
         else 
@@ -3166,15 +3174,16 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         while ($result = mysqli_fetch_row($query)) 
         {
-            $commentaireconge = new commentaireconge();
-            $commentaireconge->commentaireid = $result[0];
-            $commentaireconge->agentid = $result[1];
-            $commentaireconge->typeabsenceid = $result[2];
-            $commentaireconge->dateajout = $result[3];
-            $commentaireconge->commentaire = $result[4];
-            $commentaireconge->nbjoursajoute = $result[5];
-            $commentaireconge->auteurid = $result[6] . "";
-            $commentaireconge->libelleabsence = $result[7];
+            $commentaireconge = $this->fonctions->lirecommentaire($result[0]);
+            //$commentaireconge = new commentaireconge();
+            //$commentaireconge->commentaireid = $result[0];
+            //$commentaireconge->agentid = $result[1];
+            //$commentaireconge->typeabsenceid = $result[2];
+            //$commentaireconge->dateajout = $result[3];
+            //$commentaireconge->commentaire = $result[4];
+            //$commentaireconge->nbjoursajoute = $result[5];
+            //$commentaireconge->auteurid = $result[6] . "";
+            //$commentaireconge->libelleabsence = $result[7];
             $listecommentaire[] = $commentaireconge;
         }
         return $listecommentaire;
@@ -3188,23 +3197,51 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     function affichecommentairecongehtml($showonlycomplement = false, $anneeref = null, $allowremove = false)
     {
         //echo "<br>anneeref = XXX" . $anneeref  . "XXX<br>";
+        $jointuresupp = "";
+        if (!$allowremove)
+        {
+            $jointuresupp = " AND COMMENTAIRECONGE.AGENTID NOT IN (
+                SELECT COMPLEMENT.AGENTID 
+                FROM COMPLEMENT 
+                WHERE COMPLEMENT.AGENTID = COMMENTAIRECONGE.AGENTID
+                  AND COMPLEMENT.COMPLEMENTID = CONCAT('" . complement::AVISRH_CONGES_SUP_LABEL . "',COMMENTAIRECONGE.COMMENTAIRECONGEID)
+                )";
+        }
+
+
         if (is_null($anneeref))
         {
-            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGE.COMMENTAIRECONGEID,COMMENTAIRECONGE.AUTEURID
-    FROM COMMENTAIRECONGE,TYPEABSENCE 
-    WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
-                                                 OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
-                                                 OR COMMENTAIRECONGE.TYPEABSENCEID='cet') 
-                                               AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
+            $sql = "SELECT COMMENTAIRECONGE.AGENTID,
+                           TYPEABSENCE.LIBELLE,
+                           COMMENTAIRECONGE.DATEAJOUTCONGE,
+                           COMMENTAIRECONGE.COMMENTAIRE,
+                           COMMENTAIRECONGE.NBRJRSAJOUTE,
+                           TYPEABSENCE.TYPEABSENCEID,
+                           COMMENTAIRECONGE.COMMENTAIRECONGEID,
+                           COMMENTAIRECONGE.AUTEURID
+                    FROM COMMENTAIRECONGE,TYPEABSENCE 
+                    WHERE COMMENTAIRECONGE.AGENTID= ? 
+                      AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
+                      AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
+                        OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
+                        OR COMMENTAIRECONGE.TYPEABSENCEID='cet') $jointuresupp";
         }
         else
         {
-            $sql = "SELECT AGENTID,LIBELLE,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,TYPEABSENCE.TYPEABSENCEID,COMMENTAIRECONGE.COMMENTAIRECONGEID,COMMENTAIRECONGE.AUTEURID
-    FROM COMMENTAIRECONGE,TYPEABSENCE
-    WHERE AGENTID= ? AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
-                                                 OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
-                                                 OR COMMENTAIRECONGE.TYPEABSENCEID='cet')
-                                               AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID";
+            $sql = "SELECT COMMENTAIRECONGE.AGENTID,
+                           TYPEABSENCE.LIBELLE,
+                           COMMENTAIRECONGE.DATEAJOUTCONGE,
+                           COMMENTAIRECONGE.COMMENTAIRE,
+                           COMMENTAIRECONGE.NBRJRSAJOUTE,
+                           TYPEABSENCE.TYPEABSENCEID,
+                           COMMENTAIRECONGE.COMMENTAIRECONGEID,
+                           COMMENTAIRECONGE.AUTEURID
+                    FROM COMMENTAIRECONGE,TYPEABSENCE
+                    WHERE COMMENTAIRECONGE.AGENTID= ? 
+                      AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
+                      AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
+                        OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
+                        OR COMMENTAIRECONGE.TYPEABSENCEID='cet') $jointuresupp";
             
         }
         $params = array($this->agentid);
@@ -3245,6 +3282,20 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     $premiercomment = FALSE;
                 }
                 
+                $extraclass = "";
+                $spantext = '';
+                if ($allowremove)
+                {
+                    $complement = new complement($this->dbconnect);
+                    $complement->load($this->agentid,complement::AVISRH_CONGES_SUP_LABEL . $result[6]);
+                    // Si le complement existe (<=> agentid != '') => On doit indiquer qu'il est en attente de validation par RH
+                    if ($complement->agentid()!="")
+                    {
+                        $extraclass = " attentevalid ";
+                        $spantext = '<span data-tip="L\'ajout de congés est en attente de validation par la Direction des Ressources Humaines.">';
+                    }
+                }
+
                 $htmltext = $htmltext . "<tr align=center>";
                 $htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1] . "</td>";
                 $htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2]) . "</td>";
@@ -3265,7 +3316,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 {
                     $auteur = new agent($this->dbconnect);
                     $auteur->load(trim($result[7]));
-                    $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne' >" . htmlentities($commentaire) . " (par " .  $auteur->identitecomplete()  .   ")</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne $extraclass' >$spantext" . htmlentities($commentaire) . " (par " .  $auteur->identitecomplete()  .   ")</td>";
                 }
                 if ($allowremove)
                 {
@@ -3290,6 +3341,38 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     }
 
     /**
+     * Fonction permettant de modifier la date d'ajout du commentaire et le commentaire.
+     * ATTENTION : Ne modifie que le commentaire et la date du commentaire. Les autres propriétés ne sont pas modifiées.
+     * 
+     * @param commentaireconge $commentaireconge
+     *            commentaire sur le congé à modifier
+     * @return string Chaine vide si tout est correct. Sinon la description du problème.
+     *
+     */
+    function modifiercommentaireconge(commentaireconge $commentaireconge) : bool
+    {
+        $erreur = "";
+        if (trim($commentaireconge->commentaireid . "") == "")
+        {
+            $erreur = "Le commentaire n'est pas sauvegardé. Impossible de le modifier";
+            error_log(basename(__FILE__) . " Agent-> modifiercommentaireconge : " . $erreur);
+        }
+        else
+        {
+            $sql = "UPDATE COMMENTAIRECONGE SET DATEAJOUTCONGE = ?, COMMENTAIRE = ? WHERE COMMENTAIRECONGEID = ? ";
+            $params = array($this->fonctions->formatdatedb($commentaireconge->dateajout), $commentaireconge->commentaire, $commentaireconge->commentaireid);
+            $query = $this->fonctions->prepared_query($sql, $params);
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") 
+            {
+                error_log(basename(__FILE__) . " Agent-> modifiercommentaireconge : " . $erreur);
+            }
+        }
+        return $erreur;
+    }
+
+
+    /**
      *
      * @param string $typeconge
      *            optional type of vacation. default is null
@@ -3299,7 +3382,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
      *            optional comment for the vacation. default is null
      * @return
      */
-    function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null, $auteur = null)
+    function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null, $auteur = null, &$commentaireid = null)
     {
         $auteurid = null;
         if (!is_null($auteur))
@@ -3313,7 +3396,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $auteurid = $auteur;
             }
         }
-        
+
+        $sql = "LOCK TABLES COMMENTAIRECONGE WRITE";
+        mysqli_query($this->dbconnect, $sql);
+        $sql = "SET AUTOCOMMIT = 0";
+        mysqli_query($this->dbconnect, $sql);
+
         $date = date("d/m/Y");
         if (is_null($auteurid))
         {
@@ -3333,17 +3421,25 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             $message = "$erreur";
             error_log(basename(__FILE__) . " " . $erreur);
         }
-    }
+        $commentaireid = mysqli_insert_id($this->dbconnect);
+        // $this->demandeid
+        $sql = "COMMIT";
+        mysqli_query($this->dbconnect, $sql);
+        $sql = "UNLOCK TABLES";
+        mysqli_query($this->dbconnect, $sql);
+        $sql = "SET AUTOCOMMIT = 1";
+        mysqli_query($this->dbconnect, $sql);
+}
 
     /**
      *
      * @param string $congessuppid
-     * @param string $demandeur
+     * @param agent $demandeur
      *            object agent representing the applicant
      * @return string result if errors eccurded. Empty if all ok
      * 
      */
-    function supprcongesupplementaire($congessuppid, $demandeur)
+    function supprcongesupplementaire($congessuppid, agent $demandeur)
     {
         $marqueur_suppr = '_del';
         
@@ -3367,36 +3463,42 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $result = mysqli_fetch_row($query);
         $nbrejoursajoutes = $result[0];
 
-        $solde = new solde($this->dbconnect);
-        $erreur = $solde->load($this->agentid,$result[1]);
-        if ($erreur != "") 
+        $complement = new complement($this->dbconnect);
+        $complement->load($this->agentid,complement::AVISRH_CONGES_SUP_LABEL . $congessuppid);
+        // Si le complement n'existe pas (<=> agentid == '') => On doit impacter le solde de l'agent
+        // Si non, l'ajout de congés complémentaires n'a pas été validé par la DRH et le solde n'est pas impacté
+        if ($complement->agentid()=="")
         {
-            $message = "$erreur";
-            error_log(basename(__FILE__) . " " . $message);
-            return $message;
-        }
-        $solderestant = $solde->droitaquis()-$solde->droitpris();
-        //echo "solderestant = $solderestant   nbrejoursajoutes = $nbrejoursajoutes <br>";
-        if ($solderestant >= $nbrejoursajoutes)
-        {
-            // Il reste suffisament de jours pour annuler les jours complémentaires
-            $acquis = $solde->droitaquis()-$nbrejoursajoutes;
-            $solde->droitaquis($acquis);
-            $erreur = $solde->store();
-            if ($erreur != "")
+            $solde = new solde($this->dbconnect);
+            $erreur = $solde->load($this->agentid,$result[1]);
+            if ($erreur != "") 
             {
                 $message = "$erreur";
                 error_log(basename(__FILE__) . " " . $message);
                 return $message;
             }
+            $solderestant = $solde->droitaquis()-$solde->droitpris();
+            //echo "solderestant = $solderestant   nbrejoursajoutes = $nbrejoursajoutes <br>";
+            if ($solderestant >= $nbrejoursajoutes)
+            {
+                // Il reste suffisament de jours pour annuler les jours complémentaires
+                $acquis = $solde->droitaquis()-$nbrejoursajoutes;
+                $solde->droitaquis($acquis);
+                $erreur = $solde->store();
+                if ($erreur != "")
+                {
+                    $message = "$erreur";
+                    error_log(basename(__FILE__) . " " . $message);
+                    return $message;
+                }
+            }
+            else
+            {
+                $message = "Nombre de jours complémentaires insuffisant pour annuler la demande $congessuppid => Nbre de jours restant = $solderestant / Nbre de jours à annuler : $nbrejoursajoutes";
+                error_log(basename(__FILE__) . " " . $message);
+                return $message;
+            }
         }
-        else
-        {
-            $message = "Nombre de jours complémentaires insuffisant pour annuler la demande $congessuppid => Nbre de jours restant = $solderestant / Nbre de jours à annuler : $nbrejoursajoutes";
-            error_log(basename(__FILE__) . " " . $message);
-            return $message;
-        }
-        
 /*
         $sql = "DELETE FROM COMMENTAIRECONGE WHERE COMMENTAIRECONGEID = ?";
         $params = array($congessuppid); 
@@ -3601,6 +3703,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $demandeliste = $this->demandesliste($datedebut, $datefin);
         
         foreach ($demandeliste as $demande) {
+            $nbrejrscalcule = 0;
             if (! $demande->controlenbrejrs($nbrejrscalcule)) {
                 $analyse[$demande->id()] = "Incohérence détectée : Nombre de jours de la demande = " . $demande->nbrejrsdemande() . " / Nombre de jours recalculé = $nbrejrscalcule (demande Id = " . $demande->id() . ")";
             }            // La fonction retourne vrai mais avec un nombre de jour nul => La demande est annulée ou refusée
@@ -5953,6 +6056,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 
         return $agentlistefull;
 
+    }
+
+    function congessuppaverifier($datedebut)
+    {
+        return $this->fonctions->congessuppaverifier($datedebut,$this->agentid());
     }
     
 }
