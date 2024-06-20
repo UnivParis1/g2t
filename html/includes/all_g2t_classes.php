@@ -10,6 +10,7 @@
     require_once (dirname(__FILE__,2) . "/class/declarationTP.php");
     //require_once (dirname(__FILE__,2) . "/class/fpdf/fpdf.php");
     require_once (dirname(__FILE__,2) . "/class/cet.php");
+    require_once (dirname(__FILE__,2) . "/class/recuperation.php");
     require_once (dirname(__FILE__,2) . "/class/affectation.php");
     require_once (dirname(__FILE__,2) . "/class/complement.php");
     require_once (dirname(__FILE__,2) . "/class/demandecomplement.php");

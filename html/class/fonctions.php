@@ -583,18 +583,28 @@ class fonctions
 
         // Cas particulier du CET ==> Il n'est pas annuel mais on doit gérer le compteur de jours restant...
         if (strcasecmp($typeconge, 'cet') == 0)
+        {
             return TRUE;
+        }
         // Cas particulier du WE ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
         if (strcasecmp($typeconge, "WE") == 0)
+        {
             return false;
+        }
         // Cas particulier de la période 'non déclarée' ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
         if (strcasecmp($typeconge, "nondec") == 0)
+        {
             return false;
+        }
         if (strcasecmp($typeconge, "ferie") == 0)
+        {
             return false;
+        }
         if (strcasecmp($typeconge, "teletrav") == 0)
+        {
             return false;
-                // echo "Fonction->estunconge : typeconge = $typeconge <br>";
+        }
+        // echo "Fonction->estunconge : typeconge = $typeconge <br>";
         $sql = "SELECT ANNEEREF FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
         $params = array($typeconge);
         $query = $this->prepared_select($sql, $params);
@@ -5419,7 +5429,8 @@ WHERE  table_schema = Database()
                        COMMENTAIRECONGE.COMMENTAIRE,
                        COMMENTAIRECONGE.NBRJRSAJOUTE,
                        COMMENTAIRECONGE.AUTEURID,
-                       TYPEABSENCE.LIBELLE
+                       TYPEABSENCE.LIBELLE,
+                       COMMENTAIRECONGE.NBJRSPRIS
                 FROM COMMENTAIRECONGE, TYPEABSENCE
                 WHERE COMMENTAIRECONGE.COMMENTAIRECONGEID= ? 
                 AND TYPEABSENCE.TYPEABSENCEID = COMMENTAIRECONGE.TYPEABSENCEID";
@@ -5443,6 +5454,7 @@ WHERE  table_schema = Database()
             $commentaireconge->nbjoursajoute = $result[5];
             $commentaireconge->auteurid = $result[6] . "";
             $commentaireconge->libelleabsence = $result[7];
+            $commentaireconge->nbjrspris = $result[8];
         }
         return $commentaireconge;
     }

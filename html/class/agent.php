@@ -10,6 +10,7 @@ class commentaireconge
     public $dateajout;
     public $commentaire;
     public $nbjoursajoute;
+    public $nbjrspris;
     public $auteurid;
     public $libelleabsence;
 }
@@ -1743,6 +1744,11 @@ class agent
             }
         }
         
+        $recup = new recuperation($this->dbconnect);
+        $recup->load($this->agentid, $anneeref . $this->fonctions->debutperiode());
+        $solde = $recup->getsolde();
+        $soldeliste[$solde->typeabsenceid()] = $solde;
+
         // echo "Avant le new.. <br>";
         $cet = new cet($this->dbconnect);
         // echo "Avant le load du CET <br>";
@@ -1763,7 +1769,7 @@ class agent
                 unset($solde);
             }
         }
-        
+
         return $soldeliste;
     }
 
@@ -3342,7 +3348,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
 
     /**
      * Fonction permettant de modifier la date d'ajout du commentaire et le commentaire.
-     * ATTENTION : Ne modifie que le commentaire et la date du commentaire. Les autres propriétés ne sont pas modifiées.
+     * ATTENTION : Ne modifie que le commentaire, la date du commentaire et le nombre de jours pris. Les autres propriétés ne sont pas modifiées.
      * 
      * @param commentaireconge $commentaireconge
      *            commentaire sur le congé à modifier
@@ -3359,8 +3365,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         else
         {
-            $sql = "UPDATE COMMENTAIRECONGE SET DATEAJOUTCONGE = ?, COMMENTAIRE = ? WHERE COMMENTAIRECONGEID = ? ";
-            $params = array($this->fonctions->formatdatedb($commentaireconge->dateajout), $commentaireconge->commentaire, $commentaireconge->commentaireid);
+            $sql = "UPDATE COMMENTAIRECONGE SET DATEAJOUTCONGE = ?, COMMENTAIRE = ? , NBJRSPRIS = ? WHERE COMMENTAIRECONGEID = ? ";
+            $params = array($this->fonctions->formatdatedb($commentaireconge->dateajout), 
+                            $commentaireconge->commentaire, 
+                            $commentaireconge->nbjrspris,
+                            $commentaireconge->commentaireid);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             if ($erreur != "") 

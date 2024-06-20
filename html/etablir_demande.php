@@ -301,6 +301,50 @@
         }
     }
 
+    // Récupération des lignes de commentaire pour les recupération
+    $listerecuppost = null;
+    if (isset($_POST[recuperation::RECUP_ID]))
+    {
+        $listerecuppost = $_POST[recuperation::RECUP_ID];
+    }
+
+    $nbjourstotalrecup = 0;
+    if ($listetype == recuperation::RECUP_ID and $msg_erreur == "" and !$datefausse)
+    {
+        foreach((array)$listerecuppost as $commentid => $nbjoursrecup)
+        {
+            $nbjourstotalrecup = $nbjourstotalrecup + $nbjoursrecup;
+            $commentaireconge = $fonctions->lirecommentaire($commentid);
+            if ($nbjoursrecup > ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris))
+            {
+                $errlog = "Le solde de nombre de jours de recupération est insuffisant (Solde = " . ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris) . " Demandé = $nbjoursrecup).";
+                $msg_erreur .= $errlog . "<br/>";
+            }
+        }
+        if ($msg_erreur == "")
+        {
+            $planning = new planning($dbcon);
+            $nbjourstravaille = $planning->nbrejourtravaille($agent->agentid(),$date_debut,$deb_mataprem,$date_fin,$fin_mataprem);
+            if ($nbjourstravaille == 0)
+            {
+                //$errlog = "L'agent " . $agent->identitecomplete() . " n'est pas présent durant la période du $date_debut au $date_fin.";
+                //$msg_erreur .= $errlog . "<br/>";
+            }
+            elseif ($nbjourstotalrecup != $nbjourstravaille)
+            {
+                $errlog = "Le nombre de jours recupération n'est pas correct. Vous devez utiliser $nbjourstravaille jours.";
+                $msg_erreur .= $errlog . "<br/>";
+            }
+            else
+            {
+                //$errlog = "PSEUDO MESSAGE D'ERREUR car tout va bien en fait.";
+                //$msg_erreur .= $errlog . "<br/>";
+            }
+        }
+    }
+
+
+
     $longueurmaxcommentaire = $fonctions->logueurmaxcolonne('DEMANDE','COMMENTAIRE');
     
     // # Récupération du commentaire (s'il existe)
@@ -349,7 +393,7 @@
 
     require ("includes/menu.php");
     
-    //echo "<br>"; print_r($_POST); echo "<br>";
+    echo "<br>"; print_r($_POST); echo "<br>";
     ?>
     <script type="text/javascript">
     	// fonction pour le click gauche
@@ -362,6 +406,9 @@
     			document.frm_demande_conge["deb_mataprem"][0].checked = true;
     		else
     			document.frm_demande_conge["deb_mataprem"][1].checked = true;
+            // Create a new 'change' event
+            var event = new Event('change');
+            document.getElementById("date_debut").dispatchEvent(event);            
     	}
     	// fonction pour le click droit
     	function planning_rclick(date,moment)
@@ -373,6 +420,9 @@
     			document.frm_demande_conge["fin_mataprem"][0].checked = true;
     		else
     			document.frm_demande_conge["fin_mataprem"][1].checked = true;
+            // Create a new 'change' event
+            var event = new Event('change');
+            document.getElementById("date_fin").dispatchEvent(event);            
     	}
     	</script>
     <!--
@@ -606,6 +656,11 @@
             $demande->moment_debut($deb_mataprem);
             $demande->moment_fin($fin_mataprem);
             $demande->commentaire($commentaire);
+            if ($listetype == recuperation::RECUP_ID and is_array($listerecuppost))
+            {
+                // Liste des commentaires à impacter pour enregistrer la récupération
+                $demande->tableaucommentaire($listerecuppost);
+            }
             if ($congeanticipe != "")
             {
                 $ignoresoldeinsuffisant = TRUE;
@@ -886,7 +941,7 @@
         ?>
     			<br>
     			<td width=1px>
-    				<input required class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
+    				<input required class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' oninput='showhiderecupdiv()' onchange='showhiderecupdiv()' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
     			</td>
     			<td align="left">
                                 <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) { echo " checked "; } ?>>Matin 
@@ -896,7 +951,7 @@
     		<tr>
     			<td>Date de fin de la demande :</td>
     			<td width=1px>
-    				<input required class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
+    				<input required class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' oninput='showhiderecupdiv()' onchange='showhiderecupdiv()' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
     			</td>
     			<td align="left">
                                 <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) { echo " checked "; } ?>>Matin
@@ -938,7 +993,7 @@
                 $soldeliste = array_merge((array) $soldeliste, (array) $soldelisteannee);
                 // print_r ($soldeliste); echo "<br>";
                 if (! is_null($soldeliste)) {
-                    echo "<select name='listetype'  id='listetype'>";
+                    echo "<select name='listetype'  id='listetype' oninput='showhiderecupdiv()' onchange='showhiderecupdiv()'>";
                     $nbretype = 0;
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
@@ -1073,6 +1128,102 @@
     	</table>
     <?php
         echo "<br>";
+        echo "<div id='divnorecup' hidden >" . $fonctions->showmessage(fonctions::MSGWARNING, "Aucune récupération disponible dans cet interval de temps.") . "</div><br>";
+        echo "<div id='divrecup' hidden >";
+        echo "<table id='tabrecup' class='tableausimple'>";
+        $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
+        foreach($listerecup as $commentaireconge)
+        {
+            if ($commentaireconge->nbjrspris <= $commentaireconge->nbjoursajoute)
+            {
+                $enddate = date('Ymd',strtotime('+2 month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+                echo "<tr class='element' data-enddate='$enddate' data-startdate='". $fonctions->formatdatedb($commentaireconge->dateajout) . "'>";
+                echo "<td class='cellulesimple'>Nombre de jours ajoutés = " . $commentaireconge->nbjoursajoute . "</td>";
+                echo "<td class='cellulesimple'>Nombre de jours déjà consommé = " . $commentaireconge->nbjrspris . "</td>";
+                echo "<td class='cellulesimple'>Date de dépot = " . $fonctions->formatdate($commentaireconge->dateajout) . "</td>";
+                echo "<td class='cellulesimple'>Date de fin de validité = " . $fonctions->formatdatedb($enddate) . "  <=> " . $fonctions->formatdate($enddate) . "</td>";
+                echo "<td class='cellulesimple'><input id='" . recuperation::RECUP_ID .'[' . $commentaireconge->commentaireid . "]' name='" . recuperation::RECUP_ID .'[' . $commentaireconge->commentaireid . "]' type='text' maxlength=2 pattern='[0-9]{0,2}' placeholder='Nombre de jours' value='";
+                if (isset($listerecuppost[$commentaireconge->commentaireid])) { echo $listerecuppost[$commentaireconge->commentaireid]; }
+                echo "'></input></td>";
+                echo "</tr>";
+            }
+        }
+        echo "</table>";
+        echo "<br><br>";
+        echo "</div>";
+    ?>
+        <script>
+            function showhiderecupdiv()
+            {
+                var select = document.getElementById('listetype');
+                var datedebut = document.getElementById('<?php echo $calendrierid_deb ?>');
+                var datefin = document.getElementById('<?php echo $calendrierid_fin ?>');
+                var divrecup = document.getElementById('divrecup');
+                var divnorecup = document.getElementById('divnorecup');
+                var tabrecup = document.getElementById('tabrecup');
+
+                var afficheuneligne = false;
+
+                if (select && divrecup && datedebut && datefin && tabrecup)
+                {
+                    if (divnorecup)
+                    {
+                        divnorecup.hidden = true;
+                    }
+                    var index = select.selectedIndex
+                    if (select.value=='<?php echo recuperation::RECUP_ID ?>' && dateIsValid(datedebut.value) && dateIsValid(datefin.value))
+                    {
+                        if (divnorecup)
+                        {
+                            divnorecup.hidden = false;
+                        }
+                        var listeligne = tabrecup.getElementsByTagName('tr');
+                        if (listeligne)
+                        {
+                            for(index = 0 ; index < listeligne.length ; index++)
+                            {
+                                var ligne = listeligne[index];
+                                var finligne = ligne.getAttribute('data-enddate');
+                                var depotligne = ligne.getAttribute('data-startdate');
+
+                                var [day, month, year] = datedebut.value.split('/');
+                                datedebut = `${year}${month}${day}`;
+                                var [day, month, year] = datefin.value.split('/');
+                                datefin = `${year}${month}${day}`;
+
+                                if ( finligne < datedebut || depotligne > datefin)
+                                {
+                                    ligne.hidden = true;
+                                }
+                                else
+                                {
+                                    ligne.hidden = false;
+                                    afficheuneligne = true;
+                                    if (divnorecup)
+                                    {
+                                        divnorecup.hidden = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (divrecup)
+                {
+                    if (afficheuneligne)
+                    {
+                        divrecup.hidden = false;
+                    }
+                    else
+                    {
+                        divrecup.hidden = true;
+                    }
+                }
+            }
+        </script>
+    <?php
+
+
         if (! is_null($responsable)) 
         {
             echo "<div id='warningcommoblig'>" . $fonctions->showmessage(fonctions::MSGWARNING, "La saisie d'un commentaire est obligatoire.") . "</div>";

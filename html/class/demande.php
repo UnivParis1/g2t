@@ -41,6 +41,8 @@ class demande
     
     private $datemailannulation = '1900-01-01';  // On met par défaut une date très loin dans le passé
 
+    private $tableaucommentaire = null;
+
     // Utilisé lors de la sauvegarde !!
     private $ancienstatut = null;
 
@@ -283,6 +285,11 @@ class demande
         {
             $this->commentaire = str_replace("'", "''", $comment);
         }
+    }
+
+    function tableaucommentaire(array $listecommentaire)
+    {
+        $this->tableaucommentaire = $listecommentaire;
     }
 
     function nbrejrsdemande($nbrejrs = null)
@@ -531,45 +538,66 @@ class demande
     function store($declarationTPListe = null, $ignoreabsenceautodecla = FALSE, $ignoresoldeinsuffisant = FALSE)
     {
         // echo "Demande->store : En cours de réécriture !!!!! <br>";
-        if (is_null($this->demandeid)) {
-            // On vérifie que le nombre de jour demandé est >= Nbre de jour restant (si c'est un conge !!)
-            // echo "Demande->Store : typdemande=". $this->typdemande . "<br>";
-            if ($this->fonctions->estunconge($this->typeabsenceid)) {
-                // echo "C'est un congé... <br>";
-                unset($solde);
-                $solde = new solde($this->dbconnect);
-                $solde->load($this->agentid(), $this->typeabsenceid);
-            }
-            
-            // echo "datedemande = " . $this->datedemande;
-            if (is_null($this->nbrejrsdemande)) {
-                // echo "Le nbre jour est nul ==> On demande le nombre de jour <br>";
-                $planning = new planning($this->dbconnect);
-                // echo "this->agentid" . $this->agentid . "<br>";
-                // echo "this->fonctions->formatdate($this->datedebut) " . $this->fonctions->formatdate($this->datedebut) . "<br>";
-                // echo "this->demijrs_debut " . $this->demijrs_debut . "<br>";
-                // echo "this->fonctions->formatdate($this->datefin) " . $this->fonctions->formatdate($this->datefin) . "<br>";
-                // echo "this->demijrs_fin " . $this->demijrs_fin . "<br>";
-                // echo "ignoreabsenceautodecla " . $ignoreabsenceautodecla . "<br>";
-                
-                $this->nbrejrsdemande = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, $ignoreabsenceautodecla);
-                // echo "nbredemijrs_demande = " . $this->nbredemijrs_demande . "<br>";
-            }
-            
+        if (is_null($this->demandeid)) 
+        {
             $nbjrrestant = 0;
-            if ($this->fonctions->estunconge($this->typeabsenceid)) {
-                if (is_null($solde)) {
-                    $errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $this->agentid();
+            // Si c'est une récupération => On vérifie que le tableau des commentaires est bien renseigné
+            if ($this->typeabsenceid == recuperation::RECUP_ID)
+            {
+                if (!is_array($this->tableaucommentaire) or count($this->tableaucommentaire)==0)
+                {
+                    $errlog = "Demande->Store : Impossible d'enregister la récupération car le tableau de commentaire est vide ou null pour l'agent " . $this->agentid();
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                } else {
-                    $nbjrrestant = $solde->droitaquis() - $solde->droitpris();
-                    // echo "solde->droitaquis_demijrs() - solde->droitpris_demijrs() ==> " . $solde->droitaquis_demijrs() . " - " . $solde->droitpris_demijrs() . "<br>";
+                    return $errlog;
+                }
+                $planning = new planning($this->dbconnect);
+                $this->nbrejrsdemande = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, false);
+            }
+            else
+            {
+                // On vérifie que le nombre de jour demandé est >= Nbre de jour restant (si c'est un conge !!)
+                // echo "Demande->Store : typdemande=". $this->typdemande . "<br>";
+                if ($this->fonctions->estunconge($this->typeabsenceid)) {
+                    // echo "C'est un congé... <br>";
+                    unset($solde);
+                    $solde = new solde($this->dbconnect);
+                    $solde->load($this->agentid(), $this->typeabsenceid);
+                }
+                
+                // echo "datedemande = " . $this->datedemande;
+                if (is_null($this->nbrejrsdemande)) {
+                    // echo "Le nbre jour est nul ==> On demande le nombre de jour <br>";
+                    $planning = new planning($this->dbconnect);
+                    // echo "this->agentid" . $this->agentid . "<br>";
+                    // echo "this->fonctions->formatdate($this->datedebut) " . $this->fonctions->formatdate($this->datedebut) . "<br>";
+                    // echo "this->demijrs_debut " . $this->demijrs_debut . "<br>";
+                    // echo "this->fonctions->formatdate($this->datefin) " . $this->fonctions->formatdate($this->datefin) . "<br>";
+                    // echo "this->demijrs_fin " . $this->demijrs_fin . "<br>";
+                    // echo "ignoreabsenceautodecla " . $ignoreabsenceautodecla . "<br>";
+                    
+                    $this->nbrejrsdemande = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, $ignoreabsenceautodecla);
+                    // echo "nbredemijrs_demande = " . $this->nbredemijrs_demande . "<br>";
+                }
+                
+                if ($this->fonctions->estunconge($this->typeabsenceid)) {
+                    if (is_null($solde)) {
+                        $errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $this->agentid();
+                        echo $errlog . "<br/>";
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    } else {
+                        $nbjrrestant = $solde->droitaquis() - $solde->droitpris();
+                        // echo "solde->droitaquis_demijrs() - solde->droitpris_demijrs() ==> " . $solde->droitaquis_demijrs() . " - " . $solde->droitpris_demijrs() . "<br>";
+                    }
                 }
             }
             
             // echo "Nombre de jours restant = " . $nbjrrestant . " nbredemijrs_demande = " . $this->nbredemijrs_demande . " <br>";
-            if (($nbjrrestant >= $this->nbrejrsdemande) or (! $this->fonctions->estunconge($this->typeabsenceid)) or ($ignoresoldeinsuffisant == TRUE)) {
+            if (  ($nbjrrestant >= $this->nbrejrsdemande) 
+               or (! $this->fonctions->estunconge($this->typeabsenceid)) 
+               or ($ignoresoldeinsuffisant == TRUE)
+               or ($this->typeabsenceid == recuperation::RECUP_ID)
+               ) {
                 if ($this->nbrejrsdemande == 0) {
                     $errlog = "Le nombre de jour demandé est égal à 0.";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -611,9 +639,29 @@ class demande
                 mysqli_query($this->dbconnect, $sql);
                 $sql = "SET AUTOCOMMIT = 1";
                 mysqli_query($this->dbconnect, $sql);
-                                
+                    
+                // On traite les recupérations en impactant les jours pris dans les commentaires
+                // => On utilise $this->tableaucommentaire
+                if ($this->typeabsenceid == recuperation::RECUP_ID)
+                {
+                    $agent = new agent($this->dbconnect);
+                    foreach ($this->tableaucommentaire as $commentid => $nbjours)
+                    {
+                        $commentaire = $this->fonctions->lirecommentaire($commentid);
+                        $commentaire->nbjrspris = $commentaire->nbjrspris + $nbjours;
+                        $agent->modifiercommentaireconge($commentaire);
+                        $demandecomplement = new demandecomplement($this->dbconnect);
+                        $complementid = recuperation::RECUP_ID . "_" . $commentid;
+                        $demandecomplement->delete($this->demandeid,$complementid);
+                        $demandecomplement->demandeid($this->demandeid);
+                        $demandecomplement->complementid($complementid);
+                        $demandecomplement->valeur($nbjours);
+                        $demandecomplement->store();
+                    }
+                    unset($agent);
+                }
                 // On decompte le nombre de jours que l'on vient de poser sauf si c'est un CET
-                if ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp($this->typeabsenceid, 'cet') != 0)) {
+                elseif ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp($this->typeabsenceid, 'cet') != 0)) {
                     $sql = "UPDATE SOLDE
                             SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
                             WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
@@ -670,9 +718,25 @@ class demande
                 *   and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) {
                 */
                 if ((strcasecmp($this->ancienstatut, demande::DEMANDE_VALIDE) == 0 or strcasecmp($this->ancienstatut, demande::DEMANDE_ATTENTE) == 0)
-                   and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) {
-                       // Si ce n'est pas un CET on doit recréditer le nombre de jour
-                    if (strcasecmp($this->typeabsenceid, 'cet') != 0) {
+                   and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) 
+                {
+                    // Si c'est une récupération qu'on vient d'annuler
+                    if ($this->typeabsenceid == recuperation::RECUP_ID)
+                    {
+                        $agent = new agent($this->dbconnect);
+                        $agent->load($this->agentid);
+                        $demandecomplementliste = $this->demandecomplementliste(recuperation::RECUP_ID);
+                        foreach($demandecomplementliste as $complementid => $demandecomplement)
+                        {
+                            $commentaireid = str_replace(recuperation::RECUP_ID . "_", "", $complementid);
+                            $commentaireconges = $this->fonctions->lirecommentaire($commentaireid);
+                            $commentaireconges->nbjrspris = $commentaireconges->nbjrspris - $demandecomplement->valeur();
+                            $agent->modifiercommentaireconge($commentaireconges);
+                            $demandecomplement->delete($this->demandeid,$complementid);
+                        }
+                    }
+                    // Sinon si ce n'est pas un CET on doit recréditer le nombre de jour
+                    elseif (strcasecmp($this->typeabsenceid, 'cet') != 0) {
                         // On recrédite le nombre de jours dans les congés....
                         $sql = "UPDATE SOLDE
                                 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
@@ -691,6 +755,29 @@ class demande
             }
         }
         return "";
+    }
+
+    function demandecomplementliste($complementid)
+    {
+        $arrayliste = array();
+        $sql = "SELECT COMPLEMENTID FROM DEMANDECOMPLEMENT WHERE DEMANDEID = ? AND COMPLEMENTID LIKE ? ";
+        $params = array($this->demandeid,$complementid . "%");
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $message = "$erreur";
+            error_log(basename(__FILE__) . " " . $message);
+        }
+        while ($result = mysqli_fetch_row($query))
+        {
+            $demandecomplement = new demandecomplement($this->dbconnect);
+            $complementid = $result[0];
+            $demandecomplement->load($this->demandeid,$complementid);
+            $arrayliste[$complementid] = $demandecomplement;
+            unset($demandecomplement);
+        }
+        return $arrayliste;
     }
 
     function pdf($valideurid)
