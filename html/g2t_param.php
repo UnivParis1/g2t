@@ -33,19 +33,6 @@
     $user = new agent($dbcon);
     $user->load($userid);
     
-/*    
-    // On regarde si l'utilisateur CAS est un admin G2T (retourne l'agentid si admin sinon false)
-    $CASuserId = $fonctions->CASuserisG2TAdmin($uid);
-    if ($CASuserId===false)
-    {
-        // Ce n'est pas un administrateur
-        error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
-        echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
-        //        header('Location: index.php');
-        exit();
-    }
-*/ 
-    
     $CASAdminId = $fonctions->CASuserisG2TAdmin($uid);
     if ((!$user->estprofilrh()) and ($CASAdminId===false))
     {
@@ -241,6 +228,22 @@
             $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $congessuppfonction);
         }
         
+        /////////////////////////////////////////////
+        // Mise à jour de la durée de validité des récupérations
+        if (isset($_POST['validrecup']))
+        {
+            $validrecup = $_POST['validrecup'];
+            if (!is_numeric($validrecup) || !is_int($validrecup+0) || $validrecup <= 0)
+            {
+                $msg_erreur = $msg_erreur . "Le nombre de mois de validité doit être un entier positif. <br>";
+            }
+            else
+            {
+                $constantename = "VALIDRECUP";
+                $msg_erreur = $fonctions->enregistredbconstante($constantename, $validrecup);
+            }
+        }
+
         /////////////////////////////////////////////
         // Mise à jour de la date des reports de congés
         if (isset($_POST['valid_report']))
@@ -1458,7 +1461,12 @@
         foreach($liste as $key => $dateelement)
         {
             $elementanneeref = $fonctions->anneeref($fonctions->formatdate($dateelement["datedebut"]));
-            echo "<tr><td class='cellulesimple'>" . $elementanneeref . "/" . ($elementanneeref+1) . "</td><td class='cellulesimple'>" . $fonctions->formatdate($dateelement["datedebut"]) . "</td><td class='cellulesimple'>" . $fonctions->formatdate($dateelement["datefin"]) . "</td><td class='cellulesimple'><center><input type='checkbox' name=cancel[" . $key . "] value='yes' /></center></td></tr>";
+            echo "<tr>";
+            echo "<td class='cellulesimple centeraligntext'>" . $elementanneeref . "/" . ($elementanneeref+1) . "</td>";
+            echo "<td class='cellulesimple centeraligntext'>" . $fonctions->formatdate($dateelement["datedebut"]) . "</td>";
+            echo "<td class='cellulesimple centeraligntext'>" . $fonctions->formatdate($dateelement["datefin"]) . "</td>";
+            echo "<td class='cellulesimple centeraligntext'><input type='checkbox' name=cancel[" . $key . "] value='yes' /></td>";
+            echo "</tr>";
         }
     }
     echo "<tr><td class='cellulesimple'>Nouvelle période : </td>";
@@ -1573,7 +1581,9 @@
     echo "<br>";
     $dbconstante = 'FONCTIONCONGSUP';
     $congessuppfonction = 'n';
-    echo "Activer la fonction de demande de validation par la DRH lors d'ajout de congés complémentaires : ";
+
+    //echo "Activer la fonction de demande de validation par la DRH lors d'ajout de congés complémentaires : ";
+    echo "Activer la fonction de demande de validation par la DRH lors d'ajout de jours de récupération : ";
     if ($fonctions->testexistdbconstante($dbconstante)) { $congessuppfonction = $fonctions->liredbconstante($dbconstante); }
     echo "<select id='congessuppfonction' name='congessuppfonction'>";
     echo "<option value='o'";
@@ -1591,6 +1601,26 @@
     echo ">" . $fonctions->ouinonlibelle('n');
     echo "</option>";
     echo "</select>";
+
+    //echo "Durée de validité des ajouts de congés complémentaires/récupérations: ";
+    echo "<br>";
+    $dbconstante = 'VALIDRECUP';
+    $validrecup = '2';
+    echo "Durée de validité des récupérations après la saisie ou la validation par la DRH : ";
+    if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+    // echo "<input type='text' name='validrecup' id='validrecup' value='$validrecup' maxlength='2' size='4'>";
+    echo "<select name='validrecup' id='validrecup'>";
+    for ($index=1 ; $index <= 12 ; $index++)
+    {
+        echo "<option value='$index'";
+        if ($index == $validrecup)
+        {
+            echo " selected ";
+        }
+        echo ">" . $index;
+    }
+    echo "</select>";
+    echo " mois.";
 
     echo "<br>";
 
@@ -1834,24 +1864,24 @@
             <form name="frm_param_cet" method="post">
             
             <table class='tableausimple' id='listeindemnite'>
-            	<tr><center>
+            	<tr class='centeraligntext'>
             		<td class='titresimple'>Niveau du signataire</td>
                     <td class='titresimple'>Type de signataire</td>
                     <td class='titresimple'>Signataire</td>
                     <td class='titresimple'>Supprimer</td>
-            	</center></tr>
-            	<tr><center>
-            		<td class='cellulesimple'><center>Niveau 1</center></td>
-            		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></center></td>
-            		<td class='cellulesimple'><center>Agent demandeur</center></td>
-            		<td class='cellulesimple'><center></center></td>
-            	</center></tr>
-            	<tr><center>
-            		<td class='cellulesimple'><center>Niveau 2</center></td>
-            		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></center></td>
-            		<td class='cellulesimple'><center>Structure de l'agent</center></td>
-            		<td class='cellulesimple'><center></center></td>
-            	</center></tr>
+            	</tr>
+            	<tr class='centeraligntext'>
+            		<td class='cellulesimple'>Niveau 1</td>
+            		<td class='cellulesimple'><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></td>
+            		<td class='cellulesimple'>Agent demandeur</td>
+            		<td class='cellulesimple'></td>
+            	</tr>
+            	<tr class='centeraligntext'>
+            		<td class='cellulesimple'>Niveau 2</td>
+            		<td class='cellulesimple'><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></td>
+            		<td class='cellulesimple'>Structure de l'agent</td>
+            		<td class='cellulesimple'></td>
+            	</tr>
 <?php 
                 $constantename = 'CETSIGNATAIRE';
                 $signataireliste = '';
@@ -1885,8 +1915,8 @@
                         {
 ?>            	
             				<tr>
-                                <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
-                                <td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+                                <td class='cellulesimple centeraligntext'>Niveau <?php echo $niveau; ?></td>
+                                <td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></td>
 <?php               
                             if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                             {
@@ -1908,7 +1938,7 @@
                                     $spantext = '<span data-tip="' . $agent->mail()  .'">';
                                 }
 ?>                    
-			                    <td class='cellulesimple <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><center><?php echo $agent->identitecomplete(); ?></center></td>
+			                    <td class='cellulesimple centeraligntext <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><?php echo $agent->identitecomplete(); ?></td>
 <?php 
                             }
                             elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
@@ -1941,19 +1971,19 @@
                                 }
                                 
 ?>
-			                    <td class='cellulesimple <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><center><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+			                    <td class='cellulesimple centeraligntext <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></td>
 <?php 
                             }
                             elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
                             {
 ?>
-			                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+			                    <td class='cellulesimple centeraligntext'><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></td>
 <?php 
                             }
                             else
                             {
 ?>
-			                    <td class='cellulesimple'><center>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</center></td>
+			                    <td class='cellulesimple centeraligntext'>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</td>
 <?php 
                             }
                             $disablecheckbox = "";
@@ -1964,7 +1994,7 @@
                             }
 */                            
 ?>
-			                    <td class='cellulesimple'><center><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+			                    <td class='cellulesimple centeraligntext'><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'></td>
 			            	</tr>
 <?php
                         }
@@ -1972,14 +2002,14 @@
                 }
 ?>
 				<tr>
-                    <td class='cellulesimple'><center>
+                    <td class='cellulesimple centeraligntext'>
                         <select name="newlevelsignataire" id="newlevelsignataire">
                             <option value="3">Niveau 3</option>
                             <option value="4">Niveau 4</option>
                             <option value="5">Niveau 5</option>
                         </select>
-                    </center></td>
-                    <td class='cellulesimple'><center>
+                    </td>
+                    <td class='cellulesimple centeraligntext'>
                         <select name="newtypesignataire" id="newtypesignataire">
 <?php 
                             foreach (fonctions::SIGNATAIRE_LIBELLE as $codesignataire => $libellesignataire)
@@ -1992,8 +2022,8 @@
                             }
 ?>
                          </select>
-                    </center></td>
-                    <td class='cellulesimple'><center>
+                    </td>
+                    <td class='cellulesimple centeraligntext'>
                     	<input id="usersignataire" name="usersignataire" placeholder="Nom et/ou prenom" autofocus/>
                     	<input type='hidden' id="newidsignataire" name="newidsignataire" class='usersignataire' />
                     	<script>
@@ -2002,7 +2032,6 @@
                         	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                       	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                     	</script>
-                    </center>
                 	<div id='div_structureid' hidden> 
 					<select size='1' id='structureid' name='structureid' class='selectstructure' value=''>
 					<option value=''>----- Veuillez sélectionner la structure -----</option>
@@ -2047,7 +2076,7 @@
 					</select>
 					</div>
                     </td>
-                    <td class='cellulesimple'><center></center></td>
+                    <td class='cellulesimple centeraligntext'></td>
             	</tr>
             </table>
             <script>
@@ -2113,11 +2142,11 @@
     echo "<form name='form_indem_delete' id='form_indem_delete' method='post' >";
     echo "<br>Liste des indemnités : <br>";
     echo "<table class='tableausimple' id='listeindemnite'>";
-    echo "<tr><center><td class='titresimple'>Date début</td>
+    echo "<tr class='centeraligntext'><td class='titresimple'>Date début</td>
                       <td class='titresimple'>Date fin</td>
                       <td class='titresimple'>Montant</td>
                       <td class='titresimple'>Annuler</td>";
-    echo "</center></tr>";
+    echo "</tr>";
     
     foreach ($tabindem as $indextabindem => $indem)
     {
@@ -2154,16 +2183,16 @@
         //echo "  <td class='cellulesimple'><center>" . $fonctions->formatdate($indem["datedebut"]) . "</center></td>";
         //echo "  <td class='cellulesimple'><center>" . $fonctions->formatdate($indem["datefin"]) . "</center></td>";
 ?>
-    <td class='cellulesimple'><center>
+    <td class='cellulesimple centeraligntext'>
         <input class="calendrier" type=text
         	name=<?php echo $calendrierid_deb . '[' . $indemid . ']'?>
         	id=<?php echo $calendrierid_deb . '[' . $indemid .']'?> size=10
         	minperiode='01/01/1900'
         	maxperiode='31/12/2100'
         	value='<?php echo $fonctions->formatdate($indem["datedebut"]) ?>'>
-    </center></td>
+    </td>
     
-    <td class='cellulesimple'><center>
+    <td class='cellulesimple centeraligntext'>
         <input class="calendrier" type=text
         	name=<?php echo $calendrierid_fin . '[' . $indemid . ']' ?>
         	id=<?php echo $calendrierid_fin . '[' . $indemid . ']' ?>
@@ -2171,10 +2200,10 @@
         	minperiode='01/01/1900'
         	maxperiode='31/12/2100'
         	value='<?php echo $fonctions->formatdate($indem["datefin"]) ?>'>
-	</center></td>
+	</td>
 <?php
-        echo "  <td class='cellulesimple'><center>" . number_format($indem["montant"],2,",","") . " €</center><input type='hidden' name='montant[" . $indemid . "]' id='montant[" . $indemid . "]' value='" . number_format($indem["montant"],2,",","") . "'></td>";  // str_replace('.',',',$indem["montant"])
-        echo "  <td class='cellulesimple'><center><input type='checkbox' value='" . $indemid . "' id='" . $indemid . "' name='cancelindem[]' ></center></td>";
+        echo "  <td class='cellulesimple centeraligntext'>" . number_format($indem["montant"],2,",","") . " €<input type='hidden' name='montant[" . $indemid . "]' id='montant[" . $indemid . "]' value='" . number_format($indem["montant"],2,",","") . "'></td>";  // str_replace('.',',',$indem["montant"])
+        echo "  <td class='cellulesimple centeraligntext'><input type='checkbox' value='" . $indemid . "' id='" . $indemid . "' name='cancelindem[]' ></td>";
         echo "</tr>";
     }
     echo "</table>";
@@ -2369,24 +2398,24 @@
  -->        
  		Liste des signataires dans le circuit simple (sans 'responsable N+2') :<br>
         <table class='tableausimple' id='param_teletravail_simple'>
-        	<tr><center>
+        	<tr class='centeraligntext'>
         		<td class='titresimple'>Niveau du signataire</td>
                 <td class='titresimple'>Type de signataire</td>
                 <td class='titresimple'>Signataire</td>
                 <td class='titresimple'>Supprimer</td>
-        	</center></tr>
-        	<tr><center>
-        		<td class='cellulesimple'><center>Niveau 1</center></td>
-        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></center></td>
-        		<td class='cellulesimple'><center>Agent demandeur</center></td>
-        		<td class='cellulesimple'><center></center></td>
-        	</center></tr>
-        	<tr><center>
-        		<td class='cellulesimple'><center>Niveau 2</center></td>
-        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></center></td>
-        		<td class='cellulesimple'><center>Structure de l'agent</center></td>
-        		<td class='cellulesimple'><center></center></td>
-        	</center></tr>
+        	</tr>
+        	<tr class='centeraligntext'>
+        		<td class='cellulesimple centeraligntext'>Niveau 1</td>
+        		<td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></td>
+        		<td class='cellulesimple centeraligntext'>Agent demandeur</td>
+        		<td class='cellulesimple centeraligntext'></td>
+        	</tr>
+        	<tr class='centeraligntext'>
+        		<td class='cellulesimple centeraligntext'>Niveau 2</td>
+        		<td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></td>
+        		<td class='cellulesimple centeraligntext'>Structure de l'agent</td>
+        		<td class='cellulesimple centeraligntext'></td>
+        	</tr>
 <?php 
             $constantename = 'TELETRAVAILSIGNATAIRE';
             $signataireliste = '';
@@ -2405,8 +2434,8 @@
                     {
 ?>            	
         				<tr>
-                            <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
-                            <td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+                            <td class='cellulesimple centeraligntext'>Niveau <?php echo $niveau; ?></td>
+                            <td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></td>
 <?php               
                         if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                         {
@@ -2428,7 +2457,7 @@
                                 $spantext = '<span data-tip="' . $agent->mail()  .'">';
                             }
 ?>                    
-		                    <td class='cellulesimple <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><center><?php echo $agent->identitecomplete(); ?></center></td>
+		                    <td class='cellulesimple centeraligntext <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><?php echo $agent->identitecomplete(); ?></td>
 <?php 
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
@@ -2454,30 +2483,30 @@
                             }
                             
 ?>
-		                    <td class='cellulesimple <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><center><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+		                    <td class='cellulesimple centeraligntext <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></td>
 <?php 
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
                         {
 ?>
-		                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+		                    <td class='cellulesimple centeraligntext'><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></td>
 <?php 
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
                         {
 ?>
-		                    <td class='cellulesimple'><center>Le responsable N+2 de l'agent</center></td>
+		                    <td class='cellulesimple centeraligntext'>Le responsable N+2 de l'agent</td>
 <?php 
                         }
                         else
                         {
                             ?>
-		                    <td class='cellulesimple'><center>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</center></td>
+		                    <td class='cellulesimple centeraligntext'>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</td>
 <?php 
                         }
                         $disablecheckbox = "";
 ?>
-		                    <td class='cellulesimple'><center><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire_tele_simple[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire_tele_simple[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+		                    <td class='cellulesimple centeraligntext'><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire_tele_simple[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire_tele_simple[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'></td>
 		            	</tr>
 <?php
                     }
@@ -2485,14 +2514,14 @@
             }
 ?>
 			<tr>
-                <td class='cellulesimple'><center>
+                <td class='cellulesimple centeraligntext'>
                     <select name="newlevelsignataire_tele_simple" id="newlevelsignataire_tele_simple">
                     	<option value="">--- Sélectionnez un niveau ---</option>
                         <option value="3">Niveau 3</option>
                         <option value="4">Niveau 4</option>
                     </select>
-                </center></td>
-                <td class='cellulesimple'><center>
+                </td>
+                <td class='cellulesimple centeraligntext'>
                     <select name="newtypesignataire_tele_simple" id="newtypesignataire_tele_simple">
                     	<option value="">--- Sélectionnez un type ---</option>
 <?php 
@@ -2506,8 +2535,8 @@
                         }
 ?>
                      </select>
-                </center></td>
-                <td class='cellulesimple'><center>
+                </td>
+                <td class='cellulesimple centeraligntext'>
                 	<input id="usersignataire_tele_simple" name="usersignataire_tele_simple" placeholder="Nom et/ou prenom" autofocus/>
                 	<input type='hidden' id="newidsignataire_tele_simple" name="newidsignataire_tele_simple" class='usersignataire_tele_simple' />
                 	<script>
@@ -2516,7 +2545,6 @@
                     	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                   	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
-                </center>
             	<div id='div_structureid_tele_simple' hidden> 
 				<select size='1' id='structureid_tele_simple' name='structureid_tele_simple' class='selectstructure' value=''>
 				<option value=''>----- Veuillez sélectionner la structure -----</option>
@@ -2561,7 +2589,7 @@
 				</select>
 				</div>
                 </td>
-                <td class='cellulesimple'><center></center></td>
+                <td class='cellulesimple centeraligntext'></td>
             	</tr>
             </table>
             <script>
@@ -2615,24 +2643,24 @@
  -->        
  		Liste des signataires dans le circuit avancé (avec 'responsable N+2') :<br>
         <table class='tableausimple' id='param_teletravail_avance'>
-        	<tr><center>
+        	<tr class='centeraligntext'>
         		<td class='titresimple'>Niveau du signataire</td>
                 <td class='titresimple'>Type de signataire</td>
                 <td class='titresimple'>Signataire</td>
                 <td class='titresimple'>Supprimer</td>
-        	</center></tr>
-        	<tr><center>
-        		<td class='cellulesimple'><center>Niveau 1</center></td>
-        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></center></td>
-        		<td class='cellulesimple'><center>Agent demandeur</center></td>
-        		<td class='cellulesimple'><center></center></td>
-        	</center></tr>
-        	<tr><center>
-        		<td class='cellulesimple'><center>Niveau 2</center></td>
-        		<td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></center></td>
-        		<td class='cellulesimple'><center>Structure de l'agent</center></td>
-        		<td class='cellulesimple'><center></center></td>
-        	</center></tr>
+        	</tr>
+        	<tr class='centeraligntext'>
+        		<td class='cellulesimple centeraligntext'>Niveau 1</td>
+        		<td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[1]; ?></td>
+        		<td class='cellulesimple centeraligntext'>Agent demandeur</td>
+        		<td class='cellulesimple centeraligntext'></td>
+        	</tr>
+        	<tr class='centeraligntext'>
+        		<td class='cellulesimple centeraligntext'>Niveau 2</td>
+        		<td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[3]; ?></td>
+        		<td class='cellulesimple centeraligntext'>Structure de l'agent</td>
+        		<td class='cellulesimple centeraligntext'></td>
+        	</tr>
 <?php 
             $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
             $signataireliste = '';
@@ -2661,8 +2689,8 @@
                         $disablecheckbox = "";
 ?>            	
         				<tr>
-                            <td class='cellulesimple'><center>Niveau <?php echo $niveau; ?></center></td>
-                            <td class='cellulesimple'><center><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></center></td>
+                            <td class='cellulesimple centeraligntext'>Niveau <?php echo $niveau; ?></td>
+                            <td class='cellulesimple centeraligntext'><?php echo fonctions::SIGNATAIRE_LIBELLE[$infosignataire[0]]; ?></td>
 <?php               
                         if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                         {
@@ -2684,7 +2712,7 @@
                                 $spantext = '<span data-tip="' . $agent->mail()  .'">';
                             }
 ?>                    
-		                    <td class='cellulesimple <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><center><?php echo $agent->identitecomplete(); ?></center></td>
+		                    <td class='cellulesimple centeraligntext <?php echo $extrastyle; ?>'><?php  echo $spantext; ?><?php echo $agent->identitecomplete(); ?></td>
 <?php 
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
@@ -2710,30 +2738,30 @@
                             }
                             
 ?>
-		                    <td class='cellulesimple <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><center><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+		                    <td class='cellulesimple centeraligntext <?php echo $extrastyle; ?>'  ><?php  echo $spantext; ?><?php echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></td>
 <?php 
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
                         {
 ?>
-		                    <td class='cellulesimple'><center><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></center></td>
+		                    <td class='cellulesimple centeraligntext'><?php $struct = new structure($dbcon); $struct->load($infosignataire[1]); echo $struct->nomlong() . " (" . $struct->nomcourt() . ")"; ?></td>
 <?php 
                         }
                         elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
                         {
                             if ($niveau == 3) $disablecheckbox = ' hidden ';
 ?>
-		                    <td class='cellulesimple'><center>Le responsable N+2 de l'agent</center></td>
+		                    <td class='cellulesimple centeraligntext'>Le responsable N+2 de l'agent</td>
 <?php 
                         }
                         else
                         {
 ?>
-		                    <td class='cellulesimple'><center>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</center></td>
+		                    <td class='cellulesimple centeraligntext'>ERREUR : Le type de signataire n'est pas géré (type : <?php echo $infosignataire[0]; ?>)!</td>
 <?php 
                         }
 ?>
-		                    <td class='cellulesimple'><center><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire_tele_avance[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire_tele_avance[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'</center></td>
+		                    <td class='cellulesimple centeraligntext'><input type='checkbox' <?php echo $disablecheckbox; ?> id='supprsignataire_tele_avance[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]' name='supprsignataire_tele_avance[<?php echo $niveau; ?>][<?php echo $idsignataire; ?>]'></td>
 		            	</tr>
 <?php
                     }
@@ -2741,14 +2769,14 @@
             }
 ?>
 			<tr>
-                <td class='cellulesimple'><center>
+                <td class='cellulesimple centeraligntext'>
                     <select name="newlevelsignataire_tele_avance" id="newlevelsignataire_tele_avance">
                     	<option value="">--- Sélectionnez un niveau ---</option>
                         <option value="4">Niveau 4</option>
                         <option value="5">Niveau 5</option>
                     </select>
-                </center></td>
-                <td class='cellulesimple'><center>
+                </td>
+                <td class='cellulesimple centeraligntext'>
                     <select name="newtypesignataire_tele_avance" id="newtypesignataire_tele_avance">
                     	<option value="">--- Sélectionnez un type ---</option>
 <?php 
@@ -2762,8 +2790,8 @@
                         }
 ?>
                      </select>
-                </center></td>
-                <td class='cellulesimple'><center>
+                </td>
+                <td class='cellulesimple centeraligntext'>
                 	<input id="usersignataire_tele_avance" name="usersignataire_tele_avance" placeholder="Nom et/ou prenom" autofocus/>
                 	<input type='hidden' id="newidsignataire_tele_avance" name="newidsignataire_tele_avance" class='usersignataire_tele_avance' />
                 	<script>
@@ -2772,7 +2800,6 @@
                     	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                   	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                 	</script>
-                </center>
             	<div id='div_structureid_tele_avance' hidden>
 				<select size='1' id='structureid_tele_avance' name='structureid_tele_avance' class='selectstructure' value=''>
 				<option value=''>----- Veuillez sélectionner la structure -----</option>
@@ -2817,7 +2844,7 @@
 				</select>
 				</div>
                 </td>
-                <td class='cellulesimple'><center></center></td>
+                <td class='cellulesimple centeraligntext'></td>
             	</tr>
             </table>
             <script>
@@ -2893,27 +2920,27 @@
         foreach($agentrhliste as $key => $agentrh)
         {
             echo "<tr><td class='cellulesimple'>" . $agentrh->identitecomplete() . "</td>";
-            echo "<td class='cellulesimple'>";
+            echo "<td class='cellulesimple centeraligntext'>";
             if (isset($agentrhcetliste[$agentrh->agentid()]))
             {
-                echo "<center>&#x2714</center>";
+                echo "&#x2714";
             }
             echo "</td>";
-            echo "<td class='cellulesimple'>";
+            echo "<td class='cellulesimple centeraligntext'>";
             if (isset($agentrhcongeliste[$agentrh->agentid()]))
             {
-                echo "<center>&#x2714</center>";
+                echo "&#x2714";
             }
             echo "</td>";
-            echo "<td class='cellulesimple'>";
+            echo "<td class='cellulesimple centeraligntext'>";
             if (isset($agentrhteletravailliste[$agentrh->agentid()]))
             {
-                echo "<center>&#x2714</center>";
+                echo "&#x2714";
             }
             echo "</td>";
             $disabledtext = '';
             if ($agentrh->estutilisateurspecial()) $disabledtext  = " disabled ";
-            echo "<td class='cellulesimple'><center><input type='checkbox' name=rhcancel[" . $key . "] value='yes' $disabledtext /></center></td>";
+            echo "<td class='cellulesimple centeraligntext'><input type='checkbox' name=rhcancel[" . $key . "] value='yes' $disabledtext /></td>";
             echo "</tr>";
         }
 ?>        
@@ -2928,15 +2955,15 @@
                         	</script>
             
                         </td>
-                        <td class='cellulesimple'><center>
+                        <td class='cellulesimple centeraligntext'>
                         	<input type='checkbox' id='newprofilCET' name='newprofilCET' value='<?php  echo agent::PROFIL_RHCET; ?>'></input>
-                        </center></td>
-                        <td class='cellulesimple'><center>
+                        </td>
+                        <td class='cellulesimple centeraligntext'>
                         	<input type='checkbox' id='newprofilCONGES' name='newprofilCONGES' value='<?php  echo agent::PROFIL_RHCONGE; ?>'></input>
-                        </center></td>
-                        <td class='cellulesimple'><center>
+                        </td>
+                        <td class='cellulesimple centeraligntext'>
                         	<input type='checkbox' id='newprofilTELETRAVAIL' name='newprofilTELETRAVAIL' value='<?php  echo agent::PROFIL_RHTELETRAVAIL; ?>'></input>
-                        </center></td>
+                        </td>
                         
 <!--                         	
         					<select size='1' id='newprofilRH' name='newprofilRH'  value=''> 

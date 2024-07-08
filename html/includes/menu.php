@@ -142,6 +142,7 @@
     }
 
     function dateIsValid(dateStr) {
+        // Syntawxe : Utilisation d'un littéral d'expression régulière, qui consiste en un modèle entouré de barres obliques
         const regex = /^\d{2}\/\d{2}\/\d{4}$/;
 
         if (dateStr.match(regex) === null) {
@@ -560,7 +561,7 @@
             if (count < 0)
             {
                 var text = textarea.value;   
-                var lines = text.split(/\r|\r\n|\n/);
+                var lines = text.split('/\r|\r\n|\n/');
                 count = lines.length;
             }
             var maxRows = parseInt(textarea.getAttribute('rows'));
@@ -1066,7 +1067,10 @@
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                 <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                             </form> 
+<!--
                             <a href="javascript:document.resp_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
+-->
+                            <a href="javascript:document.resp_ajout_conge.submit();">Gestion des jours de récupération pour un agent</a>
                         </li>
 <?php
             // Si on est 6 mois avant la fin de la période ==> On peut saisir des jours par anticipation
@@ -1547,7 +1551,10 @@
                                 <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
                                 <input type="hidden" name="previous" value="no">
                             </form> 
+<!--
                             <a href="javascript:document.rh_valid_congesup.submit();">Validation des jours complémentaires</a>
+-->
+                            <a href="javascript:document.rh_valid_congesup.submit();">Validation des jours de récupération</a>
                         </li>
 <?php
                     }
@@ -1555,9 +1562,13 @@
                         <li onclick='document.rh_ajout_conge.submit();'>
                             <form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                             </form> 
+<!--
                             <a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
+-->
+                            <a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours de récupération pour un agent</a>
+
                         </li>
                         <li onclick='document.rh_aff_solde.submit();'>
                             <form name='rh_aff_solde' method='post' action="affiche_solde.php">

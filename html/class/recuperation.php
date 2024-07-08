@@ -14,6 +14,7 @@ use Fpdf\Fpdf as FPDF;
 class recuperation
 {
     const RECUP_ID = 'recup';
+    const COMPLEMENT_RECUP = "RECUP_";
 
     private $agentid = null;
     private $dbconnect = null;
@@ -114,7 +115,7 @@ class recuperation
      *            date de référence pour calculer le nombre de jours disponible
      * @return string chaine vide si le chargement est ok. Le message d'erreur sinon
      */
-    function load($agentid, $dateref)
+    function load($agentid, $dateref) :string
     {
         $msgerreur = "";
         if (is_null($agentid))
@@ -126,7 +127,21 @@ class recuperation
         $this->agentid = $agentid;
         $this->dateref = $dateref;
 
-        $sql = "SELECT SUM(NBRJRSAJOUTE), SUM(NBJRSPRIS) FROM COMMENTAIRECONGE WHERE AGENTID = ? AND TYPEABSENCEID = ? AND ADDDATE(DATEAJOUTCONGE, INTERVAL 2 MONTH) >= ?";
+        $dbconstante = 'VALIDRECUP';
+        $validrecup = '2';
+        if ($this->fonctions->testexistdbconstante($dbconstante)) { $validrecup = $this->fonctions->liredbconstante($dbconstante); }
+        
+        $sql = "SELECT SUM(NBRJRSAJOUTE), SUM(NBJRSPRIS) 
+                FROM COMMENTAIRECONGE 
+                WHERE AGENTID = ? 
+                  AND TYPEABSENCEID = ? 
+                  AND ADDDATE(DATEAJOUTCONGE, INTERVAL $validrecup MONTH) >= ?
+                  AND COMMENTAIRECONGE.COMMENTAIRECONGEID NOT IN ( 
+                      SELECT REPLACE(COMPLEMENT.COMPLEMENTID,'" . complement::AVISRH_CONGES_SUP_LABEL  . "','')
+                      FROM COMPLEMENT
+                      WHERE COMPLEMENT.AGENTID = COMMENTAIRECONGE.AGENTID
+                        AND COMPLEMENT.COMPLEMENTID LIKE '" . complement::AVISRH_CONGES_SUP_LABEL  . "%'
+                  )";
         $params = array($agentid, recuperation::RECUP_ID, $this->fonctions->formatdatedb($dateref));
         $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
@@ -149,8 +164,8 @@ class recuperation
         {
             $result = mysqli_fetch_row($query); 
             // On ajoute un '0' devant la valeur pour convertir le NULL en valeur (cas où aucune ligne n'est trouvée)
-            $this->droitacquis = (float) "0" . $result[0];
-            $this->jrspris = (float) "0" . $result[1];
+            $this->droitacquis = (float) ("0" . $result[0]);
+            $this->jrspris = (float) ("0" . $result[1]);
         }
         return $msgerreur;
 

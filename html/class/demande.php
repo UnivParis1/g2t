@@ -11,6 +11,9 @@ class demande
     public const DEMANDE_ANNULE = "x";
     public const DEMANDE_AVIS = "c";
 
+    private const ARRAYCOMMENTAIREKEY = 'commentaire';
+    private const ARRAYCOMMENTAIREJRSUTIL = 'nbjrsutilises';
+
     private $demandeid = null;
 
     private $typeabsenceid = null;
@@ -40,8 +43,6 @@ class demande
     private $heuredemande = null;
     
     private $datemailannulation = '1900-01-01';  // On met par défaut une date très loin dans le passé
-
-    private $tableaucommentaire = null;
 
     // Utilisé lors de la sauvegarde !!
     private $ancienstatut = null;
@@ -285,11 +286,6 @@ class demande
         {
             $this->commentaire = str_replace("'", "''", $comment);
         }
-    }
-
-    function tableaucommentaire(array $listecommentaire)
-    {
-        $this->tableaucommentaire = $listecommentaire;
     }
 
     function nbrejrsdemande($nbrejrs = null)
@@ -541,18 +537,114 @@ class demande
         if (is_null($this->demandeid)) 
         {
             $nbjrrestant = 0;
+            $tableaucommentaire = array();
             // Si c'est une récupération => On vérifie que le tableau des commentaires est bien renseigné
             if ($this->typeabsenceid == recuperation::RECUP_ID)
             {
-                if (!is_array($this->tableaucommentaire) or count($this->tableaucommentaire)==0)
+                //var_dump("C'est une récupération.");
+
+                // On calcule combien de jours sont nécessaires dans la demande
+                $planning = new planning($this->dbconnect);
+                $this->nbrejrsdemande = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, false);
+
+                $datedebutdb = $this->fonctions->formatdatedb($this->datedebut());
+                $datefindb = $this->fonctions->formatdatedb($this->datefin());
+
+                $datedebutbutoiremin = $this->fonctions->formatdatedb('31/12/2999'); // => Date dans le futur 31/12/2999
+                $datefinbutoiremax  = $this->fonctions->formatdatedb('01/01/1900'); // => Date dans le passé 01/01/1900
+
+                // On utilise la date de début de la demande pour déterminer l'année de référence
+                $anneeref = $this->fonctions->anneeref($this->datedebut());
+                $datedebutanneeuniv = ($anneeref) . $this->fonctions->debutperiode();
+                $datefinanneeuniv = ($anneeref + 1) . $this->fonctions->finperiode();
+                $agent = new agent($this->dbconnect);
+                $agent->load($this->agentid);
+                $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
+                foreach($listerecup as $commentaireconge)
                 {
-                    $errlog = "Demande->Store : Impossible d'enregister la récupération car le tableau de commentaire est vide ou null pour l'agent " . $this->agentid();
-                    echo $errlog . "<br/>";
+                    //var_dump("Je parcours les commentaireconges.");
+                    $complement = new complement($this->dbconnect);
+                    $complement->load($agent->agentid(),complement::AVISRH_CONGES_SUP_LABEL . $commentaireconge->commentaireid);
+                    if ($complement->agentid()==$agent->agentid())
+                    {
+                        // Le complement existe => L'ajout n'est pas validé par la DRH
+                        // On ne le traite pas
+                        continue;
+                    }
+        
+                    // Si on n'a pas trouvé assez de jours dans les récupérations et qu'il reste des jours à prendre dans le commentaireconge
+                    if (($nbjrrestant < $this->nbrejrsdemande) and ($commentaireconge->nbjrspris < $commentaireconge->nbjoursajoute))
+                    {
+                        // On ne garde que les informations des récupérations qui sont valables durant la période 01/09/XXXX et 31/08/(XXXX+1)
+                        $dbconstante = 'VALIDRECUP';
+                        $validrecup = '2';
+                        if ($this->fonctions->testexistdbconstante($dbconstante)) { $validrecup = $this->fonctions->liredbconstante($dbconstante); }
+                        $datefinvalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($this->fonctions->formatdatedb($commentaireconge->dateajout))));
+                        if (($datefinvalidite < $datedebutanneeuniv) or ($this->fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
+                        {
+                            // Cette récupération n'est pas dans la période universitaire => On ne la conserve pas
+                            //var_dump("L'interval est hors période");
+                        }
+                        else
+                        {
+                            // Pour chaque commentaire, on va calculer le nombre de jours utilisables entre MAX(datedebutanneeuniv et dateajout) et MIN(datefinanneeuniv et datefinvalidite)
+                            $dateajoutdb = $this->fonctions->formatdatedb($commentaireconge->dateajout);
+                            $datedebutinteval = max($datedebutanneeuniv, $dateajoutdb);
+                            $momentdebut = $this->moment_debut();
+                            if ($datedebutanneeuniv != $dateajoutdb and $datedebutinteval == $datedebutanneeuniv)
+                            {
+                                $momentdebut = fonctions::MOMENT_MATIN;
+                            }
+                            $datefininterval = min($datefinanneeuniv, $datefinvalidite);
+                            $momentfin = $this->moment_fin();
+                            if ($datefinanneeuniv != $datefinvalidite and $datefininterval == $datefinanneeuniv)
+                            {
+                                $momentfin = fonctions::MOMENT_APRESMIDI;
+                            }
+                            $planning = new planning($this->dbconnect);
+                            $nbjrsinterval = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($datedebutinteval), $momentdebut, $this->fonctions->formatdate($datefininterval), $momentfin, false);
+                            //var_dump("nbjrsinterval =  $nbjrsinterval");
+                            //var_dump("Solde commentaire = " . $commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris);
+                            $nbjrsutilisable = min($nbjrsinterval, $commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris);
+                            // Si aucun jour n'est utilisable => On n'utilisera pas ce commentaire pour la récup
+                            if ($nbjrsutilisable > 0)
+                            {
+                                $nbrejrsutilises = min($nbjrsutilisable,$this->nbrejrsdemande);
+                                //var_dump("J'ajoute le commentaire dans le tableau et le nbrejrsutilsable");
+                                $tableaucommentaire[] = array(demande::ARRAYCOMMENTAIREKEY => $commentaireconge, demande::ARRAYCOMMENTAIREJRSUTIL => $nbrejrsutilises);
+                                $nbjrrestant = $nbjrrestant + $nbrejrsutilises;
+                                //var_dump("dateajoutdb = $dateajoutdb,datedebutdb = $datedebutdb");
+                                $datedebutbutoiremin = max($dateajoutdb,$datedebutdb);
+                                //var_dump("datedebutbutoiremin = $datedebutbutoiremin");
+                                //var_dump("datefinvalidite = $datefinvalidite,datefindb = $datefindb");
+                                $datefinbutoiremax = min($datefinvalidite, $datefindb);
+                                //var_dump("datefinbutoiremax = $datefinbutoiremax");
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //var_dump("J'ai déjà tout consommé !");
+                    }
+                }
+
+                if (($datedebutbutoiremin > $datedebutdb) or ($datefinbutoiremax < $datefindb))
+                {
+                    $errlog = "Impossible d'enregister la récupération car aucune récupération ne couvre la totalité de la période " . $this->fonctions->formatdate($datedebutdb) . " au " . $this->fonctions->formatdate($datefindb); // . " pour " . $this->agentid();
+                    //echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                     return $errlog;
                 }
-                $planning = new planning($this->dbconnect);
-                $this->nbrejrsdemande = $planning->nbrejourtravaille($this->agentid(), $this->fonctions->formatdate($this->datedebut), $this->momentdebut, $this->fonctions->formatdate($this->datefin), $this->momentfin, false);
+
+                //var_dump($tableaucommentaire);
+                if (count($tableaucommentaire)==0)
+                {
+                    $errlog = "Impossible d'enregister la récupération car aucune recupération n'est valable entre " . $this->fonctions->formatdate($datedebutanneeuniv) . " et " . $this->fonctions->formatdate($datefinanneeuniv); // . " pour " . $this->agentid();
+                    //echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    return $errlog;
+                }
             }
             else
             {
@@ -596,9 +688,11 @@ class demande
             if (  ($nbjrrestant >= $this->nbrejrsdemande) 
                or (! $this->fonctions->estunconge($this->typeabsenceid)) 
                or ($ignoresoldeinsuffisant == TRUE)
-               or ($this->typeabsenceid == recuperation::RECUP_ID)
-               ) {
-                if ($this->nbrejrsdemande == 0) {
+               //or ($this->typeabsenceid == recuperation::RECUP_ID)
+               ) 
+            {
+                if ($this->nbrejrsdemande == 0) 
+                {
                     $errlog = "Le nombre de jour demandé est égal à 0.";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                     return $errlog . "<br/>";
@@ -641,21 +735,22 @@ class demande
                 mysqli_query($this->dbconnect, $sql);
                     
                 // On traite les recupérations en impactant les jours pris dans les commentaires
-                // => On utilise $this->tableaucommentaire
                 if ($this->typeabsenceid == recuperation::RECUP_ID)
                 {
                     $agent = new agent($this->dbconnect);
-                    foreach ($this->tableaucommentaire as $commentid => $nbjours)
+                    foreach ($tableaucommentaire as $arrayinfo)
                     {
-                        $commentaire = $this->fonctions->lirecommentaire($commentid);
-                        $commentaire->nbjrspris = $commentaire->nbjrspris + $nbjours;
+
+                        $commentaire = $arrayinfo[demande::ARRAYCOMMENTAIREKEY];
+                        $nbjrsutilisable = $arrayinfo[demande::ARRAYCOMMENTAIREJRSUTIL];
+                        $commentaire->nbjrspris = $commentaire->nbjrspris + $nbjrsutilisable;
                         $agent->modifiercommentaireconge($commentaire);
                         $demandecomplement = new demandecomplement($this->dbconnect);
-                        $complementid = recuperation::RECUP_ID . "_" . $commentid;
+                        $complementid = recuperation::COMPLEMENT_RECUP . $commentaire->commentaireid;
                         $demandecomplement->delete($this->demandeid,$complementid);
                         $demandecomplement->demandeid($this->demandeid);
                         $demandecomplement->complementid($complementid);
-                        $demandecomplement->valeur($nbjours);
+                        $demandecomplement->valeur($nbjrsutilisable);
                         $demandecomplement->store();
                     }
                     unset($agent);
@@ -725,10 +820,10 @@ class demande
                     {
                         $agent = new agent($this->dbconnect);
                         $agent->load($this->agentid);
-                        $demandecomplementliste = $this->demandecomplementliste(recuperation::RECUP_ID);
+                        $demandecomplementliste = $this->demandecomplementliste(recuperation::COMPLEMENT_RECUP);
                         foreach($demandecomplementliste as $complementid => $demandecomplement)
                         {
-                            $commentaireid = str_replace(recuperation::RECUP_ID . "_", "", $complementid);
+                            $commentaireid = str_replace(recuperation::COMPLEMENT_RECUP, "", $complementid);
                             $commentaireconges = $this->fonctions->lirecommentaire($commentaireid);
                             $commentaireconges->nbjrspris = $commentaireconges->nbjrspris - $demandecomplement->valeur();
                             $agent->modifiercommentaireconge($commentaireconges);
@@ -912,13 +1007,16 @@ class demande
         $tabsolde = $agent->soldecongesliste($this->fonctions->anneeref());
         if (is_array($tabsolde)) {
             foreach ($tabsolde as $key => $solde) {
-                $pdf->Cell(70, 7, $this->fonctions->utf8_decode($solde->typelibelle()), 1);
-                $pdf->Cell(25, 7, $this->fonctions->utf8_decode((string) ($solde->droitaquis())), 1);
-                $pdf->Cell(25, 7, $this->fonctions->utf8_decode((string) ($solde->droitpris())), 1);
-                $pdf->Cell(25, 7, $this->fonctions->utf8_decode((string) ($solde->solde())), 1);
-                $pdf->Ln();
-                $pdf->SetFont('helvetica', 'B', 6, '', true);
-                $pdf->Cell(25, 10, $this->fonctions->utf8_decode(''));
+                if ($solde->droitaquis()>0)
+                {
+                    $pdf->Cell(70, 7, $this->fonctions->utf8_decode($solde->typelibelle()), 1);
+                    $pdf->Cell(25, 7, $this->fonctions->utf8_decode((string) ($solde->droitaquis())), 1);
+                    $pdf->Cell(25, 7, $this->fonctions->utf8_decode((string) ($solde->droitpris())), 1);
+                    $pdf->Cell(25, 7, $this->fonctions->utf8_decode((string) ($solde->solde())), 1);
+                    $pdf->Ln();
+                    $pdf->SetFont('helvetica', 'B', 6, '', true);
+                    $pdf->Cell(25, 10, $this->fonctions->utf8_decode(''));
+                }
             }
         }
         

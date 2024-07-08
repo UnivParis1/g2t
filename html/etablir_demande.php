@@ -82,7 +82,8 @@
         $rh_annee_previous = 0;
     }
     // Si on est en mode RH on fixe $previous à $rh_annee_previous
-    if (strcasecmp($rh_mode, "yes") == 0)
+    //if (strcasecmp($rh_mode, "yes") == 0)
+    if ($fonctions->convertvaluetobool($rh_mode))
     {
         $previous = $rh_annee_previous;
     }
@@ -301,50 +302,6 @@
         }
     }
 
-    // Récupération des lignes de commentaire pour les recupération
-    $listerecuppost = null;
-    if (isset($_POST[recuperation::RECUP_ID]))
-    {
-        $listerecuppost = $_POST[recuperation::RECUP_ID];
-    }
-
-    $nbjourstotalrecup = 0;
-    if ($listetype == recuperation::RECUP_ID and $msg_erreur == "" and !$datefausse)
-    {
-        foreach((array)$listerecuppost as $commentid => $nbjoursrecup)
-        {
-            $nbjourstotalrecup = $nbjourstotalrecup + $nbjoursrecup;
-            $commentaireconge = $fonctions->lirecommentaire($commentid);
-            if ($nbjoursrecup > ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris))
-            {
-                $errlog = "Le solde de nombre de jours de recupération est insuffisant (Solde = " . ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris) . " Demandé = $nbjoursrecup).";
-                $msg_erreur .= $errlog . "<br/>";
-            }
-        }
-        if ($msg_erreur == "")
-        {
-            $planning = new planning($dbcon);
-            $nbjourstravaille = $planning->nbrejourtravaille($agent->agentid(),$date_debut,$deb_mataprem,$date_fin,$fin_mataprem);
-            if ($nbjourstravaille == 0)
-            {
-                //$errlog = "L'agent " . $agent->identitecomplete() . " n'est pas présent durant la période du $date_debut au $date_fin.";
-                //$msg_erreur .= $errlog . "<br/>";
-            }
-            elseif ($nbjourstotalrecup != $nbjourstravaille)
-            {
-                $errlog = "Le nombre de jours recupération n'est pas correct. Vous devez utiliser $nbjourstravaille jours.";
-                $msg_erreur .= $errlog . "<br/>";
-            }
-            else
-            {
-                //$errlog = "PSEUDO MESSAGE D'ERREUR car tout va bien en fait.";
-                //$msg_erreur .= $errlog . "<br/>";
-            }
-        }
-    }
-
-
-
     $longueurmaxcommentaire = $fonctions->logueurmaxcolonne('DEMANDE','COMMENTAIRE');
     
     // # Récupération du commentaire (s'il existe)
@@ -393,7 +350,7 @@
 
     require ("includes/menu.php");
     
-    echo "<br>"; print_r($_POST); echo "<br>";
+    //echo "<br>"; print_r($_POST); echo "<br>";
     ?>
     <script type="text/javascript">
     	// fonction pour le click gauche
@@ -443,7 +400,8 @@
     if (is_null($agent)) {
         //var_dump('on est dans le agent is null');
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
-        if ($rh_mode=='yes')
+        //if ($rh_mode=='yes')
+        if ($fonctions->convertvaluetobool($rh_mode))
         {
             echo "Personne à rechercher : <br>";
             echo "<form name='selectagentcet'  method='post' >";
@@ -503,24 +461,6 @@
         if (strcasecmp($typedemande, "conges") == 0) {
             $fonctions->afficheperiodesobligatoires();
 
-            /*
-            $periode = new periodeobligatoire($dbcon);
-            $liste = $periode->load($fonctions->anneeref());
-            if (count($liste) > 0)
-            {
-                echo "<center>";
-                echo "<div class='periodeobligatoirebloc'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
-                foreach ($liste as $element)
-                {
-                    echo "<li class='leftaligntext' >Du " . $fonctions->formatdate($element["datedebut"]) . " au " . $fonctions->formatdate($element["datefin"]) . "</li>";
-                }
-                echo "</ul>";
-                echo "Veuillez penser à poser vos congés en conséquence.";
-                echo "</div></center>";
-                echo "<br><br>";
-            }
-            */
-
             echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
             $solde = new solde($dbcon);
             $codecongeanticipe = "ann" . substr($fonctions->anneeref() + 1 - $previous, 2);
@@ -559,19 +499,10 @@
         } else {
             echo "Demande d'autorisation d'absence pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         }
-        // echo "Date fausse (1) = " . $datefausse . "<br>";
-
-        //echo "msg_erreur 2 = " .$msg_erreur ." <br>";
-        
         if (! $datefausse) {
             $planning = new planning($dbcon);
-            // echo "Date fin = " . $date_fin . "<br>";
-            // echo "Date de fin (db) = " . $fonctions->formatdatedb($date_fin) . "<br>";
-            // echo "Annee ref + 1 = " . ($fonctions->anneeref()+1) . "<br>";
-            // echo "Fin de période = ". $fonctions->finperiode() . "<br>";
-            // echo "LIMITE CONGE = " . $fonctions->liredbconstante("LIMITE_CONGE_PERIODE") . "<br>";
-
-            if (strcasecmp($rh_mode, "yes") == 0)
+            //if (strcasecmp($rh_mode, "yes") == 0)
+            if ($fonctions->convertvaluetobool($rh_mode))
             {
                 // On est en mode MODE_RH donc on ignore la présence/absence de l'agent
                 //echo 'On est en mode MODE_RH donc on ignore la présence/absence de l agent <br>';
@@ -614,9 +545,6 @@
             }
         }
 
-        // echo "Date fausse (2) = " . $datefausse . "<br>";
-        //echo "msg_erreur 3 = " .$msg_erreur. " <br>";
-
         if ($msg_erreur != "" or $datefausse) {
             
             if ($msg_erreur != "" and isset($_POST["valider"])) {
@@ -624,31 +552,11 @@
                 $msg_erreur = "Votre demande n'a pas été enregistrée.<br>" . $msg_erreur;
             }
             echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
-            // echo "J'ai print le message d'erreur pasautodeclaration = $masquerboutonvalider <br>";
-        } elseif (! $datefausse) {
-            
-            
-/*            
-            // On recherche les declarations de TP relatives à cette demande
-            $affectationliste = $agent->affectationliste($date_debut, $date_fin);
-            if (! is_null($affectationliste)) {
-
-                $declarationTPliste = array();
-                foreach ($affectationliste as $affectation) {
-                    // On recupère la première affectation
-                    // $affectation = new affectation($dbcon);
-                    // $affectation = reset($affectationliste);
-                    // echo "Datedebut = $date_debut, Date fin = $date_fin <br>";
-                    $declarationTPliste = array_merge((array) $declarationTPliste, (array) $affectation->declarationTPliste($date_debut, $date_fin));
-                }
-                // echo "declarationTPliste = "; print_r($declarationTPliste); echo "<br>";
-            }
-*/
-            // echo "Je vais sauver la demande <br>";
+        } 
+        elseif (! $datefausse) 
+        {
             unset($demande);
             $demande = new demande($dbcon);
-            // $demande->agent($agent->agentid());
-            // $demande->structure($agent->structure()->id());
             $demande->agentid($agent->agentid());
             $demande->type($listetype);
             $demande->datedebut($date_debut);
@@ -656,11 +564,6 @@
             $demande->moment_debut($deb_mataprem);
             $demande->moment_fin($fin_mataprem);
             $demande->commentaire($commentaire);
-            if ($listetype == recuperation::RECUP_ID and is_array($listerecuppost))
-            {
-                // Liste des commentaires à impacter pour enregistrer la récupération
-                $demande->tableaucommentaire($listerecuppost);
-            }
             if ($congeanticipe != "")
             {
                 $ignoresoldeinsuffisant = TRUE;
@@ -669,9 +572,7 @@
             {
                 $ignoresoldeinsuffisant = FALSE;
             }
-            // echo "demande->nbredemijrs_demande() AVANT = " . $demande->nbredemijrs_demande() . "<br>";
             $resultat = $demande->store(null, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
-            // echo "demande->nbredemijrs_demande() APRES = " . $demande->nbredemijrs_demande() . "<br>";
             if ($resultat == "") {
                 // Si on est en mode "responsable" alors la demande doit être validée automatiquement
                 if (! is_null($responsable)) {
@@ -695,15 +596,6 @@
                         $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
                         if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                         {
-                            /*
-                            // On remplace les '\' par des '/' et on cherche la position du dernier '/'
-                            $position = strrpos(str_replace('\\', '/', $pdffilename[0]), '/');
-                            // La base du chemin PDF est donc la sous-chaine du nom du fichier PDF de la demande !!
-                            $basepdfpath = substr($pdffilename[0], 0, $position);
-                            // On ajoute le fichier PDF d'utilisation du CET en congés
-                            $pdffilename[1] = $basepdfpath . '/../../documents/Utilisation_CET_Conges.pdf';
-                            */
-                            
                             // On ajoute le fichier PDF d'utilisation du CET en congés
                             $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
                             $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
@@ -887,8 +779,9 @@
     ';
         
         // Calcul de la date de debut minimale pour le calendrier de début
-        if ($rh_mode == 'yes') 
-        {
+        //if ($rh_mode == 'yes') 
+        if ($fonctions->convertvaluetobool($rh_mode)) 
+       {
             $minperiode_debut =  $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); 
         }
         else 
@@ -897,7 +790,8 @@
         }
         
         // Calcul de la date de fin maximale pour le calendrier de début
-        if ($rh_mode == 'yes')
+        //if ($rh_mode == 'yes')
+        if ($fonctions->convertvaluetobool($rh_mode))
         {
             $maxperiode_debut = $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode());
         }
@@ -913,7 +807,8 @@
         }
         
         // Calcul de la date de debut minimale pour le calendrier de fin
-        if ($rh_mode == 'yes') 
+        //if ($rh_mode == 'yes') 
+        if ($fonctions->convertvaluetobool($rh_mode)) 
         {
             $minperiode_fin = $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); 
         }
@@ -923,7 +818,8 @@
         }
         
         // Calcul de la date de fin maximale pour le calendrier de fin
-        if ($rh_mode == 'yes')
+        // if ($rh_mode == 'yes')
+        if ($fonctions->convertvaluetobool($rh_mode))
         {
             $maxperiode_fin = $fonctions->formatdate($fonctions->anneeref()+1 . $fonctions->finperiode());
         }
@@ -982,7 +878,8 @@
                 }
                 // Si on est dans l'année précédente, on peut poser des congés avec le solde de l'année future
                 // Exemple : On peut poser des congés en Aout 2015/2016, avec le solde 2016/2017 (s'il existe <=> S'il est calculé)
-                if ($rh_mode == 'yes' or !is_null($responsable))
+                //if ($rh_mode == 'yes' or !is_null($responsable))
+                if ($fonctions->convertvaluetobool($rh_mode) or !is_null($responsable))
                 {
                     $soldelisteannee = $agent->soldecongesliste($fonctions->anneeref(),$dummy,true);
                 }
@@ -998,13 +895,15 @@
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
                             ///////////////////////////////////////////////////////////////
-                            if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet' and $show_cet == 'yes')
+                            //if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet' and $show_cet == 'yes')
+                            if ($fonctions->convertvaluetobool($rh_mode) and $solde->typeabsenceid() != 'cet' and $show_cet == 'yes')
                             // if (false)  // Si on met cette ligne à la place de celle au dessus, la DRH peut poser des congés pour un agent en plus du CET
                             //////////////////////////////////////////////////////////////
                             {
                                 // On n'affiche pas le solde de congés car on est en mode RH et seul le CET est affiché
                             }
-                            elseif ($rh_mode == 'yes' and $solde->typeabsenceid() == 'cet' and $show_cet == 'no')
+                            //elseif ($rh_mode == 'yes' and $solde->typeabsenceid() == 'cet' and $show_cet == 'no')
+                            elseif ($fonctions->convertvaluetobool($rh_mode) and $solde->typeabsenceid() == 'cet' and $show_cet == 'no')
                             {
                                 // On n'affiche pas le solde du CET car on est en mode RH et le CET ne doit pas est affiché
                             }
@@ -1021,7 +920,7 @@
                             		}
                             		else 
                             		{
-                            			echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                            			echo "<OPTION value='" . $solde->typeabsenceid() . "' id='OPTION_" . $solde->typeabsenceid() . "' ";
                             			if ($keysolde == $listetype)
                             			{
                             			    echo " selected ";
@@ -1042,7 +941,7 @@
                                     }
                                     else
                                     {
-                                        echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                                        echo "<OPTION value='" . $solde->typeabsenceid() . "' id='OPTION_" . $solde->typeabsenceid() . "' ";
                                         if ($keysolde == $listetype)
                                         {
                                             echo " selected ";
@@ -1053,7 +952,7 @@
                             	}
                             	else 
                             	{
-                                    echo "<OPTION value='" . $solde->typeabsenceid() . "' ";
+                                    echo "<OPTION value='" . $solde->typeabsenceid() . "' id='OPTION_" . $solde->typeabsenceid() . "' ";
                                     if ($keysolde == $listetype)
                                     {
                                         echo " selected ";
@@ -1097,11 +996,6 @@
                     
                     // Si on est en mode 'responsable' (<=> responsable défini) alors on n'affiche pas les symboles car le commentaire est obligatoire
                     if ($fonctions->absencecommentaireoblig($keyabs) and is_null($responsable))
-
-/*
-                    // Si on est en mode 'responsable' (<=> responsable défini) alors on affiche systématiquement les symboles car le commentaire est obligatoire
-                    if ($fonctions->absencecommentaireoblig($keyabs) or !is_null($responsable))
- */
                     {
                         echo " class='abssencecommoblig' ";
 //                        echo " data-color='abssencecommoblig' ";
@@ -1128,26 +1022,67 @@
     	</table>
     <?php
         echo "<br>";
-        echo "<div id='divnorecup' hidden >" . $fonctions->showmessage(fonctions::MSGWARNING, "Aucune récupération disponible dans cet interval de temps.") . "</div><br>";
+        //////////////////////////////////////////////////////////////////////////////////
+        // On traite ici l'affichage des récupérations
+        //////////////////////////////////////////////////////////////////////////////////
+        if ($fonctions->convertvaluetobool($rh_mode))
+        {
+            $datedebutanneeuniv = ($fonctions->anneeref() - $rh_annee_previous) . $fonctions->debutperiode();
+            $datefinanneeuniv = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
+        }
+        else
+        {
+            $datedebutanneeuniv = ($fonctions->anneeref() - $previous) . $fonctions->debutperiode();
+            $datefinanneeuniv = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
+        }
+        $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
+
+        echo "<div id='divnorecup' hidden >" . $fonctions->showmessage(fonctions::MSGWARNING, "Aucune récupération disponible dans cet intervalle de temps.") . "</div><br>";
         echo "<div id='divrecup' hidden >";
         echo "<table id='tabrecup' class='tableausimple'>";
-        $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
+        echo "<thead><tr><th>Informations sur les récupérations utlisables</th></tr></thead>";
+        echo "<tbody id='tabrecupbody'>";
         foreach($listerecup as $commentaireconge)
         {
-            if ($commentaireconge->nbjrspris <= $commentaireconge->nbjoursajoute)
+            $complement = new complement($dbcon);
+            $complement->load($agent->agentid(),complement::AVISRH_CONGES_SUP_LABEL . $commentaireconge->commentaireid);
+            if ($complement->agentid()==$agent->agentid())
             {
-                $enddate = date('Ymd',strtotime('+2 month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
-                echo "<tr class='element' data-enddate='$enddate' data-startdate='". $fonctions->formatdatedb($commentaireconge->dateajout) . "'>";
-                echo "<td class='cellulesimple'>Nombre de jours ajoutés = " . $commentaireconge->nbjoursajoute . "</td>";
-                echo "<td class='cellulesimple'>Nombre de jours déjà consommé = " . $commentaireconge->nbjrspris . "</td>";
-                echo "<td class='cellulesimple'>Date de dépot = " . $fonctions->formatdate($commentaireconge->dateajout) . "</td>";
-                echo "<td class='cellulesimple'>Date de fin de validité = " . $fonctions->formatdatedb($enddate) . "  <=> " . $fonctions->formatdate($enddate) . "</td>";
-                echo "<td class='cellulesimple'><input id='" . recuperation::RECUP_ID .'[' . $commentaireconge->commentaireid . "]' name='" . recuperation::RECUP_ID .'[' . $commentaireconge->commentaireid . "]' type='text' maxlength=2 pattern='[0-9]{0,2}' placeholder='Nombre de jours' value='";
-                if (isset($listerecuppost[$commentaireconge->commentaireid])) { echo $listerecuppost[$commentaireconge->commentaireid]; }
-                echo "'></input></td>";
-                echo "</tr>";
+                // Le complement existe => L'ajout n'est pas validé par la DRH
+                // On ne le traite pas
+                continue;
+            }
+            if ($commentaireconge->nbjrspris < $commentaireconge->nbjoursajoute)
+            {
+                // On affiche les informations des récupérations qui sont valables durant la période 01/09/XXXX et 31/08/(XXXX+1)
+                $dbconstante = 'VALIDRECUP';
+                $validrecup = '2';
+                if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+                $findatevalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+                if (($findatevalidite < $datedebutanneeuniv) or ($fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
+                {
+                    // Cette récupération n'est pas dans la période universitaire => On ne l'affiche pas
+                }
+                else
+                {
+                    echo "<tr class='element' data-enddate='$findatevalidite' data-startdate='". $fonctions->formatdatedb($commentaireconge->dateajout) . "'>";
+                    if (is_null($responsable)) 
+                    {
+                        echo "<td class='cellulesimple'>Vous disposez de " . ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris) . " jour(s) de récupération valable(s) entre le " . $fonctions->formatdate($commentaireconge->dateajout) . " et le " . $fonctions->formatdate($findatevalidite) . "</td>";
+                    }
+                    else
+                    {
+                        echo "<td class='cellulesimple'>" . $agent->identitecomplete()  . " dispose de " . ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris) . " jour(s) de récupération valable(s) entre le " . $fonctions->formatdate($commentaireconge->dateajout) . " et le " . $fonctions->formatdate($findatevalidite) . "</td>";
+                    }
+                    //echo "<td class='cellulesimple'>Nombre de jours ajoutés = " . $commentaireconge->nbjoursajoute . "</td>";
+                    //echo "<td class='cellulesimple'>Nombre de jours déjà consommé = " . $commentaireconge->nbjrspris . "</td>";
+                    //echo "<td class='cellulesimple'>Date de dépot = " . $fonctions->formatdate($commentaireconge->dateajout) . "</td>";
+                    //echo "<td class='cellulesimple'>Date de fin de validité = " . $fonctions->formatdate($findatevalidite) . "</td>";
+                    echo "</tr>";
+                }
             }
         }
+        echo "</tbody>";
         echo "</table>";
         echo "<br><br>";
         echo "</div>";
@@ -1161,6 +1096,10 @@
                 var divrecup = document.getElementById('divrecup');
                 var divnorecup = document.getElementById('divnorecup');
                 var tabrecup = document.getElementById('tabrecup');
+                if (tabrecup)
+                {
+                    var tabrecupbody = document.getElementById('tabrecupbody');
+                }
 
                 var afficheuneligne = false;
 
@@ -1170,6 +1109,11 @@
                     {
                         divnorecup.hidden = true;
                     }
+                    var [day, month, year] = datedebut.value.split('/');
+                    var datedebut_db = `${year}${month}${day}`;
+                    var [day, month, year] = datefin.value.split('/');
+                    var datefin_db = `${year}${month}${day}`;
+
                     var index = select.selectedIndex
                     if (select.value=='<?php echo recuperation::RECUP_ID ?>' && dateIsValid(datedebut.value) && dateIsValid(datefin.value))
                     {
@@ -1177,7 +1121,14 @@
                         {
                             divnorecup.hidden = false;
                         }
-                        var listeligne = tabrecup.getElementsByTagName('tr');
+                        if (tabrecupbody)
+                        {
+                            var listeligne = tabrecupbody.getElementsByTagName('tr');
+                        }
+                        else
+                        {
+                            var listeligne = tabrecup.getElementsByTagName('tr');
+                        }
                         if (listeligne)
                         {
                             for(index = 0 ; index < listeligne.length ; index++)
@@ -1186,12 +1137,7 @@
                                 var finligne = ligne.getAttribute('data-enddate');
                                 var depotligne = ligne.getAttribute('data-startdate');
 
-                                var [day, month, year] = datedebut.value.split('/');
-                                datedebut = `${year}${month}${day}`;
-                                var [day, month, year] = datefin.value.split('/');
-                                datefin = `${year}${month}${day}`;
-
-                                if ( finligne < datedebut || depotligne > datefin)
+                                if ( finligne < datedebut_db || depotligne > datefin_db)
                                 {
                                     ligne.hidden = true;
                                 }
@@ -1204,6 +1150,14 @@
                                         divnorecup.hidden = true;
                                     }
                                 }
+                            }
+                        }
+                        else
+                        {
+                            var recupoption = document.getElementsByTagName('OPTION_' + <?php echo recuperation::RECUP_ID; ?>);
+                            if (recupoption)
+                            {
+                                recupoption.hidden = true;
                             }
                         }
                     }
@@ -1368,7 +1322,8 @@
         // echo "Fin periode = " . $fonctions->finperiode() . "<br>";
         // echo "Annee ref = " . $fonctions->anneeref() . "<br>";
         // echo "debut = " . $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()) . " fin =" . $fonctions->formatdate(($fonctions->anneeref()+1) . $fonctions->finperiode()) . "<br>";
-        if ($rh_mode == 'yes')
+        //if ($rh_mode == 'yes')
+        if ($fonctions->convertvaluetobool($rh_mode))
         {
             for ($index=$rh_annee_previous; $index>=0; $index--)
             {

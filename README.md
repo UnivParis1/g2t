@@ -4,13 +4,14 @@ Elle est développée par l'Université Paris 1 Panthéon-Sorbonne.
 Consultez le fichier LICENSE pour plus d'informations. 
 
 # Nécessite
-* PHP >= 7.x
+* PHP >= 7.4.x, >= 8.0.x
 * Composer
 * Esup-Signature (https://www.esup-portail.org/wiki/display/SIGN)
 * les services wsgroups (https://github.com/UnivParis1/wsgroups) - /searchUserCAS, /searchUserTrusted, /searchUser, /web-widget
 
 # Base de données
 * MySQL >= 5.7.x
+* MariaDB >= 10.11.x
 
 # Installation
 * Téléchargez la version de G2T souhaitée ([Releases G2T](https://github.com/UnivParis1/g2t/releases)).

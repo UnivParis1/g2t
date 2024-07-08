@@ -888,7 +888,7 @@ class fonctions
         {
             $sql = $sql . " OR TYPEABSENCEID = 'teletrav' ";
         }
-        $sql = $sql . " OR TYPEABSENCEID = 'teletravHC' ";
+        $sql = $sql . " OR TYPEABSENCEID IN ('teletravHC','" . recuperation::RECUP_ID . "') ";
  		$sql = $sql . "		ORDER BY LIBELLE";
         // echo "sql = " . $sql . " <br>";
  		$params = array($anneeref,($anneeref - 1));
@@ -1439,15 +1439,16 @@ class fonctions
         while ($result = mysqli_fetch_row($query)) {
             $commentaireconge = new commentaireconge();
 
-            $commentaireconge->commentaireid = $result[0];
-            $commentaireconge->agentid = $result[1];
-            $commentaireconge->typeabsenceid = $result[2];
-            $commentaireconge->dateajout = $result[3];
-            $commentaireconge->commentaire = $result[4];
-            $commentaireconge->nbjoursajoute = $result[5];
-            $commentaireconge->auteurid = $result[6];
-            $commentaireconge->libelleabsence = $result[7];
-        
+            // $commentaireconge->commentaireid = $result[0];
+            // $commentaireconge->agentid = $result[1];
+            // $commentaireconge->typeabsenceid = $result[2];
+            // $commentaireconge->dateajout = $result[3];
+            // $commentaireconge->commentaire = $result[4];
+            // $commentaireconge->nbjoursajoute = $result[5];
+            // $commentaireconge->auteurid = $result[6];
+            // $commentaireconge->libelleabsence = $result[7];
+            $commentaireconge = $this->lirecommentaire($result[0]);
+
             $congessuppliste[] = $commentaireconge;
         }
         return $congessuppliste;
@@ -3485,6 +3486,36 @@ class fonctions
         return $listeagent;
     }
 
+    public function listeagentsavecrecuperation($date)
+    {
+        $anneeref = $this->anneeref($this->formatdate($date));
+        $debutperiode = $anneeref . $this->debutperiode();
+        $finperiode = ($anneeref+1) . $this->finperiode();
+        $listeagent = array();
+        $sql = "SELECT COMMENTAIRECONGE.AGENTID,AGENT.NOM,AGENT.PRENOM
+                FROM COMMENTAIRECONGE, AGENT
+                WHERE COMMENTAIRECONGE.AGENTID=AGENT.AGENTID 
+                  AND COMMENTAIRECONGE.TYPEABSENCEID='" . recuperation::RECUP_ID . "'
+                  AND COMMENTAIRECONGE.DATEAJOUTCONGE BETWEEN '$debutperiode' AND '$finperiode'";
+        //var_dump('SQL = ' . $sql);
+        $query_agent = mysqli_query($this->dbconnect, $sql);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            echo "fonctions->listeagentsavecrecuperation : Erreur SELECT FROM COMMENTAIRECONGE => $erreur_requete \n";
+        }
+        else
+        {
+            //var_dump("j'ai des résultats");
+            while ($result = mysqli_fetch_row($query_agent))
+            {
+                //var_dump("Id = " . $result[0]);
+                $listeagent[$result[0]] = $result[1] . " " . $result[2];
+            }
+        }
+        return $listeagent;
+    }
+
 
     public function listeagentsg2t($namefirst = true, $fulllist = true)
     {
@@ -5419,7 +5450,8 @@ WHERE  table_schema = Database()
         return $corpmail;
     }
 
-    function lirecommentaire(string $commentaireid): null|commentaireconge
+    //function lirecommentaire(string $commentaireid): commentaireconge|null // ATTENTION PHP 8.0 seulement
+    function lirecommentaire(string $commentaireid)
     {
         $commentaireconge = null;
         $sql = "SELECT COMMENTAIRECONGE.COMMENTAIRECONGEID,

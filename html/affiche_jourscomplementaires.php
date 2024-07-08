@@ -57,10 +57,17 @@
     
     $htmltext = "";
     $currentanneeref = substr($fonctions->anneeref()-1, 2, 2);
+    //var_dump("currentanneeref " . $currentanneeref);
     for ($anneeref=$currentanneeref;$anneeref<=($currentanneeref+1);$anneeref++)
     {
-        $agentlist = $fonctions->listeagentsavecjourscomplementaires($anneeref); // Complémentaire 2023/2024
-        //var_dump($agentlist);
+        //var_dump("anneeref = $anneeref");
+        //var_dump(date("d/m/20$anneeref"));
+        $agentlist = $fonctions->listeagentsavecjourscomplementaires($anneeref);
+        $anneerefrecup = "20" . $anneeref;
+        $datedebutanneeuniv = $anneerefrecup . $fonctions->debutperiode();
+        $datefinanneeuniv = ($anneerefrecup+1) . $fonctions->finperiode();
+        //var_dump($fonctions->listeagentsavecrecuperation(date("d/m/$anneerefrecup")));
+        $agentlist = $agentlist + $fonctions->listeagentsavecrecuperation($datedebutanneeuniv);
         $agentlistparstructure = array();
         foreach ((array)$agentlist as $agentid => $identite)
         {
@@ -69,34 +76,6 @@
             $agentlistparstructure[$agent->structureid()][$agentid] = $agent;
         }
         //var_dump($agentlistparstructure);
-/*
-        echo "<HR>";
-
-        foreach($agentlistparstructure as $codestruct => $agentlist)
-        {
-            $structure = new structure($dbcon);
-            if (!$structure->load($codestruct))
-            {
-                // En théorie pas nécéssaire
-                $structure->nomlong('INCONNUE');
-                $structure->nomcourt('INCONNUE');
-            }
-            echo "Nom de la structure : " . $structure->nomlong() . "<br>";
-            foreach($agentlist as $agentid => $agent)
-            {
-                $solde = new solde($dbcon);
-                $solde->load($agentid, 'sup' . $anneeref);
-                echo "L'agent " . $agent->identitecomplete() . " a " . $solde->droitaquis() . " acquis jours complémenentares - Il lui en reste " . ($solde->droitaquis() - $solde->droitpris()) . "<br>";
-                $listecommentaireconge = $agent->listecommentaireconge('sup' . $anneeref);
-                echo "<ul>";
-                foreach($listecommentaireconge as $commentaireconge)
-                {
-                    echo "&nbsp;&nbsp;&nbsp;<li>Motif = " . $commentaireconge->commentaire . " nbjours = " . $commentaireconge->nbjoursajoute . "</li>";
-                }
-                echo "</ul>";
-            }
-        }
-*/
         $premierestructure = true;
         foreach($agentlistparstructure as $codestruct => $agentlist)
         {
@@ -114,7 +93,7 @@
                 $premierestructure = false;
             }
             $nbcolonne = 5;
-            $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Congés complémentaires 20" . $anneeref ."/20" . ($anneeref+1) . " pour " . $structure->nomlong() . "</td></tr>";
+            $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Congés complémentaires ou jours de récupération 20" . $anneeref ."/20" . ($anneeref+1) . " pour " . $structure->nomlong() . "</td></tr>";
             $htmltext = $htmltext . "<tr align=center>"
                     . "<td class='cellulesimple'>Identifiant de l'agent</td>"
                     . "<td class='cellulesimple'>Identité de l'agent</td>"
@@ -126,28 +105,84 @@
                 
             foreach($agentlist as $agentid => $agent)
             {
+                $soldeaquistxt = "";
+                $solderestant = "";
                 $solde = new solde($dbcon);
-                $solde->load($agentid, 'sup' . $anneeref);
-                $htmltext = $htmltext . "<tr align=center>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->agentid() . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $solde->droitaquis() . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . ($solde->droitaquis() - $solde->droitpris()) . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple' align=left>";                                
-                $listecommentaireconge = $agent->listecommentaireconge('sup' . $anneeref);
-                $htmltext = $htmltext . "<ul>";
-                foreach($listecommentaireconge as $commentaireconge)
+                $erreur = $solde->load($agentid, 'sup' . $anneeref);
+                if ($erreur=='' and $solde->droitaquis() > 0) // On a réussi à charger le solde supplémentaire
                 {
-                    $auteur = new agent($dbcon);
-                    $auteurtxt = "";
-                    if ($commentaireconge->auteurid!="" and $auteur->load($commentaireconge->auteurid))
-                    {
-                        $auteurtxt = " (Par " . $auteur->identitecomplete() . ")";
-                    }
-                    $htmltext = $htmltext . "<li>" . $commentaireconge->commentaire . $auteurtxt . " (" . $commentaireconge->nbjoursajoute . " jours)</li>";
+                    $soldeaquistxt = $soldeaquistxt . $solde->droitaquis(); 
+                    $solderestant = ($solde->droitaquis() - $solde->droitpris());
                 }
-                $htmltext = $htmltext . "</ul>";
-                $htmltext = $htmltext . "</td></tr>";
+
+                $recup = new recuperation($dbcon);
+
+                if ($recup->load($agentid,date($datedebutanneeuniv))=='')
+                {
+
+
+                    $solde = $recup->getsolde();
+                    if ($solde->droitaquis()>0)
+                    {
+                        if (strlen($soldeaquistxt)>0) { $soldeaquistxt  = $soldeaquistxt . "<br>"; }
+                        $soldeaquistxt = $soldeaquistxt . $solde->droitaquis(); 
+                        if (strlen($solderestant)>0) { $solderestant  = $solderestant . "<br>"; }
+                        $solderestant = ($solde->droitaquis() - $solde->droitpris());
+                    }
+                }
+
+                $listecommentaireconge = $agent->listecommentaireconge('sup' . $anneeref);
+
+                //var_dump("datedebutanneeuniv = $datedebutanneeuniv   datefinanneeuniv = $datefinanneeuniv");
+                $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
+                foreach($listerecup as $commentaireconge)
+                {
+                    $complement = new complement($dbcon);
+                    $complement->load($agent->agentid(),complement::AVISRH_CONGES_SUP_LABEL . $commentaireconge->commentaireid);
+                    if ($complement->agentid()==$agent->agentid())
+                    {
+                        // Le complement existe => L'ajout n'est pas validé par la DRH
+                        // On ne le traite pas
+                        continue;
+                    }
+                    // On affiche les informations des récupérations qui sont valables durant la période 01/09/XXXX et 31/08/(XXXX+1)
+                    $dbconstante = 'VALIDRECUP';
+                    $validrecup = '2';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+
+                    $findatevalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+                    if (($findatevalidite < $datedebutanneeuniv) or ($fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
+                    {
+                        // Cette récupération n'est pas dans la période universitaire => On ne l'affiche pas
+                    }
+                    else
+                    {
+                        $listecommentaireconge[] = $commentaireconge;
+                    }
+                }
+
+                if (count($listecommentaireconge)>0)
+                {
+                    $htmltext = $htmltext . "<tr align=center>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->agentid() . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $soldeaquistxt . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $solderestant . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple' align=left>";                                
+                    $htmltext = $htmltext . "<ul>";
+                    foreach($listecommentaireconge as $commentaireconge)
+                    {
+                        $auteur = new agent($dbcon);
+                        $auteurtxt = "";
+                        if ($commentaireconge->auteurid!="" and $auteur->load($commentaireconge->auteurid))
+                        {
+                            $auteurtxt = " (Par " . $auteur->identitecomplete() . ")";
+                        }
+                        $htmltext = $htmltext . "<li>" . $commentaireconge->commentaire . $auteurtxt . " (" . $commentaireconge->nbjoursajoute . " jours)</li>";
+                    }
+                    $htmltext = $htmltext . "</ul>";
+                    $htmltext = $htmltext . "</td></tr>";
+                }
             }
         }
         if (!$premierestructure)

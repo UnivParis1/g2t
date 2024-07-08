@@ -1873,37 +1873,41 @@ class agent
         $totaldroitrestant = 0;
         $totaldemandeattente = 0;
         $soldeliste = $this->soldecongesliste($anneeref);
-        foreach ((array) $soldeliste as $key => $tempsolde) {
-            $pdf->Cell(75, 5, $this->fonctions->utf8_decode($tempsolde->typelibelle()), 1, 0, 'C');
-            if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
+        foreach ((array) $soldeliste as $key => $tempsolde) 
+        {
+            if ($tempsolde->droitaquis()>0)
             {
-                $textdroitaquis = "";
-            }
-            else
-            {
-                $textdroitaquis = $tempsolde->droitaquis() . "";
-                if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
+                $pdf->Cell(75, 5, $this->fonctions->utf8_decode($tempsolde->typelibelle()), 1, 0, 'C');
+                if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
                 {
-                    if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
-                        $textdroitaquis = $textdroitaquis . " (C. BONIF.)";
+                    $textdroitaquis = "";
                 }
+                else
+                {
+                    $textdroitaquis = $tempsolde->droitaquis() . "";
+                    if (strcmp(substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
+                    {
+                        if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
+                            $textdroitaquis = $textdroitaquis . " (C. BONIF.)";
+                    }
+                }
+                $pdf->Cell(30, 5, $this->fonctions->utf8_decode($textdroitaquis), 1, 0, 'C');
+                if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas les droits pris
+                {
+                    $pdf->Cell(30, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
+                }
+                else
+                {
+                    $pdf->Cell(30, 5, $this->fonctions->utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
+                }
+                $pdf->Cell(30, 5, $this->fonctions->utf8_decode($tempsolde->solde() . ""), 1, 0, 'C');
+                $pdf->Cell(50, 5, $this->fonctions->utf8_decode($tempsolde->demandeenattente() . ""), 1, 0, 'C');
+                $totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis();
+                $totaldroitpris = $totaldroitpris + $tempsolde->droitpris();
+                $totaldroitrestant = $totaldroitrestant + $tempsolde->solde();
+                $totaldemandeattente = $totaldemandeattente + $tempsolde->demandeenattente();
+                $pdf->Ln(5);
             }
-            $pdf->Cell(30, 5, $this->fonctions->utf8_decode($textdroitaquis), 1, 0, 'C');
-            if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas les droits pris
-            {
-                $pdf->Cell(30, 5, $this->fonctions->utf8_decode(""), 1, 0, 'C');
-            }
-            else
-            {
-                $pdf->Cell(30, 5, $this->fonctions->utf8_decode($tempsolde->droitpris() . ""), 1, 0, 'C');
-            }
-            $pdf->Cell(30, 5, $this->fonctions->utf8_decode($tempsolde->solde() . ""), 1, 0, 'C');
-            $pdf->Cell(50, 5, $this->fonctions->utf8_decode($tempsolde->demandeenattente() . ""), 1, 0, 'C');
-            $totaldroitaquis = $totaldroitaquis + $tempsolde->droitaquis();
-            $totaldroitpris = $totaldroitpris + $tempsolde->droitpris();
-            $totaldroitrestant = $totaldroitrestant + $tempsolde->solde();
-            $totaldemandeattente = $totaldemandeattente + $tempsolde->demandeenattente();
-            $pdf->Ln(5);
         }
         /*
          * $pdf->Cell(75,5,"Total",1,0,'C');
@@ -1951,6 +1955,14 @@ class agent
         
         if (! is_null($soldecongesliste)) {
             foreach ($soldecongesliste as $key => $tempsolde) {
+                if ($tempsolde->typeabsenceid()==recuperation::RECUP_ID)
+                {
+                    continue;
+                }
+                if ($tempsolde->droitaquis()==0)
+                {
+                    continue;
+                }
                 $htmltext = $htmltext . "      <tr class='element'>";
                 $htmltext = $htmltext . "         <td>" . $tempsolde->typelibelle() . "</td>";
                 if (strcmp($tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
@@ -3171,6 +3183,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                       AND TYPEABSENCE.TYPEABSENCEID = COMMENTAIRECONGE.TYPEABSENCEID";
             $params = array($this->agentid,$typeabsenceid);
         }
+        $sql = $sql . " ORDER BY COMMENTAIRECONGE.DATEAJOUTCONGE";
         $query = $this->fonctions->prepared_select($sql, $params);
         //echo "SQL = " . $sql . "<br>";
         $erreur = mysqli_error($this->dbconnect);
@@ -3181,15 +3194,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         while ($result = mysqli_fetch_row($query)) 
         {
             $commentaireconge = $this->fonctions->lirecommentaire($result[0]);
-            //$commentaireconge = new commentaireconge();
-            //$commentaireconge->commentaireid = $result[0];
-            //$commentaireconge->agentid = $result[1];
-            //$commentaireconge->typeabsenceid = $result[2];
-            //$commentaireconge->dateajout = $result[3];
-            //$commentaireconge->commentaire = $result[4];
-            //$commentaireconge->nbjoursajoute = $result[5];
-            //$commentaireconge->auteurid = $result[6] . "";
-            //$commentaireconge->libelleabsence = $result[7];
             $listecommentaire[] = $commentaireconge;
         }
         return $listecommentaire;
@@ -3224,12 +3228,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                            COMMENTAIRECONGE.NBRJRSAJOUTE,
                            TYPEABSENCE.TYPEABSENCEID,
                            COMMENTAIRECONGE.COMMENTAIRECONGEID,
-                           COMMENTAIRECONGE.AUTEURID
+                           COMMENTAIRECONGE.AUTEURID,
+                           COMMENTAIRECONGE.NBJRSPRIS
                     FROM COMMENTAIRECONGE,TYPEABSENCE 
                     WHERE COMMENTAIRECONGE.AGENTID= ? 
                       AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
                       AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($this->fonctions->anneeref(), 2, 2) . "' 
                         OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($this->fonctions->anneeref() - 1), 2, 2) . "' 
+                        OR COMMENTAIRECONGE.TYPEABSENCEID = '" . recuperation::RECUP_ID . "'
                         OR COMMENTAIRECONGE.TYPEABSENCEID='cet') $jointuresupp";
         }
         else
@@ -3241,12 +3247,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                            COMMENTAIRECONGE.NBRJRSAJOUTE,
                            TYPEABSENCE.TYPEABSENCEID,
                            COMMENTAIRECONGE.COMMENTAIRECONGEID,
-                           COMMENTAIRECONGE.AUTEURID
+                           COMMENTAIRECONGE.AUTEURID,
+                           COMMENTAIRECONGE.NBJRSPRIS
                     FROM COMMENTAIRECONGE,TYPEABSENCE
                     WHERE COMMENTAIRECONGE.AGENTID= ? 
                       AND COMMENTAIRECONGE.TYPEABSENCEID = TYPEABSENCE.TYPEABSENCEID
                       AND (COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr($anneeref, 2, 2) . "'
                         OR COMMENTAIRECONGE.TYPEABSENCEID LIKE '%" . substr(($anneeref + 1), 2, 2) . "'
+                        OR COMMENTAIRECONGE.TYPEABSENCEID = '" . recuperation::RECUP_ID  . "'
                         OR COMMENTAIRECONGE.TYPEABSENCEID='cet') $jointuresupp";
             
         }
@@ -3261,7 +3269,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $htmltext = "";
         $premiercomment = TRUE;
         while ($result = mysqli_fetch_row($query)) {
-            if (($showonlycomplement and (strcasecmp(substr($result[5], 0, 3), "sup")) == 0) or ($showonlycomplement == false)) {
+            if (($showonlycomplement and ((strcasecmp(substr($result[5], 0, 3), "sup")) == 0 or $result[5]==recuperation::RECUP_ID)) or ($showonlycomplement == false)) {
                 if ($premiercomment) 
                 {
                     if (!$allowremove)
@@ -3326,7 +3334,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 }
                 if ($allowremove)
                 {
-                    $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' id='" . $result[6] . "' name='remove_compl_id[" . $result[6] . "]'></td>";
+                    $disabled = "";
+                    $spantext = '';
+
+                    if ($result[8]>0)
+                    {
+                        $disabled = " disabled ";
+                        $spantext = '<span data-tip="Suppression impossible : L\'agent a déjà utilisé une partie/la totalité de ces jours de récupération.">';
+                    }
+                    $htmltext = $htmltext . "<td class='cellulesimple'>$spantext<input type='checkbox' $disabled id='" . $result[6] . "' name='remove_compl_id[" . $result[6] . "]'></td>";
                 }
                 $htmltext = $htmltext . "</tr>";
             }
@@ -3414,14 +3430,14 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $date = date("d/m/Y");
         if (is_null($auteurid))
         {
-            $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE)
-                            VALUES (?,?,?,?,?)";
+            $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,NBJRSPRIS)
+                            VALUES (?,?,?,?,?,0)";
             $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),$commentaire,$nbrejours);
         }
         else
         {
-            $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,AUTEURID)
-                            VALUES (?,?,?,?,?,?)";
+            $sql = "INSERT INTO COMMENTAIRECONGE(AGENTID,TYPEABSENCEID,DATEAJOUTCONGE,COMMENTAIRE,NBRJRSAJOUTE,AUTEURID,NBJRSPRIS)
+                            VALUES (?,?,?,?,?,?,0)";
             $params = array($this->agentid, $typeconge, $this->fonctions->formatdatedb($date),$commentaire,$nbrejours,$auteurid);            
         }
         $query = $this->fonctions->prepared_query($sql, $params);
@@ -3465,7 +3481,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         if (mysqli_num_rows($query) == 0) 
         {
-            $message = "Impossible de trouver la demande d'ajout de comgés complémentaires $congessuppid";
+            $message = "Impossible de trouver la demande d'ajout de comgés complémentaires/récupération $congessuppid";
             error_log(basename(__FILE__) . " " . $message);
             return $message;
         }
@@ -3476,7 +3492,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $complement->load($this->agentid,complement::AVISRH_CONGES_SUP_LABEL . $congessuppid);
         // Si le complement n'existe pas (<=> agentid == '') => On doit impacter le solde de l'agent
         // Si non, l'ajout de congés complémentaires n'a pas été validé par la DRH et le solde n'est pas impacté
-        if ($complement->agentid()=="")
+        // ATTENTION Si c'est une recupération => Le solde ne doit pas être impacté puisqu'il n'existe pas.
+        if ($complement->agentid()=="" and $result[1] != recuperation::RECUP_ID)
         {
             $solde = new solde($this->dbconnect);
             $erreur = $solde->load($this->agentid,$result[1]);
@@ -3503,7 +3520,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             }
             else
             {
-                $message = "Nombre de jours complémentaires insuffisant pour annuler la demande $congessuppid => Nbre de jours restant = $solderestant / Nbre de jours à annuler : $nbrejoursajoutes";
+                //$message = "Nombre de jours complémentaires insuffisant pour annuler la demande $congessuppid => Nbre de jours restant = $solderestant / Nbre de jours à annuler : $nbrejoursajoutes";
+                $message = "Nombre de jours de récupération insuffisant pour annuler la demande $congessuppid => Nbre de jours restant = $solderestant / Nbre de jours à annuler : $nbrejoursajoutes";
                 error_log(basename(__FILE__) . " " . $message);
                 return $message;
             }
@@ -3523,7 +3541,8 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             error_log(basename(__FILE__) . " " . $message);
             return $message;
         }
-        $message = "Suppression de l'ajout de jours complémentaire $congessuppid pour " . $this->agentid . " par " . $demandeur->identitecomplete();
+        //$message = "Suppression de l'ajout de jours complémentaire $congessuppid pour " . $this->agentid . " par " . $demandeur->identitecomplete();
+        $message = "Suppression de l'ajout de jours de récupération $congessuppid pour " . $this->agentid . " par " . $demandeur->identitecomplete();
         error_log(basename(__FILE__) . " " . $message);
         return "";
     }
