@@ -576,11 +576,15 @@ class demande
                     if (($nbjrrestant < $this->nbrejrsdemande) and ($commentaireconge->nbjrspris < $commentaireconge->nbjoursajoute))
                     {
                         // On ne garde que les informations des récupérations qui sont valables durant la période 01/09/XXXX et 31/08/(XXXX+1)
-                        $dbconstante = 'VALIDRECUP';
-                        $validrecup = '2';
-                        if ($this->fonctions->testexistdbconstante($dbconstante)) { $validrecup = $this->fonctions->liredbconstante($dbconstante); }
-                        $datefinvalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($this->fonctions->formatdatedb($commentaireconge->dateajout))));
-                        if (($datefinvalidite < $datedebutanneeuniv) or ($this->fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
+                        //$dbconstante = 'VALIDRECUP';
+                        //$validrecup = '2';
+                        //if ($this->fonctions->testexistdbconstante($dbconstante)) { $validrecup = $this->fonctions->liredbconstante($dbconstante); }
+                        //$datefinvalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($this->fonctions->formatdatedb($commentaireconge->dateajout))));
+
+                        $datefinvalidite = $this->fonctions->finvaliditerecuperation($commentaireconge->dateajout);
+
+                        //if (($datefinvalidite < $datedebutanneeuniv) or ($this->fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
+                        if (($datefinvalidite < $datedebutdb) or ($this->fonctions->formatdatedb($commentaireconge->dateajout)>$datefindb))
                         {
                             // Cette récupération n'est pas dans la période universitaire => On ne la conserve pas
                             //var_dump("L'interval est hors période");

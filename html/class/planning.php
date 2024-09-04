@@ -54,9 +54,10 @@ class planning
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
         
-        $jrs_feries = $this->fonctions->jourferier();
+        //$jrs_feries = $this->fonctions->jourferier();
+        $jrs_feries = $this->fonctions->jourferier($this->fonctions->anneeref($datedebut));
         
-        // echo "Jours fériés = " . $jrs_feries . "<br>";
+        //var_dump("Jours fériés = " . $jrs_feries);
         
         unset($listeelement);
         $autodeclaration = null;

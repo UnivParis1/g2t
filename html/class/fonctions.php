@@ -122,10 +122,10 @@ class fonctions
 
     /**
      *
-     * @param
+     * @param string $anneeref (optionel)
      * @return string list (comma separated) of unworked days
      */
-    public function jourferier()
+    public function jourferier($anneeref = null)
     {
         // Chargement des jours fériés
         $dbconstante='FERIE%';
@@ -136,7 +136,11 @@ class fonctions
             $jrs_feries = ";";
             foreach ($jrs_feries_liste as $key => $liste)
             {
-                $jrs_feries = $jrs_feries . $liste . ";";
+                $annee = trim(str_replace('FERIE',"",$key));
+                if (is_null($anneeref) or $annee==($anneeref-1) or $annee==$anneeref or $annee==($anneeref+1))
+                {
+                    $jrs_feries = $jrs_feries . $liste . ";";
+                }
             }
             //var_dump($jrs_feries);
             return $jrs_feries;
@@ -145,31 +149,6 @@ class fonctions
         {
             return "";
         }
-
-
-/*
-        $sql = "SELECT NOM,VALEUR FROM CONSTANTES WHERE NOM LIKE 'FERIE%'";
-        $params = array();
-        $query = $this->prepared_select($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Fonctions->jourferier : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        }
-        if (mysqli_num_rows($query) == 0) {
-            $errlog = "Fonctions->jourferier : Pas de jour férié défini dans la base";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        }
-        $jrs_feries = ";";
-        while ($result = mysqli_fetch_row($query)) {
-            $jrs_feries = $jrs_feries . $result[1] . ";";
-        }
-
-        // echo "Jours fériés = " . $jrs_feries . "<br>";
-        return $jrs_feries;
-*/
     }
 
     /**
@@ -551,7 +530,13 @@ class fonctions
     {
         // echo "La date = " . $date . "<br>";
         if (is_null($date))
+        {
             $date = date("d/m/Y");
+        }
+        else
+        {
+            $date = $this->formatdate($date);
+        }
         // echo "La date = " . $date . "<br>";
         if ($this->verifiedate($date)) {
             $finperiode = $this->finperiode();
@@ -5489,6 +5474,29 @@ WHERE  table_schema = Database()
             $commentaireconge->nbjrspris = $result[8];
         }
         return $commentaireconge;
+    }
+
+    function finvaliditerecuperation(string $dateref)
+    {
+        $dbconstante = 'VALIDRECUP';
+        $validrecup = '2';
+        if ($this->testexistdbconstante($dbconstante)) { $validrecup = $this->liredbconstante($dbconstante); }
+
+        $dateref = $this->formatdatedb($dateref);
+        $datefin = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($dateref)));
+
+/*         ///////////////////////
+        // Bloc pour limiter la validité des récupérations à la date de fin de période => Donc fin de l'année universitaire
+        //$anneref = $this->anneeref($this->formatdate($dateref));
+        $anneref = $this->anneeref($dateref);
+        // Si l'année de référence de la date de fin est différente de l'année de référence de la date de référence 
+        if ($this->anneeref($datefin) <> $anneref)
+        {
+            $datefin = ($anneref+1) . $this->finperiode();
+        }
+        ///////////////////////
+ */        
+        return $datefin;
     }
 
 }

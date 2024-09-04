@@ -2177,7 +2177,35 @@ class agent
                     $htmltext = $htmltext . $demande->nbrejrsdemande() . $datatitleindicator;
                     $htmltext = $htmltext . "</td>";   
                     $htmltext = $htmltext . "<td>";
-                    $htmltext = $htmltext . $this->fonctions->demandestatutlibelle($demande->statut());
+                    $fullpdffilename = '';
+                    if ($demande->statut()==demande::DEMANDE_VALIDE)
+                    {
+                        //var_dump($this->fonctions->formatdatedb($demande->datestatut()));
+                        $pdfdossierdate = date('Y-m', strtotime($this->fonctions->formatdatedb($demande->datestatut())));
+                        $pdfpath = $this->fonctions->pdfpath() . '/' . $pdfdossierdate . '/';
+                        $filelist = array();
+                        //var_dump("$pdfpath");
+                        if (file_exists("$pdfpath"))
+                        {
+                            $filelist = scandir("$pdfpath");
+                        }
+                        //var_dump($filelist);
+                        $pdffilenamelist = preg_grep('/^demande_num' . $demande->id() . '_/i',$filelist);
+                        if (count($pdffilenamelist)>0)
+                        {
+                            $fullpdffilename = $pdfpath . reset($pdffilenamelist);
+                            $htmltext = $htmltext . "<form name='form_demandePDF_" . $demande->id() . "' id='form_demandePDF_" . $demande->id() . "' method='post' action='affiche_pdf.php' target='_blank'>";
+                            $htmltext = $htmltext . "<input type='hidden' name='nomdemandepdf' value='$fullpdffilename' />";  // nom du PDF à afficher
+                            $htmltext = $htmltext . "</form>";
+                            $htmltext = $htmltext . "<a href='javascript:document.form_demandePDF_" . $demande->id() . ".submit();'>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</a>";
+
+                        }
+                    }
+                    if ($fullpdffilename == '')
+                    {
+                        $htmltext = $htmltext . $this->fonctions->demandestatutlibelle($demande->statut());
+                    }
+                
                     $htmltext = $htmltext . "</td>";  
                     $datatitle = '';
                     if (strlen($demande->motifrefus()) != 0) 
@@ -4369,7 +4397,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     function calculsoldeannuel($anneeref = null, $maj_solde = true, $loginfo = false, $displayinfo = false)
     {
 
-        
+        if (date('Ymd') >= '20240901')
+        {
+            return $this->newcalculsoldeannuel($anneeref,$maj_solde,$loginfo,$displayinfo);
+        }
+
         if ($loginfo == true) {
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" ###############################################################"));
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" On est sur l'agent : " . $this->identitecomplete() . " (id = " . $this->agentid . ")"));
@@ -4398,7 +4430,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         
         $agentcomplement = new complement($this->dbconnect);
         $agentcomplement->load($this->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
-        // Si le complément existe et qu'on a réussi à le chager
+        // Si le complément existe et qu'on a réussi à le charger
         if ($agentcomplement->agentid()==$this->agentid())
         {
             if ($loginfo == true) 
@@ -5226,7 +5258,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         
         $agentcomplement = new complement($this->dbconnect);
         $agentcomplement->load($this->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
-        // Si le complément existe et qu'on a réussi à le chager
+        // Si le complément existe et qu'on a réussi à le charger
         if ($agentcomplement->agentid()==$this->agentid())
         {
             $this->fonctions->log_traces($loginfo,$displayinfo,"Le solde $anneeref de l'agent " . $this->identitecomplete() . " est forcé => On ne fait pas de calcul.");

@@ -353,7 +353,7 @@
 <!-- Donc à chaque changement de CSS, on force le chargement de la nouvelle CSS -->
 <link rel="stylesheet" type="text/css" href="css-g2t/g2t.css?<?php echo filemtime('css-g2t/g2t.css') ?>" media="all"></link>
 <!------------------------------------
-<link rel="stylesheet" type="text/css" href="style/jquery-ui.css?<?php echo filemtime('style/jquery-ui.css')  ?>" media="screen"></link>
+<link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen"></link>
 ------------------------------->
 </head>
 

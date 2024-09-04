@@ -39,6 +39,7 @@
     if (isset($_POST["typepdf"]))
         $typepdf = $_POST["typepdf"];
 
+
     if ($typepdf == 'listedemande') {
         //header('Content-Disposition: attachment; filename="liste_demandes.pdf"');
         if ($listeagent != "") {
@@ -80,6 +81,22 @@
             $agent->demandeslistepdf($anneeref . $fonctions->debutperiode(), ($anneeref + 1) . $fonctions->finperiode());
         }
     }
+
+    if (isset($_POST["nomdemandepdf"])) 
+    {
+        $fullpdffilename = $_POST["nomdemandepdf"];
+        // get size of the binary file
+        $filesize = filesize("$fullpdffilename");
+        // open file for reading in binary mode
+        $fp = fopen("$fullpdffilename", 'rb');
+        // read the entire file into a binary string
+        $binary = fread($fp, $filesize);
+        // finally close the file
+        fclose($fp);
+        header('Content-Disposition: attachment; filename="demande.pdf"');
+        echo $binary;      
+    }
+
 
     if (isset($_POST["userpdf"])) {
         //header('Content-Disposition: attachment; filename="planning_agent.pdf"');

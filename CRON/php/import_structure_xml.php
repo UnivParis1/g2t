@@ -166,10 +166,10 @@
         
         $listestructcrees = array();
 
-	$xml = simplexml_load_file("$filename");
-	$agentnode = $xml->xpath('STRUCTURE');
-	foreach ($agentnode as $node)
-	{
+        $xml = simplexml_load_file("$filename");
+        $agentnode = $xml->xpath('STRUCTURE');
+        foreach ($agentnode as $node)
+        {
             echo "---------------------------------------------------\n";
             $XMLstructure = new XMLstructure();
             $XMLstructure->code_struct = trim($node->xpath('STRUCTID')[0]);
@@ -398,7 +398,7 @@
                     $estinclue = 0;
                 }
 
-                $sql = "SELECT * FROM STRUCTURE WHERE STRUCTUREID='" . $XMLstructure->code_struct . "'";
+                $sql = "SELECT ISINCLUDED FROM STRUCTURE WHERE STRUCTUREID='" . $XMLstructure->code_struct . "'";
                 $query = mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
@@ -434,6 +434,14 @@
                 }
                 else
                 {
+                    // On récupère la valeur de ISINCLUDED dans la base de données
+                    $result = mysqli_fetch_row($query);
+                    // Si l'inclusion de la structure dans la base de donnée est FALSE et que dans le fichier il est passé à TRUE
+                    if ($fonctions->convertvaluetobool(trim($result[0]))==false and $fonctions->convertvaluetobool($estinclue)==true)
+                    {
+                        // On mémorise le changement de l'inclusion pour activer ou la structure (voir fin de la procédure)
+                        $listestructcrees["$XMLstructure->code_struct"] = $XMLstructure->code_struct;
+                    }
                     echo "Mise a jour d'une structure : $XMLstructure->nom_long_struct (Id = $XMLstructure->code_struct) \n";
                     $sql = sprintf("UPDATE STRUCTURE SET NOMLONG='%s',
                                                          NOMCOURT='%s',
@@ -592,6 +600,9 @@
             }
         }
         
+        echo "------------------------------------------------------------ \n";
+        echo "On parcourt toutes les structures que l'on vient de creer ou qui on une inclusion modifiee \n";
+        // On parcourt toutes les structures que l'on vient de créer ou qui on une inclusion modifiée
         foreach ($listestructcrees as $structid)
         {
             $structure = new structure($dbcon);
@@ -599,8 +610,13 @@
             $structureenglobante = $structure->structureenglobante();
             if ($fonctions->convertvaluetobool($structureenglobante->isdeployed()))
             {
+                echo "La structure racine " . $structureenglobante->id()  . " de $structid est déployée => On la déploie aussi. \n";
                 $structure->isdeployed($structureenglobante->isdeployed());
                 $structure->store();
+            }
+            else
+            {
+                echo "La structure racine " . $structureenglobante->id()  . " de $structid n'est pas déployée => On ne la déploie pas. \n";
             }
         }
         

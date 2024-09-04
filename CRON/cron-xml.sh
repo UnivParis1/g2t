@@ -73,8 +73,8 @@ then
    echo "Avant generation de l'historique des CET" >>$logfile
    php php/demande_cet.php >>$logfile 2>>$logfile
 fi
-php php/mail_alerte_reliquats.php >>$logfile
-php php/mail_alerte_teletravail.php >>$logfile
+php php/mail_alerte_reliquats.php >>$logfile 2>>$logfile
+php php/mail_alerte_teletravail.php >>$logfile 2>>$logfile
 
 php php/switch_synchronisation.php inactif >>$logfile
 

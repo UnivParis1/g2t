@@ -130,12 +130,12 @@ class recuperation
         $dbconstante = 'VALIDRECUP';
         $validrecup = '2';
         if ($this->fonctions->testexistdbconstante($dbconstante)) { $validrecup = $this->fonctions->liredbconstante($dbconstante); }
-        
-        $sql = "SELECT SUM(NBRJRSAJOUTE), SUM(NBJRSPRIS) 
+
+        $sql = "SELECT SUM(COMMENTAIRECONGE.NBRJRSAJOUTE), SUM(COMMENTAIRECONGE.NBJRSPRIS) 
                 FROM COMMENTAIRECONGE 
-                WHERE AGENTID = ? 
-                  AND TYPEABSENCEID = ? 
-                  AND ADDDATE(DATEAJOUTCONGE, INTERVAL $validrecup MONTH) >= ?
+                WHERE COMMENTAIRECONGE.AGENTID = ? 
+                  AND COMMENTAIRECONGE.TYPEABSENCEID = ? 
+                  AND ADDDATE(COMMENTAIRECONGE.DATEAJOUTCONGE, INTERVAL $validrecup MONTH) >= ?
                   AND COMMENTAIRECONGE.COMMENTAIRECONGEID NOT IN ( 
                       SELECT REPLACE(COMPLEMENT.COMPLEMENTID,'" . complement::AVISRH_CONGES_SUP_LABEL  . "','')
                       FROM COMPLEMENT
@@ -143,6 +143,22 @@ class recuperation
                         AND COMPLEMENT.COMPLEMENTID LIKE '" . complement::AVISRH_CONGES_SUP_LABEL  . "%'
                   )";
         $params = array($agentid, recuperation::RECUP_ID, $this->fonctions->formatdatedb($dateref));
+        
+/*         $anneeref = $this->fonctions->anneeref($dateref);
+        $datefinperiode = ($anneeref+1) . $this->fonctions->finperiode();
+        $sql = "SELECT SUM(COMMENTAIRECONGE.NBRJRSAJOUTE), SUM(COMMENTAIRECONGE.NBJRSPRIS) 
+                FROM COMMENTAIRECONGE 
+                WHERE COMMENTAIRECONGE.AGENTID = ? 
+                  AND COMMENTAIRECONGE.TYPEABSENCEID = ? 
+                  AND ? <= LEAST(ADDDATE(COMMENTAIRECONGE.DATEAJOUTCONGE, INTERVAL $validrecup MONTH),STR_TO_DATE(?,'%Y%m%d'))
+                  AND COMMENTAIRECONGE.COMMENTAIRECONGEID NOT IN ( 
+                      SELECT REPLACE(COMPLEMENT.COMPLEMENTID,'" . complement::AVISRH_CONGES_SUP_LABEL  . "','')
+                      FROM COMPLEMENT
+                      WHERE COMPLEMENT.AGENTID = COMMENTAIRECONGE.AGENTID
+                        AND COMPLEMENT.COMPLEMENTID LIKE '" . complement::AVISRH_CONGES_SUP_LABEL  . "%'
+                  )";
+        $params = array($agentid, recuperation::RECUP_ID, $this->fonctions->formatdatedb($dateref), $datefinperiode);
+ */
         $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") 

@@ -1745,7 +1745,8 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         // /Création des entetes de colones contenant les 31 jours/////
         $titre_a_ajouter = TRUE;
         $elementlegende = array();
-        foreach ($planningservice as $agentid => $planning) {
+        
+        foreach ((array)$planningservice as $agentid => $planning) {
             if ($titre_a_ajouter) 
             {
                 $pdf->SetFont('helvetica', 'B', 8, '', true);

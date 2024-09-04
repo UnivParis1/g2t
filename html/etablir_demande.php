@@ -1055,10 +1055,13 @@
             if ($commentaireconge->nbjrspris < $commentaireconge->nbjoursajoute)
             {
                 // On affiche les informations des récupérations qui sont valables durant la période 01/09/XXXX et 31/08/(XXXX+1)
-                $dbconstante = 'VALIDRECUP';
-                $validrecup = '2';
-                if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
-                $findatevalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+                //$dbconstante = 'VALIDRECUP';
+                //$validrecup = '2';
+                //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+                //$findatevalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+
+                $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout);
+
                 if (($findatevalidite < $datedebutanneeuniv) or ($fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
                 {
                     // Cette récupération n'est pas dans la période universitaire => On ne l'affiche pas

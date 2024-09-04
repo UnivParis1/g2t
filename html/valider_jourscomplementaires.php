@@ -148,11 +148,12 @@
                     //$corpmail = $corpmail . "Suite à cette validation, votre solde de jours complémentaires est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
                     //$cronuser->sendmail($currentagent, "Validation d'ajout de jours complémentaires", $corpmail);
                     $commentaire = $fonctions->lirecommentaire($commentaireid);
-                    $dbconstante = 'VALIDRECUP';
-                    $validrecup = '2';
-                    if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
-                    $findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaire->dateajout))));
+                    //$dbconstante = 'VALIDRECUP';
+                    //$validrecup = '2';
+                    //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+                    //$findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaire->dateajout))));
 
+                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaire->dateajout);
 
                     $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.\n";
                     $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";

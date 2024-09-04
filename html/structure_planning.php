@@ -684,7 +684,7 @@
             {
                 echo "<br>";
                 //echo "Le code de la structure : " . $structure->id() . "<br>";
-                if ($structure->responsable()->agentid() == $user->agentid())
+                if ($structure->responsable()->agentid() == $user->agentid() or $structure->responsablesiham()->agentid() == $user->agentid())
                 {
                     $planninggris = false;
                 }
@@ -692,7 +692,6 @@
                 {
                     $planninggris = true;
                 }
-                
                 
                 $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,$structure->sousstructure(),$planninggris,true,true);
                 echo $planninghtml;

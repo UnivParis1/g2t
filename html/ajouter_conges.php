@@ -342,10 +342,12 @@
                     //$corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
                     //$cronuser->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
                     $commentaireconge = $fonctions->lirecommentaire($commentaireid);
-                    $dbconstante = 'VALIDRECUP';
-                    $validrecup = '2';
-                    if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
-                    $findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+                    //$dbconstante = 'VALIDRECUP';
+                    //$validrecup = '2';
+                    //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+                    //$findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
+
+                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout);
 
                     $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) de récupération.\n";
                     $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";

@@ -896,7 +896,8 @@
 
                 // Si la structure n'a pas de structures filles => On n'affiche pas ce paramétrage
                 $structlistefille = $structure->structurefille();
-                if (count((array)$structlistefille)>0 and false)
+                //if (count((array)$structlistefille)>0 and false)
+                if (count((array)$structlistefille)>0 and date('Ymd') >= '20240901')
                 {
                     echo "<tr>";
                     echo "<td>";
