@@ -14,6 +14,7 @@ use Fpdf\Fpdf as FPDF;
 class recuperation
 {
     const RECUP_ID = 'recup';
+    const SUPP_ID = 'sup';
     const COMPLEMENT_RECUP = "RECUP_";
 
     private $agentid = null;

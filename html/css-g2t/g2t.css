@@ -1074,6 +1074,10 @@ select {
     padding-left: 30px;
 }
 
+.paramradiomargingleft {
+    margin-left: 30px;
+}
+
 .namefieldwidth {
     width: 300px;
 }
@@ -1147,4 +1151,14 @@ select {
 .javacancelbutton {
     height:30px;
     width:100px;
+}
+
+.periodeobligcolor {
+    background: repeating-linear-gradient(
+        45deg,
+        #bc608e,
+        #bc608e 2px,
+        #d18394 2px,
+        #d18394 4px
+    );
 }

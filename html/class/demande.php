@@ -581,7 +581,7 @@ class demande
                         //if ($this->fonctions->testexistdbconstante($dbconstante)) { $validrecup = $this->fonctions->liredbconstante($dbconstante); }
                         //$datefinvalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($this->fonctions->formatdatedb($commentaireconge->dateajout))));
 
-                        $datefinvalidite = $this->fonctions->finvaliditerecuperation($commentaireconge->dateajout);
+                        $datefinvalidite = $this->fonctions->finvaliditerecuperation($commentaireconge->dateajout,$commentaireconge->typeabsenceid);
 
                         //if (($datefinvalidite < $datedebutanneeuniv) or ($this->fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
                         if (($datefinvalidite < $datedebutdb) or ($this->fonctions->formatdatedb($commentaireconge->dateajout)>$datefindb))

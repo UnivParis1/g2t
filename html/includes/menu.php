@@ -1570,6 +1570,12 @@
                             <a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours de récupération pour un agent</a>
 
                         </li>
+                        <li onclick='document.rh_controlrecup.submit();'>
+                            <form name='rh_controlrecup' method='post' action="controlrecuperation.php">
+                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            </form> 
+                            <a href="javascript:document.rh_controlrecup.submit();">Contrôler les recupérations</a>
+                        </li>
                         <li onclick='document.rh_aff_solde.submit();'>
                             <form name='rh_aff_solde' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1687,6 +1693,12 @@
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                     </form> 
                     <a href="javascript:document.admin_affiche_teletravail.submit();">Afficher les conventions de télétravail par structure</a>
+                </li>
+                <li onclick='document.admin_controlrecup.submit();'>
+                    <form name='admin_controlrecup' method='post' action="controlrecuperation.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    </form> 
+                    <a href="javascript:document.admin_controlrecup.submit();">Contrôler les recupérations</a>
                 </li>
             </ul>
         </li>

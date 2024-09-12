@@ -102,7 +102,24 @@
 
     $msg_erreur = "";
     $annee = substr($fonctions->anneeref(), 2, 2);
-    $lib_sup = recuperation::RECUP_ID; // "sup$annee";
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    /// TYPE DE RECUPERATION A UTILISER
+    ////////////////////////////////////////////////////////////////////////////
+    $dbconstante = 'TYPERECUP';
+    $typerecup = recuperation::SUPP_ID;
+    if ($fonctions->testexistdbconstante($dbconstante)) { $typerecup = $fonctions->liredbconstante($dbconstante); }
+    if ($typerecup == recuperation::SUPP_ID)
+    {
+        $lib_sup = $typerecup . $annee;
+    }
+    else
+    {
+        $lib_sup = $typerecup;
+    }
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
 
     $cronuser = new agent($dbcon);
     $cronuser->load(SPECIAL_USER_IDCRONUSER);
@@ -347,7 +364,7 @@
                     //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
                     //$findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
 
-                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout);
+                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout,$commentaireconge->typeabsenceid);
 
                     $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) de récupération.\n";
                     $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";

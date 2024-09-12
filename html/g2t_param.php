@@ -229,6 +229,15 @@
         }
         
         /////////////////////////////////////////////
+        // Mise à jour du type de récupérations
+        if (isset($_POST['typerecup']))
+        {
+            $typerecup = $_POST['typerecup'];
+            $constantename = "TYPERECUP";
+            $msg_erreur = $fonctions->enregistredbconstante($constantename, $typerecup);
+        }
+
+        /////////////////////////////////////////////
         // Mise à jour de la durée de validité des récupérations
         if (isset($_POST['validrecup']))
         {
@@ -1602,7 +1611,28 @@
     echo "</option>";
     echo "</select>";
 
+    // Selection du type de récupération : Annuel (=> supXX) ou sur une période (=> recup)
+    echo "<br>";
+    $dbconstante = 'TYPERECUP';
+    $typerecup = recuperation::SUPP_ID;
+    if ($fonctions->testexistdbconstante($dbconstante)) { $typerecup = $fonctions->liredbconstante($dbconstante); }
+    echo "Type de récupération : <br>";
+    echo "<input class='paramradiomargingleft' type='radio' id='" . recuperation::SUPP_ID . "' name='typerecup' value='" . recuperation::SUPP_ID . "' ";
+    if ($typerecup == recuperation::SUPP_ID) 
+    {
+        echo "checked ";
+    }
+    echo " onclick='changetyperecup(this);'/>Récupérations valables sur l'année universitaire de référence.<br>";
+    echo "<input class='paramradiomargingleft' type='radio' id='" . recuperation::RECUP_ID . "' name='typerecup' value='" . recuperation::RECUP_ID . "' ";
+    if ($typerecup == recuperation::RECUP_ID) 
+    {
+        echo "checked ";
+    }
+    echo " onclick='changetyperecup(this);'/>Récupérations avec une durée de validité.<br>";
+
+
     //echo "Durée de validité des ajouts de congés complémentaires/récupérations: ";
+    echo "<div id='divvalidrecup' name='divvalidrecup' >";
     echo "<br>";
     $dbconstante = 'VALIDRECUP';
     $validrecup = '2';
@@ -1621,8 +1651,36 @@
     }
     echo "</select>";
     echo " mois.";
-
     echo "<br>";
+    echo "</div>";
+
+?>
+    <script>
+        function changetyperecup()
+        {
+            var divvaliderecup = document.getElementById('divvalidrecup');
+            var typerecupradios = document.getElementsByName('typerecup');
+            //console.log (typerecupradios);
+            typerecupradios.forEach(radio => {
+                if (radio.checked)
+                {
+                    if (radio.value == '<?php echo recuperation::RECUP_ID ?>')
+                    {
+                        divvaliderecup.style.visibility = 'visible';
+                        divvaliderecup.style.height = 'auto';
+                    }
+                    else
+                    {
+                        divvaliderecup.style.visibility = 'hidden';
+                        divvaliderecup.style.height = 0;
+                    }
+                }
+            });
+        }
+        changetyperecup();
+    </script>
+<?php
+
 
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";

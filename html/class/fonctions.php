@@ -77,7 +77,7 @@ class fonctions
                 $tempdate = str_replace("-", "", $date);
                 return $tempdate;
             } elseif (strlen($date) == 8 and substr_count($date, "/") == 0) {
-                // On ne fait rien ==> c'est deja une date correcte YYYMMDD
+                // On ne fait rien ==> c'est deja une date correcte YYYYMMDD
                 return $date;
             } else {
                 $errlog = "Fonctions->formatdatedb : Le format de la date est inconnu [Date=$date] !!";
@@ -3453,7 +3453,7 @@ class fonctions
         $sql = "SELECT SOLDE.AGENTID,AGENT.NOM,AGENT.PRENOM
                 FROM SOLDE,AGENT 
                 WHERE SOLDE.AGENTID=AGENT.AGENTID 
-                  AND SOLDE.TYPEABSENCEID='sup" . trim($anneeref) . "'
+                  AND SOLDE.TYPEABSENCEID='" . recuperation::SUPP_ID . trim($anneeref) . "'
                   AND SOLDE.DROITAQUIS>0";
         $query_agent = mysqli_query($this->dbconnect, $sql);
         $erreur_requete = mysqli_error($this->dbconnect);
@@ -5476,27 +5476,56 @@ WHERE  table_schema = Database()
         return $commentaireconge;
     }
 
-    function finvaliditerecuperation(string $dateref)
+    function finvaliditerecuperation(string $dateref, string $typeabsence)
     {
-        $dbconstante = 'VALIDRECUP';
-        $validrecup = '2';
-        if ($this->testexistdbconstante($dbconstante)) { $validrecup = $this->liredbconstante($dbconstante); }
-
-        $dateref = $this->formatdatedb($dateref);
-        $datefin = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($dateref)));
-
-/*         ///////////////////////
-        // Bloc pour limiter la validité des récupérations à la date de fin de période => Donc fin de l'année universitaire
-        //$anneref = $this->anneeref($this->formatdate($dateref));
-        $anneref = $this->anneeref($dateref);
-        // Si l'année de référence de la date de fin est différente de l'année de référence de la date de référence 
-        if ($this->anneeref($datefin) <> $anneref)
+        $congesanneeref = trim($this->congesanneeref($typeabsence));
+        if ($congesanneeref=="" or $congesanneeref>2100) // Si l'année est référence est dans le futur ou vide => on calcule par rapport à la durée des récups.
         {
-            $datefin = ($anneref+1) . $this->finperiode();
+            $dbconstante = 'VALIDRECUP';
+            $validrecup = '2';
+            if ($this->testexistdbconstante($dbconstante)) { $validrecup = $this->liredbconstante($dbconstante); }
+
+            $dateref = $this->formatdatedb($dateref);
+            $datefin = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($dateref)));
         }
-        ///////////////////////
- */        
+        else
+        {
+            // Bloc pour limiter la validité des récupérations à la date de fin de période => Donc fin de l'année universitaire
+            $datefin = ($congesanneeref+1) . $this->finperiode();
+        } 
         return $datefin;
+    }
+
+    function demandelistepartypeabsence($typeabsenceid, $anneeref)
+    {
+        $demandeliste = array();
+        $datedebut = $anneeref . $this->debutperiode();
+        $datefin = ($anneeref+1) . $this->finperiode();
+
+        $sql = "SELECT DEMANDE.DEMANDEID
+                FROM DEMANDE
+                WHERE DEMANDE.TYPEABSENCEID = ? 
+                  AND ((DEMANDE.DATEDEBUT <= ? AND DEMANDE.DATEFIN >= ? )
+                      OR (DEMANDE.DATEFIN >= ? AND DEMANDE.DATEDEBUT <= ? )
+                      OR (DEMANDE.DATEDEBUT >= ? AND DEMANDE.DATEFIN <= ? ))";
+
+        $params = array($typeabsenceid, $datedebut, $datedebut, $datefin, $datefin, $datedebut, $datefin);
+        $query = $this->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") 
+        {
+            echo "Functions->demandelistepartypeabsence : " . $erreur . "<br>";
+            error_log(basename(__FILE__) . " Functions->demandelistepartypeabsence : " . $erreur);
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $demande = new demande($this->dbconnect);
+            $demande->load($result[0]);
+            $demandeliste[] = $demande;
+
+        }
+        return $demandeliste;
+        
     }
 
 }

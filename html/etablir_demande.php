@@ -277,27 +277,53 @@
     }
     elseif (!is_null($listetype))
     {
+        $errlog = '';
         $anneeref = $fonctions->congesanneeref($listetype);
-        if ($anneeref != '' and ! $datefausse) {
-            // On ajoute 2 car un congés 2014 est valable jusqu'en Mars 2016 => soit 2 ans de plus !!!
-            $datelimite = ($anneeref + 2) . $fonctions->liredbconstante('FIN_REPORT');
-            // echo "Date limite report = $datelimite <br>";
-
-            // ------------------------------------------------------------------------------------
-            // A décommenter pour empécher le reliquat d'être pris après la date de fin du report
-            $datefindb = $fonctions->formatdatedb($date_fin);
-            if ($datefindb > $datelimite)
-            // ------------------------------------------------------------------------------------
-
-            // ------------------------------------------------------------------------------------
-            // A décommenter pour autoriser le reliquat à être pris après la fin du report
-            // $datedebutdb = $fonctions->formatdatedb($date_debut);
-            // ATTENTION : Pour l'année en cours on accepte que le debut soit postérieur au report
-            // if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4)))
-            // ------------------------------------------------------------------------------------
+        if ($anneeref != '' and ! $datefausse) 
+        {
+            // Si on est sur des congés complémentaires => On ne peut pas poser de congés sur les périodes obligatoires 
+            if (strcasecmp($listetype,recuperation::SUPP_ID . substr($anneeref,-2,2))==0)
             {
-                $errlog = "Le type de congés utilisé n'est pas valide pour la période demandée.";
-                $msg_erreur .= $errlog . "<br/>";
+                $periodeoblig = new periodeobligatoire($dbcon);
+                $periodeoblig->load($anneeref);
+                $periode = $periodeoblig->testsuperposeperiode($date_debut,$date_fin);
+                if (!is_null($periode))
+                {
+                    $errlog = "Ce type de congés ne peut pas être utilisé sur une période de congés obligatoire (Période du " . $fonctions->formatdate($periode["datedebut"]) . " au " . $fonctions->formatdate($periode["datefin"]) . ").";
+                    $msg_erreur .= $errlog . "<br/>";
+                }
+            }
+
+            if ($errlog == '')
+            {
+                // Si on est sur des congés complémentaires => On ne peut pas reporter après la fin de période 
+                if (strcasecmp($listetype,recuperation::SUPP_ID . substr($anneeref,-2,2))==0)
+                {
+                    $datelimite = ($anneeref + 1) . $fonctions->finperiode();
+                }
+                else
+                {
+                    // On ajoute 2 car un congés 2014 est valable jusqu'en Mars 2016 => soit 2 ans de plus !!!
+                    $datelimite = ($anneeref + 2) . $fonctions->liredbconstante('FIN_REPORT');
+                }
+                //var_dump ("Date limite report = $datelimite <br>");
+
+                // ------------------------------------------------------------------------------------
+                // A décommenter pour empécher le reliquat d'être pris après la date de fin du report
+                $datefindb = $fonctions->formatdatedb($date_fin);
+                if ($datefindb > $datelimite)
+                // ------------------------------------------------------------------------------------
+
+                // ------------------------------------------------------------------------------------
+                // A décommenter pour autoriser le reliquat à être pris après la fin du report
+                // $datedebutdb = $fonctions->formatdatedb($date_debut);
+                // ATTENTION : Pour l'année en cours on accepte que le debut soit postérieur au report
+                // if (($datedebutdb > $datelimite) and (($anneeref + 2) != substr($datedebutdb, 0, 4)))
+                // ------------------------------------------------------------------------------------
+                {
+                    $errlog = "Le type de congés utilisé n'est pas valide pour la période demandée.";
+                    $msg_erreur .= $errlog . "<br/>";
+                }
             }
         }
     }
@@ -888,9 +914,9 @@
                     $soldelisteannee = $agent->soldecongesliste($fonctions->anneeref(),$dummy,false);
                 }
                 $soldeliste = array_merge((array) $soldeliste, (array) $soldelisteannee);
-                // print_r ($soldeliste); echo "<br>";
+                //var_dump($soldeliste);
                 if (! is_null($soldeliste)) {
-                    echo "<select name='listetype'  id='listetype' oninput='showhiderecupdiv()' onchange='showhiderecupdiv()'>";
+                    echo "<select name='listetype'  id='listetype' oninput='showhiderecupdiv() ; showhideperiodeoblig()' onchange='showhiderecupdiv() ; showhideperiodeoblig()'>";
                     $nbretype = 0;
                     foreach ($soldeliste as $keysolde => $solde) {
                         if ($solde->solde() > 0) {
@@ -970,7 +996,7 @@
                         $masquerboutonvalider = true;
                     }
                 }
-                echo "<input type='hidden' name='typedemande' value='conges' ?>";
+                echo "<input type='hidden' name='typedemande' value='conges' >";
             }
         } 
         else // On est en mode "saisie d'une absence ou d'un télétravail HC"
@@ -1014,7 +1040,7 @@
             echo "</SELECT>";
             echo "<br>";
 
-            echo "<input type='hidden' name='typedemande' value='absence' ?>";
+            echo "<input type='hidden' name='typedemande' value='absence' >";
         }
         ?>
     			</td>
@@ -1060,7 +1086,7 @@
                 //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
                 //$findatevalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
 
-                $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout);
+                $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout,$commentaireconge->typeabsenceid);
 
                 if (($findatevalidite < $datedebutanneeuniv) or ($fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
                 {
@@ -1091,6 +1117,7 @@
         echo "</div>";
     ?>
         <script>
+
             function showhiderecupdiv()
             {
                 var select = document.getElementById('listetype');
@@ -1311,10 +1338,6 @@
                 buttonvalid.disabled = false;
             }
         }
-        // On déclenche l'évènement onchange pour initialiser la classe du <select>
-        var event = document.createEvent('HTMLEvents');
-        event.initEvent('change', false, true); // onchange event 
-        listetype.dispatchEvent(event);
     </script>    
 <?php 
         //}
@@ -1354,7 +1377,56 @@
         echo "<br>";
     }
 ?>   
-    
+    <script>
+        function showhideperiodeoblig()
+        {
+            var select = document.getElementById('listetype');
+            //console.log(select.value);
+            var planningliste = document.getElementsByClassName('periodeoblig');
+            if (planningliste.length>0)
+            {
+                for(cpt=0 ; cpt < planningliste.length; cpt++)
+                {
+                    if (select.value=='<?php echo recuperation::RECUP_ID ?>' || select.value.substring(0,'<?php echo recuperation::SUPP_ID ?>'.length)=='<?php echo recuperation::SUPP_ID ?>')
+                    {
+                        //console.log('Ajout ' + cpt);
+                        planningliste[cpt].classList.add('periodeobligcolor');
+                        var spanelement = planningliste[cpt].getElementsByTagName('span');
+                        if (spanelement)
+                        {
+                            var text = spanelement[0].getAttribute('data-tip');
+                            if (text.search(":")<0)
+                            {
+                                spanelement[0].setAttribute('data-svg',text);
+                                text = text + " : Période de congés obligatoire - Les récupérations sont interdites";
+                                spanelement[0].setAttribute('data-tip',text);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //console.log('Remove ' + cpt);
+                        planningliste[cpt].classList.remove('periodeobligcolor');
+                        var spanelement = planningliste[cpt].getElementsByTagName('span');
+                        if (spanelement)
+                        {
+                            var text = spanelement[0].getAttribute('data-svg');
+                            if (text!==null)
+                            {
+                                spanelement[0].setAttribute('data-tip',text);
+                                spanelement[0].removeAttribute('data-svg');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // On déclenche l'évènement onchange pour initialiser la classe du <select>
+        var event = document.createEvent('HTMLEvents');
+        event.initEvent('change', false, true); // onchange event 
+        listetype.dispatchEvent(event);
+    </script>    
     
 <!--
 <a href=".">Retour à la page d'accueil</a>

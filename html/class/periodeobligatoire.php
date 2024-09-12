@@ -100,6 +100,11 @@ class periodeobligatoire
 */            
         }
     }
+
+    function anneeref()
+    {
+        return $this->anneeref;
+    }
     
     function store($anneeref = null)
     {
@@ -134,37 +139,7 @@ class periodeobligatoire
             $this->anneeref = $anneeref;
         }
         $erreur = $this->fonctions->enregistredbconstante($constname, $valeur);
-        
-/*        
-        if ($this->pastrouve)
-        {
-            //echo "PeriodeObligatoire->Store : Pas trouve <br>";
-            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
-            $params = array($constname,$valeur);    
-        }
-        // Sinon si l'anneeref interne est null
-        elseif (is_null($this->anneeref))
-        {
-            //echo "PeriodeObligatoire->Store : Dans le insert sql <br>";
-            $sql = "INSERT INTO CONSTANTES(NOM,VALEUR) VALUES(?,?)";
-            $params = array($constname,$valeur);
-            $this->anneeref = $anneeref;
-        }
-        else
-        {
-            //echo "PeriodeObligatoire->Store : Dans le update sql <br>";
-            $sql = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = ?";
-            $params = array($valeur,$constname);
-        }
-        //echo "SQL Complement->Store : $sql <br>";
-        $query = $this->fonctions->prepared_query($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "PeriodeObligatoire->Store (INSERT/UPDATE) : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        }
-*/
+
         return $erreur;
     }
     
@@ -184,5 +159,29 @@ class periodeobligatoire
         $datefin = $this->fonctions->formatdatedb($datefin);
         unset ($this->listedate[$datedebut . '-' . $datefin]);
         //echo "<br>supprimer => listedate = " . print_r($this->listedate,true)."<br>";
+    }
+
+    /**
+     *
+     * @param string $datedebut date de début de la période à tester
+     * @param string $datefin date de fin de la période à tester
+     * @return null|array null si les dates ne superposent aucune période, sinon la période uperposée
+     */
+    function testsuperposeperiode($datedebut, $datefin)
+    {
+        if (count($this->listedate)==0)
+        {
+            return null;
+        }
+        foreach($this->listedate as $periode)
+        {
+            $datedebut = $this->fonctions->formatdatedb($datedebut);
+            $datefin = $this->fonctions->formatdatedb($datefin);
+            if ($datedebut<=$periode["datefin"] and $datefin>=$periode["datedebut"])
+            {
+                return $periode;
+            }
+        }
+        return null;
     }
 }

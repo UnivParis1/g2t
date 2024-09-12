@@ -1697,12 +1697,17 @@ class agent
         $subparams = array();
         if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && (date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT") or $includereport)) && $reportactif) 
         {
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND (ANNEEREF= ? OR ANNEEREF= ?))";
-            $subparams = array($anneeref,($anneeref - 1));
+            //requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND (ANNEEREF= ? OR ANNEEREF= ?))";
+            //$subparams = array($anneeref,($anneeref - 1));
+            /////////////////////////////
+            // On limite la prise des congés complémtaires à l'année de reférence
+            // On n'applique plus le report de congés sur les congés complémentaires
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? OR ANNEEREF= ?)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
+            $subparams = array($anneeref,($anneeref - 1),$anneeref);
         } 
         else 
         {
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE 'sup%') AND ANNEEREF= ?)";
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND ANNEEREF= ?)";
             $subparams = array($anneeref);
         }
         
@@ -3297,7 +3302,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $htmltext = "";
         $premiercomment = TRUE;
         while ($result = mysqli_fetch_row($query)) {
-            if (($showonlycomplement and ((strcasecmp(substr($result[5], 0, 3), "sup")) == 0 or $result[5]==recuperation::RECUP_ID)) or ($showonlycomplement == false)) {
+            if (($showonlycomplement and ((strcasecmp(substr($result[5], 0, 3), recuperation::SUPP_ID)) == 0 or $result[5]==recuperation::RECUP_ID)) or ($showonlycomplement == false)) {
                 if ($premiercomment) 
                 {
                     if (!$allowremove)

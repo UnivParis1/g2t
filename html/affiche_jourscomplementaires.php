@@ -108,7 +108,7 @@
                 $soldeaquistxt = "";
                 $solderestant = "";
                 $solde = new solde($dbcon);
-                $erreur = $solde->load($agentid, 'sup' . $anneeref);
+                $erreur = $solde->load($agentid, recuperation::SUPP_ID . $anneeref);
                 if ($erreur=='' and $solde->droitaquis() > 0) // On a réussi à charger le solde supplémentaire
                 {
                     $soldeaquistxt = $soldeaquistxt . $solde->droitaquis(); 
@@ -131,7 +131,7 @@
                     }
                 }
 
-                $listecommentaireconge = $agent->listecommentaireconge('sup' . $anneeref);
+                $listecommentaireconge = $agent->listecommentaireconge(recuperation::SUPP_ID . $anneeref);
 
                 //var_dump("datedebutanneeuniv = $datedebutanneeuniv   datefinanneeuniv = $datefinanneeuniv");
                 $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
@@ -151,7 +151,7 @@
                     //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
                     //$findatevalidite = date('Ymd',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
 
-                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout);
+                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout, $commentaireconge->typeabsenceid);
                     if (($findatevalidite < $datedebutanneeuniv) or ($fonctions->formatdatedb($commentaireconge->dateajout)>$datefinanneeuniv))
                     {
                         // Cette récupération n'est pas dans la période universitaire => On ne l'affiche pas

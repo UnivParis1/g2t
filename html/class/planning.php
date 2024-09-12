@@ -245,7 +245,7 @@ class planning
             // echo "datetemp = " . strtotime($datetemp) . "<br>";
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
-                                                                           // echo "On passe à la date : " .$datetemp . "( " . strtotime($datetemp) . ") <br>";
+            // echo "On passe à la date : " .$datetemp . "( " . strtotime($datetemp) . ") <br>";
         }
         
         // echo "Nbre d'élément = " . count($this->listeelement);
@@ -283,9 +283,12 @@ class planning
                         if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) {
                             // echo "demandemomentdebut = $demandemomentdebut <br>";
                             if ($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandetempmoment != $demandemomentdebut)
+                            {
                                 $demandetempmoment = "";
+                            }
                             // echo "demandetempmoment (apres le if - matin)= " . $demandetempmoment . "<br>";
-                            if ($demandetempmoment == fonctions::MOMENT_MATIN) {
+                            if ($demandetempmoment == fonctions::MOMENT_MATIN) 
+                            {
                                 // echo "Avant le new planningElement (bloc 'm') <br>";
                                 unset($element);
                                 $element = new planningelement($this->dbconnect);
@@ -304,10 +307,14 @@ class planning
                                 // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
                                 // echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
                                 if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
+                                {
                                     $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                }
+                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
+                                {
                                     // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
+                                    {
                                         $element->demandeid("");
                                         // On reset l'objet demande de l'élément
                                         $element->demande("");
@@ -320,9 +327,12 @@ class planning
                             }
                             // echo "datetemp = $datetemp demandedatefin = " . $this->fonctions->formatdatedb($demandedatefin) . " demandetempmoment = $demandetempmoment demandemomentfin = $demandemomentfin <br>";
                             if ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandetempmoment != $demandemomentfin)
+                            {
                                 $demandetempmoment = "";
+                            }
                             // echo "demandetempmoment (apres le if - apres-midi)= " . $demandetempmoment . "<br>";
-                                if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) {
+                            if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) 
+                            {
                                 // echo "Avant le new planningElement (bloc 'a') <br>";
                                 unset($element);
                                 $element = new planningelement($this->dbconnect);
@@ -338,10 +348,14 @@ class planning
                                 // echo "<br>Je l'ai fixé (apres midi) demande id => " . $element->demandeid() . "<br>";
                                 // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
                                 if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
+                                {
                                     $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                }
+                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
+                                {
                                     // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) {
+                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
+                                    {
                                         $element->demandeid("");
                                         // On reset l'objet demande de l'élément
                                         $element->demande("");
@@ -356,7 +370,7 @@ class planning
                         // echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
                         $timestamp = strtotime($datetemp);
                         $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
-                                                                                       // echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
+                        // echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
                     }
                 }
             }
@@ -375,27 +389,33 @@ class planning
         $params = array($agentid);
         $query = $this->fonctions->prepared_select($sql, $params);
         $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
+        if ($erreur != "") 
+        {
             $errlog = "Planning->load (ABSENCERH) : " . $erreur;
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (mysqli_num_rows($query) == 0) {
+        if (mysqli_num_rows($query) == 0) 
+        {
             // echo "Planning->load (ABSENCERH) : Pas de congé pour cette agent dans la période demandée <br>";
         }
         // echo "Avant le while 2 <br>";
-        while ($result = mysqli_fetch_row($query)) {
+        while ($result = mysqli_fetch_row($query)) 
+        {
             $demandedatedeb = $this->fonctions->formatdate($result[1]);
             $demandedatefin = $this->fonctions->formatdate($result[2]);
             $demandemomentdebut = fonctions::MOMENT_MATIN;
             $demandemomentfin = fonctions::MOMENT_APRESMIDI;
             $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
             $demandetempmoment = $demandemomentdebut;
-            while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) {
+            while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) 
+            {
                 // echo "Dans le petit while <br>";
-                if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) {
+                if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) 
+                {
                     // echo "Avant le if == m... <br>";
-                    if ($demandetempmoment == fonctions::MOMENT_MATIN) {
+                    if ($demandetempmoment == fonctions::MOMENT_MATIN) 
+                    {
                         $element = new planningelement($this->dbconnect);
                         // echo "avant le element date <br>";
                         $element->date($this->fonctions->formatdate($datetemp));
@@ -406,15 +426,20 @@ class planning
                         // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
                         // echo "avant le if interne ==> DateTemp = " . $datetemp . " demandetempmoment = " . $demandetempmoment . " <br>";
                         if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
+                        {
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                        }
                         elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->fonctions->estunconge($this->listeelement[$datetemp . $demandetempmoment]->type()))
+                        {
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                        }
                         // echo "apres le if interne <br>";
                         $demandetempmoment = fonctions::MOMENT_APRESMIDI;
                         unset($element);
                     }
                     // echo "Avant le if ==a <br>";
-                    if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) {
+                    if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) 
+                    {
                         $element = new planningelement($this->dbconnect);
                         $element->date($this->fonctions->formatdate($datetemp));
                         $element->moment($demandetempmoment);
@@ -423,9 +448,13 @@ class planning
                         $element->agentid($agentid);
                         // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
                         if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
+                        {
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                        }
                         elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->fonctions->estunconge($this->listeelement[$datetemp . $demandetempmoment]->type()))
+                        {
                             $this->listeelement[$datetemp . $demandetempmoment] = $element;
+                        }
                         $demandetempmoment = fonctions::MOMENT_MATIN;
                         unset($element);
                     }
@@ -514,6 +543,35 @@ class planning
             }
         }
         
+        // On charge les périodes obligatoires
+        $anneerefdeb = $this->fonctions->anneeref($this->fonctions->formatdate($datedebut));
+        $anneereffin = $this->fonctions->anneeref($this->fonctions->formatdate($datefin));
+        $listplaningelement = $this->planning();
+        $periodeoblig = null;
+        foreach ($listplaningelement as $element)
+        {
+            if ($element->type()=='')
+            //if (!in_array($element->type(), array("WE","ferie","tppar")))
+            //if (strcasecmp($element->type(),"WE")!=0 and strcasecmp($element->type(),"ferie")!=0)
+            {
+                for ($cpt = $anneerefdeb ; $cpt <= $anneereffin ; $cpt++)
+                {
+                    // Si les périodes obligatoires sont déjà chargées pour l'année de référence
+                    if (is_null($periodeoblig) or $periodeoblig->anneeref()!=$cpt)
+                    {
+                        $periodeoblig = new periodeobligatoire($this->dbconnect);
+                        $periodeoblig->load($cpt);
+                    }
+                    if ($periodeoblig->testsuperposeperiode($element->date(),$element->date()))
+                    {
+                        $extraclass = $element->htmlextraclass();
+                        $element->htmlextraclass($extraclass . " " . "periodeoblig");
+                        continue;
+                    }
+                }
+            }
+        }
+
         
         
         // echo "Fin de la procédure Load <br>";
