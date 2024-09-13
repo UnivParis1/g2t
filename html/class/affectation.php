@@ -354,7 +354,7 @@ class affectation
      *            the end date to search part time
      * @return array list of part time declaration object
      */
-    function declarationTPliste($datedebut, $datefin)
+    function declarationTPliste($datedebut, $datefin, $statut = null)
     {
         // echo "Je suis dans la affectation->declarationTPliste <br>";
         
@@ -365,11 +365,15 @@ class affectation
         
         //$sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE AGENTID = '" . $this->agentid()  . "' AND NUMLIGNEQUOTITE = '$quotitenumligne'  ";
  
-        $sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEDEBUT<? AND ?<=DATEFIN)";
+        $sql = "SELECT SUBQUERY.DECLARATIONID FROM ((SELECT DECLARATIONID,DATEDEBUT,STATUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEDEBUT<? AND ?<=DATEFIN)";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEDEBUT>=? AND ?>=DATEDEBUT)";
+        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT,STATUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEDEBUT>=? AND ?>=DATEDEBUT)";
         $sql = $sql . " UNION ";
-        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEFIN>=? AND ?>=DATEFIN)) AS SUBQUERY";
+        $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT,STATUT FROM DECLARATIONTP WHERE AGENTID = ? AND NUMLIGNEQUOTITE = ?  AND DATEFIN>=? AND ?>=DATEFIN)) AS SUBQUERY";
+        if (!is_null($statut))
+        {
+            $sql = $sql . " WHERE SUBQUERY.STATUT = '$statut' ";
+        }
         $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
 
         $declarationliste = null;
@@ -381,7 +385,7 @@ class affectation
         $sql = $sql . "(SELECT DECLARATIONID,DATEDEBUT FROM DECLARATIONTP WHERE AFFECTATIONID='" . $this->affectationid . "' AND DATEFIN>='" . $this->fonctions->formatdatedb($datedebut) . "' AND '" . $this->fonctions->formatdatedb($datefin) . "'>=DATEFIN)) AS SUBQUERY";
         $sql = $sql . " ORDER BY SUBQUERY.DATEDEBUT";
 */        
-        // echo "affectation->declarationTPliste SQL = $sql <br>";
+        //var_dump("affectation->declarationTPliste SQL = $sql");
         
         $params = array($this->agentid(),$quotitenumligne,$datedebut,$datefin,$this->agentid(),$quotitenumligne,$datedebut,$datefin,$this->agentid(),$quotitenumligne,$datedebut,$datefin);
         $query = $this->fonctions->prepared_select($sql, $params);

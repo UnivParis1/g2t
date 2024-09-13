@@ -6127,6 +6127,73 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
         return $this->fonctions->congessuppaverifier($datedebut,$this->agentid());
     }
+
+    function absencerhliste($datedebut, $datefin)
+    {
+        $absencerhliste = array();
+        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN,LIBELLE
+                FROM ABSENCERH
+                WHERE AGENTID = ?
+                  AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($datedebut) . "')
+                    OR (DATEFIN >= '" . $this->fonctions->formatdatedb($datefin) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($datefin) . "')
+                    OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))";
+        // echo "SQL = $sql <br>";
+        $params = array($this->agentid);
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") 
+        {
+            $errlog = "Agent->absencerhliste : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $demande = new demande($this->dbconnect);
+            $demande->agentid($this->agentid);
+            $demande->datedebut($result[1]);
+            $demande->moment_debut(fonctions::MOMENT_MATIN);
+            $demande->datefin($result[2]);
+            $demande->moment_fin(fonctions::MOMENT_APRESMIDI);
+            $demande->type('harp');
+            $demande->statut(demande::DEMANDE_VALIDE);
+            $demande->commentaire($result[3]);
+            $absencerhliste[] = $demande;
+        }
+        return $absencerhliste;
+    }
+
+    function teletravaildeplaceliste($datedebut, $datefin)
+    {
+        $ttliste = array();
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
+                FROM TTEXCEPTION
+                WHERE AGENTID = ?
+                AND DATEREMPLACEMENT BETWEEN ? AND ?";
+
+        $params = array($this->agentid,$this->fonctions->formatdatedb($datedebut),$this->fonctions->formatdatedb($datefin));
+
+        $query = $this->fonctions->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "Agent->teletravaildeplaceliste => Problème SQL dans le chargement de l'exception : " . $erreur;
+            echo $errlog;
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $exception = new ttexception();
+            $exception->agentid = $this->agentid;
+            $exception->dateorigine = $result[0];
+            $exception->momentorigine = $result[1];
+            $exception->dateremplacement = $result[2];
+            $exception->momentremplacement = $result[3];
+            $ttliste[] = $exception;
+        }
+        return $ttliste;
+
+    }
     
 }
 

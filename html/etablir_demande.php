@@ -1103,10 +1103,6 @@
                     {
                         echo "<td class='cellulesimple'>" . $agent->identitecomplete()  . " dispose de " . ($commentaireconge->nbjoursajoute - $commentaireconge->nbjrspris) . " jour(s) de récupération valable(s) entre le " . $fonctions->formatdate($commentaireconge->dateajout) . " et le " . $fonctions->formatdate($findatevalidite) . "</td>";
                     }
-                    //echo "<td class='cellulesimple'>Nombre de jours ajoutés = " . $commentaireconge->nbjoursajoute . "</td>";
-                    //echo "<td class='cellulesimple'>Nombre de jours déjà consommé = " . $commentaireconge->nbjrspris . "</td>";
-                    //echo "<td class='cellulesimple'>Date de dépot = " . $fonctions->formatdate($commentaireconge->dateajout) . "</td>";
-                    //echo "<td class='cellulesimple'>Date de fin de validité = " . $fonctions->formatdate($findatevalidite) . "</td>";
                     echo "</tr>";
                 }
             }

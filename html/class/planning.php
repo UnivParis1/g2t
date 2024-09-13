@@ -31,6 +31,9 @@ class planning
     function load($agentid, $datedebut, $datefin, $includeteletravail = false, $includecongeabsence = true, $includeabsenceteletravail = false)
     {
 
+        // Timer pour le début du chargement => Permet de mesurer la performance (voir fin fonction)
+        //$timerdebut = hrtime(true); 
+
         $agent = new agent($this->dbconnect);
         $agent->load($agentid);
         
@@ -54,24 +57,16 @@ class planning
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
         
-        //$jrs_feries = $this->fonctions->jourferier();
-        $jrs_feries = $this->fonctions->jourferier($this->fonctions->anneeref($datedebut));
-        
-        //var_dump("Jours fériés = " . $jrs_feries);
+        // Attention : La fonction retourne les jours fériés de l'année d'avant, l'année de référence et l'année d'après
+        $jrs_feries = $this->fonctions->joursferies($this->fonctions->anneeref($datedebut));
         
         unset($listeelement);
-        $autodeclaration = null;
         $affectation = null;
         $fulldeclarationTPliste = null;
         
         $nbre_jour = $this->fonctions->nbjours_deux_dates($datedebut, $datefin);
-        
         $datetemp = $this->fonctions->formatdatedb($datedebut);
-        // echo "datetemp= $datetemp <br>";
-        // On boucle sur tous les jours
         $declarationTP = null;
-        // echo "Début For : " . date("d/m/Y H:i:s") . "<br>";
-        
         $fulldeclarationTPliste = array();
         $ignoremissinggstructure = false;
         //if ($includeteletravail)
@@ -80,18 +75,20 @@ class planning
         //}
         $affectationliste = $agent->affectationliste($datedebut, $datefin, $ignoremissinggstructure);
         
-        foreach ((array) $affectationliste as $affectation) {
-            $declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
+        foreach ((array) $affectationliste as $affectation) 
+        {
+            $declarationTPliste = $affectation->declarationTPliste($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin),declarationTP::DECLARATIONTP_VALIDE);
             $fulldeclarationTPliste[$affectation->affectationid()] = $declarationTPliste;
         }
         if (is_array($affectationliste))
+        {
             $affectation = reset($affectationliste); // On récupère la première affectation
+        }
         
-        /*
-         * echo "Affectationliste = " . print_r($affectationliste,true) . "<br>";
-         * echo "----------------------------------------------------------------------------------<br>";
-         * echo "fulldeclarationTPliste = " . print_r($fulldeclarationTPliste,true) . "<br>";
-         */
+        $periodeoblig = null;
+        /////////////////////////////////////////////////////////
+        /// CREATION DES ELEMENTS ET INITIALISATION (WE, Fériés, non déclaré, temps partiel, périodes obligatoires)
+        /////////////////////////////////////////////////////////
         for ($index = 0; $index <= $nbre_jour - 1; $index ++) {
             // echo "datetemp= $datetemp <br>";
             
@@ -127,350 +124,230 @@ class planning
                 }
             }
             // Si on a déjà une declaration de TP <=> On a pas changé d'affectation
-            if (! is_null($declarationTP)) {
+            if (! is_null($declarationTP)) 
+            {
                 // On regarde si la déclaration de TP est toujours valide
-                if ($this->fonctions->formatdatedb($declarationTP->datefin()) < $this->fonctions->formatdatedb($datetemp)) {
+                if ($this->fonctions->formatdatedb($declarationTP->datefin()) < $this->fonctions->formatdatedb($datetemp)) 
+                {
                     // Non elle n'est plus valide => On la met à null
                     $declarationTP = null;
                 }
             }
             
             // Si on a une affectation courante (soit parce que c'est la même qu'au tour d'avant, soit on vient de la charger à partir de la liste 'affectationliste'
-            if (! is_null($affectation)) {
+            if (! is_null($affectation)) 
+            {
                 // On récupère la liste des declaration de TP pour cette affectation
                 $declarationTPliste = $fulldeclarationTPliste[$affectation->affectationid()];
                 // On recherche s'il y a une declaration de TP correspondant au jour courant
-                foreach ((array) $declarationTPliste as $tempdeclarationTP) {
+                foreach ((array) $declarationTPliste as $tempdeclarationTP) 
+                {
                     if (($this->fonctions->formatdatedb($tempdeclarationTP->datedebut()) <= $this->fonctions->formatdatedb($datetemp)) and ($this->fonctions->formatdatedb($tempdeclarationTP->datefin()) >= $this->fonctions->formatdatedb($datetemp))) {
                         // Si la déclaration de TP est validée
-                        if (strcasecmp($tempdeclarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0) {
+                        ////////////////////////
+                        // Le test sur la validité de la déclaration de TP est inutile car on a filtré dans la select que les declarationTP::DECLARATIONTP_VALIDE
+                        //if (strcasecmp($tempdeclarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0) {
                             // C'est la bonne declaration de TP !
                             $declarationTP = $tempdeclarationTP;
                             break;
-                        }
+                        //}
                     }
                 }
             }
-                        
-            // Le matin du jour en cours de traitement
-            $element = new planningelement($this->dbconnect);
-            $element->date($this->fonctions->formatdate($datetemp));
-            $element->moment(fonctions::MOMENT_MATIN);
-            
-            if (strpos($jrs_feries, ";" . $datetemp . ";")) {
-                // echo "C'est un jour férié = $datetemp <br>";
-                $element->type("ferie");
-                $element->info("jour férié");
-            } 
-            elseif (date("w", strtotime($datetemp)) == 0 and !$travaildimanche)  /* dimanche */
+
+            $tabmoment = array(fonctions::MOMENT_MATIN,fonctions::MOMENT_APRESMIDI);
+            $moment = reset($tabmoment);
+            while ($moment !== false)
             {
-                $element->type("WE");
-                $element->info("week-end");
-            }
-            elseif (date("w", strtotime($datetemp)) == 6 and !$travailsamedi) /* Samedi */
-            {
-                $element->type("WE");
-                $element->info("week-end");
-            }            // On est dans le cas ou aucune déclaration de TP n'est faite
-            elseif (is_null($declarationTP)) 
-            {
-                $element->type("nondec");
-                $element->info("Période non déclarée");
-            }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) 
-            {
-                $element->type("nondec");
-                $element->info("Période non déclarée");
-            } 
-            elseif ($declarationTP->enTP($element->date(), $element->moment())) 
-            {
-                $element->type("tppar");
-                $element->info("Temps partiel");
-            } 
-            else 
-            {
-                // Ici c'est une case blanche vide !! Il ne se passe rien
-                $element->type("");
-                $element->info("");
-            }
-            $element->agentid($agentid);
-            $this->listeelement[$datetemp . fonctions::MOMENT_MATIN] = $element;
-            
-            // L'apres-midi du jour en cours de traitement
-            unset($element);
-            $element = new planningelement($this->dbconnect);
-            $element->date($this->fonctions->formatdate($datetemp));
-            $element->moment(fonctions::MOMENT_APRESMIDI);
-            if (strpos($jrs_feries, ";" . $datetemp . ";")) 
-            {
-                // echo "C'est un jour férié = $datetemp <br>";
-                $element->type("ferie");
-                $element->info("jour férié");
-            } 
-            elseif (date("w", strtotime($datetemp)) == 0 and !$travaildimanche)   /* dimanche */
-            {
-                $element->type("WE");
-                $element->info("week-end");
-            }
-            elseif (date("w", strtotime($datetemp)) == 6 and !$travailsamedi)  /* Samedi */
-            {
-                $element->type("WE");
-                $element->info("week-end");
-            } 
-            elseif (is_null($declarationTP)) 
-            {
-                $element->type("nondec");
-                $element->info("Période non déclarée");
-            }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-            elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) 
-            {
-                $element->type("nondec");
-                $element->info("Période non déclarée");
-            } 
-            elseif ($declarationTP->enTP($element->date(), $element->moment())) 
-            {
-                $element->type("tppar");
-                $element->info("Temps partiel");
-            } 
-            else 
-            {
-                // Ici c'est une case blanche vide !! Il ne se passe rien
-                $element->type("");
-                $element->info("");
+                $element = new planningelement($this->dbconnect);
+                $element->date($this->fonctions->formatdate($datetemp));
+                $element->moment($moment);
+                
+                if (in_array($datetemp,$jrs_feries))
+                {
+                    // echo "C'est un jour férié = $datetemp <br>";
+                    $element->type("ferie");
+                    $element->info("jour férié");
+                } 
+                elseif (date("w", strtotime($datetemp)) == 0 and !$travaildimanche)  /* dimanche */
+                {
+                    $element->type("WE");
+                    $element->info("week-end");
+                }
+                elseif (date("w", strtotime($datetemp)) == 6 and !$travailsamedi) /* Samedi */
+                {
+                    $element->type("WE");
+                    $element->info("week-end");
+                }            // On est dans le cas ou aucune déclaration de TP n'est faite
+                elseif (is_null($declarationTP)) 
+                {
+                    $element->type("nondec");
+                    $element->info("Période non déclarée");
+                }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
+                elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) 
+                {
+                    $element->type("nondec");
+                    $element->info("Période non déclarée");
+                } 
+                elseif ($declarationTP->enTP($element->date(), $element->moment())) 
+                {
+                    $element->type("tppar");
+                    $element->info("Temps partiel");
+                } 
+                else 
+                {
+                    // Ici c'est une case blanche vide !! Il ne se passe rien
+                    $element->type("");
+                    $element->info("");
+                }
+                $element->agentid($agentid);
+                $this->listeelement[$datetemp . $moment] = $element;
+
+                // On charge les périodes obligatoires
+                if ($element->type()=='')
+                //if (!in_array($element->type(), array("WE","ferie","tppar")))
+                //if (strcasecmp($element->type(),"WE")!=0 and strcasecmp($element->type(),"ferie")!=0)
+                {
+                    $anneeref = $this->fonctions->anneeref($element->date());
+                    // Si les périodes obligatoires sont déjà chargées pour l'année de référence
+                    if (is_null($periodeoblig) or $periodeoblig->anneeref()!=$anneeref)
+                    {
+                        unset($periodeoblig);
+                        $periodeoblig = new periodeobligatoire($this->dbconnect);
+                        $periodeoblig->load($anneeref);
+                    }
+                    if ($periodeoblig->testsuperposeperiode($element->date(),$element->date()))
+                    {
+                        $extraclass = $element->htmlextraclass();
+                        $element->htmlextraclass($extraclass . " " . "periodeoblig");
+                    }
+                }
+
+                unset($element);
+                // On passe au moment suivant dans le tableau ou false si on est au bout
+                $moment = next($tabmoment);
             }
             
-            $element->agentid($agentid);
-            $this->listeelement[$datetemp . fonctions::MOMENT_APRESMIDI] = $element;
-            unset($element);
             // echo "datetemp = " . strtotime($datetemp) . "<br>";
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
             // echo "On passe à la date : " .$datetemp . "( " . strtotime($datetemp) . ") <br>";
         }
         
-        // echo "Nbre d'élément = " . count($this->listeelement);
-        // echo " " . date("H:i:s") . "<br>";
-        // echo "Planning->Load : fulldeclarationTPliste = "; print_r($fulldeclarationTPliste); echo "<br>";
-        
+        /////////////////////////////////////////////////////////
+        /// INTEGRATION DES CONGES, ABSENCE, ABSENCERH
+        /////////////////////////////////////////////////////////
+        // On récupère les demandes d'absence, les congés et les absences de type "télétravail hors convention"
         if ($includecongeabsence or $includeabsenceteletravail)
         {
             $demandeliste = $agent->demandesliste($datedebut, $datefin);
-            $demande = new demande($this->dbconnect);
-            foreach ((array) $demandeliste as $demandeid => $demande) 
+        }
+        // On fusionne le tableau précédent avec les absences RH (converties sous forme de demande typées 'harp')
+        $demandeliste = array_merge((array)$demandeliste, $agent->absencerhliste($datedebut, $datefin));
+        foreach ((array) $demandeliste as $demande) 
+        {
+            // Si on ne demande que les absences de type télétravail hors convention
+            if (!$includecongeabsence and $includeabsenceteletravail)
             {
-                // Si on ne demande que les absences de type télétravail
-                if (!$includecongeabsence and $includeabsenceteletravail)
+                // Si le parent de l'absence n'est pas de type 'teletravHC' => On ne le traite pas
+                if (TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'] != 'teletravHC')
                 {
-                    // Si le parent de l'absence n'est pas de type 'teletravHC' => On ne le traite pas
-                    if (TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'] != 'teletravHC')
-                    {
-                        continue;
-                    }
-                }
-                
-                if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) {
-                    $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
-                    $demandedatefin = $this->fonctions->formatdate($demande->datefin());
-                    $demandemomentdebut = $demande->moment_debut();
-                    $demandemomentfin = $demande->moment_fin();
-                    $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
-                    $demandetempmoment = $demandemomentdebut;
-                    
-                    // echo "demandedatedeb = $demandedatedeb demandedatefin = $demandedatefin demandemomentdebut=$demandemomentdebut demandemomentfin = $demandemomentfin datetemp =$datetemp <br>";
-                    // echo "fonctions->formatdatedb(demandedatefin) = " . $this->fonctions->formatdatedb($demandedatefin) . "<br>";
-                    while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) {
-                        // echo "demandetempmoment = $demandetempmoment datetemp = $datetemp <br>";
-                        if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) {
-                            // echo "demandemomentdebut = $demandemomentdebut <br>";
-                            if ($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandetempmoment != $demandemomentdebut)
-                            {
-                                $demandetempmoment = "";
-                            }
-                            // echo "demandetempmoment (apres le if - matin)= " . $demandetempmoment . "<br>";
-                            if ($demandetempmoment == fonctions::MOMENT_MATIN) 
-                            {
-                                // echo "Avant le new planningElement (bloc 'm') <br>";
-                                unset($element);
-                                $element = new planningelement($this->dbconnect);
-                                $element->date($this->fonctions->formatdate($datetemp));
-                                $element->moment(fonctions::MOMENT_MATIN);
-                                $element->type($demande->type());
-                                $element->statut($demande->statut());
-                                $element->info($demande->typelibelle()); // motifrefus()
-                                $element->agentid($agentid);
-                                // echo "<br>Je set (matin) le demande id => " . $demande->id() ."<br>";
-                                $element->demandeid($demande->id());
-                                $element->demande($demande);
-                                // echo "<br>Je l'ai fixé (matin) demande id => " . $element->demandeid() . "<br>";
-                                // echo "Planning->load : Type = " . $result[2] . " Info = " . $result[15] . "<br>";
-                                // echo "Planning->load : Type (element) = " . $element->type() . " Info (element) = " . $element->info() . "<br>";
-                                // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-                                // echo "Le type de l'élément courant est : " . $this->listeelement[$datetemp . $demandetempmoment]->type() . "<br>";
-                                if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-                                {
-                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                                }
-                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
-                                {
-                                    // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
-                                    {
-                                        $element->demandeid("");
-                                        // On reset l'objet demande de l'élément
-                                        $element->demande("");
-                                    }
-                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                                }
-                                $demandetempmoment = fonctions::MOMENT_APRESMIDI;
-                                unset($element);
-                                // echo "Fin du traitement du demandetempmoment = 'matin' <br>";
-                            }
-                            // echo "datetemp = $datetemp demandedatefin = " . $this->fonctions->formatdatedb($demandedatefin) . " demandetempmoment = $demandetempmoment demandemomentfin = $demandemomentfin <br>";
-                            if ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandetempmoment != $demandemomentfin)
-                            {
-                                $demandetempmoment = "";
-                            }
-                            // echo "demandetempmoment (apres le if - apres-midi)= " . $demandetempmoment . "<br>";
-                            if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) 
-                            {
-                                // echo "Avant le new planningElement (bloc 'a') <br>";
-                                unset($element);
-                                $element = new planningelement($this->dbconnect);
-                                $element->date($this->fonctions->formatdate($datetemp));
-                                $element->moment(fonctions::MOMENT_APRESMIDI);
-                                $element->type($demande->type());
-                                $element->statut($demande->statut());
-                                $element->info($demande->typelibelle()); // motifrefus()
-                                $element->agentid($agentid);
-                                // echo "<br>Je set (apres midi) le demande id => " . $demande->id() ."<br>";
-                                $element->demandeid($demande->id());
-                                $element->demande($demande);
-                                // echo "<br>Je l'ai fixé (apres midi) demande id => " . $element->demandeid() . "<br>";
-                                // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-                                if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-                                {
-                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                                }
-                                elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
-                                {
-                                    // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                    if (strcasecmp($this->listeelement[$datetemp . $demandetempmoment]->type(), "nondec") == 0) 
-                                    {
-                                        $element->demandeid("");
-                                        // On reset l'objet demande de l'élément
-                                        $element->demande("");
-                                    }
-                                    $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                                }
-                                unset($element);
-                                // echo "Fin du traitement du demandetempmoment = 'après-midi' <br>";
-                            }
-                        }
-                        $demandetempmoment = fonctions::MOMENT_MATIN;
-                        // echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
-                        $timestamp = strtotime($datetemp);
-                        $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
-                        // echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
-                    }
+                    continue;
                 }
             }
-        }
-                
-        // echo "<br><br>fin 1er while => "; print_r ($this->listeelement); echo "<br>";
-        // echo "Fin premier while ... <br>";
-        
-        $sql = "SELECT AGENTID,DATEDEBUT,DATEFIN,LIBELLE
-                FROM ABSENCERH
-                WHERE AGENTID = ?
-                  AND ((DATEDEBUT <= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN >='" . $this->fonctions->formatdatedb($datedebut) . "')
-                    OR (DATEFIN >= '" . $this->fonctions->formatdatedb($datefin) . "' AND DATEDEBUT <='" . $this->fonctions->formatdatedb($datefin) . "')
-                    OR (DATEDEBUT >= '" . $this->fonctions->formatdatedb($datedebut) . "' AND DATEFIN <= '" . $this->fonctions->formatdatedb($datefin) . "'))";
-        // echo "SQL = $sql <br>";
-        $params = array($agentid);
-        $query = $this->fonctions->prepared_select($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") 
-        {
-            $errlog = "Planning->load (ABSENCERH) : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        }
-        if (mysqli_num_rows($query) == 0) 
-        {
-            // echo "Planning->load (ABSENCERH) : Pas de congé pour cette agent dans la période demandée <br>";
-        }
-        // echo "Avant le while 2 <br>";
-        while ($result = mysqli_fetch_row($query)) 
-        {
-            $demandedatedeb = $this->fonctions->formatdate($result[1]);
-            $demandedatefin = $this->fonctions->formatdate($result[2]);
-            $demandemomentdebut = fonctions::MOMENT_MATIN;
-            $demandemomentfin = fonctions::MOMENT_APRESMIDI;
-            $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
-            $demandetempmoment = $demandemomentdebut;
-            while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) 
+            
+            if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) 
             {
-                // echo "Dans le petit while <br>";
-                if ($datetemp >= $this->fonctions->formatdatedb($datedebut) and $datetemp <= $this->fonctions->formatdatedb($datefin)) 
+                $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
+                $demandedatefin = $this->fonctions->formatdate($demande->datefin());
+                $demandemomentdebut = $demande->moment_debut();
+                $demandemomentfin = $demande->moment_fin();
+                $datetemp = $this->fonctions->formatdatedb($demandedatedeb);
+
+                // Si la date de début de la demande est avant la période du planning, on la défini comme le début du planning
+                if ($datetemp < $this->fonctions->formatdatedb($datedebut))
                 {
-                    // echo "Avant le if == m... <br>";
-                    if ($demandetempmoment == fonctions::MOMENT_MATIN) 
-                    {
-                        $element = new planningelement($this->dbconnect);
-                        // echo "avant le element date <br>";
-                        $element->date($this->fonctions->formatdate($datetemp));
-                        $element->moment($demandetempmoment);
-                        $element->type("harp"); // ==> Le type de congé est fixé - Ce sont des congés RH
-                        $element->info("$result[3]");
-                        $element->agentid($agentid);
-                        // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-                        // echo "avant le if interne ==> DateTemp = " . $datetemp . " demandetempmoment = " . $demandetempmoment . " <br>";
-                        if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-                        {
-                            $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                        }
-                        elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->fonctions->estunconge($this->listeelement[$datetemp . $demandetempmoment]->type()))
-                        {
-                            $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                        }
-                        // echo "apres le if interne <br>";
-                        $demandetempmoment = fonctions::MOMENT_APRESMIDI;
-                        unset($element);
-                    }
-                    // echo "Avant le if ==a <br>";
-                    if ($demandetempmoment == fonctions::MOMENT_APRESMIDI) 
-                    {
-                        $element = new planningelement($this->dbconnect);
-                        $element->date($this->fonctions->formatdate($datetemp));
-                        $element->moment($demandetempmoment);
-                        $element->type("harp"); // ==> Le type de congé est fixé - Ce sont des congés RH
-                        $element->info("$result[3]");
-                        $element->agentid($agentid);
-                        // $element->couleur($result[16]); ==> La couleur est gérée par l'element du planning
-                        if (! array_key_exists($datetemp . $demandetempmoment, $this->listeelement))
-                        {
-                            $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                        }
-                        elseif ($this->listeelement[$datetemp . $demandetempmoment]->type() == "" or $this->fonctions->estunconge($this->listeelement[$datetemp . $demandetempmoment]->type()))
-                        {
-                            $this->listeelement[$datetemp . $demandetempmoment] = $element;
-                        }
-                        $demandetempmoment = fonctions::MOMENT_MATIN;
-                        unset($element);
-                    }
+                    $datetemp = $this->fonctions->formatdatedb($datedebut);
+                    $demandemomentdebut = fonctions::MOMENT_MATIN;
                 }
-                // echo "Apres le while petit <br>";
-                $timestamp = strtotime($datetemp);
-                $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
+                // Si la date de fin de la demande est après la période du planning, on la défini comme la fin du planning
+                if ($this->fonctions->formatdatedb($demandedatefin) > $this->fonctions->formatdatedb($datefin))
+                {
+                    $demandedatefin = $datefin;
+                    $demandemomentfin = fonctions::MOMENT_APRESMIDI;
+                }
+
+                $tabmoment = array(fonctions::MOMENT_MATIN,fonctions::MOMENT_APRESMIDI);
+                // On parcourt tous les jours entre datebebut et datefin de la demande
+                while ($datetemp <= $this->fonctions->formatdatedb($demandedatefin)) 
+                {
+                    $moment = reset($tabmoment);
+                    while ($moment !== false)
+                    {
+                        // On ne traite pas la 1ere matinée ou la dernière après-midi si elles ne sont pas inclues dans la demande
+                        if (($datetemp == $this->fonctions->formatdatedb($demandedatedeb) and $demandemomentdebut != fonctions::MOMENT_MATIN and $moment == fonctions::MOMENT_MATIN)
+                            or ($datetemp == $this->fonctions->formatdatedb($demandedatefin) and $demandemomentfin != fonctions::MOMENT_APRESMIDI and $moment == fonctions::MOMENT_APRESMIDI))
+                        {
+                            //var_dump("Je ne traite pas. datetemp = $datetemp   moment = $moment  datedebut = " . $this->fonctions->formatdatedb($demandedatedeb) . "   momentdebut = $demandemomentdebut   datefin = " . $this->fonctions->formatdatedb($demandedatefin) . "  momentfin = $demandemomentfin");
+                        }
+                        else
+                        {
+                            unset($element);
+                            $element = new planningelement($this->dbconnect);
+                            $element->date($this->fonctions->formatdate($datetemp));
+                            $element->moment($moment);
+                            $element->type($demande->type());
+                            $element->statut($demande->statut());
+                            if ($demande->type()=='harp')
+                            {
+                                $element->info($demande->commentaire()); // motifrefus()
+                            }
+                            else
+                            {
+                                $element->info($demande->typelibelle()); // motifrefus()
+                            }
+                            $element->agentid($agentid);
+                            $element->demandeid($demande->id());
+                            $element->demande($demande);
+                            if (! array_key_exists($datetemp . $moment, $this->listeelement))
+                            {
+                                $this->listeelement[$datetemp . $moment] = $element;
+                            }
+                            elseif ($this->listeelement[$datetemp . $moment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
+                            {
+                                // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
+                                if (strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
+                                {
+                                    $element->demandeid("");
+                                    // On reset l'objet demande de l'élément
+                                    $element->demande("");
+                                }
+                                $this->listeelement[$datetemp . $moment] = $element;
+                            }
+                        }
+                        // On passe au moment suivant dans le tableau ou false si on est au bout
+                        $moment = next($tabmoment);
+                    }
+
+                    // echo "la date apres le strtotime 1 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
+                    $timestamp = strtotime($datetemp);
+                    $datetemp = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour suivant
+                    // echo "la date apres le strtotime 2 = " . strtotime($datetemp) . " datetemp= " . $datetemp . "<br>";
+                }
+                unset($element);
             }
         }
         
+        /////////////////////////////////////////////////////////
+        /// INTEGRATION DU TELETRAVAIL
+        /////////////////////////////////////////////////////////
         if ($includeteletravail)
         {
             $datedebutdb = $this->fonctions->formatdatedb($datedebut);
             $datefindb = $this->fonctions->formatdatedb($datefin);
             $teletravailliste = $agent->teletravailliste($datedebutdb,$datefindb);
             $fulldatetheorique = array();
+
             foreach ((array)$teletravailliste as $teletravailid)
             {
                 $teletravail = new teletravail($this->dbconnect);
@@ -480,7 +357,7 @@ class planning
                     $fulldatetheorique = array_merge($fulldatetheorique,$teletravail->datetheorique($datedebutdb,$datefindb));
                 }
             }
-            
+
             foreach ($fulldatetheorique as $arraydate)
             {
                 $element = $this->getelement($arraydate[0], $arraydate[1]);
@@ -491,7 +368,9 @@ class planning
                         if (!$this->fonctions->estjourteletravailexclu($agentid,$arraydate[0],$arraydate[1]))
                         {
                             $element->type('teletrav');
-                            $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL);
+                            $extraclass = $element->htmlextraclass();
+                            $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL);
+                            //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL);
                             if ($arraydate[2]!==teletravail::CODE_CONVENTION_MEDICAL)
                             {
                                 if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$element->type()]['libelle']))
@@ -510,74 +389,80 @@ class planning
                         }
                         else // L'élement est un jour de télétravail mais il est exclu => il ne s'affichera pas en rose dans le planning
                         {
-                            $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_EXCLUSION);
+                            $extraclass = $element->htmlextraclass();
+                            $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_EXCLUSION);
+
+                            //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_EXCLUSION);
                         }
                     }
                     else
                     {
                         // C'est en théorie une 1/2 journée de télétravail, mais il y a quelque chose à la place
                         // => On indique quand même que c'est un jour de télétravail théorique
-                        $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN);
-
-                    }
-                }
-            }
-            $listplaningelement = $this->planning();
-            foreach ($listplaningelement as $element)
-            {
-                $deplace = $this->fonctions->estjourteletravaildeplace($agentid, $element->date(), $element->moment());
-                if ($element->type() == '' and $deplace !== false)
-                {
-                    $element->type('teletrav');
-                    if ($deplace->momentorigine == '')
-                    {
-                        $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($deplace->dateorigine));                        
-                    }
-                    else
-                    {
-                        $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($deplace->dateorigine) . ' ' . $this->fonctions->nommoment($deplace->momentorigine));
-                    }
-                    // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
-                    $element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
-                }
-            }
-        }
-        
-        // On charge les périodes obligatoires
-        $anneerefdeb = $this->fonctions->anneeref($this->fonctions->formatdate($datedebut));
-        $anneereffin = $this->fonctions->anneeref($this->fonctions->formatdate($datefin));
-        $listplaningelement = $this->planning();
-        $periodeoblig = null;
-        foreach ($listplaningelement as $element)
-        {
-            if ($element->type()=='')
-            //if (!in_array($element->type(), array("WE","ferie","tppar")))
-            //if (strcasecmp($element->type(),"WE")!=0 and strcasecmp($element->type(),"ferie")!=0)
-            {
-                for ($cpt = $anneerefdeb ; $cpt <= $anneereffin ; $cpt++)
-                {
-                    // Si les périodes obligatoires sont déjà chargées pour l'année de référence
-                    if (is_null($periodeoblig) or $periodeoblig->anneeref()!=$cpt)
-                    {
-                        $periodeoblig = new periodeobligatoire($this->dbconnect);
-                        $periodeoblig->load($cpt);
-                    }
-                    if ($periodeoblig->testsuperposeperiode($element->date(),$element->date()))
-                    {
                         $extraclass = $element->htmlextraclass();
-                        $element->htmlextraclass($extraclass . " " . "periodeoblig");
-                        continue;
+                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN);
+    
+                        //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL_HIDDEN);
+                    }
+                }
+            }
+
+            $listplaningelement = $this->planning();
+            $ttdeplaceliste = $agent->teletravaildeplaceliste($datedebut, $datefin);
+            foreach ($ttdeplaceliste as $ttexception)
+            {
+                if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_MATIN)
+                {
+                    $momentremplacement = fonctions::MOMENT_MATIN;
+                    $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
+                    if ($element->type() == '')
+                    {
+                        $element->type('teletrav');
+                        if ($ttexception->momentorigine == '')
+                        {
+                            $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine));                        
+                        }
+                        else
+                        {
+                            $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine) . ' ' . $this->fonctions->nommoment($ttexception->momentorigine));
+                        }
+                        // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
+                        $extraclass = $element->htmlextraclass();
+                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+
+                        //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                    }
+                }
+                if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_APRESMIDI)
+                {
+                    $momentremplacement = fonctions::MOMENT_APRESMIDI;
+                    $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
+                    if ($element->type() == '')
+                    {
+                        $element->type('teletrav');
+                        if ($ttexception->momentorigine == '')
+                        {
+                            $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine));                        
+                        }
+                        else
+                        {
+                            $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine) . ' ' . $this->fonctions->nommoment($ttexception->momentorigine));
+                        }
+                        // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
+                        $extraclass = $element->htmlextraclass();
+                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+
+                        //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
                     }
                 }
             }
         }
 
-        
-        
-        // echo "Fin de la procédure Load <br>";
-        
-        // echo "<br>Liste des éléments = " . print_r($this->listeelement,true) . "<br>";
-        
+        // Timer pour le fin du chargement => Permet de mesurer la performance (voir ci-dessous)
+        //$timerfin = hrtime(true);
+        //$eta=$timerfin-$timerdebut;
+        //var_dump("Durée du chargement du planning : " . round($eta/1e+6) . " millisecondes.");          
+
         return $this->listeelement;
     }
 
@@ -632,10 +517,13 @@ class planning
         //$this->fonctions->time_elapsed("Début de la fonction planninghtml", __METHOD__, true);
         // echo "datedebut = $datedebut datefin = $datefin <br>";
         // $this->listeelement = null;
-        if (is_null($this->listeelement)) {
-            // echo "Début chargement : " . date("d/m/Y H:i:s") . "<br>";
+        if (is_null($this->listeelement)) 
+        {
+            //$timerdebut = hrtime(true); 
             $this->load($agentid, $datedebut, $datefin, $includeteletravail);
-            // echo "Fin chargement : " . date("d/m/Y H:i:s") . "<br>";
+            // $timerfin = hrtime(true);
+            // $eta=$timerfin-$timerdebut;
+            // var_dump("Durée du chargement : " . round($eta/1e+6) . " millisecondes.");          
         }
         
         // On charge toutes les absences dans un tableau
@@ -653,23 +541,30 @@ class planning
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
         $htmltext = $htmltext . "<tr class='entete'><td>Mois</td>";
-        for ($indexjrs = 0; $indexjrs < 31; $indexjrs ++) {
+        for ($indexjrs = 0; $indexjrs < 31; $indexjrs ++) 
+        {
             // echo "indexjrs = $indexjrs <br>";
             $htmltext = $htmltext . "<td colspan='2'>" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</td>";
         }
         $htmltext = $htmltext . "</tr>";
         
         $elementlegende = array();
-        foreach ($this->listeelement as $key => $planningelement) {
+        foreach ($this->listeelement as $key => $planningelement) 
+        {
             $month = date("m", strtotime($this->fonctions->formatdatedb($planningelement->date())));
             
             // echo "month = $month monthfin = $monthfin currentmonth = $currentmonth <br>";
-            if ($month != $currentmonth) {
+            if ($month != $currentmonth) 
+            {
                 $monthname = $this->fonctions->nommois($planningelement->date()) . " " . date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
                 if ($currentmonth != "")
+                {
                     $htmltext = $htmltext . "</tr>\n<tr class='ligneplanning'>";
+                }
                 else
+                {
                     $htmltext = $htmltext . "\n<tr class='ligneplanning'>";
+                }
                 $htmltext = $htmltext . "<td>" . $monthname . "</td>";
                 
                 $currentmonth = $month;
@@ -708,7 +603,8 @@ class planning
         //var_dump($elementlegende);
         
         // echo "Avant affichage legende <br>";
-        if ($noiretblanc == false) {
+        if ($noiretblanc == false) 
+        {
             $htmltext = $htmltext . $this->fonctions->legendehtml($tempannee, $includeteletravail,$elementlegende);
         }
         // echo "Apres affichage legende <br>";
@@ -726,9 +622,13 @@ class planning
         $htmltext = $htmltext . "<input type='hidden' name='previous' value='no'>";
         $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . $tempannee . "'>";
         if ($includeteletravail)
+        {
             $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
-         else
+        }
+        else
+        {
             $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
+        }
         $htmltext = $htmltext . "</form>";
         $htmltext = $htmltext . "<form name='userpreviousplanningpdf_" . $agentid . "'  method='post' action='affiche_pdf.php' target='_blank'>";
         $htmltext = $htmltext . "<input type='hidden' name='hide_teletravail_". $agentid . "' id='hidden_input_teletravail_". $agentid . "' value='off'>";
@@ -737,13 +637,18 @@ class planning
         $htmltext = $htmltext . "<input type='hidden' name='previous' value='yes'>";
         $htmltext = $htmltext . "<input type='hidden' name='anneeref' value='" . ($tempannee - 1) . "'>";
         if ($includeteletravail)
+        {
             $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='yes'>";
+        }
         else
+        {
             $htmltext = $htmltext . "<input type='hidden' name='includeteletravail' value='no'>";
+        }
         $htmltext = $htmltext . "</form>";
                 
         
-        if ($showpdflink == TRUE) {
+        if ($showpdflink == TRUE) 
+        {
             $htmltext = $htmltext . "<a href='javascript:document.userplanningpdf_" . $agentid . ".submit();'>Planning en PDF</a>";
             $htmltext = $htmltext . "<br>";
             $htmltext = $htmltext . "<a href='javascript:document.userpreviousplanningpdf_" . $agentid . ".submit();'>Planning en PDF (année précédente)</a>";

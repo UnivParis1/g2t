@@ -123,9 +123,9 @@ class fonctions
     /**
      *
      * @param string $anneeref (optionel)
-     * @return string list (comma separated) of unworked days
+     * @return array list (comma separated) of unworked days
      */
-    public function jourferier($anneeref = null)
+    public function joursferies($anneeref = null)
     {
         // Chargement des jours fériés
         $dbconstante='FERIE%';
@@ -133,17 +133,18 @@ class fonctions
         {
             $jrs_feries_liste = $this->liredbconstante($dbconstante);
             //var_dump($jrs_feries_liste);
-            $jrs_feries = ";";
+            $jrs_feries_str = ";";
             foreach ($jrs_feries_liste as $key => $liste)
             {
                 $annee = trim(str_replace('FERIE',"",$key));
                 if (is_null($anneeref) or $annee==($anneeref-1) or $annee==$anneeref or $annee==($anneeref+1))
                 {
-                    $jrs_feries = $jrs_feries . $liste . ";";
+                    $jrs_feries_str = $jrs_feries_str . $liste . ";";
                 }
             }
-            //var_dump($jrs_feries);
-            return $jrs_feries;
+            
+            //return $jrs_feries_str;
+            return explode(";", $jrs_feries_str);
         }
         else
         {
@@ -451,35 +452,22 @@ class fonctions
      */
     public function debutperiode()
     {
+        static $debutperiode = null;
+
         $dbconstante='DEBUTPERIODE';
-        if ($this->testexistdbconstante($dbconstante))
+
+        if (is_null($debutperiode))
         {
-            return $this->liredbconstante($dbconstante);
+            if ($this->testexistdbconstante($dbconstante))
+            {
+                $debutperiode = $this->liredbconstante($dbconstante);
+            }
+            else
+            {
+                $debutperiode = "0901";
+            }
         }
-        else
-        {
-            return "0901";
-        }
-/*
-        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTPERIODE'";
-        $params = array();
-        $query = $this->prepared_select($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Fonctions->debutperiode : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        }
-        if (mysqli_num_rows($query) == 0) {
-            $errlog = "Fonctions->debutperiode : Pas de début de période défini dans la base ==> On force à '0901' (1sept).";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-            return "0901";
-        }
-        $result = mysqli_fetch_row($query);
-        // echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
-        return "$result[0]";
-*/
+        return $debutperiode;
     }
 
     /**
@@ -489,35 +477,22 @@ class fonctions
      */
     public function finperiode()
     {
+        static $finperiode = null;
+
         $dbconstante='FINPERIODE';
-        if ($this->testexistdbconstante($dbconstante))
+
+        if (is_null($finperiode))
         {
-            return $this->liredbconstante($dbconstante);
+            if ($this->testexistdbconstante($dbconstante))
+            {
+                $finperiode = $this->liredbconstante($dbconstante);
+            }
+            else
+            {
+                $finperiode = "0831";
+            }
         }
-        else
-        {
-            return "0831";
-        }
-/*
-        $sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'FINPERIODE'";
-        $params = array();
-        $query = $this->prepared_select($sql, $params);
-        $erreur = mysqli_error($this->dbconnect);
-        if ($erreur != "") {
-            $errlog = "Fonctions->finperiode : " . $erreur;
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        }
-        if (mysqli_num_rows($query) == 0) {
-            $errlog = "Fonctions->finperiode : Pas de fin de période définie dans la base ==> On force à '0831' (31aout).";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-            return "0831";
-        }
-        $result = mysqli_fetch_row($query);
-        // echo "Fonctions->finperiode : fin de période ==> " . $result[0] . ".<br>";
-        return "$result[0]";
-*/
+        return $finperiode;
     }
 
     /**
@@ -538,7 +513,8 @@ class fonctions
             $date = $this->formatdate($date);
         }
         // echo "La date = " . $date . "<br>";
-        if ($this->verifiedate($date)) {
+        if ($this->verifiedate($date)) 
+        {
             $finperiode = $this->finperiode();
             // echo "Fin periode = $finperiode <br>";
             // echo "date(m, date(Y) . finperiode)= " .date("m", date("Y") . $finperiode) . "<br>";
@@ -547,14 +523,21 @@ class fonctions
             $mois = substr($date, 4, 2);
             // echo "annee = $annee mois = $mois <br>";
             if ($mois <= date("m", date("Y") . $finperiode))
-                return ($annee - 1);
+            {
+                $annee--;
+            }
             else
-                return $annee;
-        } else {
+            {
+                // L'année est la bonne => Pas de modification
+            }
+        } 
+        else 
+        {
             $errlog = "Fonctions->anneeref : La date " . $date . " est invalide !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         }
+        return $annee;
     }
 
     /**
@@ -1474,32 +1457,6 @@ class fonctions
             return ($this->anneeref()+1).$this->finperiode();
         }
 
-/*
-        if (!is_null($date))
-    	{
-    	    $update = "UPDATE CONSTANTES SET VALEUR = ? WHERE NOM = 'DEBUTALIMCET'";
-    		$params = array($this->formatdatedb($date));
-    		$query = $this->prepared_query($update, $params);
-    	}
-    	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'DEBUTALIMCET' AND VALEUR <> ''";
-    	$params = array();
-    	$query = $this->prepared_select($sql, $params);
-    	$erreur = mysqli_error($this->dbconnect);
-    	if ($erreur != "") {
-    		$errlog = "Fonctions->debutalimcet : " . $erreur;
-    		echo $errlog . "<br/>";
-    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-    	}
-    	if (mysqli_num_rows($query) == 0) {
-    		$errlog = "Fonctions->debutalimcet : Pas de début de période défini dans la base. On force au 0831 de l'année univ de référence. ";
-    		echo $errlog . "<br/>";
-    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-    		return ($this->anneeref()+1).$this->finperiode();
-    	}
-    	$result = mysqli_fetch_row($query);
-    	// echo "Fonctions->debutperiode : Debut de période ==> " . $result[0] . ".<br>";
-    	return "$result[0]";
-*/
     }
 
     /**
@@ -1655,35 +1612,21 @@ class fonctions
 
     public function getidmodelalimcet()
     {
-        $dbconstante='IDMODELALIMCET';
-        if ($this->testexistdbconstante($dbconstante))
-        {
-            return $this->liredbconstante($dbconstante);
-        }
-        else
-        {
-            return "";
-        }
+        static $modelalimcet = null;
 
-/*
-    	$sql = "SELECT VALEUR FROM CONSTANTES WHERE NOM = 'IDMODELALIMCET'";
-    	$params = array();
-    	$query = $this->prepared_select($sql, $params);
-    	$erreur = mysqli_error($this->dbconnect);
-    	if ($erreur != "") {
-    		$errlog = "Fonctions->getidmodelalimcet : " . $erreur;
-    		echo $errlog . "<br/>";
-    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-    	}
-    	if (mysqli_num_rows($query) == 0) {
-    		$errlog = "Fonctions->getidmodelalimcet : Pas d'identifiant de modele défini dans la base. ";
-    		echo $errlog . "<br/>";
-    		error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-    		return "";
-    	}
-    	$result = mysqli_fetch_row($query);
-    	return "$result[0]";
-*/
+        $dbconstante='IDMODELALIMCET';
+        if (is_null($modelalimcet))
+        {
+            if ($this->testexistdbconstante($dbconstante))
+            {
+                $modelalimcet = $this->liredbconstante($dbconstante);
+            }
+            else
+            {
+                $modelalimcet = "";
+            }
+        }
+        return $modelalimcet;
     }
 
     public function getidmodelteletravail($maxniveau, $agent)

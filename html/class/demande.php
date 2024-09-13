@@ -355,31 +355,47 @@ class demande
 
     function statut($statut = null)
     {
-        if (is_null($statut)) {
-            if (is_null($this->demandeid)) {
-                $errlog = "Demande->statut : La demande n'est pas enregistrée, donc pas de statut !!!";
+        if (is_null($statut)) 
+        {
+            if (is_null($this->demandeid) and is_null($this->statut))
+            {
+                $errlog = "Demande->statut : La demande n'est pas enregistrée et le statut est null !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else {
+            } 
+            else 
+            {
                 //if (strcasecmp($this->statut, 'v') == 0 or (strcasecmp($this->statut, 'a') == 0 or strcasecmp($this->statut, 'r') == 0))
                 //if (strcmp($this->statut, demande::DEMANDE_VALIDE) == 0 or strcmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0)
                 if (strcmp($this->statut, demande::DEMANDE_VALIDE) == 0 or strcmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)
+                {
                    return $this->statut;
-                else {
+                }
+                else 
+                {
                     $errlog = "Demande->statut : le statut n'est pas connu [statut = $this->statut] !!!";
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
             }
-        } else {
+        } 
+        else 
+        {
+            if ($this->typeabsenceid=='harp')
+            {
+                $this->statut = $statut;
+            }
             //if (strcasecmp($this->statut, 'a') == 0 or (strcasecmp($this->statut, 'v') == 0 and strcasecmp($statut, 'r') == 0)) {
             //if (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0 and strcasecmp($statut, demande::DEMANDE_REFUSE) == 0)) {
-            if (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0 and (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0))) {
+            elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0 and (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0)))
+            {
                 $this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
                 $this->statut = $statut;
-            } else {
+            } 
+            else 
+            {
                 $errlog = "Le statut actuel est : " . $this->statut . " ===> Impossible de le passer au statut : " . $statut;
-                //echo $errlog . "<br/>";
+                echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
         }
