@@ -1640,7 +1640,7 @@ class agent
                 }
             }
         }
-        // var_dump('Liste des structures où je suis gère les congés (comme gestionnaire) : '); foreach((array)$structliste as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
+        //var_dump('Liste des structures où je gère les congés (comme gestionnaire) : '); foreach((array)$structliste as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
         return $structliste;
     }
 
@@ -5990,34 +5990,49 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 // On va ajouter les responsables des structures filles si le gestionnaire peut valider les demandes ds responsables filles
                 // Attention : On doit vérifier que le responsable de la structure fille est bien affecté dans la structure
                 // Sinon, ce n'est pas à lui de gérer les congés.
-                if ($this->fonctions->convertvaluetobool($structure->gestvalidrespstructfille()))
+                // Attention 2 : Si le gestionnaire de la structure parente est dans le circuit de validation du responsable de la structure fille
+                //      on doit ajouter ce responsable dans la liste des agents à traiter
+
+                $structfilleliste = $structure->structurefille();
+                foreach ((array)$structfilleliste as $fille)
                 {
-                    $structfilleliste = $structure->structurefille();
-                    foreach ((array)$structfilleliste as $fille)
+                    if ($this->fonctions->formatdatedb($fille->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) 
                     {
+                        //var_dump("Je suis dans la structure " . $fille->nomlong());
                         $codeinterne = null;
                         $destinataire = $fille->resp_envoyer_a($codeinterne);
-                        if ($codeinterne==structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                        //var_dump("Code interne = $codeinterne ");
+                        if ($this->fonctions->convertvaluetobool($structure->gestvalidrespstructfille()) or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT)
                         {
-                            $resp = $fille->responsable();
-                            if (trim($resp->civilite())!='' and !$resp->estutilisateurspecial())
+                            // Le test sur structure::MAIL_RESP_ENVOI_RESP_PARENT => Le gestionnaire peut gérer les demandes des responsables des structures filles
+                            // Le test sur structure::MAIL_RESP_ENVOI_GEST_PARENT => Le gestionnaire fait partie du circuit de validation du responsable de la structure fille
+                            if ($codeinterne==structure::MAIL_RESP_ENVOI_RESP_PARENT or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT)
                             {
-                                if ($resp->structureid()==$fille->id())
+                                //var_dump("On va ajouter le responsable de la structure " . $fille->nomlong());
+                                $resp = $fille->responsable();
+                                if (trim($resp->civilite())!='' and !$resp->estutilisateurspecial())
                                 {
-                                    $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                                    if ($resp->structureid()==$fille->id())
+                                    {
+                                        $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                                    }
                                 }
-                            }
-                            $resp = $fille->responsablesiham();
-                            if (trim($resp->civilite())!='' and !$resp->estutilisateurspecial())
-                            {
-                                if ($resp->structureid()==$fille->id())
+                                //var_dump("On va ajouter le responsable SIHAM de la structure " . $fille->nomlong());
+                                $resp = $fille->responsablesiham();
+                                if (trim($resp->civilite())!='' and !$resp->estutilisateurspecial())
                                 {
-                                    $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                                    if ($resp->structureid()==$fille->id())
+                                    {
+                                        $agentlistefull[$resp->nom() . " " . $resp->prenom() . " " . $resp->agentid()] = $resp;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
+                //var_dump($agentlistefull);
+
                 
                 $codeinterne = null;
                 $destinataire = $structure->resp_envoyer_a($codeinterne);
