@@ -1330,17 +1330,17 @@ class agent
                 {
                     $errlog = $errlog . $destinataire;
                 }
-            $errlog = $errlog . ")";
-                    echo "$errlog ";
-                    global $uid;
-                    if (isset($uid) and $uid<>"")
-                    {
-                        echo "<br>";
-                    }
-                    else
-                    {
-                        echo "\n";                        
-                    }
+                $errlog = $errlog . ")";
+                // echo "$errlog ";
+                // global $uid;
+                // if (isset($uid) and $uid<>"")
+                // {
+                //     echo "<br>";
+                // }
+                // else
+                // {
+                //     echo "\n";                        
+                // }
 	            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog) . "\n");
 	        }
 	        else
@@ -4357,7 +4357,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     function synchroteletravail()
     {
         // Synchronisation des conventions de télétravail /// (sauf ANNULE)
-        $sql = "SELECT ESIGNATUREID FROM TELETRAVAIL WHERE AGENTID = ? AND ESIGNATUREID <> '' AND ESIGNATUREURL <> '' "; // AND STATUT NOT IN ('" . teletravail::TELETRAVAIL_ANNULE . "') " ;
+        $sql = "SELECT ESIGNATUREID,TELETRAVAILID,STATUT FROM TELETRAVAIL WHERE AGENTID = ? AND ESIGNATUREID <> '' AND ESIGNATUREURL <> '' "; // AND STATUT NOT IN ('" . teletravail::TELETRAVAIL_ANNULE . "') " ;
         $params = array($this->agentid);
         $query = $this->fonctions->prepared_select($sql, $params, "s");
         $erreur = mysqli_error($this->dbconnect);
@@ -4380,14 +4380,24 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
             while ($result = mysqli_fetch_row($query))
             {
-                $erreur = $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
-                //echo "<br>synchroteletravail => $erreur <br>";
-                if ($erreur != "")
+                $erreur = '';
+                // On prend en compte le cas du null
+                $esignatureid = trim($result[0] . "");
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" : On va traiter la demande id G2T =  " . $result[1] . " eSignature $esignatureid => statut actuel : " . $result[2]));
+                if ($esignatureid != '')
                 {
-                    return $erreur;
+                    $erreur = $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid);
+                    //echo "<br>synchroteletravail => $erreur <br>";
+                    if ($erreur != "")
+                    {
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" : On a rencontré une erreur sur la convention de télétravail id G2T = " . $result[1]  . " eSignature $esignatureid"));
+                        return $erreur;
+                    }
                 }
             }
         }
+        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" : On sort normalement de la synchroteletravail"));
+        return "";
     }
     
     

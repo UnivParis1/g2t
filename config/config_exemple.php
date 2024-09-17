@@ -164,6 +164,7 @@ define('URLCALENDAR', 'https://courrier-test.etab.fr/kronolith/lib/import-icals.
 
 // URL d'accès au serveur eSignature
 define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
+define('ESIGNATURETOKEN','');
 
 // Adresse mail du collecteur GLPI pour la création d'un ticket suite validation de la convention télétravail
 define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@etab.fr');

@@ -218,7 +218,11 @@
             $agent = new agent($dbcon);
             $agent->load($agentid);
 
-            $return = $fonctions->deleteesignaturedocument($esignatureid_annule);
+            $return = '';
+            if (trim($esignatureid_annule.'')<>'')
+            {
+                $return = $fonctions->deleteesignaturedocument($esignatureid_annule);
+            }
             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
             {
                 if (strlen($errlog)>0) $errlog = $errlog . '<br>';
@@ -421,6 +425,7 @@
     	            ];
     	            curl_setopt_array($curl, $opts);
     	            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4); 
+                    $fonctions->ajoutesignatureheader($curl);
     	            $json = curl_exec($curl);
     	            $error = curl_error ($curl);
     	            curl_close($curl);

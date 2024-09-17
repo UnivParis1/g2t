@@ -328,6 +328,7 @@
                 ];
                 curl_setopt_array($curl, $opts);
                 curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                $fonctions->ajoutesignatureheader($curl);
                 $json = curl_exec($curl);
                 $error = curl_error ($curl);
                 curl_close($curl);
@@ -391,7 +392,7 @@
     }
     
 //    if (!is_null($esignature_delete))
-    if (!is_null($esignatureid_delete))
+    if (!is_null($esignatureid_delete) and trim($esignatureid_delete)<>'')
     {
         // On appelle le WS de eSignature pour annuler la demande 
         // On synchronise ensuite le statut avec le WS G2T et on ajoute le commentaire via l'objet optionCET
@@ -412,8 +413,11 @@
         }
         else
         {
-
-            $return = $fonctions->deleteesignaturedocument($esignatureid_delete);
+            $return = '';
+            if (trim($esignatureid_delete.'')<>'')
+            {
+                $return = $fonctions->deleteesignaturedocument($esignatureid_delete);
+            }
             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
             {
                 if (strlen($errlog)>0) { $errlog = $errlog . '<br>'; }

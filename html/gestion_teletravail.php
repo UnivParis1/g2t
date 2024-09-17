@@ -267,6 +267,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
         foreach ((array)$cancelteletravailarray as $cancelteletravailid)
         {
             //echo "cancelteletravailid = $cancelteletravailid <br>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("On a demandé la suppression de la convention id G2T $cancelteletravailid"));
             $teletravail = new teletravail($dbcon);
             $return = $teletravail->load($cancelteletravailid);
             if (!$return)
@@ -286,7 +287,12 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 $return = '';
                 if ($esignatureactive and $teletravail->statutresponsable()==teletravail::TELETRAVAIL_VALIDE)
                 {
-                    $return = $fonctions->deleteesignaturedocument($teletravail->esignatureid());
+                    if (trim($teletravail->esignatureid().'')<>'')
+                    {
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("On va traiter la suppression dans eSignature de la convention $cancelteletravailid qui a le statut " . $teletravail->statut()));
+                        $return = $fonctions->deleteesignaturedocument($teletravail->esignatureid());
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("La suppression dans eSignature de la convention $cancelteletravailid est traitée"));
+                    }
                 }
                 if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
                 {
@@ -297,6 +303,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 else
                 {
                     // Annulation dans G2T
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("On modifie le statut de la convention $cancelteletravailid dans G2T"));
                     $teletravail->statut(teletravail::TELETRAVAIL_ANNULE);
                     $return = $teletravail->store();
                     if ($return != "")
@@ -778,7 +785,13 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
             }
             elseif($esignatureactive) // Tout est ok et eSignature est disponible
             {
-                $agent->synchroteletravail();
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" L'enregistrement du télétravail est ok => " . $teletravail->teletravailid() . " et le statut est : " . $teletravail->statut()));
+                $temperreur = $agent->synchroteletravail();
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" On vient de synchroniser les conventions de télétravail => temperreur = " . $temperreur));
+                $dummytt = new teletravail($dbcon);
+                $dummytt->load($teletravail->teletravailid());
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Suite à la synchro le statut de la convention qu'on vient de svg est " . $dummytt->statut()));
+
                 $responsable = $agent->getsignataire();
                 if (!is_null($responsable) and $responsable!==false)
                 {
@@ -1025,6 +1038,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                             curl_setopt_array($curl, $opts);
                             curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
                             //curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                            $fonctions->ajoutesignatureheader($curl);
                             $json = "";
                             $error = "";
                             if ($esignatureactive)
@@ -1169,7 +1183,10 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         $erreur = '';
         if ($esignatureactive)
         {
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" : On synchronise les conventions de télétravail avant affichage"));            
             $erreur = $agent->synchroteletravail();
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" : Fin de la synchronisation avant affichage => erreur = $erreur"));            
+
         }
     	if ($erreur != "")
     	{
@@ -1181,7 +1198,9 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             error_log(basename(__FILE__) . " : Pas en mode gestRH et l'interface eSignature n'est pas active");            
      	    $disablesubmit = true;
         }
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" : On récupère les conventions de télétravail de l'agent"));            
     	$teletravailliste = $agent->teletravailliste('01/01/1900', '31/12/2100'); // On va récupérer toutes les demandes de télétravail de l'agent pour les afficher
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" : On a la liste des conventions de télétravail de l'agent : Count = " . count($teletravailliste)));
     	if (count($teletravailliste) > 0)
     	{
             $displayPDFbutton = false;

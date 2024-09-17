@@ -92,6 +92,7 @@
                     ];
                     curl_setopt_array($curl, $opts);
                     curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    $fonctions->ajoutesignatureheader($curl);
                     $json = curl_exec($curl);
                     
                     $error = curl_error ($curl);
@@ -130,6 +131,7 @@
                         }
                         curl_setopt_array($curl, $opts);
                         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                        $fonctions->ajoutesignatureheader($curl);
                         $json = curl_exec($curl);
 
                         $error = curl_error ($curl);
@@ -238,6 +240,7 @@
                                         ];
                                         curl_setopt_array($curl2, $opts2);
                                         curl_setopt($curl2, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                                        $fonctions->ajoutesignatureheader($curl2);
                                         $json2 = curl_exec($curl2);
                                         $error2 = curl_error ($curl2);
                                         curl_close($curl2);

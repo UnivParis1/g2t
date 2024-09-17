@@ -606,6 +606,27 @@
 </script>
 <?php
 
+    // // Get Statut :
+    // $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); 
+
+    // $curl = curl_init();
+    // $params_string = "";
+    // $opts = [
+    //     CURLOPT_URL => $eSignature_url . '/ws/signrequests/status/' . '2494020',
+    //     CURLOPT_RETURNTRANSFER => true,
+    //     CURLOPT_SSL_VERIFYPEER => false,
+    //     CURLOPT_PROXY => ''
+    // ];
+    // curl_setopt_array($curl, $opts);
+    // curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+    // $fonctions->ajoutesignatureheader($curl);
+
+    // $json = curl_exec($curl);
+    // $result = json_decode($json);
+
+    // var_dump($json);
+
+    // var_dump($result);
 
 ?>
 </body>

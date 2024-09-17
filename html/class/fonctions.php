@@ -3502,27 +3502,31 @@ class fonctions
             error_log(basename(__FILE__) . " " . $this->stripAccents(" $erreur"));
             return $erreur;
         }
-        $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); //"https://esignature-test.univ-paris1.fr";
-        //$url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
+        $eSignature_url = $this->liredbconstante("ESIGNATUREURL"); 
+        //$url = $eSignature_url.'/ws/signrequests/'.$esignatureid;         ==> Suppression complète sans passer par la corbeille
+        //$url = $eSignature_url.'/ws/signrequests/soft/'.$esignatureid;    ==> Dépot du document dans corbeille pour purge ultérieure
+                                        /// ATTENTION : Bug dans le WS /ws/signrequests/status/{id} si le document est dans la corbeille. Il retourne 'pending'
         $url = $eSignature_url.'/ws/signrequests/soft/'.$esignatureid;
         $tryagain = true;
         $nbretry = 0;
         while ($tryagain)
         {
             $json = '';
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $json = curl_exec($ch);
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $json);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            $this->ajoutesignatureheader($curl);
+
+            $json = curl_exec($curl);
             $result = json_decode($json);
             error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE SUPPRESSION DOCUMENT -- " . var_export($result, true));
-            $error = curl_error ($ch);
+            $error = curl_error ($curl);
             //var_dump($error);
-            curl_close($ch);
+            curl_close($curl);
             if ($error != "")
             {
                 if (strlen($erreur)>0) $erreur = $erreur . '<br>';
@@ -3633,6 +3637,7 @@ class fonctions
         ];
         curl_setopt_array($curl, $opts);
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $this->ajoutesignatureheader($curl);
         $json = curl_exec($curl);
 
         $error = curl_error ($curl);
@@ -3646,8 +3651,8 @@ class fonctions
         }
         else
         {
-            //error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
-            //error_log(basename(__FILE__) . " " . var_export($json,true));
+            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
+            error_log(basename(__FILE__) . " " . var_export($json,true));
             $current_status = str_replace("'", "", $json);  // json_decode($json, true);
 
             error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests/status"));
@@ -3678,6 +3683,7 @@ class fonctions
                     ];
                     curl_setopt_array($curl, $opts);
                     curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                    $this->ajoutesignatureheader($curl);
                     $json = curl_exec($curl);
                     $error = curl_error ($curl);
                     curl_close($curl);
@@ -3716,6 +3722,7 @@ class fonctions
                     error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
                     $status = "";
                     $result_json = array('status' => 'Error', 'description' => $erreur);
+                    break;
 
             }
         }
@@ -3769,6 +3776,7 @@ class fonctions
                             //error_log(basename(__FILE__) . $this->stripAccents(" opts = " . var_export($opts,true)));
                             curl_setopt_array($curl, $opts);
                             curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                            $this->ajoutesignatureheader($curl);
                             $json = curl_exec($curl);
                             $error = curl_error ($curl);
                             curl_close($curl);
@@ -3862,6 +3870,7 @@ class fonctions
                         error_log(basename(__FILE__) . $this->stripAccents(" $reason"));
                     }
                     error_log(basename(__FILE__) . $this->stripAccents(" On passe le statut de la convention " . $esignatureid . " à $status (" . $this->teletravailstatutlibelle($status) . ")"));
+                    $ancienstatut = $teletravail->statut();
                     $teletravail->statut($status);
                     $teletravail->commentaire($reason);
                     $erreur = $teletravail->store();
@@ -3910,13 +3919,19 @@ class fonctions
                         $currentconventionid=$teletravail->teletravailid();
                         $datedebutteletravail = $teletravail->datedebut();
                         $datefinteletravail = $teletravail->datefin();
-                        $liste = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
+                        $liste = array();
+                        // Si la demande de convention était déjà annulée ou refusée, cela n'a aucun impact sur les conventions actuelles
+                        if ($ancienstatut != teletravail::TELETRAVAIL_ANNULE and $ancienstatut != teletravail::TELETRAVAIL_REFUSE)
+                        {
+                            $liste = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
+                        }
                         foreach ($liste as $conventionid)
                         {
                             if ($currentconventionid <> $conventionid) // On ignore la convention qu'on vient de traiter
                             {
                                 $teletravailmodif = new teletravail($this->dbconnect);
                                 $teletravailmodif->load($conventionid);
+                                error_log(basename(__FILE__) . $this->stripAccents(" On va changer le statut de la convention G2T $conventionid qui a actuellement le statut => " . $teletravailmodif->statut()));
                                 if (in_array($teletravailmodif->statut(),array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
                                 {
                                     if ($teletravailmodif->datefin()>=$datedebutteletravail)
@@ -3930,7 +3945,11 @@ class fonctions
                                         //echo "date fin  = " . $this->formatdatedb($teletravail->datefin()) . "<br>";
                                         if ($this->formatdatedb($teletravailmodif->datefin()) < $this->formatdatedb($teletravailmodif->datedebut()))
                                         {
-                                            $return = "" . $this->deleteesignaturedocument($teletravailmodif->esignatureid());
+                                            $return = '';
+                                            if (trim($teletravailmodif->esignatureid().'')<>'')
+                                            {
+                                                $return = "" . $this->deleteesignaturedocument($teletravailmodif->esignatureid());
+                                            }
                                             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
                                             {
                                                 if (strlen($erreur)>0) $erreur = $erreur . '<br>';
@@ -3994,6 +4013,7 @@ class fonctions
             curl_setopt_array($curl, $opts);
             curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             //curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            $this->ajoutesignatureheader($curl);
             $json = curl_exec($curl);
             $error = curl_error ($curl);
             curl_close($curl);
@@ -5469,6 +5489,28 @@ WHERE  table_schema = Database()
         }
         return $demandeliste;
         
+    }
+
+    function ajoutesignatureheader(&$curl)
+    {
+        static $token = '';   //'457a2879-530a-45f0-a2cc-54c54032b923';
+
+        $dbconstante = 'ESIGNATURETOKEN';
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            $token = $this->liredbconstante($dbconstante);
+        }
+
+        $header = array();
+        if (strlen($token)>0)
+        {
+            $header[] = "X-API-Key: $token";
+        }
+
+        if (count($header)>0)
+        {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+        }
     }
 
 }
