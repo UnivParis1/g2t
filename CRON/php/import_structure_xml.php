@@ -621,6 +621,45 @@
         }
         
 
+        ////////////////////////////////////////////////////
+        // On supprime la fonction de gestionnaire car le responsable de la structure ne peut être gestionnaire de cette même structure
+        //
+        $cronuser = new agent($dbcon);
+        $cronuser->load(SPECIAL_USER_IDCRONUSER);
+        echo "------------------------------------------------------------ \n";
+        echo "On supprime les gestionnaires qui sont responsables de la même structure \n";
+        $sql = "SELECT STRUCTURE.STRUCTUREID, STRUCTURE.GESTIONNAIREID 
+                FROM STRUCTURE 
+                WHERE STRUCTURE.GESTIONNAIREID = STRUCTURE.RESPONSABLEID 
+                  AND STRUCTURE.DATECLOTURE > '" . $fonctions->formatdatedb(date("d/m/Y")) .  "' 
+                  AND STRUCTURE.GESTIONNAIREID != '' ";
+        //echo "SQL = $sql \n";
+        $query = mysqli_query($dbcon, $sql);
+        $erreur_requete = mysqli_error($dbcon);
+        if ($erreur_requete != "")
+        {
+            echo "Error : SELECT STRUCTURE.GESTIONNAIREID => $erreur_requete \n";
+        }
+        while ($result = mysqli_fetch_row($query))
+        {
+            $gestionnaireid = $result[1];
+            $structureid = $result[0];
+            $structure = new structure($dbcon);
+            $structure->load($structureid);
+            $gestionnaire = new agent($dbcon);
+            $gestionnaire->load($gestionnaireid);
+            $structure->gestionnaire("");
+            $structure->store();
+            echo "Le gestionnaire de la structure " . $structure->id()  . " (" . $gestionnaire->identitecomplete() . ") a été supprimé => Il est responsable de cette structure. \n";
+            $corpsdumail="Votre fonction 'Gestionnaire G2T' a été supprimée pour la structure '" . $structure->nomlong() . "' \n";
+            $corpsdumail=$corpsdumail . "car en tant que responsable G2T de la structure vous ne pouvez être défini comme gestionnaire G2T de cette même structure.\n";
+            $corpsdumail=$corpsdumail . "\n";
+            $corpsdumail=$corpsdumail . "Nous vous invitons à déclarer un nouveau gestionnaire G2T respectant cette règle de gestion.\n";
+            $corpsdumail=$corpsdumail . "\n";
+            $cronuser->sendmail($gestionnaire,"Suppression de la fonction de gestionnaire G2T", $corpsdumail,null,null,false);
+        }
+
+
         ///////////////////////////////////////////////////
         // On ajoute les responsables / les gestionnaires à partir de LDAP s'il n'existent pas dans la base
         // On supprime les agents qui ont comme typepopulation => 'Import automatique LDAP'

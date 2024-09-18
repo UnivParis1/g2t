@@ -329,11 +329,22 @@
                     }
                 }
                 //echo "Agentid pour le gestionnaire vaut : $agentid <br>";
+                $structure = new structure($dbcon);
+                $structure->load($structureid);
+                $responsable = $structure->responsable();
+                if ($agentid == $responsable->agentid())
+                {
+                    $errlog = "Le responsable de la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") ne peut être défini comme gestionnaire.";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                    echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+                    $agentid = "";
+                    $structure->gestionnaire("");
+                    $structure->store();
+                }
+
                 // Si le agentid n'est pas vide ou null
-                if ($agentid != '' and (! is_null($agentid))) {
+                elseif ($agentid != '' and (! is_null($agentid))) {
                     // $structureid = str_replace("'", "", $structureid);
-                    $structure = new structure($dbcon);
-                    $structure->load($structureid);
                     $structure->gestionnaire($agentid);
                     $structure->store();
                 }

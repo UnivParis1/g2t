@@ -227,8 +227,18 @@
                     }
                 }
                 
+                $responsable = $structure->responsable();
+                if ($agentid == $responsable->agentid())
+                {
+                    $errlog = "Le responsable de la structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") ne peut être défini comme gestionnaire.";
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                    echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
+                    $agentid = "";
+                    $structure->gestionnaire("");
+                }
+
                 // Si le agentid n'est pas vide ou null
-                if ($agentid != '' and (! is_null($agentid))) 
+                elseif ($agentid != '' and (! is_null($agentid))) 
                 {
                     // echo "On fixe le gestionnaire !!!!<br>";
                     $errlog = "On fixe le gestionnaire de la structure " . $structure->nomcourt() . " à $agentid";
