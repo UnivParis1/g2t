@@ -3506,7 +3506,7 @@ class fonctions
         //$url = $eSignature_url.'/ws/signrequests/'.$esignatureid;         ==> Suppression complète sans passer par la corbeille
         //$url = $eSignature_url.'/ws/signrequests/soft/'.$esignatureid;    ==> Dépot du document dans corbeille pour purge ultérieure
                                         /// ATTENTION : Bug dans le WS /ws/signrequests/status/{id} si le document est dans la corbeille. Il retourne 'pending'
-        $url = $eSignature_url.'/ws/signrequests/soft/'.$esignatureid;
+        $url = $eSignature_url.'/ws/signrequests/'.$esignatureid;
         $tryagain = true;
         $nbretry = 0;
         while ($tryagain)
