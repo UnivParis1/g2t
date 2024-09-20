@@ -331,6 +331,11 @@
                 $fonctions->ajoutesignatureheader($curl);
                 $json = curl_exec($curl);
                 $error = curl_error ($curl);
+                $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                if ((int) $httpcode !== 200 and $error=="")
+                {
+                    $error = "Code retour HTTP => $httpcode";
+                }
                 curl_close($curl);
                 if ($error != "")
                 {
@@ -338,6 +343,10 @@
                 }
                 //echo "<br>" . print_r($json,true) . "<br>";
                 $id = json_decode($json, true);
+                if (trim($id . "") == "")
+                {
+                    $id = -99999;
+                }
 
                 //var_dump($id);
                 if (is_array($id))
@@ -346,7 +355,7 @@
                 }
                 elseif ("$id" < 0)
                 {
-                    $erreur =  "La création du droit d'option dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
+                    $erreur =  "La création du droit d'option dans eSignature a échoué (Numéro demande eSignature incorrect = $id) ==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
                 }
                 elseif ("$id" <> "")
                 {

@@ -428,7 +428,12 @@
                     $fonctions->ajoutesignatureheader($curl);
     	            $json = curl_exec($curl);
     	            $error = curl_error ($curl);
-    	            curl_close($curl);
+                    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                    if ((int) $httpcode !== 200 and $error=="")
+                    {
+                        $error = "Code retour HTTP => $httpcode";
+                    }
+                    curl_close($curl);
     	            if ($error != "")
     	            {
     	                //echo "Erreur Curl = " . $error . "<br><br>";
@@ -437,7 +442,11 @@
     	            //echo "<br>" . print_r($json,true) . "<br>";
     	            //echo "<br>"; var_dump($json); echo "<br>";
     	            $id = json_decode($json, true);
-    	            error_log(basename(__FILE__) . " " . var_export($opts, true));
+                    if (trim($id . "") == "")
+                    {
+                        $id = -99999;
+                    }
+                    error_log(basename(__FILE__) . " " . var_export($opts, true));
     	            error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE CREATION ALIM -- " . var_export($id, true));
     	            //var_dump($id);
     	            if (is_array($id))
@@ -452,7 +461,7 @@
     	            {
     	                if ("$id" < 0)
     	                {
-    	                    $erreur =  "La création de la demande d'alimentation dans eSignature a échoué (numéro demande eSignature négatif = $id) !!==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
+    	                    $erreur =  "La création de la demande d'alimentation dans eSignature a échoué (Numéro demande eSignature incorrect = $id) ==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
     	                    error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
     	                    //echo "$erreur <br><br>";
                             echo $fonctions->showmessage(fonctions::MSGERROR, "$erreur");

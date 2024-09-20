@@ -623,6 +623,11 @@ class agent
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $json = curl_exec($curl);
         $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
+        {
+            $error = "Code retour HTTP => $httpcode";
+        }
         curl_close($curl);
         if ($error != "")
         {
@@ -649,6 +654,11 @@ class agent
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $json = curl_exec($curl);
         $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
+        {
+            $error = "Code retour HTTP => $httpcode";
+        }
         curl_close($curl);
         if ($error != "")
         {
@@ -1131,8 +1141,14 @@ class agent
                     $result = "";
                     //error_log(basename(__FILE__)." Curl de MAJ du calendrier : ".$this->fonctions->stripAccents(var_export($ch,true)));
                     $result = curl_exec($ch);
+                    $error = curl_error ($ch);
+                    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    if ((int) $httpcode !== 200 and $error=="")
+                    {
+                        $error = "Code retour HTTP => $httpcode";
+                    }
                     if (curl_errno($ch)) {
-                        $curlerror = 'Curl error: ' . curl_error($ch) . ' URL = ' . $url;
+                        $curlerror = 'Curl error: ' . $error . ' URL = ' . $url;
                         $errlog = "Agent->updatecalendar (AGENT) : " . $curlerror;
                         error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                     }

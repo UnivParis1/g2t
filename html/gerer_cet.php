@@ -240,6 +240,11 @@
             $fonctions->ajoutesignatureheader($curl);
             $json = curl_exec($curl);
             $error = curl_error ($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ((int) $httpcode !== 200 and $error=="")
+            {
+                $error = "Code retour HTTP => $httpcode";
+            }
             curl_close($curl);
             if ($error != "")
             {
@@ -392,6 +397,11 @@
             $fonctions->ajoutesignatureheader($curl);
             $json = curl_exec($curl);
             $error = curl_error ($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ((int) $httpcode !== 200 and $error=="")
+            {
+                $error = "Code retour HTTP => $httpcode";
+            }
             curl_close($curl);
             if ($error != "")
             {

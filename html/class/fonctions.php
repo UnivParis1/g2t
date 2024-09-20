@@ -1742,6 +1742,11 @@ class fonctions
         //echo "<br>CURLOPT_PROXY => " . curl_getinfo($curl,CURLOPT_PROXY) . "<br><br>";
         $json = curl_exec($curl);
         $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
+        {
+            $error = "Code retour HTTP => $httpcode";
+        }
         curl_close($curl);
         if ($error != "")
         {
@@ -2582,6 +2587,11 @@ class fonctions
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $json = curl_exec($curl);
         $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
+        {
+            $error = "Code retour HTTP => $httpcode";
+        }
         curl_close($curl);
         if ($error != "")
         {
@@ -3277,6 +3287,11 @@ class fonctions
             }
             $json = curl_exec($curl);
             $error = curl_error ($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ((int) $httpcode !== 200 and $error=="")
+            {
+                $error = "Code retour HTTP => $httpcode";
+            }
             curl_close($curl);
             if ($error != "")
             {
@@ -3525,6 +3540,11 @@ class fonctions
             $result = json_decode($json);
             error_log(basename(__FILE__) . " -- RETOUR ESIGNATURE SUPPRESSION DOCUMENT -- " . var_export($result, true));
             $error = curl_error ($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ((int) $httpcode !== 200 and $error=="")
+            {
+                $error = "Code retour HTTP => $httpcode";
+            }
             //var_dump($error);
             curl_close($curl);
             if ($error != "")
@@ -3639,15 +3659,21 @@ class fonctions
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $this->ajoutesignatureheader($curl);
         $json = curl_exec($curl);
-
         $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
+        {
+            $error = "Code retour HTTP => $httpcode";
+        }
         curl_close($curl);
         if ($error != "")
         {
-            $erreur_curl = "Erreur dans eSignature (WS g2t) : ".$json;
+            $erreur_curl = "Erreur dans eSignature (WS g2t) : ". $json . " => Description de l'erreur : $error";
             error_log(basename(__FILE__) . $this->stripAccents(" $erreur_curl"));
-            // $result_json = array('status' => 'Error', 'description' => $erreur);
-            $status = teletravail::TELETRAVAIL_ANNULE;
+            //$status = teletravail::TELETRAVAIL_ANNULE;
+            // Si j'ai une erreur dans mon appel CURL on ne doit rien faire => Statut = '' et on crée le $result_json
+            $result_json = array('status' => 'Error', 'description' => $error);
+            $status = '';
         }
         else
         {
@@ -3686,6 +3712,11 @@ class fonctions
                     $this->ajoutesignatureheader($curl);
                     $json = curl_exec($curl);
                     $error = curl_error ($curl);
+                    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                    if ((int) $httpcode !== 200 and $error=="")
+                    {
+                        $error = "Code retour HTTP => $httpcode";
+                    }
                     curl_close($curl);
                     if ($error != "")
                     {
@@ -3779,6 +3810,11 @@ class fonctions
                             $this->ajoutesignatureheader($curl);
                             $json = curl_exec($curl);
                             $error = curl_error ($curl);
+                            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                            if ((int) $httpcode !== 200 and $error=="")
+                            {
+                                $error = "Code retour HTTP => $httpcode";
+                            }
                             curl_close($curl);
                             if ($error != "")
                             {
@@ -4016,6 +4052,11 @@ class fonctions
             $this->ajoutesignatureheader($curl);
             $json = curl_exec($curl);
             $error = curl_error ($curl);
+            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+            if ((int) $httpcode !== 200 and $error=="")
+            {
+                $error = "Code retour HTTP => $httpcode";
+            }
             curl_close($curl);
             if ($error != "")
             {
