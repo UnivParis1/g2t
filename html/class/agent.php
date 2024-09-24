@@ -2803,26 +2803,6 @@ const modifymotif = (motif, motifid) =>
                 $htmltext = $htmltext . "</table>";
                 $htmltext = $htmltext . "
 <script>
-/*******************************************
-******* Déclarations déplacées dans menu.php
-const getCellValue = (tr, idx) => 
-{
-    if (tr.children[idx].querySelector('time')!==null) // Si on a un time dans le td, alors on trie sur l'attribut datetime
-    {
-        return tr.children[idx].querySelector('time').getAttribute('datetime');
-    }
-    else
-    {
-        return tr.children[idx].innerText || tr.children[idx].textContent;
-    }
-}
-                    
-const comparer = (idx, asc) => (a, b) => ((v1, v2) =>
-    v1 !== '' && v2 !== '' && !isNaN(v1) && !isNaN(v2) ? v1 - v2 : v1.toString().localeCompare(v2)
-    )(getCellValue(asc ? a : b, idx), getCellValue(asc ? b : a, idx));
-*******************************************
-*/
-
                     
 // do the work...
 document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {

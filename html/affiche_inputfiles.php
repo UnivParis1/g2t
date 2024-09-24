@@ -231,16 +231,16 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_absence' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr >
                                                        <td class='titresimple' colspan=4 align=center >Affichage des absences de l'agent " . $agent->identitecomplete() . "</td>
                                                     </tr>";
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' >Id de l'agent</th>
-                                                      <th class='cellulesimple' >Date début</th>
-                                                      <th class='cellulesimple' >Date fin</th>
-                                                      <th class='cellulesimple' >Type d'absence (SIHAM)</th>";
+                                                      <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date fin <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Type d'absence (SIHAM) <span class='sortindicator'> </span></th>";
                         $htmltext = $htmltext . "   </tr>";
                         $htmltext = $htmltext . "</thead>";
                         $htmltext = $htmltext . "<tbody>";
@@ -248,8 +248,8 @@
                     }
                     $htmltext = $htmltext . "<tr align=center >";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$inputagentid</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datedebutformate</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datefinformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datedebutformate) . "'>$datedebutformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datefinformate) . "'>$datefinformate</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$typeabsence</td>";
                     $htmltext = $htmltext . "</tr>";
                 }
@@ -258,6 +258,70 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
+
+                $htmltext = $htmltext . "
+<script>
+                    
+// do the work...
+document.getElementById('table_absence').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+    const currentsortindicator = th.querySelector('.sortindicator')
+
+    if (currentsortindicator!==null)
+    {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+    
+        if (currentsortindicator.innerText.trim().length>0)
+        {
+            th.asc = !th.asc
+        }
+    
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+    
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    
+        for (var thindex = 0 ; thindex < document.getElementById('table_absence').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
+            {
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+            }
+        }
+    }
+})));
+
+document.getElementById('table_absence').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('table_absence').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+
+</script>";
+
             }
             else
             {
@@ -296,7 +360,7 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_fonctions' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des fonctions de l'agent " . $agent->identitecomplete() . " (niveau dossier agent)</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
@@ -370,7 +434,7 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_fonctionsUO' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=8 align=center >Affichage des structures où l'agent " . $agent->identitecomplete() . " est responsable (niveau UO SIHAM)</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
@@ -444,15 +508,15 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_activite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des situations/activités de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' >Id de l'agent</th>
-                                                      <th class='cellulesimple' >Numéro de ligne SIHAM</th>
-                                                      <th class='cellulesimple' >Code situation</th>
-                                                      <th class='cellulesimple' >Date de début</th>
-                                                      <th class='cellulesimple' >Date de fin</th>
+                                                      <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Code situation <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de fin <span class='sortindicator'> </span></th>
                                                       ";
                         $htmltext = $htmltext . "   </tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -469,8 +533,8 @@
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$inputagentid</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$numligne</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$codesituation</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datedebutformate</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datefinformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datedebutformate) . "'>$datedebutformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datefinformate) . "'>$datefinformate</td>";
                     $htmltext = $htmltext . "</tr>";
                 }
             }
@@ -478,6 +542,70 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
+
+                $htmltext = $htmltext . "
+<script>
+                    
+// do the work...
+document.getElementById('table_activite').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+    const currentsortindicator = th.querySelector('.sortindicator')
+
+    if (currentsortindicator!==null)
+    {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+    
+        if (currentsortindicator.innerText.trim().length>0)
+        {
+            th.asc = !th.asc
+        }
+    
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+    
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    
+        for (var thindex = 0 ; thindex < document.getElementById('table_activite').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
+            {
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+            }
+        }
+    }
+})));
+
+document.getElementById('table_activite').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('table_activite').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+
+</script>";
+
             }
             else
             {
@@ -516,15 +644,15 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_modalite' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des modalités de travail (quotité) de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' >Id de l'agent</th>
-                                                      <th class='cellulesimple' >Numéro de ligne SIHAM</th>
-                                                      <th class='cellulesimple' >Quotité de travail</th>
-                                                      <th class='cellulesimple' >Date de début</th>
-                                                      <th class='cellulesimple' >Date de fin</th>
+                                                      <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Quotité de travail <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de fin <span class='sortindicator'> </span></th>
                                                       ";
                         $htmltext = $htmltext . "   </tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -541,8 +669,8 @@
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$inputagentid</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$numligne</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$numquotite %</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datedebutformate</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datefinformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datedebutformate) . "'>$datedebutformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datefinformate) . "'>$datefinformate</td>";
                     $htmltext = $htmltext . "</tr>";
                 }
             }
@@ -550,6 +678,70 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
+
+                $htmltext = $htmltext . "
+<script>
+                    
+// do the work...
+document.getElementById('table_modalite').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+    const currentsortindicator = th.querySelector('.sortindicator')
+
+    if (currentsortindicator!==null)
+    {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+    
+        if (currentsortindicator.innerText.trim().length>0)
+        {
+            th.asc = !th.asc
+        }
+    
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+    
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    
+        for (var thindex = 0 ; thindex < document.getElementById('table_modalite').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
+            {
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+            }
+        }
+    }
+})));
+
+document.getElementById('table_modalite').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('table_modalite').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+
+</script>";
+
             }
             else
             {
@@ -595,15 +787,15 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_statut' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des statuts de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' >Id de l'agent</th>
-                                                      <th class='cellulesimple' >Numéro de ligne SIHAM</th>
-                                                      <th class='cellulesimple' >Statut</th>
-                                                      <th class='cellulesimple' >Date de début</th>
-                                                      <th class='cellulesimple' >Date de fin</th>
+                                                      <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Statut <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de fin <span class='sortindicator'> </span></th>
                                                       ";
                         $htmltext = $htmltext . "   </tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -620,8 +812,8 @@
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$inputagentid</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$numligne</td>";
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$codecontrat</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datedebutformate</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datefinformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datedebutformate) . "'>$datedebutformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datefinformate) . "'>$datefinformate</td>";
                     $htmltext = $htmltext . "</tr>";
                 }
             }
@@ -629,6 +821,70 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
+
+                $htmltext = $htmltext . "
+<script>
+                    
+// do the work...
+document.getElementById('table_statut').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+    const currentsortindicator = th.querySelector('.sortindicator')
+
+    if (currentsortindicator!==null)
+    {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+    
+        if (currentsortindicator.innerText.trim().length>0)
+        {
+            th.asc = !th.asc
+        }
+    
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+    
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    
+        for (var thindex = 0 ; thindex < document.getElementById('table_statut').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
+            {
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+            }
+        }
+    }
+})));
+
+document.getElementById('table_statut').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('table_statut').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+
+</script>";
+
             }
             else
             {
@@ -667,15 +923,15 @@
                     // Si c'est le premier noeud
                     if ($premiereligne)
                     {
-                        $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
+                        $htmltext = $htmltext . "<table id='table_affectation' class='tableausimple'>";
                         $htmltext = $htmltext . "<thead>";
                         $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des affectations fonctionnelles de l'agent " . $agent->identitecomplete() . "</td></tr>";
                         $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple' >Id de l'agent</th>
-                                                      <th class='cellulesimple' >Numéro de ligne SIHAM</th>
-                                                      <th class='cellulesimple' >Code structure</th>
-                                                      <th class='cellulesimple' >Date de début</th>
-                                                      <th class='cellulesimple' >Date de fin</th>
+                                                      <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Code structure <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de début <span class='sortindicator'> </span></th>
+                                                      <th class='cellulesimple cursorpointer' >Date de fin <span class='sortindicator'> </span></th>
                                                       ";
                         $htmltext = $htmltext . "   </tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -694,8 +950,8 @@
                     $structure = new structure($dbcon);
                     $structure->load($idstruct);
                     $htmltext = $htmltext . "   <td class='cellulesimple'>$idstruct (" . $structure->nomcourt() . ")</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datedebutformate</td>";
-                    $htmltext = $htmltext . "   <td class='cellulesimple'>$datefinformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datedebutformate) . "'>$datedebutformate</td>";
+                    $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($datefinformate) . "'>$datefinformate</td>";
                     $htmltext = $htmltext . "</tr>";
                 }
             }
@@ -703,6 +959,70 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
+
+                $htmltext = $htmltext . "
+<script>
+                    
+// do the work...
+document.getElementById('table_affectation').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
+
+    const currentsortindicator = th.querySelector('.sortindicator')
+
+    if (currentsortindicator!==null)
+    {
+        const table = th.closest('table');
+        const tbody = table.querySelector('tbody');
+        //alert (table.id);
+    
+        if (currentsortindicator.innerText.trim().length>0)
+        {
+            th.asc = !th.asc
+        }
+    
+        Array.from(tbody.querySelectorAll('tr'))
+            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+            .forEach(tr => tbody.appendChild(tr) );
+        theader = table.querySelector('theader');
+    
+        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+    
+        for (var thindex = 0 ; thindex < document.getElementById('table_affectation').querySelectorAll('th').length; thindex++)
+        {
+            //alert (thindex);
+            if (th.parentNode.children[thindex]!==null)
+            {
+                //alert (th.parentNode.children[thindex].innerHTML);
+                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                if (thsortindicator!==null)
+                {
+                    //alert (thsortindicator.innerText);
+                    thsortindicator.innerText = ' ';
+                    //alert (thsortindicator.innerText);
+                }
+            }
+        }
+    
+        if (currentsortindicator!==null)
+        {
+            if (th.asc)
+            {
+                //alert ('plouf');
+                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+            }
+            else
+            {
+                //alert ('ploc');
+                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+            }
+        }
+    }
+})));
+
+document.getElementById('table_affectation').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+document.getElementById('table_affectation').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+
+</script>";
+
             }
             else
             {
