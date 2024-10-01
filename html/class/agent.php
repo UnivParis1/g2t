@@ -3327,46 +3327,65 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 
                 $extraclass = "";
                 $spantext = '';
-                if ($allowremove)
+                $complement = new complement($this->dbconnect);
+                $complement->load($this->agentid,complement::REFUSRH_CONGES_SUP_LABEL . $result[6]);
+                // Si le complement REFUSRH_CONGES_SUP_LABEL existe (<=> agentid != '') => On doit indiquer qu'il a été refusé par RH
+                if ($complement->agentid()!="")
+                {
+                    $extraclass = " textstrike ";
+                    $spantext = '<span class="textstrike" data-tip="Refus par la Direction des Ressources Humaines : ' . htmlentities($complement->valeur()) . '">';
+                }
+                elseif ($allowremove)
                 {
                     $complement = new complement($this->dbconnect);
                     $complement->load($this->agentid,complement::AVISRH_CONGES_SUP_LABEL . $result[6]);
-                    // Si le complement existe (<=> agentid != '') => On doit indiquer qu'il est en attente de validation par RH
+                    // Si le complement AVISRH_CONGES_SUP_LABEL existe (<=> agentid != '') => On doit indiquer qu'il est en attente de validation par RH
                     if ($complement->agentid()!="")
                     {
                         $extraclass = " attentevalid ";
                         $spantext = '<span data-tip="L\'ajout de congés est en attente de validation par la Direction des Ressources Humaines.">';
+
                     }
+                }
+                $spanend = '';
+                if ($spantext != '')
+                {
+                    $spanend = '</span>';
                 }
 
                 $htmltext = $htmltext . "<tr align=center>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $result[1] . "</td>";
-                $htmltext = $htmltext . "<td class='cellulesimple'>" . $this->fonctions->formatdate($result[2]) . "</td>";
+                $htmltext = $htmltext . "<td class='cellulesimple $extraclass'>" . $result[1] . "</td>";
+                $htmltext = $htmltext . "<td class='cellulesimple $extraclass'>" . $this->fonctions->formatdate($result[2]) . "</td>";
                 if ($result[4] > 0)
                 {
-                    $htmltext = $htmltext . "<td class='cellulesimple'>+" . (float) ($result[4]) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple $extraclass'>+" . (float) ($result[4]) . "</td>";
                 }
                 else
                 {
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . (float) ($result[4]) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple $extraclass'>" . (float) ($result[4]) . "</td>";
                 }
                 $commentaire = trim($result[3]);
                 if (trim($result[7])=='')
                 {
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . htmlentities($commentaire) . "</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple $extraclass'>" . htmlentities($commentaire) . "</td>";
                 }
                 else
                 {
                     $auteur = new agent($this->dbconnect);
                     $auteur->load(trim($result[7]));
-                    $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne $extraclass' >$spantext" . htmlentities($commentaire) . " (par " .  $auteur->identitecomplete()  .   ")</td>";
+                    $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne $extraclass' >$spantext " . htmlentities($commentaire) . " (par " .  $auteur->identitecomplete()  .   ") $spanend</td>";
                 }
                 if ($allowremove)
                 {
                     $disabled = "";
                     $spantext = '';
 
-                    if ($result[8]>0)
+                    if ($complement->complementid()==complement::REFUSRH_CONGES_SUP_LABEL . $result[6])
+                    {
+                        $disabled = " hidden ";
+                        //$spantext = '<span data-tip="Suppression impossible : Cet ajout de jours de récupération a déjà refusée par la Direction des Ressources Humaines.">';
+                    }
+                    elseif ($result[8]>0)
                     {
                         $disabled = " disabled ";
                         $spantext = '<span data-tip="Suppression impossible : L\'agent a déjà utilisé une partie/la totalité de ces jours de récupération.">';

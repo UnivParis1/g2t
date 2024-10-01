@@ -290,19 +290,23 @@
     var validdemandemotif = function (motif, index)
     {
         const select = document.getElementById('statut[' +  index + ']');
-        //alert ('Select id = ' + select.id);
+        //console.log("function validdemandemotif => " + Date.now());
+        //console.log('Select id = ' + select.id + ' value = ' + select.value);
         if (select.value == '<?php echo demande::DEMANDE_REFUSE; ?>')
         {
             //alert ('Select value = ' + select.value);
             motif.disabled = false;
             //alert ('checked');
+            //console.log ('Valeur motif = ' + motif.value);
             if (motif.value == '')
             {
                 motif.style.backgroundColor = '#f5b7b1';
             }
             else
             {
+                //console.log("Le motif n'est pas nul");
                 motif.style.backgroundColor = '';
+                motif.classList.remove("commentobligatoirebackground");
             }
         }
         else
@@ -516,6 +520,7 @@
             let warningdialog = document.getElementById('warningdialog');
             let warninglabeltext = warningdialog.querySelector('#warninglabeltext'); // document.getElementById('warninglabeltext');
             let labelrestanttext = document.getElementById(labelrestantname);
+            //console.log("function checktextlength => " + Date.now());
             if (textarea.value.length > maxlength) 
             {
                 let position = textarea.selectionStart;

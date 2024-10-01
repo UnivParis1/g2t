@@ -63,11 +63,20 @@
         $agent = null;
     }
 
+    $longueurmaxmotif = $fonctions->logueurmaxcolonne('COMPLEMENT','VALEUR');
+
     $congessuppaverifier = null;
-    if (isset($_POST["congessuppaverifier"]))
+    if (isset($_POST["statut"]))
     {
-        $congessuppaverifier = $_POST["congessuppaverifier"];
+        $congessuppaverifier = $_POST["statut"];
     }
+
+    $motif = null;
+    if (isset($_POST["motif"]))
+    {
+        $motif = $_POST["motif"];
+    }
+
 
     $selectall = 'no';
     if (isset($_POST["selectall"]))
@@ -78,134 +87,225 @@
     $cronuser = new agent($dbcon);
     $cronuser->load(SPECIAL_USER_IDCRONUSER);
 
-    $msg_erreur = "";
-    if (!is_null($congessuppaverifier))
-    {
-        foreach($congessuppaverifier as $commentaireid => $valeur)
-        {
-            //on charge le commentaire congés avec l'id
-            $commentaire = $fonctions->lirecommentaire($commentaireid);
-            if (!is_null($commentaire))
-            {
-                $currentagent = new agent($dbcon);
-                $currentagent->load($commentaire->agentid);
-
-                $idcomplement = complement::AVISRH_CONGES_SUP_LABEL . $commentaire->commentaireid;
-                $complement = new complement($dbcon);
-                $complement->load($commentaire->agentid,$idcomplement);
-                if ($complement->agentid()==$commentaire->agentid)
-                {
-                    if ($commentaire->typeabsenceid != recuperation::RECUP_ID)
-                    {
-                        $solde = new solde($dbcon);
-                        $msg_erreur = $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
-                        if ($erreur != "") 
-                        {
-                            unset($solde);
-                            $solde = new solde($dbcon);
-                            $msg_erreur = $msg_erreur . $solde->creersolde($commentaire->typeabsenceid, $commentaire->agentid);
-                            $msg_erreur = $msg_erreur . $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
-                        }
-                        if ($msg_erreur == "")
-                        {
-                            $nouv_solde = ($solde->droitaquis() + $commentaire->nbjoursajoute);
-                            $solde->droitaquis($nouv_solde);
-                            $msg_erreur = $msg_erreur . $solde->store();
-                        }
-                    }
-                    if ($msg_erreur == "")
-                    {
-                        $complement = new complement($dbcon);
-                        $msg_erreur = $complement->delete($commentaire->agentid, $idcomplement);
-                    }
-                    // Si tout s'est bien passé, on modifie la date d'ajout du commentaire
-                    if ($msg_erreur == "")
-                    {
-                        $commentaire->dateajout = date('d/m/Y');
-                        $msg_erreur = $currentagent->modifiercommentaireconge($commentaire);
-                    }
-                }
-                else
-                {
-                    $msg_erreur = $msg_erreur . "Impossible de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) sur le solde " . $commentaire->libelleabsence . " pour l'agent " . $currentagent->identitecomplete();
-                }
-                if ($msg_erreur == "")
-                {
-                    if ($commentaire->typeabsenceid == recuperation::RECUP_ID)
-                    {
-                        $recup = new recuperation($dbcon);
-                        $recup->load($commentaire->agentid,date('d/m/Y'));
-                        $solde = $recup->getsolde();
-                    }
-                    else
-                    {
-                        $solde = new solde($dbcon);
-                        $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
-                    }
-                    // Envoi du mail à l'agent
-                    //$corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) complémentaire(s).\n";
-                    //$corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                    //$corpmail = $corpmail . "Suite à cette validation, votre solde de jours complémentaires est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                    //$cronuser->sendmail($currentagent, "Validation d'ajout de jours complémentaires", $corpmail);
-                    $commentaire = $fonctions->lirecommentaire($commentaireid);
-                    $dbconstante = 'VALIDRECUP';
-                    $validrecup = '2';
-                    if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
-
-                    //$findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaire->dateajout))));
-                    $findatevalidite = $fonctions->finvaliditerecuperation($commentaire->dateajout,$commentaire->typeabsenceid);
-                    $findatevalidite = $fonctions->formatdate($findatevalidite);
-
-                    $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.\n";
-                    $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                    $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.\n\n";
-                    $corpmail = $corpmail . "Suite à cette validation, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                    $cronuser->sendmail($currentagent, "Validation d'ajout de jours de récupération", $corpmail);
-
-                    // Envoi du mail au demandeur
-                    $currentsignataire = new agent($dbcon);
-                    $erreur = $currentsignataire->load($commentaire->auteurid);
-                    if ($erreur !== false)
-                    {
-                        //$corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) complémentaire(s) à " . $currentagent->identitecomplete() . "..\n";
-                        //$corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                        //$corpmail = $corpmail . "Suite à cette validation, le solde de jours complémentaires est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                        //$cronuser->sendmail($currentsignataire, "Validation d'ajout de jours complémentaires", $corpmail);
-                        $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..\n";
-                        $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                        $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.\n\n";
-                        $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                        $cronuser->sendmail($currentsignataire, "Validation d'ajout de jours de récupération", $corpmail);
-                    }
-
-                    // Envoi du mail au signataire de l'agent => Si ce n'est pas le demandeur
-                    $currentsignataire = $currentagent->getsignataire();
-                    // Si currentsignataire n'est pas à false => On a un signataire
-                    // On vérifie que le signataire n'est pas l'auteur pour éviter l'envoie en double du mail
-                    if ($currentsignataire !== false and $currentsignataire->agentid()!=$commentaire->auteurid)
-                    {
-                        //$corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) complémentaire(s) à " . $currentagent->identitecomplete() . "..\n";
-                        //$corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                        //$corpmail = $corpmail . "Suite à cette validation, le solde de jours complémentaires est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                        //$cronuser->sendmail($currentsignataire, "Validation d'ajout de jours complémentaires", $corpmail);
-                        $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..\n";
-                        $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                        $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
-                        $cronuser->sendmail($currentsignataire, "Validation d'ajout de jours de récupération", $corpmail);
-                    }
-                }
-            }
-        }
-    }
-
     require ("includes/menu.php");
     echo "<br>";
     //echo "<br>"; print_r($_POST); echo "<br><br>";
 
-    if ($msg_erreur!="")
+    if (!is_null($congessuppaverifier))
     {
-        echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+        foreach($congessuppaverifier as $commentaireid => $valeur)
+        {
+            $msg_erreur = "";
+            // Si le statut du commentaire est "en attente" => On ne doit rien faire dessus
+            if ($valeur == demande::DEMANDE_ATTENTE)
+            {
+                //var_dump("commentaireid = " . $commentaireid . " => valeur = $valeur");
+                // Si le statut du commentaire est DEMANDE_ATTENTE => On ne fait rien
+                continue;
+            }
+            elseif ($valeur == demande::DEMANDE_REFUSE)
+            {
+                //on charge le commentaire congés avec l'id
+                $commentaire = $fonctions->lirecommentaire($commentaireid);
+                if (!is_null($commentaire))
+                {
+                    $currentagent = new agent($dbcon);
+                    $currentagent->load($commentaire->agentid);
+                    // Si pas de motif saisi, on ne peut pas enregistrer le REFUS
+                    if (!isset($motif[$commentaireid]) or trim($motif[$commentaireid]==""))
+                    {
+                        $msg_erreur = "La saisie d'un motif du refus est obligatoire pour la demande de récupération de " . $currentagent->identitecomplete(); //. "<br>Motif : " . $commentaire->commentaire;
+                    }
+                    else
+                    {
+                        $idcomplement = complement::REFUSRH_CONGES_SUP_LABEL . $commentaire->commentaireid;
+                        $complement = new complement($dbcon);
+                        $complement->load($commentaire->agentid,$idcomplement);
+                        // Si le complément REFUSRH_CONGES_SUP_LABEL existe déjà, on ne traite pas le commentaire
+                        if ($complement->agentid()==$commentaire->agentid)
+                        {
+                            $msg_erreur = $msg_erreur . "Impossible de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) sur le solde " . $commentaire->libelleabsence . " pour l'agent " . $currentagent->identitecomplete() . " : Il semble déjà supprimée.";
+                        }
+                        else
+                        {
+                            // On va supprimer le complément AVISRH_CONGES_SUP_LABEL => Il n'y a plus d'avis à demander à la RH
+                            $idcomplement = complement::AVISRH_CONGES_SUP_LABEL . $commentaire->commentaireid;
+                            $complement = new complement($dbcon);
+                            $msg_erreur = $msg_erreur . $complement->delete($commentaire->agentid, $idcomplement);
+                            // On va créer le nouveau complément REFUSRH_CONGES_SUP_LABEL => Il contiendra le motif du refus
+                            $complement = new complement($dbcon);
+                            $complement->valeur(trim($motif[$commentaireid]));
+                            $complement->agentid($commentaire->agentid);
+                            $idcomplement = complement::REFUSRH_CONGES_SUP_LABEL . $commentaire->commentaireid;
+                            $complement->complementid($idcomplement);
+                            $msg_erreur = $msg_erreur . $complement->store();
+                            // Si pas d'erreur, on va envoyer le mail au responsable et à l'agent
+                            if ($msg_erreur=='')
+                            {
+                                if ($commentaire->typeabsenceid == recuperation::RECUP_ID)
+                                {
+                                    $recup = new recuperation($dbcon);
+                                    $recup->load($commentaire->agentid,date('d/m/Y'));
+                                    $solde = $recup->getsolde();
+                                }
+                                else
+                                {
+                                    $solde = new solde($dbcon);
+                                    $errorload = $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
+                                    if ($errorload . "" != "")
+                                    {
+                                        $solde->droitaquis(0);
+                                        $solde->droitpris(0);
+                                        $solde->typeabsenceid($commentaire->typeabsenceid);
+                                    }
+                                }
+        
+                                $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.\n";
+                                $corpmail = $corpmail . "La raison de ce refus est : \n" . trim($motif[$commentaireid]) . ".\n\n";
+                                $corpmail = $corpmail . "Suite à ce refus, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                                $cronuser->sendmail($currentagent, "Refus d'ajout de jours de récupération", $corpmail);
+        
+                                // Envoi du mail au demandeur
+                                $currentsignataire = new agent($dbcon);
+                                $erreur = $currentsignataire->load($commentaire->auteurid);
+                                if ($erreur !== false)
+                                {
+                                    $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . ".\n";
+                                    $corpmail = $corpmail . "La raison de ce refus est : \n" . trim($motif[$commentaireid]) . ".\n\n";
+                                    $corpmail = $corpmail . "Suite à ce refus, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                                    $cronuser->sendmail($currentsignataire, "Refus d'ajout de jours de récupération", $corpmail);
+                                }
+        
+                                // Envoi du mail au signataire de l'agent => Si ce n'est pas le demandeur
+                                $currentsignataire = $currentagent->getsignataire();
+                                // Si currentsignataire n'est pas à false => On a un signataire
+                                // On vérifie que le signataire n'est pas l'auteur pour éviter l'envoie en double du mail
+                                if ($currentsignataire !== false and $currentsignataire->agentid()!=$commentaire->auteurid)
+                                {
+                                    $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . ".\n";
+                                    $corpmail = $corpmail . "La raison de ce refus est : \n" . trim($motif[$commentaireid]) . ".\n\n";
+                                    $corpmail = $corpmail . "Suite à ce refus, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                                    $cronuser->sendmail($currentsignataire, "Refus d'ajout de jours de récupération", $corpmail);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Si le statut du commentaire est "validée" => On doit valider le commentaire et alimenter le solde
+            elseif ($valeur == demande::DEMANDE_VALIDE)
+            {
+                //on charge le commentaire congés avec l'id
+                $commentaire = $fonctions->lirecommentaire($commentaireid);
+                if (!is_null($commentaire))
+                {
+                    $currentagent = new agent($dbcon);
+                    $currentagent->load($commentaire->agentid);
+
+                    $idcomplement = complement::AVISRH_CONGES_SUP_LABEL . $commentaire->commentaireid;
+                    $complement = new complement($dbcon);
+                    $complement->load($commentaire->agentid,$idcomplement);
+                    // Si le complément n'existe pas/plus => On ne doit pas traiter le commentaire
+                    if ($complement->agentid()==$commentaire->agentid)
+                    {
+                        if ($commentaire->typeabsenceid != recuperation::RECUP_ID)
+                        {
+                            $solde = new solde($dbcon);
+                            $msg_erreur = $msg_erreur . $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
+                            if ($msg_erreur != "") 
+                            {
+                                unset($solde);
+                                $solde = new solde($dbcon);
+                                $msg_erreur = $msg_erreur . $solde->creersolde($commentaire->typeabsenceid, $commentaire->agentid);
+                                $msg_erreur = $msg_erreur . $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
+                            }
+                            if ($msg_erreur == "")
+                            {
+                                $nouv_solde = ($solde->droitaquis() + $commentaire->nbjoursajoute);
+                                $solde->droitaquis($nouv_solde);
+                                $msg_erreur = $msg_erreur . $solde->store();
+                            }
+                        }
+                        if ($msg_erreur == "")
+                        {
+                            $complement = new complement($dbcon);
+                            $msg_erreur = $complement->delete($commentaire->agentid, $idcomplement);
+                        }
+                        // Si tout s'est bien passé, on modifie la date d'ajout du commentaire
+                        if ($msg_erreur == "")
+                        {
+                            $commentaire->dateajout = date('d/m/Y');
+                            $msg_erreur = $currentagent->modifiercommentaireconge($commentaire);
+                        }
+                    }
+                    else
+                    {
+                        $msg_erreur = $msg_erreur . "Impossible de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) sur le solde " . $commentaire->libelleabsence . " pour l'agent " . $currentagent->identitecomplete() . ". Elle semble déjà validée.";
+                    }
+                    if ($msg_erreur == "")
+                    {
+                        if ($commentaire->typeabsenceid == recuperation::RECUP_ID)
+                        {
+                            $recup = new recuperation($dbcon);
+                            $recup->load($commentaire->agentid,date('d/m/Y'));
+                            $solde = $recup->getsolde();
+                        }
+                        else
+                        {
+                            $solde = new solde($dbcon);
+                            $solde->load($commentaire->agentid, $commentaire->typeabsenceid);
+                        }
+                        // Envoi du mail à l'agent
+                        $commentaire = $fonctions->lirecommentaire($commentaireid);
+                        $dbconstante = 'VALIDRECUP';
+                        // Durée de validité des récupérations
+                        $validrecup = '2';
+                        if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+
+                        //$findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaire->dateajout))));
+                        $findatevalidite = $fonctions->finvaliditerecuperation($commentaire->dateajout,$commentaire->typeabsenceid);
+                        $findatevalidite = $fonctions->formatdate($findatevalidite);
+
+                        $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.\n";
+                        $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
+                        $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.\n\n";
+                        $corpmail = $corpmail . "Suite à cette validation, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                        $cronuser->sendmail($currentagent, "Validation d'ajout de jours de récupération", $corpmail);
+
+                        // Envoi du mail au demandeur
+                        $currentsignataire = new agent($dbcon);
+                        $erreur = $currentsignataire->load($commentaire->auteurid);
+                        if ($erreur !== false)
+                        {
+                            $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..\n";
+                            $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
+                            $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.\n\n";
+                            $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                            $cronuser->sendmail($currentsignataire, "Validation d'ajout de jours de récupération", $corpmail);
+                        }
+
+                        // Envoi du mail au signataire de l'agent => Si ce n'est pas le demandeur
+                        $currentsignataire = $currentagent->getsignataire();
+                        // Si currentsignataire n'est pas à false => On a un signataire
+                        // On vérifie que le signataire n'est pas l'auteur pour éviter l'envoie en double du mail
+                        if ($currentsignataire !== false and $currentsignataire->agentid()!=$commentaire->auteurid)
+                        {
+                            $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..\n";
+                            $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
+                            $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                            $cronuser->sendmail($currentsignataire, "Validation d'ajout de jours de récupération", $corpmail);
+                        }
+                    }
+                }
+            }
+            if ($msg_erreur!="")
+            {
+                echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+                $msg_erreur = "";
+            }
+        }
     }
+
 
     //echo "Validation des jours complémentaires par la DRH<br><br>";
     echo "Validation des jours de récupération par la DRH<br><br>";
@@ -267,14 +367,15 @@
                 $htmltext = $htmltext . "<table class='tableausimple'>";
                 $htmltext = $htmltext . "<thead>";
                 //$htmltext = $htmltext . "<tr class='titresimple'><th colspan=6 align=center>Demande de congés supplémentaires à traiter pour " . $currentagent->identitecomplete() . " (id : $commentaire->agentid) </th></tr>";
-                $htmltext = $htmltext . "<tr class='titresimple'><th colspan=6 align=center>Demande de récupération à traiter pour " . $currentagent->identitecomplete() . " (id : $commentaire->agentid) </th></tr>";
+                $htmltext = $htmltext . "<tr class='titresimple'><th colspan=7 align=center>Demande de récupération à traiter pour " . $currentagent->identitecomplete() . " (id : $commentaire->agentid) </th></tr>";
                 $htmltext = $htmltext . "<tr class='entete' align=center>
                                             <th class='cellulesimple'>Demandeur</th>
                                             <th class='cellulesimple'>Date ajout</th>
                                             <th class='cellulesimple'>Libellé</th>
                                             <th class='cellulesimple'>Nbre jours</th>
                                             <th class='cellulesimple'>Motif</th>
-                                            <th class='cellulesimple'>Valider</th>
+                                            <th class='cellulesimple'>Statut</th>
+                                            <th class='cellulesimple'>Motif (obligatoire si la demande est refusée) - maximum $longueurmaxmotif caractères</th>
                                          </tr>";
                 $htmltext = $htmltext . "</thead>";
             }
@@ -297,7 +398,51 @@
 
 
 //                $htmltext = $htmltext . "<td class='cellulemultiligne'>" . $commentaire->commentaire . "</td>";
-            $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=congessuppaverifier[" . $commentaire->commentaireid . "] value='yes' /></td>";
+            //$htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=congessuppaverifier[" . $commentaire->commentaireid . "] value='yes' /></td>";
+            $htmltext = $htmltext . "<td class='cellulesimple'>";
+            //$htmltext = $htmltext . "   <select name='congessuppaverifier[" . $commentaire->commentaireid . "]' id='congessuppaverifier[" . $commentaire->commentaireid . "]' />";
+            $htmltext = $htmltext . "   <select name='statut[" . $commentaire->commentaireid . "]' id='statut[" . $commentaire->commentaireid . "]' onchange='demandestatutchange(this," . $commentaire->commentaireid . ");'>";
+            $htmltext = $htmltext . "       <option value='" . demande::DEMANDE_ATTENTE . "'";
+            if (isset($congessuppaverifier[$commentaire->commentaireid]) and $congessuppaverifier[$commentaire->commentaireid]==demande::DEMANDE_ATTENTE)
+            {
+                $htmltext = $htmltext . " selected ";
+            }
+            $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(demande::DEMANDE_ATTENTE) . "</option>";
+            $htmltext = $htmltext . "       <option value='" . demande::DEMANDE_VALIDE . "'"; 
+            if (isset($congessuppaverifier[$commentaire->commentaireid]) and $congessuppaverifier[$commentaire->commentaireid]==demande::DEMANDE_VALIDE)
+            {
+                $htmltext = $htmltext . " selected ";
+            }
+            $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(demande::DEMANDE_VALIDE) . "</option>";
+            $htmltext = $htmltext . "       <option value='" . demande::DEMANDE_REFUSE . "'";
+            if (isset($congessuppaverifier[$commentaire->commentaireid]) and $congessuppaverifier[$commentaire->commentaireid]==demande::DEMANDE_REFUSE)
+            {
+                $htmltext = $htmltext . " selected ";
+            }
+            $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(demande::DEMANDE_REFUSE) . "</option>";
+            $htmltext = $htmltext . "   </select>";
+            $htmltext = $htmltext . "</td>";
+
+            $textareastyle = " class='commenttextarea";
+            $disabletext = " disabled ";
+            if (isset($congessuppaverifier[$commentaire->commentaireid]) and $congessuppaverifier[$commentaire->commentaireid] == demande::DEMANDE_REFUSE ) //and $motif[$commentaire->commentaireid]=="")
+            {
+                //var_dump("Je passe là");
+                $textareastyle = $textareastyle . " commentobligatoirebackground";
+                $disabletext = "";
+            }
+            $textareastyle = $textareastyle . "'";
+
+            //$htmltext = $htmltext . "<td class='cellulesimple'>";
+            //$htmltext = $htmltext . "</td>";
+            $htmltext = $htmltext . "   <td class='cellulesimple'>"
+                                  . "      <textarea name='motif[" . $commentaire->commentaireid . "]' id='motif[" . $commentaire->commentaireid . "]' rows='2' cols='80' $textareastyle oninput='checktextlength(this,$longueurmaxmotif); validdemandemotif(this," . $commentaire->commentaireid . ");' $disabletext>";
+            if (isset($motif[$commentaire->commentaireid]))
+            {
+                $htmltext = $htmltext . $motif[$commentaire->commentaireid]; ///$commentaire->motifrefus;
+            }
+            $htmltext = $htmltext . trim(" </textarea>")
+                                  . "   </td>";
             $htmltext = $htmltext . "</tr>";
 
         }
