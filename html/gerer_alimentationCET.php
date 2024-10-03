@@ -662,152 +662,156 @@
 	    {
 	        echo $fonctions->showmessage(fonctions::MSGINFO, "Votre demande d'alimentation a été correctement enregistrée.");
 	    }
-            elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
-            {
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
-                /*
+        elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
+        {
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
+            /*
 //                echo "Souhaitez-vous annuler la demande ? <br>";
 //                echo "<form name='annuler_alimentation'  method='post' >";
 //                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 //                echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
 //                echo "<input type='submit' name='annule_demande' id='annule_demande' value='Annuler' onclick=\"return confirm('Annuler la demande d\'alimentation du CET ?')\">";
 //                echo "</form>";
-                */
+            */
 			
-            }
-            elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
+        }
+        elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
+        {
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée.");
+            $hasOption = TRUE;
+        }
+        elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_VALIDE))) != 0)
+        {
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année.");
+            $hasOption = TRUE;
+        }
+        elseif ($hasInterruptionAff && $valeur_a == 0)
+        {
+            echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise).");
+        }
+        else 
+        {
+            $pr = $agent->getPlafondRefCet();
+            //var_dump("Plafond de référence pour l'agent : $pr <br>");
+            // Consommation des congés au début de la période (case C)
+            $consodeb = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
+            //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés au ".$fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->finperiode())." : $consodeb <br>");
+
+            // Consommation des congés entre le debut de la période et la demande
+            $consoadd = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
+            //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd . "<br>");
+
+            // Nombre de jours déposés sur le CET au titre de l'année de ref
+            $joursCET = 0;
+            $alimentationCET = new alimentationCET($dbcon);
+            $list_id_alim = $agent->getDemandesAlim('ann'.substr($fonctions->anneeref() - 1,2, 2), array($alimentationCET::STATUT_VALIDE));
+            foreach ($list_id_alim as $id_alim)
             {
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée.");
-                $hasOption = TRUE;
+                    $alimentationCET->load($id_alim);
+                    $joursCET += $alimentationCET->valeur_f();
             }
-            elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_VALIDE))) != 0)
+            $nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
+            //var_dump("nbjoursobli = $nbjoursobli <br>");
+            if ($nbjoursobli - floor($nbjoursobli) != 0)
             {
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année.");
-                $hasOption = TRUE;
+                if ($nbjoursobli - floor($nbjoursobli) <= 0.5)
+                {
+                    $nbjoursobli = floor($nbjoursobli) + 0.5;
+                }
+                else 
+                {
+                    $nbjoursobli = floor($nbjoursobli) + 1;
+                }
             }
-            elseif ($hasInterruptionAff && $valeur_a == 0)
+            if ($valeur_c < $nbjoursobli)
             {
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise).");
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés \"" . $solde->typelibelle() . "\" obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
+                $nbjoursmax = 0;
             }
             else 
             {
-                $pr = $agent->getPlafondRefCet();
-                //echo "Plafond de référence pour l'agent : $pr <br>";
-                // Consommation des congés au début de la période (case C)
-                $consodeb = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
-                //echo "Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés au ".$fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->finperiode())." : $consodeb<br>";
-
-                // Consommation des congés entre le debut de la période et la demande
-                $consoadd = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
-                //echo "Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd." <br>";
-
-                // Nombre de jours déposés sur le CET au titre de l'année de ref
-                $joursCET = 0;
-                $alimentationCET = new alimentationCET($dbcon);
-                $list_id_alim = $agent->getDemandesAlim('ann'.substr($fonctions->anneeref() - 1,2, 2), array($alimentationCET::STATUT_VALIDE));
-                foreach ($list_id_alim as $id_alim)
+                $nbjoursmax = floor($pr - $consodeb);
+                //var_dump("pr = $pr  consodeb = $consodeb => nbjoursmax = $nbjoursmax <br>");
+                if ($nbjoursmax < 0)
                 {
-                        $alimentationCET->load($id_alim);
-                        $joursCET += $alimentationCET->valeur_f();
-                }
-                $nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
-                if ($nbjoursobli - floor($nbjoursobli) != 0)
-                {
-                    if ($nbjoursobli - floor($nbjoursobli) <= 0.5)
-                    {
-                        $nbjoursobli = floor($nbjoursobli) + 0.5;
-                    }
-                    else 
-                    {
-                        $nbjoursobli = floor($nbjoursobli) + 1;
-                    }
-                }
-                if ($valeur_c < $nbjoursobli)
-                {
-                    echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés \"" . $solde->typelibelle() . "\" obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
                     $nbjoursmax = 0;
                 }
                 else 
                 {
-                    $nbjoursmax = floor($pr - $consodeb);
-                    if ($nbjoursmax < 0)
-                            $nbjoursmax = 0;
-                    else 
+                    $nbjoursrestants = $valeur_b - $consodeb - $consoadd;
+                    if ($nbjoursmax > $nbjoursrestants)
                     {
-                        $nbjoursrestants = $valeur_b - $consodeb - $consoadd;
-                        if ($nbjoursmax > $nbjoursrestants)
-                        {
-                            $nbjoursmax = floor($nbjoursrestants);
-                        }
-                        if ($nbjoursmax > $joursCET)
-                        {
-                            $nbjoursmax = $nbjoursmax - $joursCET;
-                        }
-                        else
-                        {
-                            $nbjoursmax = 0;
-                        }
+                        $nbjoursmax = floor($nbjoursrestants);
+                    }
+                    if ($nbjoursmax > $joursCET)
+                    {
+                        $nbjoursmax = $nbjoursmax - $joursCET;
+                    }
+                    else
+                    {
+                        $nbjoursmax = 0;
                     }
                 }
-
-                if (is_null($cree_demande))
-                {
-                    $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
-                    if (count($taberrorcheckmail) > 0)
-                    {
-                        // var_dump("errorcheckmail = $errorcheckmail");
-                        $errorcheckmailstr = '';
-                        foreach ($taberrorcheckmail as $errorcheckmail)
-                        {
-                            if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
-                            $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
-                        }
-                        echo $fonctions->showmessage(fonctions::MSGERROR, "Il n'est pas possible de faire une demande d'alimentation CET car <br>$errorcheckmailstr");
-                    }
-                }
-
-                //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
-                echo "<form name='creation_alimentation'  method='post' >";
-                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-                echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-                echo "Solde actuel de votre CET : $valeur_a jour(s)";
-                echo "<br>";
-                echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond class='erroralimCETlabel'></label>";
-                echo "<br>";
-                echo "Combien de jours souhaitez-vous ajouter à votre CET ? ";
-                echo "<input type=text placeholder='Case F' name=valeur_f id=valeur_f size=4 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
-                echo "<br>";
-                echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=4 readonly class='inputdataalimCET' > jour(s).";
-                echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=4 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=4 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=4 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=4 readonly class='inputdataalimCET' >";
-                echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=4 readonly class='inputdataalimCET' >";
-/*                
-                //$code = null;
-                //if ($structure->responsable()->agentid() == $agent->agentid())
-                //{
-                //    $resp = $structure->resp_envoyer_a($code);
-                //}
-                //else
-                //{
-                //    $resp = $structure->agent_envoyer_a($code);
-                //}
- */
-                echo "<br><br>";
-                if ($mode == MODE_RH)
-                {
-                    echo "<p id='check_plafond'><input type='checkbox' id='no_verify' name='no_verify' value='on'>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
-?>
-                    <script type="text/javascript">const no_verify = document.getElementById('no_verify'); no_verify.addEventListener('input', update_case);</script>
-<?php 
-                }
-                echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-                echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' disabled>";
-                echo "</form>";
-                echo "<br>";
             }
+
+            if (is_null($cree_demande))
+            {
+                $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
+                if (count($taberrorcheckmail) > 0)
+                {
+                    // var_dump("errorcheckmail = $errorcheckmail");
+                    $errorcheckmailstr = '';
+                    foreach ($taberrorcheckmail as $errorcheckmail)
+                    {
+                        if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                        $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                    }
+                    echo $fonctions->showmessage(fonctions::MSGERROR, "Il n'est pas possible de faire une demande d'alimentation CET car <br>$errorcheckmailstr");
+                }
+            }
+
+            //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
+            echo "<form name='creation_alimentation'  method='post' >";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+            echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+            echo "Solde actuel de votre CET : $valeur_a jour(s)";
+            echo "<br>";
+            echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond class='erroralimCETlabel'></label>";
+            echo "<br>";
+            echo "Combien de jours souhaitez-vous ajouter à votre CET ? ";
+            echo "<input type=text placeholder='Case F' name=valeur_f id=valeur_f size=4 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
+            echo "<br>";
+            echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=4 readonly class='inputdataalimCET' > jour(s).";
+            echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' class='inputdataalimCET' >";
+            echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=4 readonly class='inputdataalimCET' >";
+            echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=4 readonly class='inputdataalimCET' >";
+            echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=4 readonly class='inputdataalimCET' >";
+            echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=4 readonly class='inputdataalimCET' >";
+            echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=4 readonly class='inputdataalimCET' >";
+/*                
+            //$code = null;
+            //if ($structure->responsable()->agentid() == $agent->agentid())
+            //{
+            //    $resp = $structure->resp_envoyer_a($code);
+            //}
+            //else
+            //{
+            //    $resp = $structure->agent_envoyer_a($code);
+            //}
+*/
+            echo "<br><br>";
+            if ($mode == MODE_RH)
+            {
+                echo "<p id='check_plafond'><input type='checkbox' id='no_verify' name='no_verify' value='on'>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
+?>
+                <script type="text/javascript">const no_verify = document.getElementById('no_verify'); no_verify.addEventListener('input', update_case);</script>
+<?php 
+            }
+            echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+            echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' disabled>";
+            echo "</form>";
+            echo "<br>";
+        }
 	}
 	// Si une demande d'option est en cours ou validée, pas de suppression possible de demande d'alimentation
 	if (!$hasOption)
