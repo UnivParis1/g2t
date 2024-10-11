@@ -1711,7 +1711,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 // nbjoursmaxteletravailcalcule.innerHTML = valuetodisplay;
                 verif_nbre_checkbox();
                 let creationbtn = document.getElementById('creation');
-                if (creationbtn && valuetodisplay > 0)
+                if (creationbtn && valuetodisplay > 0 && oldsubmitstatus!==true)
                 {
                     //creationbtn.style.display = 'block' ;
                     creationbtn.hidden = false;
