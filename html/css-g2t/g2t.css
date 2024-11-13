@@ -587,11 +587,15 @@ span[data-tip]:hover:after {
     top: -10px;
 }
 
+span[data-title]:hover:after,
 td[data-title]:hover:after {
     opacity: 1;
     transition: all 0.1s ease 0.5s;
     visibility: visible;
+    /* font-size: initial; */
 }
+
+span[data-title]:after,
 td[data-title]:after {
     content: attr(data-title);
     position: absolute;
@@ -609,9 +613,13 @@ td[data-title]:after {
     opacity: 0;
     z-index: 2000;
     visibility: hidden;
+    font-size: initial;    
 }
+
+span[data-title],
 td[data-title] {
     position: relative;
+    /* font-size: initial; */
 }
 
 .ui-menu .ui-menu-item a.ui-state-hover,
@@ -1011,6 +1019,10 @@ select {
 
 .cursorpointer {
     cursor: pointer;
+}
+
+.boldtext {
+    font-weight: bold;
 }
 
 .widthtd50 {

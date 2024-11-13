@@ -6,16 +6,28 @@
     
     echo "\nDébut du calcul des soldes " . date("d/m/Y H:i:s") . "\n";
     
-    $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT ORDER BY AGENTID";
-    $query_agent = mysqli_query($dbcon, $sql);
-    $erreur_requete = mysqli_error($dbcon);
-    if ($erreur_requete != "")
-        echo "SELECT FROM AGENT => $erreur_requete \n";
-    
     // echo "Avant deb / fin periode \n";
     $date_deb_period = $fonctions->anneeref() . $fonctions->debutperiode();
     $date_fin_period = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
+
+//    $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT ORDER BY AGENTID";
+    $sql = "SELECT DISTINCT AGENT.AGENTID,AGENT.NOM, AGENT.PRENOM
+            FROM AGENT, SITUATIONADMIN
+            WHERE AGENT.AGENTID = SITUATIONADMIN.AGENTID
+              AND SITUATIONADMIN.DATEDEBUT<='$date_fin_period' 
+              AND SITUATIONADMIN.DATEFIN>='$date_deb_period'
+              AND UPPER(SUBSTRING(SITUATIONADMIN.POSITIONADMIN,1,3)) IN ('ACI','DEE')
+              AND AGENT.AGENTID IN (SELECT DISTINCT QUOTITE.AGENTID FROM QUOTITE)
+              AND AGENT.AGENTID IN (SELECT DISTINCT STATUT.AGENTID FROM STATUT)
+            ORDER BY AGENTID";
     
+    $query_agent = mysqli_query($dbcon, $sql);
+    $erreur_requete = mysqli_error($dbcon);
+    if ($erreur_requete != "")
+    {
+        echo "SELECT FROM AGENT => $erreur_requete \n";
+    }
+
     // echo "Avant Nbre jours periode... \n";
     $nbre_jour_periode = $fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period);
     // echo "Avant Nbre jours offert... \n";
@@ -23,6 +35,7 @@
     $dbconstante = "NBJOURS" . substr($date_deb_period, 0, 4);
     if ($fonctions->testexistdbconstante($dbconstante))  $nbr_jrs_offert = $fonctions->liredbconstante($dbconstante);
     
+    $numrows = 0;
     // echo "Avant le 1er while \n";
     while ($result = mysqli_fetch_row($query_agent)) {
         // !!!!!!! ATTENTION : Les 4 lignes suivantes permettent de ne tester qu'un seul dossier !!!!
@@ -43,7 +56,10 @@
         echo "On est sur l'agent : " . $agent->identitecomplete() . " (id = $agentid) \n";
         $solde = $agent->calculsoldeannuel($fonctions->anneeref(),true, false, true); // On calcule le solde de l'année courante + on met à jour le solde en base + on n'ecrit pas les traces d'exécution + on les affiche
         echo "Le solde annuel de l'agent " . $agent->identitecomplete() . " (id = " . $agent->agentid() . ") pour l'annee " .  $fonctions->anneeref() . "-" . ($fonctions->anneeref()+1)  . " est de $solde jours.\n";
+        $numrows++;
     }
+    echo "$numrows soldes ont été calculés. \n";
+
     echo "Fin du calcul des soldes " . date("d/m/Y H:i:s") . "\n";
 
 ?>

@@ -39,6 +39,11 @@
             {
                 $eppn = trim($node->xpath('EPPN')[0]);
             }
+            $uid = "";
+            if (isset($node->xpath('LDAP_UID')[0]))
+            {
+                $uid = trim($node->xpath('LDAP_UID')[0]);
+            }
 
             //echo "agentid = $agentid   civilite=$civilite   nom=$nom   prenom=$prenom   adressemail=$adressemail  typepop=$typepop  \n";
 
@@ -49,6 +54,7 @@
             $agent->mail($adressemail);
             $agent->typepopulation($typepop);
             $agent->eppn($eppn);
+            $agent->uid($uid);
             $agent->structureid(''); // On force sa structure à 'vide' car elle sera initialisée plus tard
             if (!$agent->store($agentid))
             {

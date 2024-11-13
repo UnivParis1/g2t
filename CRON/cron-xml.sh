@@ -55,6 +55,7 @@ then
       echo "Le fichier $nomfichierspecifique n'existe pas - On l'ignore" >>$logfile
    fi
 
+   ##php php/poserperiodesobligatoires.php >>$logfile 2>>$logfile
    php php/mail_conges.php >>$logfile 2>>$logfile
    php php/mail_declarationTP.php >>$logfile 2>>$logfile
    php php/synchro_demandes_cet.php >>$logfile 2>>$logfile

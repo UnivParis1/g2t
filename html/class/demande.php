@@ -1,6 +1,16 @@
 <?php
 
+class soldeinsuffisantinfos
+{
+    public $typeabsenceid = null;
+    public $message = null;
+    public $nbjrsdemande = null;
+    public $solderestant = null;
+}
+
 use Fpdf\Fpdf as FPDF;
+
+use function PHPSTORM_META\elementType;
 
 class demande
 {
@@ -43,6 +53,8 @@ class demande
     private $heuredemande = null;
     
     private $datemailannulation = '1900-01-01';  // On met par défaut une date très loin dans le passé
+
+    private $soldeinsuffisantinfos = null;
 
     // Utilisé lors de la sauvegarde !!
     private $ancienstatut = null;
@@ -513,42 +525,76 @@ class demande
         return $this->agent;
     }
 
+    /**
+     *
+     * Recalcul le nombre de jours utilisés pour la demande.
+     * 
+     * Si la demande est ANNULEE ou REFUSEE, retourne TRUE et le nombre de jours recalculé = -1 (On ne refait pas de calcul sur une demande annulée ou refusée).
+     * Si la demande est VALIDEE ou EN ATTENTE :
+     * 
+     * Retourne TRUE si le nombre de jours recalculé = nombre de jours initial et nbrejrscalcule = nbre de jour initial.
+     * 
+     * Retourne FALSE su le nombre de jours recalculé <> nombre de jours initial et nbrejrscalcule = le nombre de jour calculé.
+     * 
+     * @param int $nbrejrscalcule Nombre de jours recalculé pour la demande courante (paramètre en sortie)
+     * @return boolean TRUE si le contrôle a pu avoir lieu, FALSE si le nombre de jours calculé est diffénent du nombre de jours demandé lors de la demande initiale
+     * 
+     */
     function controlenbrejrs(&$nbrejrscalcule)
     {
-        // echo "\n\n<br><br>On est sur la demande : Datedebut = " . $this->datedebut() . " date fin = " . $this->datefin() . "\n<br>";
+        //echo "\n\n<br><br>On est sur la demande : Datedebut = " . $this->datedebut() . " date fin = " . $this->datefin() . "\n<br>";
         $nbredemiejrs = 0;
         $nbrejrscalcule = 0;
         $agent = $this->agent();
-        // echo "identite de l'agent => " . $agent->identitecomplete() . "<br>";
-        // echo "Le statut de la demande est : " . $this->statut() . " \n";
-        if (($this->statut() == demande::DEMANDE_VALIDE) or ($this->statut() == demande::DEMANDE_ATTENTE)) {
+        //echo "identite de l'agent => " . $agent->identitecomplete() . "\n<br>";
+        //echo "Le statut de la demande est : " . $this->statut() . " \n<br>";
+        if (($this->statut() == demande::DEMANDE_VALIDE) or ($this->statut() == demande::DEMANDE_ATTENTE)) 
+        {
             $planning = new planning($this->dbconnect);
             $planning->load($agent->agentid(), $this->datedebut(), $this->datefin());
             $listelement = $planning->planning();
-            // echo "<br>Liste des elements => " . print_r($listelement,true) . "\n<br>";
-            foreach ((array) $listelement as $element) {
-                // echo "Dans la boucle .... Id de la demande courante = ". $this->demandeid . " L'element Id = " . $element->demandeid() . "\n<br>";
-                if ($element->demandeid() == $this->demandeid) {
+
+            //echo "<br>Liste des elements => " . print_r($listelement,true) . "\n<br>";
+            foreach ((array) $listelement as $element) 
+            {
+                //echo "Dans la boucle .... Id de la demande courante = ". $this->demandeid . " L'element Id = " . $element->demandeid() . "\n<br>";
+                //echo "Dans la boucle .... Type de la demande courante = ". $this->type() . " L'element type = " . $element->type() . "\n<br>";
+                //var_dump($element);
+                if ($element->demandeid() == $this->demandeid or ($element->type() == 'atten' and $this->statut() == demande::DEMANDE_ATTENTE)) 
+                { 
                     // echo "Yes !!! +1 \n<br>";
                     $nbredemiejrs = $nbredemiejrs + 1;
                 }
             }
             
             $nbrejrscalcule = $nbredemiejrs / 2;
-            // echo "Fin de la boucle nbrejrscalcules = $nbrejrscalcules nbrejrsdemande = " . $this->nbrejrsdemande() . "\n<br>";
-            if ($nbrejrscalcule != $this->nbrejrsdemande()) {
+            //echo "Fin de la boucle nbrejrscalcules = $nbrejrscalcule nbrejrsdemande = " . $this->nbrejrsdemande() . "\n<br>";
+            if ($nbrejrscalcule != $this->nbrejrsdemande()) 
+            {
                 return false;
-            } else {
+            } 
+            else 
+            {
                 return true;
             }
-        }        // Pas de vérification car la demande est annulée ou refusée !
-        else {
+        }        
+        else // Pas de vérification car la demande est annulée ou refusée !
+        {
+            // Pour les demandes qui ne sont pas "en attente" ou "validée", on retourne que c'est bon et le nombre de jours calculé et le nombre de jours demandé.
+            //$nbrejrscalcule = $this->nbrejrsdemande();
+            $nbrejrscalcule = -1;
             return true;
         }
     }
 
+    function soldeinsuffisantinfos()
+    {
+        return $this->soldeinsuffisantinfos;
+    }
+
     function store($declarationTPListe = null, $ignoreabsenceautodecla = FALSE, $ignoresoldeinsuffisant = FALSE)
     {
+        $this->soldeinsuffisantinfos = null;
         // echo "Demande->store : En cours de réécriture !!!!! <br>";
         if (is_null($this->demandeid)) 
         {
@@ -697,6 +743,12 @@ class demande
                         $errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $this->agentid();
                         echo $errlog . "<br/>";
                         error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                        $soldeerreur = new soldeinsuffisantinfos;
+                        $soldeerreur->message = $errlog;
+                        $soldeerreur->nbjrsdemande = $this->nbrejrsdemande;
+                        $soldeerreur->solderestant = 0;
+                        $soldeerreur->typeabsenceid = $this->typeabsenceid;
+                        $this->soldeinsuffisantinfos = $soldeerreur;
                     } else {
                         $nbjrrestant = $solde->droitaquis() - $solde->droitpris();
                         // echo "solde->droitaquis_demijrs() - solde->droitpris_demijrs() ==> " . $solde->droitaquis_demijrs() . " - " . $solde->droitpris_demijrs() . "<br>";
@@ -792,8 +844,14 @@ class demande
                 }
                 $this->ancienstatut = demande::DEMANDE_ATTENTE;
             } else {
-                $errlog = "Nombre de jours insuffisants (demandé : " . ($this->nbrejrsdemande) . " solde restant : " . ($nbjrrestant) . ").";
+                $errlog = "Solde " . $this->typelibelle() . " : Nombre de jours insuffisant (demandé : " . ($this->nbrejrsdemande) . " solde restant : " . ($nbjrrestant) . ").";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                $soldeerreur = new soldeinsuffisantinfos;
+                $soldeerreur->message = $errlog;
+                $soldeerreur->nbjrsdemande = $this->nbrejrsdemande;
+                $soldeerreur->solderestant = $nbjrrestant;
+                $soldeerreur->typeabsenceid = $this->typeabsenceid;
+                $this->soldeinsuffisantinfos = $soldeerreur;
                 return $errlog . "<br/>";
             }
         } else {
@@ -976,7 +1034,7 @@ class demande
         // else
         // $decision='refusée';
         
-        $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Votre demande ' . $typelib . 'du ' . $this->datedebut() . ' ' . $this->fonctions->nommoment($this->momentdebut) . ' au ' . $this->datefin() . ' ' . $this->fonctions->nommoment($this->momentfin) . ' '));
+        $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Votre demande' . $typelib . 'du ' . $this->datedebut() . ' ' . $this->fonctions->nommoment($this->momentdebut) . ' au ' . $this->datefin() . ' ' . $this->fonctions->nommoment($this->momentfin) . ' '));
         $pdf->Ln(10);
         $pdf->Cell(40, 10, $this->fonctions->utf8_decode(' a été ' . $decision . ' par :'));
         
@@ -989,6 +1047,11 @@ class demande
         $pdf->Ln(10);
         
         $pdf->SetFont('helvetica', 'B', 6, '', true);
+        if (trim($this->commentaire()) != '')
+        {
+            $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Commentaire : ' . $this->commentaire()));
+            $pdf->Ln(10);
+        }
         $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Date de dépot : ' . $this->date_demande()));
         $pdf->Ln(10);
         //if (strcasecmp($this->statut(), 'r') == 0)

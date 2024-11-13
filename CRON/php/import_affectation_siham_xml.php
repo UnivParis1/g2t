@@ -14,6 +14,8 @@
     $fonctions = new fonctions($dbcon);
 
     $date = date("Ymd");
+    $datedujour = $date;
+    $interval_de_calcul = $fonctions->margesynchro();  /// Nombre d'année où on recalcule les affectations
 
     echo "\nDébut de la création des affectations " . date("d/m/Y H:i:s") . "\n";
 
@@ -77,231 +79,144 @@
             exit();
         }
 
-        echo "Import des MODALITES D'AFFECTATION (QUOTITE)\n";
-        // Import des affectations-modalite.txt
-        $sql = "DELETE FROM QUOTITE";
+        $listeagentactif = array();
+
+        echo "Import des SITUATIONS ADMINISTRATIVES - " . date("d/m/Y H:i:s") . "\n";
+        // Import des affectations-statut.txt
+        $sql = "DELETE FROM SITUATIONADMIN";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
         {
-            echo "Error : DELETE QUOTITE => $erreur_requete \n";
-        }        
-        if (! file_exists($modalitefile)) 
+            echo "Error : DELETE SITUATIONADMIN => $erreur_requete \n";
+        }
+            
+        // On charge la table des statut avec le fichier
+        if (! file_exists($situationfile)) 
         {
-            echo "Le fichier $modalitefile n'existe pas !!! \n";
+            echo "Le fichier $situationfile n'existe pas !!! \n";
         } 
         else 
         {
-            $agent = new agent($dbcon);
-            $currentagent = null;
-            $xml = simplexml_load_file("$modalitefile");
-            $agentnode = $xml->xpath('MODALITE');
+            $xml = simplexml_load_file("$situationfile");
+            $agentnode = $xml->xpath('SITUATION');
             foreach ($agentnode as $node)
             {
                 $agentid = trim($node->xpath('AGENTID')[0]);
                 $numligne = trim($node->xpath('NUMLIGNE')[0]);
-                $numquotite = trim($node->xpath('QUOTITE')[0]);
+                $codesituation = trim($node->xpath('CODE')[0]);
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);
+                //echo "agentid = $agentid   numligne=$numligne   codesituation=$codesituation   datedebut=$datedebut   datefin=$datefin\n";
 
-                if ($agent->agentid() != $agentid) 
-                //if ($currentagent != $agentid )
+                $agent = new agent($dbcon);
+                if (!$agent->load($agentid))
                 {
-                    $currentagent = $agentid;
-                    $agent = new agent($dbcon);
-                    if (!$agent->load($agentid))
-                    {
-                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa quotité \n";
-                        continue;
-                    }
-                    //echo "Le load est ok pour l'agent " . $agent->agentid() . "   agentid = $agentid \n";
-                }
-
-
-                ////////////////////////////////////////////////////////////////////////////
-                // Les déclarations de TP qui se terminent avant 2016 ne sont pas créées.
-                if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb('01/01/2016'))
-                {
-                    //echo "La date de fin est avant le 01/01/2016 \n";
+                    echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa situation administrative  \n";
                     continue;
                 }
-                ////////////////////////////////////////////////////////////////////////////
 
-                //if (! isset($debug) or $debug == false)
-                //{
-                echo "agentid = $agentid   numligne=$numligne   quotite=$numquotite   datedebut=$datedebut   datefin=$datefin\n";
-                //}
-                $sql = sprintf("INSERT INTO QUOTITE (AGENTID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) 
+                $sql = sprintf("INSERT INTO SITUATIONADMIN (AGENTID,NUMLIGNE,POSITIONADMIN,DATEDEBUT,DATEFIN)
                                 VALUES('%s','%s','%s','%s','%s')", 
-                       $fonctions->my_real_escape_utf8($agentid), 
-                       $fonctions->my_real_escape_utf8($numligne), 
-                       $fonctions->my_real_escape_utf8($numquotite), 
-                       $fonctions->my_real_escape_utf8($datedebut), 
-                       $fonctions->my_real_escape_utf8($datefin));
+                                   $fonctions->my_real_escape_utf8($agentid), 
+                                   $fonctions->my_real_escape_utf8($numligne), 
+                                   $fonctions->my_real_escape_utf8($codesituation), 
+                                   $fonctions->my_real_escape_utf8($datedebut), 
+                                   $fonctions->my_real_escape_utf8($datefin));
 
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") 
                 {
-                    echo "Error : INSERT QUOTITE => $erreur_requete \n";
+                    echo "Error : INSERT SITUATIONADMIN => $erreur_requete \n";
                     echo "sql = $sql \n";
                 }
 
-                // On traite ICI le changement de quotité
-                // Si la quotité est à 100% on crée une déclaration de TP
-                if ($numquotite == '100') 
+                $datedebutperiodemarge = ($fonctions->anneeref() - $interval_de_calcul) . $fonctions->debutperiode();
+                $datedebutdb = $fonctions->formatdatedb($datedebut);
+                $datefindb = $fonctions->formatdatedb($datefin);
+                //$datefindb = $fonctions->formatdatedb(date("Y-m-d",strtotime("+$interval_de_calcul year", strtotime($datefindb))));
+
+
+                // On complète le tableau des agent qui sont en activité à la date du jour => Permet de ne traiter que ceux là ultérieurement
+                //if ($datedujour >= $datedebutdb and $datedujour <= $datefindb)
+                if ($datefindb >= $datedebutperiodemarge)
                 {
-                    echo "La quotité est à 100% \n";
-
-                    // On regarde si une déclarationTP existe déjà pour cet agent/numligne
-                    $declarationTP = new declarationTP($dbcon);
-                    $sql = sprintf("SELECT DECLARATIONID 
-                                    FROM DECLARATIONTP 
-                                    WHERE AGENTID = '%s' AND NUMLIGNEQUOTITE = '%s'",
-                           $fonctions->my_real_escape_utf8($agentid), 
-                           $fonctions->my_real_escape_utf8($numligne));
-                    $query_decla  = mysqli_query($dbcon, $sql);
-                    $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "")
+                    $codesituation = strtoupper(trim($codesituation));
+                    if (substr($codesituation,0,3) == 'ACI' or substr($codesituation,0,3) == 'DEE' )
                     {
-                        echo "Error : SELECT DECLARATIONTP A 100% => $erreur_requete \n";
-                    }
-
-                    if (mysqli_num_rows($query_decla) == 0) 
-                    {
-                        echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la crée \n";
-                        $declarationTP->agentid($agentid);
-                        $declarationTP->numlignequotite($numligne);
-                        $declarationTP->tabtpspartiel(str_repeat("0", 20));
-                        $declarationTP->datedebut($datedebut);
-                        $declarationTP->datefin($datefin);
-                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
-                        $erreur = $declarationTP->store();
-                        if ($erreur != "")
-                        {
-                            echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
-                        }
-                    }
-                    else // Il y a une déclarationTP pour cet agent/numligne
-                    {
-                        echo "Il y a une declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la charge \n";
-                        // On sait qu'il y a en qu'une seul !!!
-                        $result = mysqli_fetch_row($query_decla);
-                        $declarationid = "$result[0]";
-                        $declarationTP->load($declarationid);
-                        $declarationTP->tabtpspartiel(str_repeat("0", 20));
-                        $declarationTP->datedebut($datedebut);
-                        $declarationTP->datefin($datefin);
-                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
-                        $erreur = $declarationTP->store();
-                        if ($erreur != "")
-                        {
-                            echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
-                        }
-                    }
-                } 
-                else 
-                {
-                    echo "La quotité n'est pas à 100% \n";
-
-                    // Quotité != 100% donc on ne crée pas de declaration TP
-                    // On cherche si une declarationTP existe 
-                    $declarationTP = new declarationTP($dbcon);
-                    $sql = sprintf("SELECT DECLARATIONID 
-                                    FROM DECLARATIONTP 
-                                    WHERE AGENTID = '%s' 
-                                      AND NUMLIGNEQUOTITE = '%s' 
-                                      AND STATUT IN ('%s','%s')",
-                            $fonctions->my_real_escape_utf8($agentid), 
-                            $fonctions->my_real_escape_utf8($numligne),
-                            $fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_VALIDE),$fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_ATTENTE));
-                    $query_decla  = mysqli_query($dbcon, $sql);
-                    $erreur_requete = mysqli_error($dbcon);
-                    if ($erreur_requete != "")
-                    {
-                        echo "Error : SELECT DECLARATIONTP NON 100% => $erreur_requete \n";
-                    }
-                    if (mysqli_num_rows($query_decla) == 0) 
-                    {
-                        echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On laisse l'agent déclarer son TP \n";
-                    }
-                    else {
-                        while  ($result = mysqli_fetch_row($query_decla))
-                        {
-                            $declarationid = "$result[0]";
-                            //echo "On va charger la déclarationTP id = $declarationid \n";
-                            $declarationTP->load($declarationid);
-                            echo "L'ancienne quotité (dans le tableau) = " . $declarationTP->tabtptoquotite() . " et la nouvelle = $numquotite \n";
-                            if ($declarationTP->tabtptoquotite() == $numquotite or strcasecmp($declarationTP->forcee(),'O')==0)
-                            {
-                                // La nouvelle quotité est la même que l'ancienne ou la répartition de la quotitié est forcée => On ne touche rien
-                                if (strcasecmp($declarationTP->forcee(),'O')==0)
-                                {
-                                    echo "La déclaration de TP est forcée ==> On considère que c'est ok.\n";
-                                }
-                            }
-                            else 
-                            {
-                                // L'ancienne quantité est != de la nouvelle => On annule la déclarationTP
-                                $declarationTP->statut(declarationTP::DECLARATIONTP_REFUSE);
-                                $erreur = $declarationTP->store();
-                                if ($erreur != "")
-                                {
-                                    echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
-                                }
-                            }
-                        }
+                        $listeagentactif[$agentid] = $agentid;
                     }
                 }
+            }
+        }
 
-                ///////////////////////////////////////////////////////////////////////
-                // On va traiter ici le changement de date début et/ou de date de fin
-                ///////////////////////////////////////////////////////////////////////
-                $sql = sprintf("SELECT DECLARATIONID 
-                                FROM DECLARATIONTP 
-                                WHERE AGENTID = '%s' 
-                                  AND NUMLIGNEQUOTITE = '%s' 
-                                  AND STATUT IN ('%s','%s')
-                                  AND (DATEDEBUT < '%s'
-                                  OR DATEFIN > '%s')",
-                       $fonctions->my_real_escape_utf8($agentid), 
-                       $fonctions->my_real_escape_utf8($numligne),
-                       $fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_VALIDE),$fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_ATTENTE),
-                       $datedebut,
-                       $datefin);
-                $query_decla  = mysqli_query($dbcon, $sql);
+        echo "Import des STRUCTURES D'AFFECTATION - " . date("d/m/Y H:i:s") . "\n";
+        // Import des affectations-structure.txt
+        
+        // On charge la table des structures avec le fichier
+        if (! file_exists($structurefile)) 
+        {
+            echo "Le fichier $structurefile n'existe pas !!! \n";
+        } 
+        else 
+        {
+            $sql = "DELETE FROM HISTORIQUEAFFECTATION";
+            mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
+            if ($erreur_requete != "")
+            {
+                echo "Error : DELETE HISTORIQUEAFFECTATION => $erreur_requete \n";
+            }
+            $xml = simplexml_load_file("$structurefile");
+            $agentnode = $xml->xpath('AFF_STRUCTURE');
+            foreach ($agentnode as $node)
+            {
+                $agentid = trim($node->xpath('AGENTID')[0]);
+                $numligne = trim($node->xpath('NUMLIGNE')[0]);
+                $idstruct = trim($node->xpath('STRUCTID')[0]);
+                $datedebut = trim($node->xpath('DATEDEBUT')[0]);
+                $datefin = trim($node->xpath('DATEFIN')[0]);
+
+                //echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
+
+                // On va conserver l'historique des affectations
+                $sql = sprintf("INSERT INTO HISTORIQUEAFFECTATION(AGENTID,NUMLIGNE,STRUCTUREID,DATEDEBUT,DATEFIN)
+                                VALUES('%s','%s','%s','%s','%s')", 
+                                   $fonctions->my_real_escape_utf8($agentid), 
+                                   $fonctions->my_real_escape_utf8($numligne), 
+                                   $fonctions->my_real_escape_utf8($idstruct), 
+                                   $fonctions->my_real_escape_utf8($datedebut), 
+                                   $fonctions->my_real_escape_utf8($datefin));
+                mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
                 {
-                    echo "Error : SELECT DECLARATIONTP MODIF DEBUT FIN => $erreur_requete \n";
+                    echo "Error : INSERT HISTORIQUEAFFECTATION => $erreur_requete \n";
                 }
-                if (mysqli_num_rows($query_decla) == 0) 
+
+
+                if ($fonctions->formatdatedb($datedebut) <= date('Ymd') and $fonctions->formatdatedb($datefin) >= date('Ymd'))
                 {
-                    echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne avec une date début et fin différente \n";
-                }
-                else 
-                {
-                    while  ($result = mysqli_fetch_row($query_decla))
+                    $agent = new agent($dbcon);
+                    if (!$agent->existe($agentid))
                     {
-                        unset($declarationTP);
-                        $declarationTP = new declarationTP($dbcon);
-                        $declarationTP->load($result[0]);
-                        echo "DeclarationTP " . $result[0] . " chargée pour l'agent " . $declarationTP->agentid() .  " pour déplacer la date début ou fin \n";
-                        // On va bouger la date de début de la déclarationTP
-                        if ($fonctions->formatdatedb($declarationTP->datedebut()) < $datedebut)
-                        {
-                            echo "On déplace la date de début \n";
-                            $declarationTP->datedebut($datedebut);
-                        }
-                        if ($fonctions->formatdatedb($declarationTP->datefin()) > $datefin)
-                        {
-                            echo "On déplace la date de fin \n";
-                            $declarationTP->datefin($datefin);
-                        }
-                        $declarationTP->store();
-                        echo "Déplacement terminé ! \n";
+                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa structure d'affectation  \n";
                     }
-                } 
+                    else
+                    {
+                        $agent->load($agentid);
+                        $agent->structureid($idstruct);
+                        if (!$agent->store($agentid))
+                        {
+                            echo "Error : UPDATE STRUCTUREID dans AGENT ($agentid) => La mise à jour de la structure d'affectation a échoué. \n";
+                        }
+                    }
+                }
+                else
+                {
+                    //echo "Agent : $agentid => La date du jour n'est pas dans la période $datedebut ==> $datefin : On ignore la ligne. \n";
+                }
             }
         }
 
@@ -365,163 +280,309 @@
             }
         }
 
-        echo "Import des situations administratives - " . date("d/m/Y H:i:s") . "\n";
-        // Import des affectations-statut.txt
-        $sql = "DELETE FROM SITUATIONADMIN";
+        echo "Import des MODALITES D'AFFECTATION (QUOTITE) - " . date("d/m/Y H:i:s") . "\n";
+        // Import des affectations-modalite.txt
+        $sql = "DELETE FROM QUOTITE";
         mysqli_query($dbcon, $sql);
         $erreur_requete = mysqli_error($dbcon);
         if ($erreur_requete != "")
         {
-            echo "Error : DELETE SITUATIONADMIN => $erreur_requete \n";
-        }
-            
-        // On charge la table des statut avec le fichier
-        if (! file_exists($situationfile)) 
+            echo "Error : DELETE QUOTITE => $erreur_requete \n";
+        }        
+        if (! file_exists($modalitefile)) 
         {
-            echo "Le fichier $situationfile n'existe pas !!! \n";
+            echo "Le fichier $modalitefile n'existe pas !!! \n";
         } 
         else 
         {
-            $xml = simplexml_load_file("$situationfile");
-            $agentnode = $xml->xpath('SITUATION');
+            $agent = new agent($dbcon);
+            $currentagent = null;
+            $xml = simplexml_load_file("$modalitefile");
+            $agentnode = $xml->xpath('MODALITE');
             foreach ($agentnode as $node)
             {
                 $agentid = trim($node->xpath('AGENTID')[0]);
                 $numligne = trim($node->xpath('NUMLIGNE')[0]);
-                $codesituation = trim($node->xpath('CODE')[0]);
+                $numquotite = trim($node->xpath('QUOTITE')[0]);
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);
-                //echo "agentid = $agentid   numligne=$numligne   codesituation=$codesituation   datedebut=$datedebut   datefin=$datefin\n";
 
-                $agent = new agent($dbcon);
-                if (!$agent->load($agentid))
+                if ($agent->agentid() != $agentid) 
+                //if ($currentagent != $agentid )
                 {
-                    echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa situation administrative  \n";
-                    continue;
+                    $currentagent = $agentid;
+                    $agent = new agent($dbcon);
+                    if (!$agent->load($agentid))
+                    {
+                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa quotité \n";
+                        continue;
+                    }
+                    //echo "Le load est ok pour l'agent " . $agent->agentid() . "   agentid = $agentid \n";
                 }
 
-                $sql = sprintf("INSERT INTO SITUATIONADMIN (AGENTID,NUMLIGNE,POSITIONADMIN,DATEDEBUT,DATEFIN)
+
+                ////////////////////////////////////////////////////////////////////////////
+                // Les déclarations de TP qui se terminent avant 2016 ne sont pas créées.
+                if ($fonctions->formatdatedb($datefin) < $fonctions->formatdatedb('01/01/2016'))
+                {
+                    //echo "La date de fin est avant le 01/01/2016 \n";
+                    continue;
+                }
+                ////////////////////////////////////////////////////////////////////////////
+
+                //if (! isset($debug) or $debug == false)
+                //{
+                //echo "agentid = $agentid   numligne=$numligne   quotite=$numquotite   datedebut=$datedebut   datefin=$datefin\n";
+                //}
+                $sql = sprintf("INSERT INTO QUOTITE (AGENTID,NUMLIGNE,QUOTITE,DATEDEBUT,DATEFIN) 
                                 VALUES('%s','%s','%s','%s','%s')", 
-                                   $fonctions->my_real_escape_utf8($agentid), 
-                                   $fonctions->my_real_escape_utf8($numligne), 
-                                   $fonctions->my_real_escape_utf8($codesituation), 
-                                   $fonctions->my_real_escape_utf8($datedebut), 
-                                   $fonctions->my_real_escape_utf8($datefin));
+                       $fonctions->my_real_escape_utf8($agentid), 
+                       $fonctions->my_real_escape_utf8($numligne), 
+                       $fonctions->my_real_escape_utf8($numquotite), 
+                       $fonctions->my_real_escape_utf8($datedebut), 
+                       $fonctions->my_real_escape_utf8($datefin));
 
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "") 
                 {
-                    echo "Error : INSERT SITUATIONADMIN => $erreur_requete \n";
+                    echo "Error : INSERT QUOTITE => $erreur_requete \n";
                     echo "sql = $sql \n";
                 }
-            }
-        }
-            
-        echo "Import des STRUCTURES D'AFFECTATION - " . date("d/m/Y H:i:s") . "\n";
-        // Import des affectations-structure.txt
-        
-        // On charge la table des structures avec le fichier
-        if (! file_exists($structurefile)) 
-        {
-            echo "Le fichier $structurefile n'existe pas !!! \n";
-        } 
-        else 
-        {
-            $sql = "DELETE FROM HISTORIQUEAFFECTATION";
-            mysqli_query($dbcon, $sql);
-            $erreur_requete = mysqli_error($dbcon);
-            if ($erreur_requete != "")
-            {
-                echo "Error : DELETE HISTORIQUEAFFECTATION => $erreur_requete \n";
-            }
-            $xml = simplexml_load_file("$structurefile");
-            $agentnode = $xml->xpath('AFF_STRUCTURE');
-            foreach ($agentnode as $node)
-            {
-                $agentid = trim($node->xpath('AGENTID')[0]);
-                $numligne = trim($node->xpath('NUMLIGNE')[0]);
-                $idstruct = trim($node->xpath('STRUCTID')[0]);
-                $datedebut = trim($node->xpath('DATEDEBUT')[0]);
-                $datefin = trim($node->xpath('DATEFIN')[0]);
 
-                //echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
-
-                /*
-                 * CREATE TABLE `HISTORIQUEAFFECTATION` (
-                 *   `AGENTID` VARCHAR(10) NOT NULL,
-                 *   `NUMLIGNE` VARCHAR(10) NOT NULL,
-                 *   `STRUCTUREID` VARCHAR(10) NULL,
-                 *   `DATEDEBUT` DATE NULL,
-                 *   `DATEFIN` DATE NULL,
-                 *   PRIMARY KEY (`AGENTID`, `NUMLIGNE`));
-                 * 
-                 */
-
-                // On va conserver l'historique des affectations
-                $sql = sprintf("INSERT INTO HISTORIQUEAFFECTATION(AGENTID,NUMLIGNE,STRUCTUREID,DATEDEBUT,DATEFIN)
-                                VALUES('%s','%s','%s','%s','%s')", 
-                                   $fonctions->my_real_escape_utf8($agentid), 
-                                   $fonctions->my_real_escape_utf8($numligne), 
-                                   $fonctions->my_real_escape_utf8($idstruct), 
-                                   $fonctions->my_real_escape_utf8($datedebut), 
-                                   $fonctions->my_real_escape_utf8($datefin));
-                mysqli_query($dbcon, $sql);
-                $erreur_requete = mysqli_error($dbcon);
-                if ($erreur_requete != "")
+                // Si l'agent n'est pas en activité depuis plus de 3 ans on ne traite pas 
+                if (!isset($listeagentactif[$agentid]))
                 {
-                    echo "Error : INSERT HISTORIQUEAFFECTATION => $erreur_requete \n";
+                    continue;
                 }
 
-
-                if ($fonctions->formatdatedb($datedebut) <= date('Ymd') and $fonctions->formatdatedb($datefin) >= date('Ymd'))
+                // On traite ICI le changement de quotité
+                // Si la quotité est à 100% on crée une déclaration de TP
+                if ($numquotite == '100') 
                 {
-                    $agent = new agent($dbcon);
-                    if (!$agent->existe($agentid))
+                    //echo "La quotité est à 100% \n";
+
+                    // On regarde si une déclarationTP existe déjà pour cet agent/numligne
+                    $declarationTP = new declarationTP($dbcon);
+                    $sql = sprintf("SELECT DECLARATIONID 
+                                    FROM DECLARATIONTP 
+                                    WHERE AGENTID = '%s' AND NUMLIGNEQUOTITE = '%s'",
+                           $fonctions->my_real_escape_utf8($agentid), 
+                           $fonctions->my_real_escape_utf8($numligne));
+                    $query_decla  = mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
+                    if ($erreur_requete != "")
                     {
-                        echo "L'agent $agentid n'existe pas dans la base. On ne charge pas sa structure d'affectation  \n";
+                        echo "Error : SELECT DECLARATIONTP A 100% => $erreur_requete \n";
                     }
-                    else
+
+                    if (mysqli_num_rows($query_decla) == 0) 
                     {
-                        $agent->load($agentid);
-                        $agent->structureid($idstruct);
-                        if (!$agent->store($agentid))
+                        echo "Pas de declarationTP (100%) pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la crée \n";
+                        $declarationTP->agentid($agentid);
+                        $declarationTP->numlignequotite($numligne);
+                        $declarationTP->tabtpspartiel(str_repeat("0", 20));
+                        $declarationTP->datedebut($datedebut);
+                        $declarationTP->datefin($datefin);
+                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
+                        $erreur = $declarationTP->store();
+                        if ($erreur != "")
                         {
-                            echo "Error : UPDATE STRUCTUREID dans AGENT ($agentid) => La mise à jour de la structure d'affectation a échoué. \n";
+                            echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                        }
+                    }
+                    else // Il y a une déclarationTP pour cet agent/numligne
+                    {
+                        //echo "Il y a une declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On la charge \n";
+                        // On sait qu'il y a en qu'une seul !!!
+                        $result = mysqli_fetch_row($query_decla);
+                        $declarationid = "$result[0]";
+                        $declarationTP->load($declarationid);
+                        $declarationTP->tabtpspartiel(str_repeat("0", 20));
+                        $declarationTP->datedebut($datedebut);
+                        $declarationTP->datefin($datefin);
+                        $declarationTP->statut(declarationTP::DECLARATIONTP_VALIDE);
+                        $erreur = $declarationTP->store();
+                        if ($erreur != "")
+                        {
+                            echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                        }
+                    }
+                } 
+                else 
+                {
+                    //echo "La quotité n'est pas à 100% \n";
+
+                    // Quotité != 100% donc on ne crée pas de declaration TP
+                    // On cherche si une declarationTP existe 
+                    $declarationTP = new declarationTP($dbcon);
+                    $sql = sprintf("SELECT DECLARATIONID 
+                                    FROM DECLARATIONTP 
+                                    WHERE AGENTID = '%s' 
+                                      AND NUMLIGNEQUOTITE = '%s' 
+                                      AND STATUT IN ('%s','%s')",
+                            $fonctions->my_real_escape_utf8($agentid), 
+                            $fonctions->my_real_escape_utf8($numligne),
+                            $fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_VALIDE),$fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_ATTENTE));
+                    $query_decla  = mysqli_query($dbcon, $sql);
+                    $erreur_requete = mysqli_error($dbcon);
+                    if ($erreur_requete != "")
+                    {
+                        echo "Error : SELECT DECLARATIONTP NON 100% => $erreur_requete \n";
+                    }
+                    if (mysqli_num_rows($query_decla) == 0) 
+                    {
+                        //echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne dans la table DECLARATIONTP => On laisse l'agent déclarer son TP \n";
+                    }
+                    else 
+                    {
+                        while  ($result = mysqli_fetch_row($query_decla))
+                        {
+                            $declarationid = "$result[0]";
+                            //echo "On va charger la déclarationTP id = $declarationid \n";
+                            $declarationTP->load($declarationid);
+                            //echo "Agent $agentid : L'ancienne quotité (dans le tableau) = " . $declarationTP->tabtptoquotite() . " et la nouvelle = $numquotite \n";
+                            if ($declarationTP->tabtptoquotite() == $numquotite or strcasecmp($declarationTP->forcee(),'O')==0)
+                            {
+                                // La nouvelle quotité est la même que l'ancienne ou la répartition de la quotitié est forcée => On ne touche rien
+                                if (strcasecmp($declarationTP->forcee(),'O')==0)
+                                {
+                                    //echo "Agent $agentid : La déclaration de TP est forcée ==> On considère que c'est ok.\n";
+                                }
+                            }
+                            else 
+                            {
+                                // L'ancienne quantité est != de la nouvelle => On annule la déclarationTP
+                                $declarationTP->statut(declarationTP::DECLARATIONTP_REFUSE);
+                                $erreur = $declarationTP->store();
+                                if ($erreur != "")
+                                {
+                                    echo "Error : Erreur dans la déclarationTP->store : " . $erreur . "\n";
+                                }
+                            }
                         }
                     }
                 }
-                else
+
+                ///////////////////////////////////////////////////////////////////////
+                // On va traiter ici le changement de date début et/ou de date de fin
+                ///////////////////////////////////////////////////////////////////////
+                $sql = sprintf("SELECT DECLARATIONID 
+                                FROM DECLARATIONTP 
+                                WHERE AGENTID = '%s' 
+                                  AND NUMLIGNEQUOTITE = '%s' 
+                                  AND STATUT IN ('%s','%s')
+                                  AND (DATEDEBUT < '%s'
+                                  OR DATEFIN > '%s')",
+                       $fonctions->my_real_escape_utf8($agentid), 
+                       $fonctions->my_real_escape_utf8($numligne),
+                       $fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_VALIDE),$fonctions->my_real_escape_utf8(declarationTP::DECLARATIONTP_ATTENTE),
+                       $datedebut,
+                       $datefin);
+                $query_decla  = mysqli_query($dbcon, $sql);
+                $erreur_requete = mysqli_error($dbcon);
+                if ($erreur_requete != "")
                 {
-                    echo "Agent : $agentid => La date du jour n'est pas dans la période $datedebut ==> $datefin : On ignore la ligne. \n";
+                    echo "Error : SELECT DECLARATIONTP MODIF DEBUT FIN => $erreur_requete \n";
                 }
+                if (mysqli_num_rows($query_decla) == 0) 
+                {
+                    //echo "Pas de declarationTP pour l'agent $agentid et numligne $numligne avec une date début et fin différente \n";
+                }
+                else 
+                {
+                    while  ($result = mysqli_fetch_row($query_decla))
+                    {
+                        //echo "sql = $sql \n";
+                        unset($declarationTP);
+                        $declarationTP = new declarationTP($dbcon);
+                        $declarationTP->load($result[0]);
+                        echo "DeclarationTP " . $result[0] . " chargée pour l'agent " . $declarationTP->agentid() .  " pour déplacer la date début ou fin \n";
+                        // On va bouger la date de début de la déclarationTP
+                        if ($fonctions->formatdatedb($declarationTP->datedebut()) < $datedebut)
+                        {
+                            echo "On déplace la date de début \n";
+                            $declarationTP->datedebut($datedebut);
+                        }
+                        if ($fonctions->formatdatedb($declarationTP->datefin()) > $datefin)
+                        {
+                            echo "On déplace la date de fin \n";
+                            $declarationTP->datefin($datefin);
+                        }
+                        $declarationTP->store();
+                        echo "Déplacement terminé ! \n";
+                    }
+                } 
             }
-        }
+        }            
     }
     
+    $date_deb_period = $fonctions->anneeref() . $fonctions->debutperiode();
+    $date_deb_period_marge = ($fonctions->anneeref() - $interval_de_calcul) . $fonctions->debutperiode();
+    $date_fin_period = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
+
     echo "Création des timelines - " . date("d/m/Y H:i:s") . "\n";
-    $sql = "DELETE FROM AFFECTATION";
+    // $sql = "DELETE 
+    //         FROM AFFECTATION
+    //         WHERE AFFECTATION.AGENTID IN (SELECT DISTINCT SITUATIONADMIN.AGENTID 
+    //                                       FROM SITUATIONADMIN
+    //                                       WHERE SITUATIONADMIN.DATEDEBUT<='$date_fin_period' 
+    //                                         AND DATE_ADD(SITUATIONADMIN.DATEFIN, INTERVAL +$interval_de_calcul YEAR) >='$date_deb_period'
+    //                                         AND UPPER(SUBSTRING(SITUATIONADMIN.POSITIONADMIN,1,3)) IN ('ACI','DEE')
+    //                                      )
+    //                                   ";
+    $sql = "DELETE 
+            FROM AFFECTATION
+            WHERE AFFECTATION.AGENTID IN (SELECT DISTINCT QUOTITE.AGENTID FROM QUOTITE)
+              AND AFFECTATION.AGENTID IN (SELECT DISTINCT STATUT.AGENTID FROM STATUT)
+              AND AFFECTATION.AGENTID IN (SELECT DISTINCT AGENT.AGENTID FROM AGENT)
+              AND AFFECTATION.AGENTID IN (SELECT DISTINCT SITUATIONADMIN.AGENTID 
+                                          FROM SITUATIONADMIN
+                                          WHERE SITUATIONADMIN.DATEDEBUT <= '$date_fin_period' 
+                                            AND SITUATIONADMIN.DATEFIN >= '$date_deb_period_marge'
+                                            AND UPPER(SUBSTRING(SITUATIONADMIN.POSITIONADMIN,1,3)) IN ('ACI','DEE')
+                                         )
+            ";
     mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
     {
         echo "Error : DELETE AFFECTATION => $erreur_requete \n";
     }
-    $sql = sprintf("SELECT DISTINCT AGENTID 
-                    FROM STATUT 
-                    WHERE AGENTID IN (SELECT DISTINCT AGENTID FROM QUOTITE)
-                      AND AGENTID IN (SELECT DISTINCT AGENTID FROM SITUATIONADMIN) 
-                      AND AGENTID IN (SELECT DISTINCT AGENTID FROM AGENT)");
+    // $sql = sprintf("SELECT DISTINCT STATUT.AGENTID 
+    //                 FROM STATUT 
+    //                 WHERE STATUT.AGENTID IN (SELECT DISTINCT QUOTITE.AGENTID FROM QUOTITE)
+    //                   AND STATUT.AGENTID IN (SELECT DISTINCT SITUATIONADMIN.AGENTID 
+    //                                          FROM SITUATIONADMIN
+    //                                          WHERE SITUATIONADMIN.DATEDEBUT<='$date_fin_period' 
+    //                                            AND DATE_ADD(SITUATIONADMIN.DATEFIN, INTERVAL +$interval_de_calcul YEAR) >='$date_deb_period'
+    //                                            AND UPPER(SUBSTRING(SITUATIONADMIN.POSITIONADMIN,1,3)) IN ('ACI','DEE')
+    //                                         ) 
+    //                   AND STATUT.AGENTID IN (SELECT DISTINCT AGENT.AGENTID FROM AGENT)");
+    $sql = "SELECT DISTINCT STATUT.AGENTID 
+            FROM STATUT 
+            WHERE STATUT.AGENTID IN (SELECT DISTINCT QUOTITE.AGENTID FROM QUOTITE)
+              AND STATUT.AGENTID IN (SELECT DISTINCT AGENT.AGENTID FROM AGENT)
+              AND STATUT.AGENTID IN (SELECT DISTINCT SITUATIONADMIN.AGENTID 
+                                     FROM SITUATIONADMIN
+                                     WHERE SITUATIONADMIN.DATEDEBUT <= '$date_fin_period' 
+                                       AND SITUATIONADMIN.DATEFIN >= '$date_deb_period_marge'
+                                       AND UPPER(SUBSTRING(SITUATIONADMIN.POSITIONADMIN,1,3)) IN ('ACI','DEE')
+                                    ) 
+           ";
     $query_agentid = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
     {
         echo "Error : SELECT AGENTID FROM STATUT QUOTITE SITUATIONADMIN AGENT => $erreur_requete \n";
     }
+    $numrows = 0;
     while ($agentid = mysqli_fetch_row($query_agentid)) 
     {
         $agent = new agent($dbcon);
         $agent->load($agentid[0]);
+        echo "On traite l'agent : " . $agent->identitecomplete() . " (id : " . $agent->agentid() . ") \n";
+        $numrows++;
         $tabaffectation = $agent->creertimeline();
         //echo "Timeline de l'agent " . $agent->agentid() . " => " . print_r($tabaffectation, true) . "\n";
         
@@ -571,6 +632,7 @@
             }
         }
     }
+    echo "$numrows agents ont été traités. \n";
 
     echo "Fin de l'import des affectations " . date("d/m/Y H:i:s") . "\n";
 

@@ -76,6 +76,11 @@
         $arraycontinuesendtoresp = $_POST['continuesendtoresp'];
     }
 
+    $hiddeninput = null;
+    if (isset($_POST['hiddeninput']))
+    {
+        $hiddeninput = $_POST['hiddeninput'];
+    }
 
     $showall = false;
             
@@ -168,13 +173,22 @@
                         {
                             $error = "Un agent délégué est saisi, mais la date de début ou la date de fin de la période est vide.<br>La délégation n'est pas enregistrée.";
                             echo $fonctions->showmessage(fonctions::MSGERROR, $error);
-                        } else {
-                            $continuesendtoresp = 'n';
-                            if (isset($arraycontinuesendtoresp[$structure->id()]))
+                        } 
+                        else 
+                        {
+                            // Si la case à cocher est masquée => On désactive automatiquement la fonction "continuesendtoresptostore"
+                            if (isset($hiddeninput[$structure->id()]))
                             {
-                                $continuesendtoresp = 'o';
+                                $continuesendtoresp = 'n';
                             }
-                            
+                            else
+                            {
+                                $continuesendtoresp = 'n';
+                                if (isset($arraycontinuesendtoresp[$structure->id()]))
+                                {
+                                    $continuesendtoresp = 'o';
+                                }
+                            }
                             // echo "On enregistre la delegation.... <br>";
                             $delegation = new delegation;
                             $delegation->delegationuserid = $agentid;
@@ -263,16 +277,93 @@
                 $extrainfo = "<b><span class='redtext'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
             }
         }
-        echo "' size=40 $style/>$extrainfo";
-    
+        //echo "' size=40 $style onchange='updatedelegue_" . $structure->id() . "();'/>$extrainfo";
+        echo "' size=40 $style />$extrainfo";
+
+        //
         echo "<input type='hidden' id='delegation[" . $structure->id() . "]' name='delegation[" . $structure->id() . "]' value='";
         if (! is_null($delegationuser))
+        {
             echo $delegationuser->agentid();
+        }
         echo "' class='infodelegation[" . $structure->id() . "]' /> ";
+
+        echo "<input type='checkbox' id='hiddeninput[" . $structure->id() . "]' name='hiddeninput[" . $structure->id() . "]' hidden "; //
+        if (isset($hiddeninput[$structure->id()]))
+        {
+            echo " checked ";
+        }
+        echo " />";
+
 ?>
+        <script>
+            ///////////////////////////////////////////////////////
+            // C'est la fonction de callback lorsqu'on sélectionne un agent dans l'autocomplete
+            function updatedelegue_<?php echo $structure->id()?>(event, ui)
+            {
+                // NB: this event is called before the selected value is set in the "input"
+                //console.log ("fired updatedelegue " + Date.now());
+                var form = $(this).closest("form");
+                var selectedInput = document.activeElement;
+                if (ui)
+                {
+                    form.find("[id='" + selectedInput.name + "']").val(ui.item.label);
+                    form.find("[class='" + selectedInput.name + "']").val (ui.item.value);
+                }
+
+                var structid = "<?php echo $structure->id()?>";
+                var listeagent = "#<?php 
+                    $listeagent = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), 'n'); 
+                    foreach((array)$listeagent as $agent) 
+                    { 
+                        echo $agent->agentid() . "#" . $agent->uid() . "#";
+                    }
+                ?>";
+                var agentidinput = document.getElementById("delegation[" + structid + "]");
+                var divcontinue = document.getElementById("divcontinuesendtoresp[" + structid + "]");
+                var hiddeninput = document.getElementById("hiddeninput[" + structid + "]");
+                var infodelegation = document.getElementById("infodelegation[" + structid + "]");
+                var nomdeleguelabel = document.getElementById("nomdeleguelabel[" + structid + "]");
+                if (agentidinput && divcontinue && hiddeninput && nomdeleguelabel && infodelegation)
+                {
+                    if (listeagent.includes(agentidinput.value))
+                    {
+                        divcontinue.hidden = false;
+                        hiddeninput.checked = false;
+                        if ((infodelegation.value.trim() + "") != '')
+                        {
+                            nomdeleguelabel.innerText = infodelegation.value;
+                        }
+                    }
+                    else
+                    {
+                        divcontinue.hidden = true;
+                        hiddeninput.checked = true;
+                    }
+                }
+                if ((infodelegation.value.trim() + "") == '')
+                {
+                    divcontinue.hidden = true;
+                }
+                return false;
+            }
+
+            function cleardelegue_<?php echo $structure->id()?>(event, ui)
+            {
+                //console.log ("fired cleardelegue " + Date.now());
+
+                var structid = "<?php echo $structure->id()?>";
+                var divcontinue = document.getElementById("divcontinuesendtoresp[" + structid + "]");
+                if (divcontinue)
+                {
+                        divcontinue.hidden = true;
+                }
+                return false;
+            }
+        </script>
 	    <script>
         	$('[id="<?php echo "infodelegation[". $structure->id() ."]" ?>"]').autocompleteUser(
-      	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+      	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { minLength : 4 , noFetch : cleardelegue_<?php echo $structure->id(); ?> , disableEnterKey: true, select: updatedelegue_<?php echo $structure->id(); ?>, wantedAttr: "uid",
       	                          wsParams: { filter_eduPersonAffiliation: "employee" } });
     	</script>
 <?php
@@ -332,15 +423,38 @@
 <?php
         echo "</p>";
 
+        echo "<div id='divcontinuesendtoresp[" . $structure->id() . "]'>";
         echo "<p class='delegpaddingleft'>";
         $checked = '';
         if (strcasecmp($continuesendtoresp, 'o')==0)
         {
             $checked = ' checked ';
         }
-        echo "<input type='checkbox' $checked name='continuesendtoresp[" . $structure->id() . "]' id='continuesendtoresp[" . $structure->id() . "]'>En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de recevoir les notifications des demandes de congés/d'absences par mail durant la délégation.</input>";
+        echo "<input type='checkbox' $checked name='continuesendtoresp[" . $structure->id() . "]' id='continuesendtoresp[" . $structure->id() . "]'>";
+        //echo "En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de recevoir les notifications des demandes de congés/d'absences par mail durant la délégation.</input>";
+        //echo "En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de gérer les demandes de congés/d'absences du délégué durant cette période.</input>";
+        //echo "En cochant cette case, " . $structure->responsablesiham()->identitecomplete()  . " continue de gérer les demandes de congés/d'absences de <label id=nomdeleguelabel[" . $structure->id() . "]></label> durant cette période.</input>";
+
+        $tiptext = "En cochant cette case, le délégué peut agir comme un responsable, mais reste sous la reponsabilité de celui-ci.\n";
+        $tiptext = $tiptext . "Le responsable :\n";
+        $tiptext = $tiptext . "\t&#x2022; reçoit les notifications des demandes des agents. Le délégué les reçoit également. \n";
+        $tiptext = $tiptext . "\t&#x2022; peut valider les demandes de congés/d'absences des agents et du délégué. \n";
+        $tiptext = $tiptext . "\t&#x2022; est intégré dans le circuit de validation du CET et du télétravail des agents avec le délégué. \n";
+        $tiptext = $tiptext . "ATTENTION : Les demandes du délégué sont validées par le responsable de la structure courante. \n";
+        $tiptext = $tiptext . "\n";
+        $tiptext = $tiptext . "En ne cochant pas cette case, le délégué se substitue au responsable (poste vacant, absence longue durée).\n";
+        $tiptext = $tiptext . "Le responsable :\n";
+        $tiptext = $tiptext . "\t&#x2022; ne reçoit pas les notifications des demandes des agents. Seul le délégué est notifié. \n";
+        $tiptext = $tiptext . "\t&#x2022; peut valider les demandes de congés/d'absences des agents et du délégué. \n";
+        $tiptext = $tiptext . "\t&#x2022; est intégré dans le circuit de validation du CET et du télétravail des agents avec le délégué. \n";
+        $tiptext = $tiptext . "ATTENTION : Les demandes du délégué peuvent être validées par le responsable de la structure courante ou parente. \n";
+
+        echo "En cochant cette case, le délégué (<label id=nomdeleguelabel[" . $structure->id() . "]></label>) reste sous la responsabilité hiérarchique de " . $structure->responsablesiham()->identitecomplete()  . " <span class='cursorpointer redtext fontsize25' data-title=\"$tiptext\">&#x1F6C8;</span>.</input>";
+        echo "</div>";
         echo "</p>";
-        
+
+        echo "<script>updatedelegue_" . $structure->id() ."();</script>";
+
         echo "<input type='hidden' name='userid' value=" . $user->agentid() . ">";
         echo "<input type='hidden' name='structureid' value=" . $structureid . ">";
         echo "<br><br>";

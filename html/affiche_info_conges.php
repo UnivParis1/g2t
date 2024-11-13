@@ -140,14 +140,14 @@
         
         $htmlstring = $htmlstring . "<tr class='element'>";
         $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $agent->sihamid() . "</td><td class='cellulesimple'>" . $agent->identitecomplete() . "</td><td class='cellulesimple'>" . $solde_precedent->droitaquis()  ."</td>"; 
-        $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_precedente", "20" . ($annee_precedente-1) . "0901", "20" . $annee_courante . "0831");
+        $nbjrsconsommes = $agent->getnbjoursconsommes("20$annee_precedente", "20" . ($annee_precedente-1) . "0901", "20" . $annee_courante . "0831");
 //        echo "nbjrsconsommes 2020 = $nbjrsconsommes <br>";
         $htmlstring = $htmlstring . "<td class='cellulesimple'>" . ($solde_precedent->droitaquis() - $nbjrsconsommes) . "</td>";
-        $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_precedente", "20" . $annee_courante . "0901", "20" . $annee_courante . "1231");
+        $nbjrsconsommes = $agent->getnbjoursconsommes("20$annee_precedente", "20" . $annee_courante . "0901", "20" . $annee_courante . "1231");
 //        echo "nbjrsconsommes 2020 (post 01/09) = $nbjrsconsommes <br>";
         $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $nbjrsconsommes . "</td>";
         $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $solde_courant->droitaquis() . "</td>";
-        $nbjrsconsommes = $agent->getNbJoursConsommés("20$annee_courante", "20" . $annee_courante . "0101", "20" .$annee_courante . "1231");
+        $nbjrsconsommes = $agent->getnbjoursconsommes("20$annee_courante", "20" . $annee_courante . "0101", "20" .$annee_courante . "1231");
 //        echo "nbjrsconsommes 2021 = $nbjrsconsommes <br>";
         $htmlstring = $htmlstring . "<td class='cellulesimple'>" . $nbjrsconsommes . "</td>";
         $htmlstring = $htmlstring . "</tr>";

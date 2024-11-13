@@ -20,6 +20,7 @@ class planningelement
     const HTML_CLASS_TELETRAVAIL = ' teletravail ';
     const HTML_CLASS_TELETRAVAIL_HIDDEN = ' teletravail_cache ';
     const HTML_CLASS_DEPLACE = ' deplace ';
+    const HTML_CLASS_PERIODENONDECLA = ' periodenondecla ';
 
     const JAVA_CLASS_TELETRAVAIL_HIDDEN = 'teletravail_hidden';
     
@@ -58,6 +59,58 @@ class planningelement
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         $this->fonctions = new fonctions($db);
+    }
+
+    function id()
+    {
+        if (is_null($this->date) or is_null($this->moment))
+        {
+            $errlog = "PlanningElement->id : La date ou le moment n'est pas défini";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return "";
+        }
+        return $this->fonctions->formatdatedb($this->date) . $this->moment;
+    }
+
+    function idelementsuivant()
+    {
+        if (is_null($this->date) or is_null($this->moment))
+        {
+            $errlog = "PlanningElement->idelementsuivant : La date ou le moment n'est pas défini";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return "";
+        }
+        if ($this->moment == fonctions::MOMENT_MATIN)
+        {
+            return $this->fonctions->formatdatedb($this->date) . fonctions::MOMENT_APRESMIDI;
+        }
+        else
+        {
+            $lendemain = date("Ymd",strtotime($this->fonctions->formatdatedb($this->date) . " + 1 day"));
+            return $lendemain . fonctions::MOMENT_MATIN;
+        }
+    }
+
+    function idelementprecedent()
+    {
+        if (is_null($this->date) or is_null($this->moment))
+        {
+            $errlog = "PlanningElement->idelementprecedent : La date ou le moment n'est pas défini";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return "";
+        }
+        if ($this->moment == fonctions::MOMENT_APRESMIDI)
+        {
+            return $this->fonctions->formatdatedb($this->date) . fonctions::MOMENT_MATIN;
+        }
+        else
+        {
+            $veille = date("Ymd",strtotime($this->fonctions->formatdatedb($this->date) . " - 1 day"));
+            return $veille . fonctions::MOMENT_APRESMIDI;
+        }
     }
 
     function date($date = null)
@@ -359,7 +412,7 @@ class planningelement
         $htmltext = "";
         $datetext = "";
         $datadatefr = "";
-        if (!is_null($this->date) or strlen($this->date)>6)
+        if (!is_null($this->date) or strlen($this->date . "")>6)
         {
             $datetext = $this->fonctions->nomjour($this->date) . " " . $this->fonctions->formatdate($this->date) . " : ";
             $datadatefr = " data-datefr='" .  $this->fonctions->formatdate($this->date) . "' ";

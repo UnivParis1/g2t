@@ -18,7 +18,9 @@
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
+    {
         error_log(basename(__FILE__) . " " . $erreur_requete);
+    }
     while ($agentid = mysqli_fetch_row($query)) {
         $admin = new agent($dbcon);
         // echo "Avant le load \n";
@@ -39,7 +41,9 @@
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
+    {
         error_log(basename(__FILE__) . " " . $erreur_requete);
+    }
     while ($agentid = mysqli_fetch_row($query)) // Des agents ont des soldes négatifs !!!
     {
         $agent = new agent($dbcon);
@@ -81,7 +85,9 @@
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
+    {
         error_log(basename(__FILE__) . " " . $erreur_requete);
+    }
 
     while ($agentid = mysqli_fetch_row($query)) // Des agents ont des affectations modifiées !!!
     {
@@ -95,7 +101,8 @@
             $demande = new demande($dbcon);
             $demande->load($demandeid);
 //            if (strcasecmp($demande->statut(), 'r') != 0) // Si la demande n'est pas annulée ou refusée !
-            if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) != 0 and strcmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) // Si la demande n'est pas annulée et si elle n'est pas refusée !
+//            if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) != 0 and strcmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) // Si la demande n'est pas annulée et si elle n'est pas refusée !
+            if (!in_array($demande->statut(), array(demande::DEMANDE_ANNULE, demande::DEMANDE_REFUSE)))
             {
                 $text .= " * Compte-rendu de l'analyse de la demande du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n" . $textanalyse . "\n";
             }

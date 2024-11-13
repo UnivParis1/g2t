@@ -1,4 +1,5 @@
 /*.sql
+*.txt
 /CRON/cron.bat
 /CRON/cron.sh
 /CRON/php/import_absence.php

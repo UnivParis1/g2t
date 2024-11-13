@@ -56,100 +56,184 @@ class fonctions
 
     /**
      *
-     * @param string $date
-     *            the date to convert into DB format (YYYYMMDD)
-     *            Allowed format : DD/MM/YYYY or YYYY-MM-DD or YYYYMMDD
-     * @return string the converted date
+     * @param string $date La date à convertir 
+     * @return string|null La date convertie au format YYYYMMDD si elle est valide ou null sinon
      */
     public function formatdatedb($date)
     {
-        if (is_null($date)) {
+        $tempdate = null;
+        $jour = null;
+        $mois = null;
+        $annee = null;
+        if (is_null($date)) 
+        {
             $errlog = "Fonctions->formatdatedb : La date est NULL !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        } else {
-            if (strlen($date) == 10 and substr_count($date, "/") == 2) {
-                // On converti la date DD/MM/YYYY en YYYYMMDD
-                $tempdate = substr($date, 6, 4) . substr($date, 3, 2) . substr($date, 0, 2);
-                return $tempdate;
-            } elseif (strlen($date) == 10 and substr_count($date, "-") == 2) {
-                // On converti la date YYYY-MM-DD en YYYYMMDD
-                $tempdate = str_replace("-", "", $date);
-                return $tempdate;
-            } elseif (strlen($date) == 8 and substr_count($date, "/") == 0) {
-                // On ne fait rien ==> c'est deja une date correcte YYYYMMDD
-                return $date;
-            } else {
+        } 
+        else 
+        {
+            // Si la date est au format JJ + séparateur non numérique + MM + séparateur non numérique + AAAA
+            // => 15-03-2024 ou 15.03.2024 ou 15/03/2024 : Ok
+            // => 1510382024 => KO
+            if (preg_match("`^([0-9]{2})([^0-9]{1})([0-9]{2})([^0-9]{1})([0-9]{4})$`", $date)==1)
+            {
+                $jour = substr($date, 0, 2);
+                $mois = substr($date, 3, 2);
+                $annee = substr($date, 6, 4);
+            } 
+            // Si la date est au format AAAA + séparateur non numérique + MM + séparateur non numérique + JJ
+            // => 2024-03-15 ou 2024.03.15 ou 2024/03/15 : Ok
+            // => 2024103815 => KO
+            elseif (preg_match("`^([0-9]{4})([^0-9]{1})([0-9]{2})([^0-9]{1})([0-9]{2})$`", $date)==1)
+            {
+                $annee = substr($date, 0, 4);
+                $mois = substr($date, 5, 2);
+                $jour = substr($date, 8, 2);
+            }
+            // Si la date est une série de 8 chiffres (sans doute au format AAAAMMJJ)
+            elseif (preg_match("`^([0-9]{4})([0-9]{2})([0-9]{2})$`", $date)==1)
+            {
+                $annee = substr($date, 0, 4);
+                $mois = substr($date, 4, 2);
+                $jour = substr($date, 6, 2);
+            }
+            // Le format de la date n'est pas reconnu
+            else 
+            {
                 $errlog = "Fonctions->formatdatedb : Le format de la date est inconnu [Date=$date] !!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             }
+            // Si la date convertie a un format connu (=> $jour != null), on vérifie que c'est une date valide
+            if (!is_null($jour))
+            {
+                if (checkdate($mois,$jour,$annee))
+                {
+                    $tempdate = $annee . $mois . $jour;
+                }
+                else
+                {
+                    $errlog = "Fonctions->formatdatedb : La date convertie n'est pas valide [Date=$date / date convertie=" . $annee . $mois . $jour . "] !!";
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+                }
+            }
         }
+        return $tempdate;
     }
 
     /**
      *
-     * @param string $date
-     *            the date to convert into french format (DD/MM/YYYY)
-     *            Allowed format : DD/MM/YYYY or YYYY-MM-DD or YYYYMMDD
-     * @return string the converted date
+     * @param string $date La date à convertir
+     * @return string|null La date convertie au format DD/MM/YYYY si elle est valide ou null sinon
      */
     public function formatdate($date)
     {
-        if (is_null($date)) {
+        $tempdate = null;
+        $jour = null;
+        $mois = null;
+        $annee = null;
+        if (is_null($date)) 
+        {
             $errlog = "Fonctions->formatdate : La date est NULL !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        } else {
-            if (strlen($date) == 8 and substr_count($date, "/") == 0) {
-                // On converti la date YYYYMMDD en DD/MM/YYYY
-                $tempdate = substr($date, 6, 2) . "/" . substr($date, 4, 2) . "/" . substr($date, 0, 4);
-                return $tempdate;
-            } elseif (strlen($date) == 10 and substr_count($date, "-") == 2) {
-                // On converti la date YYYY-MM-DD en DD/MM/YYYY
-                $tempdate = substr($date, 8, 2) . "/" . substr($date, 5, 2) . "/" . substr($date, 0, 4);
-                return $tempdate;
-            } elseif (strlen($date) == 10 and substr_count($date, "/") == 2) {
-                // On ne fait rien ==> c'est deja une date correcte DD/MM/YYYY
-                return $date;
-            } else {
+        } 
+        else 
+        {
+            // Si la date est une série de 8 chiffres (sans doute au format AAAAMMJJ)
+            if (preg_match("`^([0-9]{4})([0-9]{2})([0-9]{2})$`", $date)==1)
+            {
+                $jour = substr($date, 6, 2) ;
+                $mois = substr($date, 4, 2);
+                $annee = substr($date, 0, 4);
+            } 
+            // Si la date est au format AAAA + un séparateur non numérique + MM + un séparateur non numérique + JJ
+            // => 2024-03-15 ou 2024.03.15 ou 2024/03/15 : Ok
+            // => 2024103815 => KO
+            elseif (preg_match("`^([0-9]{4})([^0-9]{1})([0-9]{2})([^0-9]{1})([0-9]{2})$`", $date)==1)
+            {
+                $jour = substr($date, 8);
+                $mois = substr($date, 5, 2);
+                $annee = substr($date, 0, 4);
+            }
+            // Si la date est au format JJ + séparateur non numérique + MM + séparateur non numérique + AAAA
+            elseif (preg_match("`^([0-9]{2})([^0-9]{1})([0-9]{2})([^0-9]{1})([0-9]{4})$`", $date)==1)
+            {
+                $jour = substr($date, 0, 2);
+                $mois = substr($date, 3, 2);
+                $annee = substr($date, 6, 4);
+            } 
+            // Le format de la date n'est pas reconnu
+            else 
+            {
                 $errlog = "Fonctions->formatdate : Le format de la date est inconnu [Date=$date] !!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
             }
+            // Si la date convertie a un format connu (=> $jour != null), on vérifie que c'est une date valide
+            if (!is_null($jour))
+            {
+                if (checkdate($mois,$jour,$annee))
+                {
+                    $tempdate = $jour . "/" . $mois . "/" . $annee;
+                }
+                else
+                {
+                    $errlog = "Fonctions->formatdate : La date convertie n'est pas valide [Date=$date / date convertie=" . $jour . "/" . $mois . "/" . $annee . "] !!";
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+                }
+            }
         }
+        return $tempdate;
     }
 
     /**
      *
-     * @param string $anneeref (optionel)
-     * @return array list (comma separated) of unworked days
+     * @param string $anneeref (optionel) année de référence pour les jours fériés. Si null, l'ensemble des jours fériés est renvoyé.
+     * @param int $amplitude nombre d'années à prendre en plus de l'année de référence (par défaut 1)
+     * @return array liste des jours fériés répondant aux paramètres. Attention : C'est la clé du tableau qui contient la date du jour fériés.
      */
-    public function joursferies($anneeref = null)
+    public function joursferies($anneeref = null, $amplitude = 1)
     {
-        // Chargement des jours fériés
-        $dbconstante='FERIE%';
-        if ($this->testexistdbconstante($dbconstante))
+        static $tabferies = array();
+
+        if (count($tabferies)==0)
         {
-            $jrs_feries_liste = $this->liredbconstante($dbconstante);
-            //var_dump($jrs_feries_liste);
-            $jrs_feries_str = ";";
-            foreach ($jrs_feries_liste as $key => $liste)
+            // Chargement des jours fériés
+            //echo "Je charge le tableau des jours féries <br>";
+            $dbconstante='FERIE%';
+            if ($this->testexistdbconstante($dbconstante))
             {
-                $annee = trim(str_replace('FERIE',"",$key));
-                if (is_null($anneeref) or $annee==($anneeref-1) or $annee==$anneeref or $annee==($anneeref+1))
+                $jrs_feries_liste = $this->liredbconstante($dbconstante);
+                //var_dump($jrs_feries_liste);
+                foreach ($jrs_feries_liste as $key => $liste)
                 {
-                    $jrs_feries_str = $jrs_feries_str . $liste . ";";
+                    $annee = trim(str_replace('FERIE',"",$key));
+                    // ATTENTION : explode génère un tableau avec comme clé un entier (<=> l'index)
+                    // C'est pour cela qu'on ne peut pas concaténer les tableaux des années avec un array_merge
+                    // car les index numériques d'un tableau sont renumérotés dans un array_merge => Utilisation de l'opérateur "+" pour la concaténation
+                    $tmparray = explode(";", $liste);
+                    // On inverse les clés et les valeurs => Recherche sur clé plus rapide
+                    $tabferies[$annee] = array_flip($tmparray);
                 }
+                //echo "Le tableau des jours fériés est : <br>"; print_r($tabferies) ; echo "<br>";
             }
-            
-            //return $jrs_feries_str;
-            return explode(";", $jrs_feries_str);
         }
-        else
+        $tabferiesfinal = array();
+        foreach($tabferies as $annee => $tabjrs)
         {
-            return "";
+            //if (is_null($anneeref) or ($annee>=($anneeref-1) and $annee<=($anneeref+$amplitude)))
+            if (is_null($anneeref) or ($annee>=$anneeref and $annee<=($anneeref+$amplitude)))
+            {
+                // Ne pas utiliser array_merge car cette fonction ne conserve pas les clés
+                // On fait donc une concaténation de tableaux avec un opérateur +
+                $tabferiesfinal = $tabferiesfinal + $tabjrs;
+            }
         }
+        return $tabferiesfinal;
     }
 
     /**
@@ -430,18 +514,29 @@ class fonctions
     public function verifiedate($date)
     {
         if (is_null($date))
+        {
+            //echo "function verifiedate -> La date est null <br>";
             return FALSE;
-
+        }
         // On vérifie avec une REGExp si le format de la date est valide DD/MM/YYYY
         // if (!ereg("^([0-9]{2})/([0-9]{2})/([0-9]{4})",$date))
-        if (! preg_match("`^([0-9]{2})\/([0-9]{2})\/([0-9]{4})`", $date))
+
+        //if (! preg_match("`^([0-9]{2})\/([0-9]{2})\/([0-9]{4})`", $date))
+        if (!preg_match("`^([0-9]{2})([^0-9]{1})([0-9]{2})([^0-9]{1})([0-9]{4})$`", $date))
+        {
+            //echo "function verifiedate -> Pas le bon format <br>";
             return FALSE;
+        }
         $jour = substr($date, 0, 2);
         $mois = substr($date, 3, 2);
         $annee = substr($date, 6);
         if (strlen($annee) != 4)
+        {
+            //echo "function verifiedate -> L'annnée n'est pas sur 4 chiffres <br>";
             return FALSE;
-        // echo "jour = $jour mois = $mois annee = $annee <br>";
+        }
+        //echo "jour = $jour mois = $mois annee = $annee <br>";
+        //echo "function verifiedate -> On checkdate <br>";
         return checkdate($mois, $jour, $annee);
     }
 
@@ -495,6 +590,32 @@ class fonctions
         return $finperiode;
     }
 
+    public function margesynchro($marge = null)
+    {
+        static $interval = null;
+
+        $dbconstante='INTERVALSYNCHRO';
+
+        if (!is_null($marge))
+        {
+            $this->enregistredbconstante($dbconstante,$marge);
+            $interval = $marge;
+        }
+        elseif (is_null($interval))
+        {
+            if ($this->testexistdbconstante($dbconstante))
+            {
+                $interval = $this->liredbconstante($dbconstante);
+            }
+            else
+            {
+                $interval = "2"; // Par défaut on synchronise 3 ans en arrière
+            }
+        }
+
+        return $interval;
+    }
+
     /**
      *
      * @param string $date
@@ -503,39 +624,57 @@ class fonctions
      */
     public function anneeref($date = null)
     {
+        static $anneeref_datenull = null;
+
+        // Si on a déjà calculé l'année de ref pour une date null => On la retourne
+        if (!is_null($anneeref_datenull) and is_null($date))
+        {
+            //echo "Ma date de ref est déjà calculée : $anneeref_datenull <br> \n";
+            return $anneeref_datenull;
+        }
+
+        $dateestnull = false;
         // echo "La date = " . $date . "<br>";
         if (is_null($date))
         {
             $date = date("d/m/Y");
+            $dateestnull = true;
         }
         else
         {
+            //echo "Date avant formatdate : $date <br>";
             $date = $this->formatdate($date);
+            //echo "Date après formatdate : $date <br>";
+            if (!$this->verifiedate($date)) 
+            {
+                $errlog = "Fonctions->anneeref : La date " . $date . " est invalide !!!";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+                return '';
+            }
         }
         // echo "La date = " . $date . "<br>";
-        if ($this->verifiedate($date)) 
+        $finperiode = $this->finperiode();
+        // echo "Fin periode = $finperiode <br>";
+        // echo "date(m, date(Y) . finperiode)= " .date("m", date("Y") . $finperiode) . "<br>";
+        $date = $this->formatdatedb($date);
+        $annee = substr($date, 0, 4);
+        $mois = substr($date, 4, 2);
+        // echo "annee = $annee mois = $mois <br>";
+        if ($mois <= date("m", date("Y") . $finperiode))
         {
-            $finperiode = $this->finperiode();
-            // echo "Fin periode = $finperiode <br>";
-            // echo "date(m, date(Y) . finperiode)= " .date("m", date("Y") . $finperiode) . "<br>";
-            $date = $this->formatdatedb($date);
-            $annee = substr($date, 0, 4);
-            $mois = substr($date, 4, 2);
-            // echo "annee = $annee mois = $mois <br>";
-            if ($mois <= date("m", date("Y") . $finperiode))
-            {
-                $annee--;
-            }
-            else
-            {
-                // L'année est la bonne => Pas de modification
-            }
-        } 
-        else 
+            $annee--;
+        }
+        else
         {
-            $errlog = "Fonctions->anneeref : La date " . $date . " est invalide !!!";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            // L'année est la bonne => Pas de modification
+        }
+
+        // Si la date est null et que l'anneeref_datenull est null aussi => On mémorise l'année de référence pour les appels ultérieurs
+        if (is_null($anneeref_datenull) and $dateestnull)
+        {
+            //echo "Je mémorise l'année de ref $annee <br> \n"; 
+            $anneeref_datenull = $annee;
         }
         return $annee;
     }
@@ -962,7 +1101,9 @@ class fonctions
         foreach ($tablegende as $key => $legende)
         {
             if ($pdf->GetStringWidth($legende["libelle"]) > $long_chps)
+            {
                 $long_chps = $pdf->GetStringWidth($legende["libelle"]);
+            }
         }
         $long_chps = $long_chps + 6;
         $index=0;
@@ -1953,6 +2094,11 @@ class fonctions
 
     public function pdfpath()
     {
+        // Constante non documentée pour enregistrer les PDF dans un dossier externe
+        if (defined('CUSTOM_PDF_FILEPATH'))
+        {
+            return CUSTOM_PDF_FILEPATH;
+        }
         $basepath = $this->g2tbasepath();
         return $basepath . '/pdf/';
     }
@@ -3378,10 +3524,19 @@ class fonctions
     }
 
 
-    public function listeagentsavecaffectation($namefirst = true)
+    public function listeagentsavecaffectation($namefirst = true, $checkstructure = false)
     {
         $listeagent = array();
-        $sql = "SELECT AGENTID,NOM,PRENOM FROM AGENT WHERE TRIM(STRUCTUREID) <> '' ORDER BY NOM,PRENOM,AGENTID";
+        $sql = "SELECT AGENT.AGENTID, AGENT.NOM, AGENT.PRENOM 
+                FROM AGENT, AFFECTATION
+                WHERE AGENT.AGENTID = AFFECTATION.AGENTID
+                  AND CURDATE() BETWEEN AFFECTATION.DATEDEBUT AND AFFECTATION.DATEFIN
+                  AND AFFECTATION.OBSOLETE = 'N' ";
+        if ($checkstructure)
+        {
+            $sql = $sql . " AND TRIM(AGENT.STRUCTUREID) <> '' ";
+        }
+        $sql = $sql . " ORDER BY AGENT.NOM,AGENT.PRENOM,AGENT.AGENTID";
         $query_agent = mysqli_query($this->dbconnect, $sql);
         $erreur_requete = mysqli_error($this->dbconnect);
         if ($erreur_requete != "")
@@ -3479,7 +3634,9 @@ class fonctions
         }
         if (!$fulllist)
         {
-            $sql = $sql . " AND AGENTID IN (SELECT AGENTID FROM AFFECTATION WHERE DATEFIN > CURDATE()- INTERVAL 3 YEAR)";
+            // $sql = $sql . " AND AGENTID IN (SELECT AGENTID FROM AFFECTATION WHERE DATEFIN > CURDATE() - INTERVAL " . $this->margesynchro() . " YEAR)";
+            // $sql = $sql . " AND AGENTID IN (SELECT AGENTID FROM AFFECTATION WHERE DATEFIN >= (" . $this->anneeref() .  $this->debutperiode() . " - INTERVAL " . $this->margesynchro() . " YEAR))";
+            $sql = $sql . " AND AGENTID IN (SELECT AGENTID FROM AFFECTATION WHERE DATEFIN >= " . ($this->anneeref()-$this->margesynchro()) .  $this->debutperiode() . ")";
         }
         $sql = $sql . " ORDER BY NOM,PRENOM,AGENTID";
         //var_dump($sql);
@@ -4712,7 +4869,7 @@ WHERE  table_schema = Database()
         $LDAP_AGENT_PRENOM = $this->liredbconstante("LDAP_AGENT_PRENOM_ATTR");
         $LDAP_AGENT_MAIL = $this->liredbconstante("LDAP_AGENT_MAIL_ATTR");
         $LDAP_AGENT_CIVILITE = $this->liredbconstante("LDAP_AGENT_CIVILITE_ATTR");
-
+        $LDAP_AGENT_UID_ATTR = $this->liredbconstante("LDAP_AGENT_UID_ATTR");
         $LDAP_CODE_AGENT_ATTR = $this->liredbconstante("LDAPATTRIBUTE");
 
         $con_ldap = ldap_connect($LDAP_SERVER);
@@ -4720,7 +4877,7 @@ WHERE  table_schema = Database()
         $r = ldap_bind($con_ldap, $LDAP_BIND_LOGIN, $LDAP_BIND_PASS);
         $filtre = "($LDAP_CODE_AGENT_ATTR=" . $agentid . ")";
         $dn = $LDAP_SEARCH_BASE;
-        $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL", "$LDAP_AGENT_CIVILITE");
+        $restriction = array("$LDAP_AGENT_NOM","$LDAP_AGENT_PRENOM","$LDAP_AGENT_MAIL", "$LDAP_AGENT_CIVILITE", "$LDAP_AGENT_UID_ATTR");
         $sr = ldap_search($con_ldap, $dn, $filtre, $restriction);
         $info = ldap_get_entries($con_ldap, $sr);
         $nomagent = null;
@@ -4743,6 +4900,10 @@ WHERE  table_schema = Database()
         {
             $civiliteagent = $info[0]["$LDAP_AGENT_CIVILITE"][0];
         }
+        if (isset($info[0]["$LDAP_AGENT_UID_ATTR"][0])) 
+        {
+            $uid = $info[0]["$LDAP_AGENT_UID_ATTR"][0];
+        }
 
         if (!is_null($nomagent) and !is_null($prenomagent) and !is_null($mailagent) and !is_null($civiliteagent))
         {
@@ -4752,6 +4913,7 @@ WHERE  table_schema = Database()
             $newagent->prenom(strtoupper($prenomagent));
             $newagent->mail($mailagent);
             $newagent->typepopulation($typepopulation);
+            $newagent->uid($uid);
             $newagent->structureid('');  // On force sa structure à 'vide'
             if (!$newagent->store($agentid)) 
             {
@@ -4802,6 +4964,31 @@ WHERE  table_schema = Database()
     
     function getagentidfromldapuid($uid)
     {
+        $agentid = '';
+        $sql = "SELECT AGENT.AGENTID FROM AGENT WHERE AGENT.UID = ?";
+        $params = array($uid);
+        $query = $this->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Fonctions->getagentidfromldapuid : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            return false;
+        }
+        if (mysqli_num_rows($query) == 1) 
+        {
+            $result = mysqli_fetch_row($query);
+            $agentid = trim($result[0] . "");
+            if ($agentid != "")
+            {
+                return $agentid;
+            }
+        }
+        // Si on est là c'est :
+        //   * Soit il n'y a pas l'uid dans la base de données
+        //   * Soit il y en a plusieurs => ?? ça serait étrange
+        //   * Soit l'agentid est vide dans la base de données => en théorie impossible
+
         $LDAP_SERVER = $this->liredbconstante("LDAPSERVER");
         $LDAP_BIND_LOGIN = $this->liredbconstante("LDAPLOGIN");
         $LDAP_BIND_PASS = $this->liredbconstante("LDAPPASSWD");

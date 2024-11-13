@@ -46,27 +46,17 @@ class agent
         
     
     private $agentid = null;
-    
     private $eppn = null;
-
+    private $uid = null;
     private $nom = null;
-
     private $prenom = null;
-
     private $dbconnect = null;
-
     private $civilite = null;
-
     private $adressemail = null;
-
     private $typepopulation = null;
-    
     private $structureid = null;
-
     private $fonctions = null;
-    
     private $travailsamedi = null;
-    
     private $travaildimanche = null;
 
     /**
@@ -102,7 +92,7 @@ class agent
                 return false;
             }
             
-            $sql = "SELECT AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID,EPPN FROM AGENT WHERE AGENTID= ? ";
+            $sql = "SELECT AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID,EPPN,UID FROM AGENT WHERE AGENTID= ? ";
             $params = array($this->fonctions->my_real_escape_utf8($agentid));
             $query = $this->fonctions->prepared_select($sql, $params);
             
@@ -132,6 +122,7 @@ class agent
             $this->typepopulation = "$result[5]";
             $this->structureid = "$result[6]";
             $this->eppn = "$result[7]";
+            $this->uid = "$result[8]";
             return true;
         }
         // echo "Fin...";
@@ -248,7 +239,7 @@ class agent
             if ($this->existe($agentid))
             {
                 // Mise à jour de l'agent
-                $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ?, TYPEPOPULATION = ?, STRUCTUREID = ?, EPPN = ? WHERE AGENTID = ?";
+                $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ?, TYPEPOPULATION = ?, STRUCTUREID = ?, EPPN = ?, UID = ? WHERE AGENTID = ?";
                 $params = array(
                     $this->civilite,
                     $this->nom,
@@ -257,13 +248,14 @@ class agent
                     $this->typepopulation,
                     $this->structureid,
                     $this->eppn . "",
+                    $this->uid . "",
                     $agentid
                 );
             }
             else
             {
                 // Ajout manuel de l'agent
-                $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID,EPPN) VALUES(?,?,?,?,?,?,?,?)";
+                $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION,STRUCTUREID,EPPN,UID) VALUES(?,?,?,?,?,?,?,?,?)";
                 $params = array(
                     $agentid,
                     $this->civilite,
@@ -272,7 +264,8 @@ class agent
                     $this->adressemail,
                     $this->typepopulation,
                     $this->structureid,
-                    $this->eppn . ""
+                    $this->eppn . "",
+                    $this->uid . ""
                 );
             }
         }
@@ -606,6 +599,75 @@ class agent
         }
     }
     
+    function uid($uid = null)
+    {
+        if (is_null($uid)) 
+        {
+            // Si pas d'UID défini pour l'agent => On va demander à LDAP
+            if (trim($this->uid . "") == "")
+            {
+                $wsgroupURL = $this->fonctions->liredbconstante('WSGROUPURL');
+
+                $curl = curl_init();
+                $params_string = "";
+                $opts = [
+                    CURLOPT_URL => "$wsgroupURL/searchUserTrusted?token=" . $this->mail() . "&attrs=uid",
+                    //CURLOPT_URL => "$wsgroupURL/searchUser?token=" . $this->mail() . "&attrs=uid",
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_PROXY => ''
+                ];
+        
+                $dbconstante = "WSGROUPS_SECRET_TOKEN";
+                if ($this->fonctions->testexistdbconstante($dbconstante))
+                {
+                    $accessToken = trim($this->fonctions->liredbconstante($dbconstante));
+                    if (strlen($accessToken)>0)
+                    {
+                        ///////////////////////////////////////////////////////////
+                        //// ATTENTION : TOKEN DE BYPASS A METTRE EN PARAMETRE DANS LE CONFIG
+                        curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer $accessToken"));
+                        ///////////////////////////////////////////////////////////
+                    }
+                }
+        
+                curl_setopt_array($curl, $opts);
+                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+                $json = curl_exec($curl);
+                $error = curl_error ($curl);
+                $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                if ((int) $httpcode !== 200 and $error=="")
+                {
+                    $error = "Code retour HTTP => $httpcode";
+                }
+                curl_close($curl);
+                if ($error != "")
+                {
+                    error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Erreur Curl (récup searchUserTrusted agent " . $this->agentid() .  ") =>  " . $error));
+                    echo "Erreur : $error";
+                }
+                $response = json_decode($json, true);
+                if (isset($response[0]['uid']))
+                {
+                    $this->uid= $response[0]['uid'];
+                }
+            } 
+            return $this->uid . "";
+        } 
+        else
+        {
+            if (mb_detect_encoding($uid, 'UTF-8', true))
+            {
+                $this->uid = $uid;
+            }
+            else
+            {
+                $this->uid = $this->fonctions->utf8_encode($uid);
+            }
+        }
+
+    }
+
     function fonctionRIFSEEP()
     {
         
@@ -2712,7 +2774,23 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datedebut()) . "_" . (($demande->moment_debut()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->nbrejrsdemande() . "</td>";
+                        $datatitle = '';
+                        $datatitleindicator = '';
+                        if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp($mode, MODE_RESPONSABLE) == 0)
+                        {
+                            $compldemande = new demandecomplement($this->dbconnect);
+                            $compldemande->load($demande->id(), demandecomplement::PERIODE_OBLIG_AUTOMATIQUE);
+                            if ($compldemande->demandeid() == $demande->id())
+                            {
+                                if (strlen($demande->commentaire()) != 0) 
+                                {
+                                    $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);  
+                                    $datatitleindicator = " &#128195; ";
+                                }
+                            }
+                        }
+                        $htmltext = $htmltext . "<td class='cellulesimple cellulemultiligne' $datatitle >" . $demande->nbrejrsdemande() . " " . $datatitleindicator;
+                        $htmltext = $htmltext . "</td>";
                         if (strcasecmp($mode, MODE_AGENT) == 0)
                         {
                             $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->demandestatutlibelle($demande->statut()) . "</td>";
@@ -3751,6 +3829,15 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 // Si la postion administrative de l'agent est "En activité" (les 3 premiers caractères de situationposition = 'ACI') 
                 // ou "Détachement entrant"  (les 3 premiers caractères de situationposition = 'DEE%') on enregistre l'info
                 // Sinon on crée un 'trou' dans son activité
+
+                // if ($this->agentid == 10946)
+                // {
+                //     echo "<br>\nOn est sur l'agent : " . $this->agentid;
+                //     echo "<br>\nstrresultat = $strresultat";
+                //     echo "<br>\nsituationposition = $situationposition";
+                //     echo "<br>\n";
+                // }
+
                 $situationposition = strtoupper(trim($situationposition));
                 if (substr($situationposition,0,3) == 'ACI' or substr($situationposition,0,3) == 'DEE' )
                 {
@@ -3783,7 +3870,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             if (! $demande->controlenbrejrs($nbrejrscalcule)) {
                 $analyse[$demande->id()] = "Incohérence détectée : Nombre de jours de la demande = " . $demande->nbrejrsdemande() . " / Nombre de jours recalculé = $nbrejrscalcule (demande Id = " . $demande->id() . ")";
             }            // La fonction retourne vrai mais avec un nombre de jour nul => La demande est annulée ou refusée
-            elseif ($nbrejrscalcule == 0) {
+            elseif ($nbrejrscalcule < 0) {
                 $analyse[$demande->id()] = "Aucune vérification faite car la demande " . $demande->id() . " est annulée ou refusée...";
             }
         }
@@ -4173,6 +4260,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     }
     
     function getNbJoursConsommés($anneeref, $datedeb, $datefin)
+    {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated - Use method agent::getnbjoursconsommes instead', E_USER_DEPRECATED);
+        return $this->getnbjoursconsommes($anneeref, $datedeb, $datefin);
+    }
+
+    function getnbjoursconsommes($anneeref, $datedeb, $datefin)
     {
     	$type_conge = 'ann'.substr($anneeref,2, 2);
     	$planning = $this->planning($this->fonctions->formatdate($datedeb), $this->fonctions->formatdate($datefin));
@@ -5149,10 +5242,31 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	$resp = $struct->responsable();
         // Si on n'a pas récupérer de responsable de la structure
         // l'adresse mail du responsable est vide
+
+        $respsiham = $struct->responsablesiham();
+        //var_dump("Le responsable est : " . $resp->mail() . "<br>");
+        //var_dump("Le responsable SIHAM est : " . $respsiham->mail() . "<br>");
+
+        // Si l'agent est responsable mais qu'il n'est pas le responsable SIHAM => Il y a délégation
+        if ($resp->agentid() == $this->agentid() and $resp->agentid() != $respsiham->agentid())
+        {
+            // On va regarder si le responsable SIHAM doit continuer d'être notifié des demandes de congés/CET/....
+            // Donc on charge la délégation de la structure
+            //var_dump("On est dans le cas ou l'agent est responsable mais n'est pas le responsable SIHAM");
+            $delegation = $struct->getdelegation(true);
+            //var_dump("Le flag de la délégation indique : " . $delegation->continuesendtoresp);
+            if ($this->fonctions->convertvaluetobool($delegation->continuesendtoresp))
+            {
+                // Le responsable continue d'être notifié donc on dit que le responsable est le responsable SIHAM
+                $resp = $respsiham;
+                //var_dump("Le responsable devient le responsable SIHAM => " . $resp->identitecomplete());
+            }
+        }
+
     	if (($resp->mail() . "") <> "")
     	{
             // Si le responsable de la structure est l'agent courant => L'agent est responsable
-            if ($resp->agentid() == $this->agentid())
+            if ($resp->agentid() == $this->agentid() or $respsiham->agentid() == $this->agentid())
             {
                 $resp = $struct->resp_envoyer_a($codeinterne,false);
                 if ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT)
@@ -5169,8 +5283,16 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             // L'agent est n'est pas le responsable de la structure
             else
             {
+
                 // Dans le cas ou on veut déterminer le responsable d'un agent, ce responsable est forcément dans la structure de l'agent
                 $resp = $struct->agent_envoyer_a($codeinterne,false);
+                // Attention : Dans le cas de la délégation avec l'option continuesendtoresp activée 
+                // => Le responsable est le délégué (à cause de struct->responable() dans la fonction struct::agent_envoyer_a)
+                // Or on fait tout pour celui ci ne soit pas considéré comme responsable => On reforce le responsable au responsable SIHAM
+                if (!is_null($resp) and $resp->agentid()==$this->agentid())
+                {
+                    $resp = $respsiham;
+                }
                 $structresp = $struct;
             }
             // Si le responsable est null ou si c'est le CRON ou si le mail est vide
@@ -5193,6 +5315,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+1 de " . $this->identitecomplete() . " est " . $resp->identitecomplete()));
         }
+        //var_dump("Resp = " . $resp->identitecomplete() . " <br>");
     	return $resp;
     }
 
@@ -5748,31 +5871,64 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     echo $this->fonctions->showmessage(fonctions::MSGERROR, "Fonction agent::listeagentenresponsabilite => Le type de filtre n'est pas connu : $criterefiltre");
                 }
                 
-                //echo "Liste de agents = "; print_r($agentliste); echo "<br>";
+                //foreach((array)$agentliste as $key => $tmpagent) { var_dump("Liste de agents pour la structure " . $structure->nomcourt() . " = Key : '$key' " . $tmpagent->identitecomplete()); }
+
+                $delegation = $structure->getdelegation(true);
+                //var_dump("Le flag de la délégation indique : " . $delegation->continuesendtoresp);
+                if ($this->fonctions->convertvaluetobool($delegation->continuesendtoresp))
+                {
+                    // Le responsable continue d'être notifié donc on dit que le responsable est le responsable SIHAM
+                    // => On ne l'ajoute pas dans le tableau en mettant le responsable à null
+                    $respsihamstruct = $structure->responsablesiham();
+                    unset($agentliste[$respsihamstruct->nom() . " " . $respsihamstruct->prenom() . " " . $respsihamstruct->agentid()]);
+                    //var_dump("On va supprimer le responsable SIHAM de la liste => " . $respsihamstruct->identitecomplete());
+                    //foreach((array)$agentliste as $key => $tmpagent) { var_dump("Liste de agents pour la structure " . $structure->nomcourt() . " = Key : '$key' " . $tmpagent->identitecomplete()); }
+                }
+
+                
                 $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-                // echo "fin du select <br>";
+                //var_dump("fin du select");
                 $structfille = $structure->structurefille();
                 if (! is_null($structfille)) 
                 {
                     foreach ($structfille as $fille) 
                     {
+                        //var_dump("Je suis sur la structure " . $fille->nomlong());
                         if ($this->fonctions->formatdatedb($fille->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) 
                         {
                             $respstructfille = $fille->responsable();
-                            // On verifie que le responsable est bien défini et que son affectation est bien la strucuture fille courante
-                            if ($respstructfille->agentid()!=SPECIAL_USER_IDCRONUSER and $respstructfille->structureid()==$fille->id()) 
+                            $respsihamstructfille = $fille->responsablesiham();
+
+                            // Si l'agent est responsable mais qu'il n'est pas le responsable SIHAM => Il y a délégation
+                            //var_dump("Avant le test if.....");
+                            if ($respstructfille->agentid() != $respsihamstructfille->agentid())
                             {
-                                // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                                $agentlistefull[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                                // /$responsableliste[$responsable->agentid()] = $responsable;
+                                //var_dump("Je suis dans le if....");
+                                // On va regarder si le responsable SIHAM doit continuer d'être notifié des demandes de congés/CET/....
+                                // Donc on charge la délégation de la structure
+                                //var_dump("On est dans le cas ou l'agent est responsable mais n'est pas le responsable SIHAM");
+                                $delegation = $fille->getdelegation(true);
+                                //var_dump("Le flag de la délégation indique : " . $delegation->continuesendtoresp);
+                                if ($this->fonctions->convertvaluetobool($delegation->continuesendtoresp))
+                                {
+                                    // Le responsable continue d'être notifié donc on dit que le responsable est le responsable SIHAM
+                                    // => On ne l'ajoute pas dans le tableau en mettant le responsable à null
+                                    $respstructfille = null;
+                                    //var_dump("Je viens de mettre à NULL le responsable de la structure");
+                                }
                             }
-                            $respstructfille = $fille->responsablesiham();
+
                             // On verifie que le responsable est bien défini et que son affectation est bien la strucuture fille courante
-                            if ($respstructfille->agentid()!=SPECIAL_USER_IDCRONUSER and $respstructfille->structureid()==$fille->id()) 
+                            if (!is_null($respstructfille) and $respstructfille->agentid()!=SPECIAL_USER_IDCRONUSER and $respstructfille->structureid()==$fille->id()) 
                             {
                                 // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
                                 $agentlistefull[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                                // /$responsableliste[$responsable->agentid()] = $responsable;
+                            }
+                            // On verifie que le responsable est bien défini et que son affectation est bien la strucuture fille courante
+                            if ($respsihamstructfille->agentid()!=SPECIAL_USER_IDCRONUSER and $respsihamstructfille->structureid()==$fille->id()) 
+                            {
+                                // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+                                $agentlistefull[$respsihamstructfille->nom() . " " . $respsihamstructfille->prenom() . " " . $respsihamstructfille->agentid()] = $respsihamstructfille;
                             }
                         }
                     }

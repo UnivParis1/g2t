@@ -15,6 +15,7 @@ class demandecomplement
 {
     public const DEMANDE_AVIS_STATUT_LABEL = 'AVISSTATUT';
     public const DEMANDE_AVIS_MOTIF_LABEL = 'AVISMOTIF';
+    public const PERIODE_OBLIG_AUTOMATIQUE = 'PERIODE_AUTO';
 
     private $demandeid = null;
 
@@ -77,7 +78,7 @@ class demandecomplement
     /**
      *
      * @param
-     * @return
+     * @return string Message d'erreur ou texte vide
      */
     function store()
     {
@@ -99,7 +100,7 @@ class demandecomplement
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        return $erreur;
+        return trim($erreur);
     }
 
     /**

@@ -110,6 +110,7 @@
 */
 
     $animationaffichee = false;
+    $script_actif = false;
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
     $affectationliste = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));
 
@@ -605,28 +606,57 @@
     };
 </script>
 <?php
+    // $planning = new planning($dbcon);
+    // //echo "<br>" . $planning->planninghtml("9328", "01/07/2025", "31/08/2025",false,false,false,false) . "<br><br>";
+    // $listedispo = $planning->listeperiodedispo("9328","15/07/2025",fonctions::MOMENT_APRESMIDI,"29/08/2025",fonctions::MOMENT_MATIN, false);
+    // echo "Période du 15/07/2025 " . fonctions::MOMENT_APRESMIDI . " au 29/08/2025 " . fonctions::MOMENT_MATIN . "<br>";
+    // foreach($listedispo as $dispo)
+    // {
+    //     echo "Début = " . $dispo->elementdebut->date() . ' ' . $dispo->elementdebut->moment() . "     Fin = " . $dispo->elementfin->date() . ' ' . $dispo->elementfin->moment() . " <br>";
+    // }
 
-    // // Get Statut :
-    // $eSignature_url = $fonctions->liredbconstante("ESIGNATUREURL"); 
+    // $listeagent = $fonctions->listeagentsavecaffectation();
+    // var_dump("Nbre d'agent = " . count($listeagent));
+    // foreach($listeagent as $key => $identite)
+    // {
+    //     var_dump("Key = $key   identite = $identite");
+    // }
 
-    // $curl = curl_init();
-    // $params_string = "";
-    // $opts = [
-    //     CURLOPT_URL => $eSignature_url . '/ws/signrequests/status/' . '2494020',
-    //     CURLOPT_RETURNTRANSFER => true,
-    //     CURLOPT_SSL_VERIFYPEER => false,
-    //     CURLOPT_PROXY => ''
-    // ];
-    // curl_setopt_array($curl, $opts);
-    // curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    // $fonctions->ajoutesignatureheader($curl);
+    //echo $user->uid();
 
-    // $json = curl_exec($curl);
-    // $result = json_decode($json);
+    // $planning = new planning($dbcon);
+    // echo $planning->planninghtml(24392, '2020-09-01', '2021-08-31');
+    // $planning = new planning($dbcon);
+    // echo $planning->planninghtml(24392, '2021-09-01', '2022-08-31');
+    // $planning = new planning($dbcon);
+    // echo $planning->planninghtml(24392, '2022-09-01', '2023-08-31');
+    // $planning = new planning($dbcon);
+    // echo $planning->planninghtml(24392, '2023-09-01', '2024-08-31');
 
-    // var_dump($json);
+    // $demande = new demande($dbcon);
+    // $demande->load(109058);
+    // $nbjrscalcule = 0;
+    // $demande->controlenbrejrs($nbjrscalcule);
+    // echo "<br><br>Demande id = " . $demande->id()  . " (début = " . $demande->datedebut() . "  " . $demande->moment_debut() . " -> " . $demande->datefin() . "  " . $demande->moment_fin() . ")  Nbre jrs demande = " . $demande->nbrejrsdemande() . "   Nbre jours calculés = $nbjrscalcule <br>";
 
-    // var_dump($result);
+    // $demande = new demande($dbcon);
+    // $demande->load(86142);
+    // $nbjrscalcule = 0;
+    // $demande->controlenbrejrs($nbjrscalcule);
+    // echo "<br><br>Demande id = " . $demande->id()  . " (début = " . $demande->datedebut() . "  " . $demande->moment_debut() . " -> " . $demande->datefin() . "  " . $demande->moment_fin() . ")  Nbre jrs demande = " . $demande->nbrejrsdemande() . "   Nbre jours calculés = $nbjrscalcule <br>";
+
+    // $demande = new demande($dbcon);
+    // $demande->load(110297);
+    // $nbjrscalcule = 0;
+    // $demande->controlenbrejrs($nbjrscalcule);
+    // echo "<br><br>Demande id = " . $demande->id()  . " (début = " . $demande->datedebut() . "  " . $demande->moment_debut() . " -> " . $demande->datefin() . "  " . $demande->moment_fin() . ")  Nbre jrs demande = " . $demande->nbrejrsdemande() . "   Nbre jours calculés = $nbjrscalcule <br>";
+
+    // $demande = new demande($dbcon);
+    // $demande->load(106820);
+    // $demande->pdf(9328);
+    
+
+
 
 ?>
 </body>

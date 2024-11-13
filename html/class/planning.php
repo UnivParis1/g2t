@@ -1,5 +1,11 @@
 <?php
 
+class disponibilite
+{
+    public $elementdebut = null;
+    public $elementfin = null;
+}
+
 use Fpdf\Fpdf as FPDF;
 
 class planning
@@ -57,8 +63,17 @@ class planning
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
         
-        // Attention : La fonction retourne les jours fériés de l'année d'avant, l'année de référence et l'année d'après
-        $jrs_feries = $this->fonctions->joursferies($this->fonctions->anneeref($datedebut));
+        // Attention : La fonction retourne les jours fériés de l'année de référence et les "amplitudes" années après l'année de référence (par défaut 1 an)
+        // On calcule donc l'amplitude dynamiquement
+        $anneereffin = $this->fonctions->anneeref($datefin);
+        $anneerefdebut = $this->fonctions->anneeref($datedebut);
+        $amplitude = $anneereffin - $anneerefdebut;
+        $jrs_feries = $this->fonctions->joursferies($anneerefdebut, $amplitude);
+        ///////////////////////////////////
+        // ATTENTON : La date des jours fériés est portée par la clé du tableau et non plus par la valeur => test à faire avec : isset($jrs_feries[$datecherchee])
+        ///////////////////////////////////
+
+        //echo "datedebut = $datedebut    datefin = $datefin  <br>"; echo "amplitude = $amplitude <br>"; print_r($jrs_feries); echo '<br>';
         
         unset($listeelement);
         $affectation = null;
@@ -163,7 +178,9 @@ class planning
                 $element->date($this->fonctions->formatdate($datetemp));
                 $element->moment($moment);
                 
-                if (in_array($datetemp,$jrs_feries))
+                //if (in_array($datetemp,$jrs_feries))
+                // On cherche si la clé existe et non plus la valeur
+                if (isset($jrs_feries[$datetemp]))
                 {
                     // echo "C'est un jour férié = $datetemp <br>";
                     $element->type("ferie");
@@ -201,7 +218,8 @@ class planning
                     $element->info("");
                 }
                 $element->agentid($agentid);
-                $this->listeelement[$datetemp . $moment] = $element;
+                //$this->listeelement[$datetemp . $moment] = $element;
+                $this->listeelement[$element->id()] = $element;
 
                 // On charge les périodes obligatoires
                 if ($element->type()=='')
@@ -243,7 +261,12 @@ class planning
             $demandeliste = $agent->demandesliste($datedebut, $datefin);
         }
         // On fusionne le tableau précédent avec les absences RH (converties sous forme de demande typées 'harp')
-        $demandeliste = array_merge((array)$demandeliste, $agent->absencerhliste($datedebut, $datefin));
+        /////////////////////////////////////////////////////
+        /////// IMPORTANT ///////////////////////////////////
+        // LORS DE LA FUSION ON DOIT POISTIONNER LES ABSENCES RH EN PREMIER ET ENSUITE LES DEMANDE 'NORMALES'
+        // SINON BUG LORS DE LA CONSTRUCTION DU PLANNING => LES ABSENCES RH NE SONT PAS CHARGEES
+        /////////////////////////////////////////////////////
+        $demandeliste = array_merge($agent->absencerhliste($datedebut, $datefin),(array)$demandeliste );
         foreach ((array) $demandeliste as $demande) 
         {
             // Si on ne demande que les absences de type télétravail hors convention
@@ -309,20 +332,28 @@ class planning
                             $element->agentid($agentid);
                             $element->demandeid($demande->id());
                             $element->demande($demande);
-                            if (! array_key_exists($datetemp . $moment, $this->listeelement))
+
+                            if (! array_key_exists($element->id(), $this->listeelement))
                             {
-                                $this->listeelement[$datetemp . $moment] = $element;
+                                //$this->listeelement[$datetemp . $moment] = $element;
+                                $this->listeelement[$element->id()] = $element;
                             }
-                            elseif ($this->listeelement[$datetemp . $moment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
+                            //elseif ($this->listeelement[$datetemp . $moment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
+                            elseif ($this->listeelement[$element->id()]->type() == "" or strcasecmp($this->listeelement[$element->id()]->type(), "nondec") == 0) 
                             {
                                 // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                if (strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
+                                //if (strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
+                                if (strcasecmp($this->listeelement[$element->id()]->type(), "nondec") == 0) 
                                 {
-                                    $element->demandeid("");
-                                    // On reset l'objet demande de l'élément
-                                    $element->demande("");
+                                    $extraclass = trim($element->htmlextraclass()) . planningelement::HTML_CLASS_PERIODENONDECLA;
+                                    $element->htmlextraclass($extraclass);
+
+                                    // $element->demandeid("");
+                                    // // On reset l'objet demande de l'élément
+                                    // $element->demande("");
                                 }
-                                $this->listeelement[$datetemp . $moment] = $element;
+                                //$this->listeelement[$datetemp . $moment] = $element;
+                                $this->listeelement[$element->id()] = $element;
                             }
                         }
                         // On passe au moment suivant dans le tableau ou false si on est au bout
@@ -487,8 +518,11 @@ class planning
             $errlog = "Planning->planning : Pas de planning défini !!!!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else
+        } 
+        else
+        {
             return $this->listeelement;
+        }
     }
 
     function getelement($date, $moment)
@@ -694,7 +728,17 @@ class planning
 
     function nbrejourtravaille($agentid, $datedebut, $momentdebut, $datefin, $momentfin, $ignoreabsenceautodecla = FALSE)
     {
-        $listeelement = $this->load($agentid, $datedebut, $datefin);
+        // Si le nombre d'éléments du planning est 0 => On doit charger le planning
+        // Sinon, il est déjà chargé
+        if (count((array)$this->listeelement)==0)
+        {
+            //var_dump('Le planning est vide => On le charge');
+            $listeelement = $this->load($agentid, $datedebut, $datefin);
+        }
+        else
+        {
+            $listeelement = $this->listeelement;
+        }
         $paslepremier = FALSE;
         $pasledernier = FALSE;
         if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0) {
@@ -707,22 +751,50 @@ class planning
         }
         $index = 0;
         $nbredemijour = 0;
-        foreach ((array) $listeelement as $key => $element) {
+        // Tableau des types d'élément où l'agent doit être considéré comme disponible (<=> pas en congés, pas absent, pas en temps partiel, pas en WE, ....)
+        $arraytypedispo = array('', 'teletrav');
+
+        $datedebutdb = $this->fonctions->formatdatedb($datedebut);
+        $datefindb = $this->fonctions->formatdatedb($datefin);
+        foreach ((array) $listeelement as $key => $element) 
+        {
             $pasdetraitement = FALSE;
-            if ($index == 0 and $paslepremier) {
+
+            $elementdatedb = $this->fonctions->formatdatedb($element->date());
+            // Si la date de l'élément n'est pas dans la période demandée (donc elementdate < datedebut ou elementdate > datefin)
+            if ($elementdatedb < $datedebutdb or $elementdatedb > $datefindb)
+            {
                 $pasdetraitement = TRUE;
-                // echo "pas de traitement du premier !! <br>";
             }
-            // echo "Index = ". $index . "<br>";
-            // echo "count($listeelement) = " . count($listeelement) . "<br>";
-            // echo "key = " . $key . "<br>";
-            if ($index == (count($listeelement) - 1) and $pasledernier) {
+            // Si on est sur le MATIN de la date de début mais qu'on doit l'exclure
+            elseif ($elementdatedb == $datedebutdb and $element->moment() == fonctions::MOMENT_MATIN and $paslepremier) 
+            {
                 $pasdetraitement = TRUE;
-                // echo "pas de traitement du dernier !! <br>";
             }
-            if (! $pasdetraitement) {
+            // Si on est sur l'APRES-MIDI de la date de fin mais qu'on doit l'exclure
+            elseif ($elementdatedb == $datefindb and $element->moment() == fonctions::MOMENT_APRESMIDI and $pasledernier) 
+            {
+                $pasdetraitement = TRUE;
+            }
+
+            // if ($index == 0 and $paslepremier) {
+            //     $pasdetraitement = TRUE;
+            //     // echo "pas de traitement du premier !! <br>";
+            // }
+            // // echo "Index = ". $index . "<br>";
+            // // echo "count($listeelement) = " . count($listeelement) . "<br>";
+            // // echo "key = " . $key . "<br>";
+            // if ($index == (count($listeelement) - 1) and $pasledernier) {
+            //     $pasdetraitement = TRUE;
+            //     // echo "pas de traitement du dernier !! <br>";
+            // }
+
+            if (! $pasdetraitement) 
+            {
                 // echo "On traite l'élément... Type =: " . $element->type() . " <br>";
-                if ($element->type() == "") {
+                //if ($element->type() == "") => Test incomplet car on doit prendre en compte le télétravail potentiellement chargé dans le planning
+                if (in_array($element->type(), $arraytypedispo))
+                {
                     // On ajoute 1 car "rien de prévu ce jour là" donc c'est un jour ou l'agent travail
                     $nbredemijour ++;
                 } elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(), "nondec") == 0) {
@@ -975,6 +1047,167 @@ class planning
         
         //var_dump($tabrepartition);
         return $nbjoursteletravail;
+    }
+
+    function listeperiodedispo($agentid, $datedebut, $momentdebut, $datefin, $momentfin, $ignoreabsenceautodecla = FALSE)
+    {
+        // Si le nombre d'éléments du planning est 0 => On doit charger le planning
+        // Sinon, il est déjà chargé
+        if (count((array)$this->listeelement)==0)
+        {
+            $listeelement = $this->load($agentid, $datedebut, $datefin);
+        }
+        else
+        {
+            $listeelement = $this->listeelement;
+        }
+        $paslepremier = FALSE;
+        $pasledernier = FALSE;
+        if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0) 
+        {
+            $paslepremier = TRUE;
+        }
+        if (strcasecmp($momentfin, fonctions::MOMENT_APRESMIDI) != 0) 
+        {
+            $pasledernier = TRUE;
+        }
+        $index = 0;
+        // Tableau des disponibilités qu'on va retourner
+        $listedispo = array();
+        $dispo = new disponibilite;
+        $priviouselement = null;
+        // Tableau des types d'élément où l'agent doit être considéré comme disponible (<=> pas en congés, pas absent, pas en temps partiel, pas en WE, ....)
+        $arraytypedispo = array('', 'teletrav');
+        // Tableau des types d'élément où on doit ignorer la situation de l'agent => Il ne travaille pas à ce moment là
+        $arraytypeignore = array("ferie","WE","tppar");
+        $datedebutdb = $this->fonctions->formatdatedb($datedebut);
+        $datefindb = $this->fonctions->formatdatedb($datefin);
+        if ($ignoreabsenceautodecla)
+        {
+            $arraytypeignore[] = "nondec";
+        }
+        foreach ((array) $listeelement as $key => $element) 
+        {
+            $pasdetraitement = FALSE;
+            $elementdatedb = $this->fonctions->formatdatedb($element->date());
+            // Si la date de l'élément n'est pas dans la période demandée (donc elementdate < datedebut ou elementdate > datefin)
+            if ($elementdatedb < $datedebutdb or $elementdatedb > $datefindb)
+            {
+                $pasdetraitement = TRUE;
+            }
+            // Si on est sur le MATIN de la date de début mais qu'on doit l'exclure
+            elseif ($elementdatedb == $datedebutdb and $element->moment() == fonctions::MOMENT_MATIN and $paslepremier) 
+            {
+                $pasdetraitement = TRUE;
+            }
+            // Si on est sur l'APRES-MIDI de la date de fin mais qu'on doit l'exclure
+            elseif ($elementdatedb == $datefindb and $element->moment() == fonctions::MOMENT_APRESMIDI and $pasledernier) 
+            {
+                $pasdetraitement = TRUE;
+            }
+            // Si l'agent ne travaille pas; on doit ingorer cet élément et donc pas modifier la situation de l'agent
+            elseif (in_array($element->type(), $arraytypeignore))
+            {
+                $pasdetraitement = TRUE;
+            }
+            if (! $pasdetraitement) 
+            {
+                //var_dump("Element date = " . $element->date() . " moment = " . $element->moment());
+                // Si l'élement est dans la liste des types "dispo" et qu'on n'a pas d'élément de début => C'est le début d'une dispo
+                if (in_array($element->type(), $arraytypedispo) and is_null($dispo->elementdebut))
+                {
+                    $dispo->elementdebut = $element;
+                }
+                // Si l'élement n'est pas dans la liste des types "dispo" et qu'on a un élément de début => C'est la fin de la dispo est l'élément précédent
+                elseif (!in_array($element->type(), $arraytypedispo) and !is_null($dispo->elementdebut))
+                {
+                    $dispo->elementfin = $priviouselement;
+                    $listedispo[] = $dispo;
+                    $dispo = new disponibilite;
+                }
+                $priviouselement = $element;
+            }
+            $index ++;
+        }
+        // Si on a un élément de début, mais qu'on a parcouru tout le planning => La fin de la disponibilité est le $previouselement
+        if (!is_null($dispo->elementdebut))
+        {
+            $dispo->elementfin = $priviouselement;
+            $listedispo[] = $dispo;
+        }
+        return $listedispo;
+    }
+
+    function calculdatefindemande($datedebut, $momentdebut, $nbjours)
+    {
+        $errlog = '';
+        $datetemp = $this->fonctions->formatdatedb($datedebut);
+        $listeelement = $this->planning();
+        if (count((array)$listeelement)==0)
+        {
+            $errlog = "Le planning est vide. Pas de calcul possible";
+            return $errlog;
+        }
+
+        if (!isset($listeelement[$datetemp . $momentdebut]))
+        {
+            $errlog = "La date de début n'est pas inclue dans le planning";
+            return $errlog;
+        }
+
+        $elementdebutkey = $datetemp . $momentdebut;
+        // On va déplacer le curseur interne du tableau sur l'élément de début
+        // On sait qu'il existe parce qu'on a fait le test au dessus
+        // On n'utilise pas la fonction $this->getelement() car on doit déplacer le curseur interne ce que ne fait pas la fonction
+        $elementdebut = reset($listeelement);
+        while (key($listeelement)!=$elementdebutkey)
+        {
+            $elementdebut = next($listeelement);
+        }
+
+        // Tableau des types d'élément où l'agent doit être considéré comme disponible (<=> pas en congés, pas absent, pas en temps partiel, pas en WE, ....)
+        $arraytypedispo = array('', 'teletrav');
+        // Tableau des types d'élément où on doit ignorer la situation de l'agent => Il ne travaille pas à ce moment là
+        $arraytypeignore = array("ferie","WE","tppar");
+
+        // Compteur indiquant le nombre de jours restant à trouver
+        // ATTENTION : Si on commence un jour de type arraytypeignore => On ne doit pas enlever 1/2 journée
+        //      Sinon, On a déjà trouvé une 1/2 journée
+        if (!in_array($elementdebut->type(), $arraytypeignore))
+        {
+            $nbjoursrestant = $nbjours - 0.5;
+        }
+        $finrecherche = false;
+        while (!$finrecherche)
+        {
+            $elementfin = next($listeelement);
+            if ($elementfin===false)
+            {
+                // On est arrivé au bout du planning est on n'a pas trouver la durée necessaire
+                $finrecherche = true;
+                $errlog = "Le planning n'est pas assez long pour trouver $nbjours travaillés à partir du $datedebut";
+            }
+            elseif (in_array($elementfin->type(), $arraytypeignore))
+            {
+                // Ce n'est pas un jour travailler donc on ne fait rien
+            }
+            elseif (in_array($elementfin->type(), $arraytypedispo))
+            {
+                // L'agent est disponible => On peut poser un congés sur cet élément
+                // Attention : Un élement du planning est une 1/2 journée => On n'a trouvé que 0.5 jour.
+                $nbjoursrestant = $nbjoursrestant - 0.5;
+            }
+            // Si on a trouvé toute la durée demandée => Fin de la recherche et $elementfin contient l'élément de fin
+            if ($nbjoursrestant==0)
+            {
+                $finrecherche = true;
+            }
+        }
+        if ($errlog<>"")
+        {
+            return $errlog;
+        }
+        return $elementfin;
     }
     
 }

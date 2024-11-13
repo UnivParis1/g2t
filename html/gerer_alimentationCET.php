@@ -415,6 +415,7 @@
                     //echo "Output = <br>"; var_dump($output);
     	            $params_string = implode( '&', $output );
                     //echo "params_string = <br>"; var_dump ($params_string);
+                    error_log(basename(__FILE__) . " Alimentation CET : " . var_export($params_string, true));
     	            
     	            $opts = [
     	                CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
@@ -532,10 +533,17 @@
             $valeur_a = 0;
         $valeur_b = $solde->droitaquis();
         // Consommation des congés au début de la période (case C)
-        $valeur_c = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
+        $valeur_c = $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
+        ///////////////////////////////
+        // QUESTION : A quoi ça sert ? J'ai le sentiment qu'on fait 2 fois le même calcul
         if ($valeur_c == 0 and $no_verify==true)
         {
-            $valeur_c = $solde->droitpris() - $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
+            /// ?????????????????????????
+            /// Si je n'ai pas posé de jours de congés dans la période réglementaire (puisque valeur_c = 0) 
+            /// les jours qui impactent "->droitpris" sont forcément postérieur à la période de référence => donc entre le 01/09/anneref et le 31/08/(anneeref+1)
+            /// => Donc si je les retranche aux "->droitpris", le résultat de ce calcul devrait être 0 ! 
+            /// ????????????????????????
+            $valeur_c = $solde->droitpris() - $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
         }
         $valeur_d = $valeur_b-$valeur_c;
 
@@ -546,276 +554,258 @@
 	    
 ?>
         <script type="text/javascript">
-	    function opendemande() {
-	    	demandeliste = document.getElementById("esignatureid_aff")
-	    	urldemande = demandeliste.value;
-	    	//alert("opendemande est activé : " + urldemande );
-	    	window.open(urldemande);
-	    	return false;
-	    }
-	    
-	    function isInt(value) {
+            function opendemande() 
+            {
+                demandeliste = document.getElementById("esignatureid_aff")
+                urldemande = demandeliste.value;
+                //alert("opendemande est activé : " + urldemande );
+                window.open(urldemande);
+                return false;
+            }
+            
+            function isInt(value) 
+            {
                 return !isNaN(value) && (function(x) { return (x | 0) === x; })(parseFloat(value))
             }
-	    
-	    function update_case(elem)
-	    {
-	    	//alert("Update Case est activé");
-		const elem_no_verify = document.getElementById('no_verify'); 
-	    	//alert("Apres le elem_no_verify = ");
-	    	check_plafond = true;
-	    	if (elem_no_verify === null)
-	    	{
+            
+            function update_case(elem)
+            {
+                //alert("Update Case est activé");
+                const elem_no_verify = document.getElementById('no_verify'); 
+                //alert("Apres le elem_no_verify = ");
+                check_plafond = true;
+                if (elem_no_verify === null)
+                {
                     //alert("elem_no_verify est NULL");
                 }
-		    
-	    	if (elem_no_verify !== null)
-	    	{
-                    //alert("elem_no_verify n'est pas null " + elem_no_verify.id);
-                    document.getElementById('check_plafond').style.color = "initial";
-                    document.getElementById('check_plafond').style.fontWeight = "normal";
-                    document.getElementById('label_plafond').innerHTML = "";
-                    if (elem_no_verify.checked)
-                    {
-                        //alert("Il est checked");
-                        document.getElementById('valeur_c').value = "<?php echo $solde->droitpris() - $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());?>";
-                        document.getElementById('valeur_d').value = document.getElementById("valeur_b").value - document.getElementById('valeur_c').value;
-                        check_plafond = false;
-                        document.getElementById('check_plafond').style.color = "red";
-                        document.getElementById('check_plafond').style.fontWeight = "bold";
-                        document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur ni le solde <?php echo $solde->typelibelle()  ?>! "; //- Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
-                        //alert("no_verify est checked");
-                        //const button = document.getElementById('cree_demande');
-                        //button.disabled = false;
-                        //return;
-	    	    }
-	    	    else
-	    	    {
-                        document.getElementById('valeur_c').value = "<?php echo $valeur_c ?>";
-                        document.getElementById('valeur_d').value = "<?php echo $valeur_d ?>";
-                        //document.getElementById('label_plafond').innerHTML = " Valeur initiale ==> Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
-	    	    }
-	    	}
-	    
-
-	    	document.getElementById("valeur_f").value = document.getElementById("valeur_f").value.replace(",",".");
-	       	valeur_f = document.getElementById("valeur_f").value;
-	    	const button = document.getElementById('cree_demande')
-	    	//alert ("valeur D = " + valeur_d + "  valeur F = " + valeur_f);
-                if (valeur_f == "")
+                
+                if (elem_no_verify !== null)
                 {
-                    document.getElementById("valeur_e").value = "";
-                    document.getElementById("valeur_g").value = "";
-                    document.getElementById("label_f").innerHTML = "";
-                    button.disabled = true;
+                        //alert("elem_no_verify n'est pas null " + elem_no_verify.id);
+                        document.getElementById('check_plafond').style.color = "initial";
+                        document.getElementById('check_plafond').style.fontWeight = "normal";
+                        document.getElementById('label_plafond').innerHTML = "";
+                        if (elem_no_verify.checked)
+                        {
+                            //alert("Il est checked");
+                            document.getElementById('valeur_c').value = "<?php echo $solde->droitpris() - $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());?>";
+                            document.getElementById('valeur_d').value = document.getElementById("valeur_b").value - document.getElementById('valeur_c').value;
+                            check_plafond = false;
+                            document.getElementById('check_plafond').style.color = "red";
+                            document.getElementById('check_plafond').style.fontWeight = "bold";
+                            document.getElementById('label_plafond').innerHTML = " &larr; ATTENTION : Il n'y a pas de vérification par rapport à cette valeur ni le solde <?php echo $solde->typelibelle()  ?>! "; //- Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
+                            //alert("no_verify est checked");
+                            //const button = document.getElementById('cree_demande');
+                            //button.disabled = false;
+                            //return;
+                    }
+                    else
+                    {
+                            document.getElementById('valeur_c').value = "<?php echo $valeur_c ?>";
+                            document.getElementById('valeur_d').value = "<?php echo $valeur_d ?>";
+                            //document.getElementById('label_plafond').innerHTML = " Valeur initiale ==> Valeur C = " + document.getElementById('valeur_c').value + " Valeur D = " + document.getElementById('valeur_d').value;
+                    }
                 }
-	    	else if (isNaN(valeur_f))
-	    	{
-                    //alert("La valeur de la case F n'est pas un nombre.");
-                    document.getElementById("label_f").innerHTML = "La valeur n'est pas un nombre. Vous devez saisir un entier positif.";
-                    button.disabled = true;
-	    	}    	
-	    	else if (!isInt(valeur_f))
-	    	{
-                    document.getElementById("label_f").innerHTML = "La valeur n'est pas un entier. Vous devez saisir un entier positif.";
-                    button.disabled = true;
-	    	}
-	    	else if (parseInt(valeur_f) <= 0)
-	    	{
-                    document.getElementById("label_f").innerHTML = "La valeur est négative. Vous devez saisir un entier positif.";
-                    button.disabled = true;
-	    	}
-	    	else if ((parseInt(valeur_f) > parseInt(plafond)) && check_plafond)
-	    	{
-                    //alert('plouf');
-                    document.getElementById("label_f").innerHTML = "Le nombre de jours doit être inférieur ou égal au dépôt maximum.";
-                    button.disabled = true;
-	    	}
-	    	else
-	    	{
-                    document.getElementById("label_f").innerHTML = "";
-                    valeur_a = document.getElementById("valeur_a").value;
-                    valeur_d = document.getElementById("valeur_d").value;
-                    plafond = document.getElementById("plafond").value;
-                    document.getElementById("valeur_e").value = parseFloat(valeur_d,10)-parseInt(valeur_f,10);
-                    document.getElementById("valeur_g").value = parseFloat(valeur_a,10)+parseInt(valeur_f,10);
-                    button.disabled = false;
-	        }
-	    }
+            
+
+                document.getElementById("valeur_f").value = document.getElementById("valeur_f").value.replace(",",".");
+                valeur_f = document.getElementById("valeur_f").value;
+                const button = document.getElementById('cree_demande')
+                //alert ("valeur D = " + valeur_d + "  valeur F = " + valeur_f);
+                    if (valeur_f == "")
+                    {
+                        document.getElementById("valeur_e").value = "";
+                        document.getElementById("valeur_g").value = "";
+                        document.getElementById("label_f").innerHTML = "";
+                        button.disabled = true;
+                    }
+                else if (isNaN(valeur_f))
+                {
+                        //alert("La valeur de la case F n'est pas un nombre.");
+                        document.getElementById("label_f").innerHTML = "La valeur n'est pas un nombre. Vous devez saisir un entier positif.";
+                        button.disabled = true;
+                }    	
+                else if (!isInt(valeur_f))
+                {
+                        document.getElementById("label_f").innerHTML = "La valeur n'est pas un entier. Vous devez saisir un entier positif.";
+                        button.disabled = true;
+                }
+                else if (parseInt(valeur_f) <= 0)
+                {
+                        document.getElementById("label_f").innerHTML = "La valeur est négative. Vous devez saisir un entier positif.";
+                        button.disabled = true;
+                }
+                else if ((parseInt(valeur_f) > parseInt(plafond)) && check_plafond)
+                {
+                        //alert('plouf');
+                        document.getElementById("label_f").innerHTML = "Le nombre de jours doit être inférieur ou égal au dépôt maximum.";
+                        button.disabled = true;
+                }
+                else
+                {
+                        document.getElementById("label_f").innerHTML = "";
+                        valeur_a = document.getElementById("valeur_a").value;
+                        valeur_d = document.getElementById("valeur_d").value;
+                        plafond = document.getElementById("plafond").value;
+                        document.getElementById("valeur_e").value = parseFloat(valeur_d,10)-parseInt(valeur_f,10);
+                        document.getElementById("valeur_g").value = parseFloat(valeur_a,10)+parseInt(valeur_f,10);
+                        button.disabled = false;
+                }
+            }
         </script>
 <?php
-	// Si campagne en cours, pas d'interruption d'affectation avec solde CET non nul et pas de demande en cours
-	$today = date('Ymd'); 
-	$ayearbefore = new DateTime(); 
-	$ayearbefore->sub(new DateInterval('P1Y')); 
-	$ayearbefore = $ayearbefore->format('Ymd');
-	$hasInterruptionAff = $agent->hasInterruptionAffectation($ayearbefore, $today);
-	$hasOption = FALSE;
-	echo "Alimentation du CET pour " . $agent->identitecomplete() . "<br><br>";
-	if ($today < $fonctions->debutalimcet() || $today > $fonctions->finalimcet())
-	{
+        // Si campagne en cours, pas d'interruption d'affectation avec solde CET non nul et pas de demande en cours
+        $today = date('Ymd'); 
+        $ayearbefore = new DateTime(); 
+        $ayearbefore->sub(new DateInterval('P1Y')); 
+        $ayearbefore = $ayearbefore->format('Ymd');
+        $hasInterruptionAff = $agent->hasInterruptionAffectation($ayearbefore, $today);
+        $hasOption = FALSE;
+        echo "Alimentation du CET pour " . $agent->identitecomplete() . "<br><br>";
+        if ($today < $fonctions->debutalimcet() || $today > $fonctions->finalimcet())
+        {
             echo $fonctions->showmessage(fonctions::MSGWARNING, "La campagne d'alimentation du CET est fermée actuellement.");
-	}
-	else 
-	{
-	    if ($sauvegardeok)
-	    {
-	        echo $fonctions->showmessage(fonctions::MSGINFO, "Votre demande d'alimentation a été correctement enregistrée.");
-	    }
-        elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
-        {
-            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
-            /*
-//                echo "Souhaitez-vous annuler la demande ? <br>";
-//                echo "<form name='annuler_alimentation'  method='post' >";
-//                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-//                echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-//                echo "<input type='submit' name='annule_demande' id='annule_demande' value='Annuler' onclick=\"return confirm('Annuler la demande d\'alimentation du CET ?')\">";
-//                echo "</form>";
-            */
-			
-        }
-        elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
-        {
-            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée.");
-            $hasOption = TRUE;
-        }
-        elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_VALIDE))) != 0)
-        {
-            echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année.");
-            $hasOption = TRUE;
-        }
-        elseif ($hasInterruptionAff && $valeur_a == 0)
-        {
-            echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise).");
         }
         else 
         {
-            $pr = $agent->getPlafondRefCet();
-            //var_dump("Plafond de référence pour l'agent : $pr <br>");
-            // Consommation des congés au début de la période (case C)
-            $consodeb = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
-            //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés au ".$fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->finperiode())." : $consodeb <br>");
-
-            // Consommation des congés entre le debut de la période et la demande
-            $consoadd = $agent->getNbJoursConsommés($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
-            //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd . "<br>");
-
-            // Nombre de jours déposés sur le CET au titre de l'année de ref
-            $joursCET = 0;
-            $alimentationCET = new alimentationCET($dbcon);
-            $list_id_alim = $agent->getDemandesAlim('ann'.substr($fonctions->anneeref() - 1,2, 2), array($alimentationCET::STATUT_VALIDE));
-            foreach ($list_id_alim as $id_alim)
+            if ($sauvegardeok)
             {
-                    $alimentationCET->load($id_alim);
-                    $joursCET += $alimentationCET->valeur_f();
+                echo $fonctions->showmessage(fonctions::MSGINFO, "Votre demande d'alimentation a été correctement enregistrée.");
             }
-            $nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
-            //var_dump("nbjoursobli = $nbjoursobli <br>");
-            if ($nbjoursobli - floor($nbjoursobli) != 0)
+            elseif (sizeof($agent->getDemandesAlim('', array($alimentationCET::STATUT_EN_COURS, $alimentationCET::STATUT_PREPARE))) != 0)
             {
-                if ($nbjoursobli - floor($nbjoursobli) <= 0.5)
-                {
-                    $nbjoursobli = floor($nbjoursobli) + 0.5;
-                }
-                else 
-                {
-                    $nbjoursobli = floor($nbjoursobli) + 1;
-                }
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande d'alimentation en cours. Vous pourrez en effectuer une nouvelle lorsque celle-ci sera terminée ou annulée.");
             }
-            if ($valeur_c < $nbjoursobli)
+            elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_EN_COURS, $optionCET::STATUT_PREPARE))) != 0)
             {
-                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés \"" . $solde->typelibelle() . "\" obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
-                $nbjoursmax = 0;
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option en cours. Vous ne pourrez effectuer une nouvelle demande d'alimentation que si celle-ci est refusée ou annulée.");
+                $hasOption = TRUE;
+            }
+            elseif (sizeof($agent->getDemandesOption($fonctions->anneeref(), array($optionCET::STATUT_VALIDE))) != 0)
+            {
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de droit d'option validée. Vous ne pourrez pas effectuer de nouvelle demande d'alimentation cette année.");
+                $hasOption = TRUE;
+            }
+            elseif ($hasInterruptionAff && $valeur_a == 0)
+            {
+                echo $fonctions->showmessage(fonctions::MSGWARNING, "Votre ancienneté n'est pas suffisante pour alimenter votre CET (ancienneté d'au minimum un an sans interruption requise).");
             }
             else 
             {
-                $nbjoursmax = floor($pr - $consodeb);
-                //var_dump("pr = $pr  consodeb = $consodeb => nbjoursmax = $nbjoursmax <br>");
-                if ($nbjoursmax < 0)
+                $pr = $agent->getPlafondRefCet();
+                //var_dump("Plafond de référence pour l'agent : $pr <br>");
+                // Consommation des congés au début de la période (case C)
+                $consodeb = $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
+                //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés au ".$fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->finperiode())." : $consodeb <br>");
+
+                // Consommation des congés entre le debut de la période et la demande
+                $consoadd = $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
+                //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd . "<br>");
+
+                // Nombre de jours déposés sur le CET au titre de l'année de ref
+                $joursCET = 0;
+                $alimentationCET = new alimentationCET($dbcon);
+                $list_id_alim = $agent->getDemandesAlim('ann'.substr($fonctions->anneeref() - 1,2, 2), array($alimentationCET::STATUT_VALIDE));
+                foreach ($list_id_alim as $id_alim)
                 {
+                        $alimentationCET->load($id_alim);
+                        $joursCET += $alimentationCET->valeur_f();
+                }
+                $nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
+                //var_dump("nbjoursobli = $nbjoursobli <br>");
+                if ($nbjoursobli - floor($nbjoursobli) != 0)
+                {
+                    if ($nbjoursobli - floor($nbjoursobli) <= 0.5)
+                    {
+                        $nbjoursobli = floor($nbjoursobli) + 0.5;
+                    }
+                    else 
+                    {
+                        $nbjoursobli = floor($nbjoursobli) + 1;
+                    }
+                }
+                if ($valeur_c < $nbjoursobli)
+                {
+                    echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous n'avez pas posé les $nbjoursobli jours de congés \"" . $solde->typelibelle() . "\" obligatoires (sur la période de référence du " . $fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->debutperiode()) . " au " . $fonctions->formatdate($fonctions->anneeref().$fonctions->finperiode()) . "). Vous ne pouvez donc pas alimenter votre CET.");
                     $nbjoursmax = 0;
                 }
                 else 
                 {
-                    $nbjoursrestants = $valeur_b - $consodeb - $consoadd;
-                    if ($nbjoursmax > $nbjoursrestants)
-                    {
-                        $nbjoursmax = floor($nbjoursrestants);
-                    }
-                    if ($nbjoursmax > $joursCET)
-                    {
-                        $nbjoursmax = $nbjoursmax - $joursCET;
-                    }
-                    else
+                    $nbjoursmax = floor($pr - $consodeb);
+                    //var_dump("pr = $pr  consodeb = $consodeb => nbjoursmax = $nbjoursmax <br>");
+                    if ($nbjoursmax < 0)
                     {
                         $nbjoursmax = 0;
                     }
-                }
-            }
-
-            if (is_null($cree_demande))
-            {
-                $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
-                if (count($taberrorcheckmail) > 0)
-                {
-                    // var_dump("errorcheckmail = $errorcheckmail");
-                    $errorcheckmailstr = '';
-                    foreach ($taberrorcheckmail as $errorcheckmail)
+                    else 
                     {
-                        if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
-                        $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                        $nbjoursrestants = $valeur_b - $consodeb - $consoadd;
+                        if ($nbjoursmax > $nbjoursrestants)
+                        {
+                            $nbjoursmax = floor($nbjoursrestants);
+                        }
+                        if ($nbjoursmax > $joursCET)
+                        {
+                            $nbjoursmax = $nbjoursmax - $joursCET;
+                        }
+                        else
+                        {
+                            $nbjoursmax = 0;
+                        }
                     }
-                    echo $fonctions->showmessage(fonctions::MSGERROR, "Il n'est pas possible de faire une demande d'alimentation CET car <br>$errorcheckmailstr");
                 }
-            }
 
-            //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
-            echo "<form name='creation_alimentation'  method='post' >";
-            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-            echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
-            echo "Solde actuel de votre CET : $valeur_a jour(s)";
-            echo "<br>";
-            echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond class='erroralimCETlabel'></label>";
-            echo "<br>";
-            echo "Combien de jours souhaitez-vous ajouter à votre CET ? ";
-            echo "<input type=text placeholder='Case F' name=valeur_f id=valeur_f size=4 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
-            echo "<br>";
-            echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=4 readonly class='inputdataalimCET' > jour(s).";
-            echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' class='inputdataalimCET' >";
-            echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=4 readonly class='inputdataalimCET' >";
-            echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=4 readonly class='inputdataalimCET' >";
-            echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=4 readonly class='inputdataalimCET' >";
-            echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=4 readonly class='inputdataalimCET' >";
-            echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=4 readonly class='inputdataalimCET' >";
-/*                
-            //$code = null;
-            //if ($structure->responsable()->agentid() == $agent->agentid())
-            //{
-            //    $resp = $structure->resp_envoyer_a($code);
-            //}
-            //else
-            //{
-            //    $resp = $structure->agent_envoyer_a($code);
-            //}
-*/
-            echo "<br><br>";
-            if ($mode == MODE_RH)
-            {
-                echo "<p id='check_plafond'><input type='checkbox' id='no_verify' name='no_verify' value='on'>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
+                if (is_null($cree_demande))
+                {
+                    $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
+                    if (count($taberrorcheckmail) > 0)
+                    {
+                        // var_dump("errorcheckmail = $errorcheckmail");
+                        $errorcheckmailstr = '';
+                        foreach ($taberrorcheckmail as $errorcheckmail)
+                        {
+                            if (strlen($errorcheckmailstr)>0) $errorcheckmailstr = $errorcheckmailstr . '<br>';
+                            $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                        }
+                        echo $fonctions->showmessage(fonctions::MSGERROR, "Il n'est pas possible de faire une demande d'alimentation CET car <br>$errorcheckmailstr");
+                    }
+                }
+
+                //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
+                echo "<form name='creation_alimentation'  method='post' >";
+                echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+                echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
+                echo "Solde actuel de votre CET : $valeur_a jour(s)";
+                echo "<br>";
+                echo "Dépôt maximum : $nbjoursmax jour(s) <label id=label_plafond class='erroralimCETlabel'></label>";
+                echo "<br>";
+                echo "Combien de jours souhaitez-vous ajouter à votre CET ? ";
+                echo "<input type=text placeholder='Case F' name=valeur_f id=valeur_f size=4 onchange='update_case()' onkeyup='update_case()' onfocusout='update_case()' ><label id=label_f  class='erroralimCETlabel'></label>";
+                echo "<br>";
+                echo "Solde de votre CET après versement <input type=text placeholder='Case G' name=valeur_g id=valeur_g size=4 readonly class='inputdataalimCET' > jour(s).";
+                echo "<input type='hidden' name='plafond' readonly id='plafond' value='" . $nbjoursmax . "' class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case A' name=valeur_a id=valeur_a value=$valeur_a size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case B' name=valeur_b id=valeur_b value=$valeur_b size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case C' name=valeur_c id=valeur_c value=$valeur_c size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case D' name=valeur_d id=valeur_d value=$valeur_d size=4 readonly class='inputdataalimCET' >";
+                echo "<input type='hidden' placeholder='Case E' name=valeur_e id=valeur_e size=4 readonly class='inputdataalimCET' >";
+                echo "<br><br>";
+                if ($mode == MODE_RH)
+                {
+                    echo "<p id='check_plafond'><input type='checkbox' id='no_verify' name='no_verify' value='on'>Ne pas contrôler le plafond d'alimentation CET.</p><br><br>";
 ?>
-                <script type="text/javascript">const no_verify = document.getElementById('no_verify'); no_verify.addEventListener('input', update_case);</script>
+                    <script type="text/javascript">const no_verify = document.getElementById('no_verify'); no_verify.addEventListener('input', update_case);</script>
 <?php 
+                }
+                echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+                echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' disabled>";
+                echo "</form>";
+                echo "<br>";
             }
-            echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-            echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' disabled>";
-            echo "</form>";
-            echo "<br>";
         }
-	}
-	// Si une demande d'option est en cours ou validée, pas de suppression possible de demande d'alimentation
-	if (!$hasOption)
-	{
+        // Si une demande d'option est en cours ou validée, pas de suppression possible de demande d'alimentation
+        if (!$hasOption)
+        {
             // contrôle de la date de fin d'utilisation des reliquats
             $dbconstante = 'FIN_REPORT';
             if (!$fonctions->testexistdbconstante($dbconstante))
