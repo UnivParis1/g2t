@@ -2410,11 +2410,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         {
                             echo "<table class='tableausimple'>";
                             echo "<tr>";
-                            echo "<td class='titresimple' colspan=6>Informations sur les demandes de télétravail pour la structure : " . $structure->nomlong()  . "</td>";
+                            echo "<td class='titresimple' colspan=7>Informations sur les demandes de télétravail pour la structure : " . $structure->nomlong()  . "</td>";
                             echo "</tr>";
                             echo "<tr>";
                             echo "<td class='cellulesimple'>Identité du demandeur</td>";
                             echo "<td class='cellulesimple'>Type de demande</td>";
+                            echo "<td class='cellulesimple'>Date de création</td>";
                             echo "<td class='cellulesimple'>Date début</td>";
                             echo "<td class='cellulesimple'>Date fin</td>";
                             echo "<td class='cellulesimple'>Répartition souhaitée</td>";
@@ -2448,6 +2449,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         echo "<tr class='ligneteletravail' id='" . $teletravail->teletravailid() . "'>";
                         echo "<td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
                         echo "<td class='cellulesimple'>$debutspan" . $teletravail->libelletypeconvention()  . "$finspan</td>";
+                        echo "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->creationg2t())  . "</td>";
                         echo "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datedebut())  . "</td>";
                         echo "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datefin())  . "</td>";
                         echo "<td class='cellulesimple'>" . $teletravail->libelletabteletravail()  . "</td>";
