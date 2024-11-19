@@ -54,6 +54,52 @@
     }
     // Fin du forçage de l'affichage de l'image d'attente
     
+    $selectedstructid = null;
+    if (isset($_POST["structureid"]))
+    {
+        $selectedstructid = $_POST["structureid"];
+    }
+
+    $structureidliste = $fonctions->listestructurenoninclue();
+    foreach ((array)$structureidliste as $structureid)
+    {
+        $structure = new structure($dbcon);
+        $structure->load($structureid);
+        $structureliste[$structureid] = $structure->nomlong() . " (" . $structure->nomcourt() . ")";
+
+    } 
+    asort($structureliste);
+
+    echo "<form name='selectstructure'  method='post' >";
+    echo "Liste des structures racines :<br>";
+    echo "<select size='1' id='structureid' name='structureid'>";
+    echo "<option value='' ";
+    if ($selectedstructid == 0 or trim($selectedstructid . '') == '')
+    {
+        echo " selected ";
+    }
+    echo ">";
+    echo "-- Voir les conventions de télétravail de toutes les structures --";
+    echo "</option>";
+
+    foreach ((array)$structureliste as $structureid => $structnom)
+    {
+        echo "<option value='" . $structureid . "' ";
+        if ($structureid == $selectedstructid) {
+            echo " selected ";
+        }
+        echo ">";
+        echo $structnom;
+        echo "</option>";
+    }
+    echo "</select>";
+    echo "<br>";
+    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    echo " <input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
+    echo "</form>";
+    echo "<br><br>";
+    unset ($structure);
+    unset ($structureid);
     
     $htmltext = "";
 
@@ -75,6 +121,7 @@
     // Pour chaque structure, on récupère la liste des agents de cette structure avec une convention de télétravail
     foreach($agentlistparstructure as $codestruct => $agentlist)
     {
+
         $structure = new structure($dbcon);
         if (!$structure->load($codestruct))
         {
@@ -83,60 +130,64 @@
             $structure->nomcourt('INCONNUE');
         }
 
-        if ($premierestructure)
+        if ($selectedstructid == $structure->structureenglobante()->id() or trim($selectedstructid . '') == "")
         {
-            $htmltext = $htmltext . "<table class='tableausimple'>";
-            $premierestructure = false;
-        }
 
-        $premiereconventionstructure = true;
-        $nbconvention = 0;
-        // Pour chaque agent
-        foreach($agentlist as $agentid => $agent)
-        {
-            // On récupère la liste des conventions de télétravail de cet agent
-            $teletravailliste = $agent->teletravailliste(date("d/m/Y"),date("d/m/Y"));
-            // Pour toutes les conventions récupérées
-            foreach ((array)$teletravailliste as $teletravailid)
+            if ($premierestructure)
             {
-                $teletravail = new teletravail($dbcon);
-                $teletravail->load($teletravailid);
-                // Si la convention est validée on l'affiche
-                if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE)
-                {
+                $htmltext = $htmltext . "<table class='tableausimple'>";
+                $premierestructure = false;
+            }
 
-                    if ($premiereconventionstructure)
+            $premiereconventionstructure = true;
+            $nbconvention = 0;
+            // Pour chaque agent
+            foreach($agentlist as $agentid => $agent)
+            {
+                // On récupère la liste des conventions de télétravail de cet agent
+                $teletravailliste = $agent->teletravailliste(date("d/m/Y"),date("d/m/Y"));
+                // Pour toutes les conventions récupérées
+                foreach ((array)$teletravailliste as $teletravailid)
+                {
+                    $teletravail = new teletravail($dbcon);
+                    $teletravail->load($teletravailid);
+                    // Si la convention est validée on l'affiche
+                    if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE)
                     {
-                        $nbcolonne = 6;
-                        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Convention de télétravail pour " . $structure->nomlong() . " (Structure Id = $codestruct ) <label id='label_$codestruct'></label></td></tr>";
-                        $htmltext = $htmltext . "<tr align=center>"
-                                . "<td class='cellulesimple'>Identifiant de l'agent</td>"
-                                . "<td class='cellulesimple'>Identité de l'agent</td>"
-                                . "<td class='cellulesimple'>Type de convention</td>"
-                                . "<td class='cellulesimple'>Date de début</td>"
-                                . "<td class='cellulesimple'>Date de fin</td>"
-                                . "<td class='cellulesimple'>Jours en télétravail</td>";
+
+                        if ($premiereconventionstructure)
+                        {
+                            $nbcolonne = 6;
+                            $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Convention de télétravail pour " . $structure->nomlong() . " (" .  $structure->nomcourt() . ") -  Structure Id = $codestruct - <label id='label_$codestruct'></label></td></tr>";
+                            $htmltext = $htmltext . "<tr align=center>"
+                                    . "<td class='cellulesimple'>Identifiant de l'agent</td>"
+                                    . "<td class='cellulesimple'>Identité de l'agent</td>"
+                                    . "<td class='cellulesimple'>Type de convention</td>"
+                                    . "<td class='cellulesimple'>Date de début</td>"
+                                    . "<td class='cellulesimple'>Date de fin</td>"
+                                    . "<td class='cellulesimple'>Jours en télétravail</td>";
+                            $htmltext = $htmltext . "</tr>";
+                            $premiereconventionstructure = false;
+                        }
+                        $htmltext = $htmltext . "<tr align=center>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->agentid() . "</td>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'>" . $teletravail->libelletypeconvention() . "</td>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datedebut()) . "</td>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datefin()) . "</td>";
+                        $htmltext = $htmltext . "<td class='cellulesimple'>" . $teletravail->libelletabteletravail() . "</td>";
                         $htmltext = $htmltext . "</tr>";
-                        $premiereconventionstructure = false;
+                        $nbconvention++;
                     }
-                    $htmltext = $htmltext . "<tr align=center>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->agentid() . "</td>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $teletravail->libelletypeconvention() . "</td>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datedebut()) . "</td>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datefin()) . "</td>";
-                    $htmltext = $htmltext . "<td class='cellulesimple'>" . $teletravail->libelletabteletravail() . "</td>";
-                    $htmltext = $htmltext . "</tr>";
-                    $nbconvention++;
                 }
             }
+            // On construit le tableau associatif code_libelle => nbre_convention pour pouvoir ensuite mettre à jour les libellés dans un javascript
+            if ($javavalue != "")
+            {
+                $javavalue = $javavalue . ",";
+            }
+            $javavalue = $javavalue . "'label_$codestruct' : '$nbconvention'";
         }
-        // On construit le tableau associatif code_libelle => nbre_convention pour pouvoir ensuite mettre à jour les libellés dans un javascript
-        if ($javavalue != "")
-        {
-            $javavalue = $javavalue . ",";
-        }
-        $javavalue = $javavalue . "'label_$codestruct' : '$nbconvention'";
     }
     if (!$premierestructure)
     {
