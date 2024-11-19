@@ -3225,7 +3225,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                             $htmltext = $htmltext . $this->fonctions->demandestatutlibelle(demande::DEMANDE_ATTENTE);
                         }
                         $htmltext = $htmltext . "</option>";
-                        $htmltext = $htmltext . "      <select>";
+                        $htmltext = $htmltext . "      </select>";
                         $htmltext = $htmltext . "</td>";
                         
                         $textareastyle = " class='commenttextarea";
