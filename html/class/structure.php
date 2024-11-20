@@ -1376,12 +1376,14 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         return $htmltext;
     }
 
-    function dossierhtml($pourmodif = FALSE, $responsableid = NULL)
+    function dossierhtml($pourmodif = FALSE, $responsableid = NULL, &$formulairetext_openpdf = '')
     {
         
         // echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
         // return null;
         $WSGROUPURL = $this->fonctions->liredbconstante("WSGROUPURL");
+
+        $formulairetext_openpdf = '';
 
         $nbcolonne = 5;
         $dbconstante = 'FONCTIONAVIS';
@@ -1431,12 +1433,13 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             $agentliste = array_merge((array) $agentliste, (array) $responsableliste);
             ksort($agentliste);
         }
-        if (is_array($agentliste)) {
+        if (is_array($agentliste)) 
+        {
             foreach ($agentliste as $key => $membre) {
                 // echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
                 if ($membre->agentid() != $responsableid) {
                     $htmltext = $htmltext . "<tr>";
-                    $htmltext = $htmltext . "<center><td class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td></center>";
+                    $htmltext = $htmltext . "<td class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td>";
                     
                     $complement = new complement($this->dbconnect);
                     $complement->load($membre->agentid(), "REPORTACTIF");
@@ -1504,6 +1507,13 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                             
                             $styletexte = '';
                             $extrainfo = "";
+                            if (($convention->esignatureid() . "") != "" and !is_null($responsableid))
+                            {
+                                $formulairetext_openpdf = $formulairetext_openpdf . '<form name="showesignaturePDF_' . $convention->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
+                                $formulairetext_openpdf = $formulairetext_openpdf . '<input type="hidden" name="esignatureid" value="' . $convention->esignatureid() . '">';
+                                $formulairetext_openpdf = $formulairetext_openpdf . '<input type="hidden" name="esignaturePDF" value="ok">';
+                                $formulairetext_openpdf = $formulairetext_openpdf . '</form>';
+                            }
                             if (key($tabconventionactive)==(count($tabconventionactive)-1)) // Si on est sur le dernier élément du tableau
                             {
                                 $datefinalerte = strtotime($this->fonctions->formatdatedb($convention->datefin())."- 1 months");
@@ -1524,11 +1534,21 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                                     $extrainfo = "<span data-tip=" . chr(34) . "Cette convention est terminée depuis moins de six mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
                                 }
                             }
-                            $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo" . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) . "</span>";
+                            // $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo" . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) . "</span>";
+                            $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo";
+                            if (($convention->esignatureid() . "") != "" and !is_null($responsableid))
+                            {
+                                $teletravailstring = $teletravailstring . "<a $styletexte href='affiche_pdf.php' target='_blank' onClick='document.forms[\"showesignaturePDF_" . $convention->esignatureid() . "\"].submit(); return false;'>". $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) ."</a>";
+                            }
+                            else
+                            {
+                                $teletravailstring = $teletravailstring . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin());
+                            }
                             if (strlen($extrainfo)>0)
                             {
                                 $teletravailstring = $teletravailstring . "</span>";
                             }
+                            $teletravailstring = $teletravailstring . "</span>";
                         }
                         $htmltext = $htmltext . $teletravailstring;
                     }

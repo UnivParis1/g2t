@@ -650,6 +650,9 @@
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msgerreur));
         echo $fonctions->showmessage(fonctions::MSGERROR, "$msgerreur");
     }
+
+    $full_formulairetexte_openpdf = '';
+
     echo "<form name='frm_dossier'  method='post' >";
     if ($mode == MODE_RESPONSABLE) {
         $structliste = $user->structrespliste();
@@ -690,15 +693,18 @@
         
         if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n')) or count($responsableliste)>0) 
         {
+            $formulairetext_openpdf = '';
             if ($mode == MODE_RESPONSABLE)
             {
-                echo $structure->dossierhtml(($action == 'modif'), $userid);
+                echo $structure->dossierhtml(($action == 'modif'), $userid, $formulairetext_openpdf);
             }
             else
             {
-                echo $structure->dossierhtml(($action == 'modif'));
+                echo $structure->dossierhtml(($action == 'modif'), null);
             }
 
+            $full_formulairetexte_openpdf = $full_formulairetexte_openpdf . " " . $formulairetext_openpdf;
+            // var_dump($full_formulairetexte_openpdf);
             echo "<table>";
             echo "<tr>";
             echo "<td>";
@@ -1358,6 +1364,7 @@
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
     }
     echo "</form>";
+    echo "$full_formulairetexte_openpdf";
 
 ?>
 
