@@ -46,16 +46,39 @@
                              or $fonctions->formatdatedb($convention->datefin()) == $fonctions->formatdatedb($datefinconvention_2mois)))
                        or $force)
                     {
-                        // On doit envoyer un mail de rappel à l'agent !
-                        echo "Id de la convention teletravail = $conventionid  Statut convention = " . $convention->statut() . " Id de l'agent = $agentid  date fin = " . $convention->datefin() . " : ";
-                        echo "Tout est ok... On peut envoyer le mail \n";
-                        $corpsdumail="Votre convention de télétravail arrive bientôt à son terme.\n";
-                        $corpsdumail=$corpsdumail . "Si vous souhaitez renouveler votre convention de télétravail, veuillez prendre contact avec le service de la DRH afin de connaitre les modalités.\n";
-                        $corpsdumail=$corpsdumail . "Dans le cas contraire, vous ne serez plus en télétravail après le " . $fonctions->formatdate($convention->datefin()) . ".\n";
-                        $corpsdumail=$corpsdumail . "\n";
-                        //echo "Avant l'envoi \n";
-                        $agentcron->sendmail($agent, "Alerte : Fin de votre convention de télétravail", $corpsdumail, null, null, false);
-                        //echo "Apres l'envoi \n";
+                        $timestamp = strtotime($fonctions->formatdatedb($convention->datefin()));
+                        $lendemain = date("d/m/Y", strtotime("+1 day", $timestamp)); // On passe au lendemain de la date de fin de la convention
+                        
+                        $teletravaillistesuivante = $agent->teletravailliste($lendemain,'31/12/2999');
+                        $conventionsuivantetrouvee = false;
+                        foreach ($teletravaillistesuivante as $conventionsuivanteid)
+                        {
+                            $conventionsuivante = new teletravail($dbcon);
+                            if ($conventionsuivante->load($conventionsuivanteid) and in_array($conventionsuivante->statut(),array(teletravail::TELETRAVAIL_ATTENTE,teletravail::TELETRAVAIL_VALIDE)))
+                            {
+                                $conventionsuivantetrouvee = true;
+                                break;
+                            }
+                        }
+
+                        echo "convention teletravail Id = $conventionid  Statut = " . $convention->statut() . " Agent = $agentid  date fin = " . $fonctions->formatdate($convention->datefin()) . " : ";
+                        // Si on n'a pas trouvé de convention après la convention qui lève l'alerte => On envoi un mail à l'agent
+                        if (!$conventionsuivantetrouvee)
+                        {
+                            // On doit envoyer un mail de rappel à l'agent !
+                            echo "Tout est ok... On peut envoyer le mail \n";
+                            $corpsdumail="Votre convention de télétravail arrive bientôt à son terme.\n";
+                            $corpsdumail=$corpsdumail . "Si vous souhaitez renouveler votre convention de télétravail, veuillez prendre contact avec le service de la DRH afin de connaitre les modalités.\n";
+                            $corpsdumail=$corpsdumail . "Dans le cas contraire, vous ne serez plus en télétravail après le " . $fonctions->formatdate($convention->datefin()) . ".\n";
+                            $corpsdumail=$corpsdumail . "\n";
+                            //echo "Avant l'envoi \n";
+                            $agentcron->sendmail($agent, "Alerte : Fin de votre convention de télétravail", $corpsdumail, null, null, false);
+                            //echo "Apres l'envoi \n";
+                        }
+                        else
+                        {
+                            echo "convention $conventionsuivanteid après (début : " . $fonctions->formatdate($conventionsuivante->datedebut()) . " Statut : " . $conventionsuivante->statut() . ") => Pas de mail \n";
+                        }
                     }
                     else
                     {
