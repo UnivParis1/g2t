@@ -1462,7 +1462,7 @@
         
     // On crée l'entete du tableau et on affiche chaque période enregistrée
     echo "<form name='selectperiode'  method='post' >";
-    echo "<br>Période de fermeture de l'établissement : <br>";
+    echo "<br>Période de fermeture de l'établissement (dates incluses) : <br>";
     echo "<table class='tableausimple'>";
     echo "<tr><td class='titresimple'>Année référence</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Supprimer</td></tr>";
     if (count($liste)>0)

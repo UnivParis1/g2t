@@ -4665,7 +4665,7 @@ WHERE  table_schema = Database()
             echo "<div class='periodeobligatoirebloc'><b>RAPPEL : </b>Les périodes de fermeture obligatoire de l'établissement sont les suivantes : <ul>";
             foreach ($liste as $element)
             {
-                echo "<li class='leftaligntext' >Du " . $this->formatdate($element["datedebut"]) . " au " . $this->formatdate($element["datefin"]) . "</li>";
+                echo "<li class='leftaligntext' >Du " . $this->formatdate($element["datedebut"]) . " (inclus) au " . $this->formatdate($element["datefin"]) . " (inclus)</li>";
             }
             echo "</ul>";
             echo "Veuillez penser à poser vos congés en conséquence.";
