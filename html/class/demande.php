@@ -559,11 +559,17 @@ class demande
             {
                 //echo "Dans la boucle .... Id de la demande courante = ". $this->demandeid . " L'element Id = " . $element->demandeid() . "\n<br>";
                 //echo "Dans la boucle .... Type de la demande courante = ". $this->type() . " L'element type = " . $element->type() . "\n<br>";
-                //var_dump($element);
+                // var_dump("On est sur l'element : " . $element->id());
                 if ($element->demandeid() == $this->demandeid or ($element->type() == 'atten' and $this->statut() == demande::DEMANDE_ATTENTE)) 
                 { 
-                    // echo "Yes !!! +1 \n<br>";
-                    $nbredemiejrs = $nbredemiejrs + 1;
+                    // On vérifie que l'agent est en activité => Si non on ne doit pas compter cet élément
+                    // On ajoute des espaces avant et après pour rechercher la constante
+                    // var_dump("Avant le stripos.... : extraclass = " . $element->htmlextraclass());
+                    if (stripos(" " . $element->htmlextraclass() . " ",planningelement::HTML_CLASS_SANSACTIVITE)===false)
+                    {
+                        // var_dump("Yes !!! +1");
+                        $nbredemiejrs = $nbredemiejrs + 1;
+                    }
                 }
             }
             

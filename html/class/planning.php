@@ -195,13 +195,22 @@ class planning
                 {
                     $element->type("WE");
                     $element->info("week-end");
-                }            // On est dans le cas ou aucune déclaration de TP n'est faite
-                elseif (is_null($declarationTP)) 
+                }
+                elseif (is_null($affectation)) // On est dans le cas ou l'agent ne travaille plus dans l'établissement
+                {
+                    // var_dump("element id = " . $element->id() . " et pas d'affectation");
+                    $element->type("nondec");
+                    $element->info("Sans activité"); // "Période non déclarée"
+                    $extraclass = $element->htmlextraclass();
+                    $element->htmlextraclass(trim($extraclass . " " . trim(planningelement::HTML_CLASS_SANSACTIVITE)));
+                    // var_dump("element id = " . $element->id() . " :  htmlextraclass = " . $element->htmlextraclass());
+                }
+                elseif (is_null($declarationTP)) // On est dans le cas ou aucune déclaration de TP n'est faite
                 {
                     $element->type("nondec");
                     $element->info("Période non déclarée");
-                }            // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
-                elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) 
+                }            
+                elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
                 {
                     $element->type("nondec");
                     $element->info("Période non déclarée");
@@ -237,7 +246,7 @@ class planning
                     if ($periodeoblig->testsuperposeperiode($element->date(),$element->date()))
                     {
                         $extraclass = $element->htmlextraclass();
-                        $element->htmlextraclass($extraclass . " " . "periodeoblig");
+                        $element->htmlextraclass(trim($extraclass . " " . trim(planningelement::HTML_CLASS_PERIODEOBLIGATOIRE)));
                     }
                 }
 
@@ -252,6 +261,8 @@ class planning
             // echo "On passe à la date : " .$datetemp . "( " . strtotime($datetemp) . ") <br>";
         }
         
+        //var_dump("element HTMLClass => " . $this->listeelement["20250102m"]->htmlextraclass());
+
         /////////////////////////////////////////////////////////
         /// INTEGRATION DES CONGES, ABSENCE, ABSENCERH
         /////////////////////////////////////////////////////////
@@ -333,6 +344,12 @@ class planning
                             $element->demandeid($demande->id());
                             $element->demande($demande);
 
+                            // On récupère les classes HTML de l'élément qui est déjà présent dans le planning (<=> listeelement)
+                            if (array_key_exists($element->id(), $this->listeelement))
+                            {
+                                $element->htmlextraclass($this->listeelement[$element->id()]->htmlextraclass());
+                            }
+
                             if (! array_key_exists($element->id(), $this->listeelement))
                             {
                                 //$this->listeelement[$datetemp . $moment] = $element;
@@ -342,18 +359,22 @@ class planning
                             elseif ($this->listeelement[$element->id()]->type() == "" or strcasecmp($this->listeelement[$element->id()]->type(), "nondec") == 0) 
                             {
                                 // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                //if (strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
                                 if (strcasecmp($this->listeelement[$element->id()]->type(), "nondec") == 0) 
                                 {
-                                    $extraclass = trim($element->htmlextraclass()) . planningelement::HTML_CLASS_PERIODENONDECLA;
+                                    //var_dump("On vérifie le extraClass => " . $element->htmlextraclass());
+                                    $extraclass = trim($element->htmlextraclass() . " " . trim(planningelement::HTML_CLASS_PERIODENONDECLA));
+                                    //var_dump("Le nouvel extraClass = $extraclass");
                                     $element->htmlextraclass($extraclass);
 
                                     // $element->demandeid("");
                                     // // On reset l'objet demande de l'élément
                                     // $element->demande("");
                                 }
-                                //$this->listeelement[$datetemp . $moment] = $element;
-                                $this->listeelement[$element->id()] = $element;
+                                // Si l'élément actuel est sans activité => On ne doit pas charger l'absence/le congé.... => Car l'agent ne travaille pas (pas en activité)
+                                if (stripos(" " . $element->htmlextraclass() . " ",planningelement::HTML_CLASS_SANSACTIVITE)===false)
+                                {
+                                    $this->listeelement[$element->id()] = $element;
+                                }
                             }
                         }
                         // On passe au moment suivant dans le tableau ou false si on est au bout
@@ -369,6 +390,8 @@ class planning
             }
         }
         
+        // var_dump("element HTMLClass => " . $this->listeelement["20250102m"]->htmlextraclass());
+
         /////////////////////////////////////////////////////////
         /// INTEGRATION DU TELETRAVAIL
         /////////////////////////////////////////////////////////
@@ -797,10 +820,19 @@ class planning
                 {
                     // On ajoute 1 car "rien de prévu ce jour là" donc c'est un jour ou l'agent travail
                     $nbredemijour ++;
-                } elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(), "nondec") == 0) {
-                    // On ajoute 1 car "pas d'autodeclaration et on doit l'ignorer" donc c'est un jour ou l'agent travail
-                    $nbredemijour ++;
-                } else {
+                } 
+                elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(), "nondec") == 0) 
+                {
+                    // On vérifie que l'agent est en activité => Si non on ne doit pas compter cet élément
+                    // On ajoute des espaces avant et après pour rechercher la constante
+                    if (stripos(" " . $element->htmlextraclass() . " ",planningelement::HTML_CLASS_SANSACTIVITE)===false)
+                    {
+                        // On ajoute 1 car "pas d'autodeclaration et on doit l'ignorer" donc c'est un jour ou l'agent travail
+                        $nbredemijour ++;
+                    }
+                } 
+                else 
+                {
                     // On ne fait rien car le jour n'est pas travaillé et dispo
                 }
             }
@@ -1071,7 +1103,7 @@ class planning
         {
             $pasledernier = TRUE;
         }
-        $index = 0;
+        //$index = 0;
         // Tableau des disponibilités qu'on va retourner
         $listedispo = array();
         $dispo = new disponibilite;
@@ -1084,6 +1116,7 @@ class planning
         $datefindb = $this->fonctions->formatdatedb($datefin);
         if ($ignoreabsenceautodecla)
         {
+            // On ajoute le type "nondec"
             $arraytypeignore[] = "nondec";
         }
         foreach ((array) $listeelement as $key => $element) 
@@ -1127,7 +1160,7 @@ class planning
                 }
                 $priviouselement = $element;
             }
-            $index ++;
+            //$index ++;
         }
         // Si on a un élément de début, mais qu'on a parcouru tout le planning => La fin de la disponibilité est le $previouselement
         if (!is_null($dispo->elementdebut))

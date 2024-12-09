@@ -738,10 +738,26 @@ textarea:required {
 / Image de chargement
 /*************************************************/
 .waiting_div {
-    position: absolute;
+/*
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);   
+    transform: translate(-50%, -50%); 
+*/   
+	position: fixed;
+	top: 1px;
+	left: 1px;
+	height: 100%;
+	width: 100%;
+	z-index: 999999;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.waiting_img {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
 }
 
 /*************************************************
@@ -972,6 +988,10 @@ select {
 
 .okbackgroundtext {
     background-color : #c5efbd;
+}
+
+.warnbackgroundtext {
+    background-color : #f7ae50;
 }
 
 .commentobligatoirebackground {

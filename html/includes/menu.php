@@ -128,6 +128,34 @@
     
     });
 
+    function showwaitingimg()
+    {
+        var waiting_img = document.getElementById('waiting_img');
+        if (waiting_img)
+        {
+            waiting_img.hidden=false;
+        }
+        var waiting_div = document.getElementById('waiting_div');
+        if (waiting_div)
+        {
+            waiting_div.hidden=false;
+        }
+    }
+
+    function hiddewaitingimg()
+    {
+        var waiting_img = document.getElementById('waiting_img');
+        if (waiting_img)
+        {
+            waiting_img.hidden=true;
+        }
+        var waiting_div = document.getElementById('waiting_div');
+        if (waiting_div)
+        {
+            waiting_div.hidden=true;
+        }
+    }
+
     function select2setfocus()
     {
         // console.log('select2setfocus inside');
@@ -1600,6 +1628,12 @@
                             </form> 
                             <a href="javascript:document.rh_affiche_jourscomplementaires.submit();">Afficher les jours complémentaires</a>
                         </li>
+                        <li onclick='document.rh_gestperiodeoblig.submit();'>
+                            <form name='rh_gestperiodeoblig' method='post' action="gestion_periodeobligatoire.php">
+                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            </form> 
+                            <a href="javascript:document.rh_gestperiodeoblig.submit();">Gérer les périodes obligatoires</a>
+                        </li>
                     </ul>
                 </li>
 <?php
@@ -1709,6 +1743,12 @@
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                     </form> 
                     <a href="javascript:document.admin_controlrecup.submit();">Contrôler les recupérations</a>
+                </li>
+                <li onclick='document.admin_gestperiodeoblig.submit();'>
+                    <form name='admin_gestperiodeoblig' method='post' action="gestion_periodeobligatoire.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    </form> 
+                    <a href="javascript:document.admin_gestperiodeoblig.submit();">Gérer les périodes obligatoires</a>
                 </li>
             </ul>
         </li>

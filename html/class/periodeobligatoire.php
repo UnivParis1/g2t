@@ -57,6 +57,7 @@ class periodeobligatoire
                 $this->listedate = array();
                 $this->pastrouve = true;
             }
+            ksort($this->listedate); // On les trie par ordre chronologique
             return $this->listedate;
             
 /*            
@@ -142,13 +143,27 @@ class periodeobligatoire
 
         return $erreur;
     }
+
+    function loadperiodefromid($periodeid)
+    {
+        $periode = array();
+        if (strpos($periodeid,'-')!==false)
+        {
+            //echo "<br>J'ai trouvé le - dans periode $periode <br>";
+            list($datedebut, $datefin) = explode("-", $periodeid);
+            $periode = array("datedebut" => $datedebut, "datefin" => $datefin, "id" => $datedebut . '-' . $datefin);
+        }
+        return $periode;
+    }
     
     function ajouterperiode($datedebut,$datefin)
     {
         $datedebut = $this->fonctions->formatdatedb($datedebut);
         $datefin = $this->fonctions->formatdatedb($datefin);
-        $periode = array("datedebut" => $datedebut,"datefin" => $datefin);
-        $this->listedate[$datedebut . '-' . $datefin] = $periode;
+        //$periode = array("datedebut" => $datedebut, "datefin" => $datefin, "id" => $datedebut . '-' . $datefin);
+        $periode = $this->loadperiodefromid($datedebut . '-' . $datefin);
+
+        $this->listedate[$periode["id"]] = $periode;
         ksort($this->listedate);
         //echo "<br>ajouter => listedate = " . print_r($this->listedate,true)."<br>";
     }

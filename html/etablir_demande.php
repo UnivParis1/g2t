@@ -1378,7 +1378,7 @@
         {
             var select = document.getElementById('listetype');
             //console.log(select.value);
-            var planningliste = document.getElementsByClassName('periodeoblig');
+            var planningliste = document.getElementsByClassName('<?php echo trim(planningelement::HTML_CLASS_PERIODEOBLIGATOIRE); ?>');
             if (planningliste.length>0)
             {
                 for(cpt=0 ; cpt < planningliste.length; cpt++)

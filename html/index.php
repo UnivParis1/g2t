@@ -655,8 +655,50 @@
     // $demande->load(106820);
     // $demande->pdf(9328);
     
+    // $periode = new periodeobligatoire($dbcon);
+    // $listeperiode = $periode->load($fonctions->anneeref());
 
+    // $agentid = 87720;
+    // $agent = new agent($dbcon);
+    // $agent->load($agentid);
+    // $periode = reset($listeperiode);
+    // var_dump($periode);
+    // $agent->forceperiodeobligatoire($periode,false,$returndesc);
+    // var_dump("Retour de forceperiodeobligatoire en ecriture : ");
+    // var_dump($returndesc);
 
+    // $agent->forceperiodeobligatoire($periode,true,$returndesc);
+    // var_dump("Retour de forceperiodeobligatoire en consultation : ");
+    // var_dump($returndesc);
+
+    // $planning = new planning($dbcon);
+    // $planning->load($agentid,$periode["datedebut"], $periode["datefin"],false,true,false);
+    // echo "<br>";
+    // echo $planning->planninghtml($agentid,$periode["datedebut"], $periode["datefin"],false,false,false,false);
+    // echo "<br>";
+
+    // $listedispo = $planning->listeperiodedispo($agentid, $periode["datedebut"], fonctions::MOMENT_MATIN, $periode["datefin"],fonctions::MOMENT_APRESMIDI,false);
+    // var_dump("Liste des périodes dispo : ");
+    // var_dump($listedispo);
+
+    // $demandeliste = $agent->demandesliste($periode["datedebut"], $periode["datefin"]);
+    // if (is_array($demandeliste))
+    // {
+    //     foreach($demandeliste as $demande)
+    //     {
+    //         if ($demande->statut() == demande::DEMANDE_VALIDE)
+    //         {
+    //             break;
+    //         }
+    //         $demande = null;
+    //     }
+    //     if (is_object($demande))
+    //     {
+    //         $nbjrscalcule = -1;
+    //         $return = $demande->controlenbrejrs($nbjrscalcule);
+    //         var_dump("demande->controlenbrejrs : return = $return  nbjrscalcule = $nbjrscalcule  nbjrsorigine = " . $demande->nbrejrsdemande());
+    //     }
+    // }
 
 ?>
 </body>

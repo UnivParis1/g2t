@@ -90,7 +90,7 @@
     $typeimage = pathinfo($path, PATHINFO_EXTENSION);
     $data = file_get_contents($path);
     $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img'  class='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
     // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
     if (ob_get_contents()!==false)
     {

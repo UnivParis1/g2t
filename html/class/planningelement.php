@@ -21,6 +21,8 @@ class planningelement
     const HTML_CLASS_TELETRAVAIL_HIDDEN = ' teletravail_cache ';
     const HTML_CLASS_DEPLACE = ' deplace ';
     const HTML_CLASS_PERIODENONDECLA = ' periodenondecla ';
+    const HTML_CLASS_SANSACTIVITE = ' sansactivite ';
+    const HTML_CLASS_PERIODEOBLIGATOIRE = ' periodeoblig ';
 
     const JAVA_CLASS_TELETRAVAIL_HIDDEN = 'teletravail_hidden';
     
@@ -115,57 +117,92 @@ class planningelement
 
     function date($date = null)
     {
-        if (is_null($date)) {
-            if (is_null($this->date)) {
+        if (is_null($date)) 
+        {
+            if (is_null($this->date)) 
+            {
                 $errlog = "PlanningElement->date : La date n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->fonctions->formatdate($this->date);
-        } else
+            }
+        } 
+        else
+        {
             $this->date = $this->fonctions->formatdatedb($date);
+        }
     }
 
     function moment($moment = null)
     {
-        if (is_null($moment)) {
-            if (is_null($this->moment)) {
+        if (is_null($moment)) 
+        {
+            if (is_null($this->moment)) 
+            {
                 $errlog = "PlanningElement->moment : Le moment n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->moment;
-        } else
+            }
+        } 
+        else
+        {
             $this->moment = $moment;
+        }
     }
 
     function type($type = null)
     {
-        if (is_null($type)) {
-            if (is_null($this->typeelement)) {
+        if (is_null($type)) 
+        {
+            if (is_null($this->typeelement)) 
+            {
                 $errlog = "PlanningElement->type : Le type n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->typeelement;
-        } else
+            }
+        } 
+        else
+        {
             $this->typeelement = $type;
+        }
     }
 
     function info($info = null)
     {
-        if (is_null($info)) {
-            if (is_null($this->info)) {
+        if (is_null($info)) 
+        {
+            if (is_null($this->info)) 
+            {
                 $errlog = "PlanningElement->info : L'info n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->info;
-        } elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) != 0)
+            }
+        } 
+        elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) != 0)
+        {
             $this->info = $info;
-            elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0)
+        }
+        elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0)
+        {
             $this->info = $this->info . "  " . $info;
-        else {
+        }
+        else 
+        {
             // echo "PlanningElement->info : Le statut est '" . demande::DEMANDE_ATTENTE . "' ==> On ne modifie pas l'info <br>";
         }
     }
@@ -439,8 +476,8 @@ class planningelement
         
         //$extraclass = '';        
         $extraclass = $this->htmlextraclass();
-        $exclusion = (stripos($this->htmlextraclass(), planningelement::HTML_CLASS_EXCLUSION)!==false);
-        $deplace = (stripos($this->htmlextraclass(), planningelement::HTML_CLASS_DEPLACE)!==false);
+        $exclusion = (stripos(" " . $this->htmlextraclass() . " ", planningelement::HTML_CLASS_EXCLUSION)!==false);
+        $deplace = (stripos(" " . $this->htmlextraclass() . " ", planningelement::HTML_CLASS_DEPLACE)!==false);
         if ((strcasecmp($this->type(),'teletrav')==0 or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
             
@@ -475,37 +512,9 @@ class planningelement
                 }
             }
             $spanactive = false;
-/*
-            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']) and strlen($this->info()) != 0 )
-            {
-                if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC' and $noiretblanc)
-                {
-                    //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . "<br>";
-                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . chr(34) . ">";
-                    $spanactive = true;
-                }
-            }
-*/
             // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
             // ==> On affiche le type du parent 'Teletravail hors convention'
             $demandeparenttype = '';
-/*            
-            if (strcasecmp($this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)))
-            {
-                if (!is_null($this->demande))
-                {
-                    $demande = $this->demande;
-                }
-                else
-                {
-                    $demande = new demande($this->dbconnect);
-                    $demande->load($this->demandeid());
-                    $this->demande = $demande;
-                }
-                $demandeparenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
-                //var_dump($demandeparenttype);
-            }
-*/            
             if (strlen($this->info()) != 0 and (strcasecmp($this->parenttype(),'teletravHC')==0 or strcasecmp($demandeparenttype,'teletravHC')==0) and $noiretblanc) 
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
@@ -559,35 +568,7 @@ class planningelement
                 }
             }
             $spanactive = false;
-/*            
-            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid']) and strlen($this->info()) != 0 )
-            {
-                if (TABCOULEURPLANNINGELEMENT[$this->typeelement]['parentid'] == 'teletravHC' and $noiretblanc)
-                {
-                    //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . "<br>";
-                    $htmltext = $htmltext . "<span data-tip=" . chr(34) . TABCOULEURPLANNINGELEMENT['teletravHC']['libelle'] . chr(34) . ">";
-                    $spanactive = true;
-                }
-            }
-*/
             $demandeparenttype = '';
-/*            
-            if (strcasecmp($this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)))
-            {
-                if (!is_null($this->demande))
-                {
-                    $demande = $this->demande;
-                }
-                else
-                {
-                    $demande = new demande($this->dbconnect);
-                    $demande->load($this->demandeid());
-                    $this->demande = $demande;
-                }
-                $demandeparenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
-                // var_dump($demandeparenttype);
-            }
-*/            
             // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
             // ==> On affiche le type du parent 'Teletravail hors convention'
             if (strlen($this->info()) != 0 and (strcasecmp($this->parenttype(),'teletravHC')==0 or strcasecmp($demandeparenttype,'teletravHC')==0) and $noiretblanc) 

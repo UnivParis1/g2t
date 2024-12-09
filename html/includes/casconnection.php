@@ -1,7 +1,7 @@
 <?php
     require_once (__DIR__ . '/../../vendor/autoload.php');
-    require_once ('./class/fonctions.php');
-    require_once ('./includes/dbconnection.php');
+    require_once (__DIR__ . '/../class/fonctions.php');
+    require_once (__DIR__ . '/../includes/dbconnection.php');
     $fonctions = new fonctions($dbcon);
     // Parametres pour connexion CAS
     $CAS_SERVER = $fonctions->liredbconstante("CASSERVER");
