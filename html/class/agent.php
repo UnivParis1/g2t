@@ -4317,7 +4317,10 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		elseif ($element->type() == 'atten')
     		{
     			$date_element = $this->fonctions->formatdatedb($element->date());
-    			$list_demandes = $this->demandesliste($date_element, $date_element + 1);
+                //$list_demandes = $this->demandesliste($date_element, $date_element + 1);
+                $timestamp = strtotime($date_element);
+                $lendemain = date("Ymd", strtotime("+1 day", $timestamp)); // On passe au lendemain de la date
+                $list_demandes = $this->demandesliste($date_element, $lendemain);
     			foreach($list_demandes as $demande)
     			{
     			    //if (($demande->type() == $type_conge) and (strcasecmp($demande->statut(), 'r')!=0) )
