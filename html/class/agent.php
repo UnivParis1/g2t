@@ -65,8 +65,6 @@ class agent
     private $typepopulation = null;
     private $structureid = null;
     private $fonctions = null;
-    private $travailsamedi = null;
-    private $travaildimanche = null;
 
     /**
      *
@@ -292,66 +290,6 @@ class agent
         return true;
     }
 
-
-//     /**
-//      *
-//      * @deprecated
-//      */
-//     function storeutilisateurspecial($agentid)
-//     {
-//         trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
-//         //echo "<br>Avant le if estutilisateurspecial";
-//         if ($this->estutilisateurspecial($agentid))
-//         {
-//             //echo "<br>On set les paramètres avec les valeurs par défaut";
-//             if (strlen(trim($this->civilite . ""))==0) $this->civilite('');
-//             if (strlen(trim($this->nom . ""))==0) $this->nom('SPECIAL_' . $agentid);
-//             if (strlen(trim($this->prenom . ""))==0) $this->prenom('UTILISATEUR_' . $agentid);
-//             if (strlen(trim($this->adressemail . ""))==0) $this->mail('noreply@no_domaine.fr');
-//             if ($this->existe($agentid))
-//             {
-//                 // Ajout manuel de l'agent
-//                 $sql = "UPDATE AGENT SET CIVILITE = ?, NOM = ?, PRENOM = ?, ADRESSEMAIL = ? WHERE AGENTID = ?";
-//                 $params = array(
-//                     $this->fonctions->my_real_escape_utf8($this->civilite),
-//                     $this->fonctions->my_real_escape_utf8($this->nom),
-//                     $this->fonctions->my_real_escape_utf8($this->prenom),
-//                     $this->fonctions->my_real_escape_utf8($this->adressemail),
-//                     $this->fonctions->my_real_escape_utf8($agentid)
-//                 );
-//             }
-//             else
-//             {
-//                 // Ajout manuel de l'agent
-//                 $sql = "INSERT INTO AGENT(AGENTID,CIVILITE,NOM,PRENOM,ADRESSEMAIL,TYPEPOPULATION) VALUES(?,?,?,?,?,'')";
-//                 $params = array(
-//                     $this->fonctions->my_real_escape_utf8($agentid),
-//                     $this->fonctions->my_real_escape_utf8($this->civilite),
-//                     $this->fonctions->my_real_escape_utf8($this->nom),
-//                     $this->fonctions->my_real_escape_utf8($this->prenom),
-//                     $this->fonctions->my_real_escape_utf8($this->adressemail)
-//                     );
-//             }
-//             $query = $this->fonctions->prepared_select($sql, $params);
-//             //echo "sql = " . $sql . "<br>";
-//             $erreur = mysqli_error($this->dbconnect);
-//             if ($erreur != "") {
-//                 $errlog = "Agent->storeutilisateurspecial (AGENT) : " . $erreur;
-//                 echo $errlog . "<br/>";
-//                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-//                 return false;
-//             }
-//             $this->agentid = $agentid;
-//             return true;
-//         }
-//         else
-//         {
-//             echo "<br> $agentid n'est pas dans la liste des utilisateurs speciaux => Impossible de le sauvegarder<br>";
-//             return false;
-//         }
-//     }
-
-    
     function estutilisateurspecial($agentid = null)
     {
         $tab_special_users = $this->fonctions->listeutilisateursspeciaux();
@@ -833,26 +771,104 @@ class agent
         }
     }
     
-    function travailsamedi()
+    function travailsamedi($date)
     {
-        if (is_null($this->travailsamedi))
+        static $lastperiod = null;
+
+        $datedb = $this->fonctions->formatdatedb($date);
+        if (date("w",strtotime($datedb)) == 6) // 6 = samedi
         {
-            $complement = new complement($this->dbconnect);
-            $complement->load($this->agentid, "TRAVAILSAMEDI");
-            $this->travailsamedi = (strcasecmp($complement->valeur(), "O") == 0);
+            // Si on n'a pas déjà chargé les période SAMEDI pour l'agent => On va les charger
+            if (!isset($lastperiod[$this->agentid]))
+            {
+                $sql = "SELECT DATEDEBUT,DATEFIN,AGENTPERIODEID FROM AGENTPERIODE WHERE AGENTID = ? AND TYPEPERIODE = 'SAMEDI'";
+                $params = array($this->agentid);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                // echo "sql = " . $sql . "<br>";
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") 
+                {
+                    $errlog = "Agent->travailsamedi (AGENT) : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    return FALSE;
+                }
+                // On vient de charger les périodes de l'agent => On initialise l'entrée du tableau à vide
+                $lastperiod[$this->agentid] = array();
+                // Pour toutes les lignes récupérées => On les charges dans le tableau
+                while($result = mysqli_fetch_row($query))
+                {
+                    $lastperiod[$this->agentid][$result[2]]["datedebut"] = $this->fonctions->formatdatedb($result[0]);
+                    $lastperiod[$this->agentid][$result[2]]["datefin"] = $this->fonctions->formatdatedb($result[1]);
+                }
+            }
+
+            // On parcourt le tableau des périodes de l'agent
+            foreach($lastperiod[$this->agentid] as $periode)
+            {
+                // Si la date courante est entre le début et la fin de la période => On a trouvé
+                if ($periode["datedebut"] <= $datedb and $periode["datefin"] >= $datedb)
+                {
+                    return true;
+                }
+            }
+            // On a parcouru toutes les périodes de l'agent => On n'a rien trouvé donc il ne travaille pas le SAMEDI
+            return false;
         }
-        return $this->travailsamedi;
+        else // La date n'est pas un SAMEDI => donc retourne FALSE
+        {
+            return false;
+        }
     }
 
-    function travaildimanche()
+    function travaildimanche($date)
     {
-        if (is_null($this->travaildimanche))
+        static $lastperiod = null;
+
+        $datedb = $this->fonctions->formatdatedb($date);
+        if (date("w",strtotime($datedb)) == 0) // 0 = dimanche
         {
-            $complement = new complement($this->dbconnect);
-            $complement->load($this->agentid, "TRAVAILDIMANCHE");
-            $this->travaildimanche = (strcasecmp($complement->valeur(), "O") == 0);
+            // Si on n'a pas déjà chargé les période DIMANCHE pour l'agent => On va les charger
+            if (!isset($lastperiod[$this->agentid]))
+            {
+                $sql = "SELECT DATEDEBUT,DATEFIN,AGENTPERIODEID FROM AGENTPERIODE WHERE AGENTID = ? AND TYPEPERIODE = 'DIMANCHE'";
+                $params = array($this->agentid);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                // echo "sql = " . $sql . "<br>";
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") 
+                {
+                    $errlog = "Agent->travaildimanche (AGENT) : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    return FALSE;
+                }
+                // On vient de charger les périodes de l'agent => On initialise l'entrée du tableau à vide
+                $lastperiod[$this->agentid] = array();
+                // Pour toutes les lignes récupérées => On les charges dans le tableau
+                while($result = mysqli_fetch_row($query))
+                {
+                    $lastperiod[$this->agentid][$result[2]]["datedebut"] = $this->fonctions->formatdatedb($result[0]);
+                    $lastperiod[$this->agentid][$result[2]]["datefin"] = $this->fonctions->formatdatedb($result[1]);
+                }
+            }
+
+            // On parcourt le tableau des périodes de l'agent
+            foreach($lastperiod[$this->agentid] as $periode)
+            {
+                // Si la date courante est entre le début et la fin de la période => On a trouvé
+                if ($periode["datedebut"] <= $datedb and $periode["datefin"] >= $datedb)
+                {
+                    return true;
+                }
+            }
+            // On a parcouru toutes les périodes de l'agent => On n'a rien trouvé donc il ne travaille pas le DIMANCHE
+            return false;
         }
-        return $this->travaildimanche;
+        else // La date n'est pas un DIMANCHE => donc retourne FALSE
+        {
+            return false;
+        }
     }
     
     /**

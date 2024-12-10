@@ -45,20 +45,20 @@ class planning
         
         $this->agent = $agent;
         
-        // Par défaut, un agent ne travaille pas le samedi
-        $travailsamedi = false;
-        if (method_exists($agent,'travailsamedi'))
-        {
-            // Si la méthode existe, alors on regarde quelle est sa valeur
-            $travailsamedi = $agent->travailsamedi();
-        }
+        // // Par défaut, un agent ne travaille pas le samedi
+        // $travailsamedi = false;
+        // if (method_exists($agent,'travailsamedi'))
+        // {
+        //     // Si la méthode existe, alors on regarde quelle est sa valeur
+        //     $travailsamedi = $agent->travailsamedi();
+        // }
         // Par défaut, un agent ne travaille pas le dimanche
-        $travaildimanche = false;
-        if (method_exists($agent,'travaildimanche'))
-        {
-            // Si la méthode existe, alors on regarde quelle est sa valeur
-            $travaildimanche = $agent->travaildimanche();
-        }
+        // $travaildimanche = false;
+        // if (method_exists($agent,'travaildimanche'))
+        // {
+        //     // Si la méthode existe, alors on regarde quelle est sa valeur
+        //     $travaildimanche = $agent->travaildimanche();
+        // }
         
         $this->datedebut = $datedebut;
         $this->datefin = $datefin;
@@ -177,7 +177,10 @@ class planning
                 $element = new planningelement($this->dbconnect);
                 $element->date($this->fonctions->formatdate($datetemp));
                 $element->moment($moment);
-                
+
+                $travailsamedi = $agent->travailsamedi($datetemp);
+                $travaildimanche = $agent->travaildimanche($datetemp);
+               
                 //if (in_array($datetemp,$jrs_feries))
                 // On cherche si la clé existe et non plus la valeur
                 if (isset($jrs_feries[$datetemp]))
