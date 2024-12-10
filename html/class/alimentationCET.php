@@ -169,7 +169,34 @@ class alimentationCET
                 $this->typeconges = $typeconges;
         }
     }
+
+    function typelibelle()
+    {
+        if (is_null($this->typeconges)) {
+            $errlog = "AlimentationCET->typelibelle : Le type de demande n'est pas défini !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        } else {
+            $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID=?";
+            $params = array($this->typeconges);
+            $query = $this->fonctions->prepared_select($sql, $params);
+            $erreur = mysqli_error($this->dbconnect);
+            if ($erreur != "") {
+                $errlog = "AlimentationCET->typelibelle : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            if (mysqli_num_rows($query) == 0) {
+                $errlog = "AlimentationCET->typelibelle : Libellé du type d'alimentationCET $this->typeconges non trouvé";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            $result = mysqli_fetch_row($query);
+            return "$result[0]";
+        }
+    }
     
+
     function valeur_a($valeur_a = null)
     {
         if (is_null($valeur_a)) {

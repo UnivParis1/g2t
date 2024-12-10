@@ -4060,7 +4060,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                 $htmltext = $htmltext . "<tr>
                                     <td class='cellulesimple'>" . $id . "</td>
                                     <td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>
-                                    <td class='cellulesimple'>" . $alimcet->typeconges() . "</td>
+                                    <td class='cellulesimple'>" . $alimcet->typelibelle() /* $alimcet->typeconges() */ . "</td>
                                     <td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>
                                     <td class='cellulesimple'>" . $alimcet->statut() . "</td>
                                     <td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td>
