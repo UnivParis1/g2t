@@ -98,7 +98,9 @@
         $description = $_POST["description"];
     
     $cree_demande = null;
-    if (isset($_POST["cree_demande"]))
+    if (isset($_POST["creation_form"]))
+        $cree_demande = $_POST["creation_form"];
+    elseif (isset($_POST["cree_demande"]))
     	$cree_demande = $_POST["cree_demande"];
     	
     $modif_statut = null;
@@ -145,6 +147,10 @@
     }
         
     require ("includes/menu.php");
+
+    // var_dump($_POST);
+//    echo "<br>" . print_r($_POST,true);
+//    echo "<br><br><br>";
     
     $id_model = trim($fonctions->getidmodelalimcet());
     $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
@@ -158,7 +164,8 @@
           //window.addEventListener("load", function(event) {
           //  window.open('http://esignature.univ-paris1.fr');
           //});
-   </script>	
+        var submit_form = null;
+    </script>	
 
     
 <?php 
@@ -169,8 +176,6 @@
 
     echo "L'URL d'appel du WS G2T est : " . $full_g2t_ws_url;
  */
-//    echo "<br>" . print_r($_POST,true);
-//    echo "<br><br><br>";
 
     
     // Si on est en mode MODE_RH et qu'on n'a pas encore choisi l'agent, on affiche la zone de sélection.
@@ -178,7 +183,7 @@
     {
         echo "<form name='demandeforagent'  method='post' action='gerer_alimentationCET.php'>";
         echo "Personne à rechercher : <br>";
-        echo "<form name='selectagentcet'  method='post' >";
+        //echo "<form name='selectagentcet'  method='post' >";
 
         $agentsliste = $fonctions->listeagentsg2t(true,false);
         echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
@@ -277,7 +282,11 @@
                 $alimentationCET->store();
                 $errlog .= "L'utilisateur " . $user->identitecomplete() . " (identifiant = " . $user->agentid() . ") a supprimé la demande d'alimentation du CET de ".$agent->identitecomplete()." (esignatureid = ".$esignatureid_annule.")";
             }
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            if (trim($errlog)> 0)
+            {
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+            }
     	}
     }
     
@@ -443,7 +452,7 @@
     	            //echo "<br>" . print_r($json,true) . "<br>";
     	            //echo "<br>"; var_dump($json); echo "<br>";
     	            $id = json_decode($json, true);
-                    if (trim($id . "") == "")
+                    if (!is_array($id) and trim($id . "") == "")
                     {
                         $id = -99999;
                     }
@@ -695,10 +704,12 @@
                 $pr = $agent->getPlafondRefCet();
                 //var_dump("Plafond de référence pour l'agent : $pr <br>");
                 // Consommation des congés au début de la période (case C)
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Avant getnbjoursconsommes 1 " ));
                 $consodeb = $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()-2).'0101', ($fonctions->anneeref()).$fonctions->finperiode());
                 //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés au ".$fonctions->formatdate(($fonctions->anneeref()-1).$fonctions->finperiode())." : $consodeb <br>");
 
                 // Consommation des congés entre le debut de la période et la demande
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Avant getnbjoursconsommes 2 " ));
                 $consoadd = $agent->getnbjoursconsommes($fonctions->anneeref() - 1, ($fonctions->anneeref()).$fonctions->debutperiode(), ($fonctions->anneeref()+1).$fonctions->finperiode());
                 //var_dump("Congés ".($fonctions->anneeref() - 1)."/".$fonctions->anneeref()." consommés depuis le ".$fonctions->formatdate(($fonctions->anneeref()).$fonctions->debutperiode())." : ".$consoadd . "<br>");
 
@@ -706,9 +717,9 @@
                 $joursCET = 0;
                 $alimentationCET = new alimentationCET($dbcon);
                 $list_id_alim = $agent->getDemandesAlim('ann'.substr($fonctions->anneeref() - 1,2, 2), array($alimentationCET::STATUT_VALIDE));
-                foreach ($list_id_alim as $id_alim)
+                foreach ($list_id_alim as $alimid => $id_alim)
                 {
-                        $alimentationCET->load($id_alim);
+                        $alimentationCET->load(null, $alimid);
                         $joursCET += $alimentationCET->valeur_f();
                 }
                 $nbjoursobli = (20 * $agent->getQuotiteMoyPeriode(($fonctions->anneeref() - 1).$fonctions->debutperiode(), $fonctions->anneeref().$fonctions->finperiode()) /100);
@@ -772,7 +783,7 @@
                 }
 
                 //echo 'Structure complète d\'affectation : '.$structure->nomcompletcet().'<br>';
-                echo "<form name='creation_alimentation'  method='post' >";
+                echo "<form name='creation_alimentation' id='creation_alimentation'  method='post'>";
                 echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
                 echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
                 echo "Solde actuel de votre CET : $valeur_a jour(s)";
@@ -798,7 +809,8 @@
 <?php 
                 }
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-                echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' disabled>";
+                echo "<input type='hidden' name='creation_form' value = 'newdemande' >";
+                echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' onclick='return alertuser();' disabled>";
                 echo "</form>";
                 echo "<br>";
             }
@@ -828,33 +840,40 @@
                         $htmltext = '';
                         if (sizeof($listid) != 0)
                         {
-                            echo "Suppression d'une demande d'alimentation.<br>";
-                            echo "<form name='form_esignature_annule' id='form_esignature_annule' method='post' >";
-                            echo "<input type='hidden' name='userid' value='" . $userid . "'>";
-                            echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
-                            echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
-                            foreach ($listid as $id)
+                            $alimtrouve = false;
+                            foreach ($listid as $alimid => $id)
                             {
-                                $alimcet->load($id);
-    //                            echo "alimcet->typeconges() => " . $alimcet->typeconges() . "  AnneeRef = " . substr($fonctions->anneeref(),2,2) . "<br>";
-    //                            if ($alimcet->typeconges() == "ann" . substr(($fonctions->anneeref()-1),2,2))
-    //                            {
-                                echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
-    //                            }
+                                if (trim($id . "") != "")
+                                {
+                                    if (!$alimtrouve)
+                                    {
+                                        echo "Suppression d'une demande d'alimentation.<br>";
+                                        echo "<form name='form_esignature_annule' id='form_esignature_annule' method='post' >";
+                                        echo "<input type='hidden' name='userid' value='" . $userid . "'>";
+                                        echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
+                                        echo "<select name='esignatureid_annule' id='esignatureid_annule'>";
+                                        $alimtrouve = true;
+                                    }
+                                    $alimcet->load($id);
+                                    echo "<option value='" . $id  . "'>" . $id ." => ".$alimcet->statut()."</option>";
+                                }
                             }
 
-                            echo "</select>";
-                            echo "<br><br>";
-                            echo "<input type='hidden' name='mode' value='" . $mode . "'>";
-//                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
-                            echo "<input type='submit' name='annuler_demande' id='annuler_demande' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick=\"click_element('annuler_demande'); return false; \">";
-//                            echo "<button class='cancel' name='annuler_demande' id='annuler_demande' onclick='alert(\"plouf\"); if (this.tagname!=\"OK\") {alert(\"truc\"); click_element(\"annuler_demande\"); alert(\"toto\"); return false; } alert(\"zozo\");'>Annuler la demande</button>";
-                            if (isset($error_suppr))
+                            if ($alimtrouve)
                             {
-                                echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
+                                echo "</select>";
+                                echo "<br><br>";
+                                echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+    //                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
+                                echo "<input type='submit' name='annuler_demande' id='annuler_demande' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick=\"click_element('annuler_demande'); return false; \">";
+    //                            echo "<button class='cancel' name='annuler_demande' id='annuler_demande' onclick='alert(\"plouf\"); if (this.tagname!=\"OK\") {alert(\"truc\"); click_element(\"annuler_demande\"); alert(\"toto\"); return false; } alert(\"zozo\");'>Annuler la demande</button>";
+                                if (isset($error_suppr))
+                                {
+                                    echo $fonctions->showmessage(fonctions::MSGERROR, $error_suppr);
+                                }
+                                echo "<br><br>";
+                                echo "</form>";
                             }
-                            echo "<br><br>";
-                            echo "</form>";
                         }
                     }
                     else
@@ -885,48 +904,92 @@
     }
 
 ?>
-        <script>
-            var confirmdialog = document.getElementById('confirmdialog');
-            /*
-            var confirmBtn = document.getElementById('questionconfirmBtn');
-            var labeltext = document.getElementById('questionlabeltext');
-            var cancelBtn = document.getElementById('questioncancelBtn');        
-            */
-            var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
-            var labeltext = confirmdialog.querySelector('#questionlabeltext');
-            var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
-
-            confirmdialog.addEventListener('close', function onClose() {
-                if (confirmdialog.returnValue!=='cancel')
-                {
-                    var submit_form = document.getElementById('form_esignature_annule');
-                    submit_form.submit();
-                }
-            });
-
-            var click_element = function(elementid)
+    <script>
+        function alertuser()
+        {
+            var coderetour = true;
+            var divdemande = document.getElementById('demandes_alim_cet');
+            if (divdemande)
             {
-                if (typeof confirmdialog.showModal === "function") {
-                    var submit_button = document.getElementById(elementid);
-                    if (submit_button.classList.contains("cancel"))
+                //console.log("J'ai le div du tableau");
+                var tabdemande = divdemande.getElementsByTagName("table");
+                if (tabdemande)
+                {
+                    //console.log("J'ai le tableau");
+                    // On récupère les lignes du tableau
+                    var trliste = tabdemande[0].getElementsByTagName("tr");
+                    for (var trindex = 0 ; trindex < trliste.length ; trindex++)
                     {
-                        labeltext.innerHTML = 'Confirmez vous la suppresion de cette demande ? ';
+                        //console.log("trindex = " + trindex);
+                        trdemande = trliste[trindex];
+                        if (trdemande.getElementsByTagName("td").length>=5)
+                        {
+                            //console.log("La ligne contient plus de 5 cellules");
+                            // Si la demande est VALIDEE et qu'elle concerne l'année en cours
+                            var tdtypeannee = trdemande.getElementsByClassName("typeannee")[0];
+                            var tdstatut = trdemande.getElementsByClassName("statutalim")[0];
+                            if (tdtypeannee && tdstatut)
+                            {
+                                if (tdtypeannee.classList.contains('<?php echo trim('ann' . substr($anneeref,2,2)) ?>')
+                                    && (tdstatut.innerText == '<?php echo alimentationCET::STATUT_VALIDE ?>' ||
+                                        tdstatut.innerText == '<?php echo alimentationCET::STATUT_EN_COURS ?>'
+                                       )
+                                )
+                                {
+                                    click_element('cree_demande');
+                                    coderetour = false;
+                                    // On sort de la boucle
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        labeltext.innerHTML = 'Confirmez vous cette action ? ';
-                    }
-                    cancelBtn.textContent = "Non";
-                    cancelBtn.hidden = false;
-                    confirmBtn.textContent = "Oui";
-                    confirmBtn.hidden = false;
-                    confirmdialog.showModal();
-                }        
-                else {
-                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
                 }
-            };
-        </script>
+            }
+            return coderetour;
+        }
+    </script>
+
+
+    <script>
+        var confirmdialog = document.getElementById('confirmdialog');
+
+        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
+        var labeltext = confirmdialog.querySelector('#questionlabeltext');
+        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
+
+        confirmdialog.addEventListener('close', function onClose() {
+            if (confirmdialog.returnValue!=='cancel')
+            {
+                submit_form.submit();
+            }
+        });
+
+        var click_element = function(elementid)
+        {
+            if (typeof confirmdialog.showModal === "function") {
+                var submit_button = document.getElementById(elementid);
+                submit_form = submit_button.closest("form");
+                //console.log(submit_form.id);
+                if (submit_button.classList.contains("cancel"))
+                {
+                    labeltext.innerHTML = 'Confirmez vous la suppresion de cette demande ? ';
+                }
+                else
+                {
+                    labeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+                }
+                cancelBtn.textContent = "Non";
+                cancelBtn.hidden = false;
+                confirmBtn.textContent = "Oui";
+                confirmBtn.hidden = false;
+                confirmdialog.showModal();
+            }        
+            else {
+                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+            }
+        };
+    </script>
 <?php
     
 ?>

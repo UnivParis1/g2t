@@ -187,7 +187,7 @@
     }
     //var_dump($alimCETliste);
     $htmltext = '';
-    foreach ($alimCETliste as $esignatureid)
+    foreach ($alimCETliste as $alimid => $esignatureid)
     {
         if ($htmltext == '')
         {
@@ -210,7 +210,7 @@
         }
         
         $alimcet = new alimentationCET($dbcon);
-        $alimcet->load($esignatureid);
+        $alimcet->load(null,$alimid);
         if (!is_null($agent))
         {
             $agentalim = $agent;
@@ -343,10 +343,10 @@
         }
     }
     $htmltext = '';
-    foreach ($optionCETliste as $esignatureid)
+    foreach ($optionCETliste as $optionid => $esignatureid)
     {
         $optioncet = new optionCET($dbcon);
-        $optioncet->load($esignatureid);
+        $optioncet->load(null, $optionid);
         if ($htmltext == '')
         {
             $htmltext = $htmltext . "<table class='tableausimple' id='table_option'>";

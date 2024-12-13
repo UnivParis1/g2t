@@ -127,36 +127,42 @@
 //    echo "<option value='Demande alimentation' disabled>Demande d'alimentation</option>";
     $alimCETliste = $fonctions->get_alimCET_liste('ann' . substr($anneecampagne-1,2,2),array(),false);
     //echo "On a récup <br>";
-    foreach ($alimCETliste as $alimid)
+    foreach ($alimCETliste as $alimid => $externalid)
     {
         //echo "Dans la boucle alim <br>";
-        $alimCET = new alimentationCET($dbcon);
-        $alimCET->load($alimid);
-        //echo "Apres le load alim <br>";
-        echo "<option value='alim|" . $alimid . "' ";
-        if ($alimid == $esignatureid)
+        if (trim($externalid . "") != "")
         {
-            echo " selected='selected' ";
+            $alimCET = new alimentationCET($dbcon);
+            $alimCET->load(null,$alimid);
+            //echo "Apres le load alim <br>";
+            echo "<option value='alim|" . $externalid . "' ";
+            if ($externalid == $esignatureid)
+            {
+                echo " selected='selected' ";
+            }
+            $demandeur = new agent($dbcon);
+            $demandeur->load($alimCET->agentid());
+            echo ">" . $alimCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $alimCET->statut()  . ")</option>";
         }
-        $demandeur = new agent($dbcon);
-        $demandeur->load($alimCET->agentid());
-        echo ">" . $alimCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $alimCET->statut()  . ")</option>";
     }
     $optionCETliste = $fonctions->get_optionCET_liste($anneecampagne,array(),false);
     echo "<optgroup label='Demandes d&apos;option'>";
 //    echo "<option value='Demande option' disabled>Demande d'option</option>";
-    foreach ($optionCETliste as $optionid)
+    foreach ($optionCETliste as $optionid => $externalid)
     {
-        $optionCET = new optionCET($dbcon);
-        $optionCET->load($optionid);
-        echo "<option value='opt|" . $optionid . "' ";
-        if ($optionid == $esignatureid)
+        if (trim($externalid . "") != "")
         {
-            echo " selected='selected' ";
+            $optionCET = new optionCET($dbcon);
+            $optionCET->load(null,$optionid);
+            echo "<option value='opt|" . $externalid . "' ";
+            if ($externalid == $esignatureid)
+            {
+                echo " selected='selected' ";
+            }
+            $demandeur = new agent($dbcon);
+            $demandeur->load($optionCET->agentid());
+            echo ">" . $optionCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $optionCET->statut()  . ")</option>";
         }
-        $demandeur = new agent($dbcon);
-        $demandeur->load($optionCET->agentid());
-        echo ">" . $optionCET->esignatureid() . " => " . $demandeur->identitecomplete() . " (Statut = " . $optionCET->statut()  . ")</option>";
     }
     echo "</select>";
     //echo "<input id='esignatureid' name='esignatureid' placeholder='Id. eSignature' value='$esignatureid' size=40 />";
@@ -172,62 +178,6 @@
         echo "Le numéro eSignatureid = $esignatureid <br>";
         $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
         $error = '';
-/*
-        // On appelle le WS eSignature pour récupérer les infos du Workflow
-        $curl = curl_init();
-        $params_string = "";
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/forms/get-datas/' . $esignatureid,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $params_string,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        $fonctions->ajoutesignatureheader($curl);
-        $json = curl_exec($curl);
-        $error = curl_error ($curl);
-        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ((int) $httpcode !== 200 and $error=="")
-        {
-            $error = "Code retour HTTP => $httpcode";
-        }
-        curl_close($curl);
-        if (stristr(substr($json,0,20),'HTML') === false)
-        {
-            if ($error != "")
-            {
-                $erreur = "Erreur Curl =>  " . $error;
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-            }
-            else // Tout va bien !
-            {
-                //echo "<br><pre>";
-                //var_dump($json);
-                //echo "</pre><br>";
-                $response = json_decode($json, true);
-                if (isset($response['error']))
-                {
-                    $erreur = "La réponse json est une erreur ==> On doit la retourner : " . $response['error'];
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-                }
-                else // Tout est ok => on va récupérer les données du workflow
-                {
-                    echo "<br><pre>";
-                    var_dump($response);
-                    echo "</pre><br>";
-                    // => A voir
-                }
-            }
-        }
-        else
-        {
-            $erreur = "Erreur dans eSignature : \n\t |  ".$json;
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-        }
-*/        
         $curl = curl_init();
         $params_string = "";
         $opts = [

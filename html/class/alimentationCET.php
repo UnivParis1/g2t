@@ -121,7 +121,14 @@ class alimentationCET
             } 
             else
             {
-                return preg_replace('/([^:])(\/{2,})/', '$1/', $this->esignatureurl);
+                if (trim($this->esignatureid . "") != "")
+                {
+                    return preg_replace('/([^:])(\/{2,})/', '$1/', $this->esignatureurl);
+                }
+                else
+                {
+                    return "";
+                }
             }
         }
         else

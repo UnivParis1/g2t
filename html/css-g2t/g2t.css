@@ -1199,3 +1199,8 @@ select {
         #d18394 4px
     );
 }
+
+.centertable {
+    margin-left: auto;  
+    margin-right: auto;
+}

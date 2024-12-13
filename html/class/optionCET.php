@@ -37,7 +37,9 @@ class optionCET
     public const STATUT_ABANDONNE = "Abandonnée";
     public const STATUT_PREPARE = "Préparée";
     public const STATUT_INCONNU = "Inconnu";
-    
+
+    public const TYPE_RETRAIT_INDEMNISATION = 'Indemnisation';
+    public const TYPE_RETRAIT_RAFP = 'Prise en compte au sein de la RAFP';
     
     private $dbconnect = null;
     private $fonctions = null;
@@ -146,7 +148,14 @@ class optionCET
             }
             else
             {
-                return preg_replace('/([^:])(\/{2,})/', '$1/', $this->esignatureurl);
+                if (trim($this->esignatureid . "") != "")
+                {
+                    return preg_replace('/([^:])(\/{2,})/', '$1/', $this->esignatureurl);
+                }
+                else
+                {
+                    return "";
+                }
             }
         }
         else

@@ -105,7 +105,12 @@
         echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
         foreach ($agentsliste as $key => $identite)
         {
-            echo "<option value='$key'>$identite</option>";
+            $selected = '';
+            if ($agentid == $key)
+            {
+                $selected = " selected ";
+            }
+            echo "<option value='$key' $selected >$identite</option>";
         }
         echo "</select>";
 
@@ -184,7 +189,23 @@
 //                        }
                     }
                     // Si tout s'est bien passé dans le store du CET (création d'un nouveau CET ou ajout de jour dans un CET existant)
-                    if ($msg_erreur == "") {
+                    if ($msg_erreur == "") 
+                    {
+                        $alimentationCET = new alimentationCET($dbcon);
+                        $alimentationCET->agentid($agentid);
+                        $alimentationCET->statut(alimentationCET::STATUT_VALIDE);
+                        $alimentationCET->typeconges("ann" . substr(($fonctions->anneeref() - 1), 2, 2));
+                        $alimentationCET->valeur_a(0);
+                        $alimentationCET->valeur_b(0);
+                        $alimentationCET->valeur_c(0);
+                        $alimentationCET->valeur_d(0);
+                        $alimentationCET->valeur_e(0);
+                        $alimentationCET->valeur_f($nbr_jours_cet);
+                        $alimentationCET->valeur_g(0);
+                        $msg_erreur = $alimentationCET->store();
+
+                        echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+                
                         $tempsolde = ($soldeannuel->droitpris());
                         $tempsolde = $tempsolde + $nbr_jours_cet;
                         $soldeannuel->droitpris(($tempsolde));
@@ -218,8 +239,36 @@
                     $droit_cet = $droit_cet + $nbr_jours_cet;
                     $cet->jrspris(($droit_cet));
                     $msg_erreur = $cet->store();
-                    if ($msg_erreur == "") {
-                        $msg_erreur = $agent->ajoutecommentaireconge("cet", ($nbr_jours_cet * - 1), "Retrait de jours - Motif : " . $typeretrait);
+                    if ($msg_erreur == "") 
+                    {
+                        $optionCET = new optionCET($dbcon);
+                        $optionCET->agentid($agentid);
+                        $optionCET->anneeref($fonctions->anneeref());
+                        $optionCET->valeur_a(0);
+                        $optionCET->valeur_g(0);
+                        $optionCET->valeur_h(0);
+                        if ($typeretrait == optionCET::TYPE_RETRAIT_RAFP)
+                        {
+                            $optionCET->valeur_i($nbr_jours_cet);
+                        }
+                        else
+                        {
+                            $optionCET->valeur_i(0);
+                        }
+                        if ($typeretrait == optionCET::TYPE_RETRAIT_INDEMNISATION)
+                        {
+                            $optionCET->valeur_j($nbr_jours_cet);
+                        }
+                        else
+                        {
+                            $optionCET->valeur_j(0);
+                        }
+                        $optionCET->valeur_k(0);
+                        $optionCET->valeur_l(0);
+                        $optionCET->statut(optionCET::STATUT_VALIDE);
+                        $msg_erreur = $optionCET->store();
+
+                        $msg_erreur = $msg_erreur . $agent->ajoutecommentaireconge("cet", ($nbr_jours_cet * - 1), "Retrait de jours - Motif : " . $typeretrait);
                         if ($nbr_jours_cet > 1)
                             $detail = $nbr_jours_cet . " jours vous ont été retirés du CET au motif : " . $typeretrait;
                         else
@@ -229,7 +278,7 @@
                         $msg_erreur = $msg_erreur . $cet->load($agentid);
                         $pdffilename = $cet->pdf($userid, FALSE, $detail);
                         // echo "Avant l'envoi de mail <br>";
-                        $user->sendmail($agent, "Alimentation du CET", "Votre CET vient d'être modifié.", $pdffilename);
+                        $user->sendmail($agent, "Droit d'option sur CET", "Votre CET vient d'être modifié.", $pdffilename);
                     }
                 } else {
                     $msg_erreur = $msg_erreur . "Vos droits à CET sont insuffisants : Demandé " . $nbr_jours_cet . " jour(s)   Disponible : " . $nbrejoursdispo . " jour(s)<br>";
@@ -321,15 +370,16 @@
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
             if ($msg_bloquant == "")
             {
-                echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+                echo "<input type='submit' name='cree_alim_btn' id='cree_alim_btn' class='g2tbouton g2tvalidebouton alimbtn' value='Enregistrer' onclick='return alertuser(\"demandes_alim_cet\");' >";
             }
             echo "</form>";
             echo "</span>";
             echo "<br>";
+            echo $agent->afficheAlimCetHtml();
         } 
         elseif (($soldelibelle.'') !='') 
         {
-            echo $fonctions->showmessage(fonctions::MSGERROR, "Le solde $soldelibelle est nul ==> Impossible d'alimenter le CET....<br>");
+            echo $fonctions->showmessage(fonctions::MSGERROR, "Le solde " . strtolower($soldelibelle) . " est nul.<br>Impossible d'alimenter le CET.");
         }
         // echo 'Avant le test null(CET) <br>';
 
@@ -350,8 +400,8 @@
 
                 echo "Indiquer le type de retrait : ";
                 echo "<select name='typeretrait'>";
-                echo "<OPTION value='Indemnisation'>Indemnisation</OPTION>";
-                echo "<OPTION value='Prise en compte au sein de la RAFP'>Prise en compte au sein de la RAFP</OPTION>";
+                echo "<OPTION value='" . optionCET::TYPE_RETRAIT_INDEMNISATION . "'>" . optionCET::TYPE_RETRAIT_INDEMNISATION . "</OPTION>";
+                echo "<OPTION value='" . optionCET::TYPE_RETRAIT_RAFP . "'>" . optionCET::TYPE_RETRAIT_RAFP . "</OPTION>";
                 echo "</select>";
                 echo "<br>";
                 echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -362,12 +412,14 @@
 
                 if ($msg_bloquant == "")
                 {
-                    echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
+                    echo "<input type='submit' name='cree_option_btn' id='cree_option_btn' class='g2tbouton g2tvalidebouton optionbtn' value='Enregistrer' onclick='return alertuser(\"option_alim_cet\");'>";
                 }
                 echo "</form>";
                 echo "</span>";
+                echo "<br>";
+                echo $agent->afficheOptionCetHtml();
             } else {
-                echo $fonctions->showmessage(fonctions::MSGERROR, "Le solde du CET de " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . " est nul ==> Impossible de faire une indemnisation<br>");
+                echo $fonctions->showmessage(fonctions::MSGERROR, "Le solde du CET de " . $agent->identitecomplete() . " est nul.<br>Impossible de creer un droit d'option");
             }
         }
         // Affichage du solde de l'année précédente
@@ -379,10 +431,130 @@
     }
 
 ?>
+    <script>
+        function alertuser(divnameid)
+        {
+            //alert("Activation alertuser : ");
+            var coderetour = true;
+            var divdemande = document.getElementById(divnameid);
+            if (divdemande)
+            {
+                //alert("J'ai le div du tableau");
+                var tabdemande = divdemande.getElementsByTagName("table");
+                if (tabdemande)
+                {
+                    //console.log("J'ai le tableau");
+                    //alert("J'ai le tableau");
+                    // On récupère les lignes du tableau
+                    var trliste = tabdemande[0].getElementsByTagName("tr");
+                    for (var trindex = 0 ; trindex < trliste.length ; trindex++)
+                    {
+                        //console.log("trindex = " + trindex);
+                        //alert("trindex = " + trindex);
+                        trdemande = trliste[trindex];
+                        //alert("avant le contains alim");
+                        if (tabdemande[0].classList.contains('tabsynthesealim'))
+                        {
+                            //alert("cas d'une alimentation");
+                            // Si la demande est VALIDEE et qu'elle concerne l'année en cours
+                            var tdtypeannee = trdemande.getElementsByClassName("typeannee")[0];
+                            var tdstatut = trdemande.getElementsByClassName("statutalim")[0];
+                            if (tdtypeannee && tdstatut)
+                            {
+                                if (tdtypeannee.classList.contains('<?php echo trim('ann' . substr($fonctions->anneeref(),2,2)-1); ?>')
+                                    && (tdstatut.innerText == '<?php echo alimentationCET::STATUT_VALIDE ?>' ||
+                                        tdstatut.innerText == '<?php echo alimentationCET::STATUT_EN_COURS ?>'
+                                    )
+                                )
+                                {
+                                    //alert("Avant le click element");
+                                    click_element('cree_alim_btn');
+                                    coderetour = false;
+                                    // On sort de la boucle
+                                    break;
+                                }
+                            }
+                        }
+                        else if (tabdemande[0].classList.contains('tabsyntheseoption'))
+                        {
+                            //alert("cas d'une option");
+                            // Si la demande est VALIDEE et qu'elle concerne l'année en cours
+                            var tdtypeannee = trdemande.getElementsByClassName("typeannee")[0];
+                            var tdstatut = trdemande.getElementsByClassName("statutoption")[0];
+                            if (tdtypeannee && tdstatut)
+                            {
+                                if (tdtypeannee.classList.contains('<?php echo 'annee_' . trim($fonctions->anneeref()); ?>')
+                                    && (tdstatut.innerText == '<?php echo optionCET::STATUT_VALIDE ?>' ||
+                                        tdstatut.innerText == '<?php echo optionCET::STATUT_EN_COURS ?>'
+                                    )
+                                )
+                                {
+                                    //alert("Avant le click element");
+                                    click_element('cree_option_btn');
+                                    coderetour = false;
+                                    // On sort de la boucle
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            alert("Le type de tableau n'est pas connu !");
+                            coderetour = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            return coderetour;
+        }
+    </script>
 
-<!--
-<a href=".">Retour à la page d'accueil</a>
--->
+
+    <script>
+        var confirmdialog = document.getElementById('confirmdialog');
+
+        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
+        var labeltext = confirmdialog.querySelector('#questionlabeltext');
+        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
+
+        confirmdialog.addEventListener('close', function onClose() {
+            if (confirmdialog.returnValue!=='cancel')
+            {
+                submit_form.submit();
+            }
+        });
+
+        var click_element = function(elementid)
+        {
+            if (typeof confirmdialog.showModal === "function") {
+                var submit_button = document.getElementById(elementid);
+                submit_form = submit_button.closest("form");
+                //console.log(submit_form.id);
+                if (submit_button.classList.contains("optionbtn"))
+                {
+                    labeltext.innerHTML = 'Attention : Il y a déjà une demande d\'option CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+                }
+                else if (submit_button.classList.contains("alimbtn"))
+                {
+                    labeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+                }
+                else
+                {
+                    labeltext.innerHTML = 'Je ne connais pas ce bouton - voulez-vous continuer ?'
+                }
+                cancelBtn.textContent = "Non";
+                cancelBtn.hidden = false;
+                confirmBtn.textContent = "Oui";
+                confirmBtn.hidden = false;
+                confirmdialog.showModal();
+            }        
+            else {
+                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+            }
+        };
+    </script>
+
 </body>
 </html>
 

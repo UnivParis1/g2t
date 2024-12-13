@@ -2005,7 +2005,7 @@ class fonctions
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
         $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
-        $sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE TYPECONGES = ? ";
+        $sql = "SELECT ESIGNATUREID,ALIMENTATIONID FROM ALIMENTATIONCET WHERE TYPECONGES = ? ";
         if (sizeof($listStatuts) != 0)
         {
             $statuts = $this->formatlistedb($listStatuts);
@@ -2026,7 +2026,7 @@ class fonctions
         }
         while ($result = mysqli_fetch_row($query)) {
             $alimid = $result[0];
-            $alimCETliste[] = $alimid;
+            $alimCETliste[$result[1]] = $alimid;
             if ($forcesynchro)
             {
                 $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
@@ -2039,7 +2039,7 @@ class fonctions
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
         $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
-        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE ANNEEREF = ? ";
+        $sql = "SELECT ESIGNATUREID,OPTIONID FROM OPTIONCET WHERE ANNEEREF = ? ";
         if (sizeof($listStatuts) != 0)
         {
             $statuts = $this->formatlistedb($listStatuts);
@@ -2061,7 +2061,7 @@ class fonctions
         }
         while ($result = mysqli_fetch_row($query)) {
             $optionid = $result[0];
-            $optionCETliste[] = $optionid;
+            $optionCETliste[$result[1]] = $optionid;
             if ($forcesynchro)
             {
                 $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);

@@ -4049,27 +4049,34 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	if (sizeof($listid) != 0)
     	{
             $htmltext = $htmltext . "<div id='demandes_alim_cet'>";
-            $htmltext = $htmltext . "<center>";
-            $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr class='titresimple'><td colspan=8>Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "</td></tr>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            //$htmltext = $htmltext . "<center>";
+            $htmltext = $htmltext . "<table class='tableausimple tabsynthesealim centertable'>";
+            $htmltext = $htmltext . "<thead>";
+            $htmltext = $htmltext . "<tr class='titresimple'>";
+            $htmltext = $htmltext . "   <th colspan=8>Informations sur les demandes d'alimentation de CET pour " . $this->identitecomplete() . "</th>";
             $htmltext = $htmltext . "</tr>";
-            foreach ($listid as $id)
+            $htmltext = $htmltext . "<tr>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Type de demande</td><td class='titresimple'>Nombre de jours</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</th>";
+            $htmltext = $htmltext . "</tr>";
+            $htmltext = $htmltext . "</thead>";
+            $htmltext = $htmltext . "<tbody>";
+            foreach ($listid as $alimid => $id)
             {
-                $alimcet->load($id);
+                $alimcet->load(null,$alimid);
                 $htmltext = $htmltext . "<tr>
-                                    <td class='cellulesimple'>" . $id . "</td>
+                                    <td class='cellulesimple'>" . $alimid . "</td>
                                     <td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>
-                                    <td class='cellulesimple'>" . $alimcet->typelibelle() /* $alimcet->typeconges() */ . "</td>
+                                    <td class='cellulesimple typeannee " . $alimcet->typeconges() . "'>" . $alimcet->typelibelle() . "</td>
                                     <td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>
-                                    <td class='cellulesimple'>" . $alimcet->statut() . "</td>
+                                    <td class='cellulesimple statutalim'>" . $alimcet->statut() . "</td>
                                     <td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td>
                                     <td class='cellulesimple'>" . $alimcet->motif() . "</td>
                                     <td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>
                                  </tr>";
             }
+            $htmltext = $htmltext . "</tbody>";
             $htmltext = $htmltext . "</table><br>";
-            $htmltext = $htmltext . "</center>";
+            //$htmltext = $htmltext . "</center>";
 
             $htmltext = $htmltext . "</div>";
     	}
@@ -4104,17 +4111,40 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         $htmltext = '';
         if (sizeof($listid) != 0)
         {
-            $htmltext = "Informations sur les droits d'options sur CET pour " . $this->identitecomplete() . "<br>";
             $htmltext = $htmltext . "<div id='option_alim_cet'>";
-            $htmltext = $htmltext . "<table class='tableausimple'>";
-            $htmltext = $htmltext . "<tr><td class='titresimple'>Identifiant</td><td class='titresimple'>Date création</td><td class='titresimple'>Année de référence</td><td class='titresimple'>RAFP</td><td class='titresimple'>Indemnisation</td><td class='titresimple'>Statut</td><td class='titresimple'>Date Statut</td><td class='titresimple'>Motif</td><td class='titresimple'>Consulter</td>";
+            $htmltext = $htmltext . "<table class='tableausimple tabsyntheseoption centertable' >";
+            $htmltext = $htmltext . "<thead>";
+            $htmltext = $htmltext . "<tr>";
+            $htmltext = $htmltext . "<th class='titresimple' colspan='9'>Informations sur les droits d'options sur CET pour " . $this->identitecomplete() . "</th></tr>";
+            $htmltext = $htmltext . "<tr>"; 
+            $htmltext = $htmltext . "   <th class='titresimple'>Identifiant</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Date création</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Année de référence</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>RAFP</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Indemnisation</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Statut</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Date Statut</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Motif</th>";
+            $htmltext = $htmltext . "   <th class='titresimple'>Consulter</th>";
             $htmltext = $htmltext . "</tr>";
-            foreach ($listid as $id)
+            $htmltext = $htmltext . "</thead>";
+            $htmltext = $htmltext . "<tbody>";
+            foreach ($listid as $optionid => $id)
             {
-                $optioncet->load($id);
-                //$htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $alimcet->typeconges() . "</td><td class='cellulesimple'>" . $alimcet->valeur_f() . "</td><td class='cellulesimple'>" . $alimcet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($alimcet->datestatut()) . "</td><td class='cellulesimple'>" . $alimcet->motif() . "</td><td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".$alimcet->esignatureurl()."</a></td></tr>";
-                $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $id . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td><td class='cellulesimple'>" . $optioncet->anneeref() . "</td><td class='cellulesimple'>" . $optioncet->valeur_i() . "</td><td class='cellulesimple'>" . $optioncet->valeur_j() . "</td><td class='cellulesimple'>" . $optioncet->statut() . "</td><td class='cellulesimple'>" . $this->fonctions->formatdate($optioncet->datestatut()) . "</td><td class='cellulesimple'>" . $optioncet->motif() . "</td><td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td></tr>";
+                $optioncet->load(null, $optionid);
+                $htmltext = $htmltext . "<tr>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'>" . $optionid . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple typeannee annee_" . $optioncet->anneeref() . "'>" . $optioncet->anneeref() . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'>" . $optioncet->valeur_i() . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'>" . $optioncet->valeur_j() . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple statutoption'>" . $optioncet->statut() . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->formatdate($optioncet->datestatut()) . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'>" . $optioncet->motif() . "</td>";
+                $htmltext = $htmltext . "   <td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
+                $htmltext = $htmltext . "</tr>";
             }
+            $htmltext = $htmltext . "</tbody>";
             $htmltext = $htmltext . "</table><br>";
             
             $htmltext = $htmltext . "</div>";
@@ -4136,7 +4166,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
     	$listdemandes = array();
     	$statuts = '';
-    	$sql = "SELECT ESIGNATUREID FROM ALIMENTATIONCET WHERE AGENTID = ? ";
+    	$sql = "SELECT ESIGNATUREID,ALIMENTATIONID FROM ALIMENTATIONCET WHERE AGENTID = ? ";
     	if ($typeconge != '') 
     	{
     		$sql .= " AND TYPECONGES = '$typeconge' " ;
@@ -4167,7 +4197,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query)) 
     		{
-    			$listdemandes[] = $result[0];
+    			$listdemandes[$result[1]] = $result[0];
     		}
     	}
     	return $listdemandes;
@@ -4355,9 +4385,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	{
     		$datedeb_db = $this->fonctions->formatdatedb($datedeb);
     		$datefin_db = $this->fonctions->formatdatedb($datefin);
-    		foreach ($list_id_alim as $id_alim)
+    		foreach ($list_id_alim as $alimdid => $id_alim)
     		{
-    			$alimentationCET->load($id_alim);
+    			$alimentationCET->load(null,$alimdid);
     			$date_alim = $this->fonctions->formatdatedb($alimentationCET->datestatut());
     			if ($date_alim >= $datedeb_db && $date_alim <= $datefin_db)
     				$nbjours += $alimentationCET->valeur_f();
@@ -4414,7 +4444,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     {
         $listdemandes = array();
         $optionCET = new optionCET($this->dbconnect);
-        $sql = "SELECT ESIGNATUREID FROM OPTIONCET WHERE AGENTID = ? ";
+        $sql = "SELECT ESIGNATUREID, OPTIONID FROM OPTIONCET WHERE AGENTID = ? ";
 
         if ($anneeref != '')
             $sql .= " AND ANNEEREF = '$anneeref' " ;
@@ -4442,7 +4472,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         {
             while ($result = mysqli_fetch_row($query))
             {
-                $listdemandes[] = $result[0];
+                $listdemandes[$result[1]] = $result[0];
             }
         }
         return $listdemandes;

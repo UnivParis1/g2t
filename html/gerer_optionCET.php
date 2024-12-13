@@ -817,13 +817,16 @@
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
             echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
             echo "<select name='esignatureid_delete' id='esignatureid_delete'>";
-            foreach ($listid as $id)
+            foreach ($listid as $optionid => $id)
             {
                 $optionCET = new optionCET($dbcon);
-                $optionCET->load($id);
+                $optionCET->load(null,$optionid);
                 if ($optionCET->statut() <> OPTIONCET::STATUT_ABANDONNE)
                 {
-                    echo "<option value='" . $id  . "'>" . $id  . "=> " .  $optionCET->statut() . "</option>";
+                    if (trim($id . "") != "")
+                    {
+                        echo "<option value='" . $id  . "'>" . $id  . "=> " .  $optionCET->statut() . "</option>";
+                    }
                 }
                 unset($optionCET);
             }
