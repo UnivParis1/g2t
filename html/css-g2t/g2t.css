@@ -1041,6 +1041,14 @@ select {
     cursor: pointer;
 }
 
+.cursornone {
+    cursor: none;   
+}
+
+.cursordefault {
+    cursor: default;
+}
+
 .boldtext {
     font-weight: bold;
 }

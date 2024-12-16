@@ -53,6 +53,7 @@ class agent
     const WS_METHODE_EXCEPTION_PERIODE = 'EXCEPTION_PERIODE';
     const WS_METHODE_SEND_MAIL = 'SEND_MAIL';
     const WS_METHODE_FORCE_PERIODE = 'FORCE_PERIODE';
+    const WS_METHODE_ONOFF_ANIMATION = 'ONOFF_ANIMATION';
     
     private $agentid = null;
     private $eppn = null;

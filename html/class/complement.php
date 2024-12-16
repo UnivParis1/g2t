@@ -18,6 +18,7 @@ class complement
     public const AVIS_CONGES_LABEL = 'AVISCONGES';
     public const AVISRH_CONGES_SUP_LABEL = 'AVISRH_SUP_';
     public const REFUSRH_CONGES_SUP_LABEL = 'REFUSRH_SUP_';
+    public const SHOW_ANIMATION = 'SHOW_ANIMATION';
 
     private $agentid = null;
 

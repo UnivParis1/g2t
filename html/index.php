@@ -246,7 +246,7 @@
                 if ($imgfilename!= '' or $animationtext != '')
                 {
                     $animationaffichee = true;
-                    echo "<div id='$nom_animation' class='centeraligntext animation' title='Double-clic pour masquer les animations'>";
+                    echo "<div id='$nom_animation' class='centeraligntext animation cursordefault' >";   //title='Double-clic pour masquer les animations'>";
                     if ($imgfilename!= '')
                     {
                         $path = $fonctions->etablissementimagepath() . "/" . $imgfilename;
@@ -359,14 +359,14 @@
             var rect = menu.getBoundingClientRect();
             var animbuttonoff = document.createElement("button");
             animbuttonoff.setAttribute("id","animbuttonoff");
-            animbuttonoff.setAttribute("class","g2tbouton g2tboutonwidthauto");
+            animbuttonoff.setAttribute("class","g2tbouton g2tboutonwidthauto onoffanimationbtn");
             animbuttonoff.style.padding = "8px 8px 8px 8px"; 
             animbuttonoff.style.position = "absolute";
             animbuttonoff.style.top = rect.top + "px";
             // animbuttonoff.style.left = (body.offsetWidth -100) + "px";
             animbuttonoff.style.right = "20px"; 
             animbuttonoff.textContent = 'Désactiver les animations';
-            animbuttonoff.addEventListener('click', masqueanimation);
+            animbuttonoff.addEventListener('click', modifieranimation_click);
             body.appendChild(animbuttonoff);    
         }
         
@@ -378,7 +378,7 @@
         {
 
             // Pour chaque animation, si on double-clic dessus, on la cache et on désactive le script s'il est actif
-            animation.addEventListener("dblclick", masqueanimation);
+            //animation.addEventListener("dblclick", showhidde_animation);
 
             var rect = animation.getBoundingClientRect();
             var animationtop = Math.round(rect.top);
@@ -424,24 +424,101 @@
             }
         }
 
-        function masqueanimation()
+        function AppelWSAgent(onoff_flag)
         {
-            for (const anim of animationliste) 
+            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?>", agentid: <?php echo $user->agentid(); ?>, onoff: onoff_flag })
+                        .done(function( data ) {
+                            if (data.status.toUpperCase()=='OK')
+                            {
+                                var statutinfo = "OK";
+                            }
+                            else
+                            {
+                                var statutinfo = "KO => " + data.description;
+                            }
+                            console.log("Retour du WS => " + statutinfo);
+                        })
+                        .fail(function( xhr ) {
+                            var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?> - " + xhr.status + " " + xhr.statusText;
+                            console.log(statutinfo);
+                        })
+                        .always(function() {
+                            // Nothing to do
+                        });
+
+        }
+
+        function modifieranimation_click()
+        {
+            var animationliste = document.getElementsByClassName('animation');
+            // Si les animations sont visibles
+            if (animationliste.length > 0 && animationliste[0].style.display!="none")
             {
-                // console.log ("desactivation de " + anim.id);
-                anim.style.display='none';
+                // Appeler le WS pour enregistrer la désactivation des animations
+                AppelWSAgent('NON');
             }
-            if ( typeof(no) !== 'undefined' )
+            // Sinon (<=> Les animations sont masquées)
+            else
             {
-                for (i = 0; i < no; i++) 
+                // Appeler le WS pour enregistrer la désactivation des animations
+                AppelWSAgent('OUI');
+            }
+            showhidde_animation();
+        }
+
+        function showhidde_animation()
+        {
+            var anim_onoff = document.getElementById("animbuttonoff");
+            var animationliste = document.getElementsByClassName('animation');
+            if (animationliste.length > 0 )
+            {
+                if (animationliste[0].style.display!="none")
                 {
-                    if (document.getElementById("dot"+i))
+                    for (const anim of animationliste) 
                     {
-                        document.getElementById("dot"+i).style.display = 'none';
+                        // console.log ("desactivation de " + anim.id);
+                        anim.style.display='none';
+                    }
+                    if ( typeof(no) !== 'undefined' )
+                    {
+                        for (i = 0; i < no; i++) 
+                        {
+                            if (document.getElementById("dot"+i))
+                            {
+                                document.getElementById("dot"+i).style.display = 'none';
+                            }
+                        }
+                    }
+                    if (anim_onoff)
+                    {
+                        anim_onoff.innerHTML = "Activer les animations";
+                    }
+                }
+                else
+                {
+                    for (const anim of animationliste) 
+                    {
+                        // console.log ("desactivation de " + anim.id);
+                        anim.style.display='block';
+                    }
+                    if ( typeof(no) !== 'undefined' )
+                    {
+                        for (i = 0; i < no; i++) 
+                        {
+                            if (document.getElementById("dot"+i))
+                            {
+                                document.getElementById("dot"+i).style.display = 'block';
+                            }
+                        }
+                    }
+                    if (anim_onoff)
+                    {
+                        anim_onoff.innerHTML = "Désactiver les animations";
                     }
                 }
             }
-            document.getElementById("animbuttonoff").style.display = 'none';
+            //document.getElementById("animbuttonoff").style.display = 'none';
         }
         
 <?php
@@ -601,6 +678,20 @@
            }
 
 <?php
+        }
+
+        // On est ici à la fin de l'évènement load sur le document 
+        // => Donc si l'agent veut désactiver les animations, on appelle (en javascript) la fonction showhidde_animation()
+        $complement = new complement($dbcon);
+        $complement->load($user->agentid(),complement::SHOW_ANIMATION);
+        // Si le complément existe et qu'il a été chargé correctement
+        if ($complement->agentid()==$user->agentid())
+        {
+            if (!$fonctions->convertvaluetobool($complement->valeur()))
+            {
+                // On masque les animations en appelant la fonction
+                echo "showhidde_animation()";
+            }
         }
 ?>
     };

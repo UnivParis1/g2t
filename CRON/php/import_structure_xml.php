@@ -305,7 +305,7 @@
                             }
                         }
 
-			// On a trouvé une fonction (soit via un RA, soit via la voie normale)
+			            // On a trouvé une fonction (soit via un RA, soit via la voie normale)
                         //echo "code_fonct = $code_fonct (avant le test des interim) \n";
                         if ($code_fonct != '')
                         {

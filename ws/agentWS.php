@@ -133,6 +133,48 @@
         return $result_json;
     }
 
+    function onoff_animation()
+    {
+        global $dbcon;
+        global $fonctions;
+
+        //error_log(basename(__FILE__) . $fonctions->stripAccents("Debut du WS force_periode"));
+        $agentid = null;
+        $onoff_flag = null;
+        if (array_key_exists("agentid", $_POST)) // Id de l'agent
+        {
+            $agentid = $_POST["agentid"];
+        }
+        if (array_key_exists("onoff", $_POST)) // Date de début de la période obligatoire
+        {
+            $onoff_flag = $_POST["onoff"];
+        }
+        if (is_null($agentid) or is_null($onoff_flag))
+        {
+            $erreur = "Impossible d'activer/désactiver les animations ' (agentid = $agentid onoff_flag = $onoff_flag)";
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
+        }
+        else
+        {
+            $complement = new complement($dbcon);
+            if ($fonctions->convertvaluetobool($onoff_flag)) // Les animations doivent être affichées => On supprime le flag du complément
+            {
+                $complement->delete($agentid,complement::SHOW_ANIMATION);
+            }
+            else
+            {
+                $complement->agentid($agentid);
+                $complement->complementid(complement::SHOW_ANIMATION);
+                $complement->valeur($onoff_flag);
+                $complement->store();
+            }
+
+        }
+        //error_log(basename(__FILE__) . $fonctions->stripAccents(" Avant le retour => " . $result_json["status"]));
+        return $result_json;
+    }
+
     function force_periode()
     {
         global $dbcon;
@@ -283,7 +325,11 @@
                         break;
                     case agent::WS_METHODE_FORCE_PERIODE :
                         $result_json = force_periode();
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour de l'envoi de mail => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour du forçage des périodes => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        break;
+                    case agent::WS_METHODE_ONOFF_ANIMATION :
+                        $result_json = onoff_animation();
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour de l'activation/désactivation animation => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
                         break;
                     default:
                         $erreur = "La méthode du WS n'est pas définie ou mal définie.";
