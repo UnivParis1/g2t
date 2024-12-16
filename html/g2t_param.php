@@ -397,6 +397,7 @@
         //if (isset($_POST['valider_param_plafond']))
         $plafondupdate = false;
         $plafondreferenceupdate=false;
+        $maxaugmentcetupdate =false;
         if (isset($_POST['plafondcet']))
         {
             $constantename = 'PLAFONDCET';
@@ -417,6 +418,26 @@
                 else
                 {
                     $plafondupdate = true;
+                }
+            }
+            $constantename = 'MAX_AUGMENT_CET';
+            $maxaugmentcet = trim($_POST['maxaugmentcet']);
+            if (!is_numeric($maxaugmentcet) || !is_int($maxaugmentcet+0) || $maxaugmentcet < 0)
+            {
+                $msgerror = $msgerror . "L'augmentation maximale de jours doit être un entier positif. <br>";
+                //echo "Le nombre de jours maximum doit être un entier positif. <br>";
+            }
+            else
+            {
+                $erreur = $fonctions->enregistredbconstante($constantename, $maxaugmentcet);
+                if (strlen($erreur)>0)
+                {
+                    if (strlen($msgerror)>0) $msgerror = $msgerror . "<br>";
+                    $msgerror = $msgerror . $erreur;
+                }
+                else
+                {
+                    $maxaugmentcetupdate = true;
                 }
             }
             $constantename = 'PLAFONDREFERENCECET';
@@ -604,7 +625,7 @@
         {
             echo $fonctions->showmessage(fonctions::MSGERROR, $msgerror);
         }
-        if ($plafondupdate or $datecampagneoptionupdate or $datecampagnealimupdate or $signataireupdate or $plafondreferenceupdate)
+        if ($plafondupdate or $maxaugmentcetupdate or $datecampagneoptionupdate or $datecampagnealimupdate or $signataireupdate or $plafondreferenceupdate)
         {
             echo $fonctions->showmessage(fonctions::MSGINFO, "Les données sont enregistrées");
         }
@@ -1780,7 +1801,9 @@
         $disablebuttonsubmit = " disabled ";
     }
     
-    
+    $constantename = 'MAX_AUGMENT_CET';
+    $maxaugmentcet = 10; // Par défaut on ne peut augmenter son CET que de 10 jours par campagne
+    if ($fonctions->testexistdbconstante($constantename)) $maxaugmentcet = $fonctions->liredbconstante($constantename);
     
     $constantename = 'PLAFONDCET';
     $plafondparam = 0;
@@ -1898,6 +1921,8 @@
         	    		</tr>
         	    	</table>
         	 		<br><br>
+            		Augmentation maximale d'un CET sur une campagne (en jours) : <input type='text' name='maxaugmentcet' value='<?php echo $maxaugmentcet;?>'>
+        	 		<br>
             		Nombre de jours maximum sur CET : <input type='text' name='plafondcet' value='<?php echo $plafondparam;?>'>
             		<br>
             		Plafond de référence pour alimenter le CET : <input type='text' name=plafondreferencecet value='<?php echo $plafondreferencecet;?>'>

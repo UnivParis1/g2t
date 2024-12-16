@@ -614,14 +614,21 @@
 
 
                     valeur_l = valeur_k + 15;
+
+                    var maxaugmentcet = <?php
+                        $constantename = 'MAX_AUGMENT_CET';
+                        $maxaugmentcet = 10; // Par défaut on ne peut augmenter son CET que de 10 jours par campagne
+                        if ($fonctions->testexistdbconstante($constantename)) $maxaugmentcet = $fonctions->liredbconstante($constantename);
+                        echo $maxaugmentcet; ?>;
+
                     if (valeur_l > <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>)
                     {
                         document.getElementById("label_l").innerHTML = "La valeur de solde du CET après option doit être inférieure à <?php echo $fonctions->liredbconstante('PLAFONDCET') ?>.";
                         deactive_button = true;
                     }
-                    else if ((valeur_l > (valeur_a + 10)) && (valeur_a >= 15))
+                    else if ((valeur_l > (valeur_a + maxaugmentcet)) && (valeur_a >= 15))
                     {
-                        document.getElementById("label_l").innerHTML = "Il n'est pas possible d'augmenter le solde du CET de plus de 10 jours."; // "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
+                        document.getElementById("label_l").innerHTML = "Il n'est pas possible d'augmenter le solde du CET de plus de " + maxaugmentcet + " jours."; // "Ancien solde = " + valeur_a + " / Nouveau solde = " + valeur_l  + " => Impossible d'accroite son CET de plus de 10 jours.";
                         deactive_button = true;
                     }
                 }
