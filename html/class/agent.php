@@ -5213,7 +5213,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                   AND ((DATEDEBUT <= ? AND DATEFIN >= ? )
                     OR (DATEFIN >= ? AND DATEDEBUT <= ? )
                     OR (DATEDEBUT >= ? AND DATEFIN <= ? ))
-                ORDER BY DATEDEBUT,DATEFIN";
+                ORDER BY DATEDEBUT,DATEFIN,POURCENTAGE"; // On ordonne par pourcentage, pour que le pourcentage le plus élevé soit le dernier
         
         $params = array($this->agentid,$datedebut,$datedebut,$datefin,$datefin,$datedebut,$datefin);
         $query = $this->fonctions->prepared_select($sql, $params);

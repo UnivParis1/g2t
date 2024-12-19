@@ -170,6 +170,7 @@
             }
             $xml = simplexml_load_file("$structurefile");
             $agentnode = $xml->xpath('AFF_STRUCTURE');
+            $agent = null;
             foreach ($agentnode as $node)
             {
                 $agentid = trim($node->xpath('AGENTID')[0]);
@@ -177,17 +178,23 @@
                 $idstruct = trim($node->xpath('STRUCTID')[0]);
                 $datedebut = trim($node->xpath('DATEDEBUT')[0]);
                 $datefin = trim($node->xpath('DATEFIN')[0]);
+                $pourcentage = 100; /// On fixe le pourcentage au plus petit possible
+                if (isset($node->xpath('POURCENTAGE')[0]))
+                {
+                    $pourcentage = trim($node->xpath('POURCENTAGE')[0]);
+                }
 
                 //echo "agentid = $agentid   numligne=$numligne   structure=$idstruct   datedebut=$datedebut   datefin=$datefin\n";
 
                 // On va conserver l'historique des affectations
-                $sql = sprintf("INSERT INTO HISTORIQUEAFFECTATION(AGENTID,NUMLIGNE,STRUCTUREID,DATEDEBUT,DATEFIN)
-                                VALUES('%s','%s','%s','%s','%s')", 
+                $sql = sprintf("INSERT INTO HISTORIQUEAFFECTATION(AGENTID,NUMLIGNE,STRUCTUREID,DATEDEBUT,DATEFIN,POURCENTAGE)
+                                VALUES('%s','%s','%s','%s','%s', '%s')", 
                                    $fonctions->my_real_escape_utf8($agentid), 
                                    $fonctions->my_real_escape_utf8($numligne), 
                                    $fonctions->my_real_escape_utf8($idstruct), 
                                    $fonctions->my_real_escape_utf8($datedebut), 
-                                   $fonctions->my_real_escape_utf8($datefin));
+                                   $fonctions->my_real_escape_utf8($datefin),
+                                   $fonctions->my_real_escape_utf8($pourcentage));
                 mysqli_query($dbcon, $sql);
                 $erreur_requete = mysqli_error($dbcon);
                 if ($erreur_requete != "")
@@ -195,6 +202,10 @@
                     echo "Error : INSERT HISTORIQUEAFFECTATION => $erreur_requete \n";
                 }
 
+                if (is_null($agent) or $agent->agentid() != $agentid)
+                {
+                    $ancienpourcentage = 0;
+                }
 
                 if ($fonctions->formatdatedb($datedebut) <= date('Ymd') and $fonctions->formatdatedb($datefin) >= date('Ymd'))
                 {
@@ -205,11 +216,20 @@
                     }
                     else
                     {
-                        $agent->load($agentid);
-                        $agent->structureid($idstruct);
-                        if (!$agent->store($agentid))
+                        if (floatval($ancienpourcentage) <= floatval($pourcentage))
                         {
-                            echo "Error : UPDATE STRUCTUREID dans AGENT ($agentid) => La mise à jour de la structure d'affectation a échoué. \n";
+                            //echo "Info (agent : $agentid) : L'ancien pourcentage ($ancienpourcentage) est plus faible que le pourcentage courant ($pourcentage) => Modification d'affectation. \n";
+                            $agent->load($agentid);
+                            $agent->structureid($idstruct);
+                            $ancienpourcentage = floatval($pourcentage);
+                            if (!$agent->store($agentid))
+                            {
+                                echo "Error : UPDATE STRUCTUREID dans AGENT ($agentid) => La mise à jour de la structure d'affectation a échoué. \n";
+                            }
+                        }
+                        else
+                        {
+                            //echo "Info (agent : $agentid) : L'ancien pourcentage ($ancienpourcentage) est plus élevé que le pourcentage courant ($pourcentage) => Pas de modification d'affectation. \n";
                         }
                     }
                 }
