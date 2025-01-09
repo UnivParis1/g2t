@@ -40,14 +40,13 @@
     $tab_fonctions_RA = array();
     // On regarde si le fichier des priorites de fonctions est present
     $filename = $fonctions->inputfilepath() . "/infos_fonctions_$date.xml";
-    if (!file_exists($filename))
+    if (!file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false)
     {
-        echo "Le fichier des priorites de fonctions $filename n'existe pas ....\n";
+        echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
     }
     else
     {
-        echo "Le fichier $filename est présent. \n";
-        $xml = simplexml_load_file("$filename");
+        echo "Le fichier " . basename($filename) . " est présent. \n";
         $fctpriorite = $xml->xpath('FCT_PRIORITE');
         foreach ($fctpriorite as $node)
         {
@@ -102,19 +101,18 @@
 
     // On regarde si le fichier des fonctions est present
     $filename = $fonctions->inputfilepath() . "/siham_fonctions_$date.xml";
-    if (!file_exists($filename))
+    if (!file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false)
     {
-        echo "Le fichier des fonctions $filename n'existe pas ....\n";
+        echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         $tab_struct_fonctions = array();
     }
     else
     {
-        echo "Le fichier $filename est présent. \n";
+        echo "Le fichier " . basename($filename) . " est présent. \n";
 
-	$xml = simplexml_load_file("$filename");
-	$agentnode = $xml->xpath('FONCTION');
-	foreach ($agentnode as $node)
-	{
+        $agentnode = $xml->xpath('FONCTION');
+        foreach ($agentnode as $node)
+        {
             $agentid = trim($node->xpath('AGENTID')[0]);
             if (isset($node->xpath('CONDEFONCT')[0]))
             {
@@ -155,18 +153,17 @@
     // on update les infos
 
     $filename = $fonctions->inputfilepath() . "/siham_structures_$date.xml";
-    if (! file_exists($filename))
+    if (! file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false)
     {
-        echo "Le fichier $filename n'existe pas !!! \n";
+        echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         exit();
     }
     else
     {
-        echo "Le fichier $filename est présent. \n";
+        echo "Le fichier " . basename($filename) . " est présent. \n";
         
         $listestructcrees = array();
 
-        $xml = simplexml_load_file("$filename");
         $agentnode = $xml->xpath('STRUCTURE');
         foreach ($agentnode as $node)
         {

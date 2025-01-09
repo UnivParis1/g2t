@@ -9,13 +9,14 @@
     echo "\nDébut de l'import des agents " . date("d/m/Y H:i:s") . "\n";
 
     $filename = $fonctions->inputfilepath() . "/siham_agents_$date.xml";
-    if (! file_exists($filename)) {
-        echo "Le fichier $filename n'existe pas !!! \n";
+    if (! file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false) 
+    {
+        echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         exit();
     }
     else
     {
-        echo "Le fichier $filename est présent. \n";
+        echo "Le fichier " . basename($filename) . " est présent. \n";
 /*
         // On vide la table des agents pour la recharger complètement
         $sql = "DELETE FROM AGENT";
@@ -24,10 +25,10 @@
         if ($erreur_requete != "")
             echo "DELETE AGENT => $erreur_requete \n";
 */
-	$xml = simplexml_load_file("$filename");
-	$agentnode = $xml->xpath('AGENT');
-	foreach ($agentnode as $node)
-	{
+
+        $agentnode = $xml->xpath('AGENT');
+        foreach ($agentnode as $node)
+        {
             $agentid = trim($node->xpath('AGENTID')[0]);
             $civilite = trim($node->xpath('CIVIL')[0]);
             $nom = trim($node->xpath('NOM')[0]);

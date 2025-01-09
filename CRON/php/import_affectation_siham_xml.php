@@ -38,39 +38,39 @@
         echo "Vérification existance des fichiers....\n";
         if (! file_exists($modalitefile)) 
         {
-            echo "Le fichier $modalitefile n'existe pas !!! \n";
+            echo "Le fichier " . basename($modalitefile) . " n'existe pas !!! \n";
             $exit = true;
         }
         else
         {
-            echo "Le fichier $modalitefile est présent. \n";
+            echo "Le fichier " . basename($modalitefile) . " est présent. \n";
         }
         if (! file_exists($statutfile)) 
         {
-            echo "Le fichier $statutfile n'existe pas !!! \n";
+            echo "Le fichier " . basename($statutfile) . " n'existe pas !!! \n";
             $exit = true;
         }
         else
         {
-            echo "Le fichier $statutfile est présent. \n";
+            echo "Le fichier " . basename($statutfile) . " est présent. \n";
         }
         if (! file_exists($structurefile)) 
         {
-            echo "Le fichier $structurefile n'existe pas !!! \n";
+            echo "Le fichier " . basename($structurefile) . " n'existe pas !!! \n";
             $exit = true;
         }
         else
         {
-            echo "Le fichier $structurefile est présent. \n";
+            echo "Le fichier " . basename($structurefile) . " est présent. \n";
         }
         if (! file_exists($situationfile)) 
         {
-            echo "Le fichier $situationfile n'existe pas !!! \n";
+            echo "Le fichier " . basename($situationfile) . " n'existe pas !!! \n";
             $exit = true;
         }
         else
         {
-            echo "Le fichier $situationfile est présent. \n";
+            echo "Le fichier " . basename($situationfile) . " est présent. \n";
         }
 
         if ($exit == true) 
@@ -82,23 +82,21 @@
         $listeagentactif = array();
 
         echo "Import des SITUATIONS ADMINISTRATIVES - " . date("d/m/Y H:i:s") . "\n";
-        // Import des affectations-statut.txt
-        $sql = "DELETE FROM SITUATIONADMIN";
-        mysqli_query($dbcon, $sql);
-        $erreur_requete = mysqli_error($dbcon);
-        if ($erreur_requete != "")
-        {
-            echo "Error : DELETE SITUATIONADMIN => $erreur_requete \n";
-        }
             
-        // On charge la table des statut avec le fichier
-        if (! file_exists($situationfile)) 
+        // On charge la table SITUATIONADMIN avec le fichier
+        if (! file_exists($situationfile) or ($xml = @simplexml_load_file("$situationfile"))===false) 
         {
-            echo "Le fichier $situationfile n'existe pas !!! \n";
+            echo "Le fichier " . basename($situationfile) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         } 
         else 
         {
-            $xml = simplexml_load_file("$situationfile");
+            $sql = "DELETE FROM SITUATIONADMIN";
+            mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
+            if ($erreur_requete != "")
+            {
+                echo "Error : DELETE SITUATIONADMIN => $erreur_requete \n";
+            }
             $agentnode = $xml->xpath('SITUATION');
             foreach ($agentnode as $node)
             {
@@ -152,12 +150,11 @@
         }
 
         echo "Import des STRUCTURES D'AFFECTATION - " . date("d/m/Y H:i:s") . "\n";
-        // Import des affectations-structure.txt
         
-        // On charge la table des structures avec le fichier
-        if (! file_exists($structurefile)) 
+        // On charge la table HISTORIQUEAFFECTATION avec le fichier
+        if (! file_exists($structurefile) or ($xml = @simplexml_load_file("$structurefile"))===false) 
         {
-            echo "Le fichier $structurefile n'existe pas !!! \n";
+            echo "Le fichier " . basename($structurefile) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         } 
         else 
         {
@@ -168,7 +165,6 @@
             {
                 echo "Error : DELETE HISTORIQUEAFFECTATION => $erreur_requete \n";
             }
-            $xml = simplexml_load_file("$structurefile");
             $agentnode = $xml->xpath('AFF_STRUCTURE');
             $agent = null;
             foreach ($agentnode as $node)
@@ -241,23 +237,21 @@
         }
 
         echo "Import des STATUTS D'AFFECTATION (NUMERO DE CONTRAT/TITULAIRE) - " . date("d/m/Y H:i:s") . "\n";
-        // Import des affectations-statut.txt
-        $sql = "DELETE FROM STATUT";
-        mysqli_query($dbcon, $sql);
-        $erreur_requete = mysqli_error($dbcon);
-        if ($erreur_requete != "")
-        {
-            echo "Error : DELETE STATUT => $erreur_requete \n";
-        }
 
-        // On charge la table des statut avec le fichier
-        if (! file_exists($statutfile)) 
+        // On charge la table STATUT avec le fichier
+        if (! file_exists($statutfile) or ($xml = @simplexml_load_file("$statutfile"))===false) 
         {
-            echo "Le fichier $statutfile n'existe pas !!! \n";
+            echo "Le fichier " . basename($statutfile) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         } 
         else 
         {
-            $xml = simplexml_load_file("$statutfile");
+            $sql = "DELETE FROM STATUT";
+            mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
+            if ($erreur_requete != "")
+            {
+                echo "Error : DELETE STATUT => $erreur_requete \n";
+            }
             $agentnode = $xml->xpath('STATUT');
             foreach ($agentnode as $node)
             {
@@ -301,23 +295,23 @@
         }
 
         echo "Import des MODALITES D'AFFECTATION (QUOTITE) - " . date("d/m/Y H:i:s") . "\n";
-        // Import des affectations-modalite.txt
-        $sql = "DELETE FROM QUOTITE";
-        mysqli_query($dbcon, $sql);
-        $erreur_requete = mysqli_error($dbcon);
-        if ($erreur_requete != "")
+
+        // On charge la table QUOTITE avec le fichier
+        if (! file_exists($modalitefile) or ($xml = @simplexml_load_file("$modalitefile"))===false) 
         {
-            echo "Error : DELETE QUOTITE => $erreur_requete \n";
-        }        
-        if (! file_exists($modalitefile)) 
-        {
-            echo "Le fichier $modalitefile n'existe pas !!! \n";
+            echo "Le fichier " . basename($modalitefile) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         } 
         else 
         {
+            $sql = "DELETE FROM QUOTITE";
+            mysqli_query($dbcon, $sql);
+            $erreur_requete = mysqli_error($dbcon);
+            if ($erreur_requete != "")
+            {
+                echo "Error : DELETE QUOTITE => $erreur_requete \n";
+            }        
             $agent = new agent($dbcon);
             $currentagent = null;
-            $xml = simplexml_load_file("$modalitefile");
             $agentnode = $xml->xpath('MODALITE');
             foreach ($agentnode as $node)
             {

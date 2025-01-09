@@ -401,7 +401,13 @@
 <?php
                 $type = 'warning';
                 $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                list($width, $height, $imagetype) = getimagesize("$path");
+                $typeimage = image_type_to_extension($imagetype,false);
+                if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+                {
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+                    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                }
                 $data = file_get_contents($path);
                 $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
                 echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
@@ -434,7 +440,13 @@
 <?php
                 $type = 'question';
                 $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                list($width, $height, $imagetype) = getimagesize("$path");
+                $typeimage = image_type_to_extension($imagetype,false);
+                if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+                {
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+                    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                }
                 $data = file_get_contents($path);
                 $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
                 echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
@@ -456,7 +468,13 @@
 <?php
                 $type = 'question';
                 $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                list($width, $height, $imagetype) = getimagesize("$path");
+                $typeimage = image_type_to_extension($imagetype,false);
+                if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+                {
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+                    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                }
                 $data = file_get_contents($path);
                 $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
                 echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;";

@@ -246,6 +246,7 @@
                 if ($imgfilename!= '' or $animationtext != '')
                 {
                     $animationaffichee = true;
+                    echo "<br>";
                     echo "<div id='$nom_animation' class='centeraligntext animation cursordefault' >";   //title='Double-clic pour masquer les animations'>";
                     if ($imgfilename!= '')
                     {
@@ -269,9 +270,16 @@
                                 $imglargeur = '';
                             }
                             
-                            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                            list($filelargeur, $filehauteur, $imagetype) = getimagesize("$path");
+                            //error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension = " . image_type_to_extension($imagetype,false)));
+                            $typeimage = image_type_to_extension($imagetype,false);
+                            if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+                            {
+                                error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+                                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                            }
                             $data = file_get_contents($path);
-                            $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+                            $base64 = 'data:image/' . $typeimage . ';base64,' . chunk_split(base64_encode($data)); // base64_encode($data);
                             echo "<img id='img_$nom_animation' src='" . $base64 . "' $imghauteur $imglargeur >"; 
                         }
                     }
@@ -524,10 +532,17 @@
 <?php
         if ($script_actif)
         {
+
             $paraheightstring = '';
             $parawidthstring = '';
             $path =  $fonctions->etablissementimagepath() . "/$scriptfilename"; 
-            list($filelargeur, $filehauteur) = getimagesize("$path");
+            list($filelargeur, $filehauteur, $imagetype) = getimagesize("$path");
+            $typeimage = image_type_to_extension($imagetype,false);
+            if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+            {
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+                $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+            }
 
             if (intval($scripthauteur) != 0)
             {
@@ -547,10 +562,9 @@
             }
             $imagelargeur = $scriptlargeur;
             $imagehauteur = $scripthauteur;
-            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-            $data = file_get_contents($path);
-            $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
 
+            $data = file_get_contents($path);
+            $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data); //chunk_split(base64_encode($data),64,'\n'); // base64_encode($data);
 ?>
             /*
             * Script pour afficher des flocons qui tombent sur l'écran
@@ -675,7 +689,7 @@
                     echo "setInterval(start_animation_horizontale, delai); \n";
                 }
  ?>
-           }
+            }
 
 <?php
         }
@@ -695,8 +709,10 @@
         }
 ?>
     };
+
 </script>
 <?php
+
     // $planning = new planning($dbcon);
     // //echo "<br>" . $planning->planninghtml("9328", "01/07/2025", "31/08/2025",false,false,false,false) . "<br><br>";
     // $listedispo = $planning->listeperiodedispo("9328","15/07/2025",fonctions::MOMENT_APRESMIDI,"29/08/2025",fonctions::MOMENT_MATIN, false);

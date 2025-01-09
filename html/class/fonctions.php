@@ -2645,7 +2645,13 @@ class fonctions
         $html = $html . "<tr>";
         $html = $html . "<td class='cel" . $type  . " celllogo'>";
         $path = $this->imagepath() . "/" . $type  . "_logo.png";
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        list($width, $height, $imagetype) = getimagesize("$path");
+        $typeimage = image_type_to_extension($imagetype,false);
+        if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+        {
+            error_log(basename(__FILE__) . " " . $this->stripAccents("imagetype = $imagetype => extension non définie"));
+            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        }
         $data = file_get_contents($path);
         $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
         $html = $html . "<img class='img". $type ."' src='" . $base64 . "'>"; 

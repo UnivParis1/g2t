@@ -10,13 +10,13 @@
     
     // On charge la table des absences avec le fichier
     $filename = $fonctions->inputfilepath() . "/siham_absence_$date.xml";
-    if (! file_exists($filename)) {
-        echo "Le fichier $filename n'existe pas !!! \n";
+    if (! file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false) {
+        echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
         exit();
     } 
     else 
     {
-        echo "Le fichier $filename est présent. \n";
+        echo "Le fichier " . basename($filename) . " est présent. \n";
         // On vide la table des absences pour la recharger complètement
         $sql = "DELETE FROM ABSENCERH";
         mysqli_query($dbcon, $sql);
@@ -26,7 +26,6 @@
             echo "DELETE ABSENCERH => $erreur_requete \n";
         }
         
-        $xml = simplexml_load_file("$filename");
         $agentnode = $xml->xpath('ABSENCE');
         echo "Import en masse de toutes les absences RH dans G2T " . date("d/m/Y H:i:s") . "\n";
         foreach ($agentnode as $node)
