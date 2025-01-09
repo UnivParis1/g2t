@@ -4958,14 +4958,37 @@ WHERE  table_schema = Database()
     function executionbatch()
     {
         global $uid;
-        if (!isset($uid) or $uid == "")
+        // Si un useragent est défini => sans doute qu'il y a un appel depuis un navigateur/browser.
+        if (isset($_SERVER['HTTP_USER_AGENT']))
         {
-            return true;
+            //error_log(basename(__FILE__) . $this->stripAccents(" Le useragent = " . $_SERVER['HTTP_USER_AGENT'] . "."));
+
+            // Si le useragent n'est pas vide => C'est sûr qu'il y a un navigateur => Pas mode batch
+            if (trim($_SERVER['HTTP_USER_AGENT'] . "")!='')
+            {
+                return false;
+            }
+            // Le useragent est vide => On considère qu'il n'y a pas de navigateur/browser => Mode batch
+            else
+            {
+                return true;
+            }
         }
+        // Le useragent n'est pas défini => Ce n'est pas un appel depuis un navigateur/browser => Mode batch
         else
         {
-            return false;
+            //error_log(basename(__FILE__) . $this->stripAccents(" Le useragent n'est pas défini."));
+            return true;
         }
+
+        // if (!isset($uid) or $uid == "")
+        // {
+        //     return true;
+        // }
+        // else
+        // {
+        //     return false;
+        // }
     }
     
     function getagentidfromldapuid($uid)
@@ -5016,7 +5039,7 @@ WHERE  table_schema = Database()
             error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             if ($this->executionbatch())
             {
-                // On est en mode batch car pas d'utilisateur défini
+                // On est en mode batch
                 echo "$errlog";
             }
             return false;

@@ -432,10 +432,10 @@
             }
         }
 
-        function AppelWSAgent(onoff_flag)
+        function AppelWSAgent(display_flag)
         {
             var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
-            $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?>", agentid: <?php echo $user->agentid(); ?>, onoff: onoff_flag })
+            $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?>", agentid: <?php echo $user->agentid(); ?>, display: display_flag })
                         .done(function( data ) {
                             if (data.status.toUpperCase()=='OK')
                             {
@@ -712,100 +712,6 @@
 
 </script>
 <?php
-
-    // $planning = new planning($dbcon);
-    // //echo "<br>" . $planning->planninghtml("9328", "01/07/2025", "31/08/2025",false,false,false,false) . "<br><br>";
-    // $listedispo = $planning->listeperiodedispo("9328","15/07/2025",fonctions::MOMENT_APRESMIDI,"29/08/2025",fonctions::MOMENT_MATIN, false);
-    // echo "Période du 15/07/2025 " . fonctions::MOMENT_APRESMIDI . " au 29/08/2025 " . fonctions::MOMENT_MATIN . "<br>";
-    // foreach($listedispo as $dispo)
-    // {
-    //     echo "Début = " . $dispo->elementdebut->date() . ' ' . $dispo->elementdebut->moment() . "     Fin = " . $dispo->elementfin->date() . ' ' . $dispo->elementfin->moment() . " <br>";
-    // }
-
-    // $listeagent = $fonctions->listeagentsavecaffectation();
-    // var_dump("Nbre d'agent = " . count($listeagent));
-    // foreach($listeagent as $key => $identite)
-    // {
-    //     var_dump("Key = $key   identite = $identite");
-    // }
-
-    //echo $user->uid();
-
-    // $planning = new planning($dbcon);
-    // echo $planning->planninghtml(24392, '2020-09-01', '2021-08-31');
-    // $planning = new planning($dbcon);
-    // echo $planning->planninghtml(24392, '2021-09-01', '2022-08-31');
-    // $planning = new planning($dbcon);
-    // echo $planning->planninghtml(24392, '2022-09-01', '2023-08-31');
-    // $planning = new planning($dbcon);
-    // echo $planning->planninghtml(24392, '2023-09-01', '2024-08-31');
-
-    // $demande = new demande($dbcon);
-    // $demande->load(109058);
-    // $nbjrscalcule = 0;
-    // $demande->controlenbrejrs($nbjrscalcule);
-    // echo "<br><br>Demande id = " . $demande->id()  . " (début = " . $demande->datedebut() . "  " . $demande->moment_debut() . " -> " . $demande->datefin() . "  " . $demande->moment_fin() . ")  Nbre jrs demande = " . $demande->nbrejrsdemande() . "   Nbre jours calculés = $nbjrscalcule <br>";
-
-    // $demande = new demande($dbcon);
-    // $demande->load(86142);
-    // $nbjrscalcule = 0;
-    // $demande->controlenbrejrs($nbjrscalcule);
-    // echo "<br><br>Demande id = " . $demande->id()  . " (début = " . $demande->datedebut() . "  " . $demande->moment_debut() . " -> " . $demande->datefin() . "  " . $demande->moment_fin() . ")  Nbre jrs demande = " . $demande->nbrejrsdemande() . "   Nbre jours calculés = $nbjrscalcule <br>";
-
-    // $demande = new demande($dbcon);
-    // $demande->load(110297);
-    // $nbjrscalcule = 0;
-    // $demande->controlenbrejrs($nbjrscalcule);
-    // echo "<br><br>Demande id = " . $demande->id()  . " (début = " . $demande->datedebut() . "  " . $demande->moment_debut() . " -> " . $demande->datefin() . "  " . $demande->moment_fin() . ")  Nbre jrs demande = " . $demande->nbrejrsdemande() . "   Nbre jours calculés = $nbjrscalcule <br>";
-
-    // $demande = new demande($dbcon);
-    // $demande->load(106820);
-    // $demande->pdf(9328);
-    
-    // $periode = new periodeobligatoire($dbcon);
-    // $listeperiode = $periode->load($fonctions->anneeref());
-
-    // $agentid = 87720;
-    // $agent = new agent($dbcon);
-    // $agent->load($agentid);
-    // $periode = reset($listeperiode);
-    // var_dump($periode);
-    // $agent->forceperiodeobligatoire($periode,false,$returndesc);
-    // var_dump("Retour de forceperiodeobligatoire en ecriture : ");
-    // var_dump($returndesc);
-
-    // $agent->forceperiodeobligatoire($periode,true,$returndesc);
-    // var_dump("Retour de forceperiodeobligatoire en consultation : ");
-    // var_dump($returndesc);
-
-    // $planning = new planning($dbcon);
-    // $planning->load($agentid,$periode["datedebut"], $periode["datefin"],false,true,false);
-    // echo "<br>";
-    // echo $planning->planninghtml($agentid,$periode["datedebut"], $periode["datefin"],false,false,false,false);
-    // echo "<br>";
-
-    // $listedispo = $planning->listeperiodedispo($agentid, $periode["datedebut"], fonctions::MOMENT_MATIN, $periode["datefin"],fonctions::MOMENT_APRESMIDI,false);
-    // var_dump("Liste des périodes dispo : ");
-    // var_dump($listedispo);
-
-    // $demandeliste = $agent->demandesliste($periode["datedebut"], $periode["datefin"]);
-    // if (is_array($demandeliste))
-    // {
-    //     foreach($demandeliste as $demande)
-    //     {
-    //         if ($demande->statut() == demande::DEMANDE_VALIDE)
-    //         {
-    //             break;
-    //         }
-    //         $demande = null;
-    //     }
-    //     if (is_object($demande))
-    //     {
-    //         $nbjrscalcule = -1;
-    //         $return = $demande->controlenbrejrs($nbjrscalcule);
-    //         var_dump("demande->controlenbrejrs : return = $return  nbjrscalcule = $nbjrscalcule  nbjrsorigine = " . $demande->nbrejrsdemande());
-    //     }
-    // }
 
 ?>
 </body>

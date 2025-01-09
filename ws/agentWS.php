@@ -140,25 +140,25 @@
 
         //error_log(basename(__FILE__) . $fonctions->stripAccents("Debut du WS force_periode"));
         $agentid = null;
-        $onoff_flag = null;
+        $display_flag = null;
         if (array_key_exists("agentid", $_POST)) // Id de l'agent
         {
             $agentid = $_POST["agentid"];
         }
-        if (array_key_exists("onoff", $_POST)) // Date de début de la période obligatoire
+        if (array_key_exists("display", $_POST)) // Date de début de la période obligatoire
         {
-            $onoff_flag = $_POST["onoff"];
+            $display_flag = $_POST["display"];
         }
-        if (is_null($agentid) or is_null($onoff_flag))
+        if (is_null($agentid) or is_null($display_flag))
         {
-            $erreur = "Impossible d'activer/désactiver les animations ' (agentid = $agentid onoff_flag = $onoff_flag)";
+            $erreur = "Impossible d'activer/désactiver les animations ' (agentid = $agentid display_flag = $display_flag)";
             $result_json = array('status' => 'Error', 'description' => $erreur);
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
         }
         else
         {
             $complement = new complement($dbcon);
-            if ($fonctions->convertvaluetobool($onoff_flag)) // Les animations doivent être affichées => On supprime le flag du complément
+            if ($fonctions->convertvaluetobool($display_flag)) // Les animations doivent être affichées => On supprime le flag du complément
             {
                 $complement->delete($agentid,complement::SHOW_ANIMATION);
             }
@@ -166,10 +166,11 @@
             {
                 $complement->agentid($agentid);
                 $complement->complementid(complement::SHOW_ANIMATION);
-                $complement->valeur($onoff_flag);
+                $complement->valeur($display_flag);
                 $complement->store();
             }
-
+            $erreur = "";
+            $result_json = array('status' => 'Ok', 'description' => $erreur);
         }
         //error_log(basename(__FILE__) . $fonctions->stripAccents(" Avant le retour => " . $result_json["status"]));
         return $result_json;
