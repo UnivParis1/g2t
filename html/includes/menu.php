@@ -1255,12 +1255,29 @@
     </ul> 
 <?php
     }
-    if ($user->estgestionnaire()) {
+    if ($user->estgestionnaire()) 
+    {
+        $structgestliste = $user->structgestliste();
+        $estgestdebibliotheque = true;
+        foreach ((array)$structgestliste as $struct)
+        {
+            if (!$struct->estbibliotheque())
+            {
+                $estgestdebibliotheque = false;
+                break;
+            }
+        }
+
+
 ?>
     <ul class="niveau1">
 <!--        <li onclick="">MENU GESTIONNAIRE -->
             <li>MENU GESTIONNAIRE
             <ul class="niveau2">
+<?php
+        if (!$estgestdebibliotheque)
+        {
+?>
                 <li onclick='document.gest_parametre_modif.submit();'>
                     <form name='gest_parametre_modif' method='post' action="gestion_dossier.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1269,6 +1286,9 @@
                     </form>
                     <a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
                 </li>
+<?php
+        }
+?>
                 <li onclick='document.gest_gest_teletravail.submit();'>
                     <form name='gest_gest_teletravail' method='post' action="gestion_teletravail.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1278,6 +1298,10 @@
                 </li>
                 <li class="plus"><a>Gestion de l'année en cours</a>
                     <ul class="niveau3">
+<?php
+        if (!$estgestdebibliotheque)
+        {
+?>
                         <li onclick='document.gest_struct_planning.submit();'>
                             <form name='gest_struct_planning' method='post' action="structure_planning.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1287,19 +1311,19 @@
                             <a href="javascript:document.gest_struct_planning.submit();">Planning de la structure</a>
                         </li>
 <?php
-    $structureliste = $user->structgestliste();
-    $code = null;
-    foreach ($structureliste as $structure)
-    {
-        $resp = $structure->resp_envoyer_a($code);
-        if ($code ==structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
-        {
-            // On a au moins une structure qui match => On arrête la boucle
-            break;
-        }
-    }
-    if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
-    {
+            $structgestliste = $user->structgestliste();
+            $code = null;
+            foreach ((array)$structgestliste as $structure)
+            {
+                $resp = $structure->resp_envoyer_a($code);
+                if ($code ==structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
+                {
+                    // On a au moins une structure qui match => On arrête la boucle
+                    break;
+                }
+            }
+            if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
+            {
 ?>
                         <li onclick='document.gest_conge.submit();'>
                             <form name='gest_conge' method='post' action="etablir_demande.php">
@@ -1323,7 +1347,7 @@
                             <a href="javascript:document.gest_absence.submit();">Saisir une demande d'absence pour un responsable</a>
                         </li>
 <?php
-    }
+            }
 ?>
                         <li onclick='document.gest_valid_conge.submit();'>
                             <form name='gest_valid_conge' method='post' action="valider_demande.php">
@@ -1340,6 +1364,9 @@
                             </form> 
                             <a href="javascript:document.gest_gest_conge.submit();">Annulation de congé ou d'absence</a>
                         </li>
+<?php
+        }
+?>
                         <li onclick='document.gest_valid_tpspartiel.submit();'>
                             <form name='gest_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1347,6 +1374,11 @@
                             </form> 
                             <a href="javascript:document.gest_valid_tpspartiel.submit();">Validation des temps partiels</a>
                         </li>
+<?php
+        if (!$estgestdebibliotheque)
+        {
+?>
+
                         <li onclick='document.gest_aff_solde.submit();'>
                             <form name='gest_aff_solde' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1354,8 +1386,16 @@
                             </form>
                             <a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
                         </li>
+<?php
+        }
+?>
                     </ul>
                 </li>
+<?php
+        if (!$estgestdebibliotheque)
+        {
+?>
+
                 <li class="plus"><a>Gestion de l'année précédente</a>
                     <ul class="niveau3">
                         <li onclick='document.gest_struct_planning_previous.submit();'>
@@ -1367,19 +1407,19 @@
                             <a href="javascript:document.gest_struct_planning_previous.submit();">Planning de la structure</a>
                         </li>
 <?php
-    $structureliste = $user->structgestliste();
-    $code = null;
-    foreach ($structureliste as $structure)
-    {
-        $resp = $structure->resp_envoyer_a($code);
-        if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
-        {
-            // On a au moins une structure qui match => On arrête la boucle
-            break;
-        }
-    }
-    if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
-    {
+            $structgestliste = $user->structgestliste();
+            $code = null;
+            foreach ((array)$structgestliste as $structure)
+            {
+                $resp = $structure->resp_envoyer_a($code);
+                if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) // 3 = Envoie des mails au gestionnaire de la structure courante
+                {
+                    // On a au moins une structure qui match => On arrête la boucle
+                    break;
+                }
+            }
+            if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
+            {
 ?>
                         <li onclick='document.gest_conge_prev.submit();'>
                             <form name='gest_conge_prev' method='post' action="etablir_demande.php">
@@ -1403,7 +1443,7 @@
                             <a href="javascript:document.gest_absence_prev.submit();">Saisir une demande d'absence pour un responsable</a>
                         </li>
 <?php
-    }
+            }
 ?>
                         <li onclick='document.gest_valid_conge_prev.submit();'>
                             <form name='gest_valid_conge_prev' method='post' action="valider_demande.php">
@@ -1423,12 +1463,16 @@
                         </li>
                     </ul>
                 </li>
+<?php
+        }
+?>
             </ul>
         </li>
     </ul>
 <?php
     }
-    if ($user->estprofilrh()) {
+    if ($user->estprofilrh()) 
+    {
 ?>
     <ul class="niveau1">
 <!--        <li onclick="">MENU GESTION RH  -->
@@ -1677,7 +1721,8 @@
     </ul>
 <?php
     }
-    if ($realuser->estadministrateur()) {
+    if ($realuser->estadministrateur()) 
+    {
 ?>
     <ul class="niveau1">
 <!--        <li onclick="">MENU ADMINISTRATEUR -->
