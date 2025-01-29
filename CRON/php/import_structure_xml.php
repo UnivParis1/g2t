@@ -75,17 +75,17 @@
 
             ///////////////////////////////////////////////////////////////////
             // On construit le tableau des fonctions speciales PEDAGOGIE
-            if (strcasecmp($XMLfonction->fctpedagogie,'O')==0)
+            if (strcasecmp((string)$XMLfonction->fctpedagogie,'O')==0)
             {
 	            $tab_fonctions_RA[$XMLfonction->code] = $XMLfonction;
             }
             // On construit le tableau des fonctions interim
-            if (trim($XMLfonction->fctinterim) != '')
+            if (trim((string)$XMLfonction->fctinterim) != '')
             {
                 $tab_fonctions_interim[trim($XMLfonction->code)] = $XMLfonction;
             }
             
-            if (trim($XMLfonction->fctnormale) != '')
+            if (trim((string)$XMLfonction->fctnormale) != '')
             {
             	$arrayfct_normale = explode(",",trim($XMLfonction->fctnormale));
             	foreach ((array)$arrayfct_normale as $fct)
@@ -227,9 +227,9 @@
             $codefonction = "";
             $resp_struct = "";
             // Si la structure est active on cherche le responsable.
-            if (strcasecmp($XMLstructure->statut_struct, 'ACT') == 0)
+            if (strcasecmp((string)$XMLstructure->statut_struct, 'ACT') == 0)
             {
-                if (strcasecmp($XMLstructure->code_struct,'UP1_1') == 0)
+                if (strcasecmp((string)$XMLstructure->code_struct,'UP1_1') == 0)
                 {
                     echo "On ignore les fonctions définies pour la structure $XMLstructure->code_struct \n";
                 }
@@ -370,7 +370,7 @@
             }
             echo "Le code SIHAM du statut de la structure est : $XMLstructure->statut_struct \n";
             // Si la structure est active 'ACT'
-            if (strcasecmp($XMLstructure->statut_struct, 'ACT') == 0)
+            if (strcasecmp((string)$XMLstructure->statut_struct, 'ACT') == 0)
             {
                 if (is_null($XMLstructure->date_cloture) or $XMLstructure->date_cloture == "")
                 {
@@ -552,7 +552,7 @@
                     }
                 }
             }
-            elseif (strcasecmp($XMLstructure->statut_struct, 'INA') == 0)
+            elseif (strcasecmp((string)$XMLstructure->statut_struct, 'INA') == 0)
             // La structure est inactive ==> On doit la fermer si ce n'est pas déjà fait
             {
                 $sql = "SELECT DATECLOTURE FROM STRUCTURE WHERE STRUCTUREID='" . $XMLstructure->code_struct . "'";

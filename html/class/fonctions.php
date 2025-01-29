@@ -498,7 +498,7 @@ class fonctions
         }
         $result = mysqli_fetch_row($query);
         //echo " COMMENTOBLIG => " . $result[0] . "<br>";
-        if (strcasecmp($result[0] . "",'o')==0) // Si la colonne vaut 'o' ou 'O'
+        if (strcasecmp((string)$result[0] . "",'o')==0) // Si la colonne vaut 'o' ou 'O'
         {
             return true;
         }
@@ -689,25 +689,25 @@ class fonctions
     {
 
         // Cas particulier du CET ==> Il n'est pas annuel mais on doit gérer le compteur de jours restant...
-        if (strcasecmp($typeconge, 'cet') == 0)
+        if (strcasecmp((string)$typeconge, 'cet') == 0)
         {
             return TRUE;
         }
         // Cas particulier du WE ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
-        if (strcasecmp($typeconge, "WE") == 0)
+        if (strcasecmp((string)$typeconge, "WE") == 0)
         {
             return false;
         }
         // Cas particulier de la période 'non déclarée' ==> Comme ce n'est pas un congé, il n'est pas dans la base de données.....
-        if (strcasecmp($typeconge, "nondec") == 0)
+        if (strcasecmp((string)$typeconge, "nondec") == 0)
         {
             return false;
         }
-        if (strcasecmp($typeconge, "ferie") == 0)
+        if (strcasecmp((string)$typeconge, "ferie") == 0)
         {
             return false;
         }
-        if (strcasecmp($typeconge, "teletrav") == 0)
+        if (strcasecmp((string)$typeconge, "teletrav") == 0)
         {
             return false;
         }
@@ -1196,23 +1196,23 @@ class fonctions
 
     public function demandestatutlibelle($statut = null)
     {
-        if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
+        if (strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
         {
             return "Validée";
         }
-        elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
+        elseif (strcmp((string)$statut, demande::DEMANDE_REFUSE) == 0)
         {
             return "Refusée";
         }
-        elseif (strcmp($statut, demande::DEMANDE_ANNULE) == 0)
+        elseif (strcmp((string)$statut, demande::DEMANDE_ANNULE) == 0)
         {
             return "Annulée";
         }
-        elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
+        elseif (strcasecmp((string)$statut, demande::DEMANDE_ATTENTE) == 0)
         {
             return "En attente";
         }
-        elseif (strcasecmp($statut, demande::DEMANDE_AVIS) == 0)
+        elseif (strcasecmp((string)$statut, demande::DEMANDE_AVIS) == 0)
         {
             return "Demande d'avis";
         }
@@ -1224,19 +1224,19 @@ class fonctions
 
     public function demandeavislibelle($statut = null)
     {
-        if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
+        if (strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
         {
             return "Favorable";
         }
-        elseif (strcmp($statut, demande::DEMANDE_REFUSE) == 0)
+        elseif (strcmp((string)$statut, demande::DEMANDE_REFUSE) == 0)
         {
             return "Défavorable";
         }
-        elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) == 0)
+        elseif (strcasecmp((string)$statut, demande::DEMANDE_ATTENTE) == 0)
         {
             return "En attente";
         }
-        elseif (strcasecmp($statut, demande::DEMANDE_AVIS) == 0)
+        elseif (strcasecmp((string)$statut, demande::DEMANDE_AVIS) == 0)
         {
             return "Demande d'avis";
         }
@@ -1249,19 +1249,19 @@ class fonctions
 
     public function teletravailstatutlibelle($statut = null)
     {
-        if (strcasecmp($statut, teletravail::TELETRAVAIL_VALIDE) == 0)
+        if (strcasecmp((string)$statut, teletravail::TELETRAVAIL_VALIDE) == 0)
         {
             return "Validée";
         }
-        elseif (strcmp($statut, teletravail::TELETRAVAIL_REFUSE) == 0)
+        elseif (strcmp((string)$statut, teletravail::TELETRAVAIL_REFUSE) == 0)
         {
             return "Refusée";
         }
-        elseif (strcmp($statut, teletravail::TELETRAVAIL_ANNULE) == 0)
+        elseif (strcmp((string)$statut, teletravail::TELETRAVAIL_ANNULE) == 0)
         {
             return "Annulée";
         }
-        elseif (strcasecmp($statut, teletravail::TELETRAVAIL_ATTENTE) == 0)
+        elseif (strcasecmp((string)$statut, teletravail::TELETRAVAIL_ATTENTE) == 0)
         {
             return "En attente";
         }
@@ -1279,11 +1279,11 @@ class fonctions
      */
     public function declarationTPstatutlibelle($statut = null)
     {
-        if (strcasecmp($statut, declarationTP::DECLARATIONTP_VALIDE) == 0)
+        if (strcasecmp((string)$statut, declarationTP::DECLARATIONTP_VALIDE) == 0)
             return "Validée";
-        elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_REFUSE) == 0)
+        elseif (strcasecmp((string)$statut, declarationTP::DECLARATIONTP_REFUSE) == 0)
             return "Refusée";
-        elseif (strcasecmp($statut, declarationTP::DECLARATIONTP_ATTENTE) == 0)
+        elseif (strcasecmp((string)$statut, declarationTP::DECLARATIONTP_ATTENTE) == 0)
             return "En attente";
         else
             echo "declarationTPstatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
@@ -4285,7 +4285,7 @@ class fonctions
                         {
                             $typemateriel = str_ireplace($key_materiel,'',$key);
                             $besoin = $besoin . "&nbsp;&nbsp;&bull; ";
-                            if (strcasecmp($value,'on')==0) // L'agent a demandé => valeur ON
+                            if (strcasecmp((string)$value,'on')==0) // L'agent a demandé => valeur ON
                             {
                                 $besoin = $besoin . "J'ai demandé ";
                                 $materieldemande = true;
@@ -4317,7 +4317,7 @@ class fonctions
                             
                             $constante = 'MAINTENANCE';
                             $maintenance = $this->liredbconstante($constante);
-                            if (strcasecmp($maintenance, 'n') != 0)
+                            if (strcasecmp((string)$maintenance, 'n') != 0)
                             {
                                 // Si on est en mode maintenance => On ne fait rien
                                 error_log(basename(__FILE__) . $this->stripAccents(" Création du ticket GLPI => Mode maintenance activé. On ne fait rien."));
@@ -4703,7 +4703,7 @@ WHERE  table_schema = Database()
                 {
                     //var_dump("La structure englobante est définie dans la liste des structures en parametre");
                     // Le responsable peut afficher tous les soldes des sous-structures
-                    if (strcasecmp($racinestruct->respaffsoldesousstruct(), "o") == 0)
+                    if (strcasecmp((string)$racinestruct->respaffsoldesousstruct(), "o") == 0)
                     {
                         // On peut enlever la structure inclue en cours
                         //var_dump("On enleve la structure " . $struct->nomcourt() . " de la liste.");
@@ -4739,7 +4739,7 @@ WHERE  table_schema = Database()
                 {
                     //var_dump("La structure englobante est définie dans la liste des structures en parametre");
                     // Le responsable peut afficher toutes les demandes des sous-structures
-                    if (strcasecmp($racinestruct->respaffdemandesousstruct(), "o") == 0)
+                    if (strcasecmp((string)$racinestruct->respaffdemandesousstruct(), "o") == 0)
                     {
                         // On peut enlever la structure inclue en cours
                         //var_dump("On enleve la structure " . $struct->nomcourt() . " de la liste.");
@@ -4765,7 +4765,7 @@ WHERE  table_schema = Database()
         foreach ($structarray as $struct)
         {
             // Si on autorise l'affichage du planning des sous-structures
-            if (strcasecmp($struct->sousstructure(), "o") == 0)
+            if (strcasecmp((string)$struct->sousstructure(), "o") == 0)
             {
                 // On récupère les structures inclues
                 $structincluesliste = $struct->structureinclue(true);

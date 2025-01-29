@@ -39,7 +39,7 @@
         $previoustxt = $_POST["previous"];
     }
 
-    if (strcasecmp($previoustxt, "yes") == 0)
+    if (strcasecmp((string)$previoustxt, "yes") == 0)
     {
         $previous = 1;
     }
@@ -430,7 +430,7 @@
                 {
                     $reportteletravail = $fonctions->liredbconstante($constantename);
                 }
-                if (strcasecmp($reportteletravail, "o") == 0) // Si on active le report du télétravail
+                if (strcasecmp((string)$reportteletravail, "o") == 0) // Si on active le report du télétravail
                 {
                 ?>
                     if (typeof reportdialog.showModal === "function") {
@@ -614,7 +614,6 @@
     for ($indexcpt = 1; $indexcpt <= 12; $indexcpt ++) {
         // Si on est en mode consultant ou agent et que la date calculée (annee + mois) est inférieure à la date du jour => on n'affiche pas
         
-        //if (strcasecmp($mode,MODE_CONSULTANT)==0 and ($anneemois . str_pad($index, 2, "0", STR_PAD_LEFT) < date("Ym")))
         if (in_array($mode,array(MODE_CONSULTANT,MODE_AGENT)) and ($anneemois . str_pad($index, 2, "0", STR_PAD_LEFT) < date("Ym")))
         {
             // On ne fait rien
@@ -653,7 +652,7 @@
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Sélectionner'  /></center>";
     echo "</form>";
     
-    if (strcasecmp($mode, MODE_RESPONSABLE) == 0) 
+    if (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0) 
     {
         $structureliste = $user->structrespliste();
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
@@ -736,7 +735,7 @@
                 }
             }
         }
-    } elseif (strcasecmp($mode, MODE_GESTION) == 0) {
+    } elseif (strcasecmp((string)$mode, MODE_GESTION) == 0) {
         $structureliste = $user->structgestliste();
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
         if (is_array($structureliste))
@@ -784,7 +783,7 @@
             }
         }
     }
-    elseif (strcasecmp($mode, MODE_CONSULTANT) == 0)
+    elseif (strcasecmp((string)$mode, MODE_CONSULTANT) == 0)
     {
         //var_dump("Je suis en mode consultant");
         $structure = new structure($dbcon);
@@ -802,7 +801,7 @@
             $structure = new structure($dbcon);
             $structure->load($affstructureid);
             $showsousstruct = 'n';
-            if (strcasecmp($structure->affichetoutagent(), "o") == 0)
+            if (strcasecmp((string)$structure->affichetoutagent(), "o") == 0)
             {
                 // Rappel : 
                 //      structureid => Id de la structure d'affectation de l'agent (récupéré du POST)

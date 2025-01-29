@@ -136,7 +136,7 @@
         }
     }
 
-    if (strcasecmp($mode, MODE_RH) == 0) {
+    if (strcasecmp((string)$mode, MODE_RH) == 0) {
         echo "Personne à rechercher : <br>";
         echo "<form name='selectagentcet'  method='post' >";
 

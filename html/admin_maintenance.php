@@ -82,8 +82,8 @@ Gestion du mode maintenance...
 <br>
 <form name='maintenance_mode' method='post'>
     <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
-    <INPUT type="radio" name="maintenance" value="on" <?php if (strcasecmp($etat,'n')==0) echo 'checked ' ?>> Activer le mode maintenance <br> 
-    <INPUT type="radio" name="maintenance" value="off" <?php if (strcasecmp($etat,'o')==0) echo 'checked ' ?>> Désactiver le mode maintenance <br> 
+    <INPUT type="radio" name="maintenance" value="on" <?php if (strcasecmp((string)$etat,'n')==0) echo 'checked ' ?>> Activer le mode maintenance <br> 
+    <INPUT type="radio" name="maintenance" value="off" <?php if (strcasecmp((string)$etat,'o')==0) echo 'checked ' ?>> Désactiver le mode maintenance <br> 
     <br> 
     <input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer'>
 </form>

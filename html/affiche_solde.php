@@ -148,7 +148,7 @@
         echo "<br>";
 
     }
-    elseif (strcasecmp($mode, MODE_RESPONSABLE) == 0) 
+    elseif (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0) 
     {
         $structureliste = $user->structrespliste();
         //var_dump("Avant appel enleverstructuresinclues_soldes");
@@ -169,7 +169,7 @@
             
             $annerecherche = ($fonctions->anneeref() - $previous);
 
-            if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit afficher le solde des agents des structures inclues
+            if (strcasecmp((string)$structure->respaffsoldesousstruct(),'o')==0)  // Si on doit afficher le solde des agents des structures inclues
             {
                 if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                 {
@@ -238,7 +238,7 @@
                     $annerecherche = ($fonctions->anneeref() - $previous);
                     
                     //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
-                    if (strcasecmp($structure->respaffsoldesousstruct(),'o')==0)  // Si on doit afficher le solde des agents des structures inclues 
+                    if (strcasecmp((string)$structure->respaffsoldesousstruct(),'o')==0)  // Si on doit afficher le solde des agents des structures inclues 
                     {
                         if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                         {

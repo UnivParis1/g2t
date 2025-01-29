@@ -161,7 +161,7 @@ class planning
                         // Si la déclaration de TP est validée
                         ////////////////////////
                         // Le test sur la validité de la déclaration de TP est inutile car on a filtré dans la select que les declarationTP::DECLARATIONTP_VALIDE
-                        //if (strcasecmp($tempdeclarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0) {
+                        //if (strcasecmp((string)$tempdeclarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0) {
                             // C'est la bonne declaration de TP !
                             $declarationTP = $tempdeclarationTP;
                             break;
@@ -213,7 +213,7 @@ class planning
                     $element->type("nondec");
                     $element->info("Période non déclarée");
                 }            
-                elseif (strcasecmp($declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
+                elseif (strcasecmp((string)$declarationTP->statut(), declarationTP::DECLARATIONTP_VALIDE) != 0) // On est dans le cas ou le statut n'est pas validé => C'est comme si on avait rien fait !!!
                 {
                     $element->type("nondec");
                     $element->info("Période non déclarée");
@@ -236,7 +236,6 @@ class planning
                 // On charge les périodes obligatoires
                 if ($element->type()=='')
                 //if (!in_array($element->type(), array("WE","ferie","tppar")))
-                //if (strcasecmp($element->type(),"WE")!=0 and strcasecmp($element->type(),"ferie")!=0)
                 {
                     $anneeref = $this->fonctions->anneeref($element->date());
                     // Si les périodes obligatoires sont déjà chargées pour l'année de référence
@@ -358,11 +357,10 @@ class planning
                                 //$this->listeelement[$datetemp . $moment] = $element;
                                 $this->listeelement[$element->id()] = $element;
                             }
-                            //elseif ($this->listeelement[$datetemp . $moment]->type() == "" or strcasecmp($this->listeelement[$datetemp . $moment]->type(), "nondec") == 0) 
-                            elseif ($this->listeelement[$element->id()]->type() == "" or strcasecmp($this->listeelement[$element->id()]->type(), "nondec") == 0) 
+                            elseif ($this->listeelement[$element->id()]->type() == "" or strcasecmp((string)$this->listeelement[$element->id()]->type(), "nondec") == 0) 
                             {
                                 // Si la période n'est pas déclarée, on affiche l'element de demande de congés, mais on efface son id de demande car on ne sait pas recalculer le nombre de jours
-                                if (strcasecmp($this->listeelement[$element->id()]->type(), "nondec") == 0) 
+                                if (strcasecmp((string)$this->listeelement[$element->id()]->type(), "nondec") == 0) 
                                 {
                                     //var_dump("On vérifie le extraClass => " . $element->htmlextraclass());
                                     $extraclass = trim($element->htmlextraclass() . " " . trim(planningelement::HTML_CLASS_PERIODENONDECLA));
@@ -636,7 +634,7 @@ class planning
                 if (array_key_exists($planningelement->type(),$listeabs))
                 {
                     // Si c'est une absence dans la catégorie "télétravail hors convention"
-                    if (strcmp($planningelement->parenttype(),'teletravHC')==0)
+                    if (strcmp((string)$planningelement->parenttype(),'teletravHC')==0)
                     {
                         $elementlegende[$planningelement->parenttype()] = $planningelement->parenttype();
                     }
@@ -725,9 +723,9 @@ class planning
         // echo "Apres le load <br>";
         $paslepremier = FALSE;
         $pasledernier = FALSE;
-        if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0)
+        if (strcasecmp((string)$momentdebut, fonctions::MOMENT_MATIN) != 0)
             $paslepremier = TRUE;
-            if (strcasecmp($momentfin, fonctions::MOMENT_APRESMIDI) != 0)
+            if (strcasecmp((string)$momentfin, fonctions::MOMENT_APRESMIDI) != 0)
             $pasledernier = TRUE;
         $index = 0;
         foreach ($listeelement as $key => $element) {
@@ -738,9 +736,9 @@ class planning
                 $pasdetraitement = TRUE;
             if (! $pasdetraitement) {
                 // echo "element->type() = " . $element->type() . "<br>";
-                if ($element->type() == "" or strcasecmp($element->type(), "WE") == 0 or strcasecmp($element->type(), "ferie") == 0 or strcasecmp($element->type(), "tppar") == 0) {
+                if ($element->type() == "" or strcasecmp((string)$element->type(), "WE") == 0 or strcasecmp((string)$element->type(), "ferie") == 0 or strcasecmp((string)$element->type(), "tppar") == 0) {
                     // On ne fait rien si c'est vide, un WE, un jour férié ou un temp partiel
-                } elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(), "nondec") == 0) {
+                } elseif ($ignoreabsenceautodecla == TRUE and strcasecmp((string)$element->type(), "nondec") == 0) {
                     // On ne fait rien car on doit ignorer le fait que l'autodéclaration n'est pas faite
                 } else {
                     // echo "L'element " . $element->date() . " " . $element->moment() . " est de type : " . $element->type() . " ==> On sort (ABSENT) <br>";
@@ -767,11 +765,11 @@ class planning
         }
         $paslepremier = FALSE;
         $pasledernier = FALSE;
-        if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0) {
+        if (strcasecmp((string)$momentdebut, fonctions::MOMENT_MATIN) != 0) {
             $paslepremier = TRUE;
             // echo "On fixe paslepremier <br>";
         }
-        if (strcasecmp($momentfin, fonctions::MOMENT_APRESMIDI) != 0) {
+        if (strcasecmp((string)$momentfin, fonctions::MOMENT_APRESMIDI) != 0) {
             $pasledernier = TRUE;
             // echo "On fixe pasledernier <br>";
         }
@@ -824,7 +822,7 @@ class planning
                     // On ajoute 1 car "rien de prévu ce jour là" donc c'est un jour ou l'agent travail
                     $nbredemijour ++;
                 } 
-                elseif ($ignoreabsenceautodecla == TRUE and strcasecmp($element->type(), "nondec") == 0) 
+                elseif ($ignoreabsenceautodecla == TRUE and strcasecmp((string)$element->type(), "nondec") == 0) 
                 {
                     // On vérifie que l'agent est en activité => Si non on ne doit pas compter cet élément
                     // On ajoute des espaces avant et après pour rechercher la constante
@@ -956,7 +954,7 @@ class planning
             // -------------------------------------------
             list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($planningelement->couleur($noiretblanc));
             $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
-            if (strcasecmp($planningelement->moment(), fonctions::MOMENT_MATIN) != 0)
+            if (strcasecmp((string)$planningelement->moment(), fonctions::MOMENT_MATIN) != 0)
                 $pdf->Cell(4, 5, $this->fonctions->utf8_decode(""), 'TBR', 0, 'C', 1);
             else
                 $pdf->Cell(4, 5, $this->fonctions->utf8_decode(""), 'TBL', 0, 'C', 1);
@@ -967,7 +965,7 @@ class planning
                 if (array_key_exists($planningelement->type(),$listeabs))
                 {
                     // Si c'est une absence dans la catégorie "télétravail hors convention"
-                    if (strcmp($planningelement->parenttype(),'teletravHC')==0)
+                    if (strcmp((string)$planningelement->parenttype(),'teletravHC')==0)
                     {
                         $elementlegende[$planningelement->parenttype()] = $planningelement->parenttype();
                     }
@@ -1029,7 +1027,7 @@ class planning
         foreach ($elementliste as $element)
         {
             //error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("Le type parent de l'élément est " . $element->parenttype()));
-            if (strcasecmp($element->type(), "teletrav")==0 or strcasecmp($element->parenttype(), "teletravHC")==0 )
+            if (strcasecmp((string)$element->type(), "teletrav")==0 or strcasecmp((string)$element->parenttype(), "teletravHC")==0 )
             {
                 $nbjoursteletravail = $nbjoursteletravail + 0.5;
                 $tabrepartition[$element->type()] = $tabrepartition[$element->type()] + 0.5;
@@ -1098,11 +1096,11 @@ class planning
         }
         $paslepremier = FALSE;
         $pasledernier = FALSE;
-        if (strcasecmp($momentdebut, fonctions::MOMENT_MATIN) != 0) 
+        if (strcasecmp((string)$momentdebut, fonctions::MOMENT_MATIN) != 0) 
         {
             $paslepremier = TRUE;
         }
-        if (strcasecmp($momentfin, fonctions::MOMENT_APRESMIDI) != 0) 
+        if (strcasecmp((string)$momentfin, fonctions::MOMENT_APRESMIDI) != 0) 
         {
             $pasledernier = TRUE;
         }

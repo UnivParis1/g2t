@@ -214,7 +214,7 @@
         //echo "Ce n'est pas un tableau<br>";
     }
     
-    if ($agentid == "" and strcasecmp($mode, MODE_RH) == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
+    if ($agentid == "" and strcasecmp((string)$mode, MODE_RH) == 0) // Si on est en mode gestrh et qu'aucun agent n'est selectionné
     {
         echo "<form name='selectagentcongessupp'  method='post' >";
         

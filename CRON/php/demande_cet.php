@@ -105,8 +105,7 @@
                 $pdf->Cell(60, 5, $fonctions->utf8_decode($demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut())), 1, 0, 'C');
                 $pdf->Cell(60, 5, $fonctions->utf8_decode($demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin())), 1, 0, 'C');
                 $pdf->Cell(30, 5, $fonctions->utf8_decode($demande->nbrejrsdemande() . "jour(s)"), 1, 0, 'C');
-//                if (strcasecmp($demande->statut(), 'R') == 0) {
-                if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) == 0 or strcmp($demande->statut(), demande::DEMANDE_REFUSE) == 0) { // Si la demande est annulée ou refusée
+                if (strcmp((string)$demande->statut(), demande::DEMANDE_ANNULE) == 0 or strcmp((string)$demande->statut(), demande::DEMANDE_REFUSE) == 0) { // Si la demande est annulée ou refusée
                     $pdf->SetFont('helvetica', 'B', 11, '', true);
                     $pdf->SetTextColor(255, 0, 0);
                 }
@@ -119,31 +118,6 @@
                 echo "IGNORE";
             }
             echo "\n";
-            /*
-             * if (($demande->statut() == 'R' and strlen($demande->motifrefus()) == 0 ) or ($demande->statut() == 'r') or (strcasecmp($demande->statut(),'a') == 0))
-             * {
-             * // Si c'est une annulation de l'utilisateur (Statut = R et pas de motif)
-             * // si c'est un refus du responsable (statut = r)
-             * // Si la demande est en attente de validation (statut = a)
-             * continue;
-             * }
-             *
-             * $pdf->SetFont('helvetica', '', 11, '', true);
-             * $pdf->SetTextColor(0,0,0);
-             * $pdf->Cell(100,5,$agent->identitecomplete(),1,0,'C');
-             * $pdf->Cell(60,5,$demande->datedebut() . ' ' . $fonctions->nommoment($demande->moment_debut()),1,0,'C');
-             * $pdf->Cell(60,5,$demande->datefin() . ' ' . $fonctions->nommoment($demande->moment_fin()),1,0,'C');
-             * $pdf->Cell(30,5,$demande->nbrejrsdemande() . "jour(s)",1,0,'C');
-             * if (strcasecmp($demande->statut(),'R') == 0)
-             * {
-             * $pdf->SetFont('helvetica', 'B', 11, '', true);
-             * $pdf->SetTextColor(255,0,0);
-             * }
-             * $pdf->Cell(30,5,$fonctions->demandestatutlibelle($demande->statut()),1,0,'C');
-             * $pdf->SetFont('helvetica', '', 11, '', true);
-             * $pdf->SetTextColor(0,0,0);
-             * $pdf->Ln();
-             */
         }
         $filename = $fonctions->pdfpath() . '/' . date('Y-m') . '/historique_demande_cet_' . date("YmdHis") . ".pdf";
         //ob_end_clean();

@@ -426,7 +426,7 @@
         echo "<div id='divcontinuesendtoresp[" . $structure->id() . "]'>";
         echo "<p class='delegpaddingleft'>";
         $checked = '';
-        if (strcasecmp($continuesendtoresp, 'o')==0)
+        if (strcasecmp((string)$continuesendtoresp, 'o')==0)
         {
             $checked = ' checked ';
         }

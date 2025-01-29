@@ -82,8 +82,7 @@
                     if ($fonctions->nommoment($deb_mataprem) == "")
                         $msg_erreur = $msg_erreur . "$fin_mataprem n'est pas un moment valide (fin). ";
                     $statut = $element[6];
-                    //if ((strcasecmp($statut, 'v') != 0) and (strcmp($statut, 'r') != 0) and (strcmp($statut, 'R') != 0) and (strcasecmp($statut, 'a') != 0))
-                    if ((strcasecmp($statut, demande::DEMANDE_VALIDE) != 0) and (strcmp($statut, demande::DEMANDE_ANNULE) != 0) and (strcmp($statut, demande::DEMANDE_REFUSE) != 0) and (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0))
+                    if ((strcasecmp((string)$statut, demande::DEMANDE_VALIDE) != 0) and (strcmp((string)$statut, demande::DEMANDE_ANNULE) != 0) and (strcmp((string)$statut, demande::DEMANDE_REFUSE) != 0) and (strcasecmp((string)$statut, demande::DEMANDE_ATTENTE) != 0))
                         $msg_erreur = $msg_erreur . "$statut n'est pas un statut valide. ";
 
                     if ($msg_erreur == "") {

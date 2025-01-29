@@ -207,13 +207,13 @@
 										if (stristr(strtolower($key),"form_data_d")!==false and stristr(strtolower($key),"cision")!==false) //   preg_match("/form_data_d.+cision/i",$key))
 										{
 											error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
-											if (strcasecmp($value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
+											if (strcasecmp((string)$value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
 											{
 												error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut YES."));
 												$validation = optionCET::STATUT_VALIDE;
 												break;
 											}
-											elseif (strcasecmp($value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
+											elseif (strcasecmp((string)$value,'no')==0)  // elseif ($response['form_data_decision'] == 'no')
 											{
 												error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut NO."));
 												$validation = optionCET::STATUT_REFUSE;

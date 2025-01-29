@@ -566,7 +566,7 @@ class structure
     function agentlist($datedebut, $datefin, $sousstrucuture = null)
     {
         $agentliste = null;
-        if ((strcasecmp($this->sousstructure(), 'o') == 0 and strcasecmp($sousstrucuture, 'n') != 0) or (strcasecmp($sousstrucuture, 'o') == 0)) {
+        if ((strcasecmp((string)$this->sousstructure(), 'o') == 0 and strcasecmp((string)$sousstrucuture, 'n') != 0) or (strcasecmp((string)$sousstrucuture, 'o') == 0)) {
             //$structliste = $this->structurefille();
             $structliste = $this->structureinclue();
             if (! is_null($structliste)) {
@@ -1109,7 +1109,7 @@ class structure
                     if (array_key_exists($element->type(),$listeabs))
                     {
                         // Si c'est une absence dans la catégorie "télétravail hors convention"
-                        if (strcmp($element->parenttype(),'teletravHC')==0)
+                        if (strcmp((string)$element->parenttype(),'teletravHC')==0)
                         {
                             $elementlegende[$element->parenttype()] = $element->parenttype();
                         }
@@ -1341,7 +1341,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                         if (array_key_exists($element->type(),$listeabs))
                         {
                             // Si c'est une absence dans la catégorie "télétravail hors convention"
-                            if (strcmp($element->parenttype(),'teletravHC')==0)
+                            if (strcmp((string)$element->parenttype(),'teletravHC')==0)
                             {
                                 $elementlegende[$element->parenttype()] = $element->parenttype();
                             }
@@ -1449,11 +1449,11 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     if ($pourmodif) {
                         $htmltext = $htmltext . "<select name=report[" . $membre->agentid() . "]>";
                         $htmltext = $htmltext . "<option value='n'";
-                        if (strcasecmp($complement->valeur(), "n") == 0)
+                        if (strcasecmp((string)$complement->valeur(), "n") == 0)
                             $htmltext = $htmltext . " selected ";
                         $htmltext = $htmltext . ">Non</option>";
                         $htmltext = $htmltext . "<option value='o'";
-                        if (strcasecmp($complement->valeur(), "o") == 0)
+                        if (strcasecmp((string)$complement->valeur(), "o") == 0)
                             $htmltext = $htmltext . " selected ";
                         $htmltext = $htmltext . ">Oui</option>";
                         $htmltext = $htmltext . "</select>";
@@ -1772,7 +1772,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
             {
                 list ($col_part1, $col_part2, $col_part3) = $this->fonctions->html2rgb($element->couleur($noiretblanc));
                 $pdf->SetFillColor($col_part1, $col_part2, $col_part3);
-                if (strcasecmp($element->moment(), fonctions::MOMENT_MATIN) != 0)
+                if (strcasecmp((string)$element->moment(), fonctions::MOMENT_MATIN) != 0)
                     $pdf->Cell(3, 5, $this->fonctions->utf8_decode(""), 'TBR', 0, 'C', 1);
                 else
                     $pdf->Cell(3, 5, $this->fonctions->utf8_decode(""), 'TBL', 0, 'C', 1);
@@ -1782,7 +1782,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     if (array_key_exists($element->type(),$listeabs))
                     {
                         // Si c'est une absence dans la catégorie "télétravail hors convention"
-                        if (strcmp($element->parenttype(),'teletravHC')==0)
+                        if (strcmp((string)$element->parenttype(),'teletravHC')==0)
                         {
                             $elementlegende[$element->parenttype()] = $element->parenttype();
                         }

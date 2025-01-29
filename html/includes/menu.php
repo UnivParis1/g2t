@@ -11,7 +11,7 @@
 ?>
 <title>G2T
 <?php 
-    if (defined('TYPE_ENVIRONNEMENT') and strcasecmp(TYPE_ENVIRONNEMENT,'PROD')!=0)
+    if (defined('TYPE_ENVIRONNEMENT') and strcasecmp((string)TYPE_ENVIRONNEMENT,'PROD')!=0)
     { 
         echo " - " . strtoupper(TYPE_ENVIRONNEMENT); 
     }
@@ -743,14 +743,14 @@
     {
         $synchro = $fonctions->liredbconstante($constante);
     }
-    if (strcasecmp($maintenance, 'n') != 0 or strcasecmp($synchro, 'n') != 0) {
+    if (strcasecmp((string)$maintenance, 'n') != 0 or strcasecmp((string)$synchro, 'n') != 0) {
         if ($realuser->estadministrateur()) // Si un administrateur est connecté
         {
-            if (strcasecmp($maintenance, 'n') != 0)
+            if (strcasecmp((string)$maintenance, 'n') != 0)
             {
                 echo "<CENTER><div class='redtext fontsize25' ><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
             }
-            if (strcasecmp($synchro, 'n') != 0)
+            if (strcasecmp((string)$synchro, 'n') != 0)
             {
                 echo "<CENTER><div class='redtext fontsize25'><B><U>ATTENTION : LE MODE SYNCHRONISATION EST ACTIV&Eacute; -- APPLICATION EN COURS DE SYNCHRO</U></B></div></CENTER><BR>";
             }
@@ -899,7 +899,7 @@
                     <a href="javascript:document.agent_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
                 </li>
 <?php
-    if (strcasecmp($agentstructure->affichetoutagent(), "o") == 0 and !$agentstructure->estbibliotheque()) 
+    if (strcasecmp((string)$agentstructure->affichetoutagent(), "o") == 0 and !$agentstructure->estbibliotheque()) 
     // if ($user->structure()->affichetoutagent() == "o")
     {
 ?>

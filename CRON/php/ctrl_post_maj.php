@@ -100,8 +100,6 @@
         foreach ($tabanalyse as $demandeid => $textanalyse) {
             $demande = new demande($dbcon);
             $demande->load($demandeid);
-//            if (strcasecmp($demande->statut(), 'r') != 0) // Si la demande n'est pas annulée ou refusée !
-//            if (strcmp($demande->statut(), demande::DEMANDE_ANNULE) != 0 and strcmp($demande->statut(), demande::DEMANDE_REFUSE) != 0) // Si la demande n'est pas annulée et si elle n'est pas refusée !
             if (!in_array($demande->statut(), array(demande::DEMANDE_ANNULE, demande::DEMANDE_REFUSE)))
             {
                 $text .= " * Compte-rendu de l'analyse de la demande du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n" . $textanalyse . "\n";

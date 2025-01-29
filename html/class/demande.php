@@ -377,9 +377,7 @@ class demande
             } 
             else 
             {
-                //if (strcasecmp($this->statut, 'v') == 0 or (strcasecmp($this->statut, 'a') == 0 or strcasecmp($this->statut, 'r') == 0))
-                //if (strcmp($this->statut, demande::DEMANDE_VALIDE) == 0 or strcmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0)
-                if (strcmp($this->statut, demande::DEMANDE_VALIDE) == 0 or strcmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)
+                if (strcmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0 or strcmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or strcasecmp((string)$this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$this->statut, demande::DEMANDE_ANNULE) == 0)
                 {
                    return $this->statut;
                 }
@@ -397,9 +395,7 @@ class demande
             {
                 $this->statut = $statut;
             }
-            //if (strcasecmp($this->statut, 'a') == 0 or (strcasecmp($this->statut, 'v') == 0 and strcasecmp($statut, 'r') == 0)) {
-            //if (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0 and strcasecmp($statut, demande::DEMANDE_REFUSE) == 0)) {
-            elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0 and (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0)))
+            elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0 and (strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0)))
             {
                 $this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
                 $this->statut = $statut;
@@ -834,7 +830,7 @@ class demande
                     unset($agent);
                 }
                 // On decompte le nombre de jours que l'on vient de poser sauf si c'est un CET
-                elseif ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp($this->typeabsenceid, 'cet') != 0)) {
+                elseif ($this->fonctions->estunconge($this->typeabsenceid) and (strcasecmp((string)$this->typeabsenceid, 'cet') != 0)) {
                     $sql = "UPDATE SOLDE
                             SET DROITPRIS = DROITPRIS + " . $this->nbrejrsdemande . "
                             WHERE TYPEABSENCEID='" . $this->typeabsenceid . "' AND AGENTID = '" . $this->agentid() . "'";
@@ -862,8 +858,7 @@ class demande
             }
         } else {
             // Si le statut de la demande était déja annulé/refusé => On ne fait rien
-            //if (strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) == 0) {
-            if ((strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->ancienstatut, demande::DEMANDE_ANNULE) == 0)) {
+            if ((strcasecmp((string)$this->ancienstatut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$this->ancienstatut, demande::DEMANDE_ANNULE) == 0)) {
                 $errlog = "Impossible de changer le statut d'une demande 'refusée'.";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 return $errlog . "<br/>";
@@ -891,13 +886,8 @@ class demande
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
                 // Si le nouveau statut est annulé => On doit recréditer le nombre de jour....
-                //if (strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) != 0 and strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0) {
-                /*
-                *if ((strcasecmp($this->ancienstatut, demande::DEMANDE_REFUSE) != 0 and strcasecmp($this->ancienstatut, demande::DEMANDE_ANNULE) != 0)
-                *   and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) {
-                */
-                if ((strcasecmp($this->ancienstatut, demande::DEMANDE_VALIDE) == 0 or strcasecmp($this->ancienstatut, demande::DEMANDE_ATTENTE) == 0)
-                   and (strcasecmp($this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut, demande::DEMANDE_ANNULE) == 0)) 
+                if ((strcasecmp((string)$this->ancienstatut, demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$this->ancienstatut, demande::DEMANDE_ATTENTE) == 0)
+                   and (strcasecmp((string)$this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$this->statut, demande::DEMANDE_ANNULE) == 0)) 
                 {
                     // Si c'est une récupération qu'on vient d'annuler
                     if ($this->typeabsenceid == recuperation::RECUP_ID)
@@ -915,7 +905,7 @@ class demande
                         }
                     }
                     // Sinon si ce n'est pas un CET on doit recréditer le nombre de jour
-                    elseif (strcasecmp($this->typeabsenceid, 'cet') != 0) {
+                    elseif (strcasecmp((string)$this->typeabsenceid, 'cet') != 0) {
                         // On recrédite le nombre de jours dans les congés....
                         $sql = "UPDATE SOLDE
                                 SET DROITPRIS = DROITPRIS - " . $this->nbrejrsdemande . "
@@ -1060,9 +1050,7 @@ class demande
         }
         $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Date de dépot : ' . $this->date_demande()));
         $pdf->Ln(10);
-        //if (strcasecmp($this->statut(), 'r') == 0)
-        //if (strcasecmp($this->statut(), demande::DEMANDE_REFUSE) == 0)
-        if (strcasecmp($this->statut(), demande::DEMANDE_REFUSE) == 0 or strcasecmp($this->statut(), demande::DEMANDE_ANNULE) == 0)
+        if (strcasecmp((string)$this->statut(), demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$this->statut(), demande::DEMANDE_ANNULE) == 0)
             $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Date du refus/de l\'annulation : ' . $this->datestatut()));
         else
             $pdf->Cell(40, 10, $this->fonctions->utf8_decode('Date de validation : ' . $this->datestatut()));
@@ -1126,7 +1114,7 @@ class demande
 
     function ics($mail)
     {
-        if (strcasecmp($this->typeabsenceid, 'teletrav') == 0  or strcasecmp($this->typeabsenceid, 'travdist') == 0)
+        if (strcasecmp((string)$this->typeabsenceid, 'teletrav') == 0  or strcasecmp((string)$this->typeabsenceid, 'travdist') == 0)
         {
             // L'agent travaille donc il ne doit pas être mis en 'absence' ou en 'congés' dans l'agenda
             // Pas de mise à jour de l'agenda ==> Pas de création d'un ICS
@@ -1173,7 +1161,7 @@ class demande
         if ($this->fonctions->estunconge($this->typeabsenceid)) {
             $meeting_description = 'Congé';
             $subject = 'Congé';
-        } elseif (strcasecmp($absenceidparent,'teletravHC') == 0) {
+        } elseif (strcasecmp((string)$absenceidparent,'teletravHC') == 0) {
             $meeting_description = $libelleabsenceparent;
             $subject = $libelleabsenceparent;
         } else {
@@ -1184,11 +1172,10 @@ class demande
         //echo "<br>Le statut de la demande est : " . $this->statut . " <br>";
         
         $disponibilite = 'OPAQUE';
-        //if (strcasecmp($this->statut, 'v') == 0) 
-        if (strcasecmp($this->statut, demande::DEMANDE_VALIDE) == 0)
+        if (strcasecmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0)
         // La demande est validée
         {
-            if (strcasecmp($absenceidparent,'teletravHC') == 0)  // Si c'est un télétravail HC => Le statut est FREE
+            if (strcasecmp((string)$absenceidparent,'teletravHC') == 0)  // Si c'est un télétravail HC => Le statut est FREE
             {
                 $ics_status = 'FREE';
                 $disponibilite = 'TRANSPARENT';
@@ -1197,14 +1184,12 @@ class demande
             {
                 $ics_status = 'CONFIRMED';
             }
-        //} elseif (strcasecmp($this->statut, 'R') == 0) 
-        } elseif (strcmp($this->statut, demande::DEMANDE_ANNULE) == 0 or strcmp($this->statut, demande::DEMANDE_REFUSE) == 0) 
+        } elseif (strcmp((string)$this->statut, demande::DEMANDE_ANNULE) == 0 or strcmp((string)$this->statut, demande::DEMANDE_REFUSE) == 0) 
         // La demande est refusée ou annulée
         {
             $ics_status = 'CANCELLED';
             $disponibilite = 'TRANSPARENT';
-        //} elseif (strcasecmp($this->statut, 'a') == 0)
-        } elseif (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0) 
+        } elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0) 
         // La demande est en attente
         {
             $ics_status = 'TENTATIVE';

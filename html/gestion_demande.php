@@ -106,7 +106,7 @@
     {
         $previoustxt = null;
     }
-    if (strcasecmp($previoustxt, "yes") == 0)
+    if (strcasecmp((string)$previoustxt, "yes") == 0)
     {
         $previous = 1;
     }
@@ -163,7 +163,6 @@
 
     foreach ($cancelarray as $demandeid => $value) {
         // echo "demandeid = $demandeid value = $value <br>";
-//        if (strcasecmp($value, "yes") == 0) {
             $motif = "";
             if (isset($_POST["motif"][$demandeid]))
             {
@@ -174,7 +173,7 @@
             // echo "cleelement = $cleelement demandeid = $demandeid <br>";
             $demande->load($demandeid);
             $demande->motifrefus($motif);
-            if (strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0 and $motif == "") {
+            if (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and $motif == "") {
                 $errlog = "Le motif de l'annulation est obligatoire.";
                 echo $fonctions->showmessage(fonctions::MSGERROR, "$errlog");
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
@@ -210,7 +209,7 @@
                         $agentdemande->updatecalendar($ics,true);
                         //echo "On vient de mettre le calendrier à jour....<br>";
                     }
-                    if (strcasecmp($demande->type(), "cet") == 0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
+                    if (strcasecmp((string)$demande->type(), "cet") == 0) // Si c'est une demande prise sur un CET => On envoie un mail au gestionnaire RH de CET
                     {
                         // Si on n'est pas en mode responsable envoi du mail au gestionnaire RH.... (Sinon c'est l'agent qui a annulé sa propre demande => donc pas d'envoi)
                         if (is_null($responsableid) == false) {
@@ -242,7 +241,7 @@
     {
         $fin = $fonctions->formatdate($fonctions->anneeref() . $fonctions->finperiode());
     }
-    elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
+    elseif (strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
     {
         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
     }

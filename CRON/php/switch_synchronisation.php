@@ -13,14 +13,14 @@
     $constante = "SYNCHRONISATION";
     $valeur = '';
     if (isset($argv[1])) {
-        if (strcasecmp($argv[1],SYNCHRO_ACTIF)==0 or strcasecmp($argv[1],SYNCHRO_INACTIF)==0)
+        if (strcasecmp((string)$argv[1],SYNCHRO_ACTIF)==0 or strcasecmp((string)$argv[1],SYNCHRO_INACTIF)==0)
         {
             echo "On recupere la valeur du parametre : " . $argv[1] . "\n";
-            if (strcasecmp($argv[1],SYNCHRO_ACTIF)==0)
+            if (strcasecmp((string)$argv[1],SYNCHRO_ACTIF)==0)
             {
                 $valeur = 'o';
             }
-            elseif (strcasecmp($argv[1],SYNCHRO_INACTIF)==0)
+            elseif (strcasecmp((string)$argv[1],SYNCHRO_INACTIF)==0)
             {
                 $valeur = 'n';
             }
@@ -38,7 +38,7 @@
             $valeur = $fonctions->liredbconstante($constante);
         }
         echo "La valeur courante de la synchronisation est $valeur \n";
-        if (strcasecmp($valeur,"n")==0) // C'est n ou N
+        if (strcasecmp((string)$valeur,"n")==0) // C'est n ou N
         {
             $valeur = "o";
         }

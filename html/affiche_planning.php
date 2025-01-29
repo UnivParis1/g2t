@@ -39,7 +39,7 @@
     echo "<br>Planning de l'agent " . $user->civilite() . " " . $user->nom() . " " . $user->prenom() . " <br>";
 
     $datedebut = $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode());
-    if (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
+    if (strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
         $datefin = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
         $timestamp = strtotime($datefin);
         $datefin = date("Ymd", strtotime("+1month", $timestamp)); // On passe au mois suivant

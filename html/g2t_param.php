@@ -1250,7 +1250,7 @@
                 foreach ($rhcancel as $rhagentid => $rhvalue)
                 {
                     $rhagent = new agent($dbcon);
-                    if (strcasecmp($rhvalue,'yes')==0 and  $rhagent->load($rhagentid))
+                    if (strcasecmp((string)$rhvalue,'yes')==0 and  $rhagent->load($rhagentid))
                     {
                         $rhagent->enregistreprofilrh(array());
                     }
@@ -2427,14 +2427,14 @@
         }
         echo "<select id='reportteletravail' name='reportteletravail'>";
 	echo "<option value='o'";
-        if (strcasecmp($reportteletravail, "o") == 0)
+        if (strcasecmp((string)$reportteletravail, "o") == 0)
         {
             echo " selected ";
         }
         echo ">" . $fonctions->ouinonlibelle('o');
         echo "</option>";
 	echo "<option value='n'";
-        if (strcasecmp($reportteletravail, "n") == 0)
+        if (strcasecmp((string)$reportteletravail, "n") == 0)
         {
             echo " selected ";
         }
@@ -2452,14 +2452,14 @@
         }
         echo "<select id='esignatureteletravail' name='esignatureteletravail'>";
 	echo "<option value='o'";
-        if (strcasecmp($esignatureteletravail, "o") == 0)
+        if (strcasecmp((string)$esignatureteletravail, "o") == 0)
         {
             echo " selected ";
         }
         echo ">" . $fonctions->ouinonlibelle('o');
         echo "</option>";
 	echo "<option value='n'";
-        if (strcasecmp($esignatureteletravail, "n") == 0)
+        if (strcasecmp((string)$esignatureteletravail, "n") == 0)
         {
             echo " selected ";
         }
@@ -3221,8 +3221,8 @@
                 <tr>
                     <td><span data-tip="Non = L'agent peut poser des jours de congés un mois au delà de la fin de la période de référence">Limiter la pose de congés à la période de référence : 
                         <select name='limite_conge_periode' id='limite_conge_periode'>
-                            <option value='o' <?php if (strcasecmp($limitecongesperiode, "n") != 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('o'); ?></option>
-                            <option value='n' <?php if (strcasecmp($limitecongesperiode, "n") == 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('n'); ?></option>
+                            <option value='o' <?php if (strcasecmp((string)$limitecongesperiode, "n") != 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('o'); ?></option>
+                            <option value='n' <?php if (strcasecmp((string)$limitecongesperiode, "n") == 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('n'); ?></option>
                         </select>
                     </td>
                 </tr>

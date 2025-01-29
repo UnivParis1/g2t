@@ -103,7 +103,6 @@
     $msgerreur = "";
     if (is_array($enfantmaladelist)) {
         foreach ($enfantmaladelist as $agentid => $enfantmaladevalue) {
-            // echo "strcasecmp(intval ... => " . strcasecmp(intval($enfantmaladevalue),$enfantmaladevalue) . "<br>";
             // echo "intval >=0 => " . (intval($enfantmaladevalue)>=0) . "<br>";
             if ((strcasecmp(intval($enfantmaladevalue), $enfantmaladevalue) == 0) and (intval($enfantmaladevalue) >= 0)) // Ce n'est pas un nombre à virgule, ni une chaine et la valeur est positive
             {
@@ -821,31 +820,6 @@
                 }
             }
 
-//            echo "<br>";
-//            echo "Autoriser l'affichage uniquement du planning des responsables G2T des sous-structures (responsable G2T/gestionnaire G2T) : ";
-//            if ($action == 'modif') 
-//            {
-//                echo "<select name=displayrespsousstruct['" . $structure->id() . "']>";
-//                echo "<option value='o'";
-//                if (strcasecmp($structure->afficherespsousstruct(), "o") == 0)
-//                {
-//                    echo " selected ";
-//                }
-//                echo ">Oui</option>";
-//                echo "<option value='n'";
-//                if (strcasecmp($structure->afficherespsousstruct(), "n") == 0)
-//                {
-//                    echo " selected ";
-//                }
-//                echo ">Non</option>";
-//                echo "</select>";
-//            } 
-//            else
-//            {
-//                echo $fonctions->ouinonlibelle($structure->afficherespsousstruct());
-//            }
-
-//            echo "<br>";
             echo "<tr>";
             echo "<td>";
             echo "Autoriser la consultation du planning de la structure <b>" . $structure->nomcourt() . "</b> par tous les agents de celle-ci : ";
@@ -873,30 +847,6 @@
             }
             echo "</td>";
             echo "</tr>";
-
-//            echo "<br>";
-//            echo "Autoriser la validation des demandes d'une sous-structure par le responsable G2T de la structure parente : ";
-//            if ($action == 'modif') 
-//            {
-//                echo "<select name=respvalidsousstruct['" . $structure->id() . "']>";
-//                echo "<option value='o'";
-//                if (strcasecmp($structure->respvalidsousstruct(), "o") == 0)
-//                {
-//                    echo " selected ";
-//                }
-//                echo ">Oui</option>";
-//                echo "<option value='n'";
-//                if (strcasecmp($structure->respvalidsousstruct(), "n") == 0)
-//                {
-//                    echo " selected ";
-//                }
-//                echo ">Non</option>";
-//                echo "</select>";
-//            } 
-//            else
-//            {
-//                echo $fonctions->ouinonlibelle($structure->respvalidsousstruct());
-//            }
 
             if ($mode == MODE_RESPONSABLE) 
             {

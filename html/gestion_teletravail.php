@@ -35,7 +35,7 @@
     if ($fonctions->testexistdbconstante('ESIGNATURETELETRAVAIL')) 
     {
         $esignatureactive = $fonctions->liredbconstante('ESIGNATURETELETRAVAIL');
-        if (strcasecmp($esignatureactive,'o')==0)
+        if (strcasecmp((string)$esignatureactive,'o')==0)
         {
             $esignatureactive = true;
         }
@@ -52,7 +52,7 @@
     {
         $noesignature = $_POST["noesignature"];
     }
-    if (strcasecmp($noesignature, 'yes')==0) // Si le flag $noesignature = yes => On force le $esignatureactive à false
+    if (strcasecmp((string)$noesignature, 'yes')==0) // Si le flag $noesignature = yes => On force le $esignatureactive à false
     {
         $esignatureactive = false;
     }

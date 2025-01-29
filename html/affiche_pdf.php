@@ -22,7 +22,7 @@
 
     $previous = 0;
     if (isset($_POST["previous"]))
-        if (strcasecmp($_POST["previous"], "yes") == 0)
+        if (strcasecmp((string)$_POST["previous"], "yes") == 0)
             $previous = 1;
         else
             $previous = 0;
@@ -100,14 +100,14 @@
 
     if (isset($_POST["userpdf"])) {
         //header('Content-Disposition: attachment; filename="planning_agent.pdf"');
-        if (strcasecmp($_POST["userpdf"], "yes") == 0) {
+        if (strcasecmp((string)$_POST["userpdf"], "yes") == 0) {
             $agentid = $_POST["agentid"];
             $includeteletravail = $_POST["includeteletravail"];
             $checkbox = 'off';
             if (isset($_POST["hide_teletravail_". $agentid ]))
                 $checkbox = $_POST["hide_teletravail_". $agentid ];
             //error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Checkbox = $checkbox"));
-            if (strcasecmp($includeteletravail, "yes") == 0 and strcasecmp($checkbox, "off") == 0)
+            if (strcasecmp((string)$includeteletravail, "yes") == 0 and strcasecmp((string)$checkbox, "off") == 0)
                 $includeteletravail = true;
             else
                 $includeteletravail = false;
@@ -118,11 +118,11 @@
 
     if (isset($_POST["structpdf"])) {
         //header('Content-Disposition: attachment; filename="planning_structure.pdf"');
-        if (strcasecmp($_POST["structpdf"], "yes") == 0) {
+        if (strcasecmp((string)$_POST["structpdf"], "yes") == 0) {
             $structid = $_POST["structid"];
             $mois_annee = $_POST["mois_annee"];
             $noiretblanc = $_POST["noiretblanc"];
-            if (strcasecmp($noiretblanc, "yes") == 0)
+            if (strcasecmp((string)$noiretblanc, "yes") == 0)
                 $noiretblanc = true;
             else
                 $noiretblanc = false;
@@ -131,7 +131,7 @@
             $checkbox = 'off';
             if (isset($_POST["hide_teletravail_". $structid ]))
                 $checkbox = $_POST["hide_teletravail_". $structid ];
-            if (strcasecmp($includeteletravail, "yes") == 0 and strcasecmp($checkbox, "off") == 0)
+            if (strcasecmp((string)$includeteletravail, "yes") == 0 and strcasecmp((string)$checkbox, "off") == 0)
                 $includeteletravail = true;
             else
                 $includeteletravail = false;

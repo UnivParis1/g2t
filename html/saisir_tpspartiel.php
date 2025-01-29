@@ -184,7 +184,7 @@
         if (! is_null($declarationliste)) {
             // echo "Il y a potentiellement chevauchement entre des declarations !!!! <br>";
             foreach ($declarationliste as $key => $declaration) {
-                if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
+                if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                     // Si la date de fin de l'ancienne est après la date de debut de la nouvelle
                     $msg = "";
                     // Nouvelle [--------------]
@@ -198,7 +198,7 @@
                         $nvlledatedebut = date("Ymd", strtotime("+1days", $timestamp)); // On passe au jour d'avant (donc la veille)
                                                                                          // echo "nvlledatedebut = $nvlledatedebut <br>";
                         $declaration->datedebut($fonctions->formatdate($nvlledatedebut));
-                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
+                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                             $msg = $declaration->store();
                         // echo "Apres le store de l'ID " . $declaration->declarationTPid() . "... <br>";
                         if ($msg != "") {
@@ -220,7 +220,7 @@
                         $nvlledatefin = date("Ymd", strtotime("-1days", $timestamp)); // On passe au jour d'après (donc le lendemain)
                                                                                        // echo "nvlledatefin = $nvlledatefin <br>";
                         $declaration->datefin($fonctions->formatdate($nvlledatefin));
-                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
+                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                             $msg = $declaration->store();
                         // echo "Apres le store de l'ID " . $declaration->declarationTPid() . "... <br>";
                         if ($msg != "") {
@@ -242,7 +242,7 @@
                         $nvlledatefin = date("Ymd", strtotime("-1days", $timestamp)); // On passe au jour d'après (donc le lendemain)
                                                                                        // echo "nvlledatefin = $nvlledatefin <br>";
                         $declaration->datefin($fonctions->formatdate($nvlledatefin));
-                        if (strcasecmp($declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
+                        if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0)
                             $msg = $declaration->store();
                         // echo "Apres le store de l'ID " . $declaration->declarationTPid() . "... <br>";
                         if ($msg != "") {
@@ -448,7 +448,7 @@
                     echo "</div>";
 
                     echo "<br>";
-                    if (strcasecmp($mode, MODE_RESPONSABLE) == 0) {
+                    if (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0) {
                         echo "<br>";
                         echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel. <br>";
                         echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";

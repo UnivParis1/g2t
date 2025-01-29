@@ -114,9 +114,7 @@
 
             //echo "datefinformate = $datefinformate   Date J - 2 ans = " . (date('Y')-2) . date("md") . " typeabsence = $typeabsence \n";
             // Si l'arret s'est terminé il y a moins de 2 ans et que c'est un type d'absence M (<=> maladie)
-            //if ($datefinformate > (date('Y')-2) . date("md") and strcasecmp($typeabsence,'M')==0 and false)
-            //if ($datefinformate > (date('Y')-$fonctions->margesynchro()) . date("md") and strcasecmp($typeabsence,'M')==0 and date('Ymd') >= '20240901')
-            if ($datefinformate >= $debut_periode_marge and strcasecmp($typeabsence,'M')==0)
+            if ($datefinformate >= $debut_periode_marge and strcasecmp((string)$typeabsence,'M')==0)
             {
                 echo "On a un arret qui est postérieur à " . $fonctions->formatdate($debut_periode_marge) . " et c'est une maladie (typeabsence = $typeabsence) : " . $fonctions->formatdate($datedebut) . " -> " . $fonctions->formatdate($datefin) . "\n";
                 $agent = new agent($dbcon);

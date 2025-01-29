@@ -74,14 +74,14 @@
 
     if (is_array($statutliste))
     {
-        if (strcasecmp($mode,MODE_CONSULTANT)==0)
+        if (strcasecmp((string)$mode,MODE_CONSULTANT)==0)
         {
             $cron = new agent($dbcon);
             $cron->load(SPECIAL_USER_IDCRONUSER);
             foreach ($statutliste as $demandeid => $statut)
             {
                 $demandemodifiee = false;
-                if (strcasecmp($statut, demande::DEMANDE_VALIDE) == 0 )
+                if (strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0 )
                 {
                     //var_dump("La demande $demandeid est validée => On va l'enregistrer");
                     $demandecomplement  = new demandecomplement($dbcon);
@@ -91,14 +91,14 @@
                     $demandecomplement->store();
                     $demandemodifiee = true;
                 }
-                elseif (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 )
+                elseif (strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 )
                 {
                     $motif = '';
                     if (isset($motifliste["$demandeid"]))
                     {
                         $motif = $motifliste["$demandeid"];
                     }
-                    if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
+                    if ((strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
                     {
                         $errlog = "Le motif du refus est obligatoire.";
                         echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
@@ -148,7 +148,7 @@
             foreach ($statutliste as $demandeid => $statut)
             {
                 //echo "Le statut est $statut <br>";
-                if (strcasecmp($statut, demande::DEMANDE_AVIS) == 0 )
+                if (strcasecmp((string)$statut, demande::DEMANDE_AVIS) == 0 )
                 {
                     $demande = new demande($dbcon);
                     $demande->load($demandeid);
@@ -170,7 +170,7 @@
                     $_POST['statut'][$demandeid] = demande::DEMANDE_ATTENTE;
                     $statutliste[$demandeid] = demande::DEMANDE_ATTENTE;
                 }
-                elseif (strcasecmp($statut, demande::DEMANDE_ATTENTE) != 0 )
+                elseif (strcasecmp((string)$statut, demande::DEMANDE_ATTENTE) != 0 )
                 {
                     //var_dump("On est après le test statut");
                     $motif = '';
@@ -195,8 +195,7 @@
                     else
                     {
                         $demande->statut($statut);
-        //                if (strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 and $motif == "") {
-                        if ((strcasecmp($statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp($statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
+                        if ((strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
                         {
                             $errlog = "Le motif du refus est obligatoire.";
                             echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
@@ -213,16 +212,16 @@
                                 $pdffilename[0] = $demande->pdf($user->agentid());
                                 $agent = $demande->agent();
                                 //echo "<br>Le statut de la demande est : $statut <br><br>";
-                                if ((strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) or (strcmp($statut, demande::DEMANDE_ANNULE) == 0)) {
+                                if ((strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0) or (strcmp((string)$statut, demande::DEMANDE_ANNULE) == 0)) {
                                     $ics = $demande->ics($agent->mail());
                                 }
-                                elseif ((strcmp($statut, demande::DEMANDE_REFUSE) == 0)) {
+                                elseif ((strcmp((string)$statut, demande::DEMANDE_REFUSE) == 0)) {
                                     // On refuse une demande => On doit mettre à jour l'agenda car la demande est en statut "TENTATIVE"
                                     $ics = $demande->ics($agent->mail());
                                 }
                                 $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
 
-                                if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
+                                if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                                 {
                                     /*
                                     // On remplace les '\' par des '/' et on cherche la position du dernier '/'
@@ -244,7 +243,7 @@
 
                                 $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
                                 // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
-                                if (strcasecmp($demande->type(), "cet") == 0 and strcasecmp($statut, demande::DEMANDE_VALIDE) == 0)
+                                if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
                                 {
                                     $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                                     foreach ($arrayagentrh as $gestrh) {
@@ -259,7 +258,7 @@
                                     }
                                 }
                                 // Si c'est une demande de type télétravail HC raison médical  et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
-                                elseif (strcasecmp($demande->type(), "telesante") == 0 and strcasecmp($demande->statut(), demande::DEMANDE_VALIDE) == 0)
+                                elseif (strcasecmp((string)$demande->type(), "telesante") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0)
                                 {
                                     $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
                                     foreach ($arrayagentrh as $gestrh) {
@@ -285,7 +284,7 @@
 
     echo "Changez l'état de chacune des demandes en \"Validée\" ou \"Refusée\", puis enregistrez les modifications en cliquant sur le bouton \"Enregistrer\" <br>Laissez l'état des demandes à \"En attente\" si vous ne souhaitez pas faire de modification.<br><U>Attention :</U> La saisie du motif est obligatoire dans le cas d'un refus.<br><br>";
 
-    if ($user->estresponsable() and (strcasecmp($mode, MODE_RESPONSABLE) == 0)) {
+    if ($user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) {
         $listestruct = $user->structrespliste();
         $listestruct = $fonctions->enleverstructuresinclues_demandes($listestruct);
         if (is_array($listestruct))
@@ -300,7 +299,7 @@
             $cleelement = $structure->id();
 
             //if ($user->agentid() == '937') ////// PATCH MONIQUE LIER - Ticket GLPI 145258
-            if (strcasecmp($structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
+            if (strcasecmp((string)$structure->respaffdemandesousstruct(),'o')==0)  // Si on doit gérer les demandes de congés/afficher le solde des agents des structures inclues
             {
                 if ($structure->isincluded() and $structure->parentstructure()->responsable()->agentid()==$user->agentid())
                 {
@@ -328,7 +327,7 @@
 
                     // Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
                     // On doit afficher les congés qui sont dans la période suivante
-                    if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) and ($previous == 0))
+                    if ((strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) and ($previous == 0))
                     {
                         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
                     }
@@ -356,11 +355,11 @@
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
-    } elseif (! $user->estresponsable() and (strcasecmp($mode, MODE_RESPONSABLE) == 0)) {
+    } elseif (! $user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) {
         echo "Vous n'êtes pas responsable, vous ne pouvez pas valider les demandes de congés/d'absence <br>";
     }
 
-    if ($user->estgestionnaire() and (strcasecmp($mode, MODE_GESTION) == 0)) {
+    if ($user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
@@ -378,7 +377,7 @@
             $aumoinsunedemande = FALSE;
             $cleelement = $structure->id();
             // Si le gestionnaire ne doit pas gérer les agents et qu'il n'est pas destinataire des notifications des demandes de congés
-            if (strcasecmp($structure->gestvalidagent(),'n')==0
+            if (strcasecmp((string)$structure->gestvalidagent(),'n')==0
                     and array_key_exists($structure->id(),(array)$listegeststruct)===false)
             {
                 // Il n'est pas autorisé à voir les agents de cette structure
@@ -407,7 +406,7 @@
                     }
                     // Si on ne limite pas les congés a la date de fin de la période, il faut prendre plus large que la fin de période
                     // On prend la fin de période + 1 an (soit 2 ans par rapport a l'année de référence)
-                    elseif (strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
+                    elseif (strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0)
                     {
                         $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
                     }
@@ -445,12 +444,12 @@
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
-    } elseif (! $user->estgestionnaire() and (strcasecmp($mode, MODE_GESTION) == 0)) {
+    } elseif (! $user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
         echo "Vous n'êtes pas gestionnaire, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
     }
     
     //var_dump ("mode = $mode");
-    if (strcasecmp($mode, MODE_CONSULTANT) == 0) {
+    if (strcasecmp((string)$mode, MODE_CONSULTANT) == 0) {
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "<center><p>Liste des agents avec une demande d'avis en attente</p></center>";
@@ -463,7 +462,7 @@
 
         // Si on est dans l'année courante et si on ne limite pas les conges a la periode =>
         // On doit afficher les congés qui sont dans la période suivante
-        if ((strcasecmp($fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) and ($previous == 0))
+        if ((strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) and ($previous == 0))
         {
             $fin = $fonctions->formatdate(($fonctions->anneeref() + 2) . $fonctions->finperiode());
         }

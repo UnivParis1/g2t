@@ -191,7 +191,7 @@
                                 {
                                     $scriptlargeur = trim($scriptinfos['LARGEUR']);
                                 }
-                                if (isset($scriptinfos['PLEINECRAN']) and strcasecmp(trim($scriptinfos['PLEINECRAN']),'O')==0)
+                                if (isset($scriptinfos['PLEINECRAN']) and strcasecmp((string)trim($scriptinfos['PLEINECRAN']),'O')==0)
                                 {
                                     $pleinecran = true;
                                 }

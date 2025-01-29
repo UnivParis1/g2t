@@ -50,7 +50,7 @@
     {
         $valeur = explode('|',$_POST["esignatureid"]);
         $esignatureid = $valeur[1];
-        if (strcasecmp($valeur[0],'opt')==0)  // Si c'est une option
+        if (strcasecmp((string)$valeur[0],'opt')==0)  // Si c'est une option
         {
             $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/optionWS.php";
             $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
@@ -59,7 +59,7 @@
             $currentoption = new optionCET($dbcon);
             $currentoption->load($esignatureid);
         }
-        elseif (strcasecmp($valeur[0],'alim')==0) // Si c'est une alimentation
+        elseif (strcasecmp((string)$valeur[0],'alim')==0) // Si c'est une alimentation
         {
             $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/alimentationWS.php";
             $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);

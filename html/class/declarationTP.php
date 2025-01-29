@@ -297,7 +297,7 @@ class declarationTP
         }
         else
         {
-            if (strcasecmp($forced, 'N')==0 or strcasecmp($forced, 'O')==0) //Si c'est O ou N (case insensitive)
+            if (strcasecmp((string)$forced, 'N')==0 or strcasecmp((string)$forced, 'O')==0) //Si c'est O ou N (case insensitive)
             {
                 $this->forcee = strtoupper($forced);
             }
@@ -351,7 +351,7 @@ class declarationTP
             $semaineindex = 1;
         }
         
-        if (strcasecmp($moment, fonctions::MOMENT_MATIN) == 0)
+        if (strcasecmp((string)$moment, fonctions::MOMENT_MATIN) == 0)
             $momentindex = 0;
         else
             $momentindex = 1;
@@ -406,7 +406,7 @@ class declarationTP
             $semaineindex = 1;
         }
         
-        if (strcasecmp($moment, fonctions::MOMENT_MATIN) == 0)
+        if (strcasecmp((string)$moment, fonctions::MOMENT_MATIN) == 0)
             $momentindex = 0;
         else
             $momentindex = 1;
@@ -525,19 +525,19 @@ class declarationTP
             $htmltext = $htmltext . "<B><div class='redtext'>" . $this->datefin() . "</div></B>";
         $htmltext = $htmltext . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >";
-        if ($pourmodif and strcasecmp($this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) {
+        if ($pourmodif and strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) {
             // Affichager les selections !!!!
             $htmltext = $htmltext . "<select name='statut[" . $this->declarationTPid() . "]'>";
             $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_ATTENTE . "'";
-            if (strcasecmp($this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0)
+            if (strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0)
                 $htmltext = $htmltext . " selected ";
             $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_ATTENTE) . "</option>";
             $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_VALIDE ."'";
-            if (strcasecmp($this->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0)
+            if (strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0)
                 $htmltext = $htmltext . " selected ";
             $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_VALIDE) . "</option>";
             $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_REFUSE ."";
-            if (strcasecmp($this->statut(), declarationTP::DECLARATIONTP_REFUSE) == 0)
+            if (strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_REFUSE) == 0)
                 $htmltext = $htmltext . " selected ";
             $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_REFUSE) . "</option>";
             $htmltext = $htmltext . "</select>";

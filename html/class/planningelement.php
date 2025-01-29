@@ -323,7 +323,7 @@ class planningelement
         // Si la date se situe dans le passé et qu'on affiche en noir et blanc sauf si c'est un WE ou un jour férier alors met la case achurée
         // ==> Evite que les agents "surveillent" si un autre agent à bien posé des congés dans le passé....
         if (is_null($this->date) == false) {
-            if (($this->fonctions->formatdatedb($this->date()) < date('Ymd')) and ($noiretblanc == true) and ($this->typeelement != 'ferie') and (strcasecmp($this->typeelement, "WE") != 0)) // $this->typeelement == "" or '
+            if (($this->fonctions->formatdatedb($this->date()) < date('Ymd')) and ($noiretblanc == true) and ($this->typeelement != 'ferie') and (strcasecmp((string)$this->typeelement, "WE") != 0)) // $this->typeelement == "" or '
             {
                 // return self::COULEUR_NOIRE;
                 return self::COULEUR_HACHURE;
@@ -333,24 +333,20 @@ class planningelement
         {
             return self::COULEUR_VIDE;
         }
-//        elseif (strcasecmp($this->typeelement, "nondec") == 0)
-//        {
-//            return self::COULEUR_NON_DECL;
-//        }
-        elseif (strcasecmp($this->typeelement, "WE") == 0)
+        elseif (strcasecmp((string)$this->typeelement, "WE") == 0)
         {
             return self::COULEUR_WE;
         }
         // if ($this->typeelement != 'ferie' and $this->typeelement != 'teletrav' )  // and $this->typeelement != 'tppar')
-        if (strcasecmp($this->typeelement, "ferie") != 0 and strcasecmp($this->typeelement, "teletrav") != 0 and strcasecmp($this->typeelement, "nondec") != 0)
+        if (strcasecmp((string)$this->typeelement, "ferie") != 0 and strcasecmp((string)$this->typeelement, "teletrav") != 0 and strcasecmp((string)$this->typeelement, "nondec") != 0)
         {
-            if (strcasecmp($this->parenttype(),'teletravHC')==0) // Si le type du parent de l'element est teletravHC
+            if (strcasecmp((string)$this->parenttype(),'teletravHC')==0) // Si le type du parent de l'element est teletravHC
             {
                 // Même si on doit afficher l'élément en N&B, les élémenet dont le parent est 'teletravHC' doivent être affiché en couleur
                 $noiretblanc = false; 
             }
             // Si on est en N&B et si la demande en attente et qu'on dispose de quoi identifier la demande d'origine => On va vérifier le type de la demande
-            elseif (strcasecmp($this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)) and $noiretblanc)
+            elseif (strcasecmp((string)$this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)) and $noiretblanc)
             {
                 if (!is_null($this->demande))
                 {
@@ -366,7 +362,7 @@ class planningelement
                 }
                 $demandeparenttype = TABCOULEURPLANNINGELEMENT[$demande->type()]['parentid'];
                 //  Si la demande est de type télétravail HC, on ne l'affiche pas car l'agent travaille
-                if (strcasecmp($demandeparenttype,'teletravHC')==0)
+                if (strcasecmp((string)$demandeparenttype,'teletravHC')==0)
                 {
                     return self::COULEUR_VIDE;
                 }
@@ -422,7 +418,7 @@ class planningelement
                 return $this->statut;
         } else {
             $this->statut = $statut;
-            if (strcasecmp($this->statut, demande::DEMANDE_ATTENTE) == 0) {
+            if (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0) {
                 $this->type("atten");
                 $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
                 $params = array($this->typeelement);
@@ -478,7 +474,7 @@ class planningelement
         $extraclass = $this->htmlextraclass();
         $exclusion = (stripos(" " . $this->htmlextraclass() . " ", planningelement::HTML_CLASS_EXCLUSION)!==false);
         $deplace = (stripos(" " . $this->htmlextraclass() . " ", planningelement::HTML_CLASS_DEPLACE)!==false);
-        if ((strcasecmp($this->type(),'teletrav')==0 or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
+        if ((strcasecmp((string)$this->type(),'teletrav')==0 or $exclusion) and !$noiretblanc)  // On permet le double click si on est pas en N&B et (c'est du télétravail ou c'est une date exclue du télétravail)
         {
             
             // Le fait que se soit une convention 'médicale' est pris en charge par le script de déplacement/annulation
@@ -515,7 +511,7 @@ class planningelement
             // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
             // ==> On affiche le type du parent 'Teletravail hors convention'
             $demandeparenttype = '';
-            if (strlen($this->info()) != 0 and (strcasecmp($this->parenttype(),'teletravHC')==0 or strcasecmp($demandeparenttype,'teletravHC')==0) and $noiretblanc) 
+            if (strlen($this->info()) != 0 and (strcasecmp((string)$this->parenttype(),'teletravHC')==0 or strcasecmp((string)$demandeparenttype,'teletravHC')==0) and $noiretblanc) 
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
                 if ($demandeparenttype != '')
@@ -538,7 +534,7 @@ class planningelement
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
-            elseif ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
+            elseif ((strcasecmp((string)$this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
             {
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
                 $spanactive = true;
@@ -571,7 +567,7 @@ class planningelement
             $demandeparenttype = '';
             // S'il y a une info lié à l'élément, que le type du parent de l'element est teletravHC et que l'affichage est en N&B
             // ==> On affiche le type du parent 'Teletravail hors convention'
-            if (strlen($this->info()) != 0 and (strcasecmp($this->parenttype(),'teletravHC')==0 or strcasecmp($demandeparenttype,'teletravHC')==0) and $noiretblanc) 
+            if (strlen($this->info()) != 0 and (strcasecmp((string)$this->parenttype(),'teletravHC')==0 or strcasecmp((string)$demandeparenttype,'teletravHC')==0) and $noiretblanc) 
             {
                 //echo "On va mettre le libellé du parent : " . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle'] . "<br>";
                 if ($demandeparenttype != '')
@@ -594,7 +590,7 @@ class planningelement
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
-            elseif ((strcasecmp($this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
+            elseif ((strcasecmp((string)$this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
             {
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
                 $spanactive = true;

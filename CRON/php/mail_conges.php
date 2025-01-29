@@ -135,7 +135,7 @@ Merci de contrôler son dossier.\n");
                         echo "On a récupéré la délégation pour la structure " . $structresp->nomcourt() . " et le flag d'envoi au responsable est $continuesendtoresp \n";
                     }
                     
-                    if (strcasecmp($continuesendtoresp, 'o')==0 )
+                    if (strcasecmp((string)$continuesendtoresp, 'o')==0 )
                     {
                         echo "On ajoute le responsable SIHAM (" . $sihamresp->identitecomplete()  . ") dans les destinataires. \n";
                         if (isset($mail_resp[$sihamresp->agentid()]))
