@@ -77,69 +77,47 @@
             if ($esignatureid <>'' and $esignatureid>0)
             {
                 echo "La convention (eSingatureid = $esignatureid) est dans eSignature => On récupère les informations \n";
-                // On interroge le WS eSignature /ws/signrequests/{id}
-                $curl = curl_init();
-                $params_string = "";
-                $opts = [
-                    CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_PROXY => ''
-                ];
-                curl_setopt_array($curl, $opts);
-                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                $fonctions->ajoutesignatureheader($curl);
-                $json = curl_exec($curl);
-                $error = curl_error ($curl);
-                $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-                if ((int) $httpcode !== 200 and $error=="")
-                {
-                    $error = "Code retour HTTP => $httpcode";
-                }
-                curl_close($curl);
-                if ($error != "")
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup niveau signature) =>  " . $error));
-                }
-                else
-                {
-                    $response = json_decode($json, true);
-                    // parentSignBook->liveWorkflow->currentStepNumber
 
-                    if (isset($response['parentSignBook']['liveWorkflow']['currentStepNumber']))
+                $esignature = new esignature($dbcon);
+                $response = $esignature->get_signrequests($esignatureid);
+
+                if (is_string($response))
+                {
+                    echo "Une erreur s'est produite dans la récupération des informations : $response \n";
+                }
+                elseif (isset($response['parentSignBook']['liveWorkflow']['currentStepNumber']))
+                {
+                    $currentstepnumber = $response['parentSignBook']['liveWorkflow']['currentStepNumber'];
+                    echo "Le currentstepnumber = $currentstepnumber dans la convention $esignatureid \n";
+                    if (isset($response['parentSignBook']['liveWorkflow']['liveWorkflowSteps']))
                     {
-                        $currentstepnumber = $response['parentSignBook']['liveWorkflow']['currentStepNumber'];
-                        echo "Le currentstepnumber = $currentstepnumber dans la convention $esignatureid \n";
-                        if (isset($response['parentSignBook']['liveWorkflow']['liveWorkflowSteps']))
+                        $liveworkflowsteps = $response['parentSignBook']['liveWorkflow']['liveWorkflowSteps'];
+                        $nbworkflowsteps = count($liveworkflowsteps);
+                        echo "nbworkflowsteps = $nbworkflowsteps \n";
+                        if ($currentstepnumber <= $nbworkflowsteps -2)  // On ne traite pas les deux derniers niveaux de signature
                         {
-                            $liveworkflowsteps = $response['parentSignBook']['liveWorkflow']['liveWorkflowSteps'];
-                            $nbworkflowsteps = count($liveworkflowsteps);
-                            echo "nbworkflowsteps = $nbworkflowsteps \n";
-                            if ($currentstepnumber <= $nbworkflowsteps -2)  // On ne traite pas les deux derniers niveaux de signature
+                            $currentstep = $liveworkflowsteps[$currentstepnumber-1]; // L'index comence à 0
+                            foreach($currentstep['recipients'] as $recipient)
                             {
-                                $currentstep = $liveworkflowsteps[$currentstepnumber-1]; // L'index comence à 0
-                                foreach($currentstep['recipients'] as $recipient)
+                                $recipientuser = $recipient['user'];
+                                echo "Recipient nom => " . $recipientuser['name'] . " " . $recipientuser['firstname'] . "   eppn = " . $recipientuser['eppn'] . "  mail = " . $recipientuser['email'] . " \n";
+                                $destinataire = new agent($dbcon);
+                                if (!$destinataire->loadbyemail($recipientuser['email']))
                                 {
-                                    $recipientuser = $recipient['user'];
-                                    echo "Recipient nom => " . $recipientuser['name'] . " " . $recipientuser['firstname'] . "   eppn = " . $recipientuser['eppn'] . "  mail = " . $recipientuser['email'] . " \n";
-                                    $destinataire = new agent($dbcon);
-                                    if (!$destinataire->loadbyemail($recipientuser['email']))
-                                    {
-                                        echo "Envoi impossible au destinataire " . $recipientuser['email'] . "\n";
-                                    }
-                                    else
-                                    {
-                                        echo "Le desitnataire est : " . $destinataire->identitecomplete() . " \n";
-                                        $tabdestinataireesignature[$destinataire->agentid()] = $destinataire;
-                                    }
+                                    echo "Envoi impossible au destinataire " . $recipientuser['email'] . "\n";
+                                }
+                                else
+                                {
+                                    echo "Le desitnataire est : " . $destinataire->identitecomplete() . " \n";
+                                    $tabdestinataireesignature[$destinataire->agentid()] = $destinataire;
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        echo "Impossible de déterminer le currentstep \n";
-                    }
+                }
+                else
+                {
+                    echo "Impossible de déterminer le currentstep \n";
                 }
             }
             elseif ($convention->statutresponsable() == teletravail::TELETRAVAIL_ATTENTE)
@@ -148,18 +126,6 @@
                 $agent = new agent($dbcon);
                 $agent->load($convention->agentid());
                 $responsable = $agent->getsignataire(null,$structresp);
-/*                
-                //$structure = new structure($dbcon);
-                //$structure->load($agent->structureid());
-                //if ($structure->responsable()->agentid() == $agent->agentid())
-                //{
-                //    $responsable = $structure->resp_envoyer_a($codeinterne);
-                //}
-                //else
-                //{
-                //    $responsable = $structure->agent_envoyer_a($codeinterne);
-                //}
- */
                 if (is_null($responsable) or $responsable===false)
                 {
                     echo "On n'envoie pas de rappel au responsable de l'agent => car il n'est pas défini \n";

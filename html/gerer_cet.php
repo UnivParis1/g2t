@@ -232,37 +232,24 @@
             
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
 
-            $curl = curl_init();
-            $params_string = "";
-            $opts = [
-                CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $alimcet->esignatureid(),
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_PROXY => ''
-            ];
-            curl_setopt_array($curl, $opts);
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            $fonctions->ajoutesignatureheader($curl);
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            if ((int) $httpcode !== 200 and $error=="")
+            $esignature = new esignature($dbcon);
+            $response = $esignature->get_signrequests($alimcet->esignatureid());
+            
+            if (is_string($response) or !isset($response['parentSignBook']['liveWorkflow']['currentStep']))
             {
-                $error = "Code retour HTTP => $httpcode";
+                // Il y a un problème dans la récupération des informations
+                // On affiche un message d'erreur
+                var_dump("$response");
             }
-            curl_close($curl);
-            if ($error != "")
+            else
             {
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
-            }
-            $response = json_decode($json, true);
-            $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
-            $statut = $statut . "En attente de : ";
-            foreach ((array)$currentstep['recipients'] as $recipient)
-            {
-                $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
-            }
-            $htmltext = $htmltext . "<tr>"
+                $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
+                $statut = $statut . "En attente de : ";
+                foreach ((array)$currentstep['recipients'] as $recipient)
+                {
+                    $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                }
+                $htmltext = $htmltext . "<tr>"
                     . "<td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td>"
                     . "<td class='cellulesimple'>" . $alimcet->esignatureid() . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($alimcet->datecreation(), 0, 10)) . "_" . substr($alimcet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>"
@@ -271,50 +258,22 @@
                     . "<td class='cellulesimple'>" . $statut . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
                     . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
-//                    .'<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
-//                    .'<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">'
-//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
-//                    .'</form>'
-//                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $alimcet->esignatureid() . "\"].submit(); return false;'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
                     . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
+            }
         }
         else
         {
             $htmltext = $htmltext . "<tr>"
-                    . "<td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td>"
-                    . "<td class='cellulesimple'>" . $alimcet->esignatureid() . "</td>"
-                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($alimcet->datecreation(), 0, 10)) . "_" . substr($alimcet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>"
-                    . "<td class='cellulesimple'>" . $alimcet->typeconges() . "</td>"
-                    . "<td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>"
-                    . "<td class='cellulesimple'>" . $alimcet->statut() . "</td>"
-                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
-                    . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
-//                    .'<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
-//                    .'<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">'
-//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
-//                    .'</form>'
-//                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $alimcet->esignatureid() . "\"].submit(); return false;'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
-                    . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
+                . "<td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td>"
+                . "<td class='cellulesimple'>" . $alimcet->esignatureid() . "</td>"
+                . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($alimcet->datecreation(), 0, 10)) . "_" . substr($alimcet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($alimcet->datecreation(), 0, 10)).' '.substr($alimcet->datecreation(), 10) . "</td>"
+                . "<td class='cellulesimple'>" . $alimcet->typeconges() . "</td>"
+                . "<td class='cellulesimple'>" . $alimcet->valeur_f() . "</td>"
+                . "<td class='cellulesimple'>" . $alimcet->statut() . "</td>"
+                . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($alimcet->datestatut()) . "'>" . $fonctions->formatdate($alimcet->datestatut()) . "</td>"
+                . "<td class='cellulesimple'>" . $alimcet->motif() . "</td>"
+                . "<td class='cellulesimple'><a href='" . $alimcet->esignatureurl() . "' target='_blank'>".(($alimcet->statut() == $alimcet::STATUT_ABANDONNE) ? '':$alimcet->esignatureurl())."</a></td>";
         }
-//        $htmltext = $htmltext . "<td class='cellulesimple'><form name='alim_" . $alimcet->esignatureid() . "'  method='post' >";
-//        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-//        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
-//        if (isset($_POST["agentid"]))
-//        {
-//            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
-//        }
-//        if (isset($_POST["agent"]))
-//        {
-//            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
-//        }
-//        $htmltext = $htmltext . "<input type='hidden' name='alimid' value='" . $alimcet->esignatureid() . "'>";
-//        $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
-//        if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
-//        {
-//            $htmltext = $htmltext . " disabled='disabled' ";
-//        }
-//        $htmltext = $htmltext . ">";
-//        $htmltext = $htmltext . "</form></td>";
         $htmltext = $htmltext . "<td class='cellulesimple'>";
         $htmltext = $htmltext . '<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
         $htmltext = $htmltext . '<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">';
@@ -388,53 +347,35 @@
             $statut = $optioncet->statut() . '<br>';
             
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
-            
-            $curl = curl_init();
-            $params_string = "";
-            $opts = [
-                CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $optioncet->esignatureid(),
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_PROXY => ''
-            ];
-            curl_setopt_array($curl, $opts);
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            $fonctions->ajoutesignatureheader($curl);
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            if ((int) $httpcode !== 200 and $error=="")
+            $esignature = new esignature($dbcon);
+            $response = $esignature->get_signrequests($optioncet->esignatureid());
+
+            if (is_string($response) or !isset($response['parentSignBook']['liveWorkflow']['currentStep']))
             {
-                $error = "Code retour HTTP => $httpcode";
+                // Il y a un problème dans la récupération des informations
+                // On affiche un message d'erreur
+                var_dump("$response");
             }
-            curl_close($curl);
-            if ($error != "")
+            else
             {
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
+                $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
+                $statut = $statut . "En attente de : ";
+                foreach ((array)$currentstep['recipients'] as $recipient)
+                {
+                    $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                }
+                $htmltext = $htmltext . "<tr>"
+                        . "<td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td>"
+                        . "<td class='cellulesimple'>" . $optioncet->esignatureid() . "</td>"
+                        . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($optioncet->datecreation(), 0, 10)) . "_" . substr($optioncet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td>"
+                        . "<td class='cellulesimple'>" . $optioncet->anneeref() . "</td>"
+                        . "<td class='cellulesimple'>" . $optioncet->valeur_i() . "</td>"
+                        . "<td class='cellulesimple'>" . $optioncet->valeur_j() . "</td>"
+                        . "<td class='cellulesimple'>" . $statut . "</td>"
+                        . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
+                        . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
+                        . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
             }
-            $response = json_decode($json, true);
-            $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
-            $statut = $statut . "En attente de : ";
-            foreach ((array)$currentstep['recipients'] as $recipient)
-            {
-                $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
-            }
-            $htmltext = $htmltext . "<tr>"
-                    . "<td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td>"
-                    . "<td class='cellulesimple'>" . $optioncet->esignatureid() . "</td>"
-                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb(substr($optioncet->datecreation(), 0, 10)) . "_" . substr($optioncet->datecreation(), 10) . "'>" . $fonctions->formatdate(substr($optioncet->datecreation(), 0, 10)).' '.substr($optioncet->datecreation(), 10) . "</td>"
-                    . "<td class='cellulesimple'>" . $optioncet->anneeref() . "</td>"
-                    . "<td class='cellulesimple'>" . $optioncet->valeur_i() . "</td>"
-                    . "<td class='cellulesimple'>" . $optioncet->valeur_j() . "</td>"
-                    . "<td class='cellulesimple'>" . $statut . "</td>"
-                    . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
-                    . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
-//                    .'<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
-//                    .'<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">'
-//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
-//                    .'</form>'
-//                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $optioncet->esignatureid() . "\"].submit(); return false;'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
-                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
         else
         {
@@ -448,32 +389,8 @@
                     . "<td class='cellulesimple'>" . $optioncet->statut() . "</td>"
                     . "<td class='cellulesimple'><time datetime='" . $fonctions->formatdatedb($optioncet->datestatut()) . "'>" . $fonctions->formatdate($optioncet->datestatut()) . "</td>"
                     . "<td class='cellulesimple'>" . $optioncet->motif() . "</td>"
-//                    .'<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">'
-//                    .'<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">'
-//                    .'<input type="hidden" name="esignaturePDF" value="ok">'
-//                    .'</form>'
-//                    . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'  onClick='document.forms[\"showesignaturePDF_" . $optioncet->esignatureid() . "\"].submit(); return false;'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
                     . "<td class='cellulesimple'><a href='" . $optioncet->esignatureurl() . "' target='_blank'>".(($optioncet->statut() == $optioncet::STATUT_ABANDONNE) ? '':$optioncet->esignatureurl())."</a></td>";
         }
-//        $htmltext = $htmltext . "<td class='cellulesimple'><form name='option_" . $optioncet->esignatureid() . "'  method='post' >";
-//        $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
-//        $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "'>";
-//        if (isset($_POST["agentid"]))
-//        {
-//            $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $_POST["agentid"] . "'>";
-//        }
-//        if (isset($_POST["agent"]))
-//        {
-//            $htmltext = $htmltext . "<input type='hidden' name='agent' value='" . $_POST["agent"] . "'>";
-//        }
-//        $htmltext = $htmltext . "<input type='hidden' name='optionid' value='" . $optioncet->esignatureid() . "'>";
-//        $htmltext = $htmltext . "<input type='submit' name='option_" . $optioncet->esignatureid()  . "' class='g2tbouton g2tdocumentbouton' value='Générer' ";
-//        if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optionCET::STATUT_REFUSE )
-//        {
-//            $htmltext = $htmltext . " disabled='disabled' ";
-//        }
-//        $htmltext = $htmltext . ">";
-//        $htmltext = $htmltext . "</form></td>";
         $htmltext = $htmltext . "<td class='cellulesimple'>";
         $htmltext = $htmltext . '<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
         $htmltext = $htmltext . '<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">';

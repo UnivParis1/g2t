@@ -104,32 +104,15 @@
         if ($teletravail->esignatureid()<>"")
         {
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
-            $curl = curl_init();
-            $params_string = "";
-            $opts = [
-                CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $teletravail->esignatureid(),
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_PROXY => ''
-            ];
-            curl_setopt_array($curl, $opts);
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            $fonctions->ajoutesignatureheader($curl);
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            if ((int) $httpcode !== 200 and $error=="")
+
+            $esignature = new esignature($dbcon);
+            $response = $esignature->get_signrequests($teletravail->esignatureid());
+
+            if (is_string($response))
             {
-                $error = "Code retour HTTP => $httpcode";
+                $enattente = $enattente . $response;
             }
-            curl_close($curl);
-            if ($error != "")
-            {
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
-            }
-            $response = json_decode($json, true);
-            //var_dump($response);
-            if (isset($response['parentSignBook']['liveWorkflow']['currentStep']))
+            elseif (isset($response['parentSignBook']['liveWorkflow']['currentStep']))
             {
                 $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
                 foreach ((array)$currentstep['recipients'] as $recipient)
@@ -179,10 +162,6 @@
                             $signedstep = true;
                         }
                         $spantext = $spantext . "   " . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature \n";
-                    }
-                    if ($signedstep==false and is_null($nextstep))
-                    {
-                        $nextstep = $numstep;
                     }
                 }
             }

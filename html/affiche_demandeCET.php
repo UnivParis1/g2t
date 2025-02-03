@@ -182,51 +182,16 @@
     if (!is_null($esignatureid))
     {
         echo "Le numéro eSignatureid = $esignatureid <br>";
-        $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
-        $error = '';
-        $curl = curl_init();
-        $params_string = "";
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/signrequests/' . $esignatureid,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        $fonctions->ajoutesignatureheader($curl);
-        $json = curl_exec($curl);
-        $error = curl_error ($curl);
-        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ((int) $httpcode !== 200 and $error=="")
+
+        $esignature = new esignature($dbcon);
+        $response = $esignature->get_signrequests($esignatureid);
+
+        if (is_string($response))
         {
-            $error = "Code retour HTTP => $httpcode";
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" $response"));
+            echo "<br>$response <br><br>";
         }
-        curl_close($curl);
-        if ($error != "")
-        {
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur Curl =>  " . $error));
-            echo "Erreur CURL (récup data) => $error <br>";
-        }
-        $response = json_decode($json, true);
-/*
-        echo "<br><pre>";
-        var_dump($response);
-        echo "</pre><br>";
-*/
-        if (is_null($response))
-        {
-            $erreur = "La réponse json est null => Demande introuvable ??";
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-            echo "<br>$erreur <br>";
-        }
-        elseif (isset($response['error']))
-        {
-            $erreur = "La réponse json est une erreur : " . $response['error'];
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" $erreur"));
-            echo "<br>$erreur <br>";
-        }
-        else // Tout est ok => on va récupérer les données du workflow
+        else
         {
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"]));
             echo "<br><br>Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"] . "<br>";
@@ -343,39 +308,16 @@
         echo "<br><br>";
         
         // On appelle le WS eSignature pour récupérer le document correspondant à la demande
-        $curl = curl_init();
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $esignatureid,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        $fonctions->ajoutesignatureheader($curl);
-        $pdf = curl_exec($curl);
-        $error = curl_error ($curl);
-        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ((int) $httpcode !== 200 and $error=="")
-        {
-            $error = "Code retour HTTP => $httpcode";
-        }
-        curl_close($curl);
+
+        $esignature = new esignature($dbcon);
+        $pdf = '';
+        $error = $esignature->get_document($esignatureid, $pdf);
         if ($error != "")
         {
-            $error = "Erreur Curl (récup PDF) =>  " . $error;
             error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));
             echo $error . '<br><br>';
         }
-        if (stristr(substr($pdf,0,200),'%PDF-') === false)
-        {
-            $error = "Le WS n'a pas retourné un fichier PDF";
-            $error = "Erreur Curl (récup PDF) =>  " . $error;
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));
-            echo $error . '<br><br>';
-        }
-        
-        if ($error == '')
+        else
         {
             $encodage = base64_encode($pdf);
             

@@ -560,54 +560,27 @@ class alimentationCET
         $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
         $error = '';
         
-            // On appelle le WS eSignature pour récupérer le document final
-        $curl = curl_init();
-        $opts = [
-            CURLOPT_URL => $eSignature_url . '/ws/signrequests/get-last-file/' . $this->esignatureid,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_PROXY => ''
-        ];
-        curl_setopt_array($curl, $opts);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        $this->fonctions->ajoutesignatureheader($curl);
-        $pdf = curl_exec($curl);
-        $error = curl_error ($curl);
-        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if ((int) $httpcode !== 200 and $error=="")
-        {
-            $error = "Code retour HTTP => $httpcode";
-        }
-        curl_close($curl);
+        // On appelle le WS eSignature pour récupérer le document final
+        $esignature = new esignature($this->dbconnect);
+        $pdf = '';
+        $error = $esignature->get_document($this->esignatureid, $pdf);
+
         if ($error != "")
         {
-            $error = "Erreur Curl (récup PDF) =>  " . $error;
-            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
-            return $error;
-            //echo "Erreur Curl (récup PDF) =>  " . $error . '<br><br>';
-        }
-        if (stristr(substr($pdf,0,10),'PDF') === false)
-        {
-            $error = "Erreur Curl (récup PDF) =>  " . $error;
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
             return $error;
         }
-        //echo "<br>" . print_r($json,true) . "<br>";
-        //$response = json_decode($json, true);
         
         $agent = new agent($this->dbconnect);
         $agent->load($this->agentid());
         $basename = str_replace(' ', '_', "Alimentation_CET_" . $agent->nom() . "_" . $agent->prenom() . "_num_" . $this->esignatureid . ".pdf");
         $pdffilename = $this->fonctions->pdfpath() . '/cet/' . $basename;
-        //echo "<br>pdffilename = $pdffilename <br><br>";
         
         // création du fichier
-        //$pdffilename = '/tmp/mon_fichier_test.pdf';
         $path = dirname("$pdffilename");
         if (!file_exists($path))
         {
             mkdir("$path",0777,true);
-            //mkdir("$path");
             chmod("$path", 0777);
         }
         

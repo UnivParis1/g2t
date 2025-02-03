@@ -282,15 +282,10 @@
             (
                 'eppn' => "$agent_eppn",
                 'createByEppn' => "$agent_eppn",
-                'targetEmails' => array
-                (
-                    "$agent_mail"
-                ),
-                //'targetUrls' => array("$full_g2t_ws_url")
-                //'targetUrls' => array($sftpurl . "/" . $agent->nom(). "_" . $agent->prenom(),"$full_g2t_ws_url")
+                'targetEmails' => array("$agent_mail"),
                 'targetUrl' => "$full_g2t_ws_url",
                 'targetUrls' => array("$full_g2t_ws_url"),
-                'formDatas' => json_encode($formsdata)
+                'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
             );
 	            
             $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
@@ -309,55 +304,22 @@
             {
                 $params = $fonctions->createesignaturestepsJson($params);
 
-                $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk ) {
+                $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
+                {
                     is_array( $item )
                     ? array_walk( $item, $walk, $key )
-                    : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                    // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                    : $output[] = ($parent_key ?: $key) . "=" . $item;
                 };
+                //echo "Param = <br>"; var_dump($params);
                 array_walk( $params, $walk );
-                //echo "Output = <br>"; var_dump($output);
-                $params_string = implode( '&', $output );
-                //echo "params_string = <br>"; var_dump ($params_string);
+                //echo "Output = <br>"; var_export($output);
 
-                $opts = [
-                    CURLOPT_URL => trim($eSignature_url) . '/ws/forms/' . trim($id_model)  . '/new',
-                    CURLOPT_POST => true,
-                    CURLOPT_POSTFIELDS => $params_string,
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_SSL_VERIFYPEER => false
-                ];
-                curl_setopt_array($curl, $opts);
-                curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-                $fonctions->ajoutesignatureheader($curl);
-                $json = curl_exec($curl);
-                $error = curl_error ($curl);
-                $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-                if ((int) $httpcode !== 200 and $error=="")
-                {
-                    $error = "Code retour HTTP => $httpcode";
-                }
-                curl_close($curl);
-                if ($error != "")
-                {
-                    echo "Erreur Curl = " . $error . "<br><br>";
-                }
-                //echo "<br>" . print_r($json,true) . "<br>";
-                $id = json_decode($json, true);
-                if (trim($id . "") == "")
-                {
-                    $id = -99999;
-                }
+                $esignature = new esignature($dbcon);
+                $id = $esignature->create_existing_signrequest(trim($id_model), $output);
+                //var_dump("id creation = " . $id);
 
-                //var_dump($id);
-                if (is_array($id))
-                {
-                    $erreur = $id['error'];  
-                }
-                elseif ("$id" < 0)
-                {
-                    $erreur =  "La création du droit d'option dans eSignature a échoué (Numéro demande eSignature incorrect = $id) ==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
-                }
-                elseif ("$id" <> "")
+                if (is_integer($id))
                 {
                     //echo "Id de la nouvelle demande = " . $id . "<br>";
                     $optionCET->esignatureid($id);
@@ -366,30 +328,25 @@
 
                     $erreur = $optionCET->store();
                     $agent->synchroCET();
-                    $sauvegardeok = true;
 
-                }
-                else
-                {
-                    $erreur =  "La création du droit d'option dans eSignature a échoué !!==> Pas de sauvegarde du droit d'option dans G2T.<br><br>";
-                }
-                if ($erreur <> "")
-                {
-                    if (is_array($id))
+                    if ($erreur <> "")
                     {
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . print_r($id,true)));
+                        echo "Erreur (création) = $erreur <br>";
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
                     }
                     else
                     {
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur));
+                        //var_dump($optionCET);
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
+                        //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+                        $sauvegardeok = true;
                     }
-                    echo $fonctions->showmessage(fonctions::MSGERROR, "Erreur (création) = $erreur");
                 }
                 else
                 {
-                    //var_dump($optionCET);
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La sauvegarde (création) s'est bien passée => eSignatureid = " . $id ));
-                    //echo "La sauvegarde (création) s'est bien passée...<br><br>";
+                    $erreur  = "La création du droit d'option dans eSignature a échoué ==> Pas de sauvegarde du droit d'option dans G2T.";
+                    error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+                    echo $fonctions->showmessage(fonctions::MSGERROR, "$erreur");
                 }
             }
         }
@@ -425,7 +382,9 @@
             $return = '';
             if (trim($esignatureid_delete.'')<>'')
             {
-                $return = $fonctions->deleteesignaturedocument($esignatureid_delete);
+                $esignature = new esignature($dbcon);
+                $return = $esignature->delete_signrequest($esignatureid_delete);
+                // $return = $fonctions->deleteesignaturedocument($esignatureid_delete);
             }
             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
             {

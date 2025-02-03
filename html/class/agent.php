@@ -4016,22 +4016,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     
     function afficheAlimCetHtml($typeconge = '', $statuts = array())
     {
-/*
-        $servername = $_SERVER['SERVER_NAME'];
-        $serverport = $_SERVER['SERVER_PORT'];
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
-        {
-            $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-            $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
-        }
-        else
-        {
-            $serverprotocol = "http";
-        }
-        $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
-        $full_g2t_ws_url = $g2t_ws_url . "/ws/alimentationWS.php";
-*/
-        
         $alimcet = new alimentationCET($this->dbconnect);
     	$listid = $this->getDemandesAlim($typeconge, $statuts);
     	$htmltext = '';
@@ -4078,23 +4062,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     
     function afficheOptionCetHtml($anneeref = '', $statuts = array())
     {
-/*
-        $servername = $_SERVER['SERVER_NAME'];
-        $serverport = $_SERVER['SERVER_PORT'];
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
-        {
-            $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
-            $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
-        }
-        else
-        {
-            $serverprotocol = "http";
-        }
-        $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport;
-        $full_g2t_ws_url = $g2t_ws_url . "/ws/optionWS.php";
-*/
-        
-        
         $optioncet = new optionCET($this->dbconnect);
         $listid = $this->getDemandesOption($anneeref, $statuts);
         $htmltext = '';
