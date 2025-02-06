@@ -449,7 +449,7 @@
         function sendmail_struct(structid)
         {
             //console.log('sendmail_struct => ' + structid);
-            //var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            //var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
 
             var currenttab = document.getElementById(structid);
             if (currenttab)
@@ -489,7 +489,7 @@
         function sendmail_agent(button)
         {
             //console.log('sendmail_struct => ' + structid);
-            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
 
             var currentbutton = button;
             var currenttr = currentbutton.closest("tr");
@@ -563,7 +563,7 @@
         function poserconges_struct(structid)
         {
             //console.log('sendmail_struct => ' + structid);
-            //var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            //var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
 
             var currenttab = document.getElementById(structid);
             if (currenttab)
@@ -603,7 +603,7 @@
         function poserconges_agent(button)
         {
             //console.log('poserconges_agent => ' + button.id);
-            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
 
             var currentbutton = button;
             var currenttr = currentbutton.closest("tr");
@@ -700,7 +700,7 @@
 
         function modifieperiode(selectobject, agentid, periodeid)
         {
-            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
             var currentindx = selectobject.selectedIndex;
             var optionvalue = selectobject.options[currentindx].value;
 

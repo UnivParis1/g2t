@@ -2001,6 +2001,70 @@ class fonctions
         return $g2t_ws_url;
     }
 
+    public function get_g2t_ws_public_url()
+    {
+        if (defined('G2T_WS_PUBLIC_URL')) /* A partir de la version 7.1.9 de G2T, la constante est forcément déclarée ==> Donc on devrait passer systématiquement ici */
+        {
+            $g2t_ws_url = G2T_WS_PUBLIC_URL;
+            // error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est récupérée de la constante => $g2t_ws_url" ));
+        }
+        else if (!isset($_SERVER['SERVER_NAME'])) /* Si on passe là, on a un problème car la constante n'est pas défini et on n'a aucun moyen de calculer l'URL du WS!! */
+        {
+            $g2t_ws_url = "URL invalide !";
+            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T n'est pas dans la constante et impossible de calculer l'URL => $g2t_ws_url" ));
+        }
+        else
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T va être calculée" ));
+            // On récuère le nom du serveur G2T
+            $servername = $_SERVER['SERVER_NAME'];
+
+
+            // Si on passe par un proxy ==> HTTP_X_FORWARDED_PROTO est défini dans le header (protocole utilisé entre le client et le proxy)
+            if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']))
+            {
+                $serverprotocol = $_SERVER['HTTP_X_FORWARDED_PROTO'];
+            }
+            // Si la requète vient directement sur le serveur, on regarde si $_SERVER['HTTPS'] est défini
+            else if (isset($_SERVER['HTTPS']))
+            {
+                 $serverprotocol = "https";
+            }
+            // Sinon c'est de l'HTTP
+            else
+            {
+                $serverprotocol = "http";
+            }
+
+            //Si on passe par un proxy => HTTP_X_FORWARDED_PORT est défini dans le header (port utilisé entre le client et le proxy)
+            if (isset($_SERVER['HTTP_X_FORWARDED_PORT']))
+            {
+                $serverport = $_SERVER['HTTP_X_FORWARDED_PORT'];
+            }
+            // Si la requête vient directement sur le serveur, on regarde si $_SERVER['SERVER_PORT'] est défini
+            else if (isset($_SERVER['SERVER_PORT']))
+            {
+                // Le port pour parler au serveur est contenu dans la variable
+                $serverport = $_SERVER['SERVER_PORT'];
+            }
+            // Si le protocole est en https => Le port par défaut est 443
+            else if ($serverprotocol == "https")
+            {
+                $serverport = "443";
+            }
+            // Si c'est de l'HTTP ou si on n'a aucune information => Le port par défaut est 80
+            else
+            {
+                $serverport = "80";
+            }
+
+            //echo "serverprotocol  = $serverprotocol   servername = $servername   serverport = $serverport <br>";
+            $g2t_ws_url = $serverprotocol . "://" . $servername . ":" . $serverport.'/ws_public';
+            error_log(basename(__FILE__) . $this->stripAccents(" L'URL de base des WS G2T est => $g2t_ws_url" ));
+        }
+        return $g2t_ws_url;
+    }
+
     public function get_alimCET_liste($typeconges, $listStatuts = array(), $forcesynchro = true) // $typeconges de la forme annYY
     {
         $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
