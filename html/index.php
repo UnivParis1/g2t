@@ -434,7 +434,7 @@
 
         function AppelWSAgent(display_flag)
         {
-            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_url() ?>/agentWS.php";
+            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
             $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?>", agentid: <?php echo $user->agentid(); ?>, display: display_flag })
                         .done(function( data ) {
                             if (data.status.toUpperCase()=='OK')

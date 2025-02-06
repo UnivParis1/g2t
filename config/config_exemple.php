@@ -2,6 +2,8 @@
 
 // URL d'accès aux WS G2T
 define('G2T_WS_URL', "http://host_name:port/webservice_folder");
+// URL d'accès aux WS public G2T
+define('G2T_WS_PUBLIC_URL', 'http://host_name:port/webservice_public_folder');
 // URL d'accès à G2T
 define('G2T_URL', 'http://host_name:port/appli_folder');
 // Défini le type d'environnement :
