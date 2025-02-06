@@ -165,36 +165,6 @@
         }
     }
 
-//    $displayrespsousstructlist = null;
-//    if (isset($_POST["displayrespsousstruct"]))
-//    {
-//        $displayrespsousstructlist = $_POST["displayrespsousstruct"];
-//    }
-//    if (is_array($displayrespsousstructlist)) {
-//        foreach ($displayrespsousstructlist as $structureid => $valeur) {
-//            $structureid = str_replace("'", "", $structureid);
-//            $structure = new structure($dbcon);
-//            $structure->load($structureid);
-//            $structure->afficherespsousstruct($valeur);
-//            $structure->store();
-//        }
-//    }
-
-//    $respvalidsousstructlist = null;
-//    if (isset($_POST["respvalidsousstruct"]))
-//    {
-//        $respvalidsousstructlist = $_POST["respvalidsousstruct"];
-//    }
-//    if (is_array($respvalidsousstructlist)) {
-//        foreach ($respvalidsousstructlist as $structureid => $valeur) {
-//            $structureid = str_replace("'", "", $structureid);
-//            $structure = new structure($dbcon);
-//            $structure->load($structureid);
-//            $structure->respvalidsousstruct($valeur);
-//            $structure->store();
-//        }
-//    }
-
     $gestvalidagent = null;
     if (isset($_POST["gestvalidagent"]))
     {
@@ -299,11 +269,6 @@
                 if (! is_numeric($valeur))
                 {
                     // Cas de l'UID
-                    //$agentid = $fonctions->useridfromCAS($valeur);
-                    //if ($agentid === false)
-                    //{
-                    //    $agentid = null;
-                    //}
                     $agentgest = $fonctions->createldapagentfromuid($valeur);
                     if ($agentgest===false)
                     {
@@ -512,11 +477,6 @@
                     {
                         $agentid = $delegagent->agentid();
                     }
-//                    $agentid = $fonctions->useridfromCAS($valeur);
-//                    if ($agentid === false)
-//                    {
-//                        $agentid = null;
-//                    }
                 }
                 else
                 {
@@ -690,7 +650,14 @@
             }
         }
         
-        if (is_array($structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n')) or count($responsableliste)>0) 
+        $arrayagent = $structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
+        $arrayagentid = array();
+        foreach ((array)$arrayagent as $agent)
+        {
+            $arrayagentid[$agent->agentid()] = $agent;
+        }
+
+        if (count((array)$arrayagent) or count($responsableliste)>0) 
         {
             $formulairetext_openpdf = '';
             if ($mode == MODE_RESPONSABLE)
@@ -916,70 +883,90 @@
             echo "<br>";
 
 
-            if ($mode == MODE_RESPONSABLE) {
-                $structure->agent_envoyer_a($codeinterne);
+            if ($mode == MODE_RESPONSABLE) 
+            {
+                // $arrayagent = $structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
+                // $arrayagentid = array();
+                // foreach ((array)$arrayagent as $agent)
+                // {
+                //     $arrayagentid[$agent->agentid()] = $agent;
+                // }
+
                 echo "<table>";
-                echo "<tr>";
-                echo "<td>";
-                echo "Envoyer les demandes des agents au : ";
-                echo "<SELECT id='agent_mail[" . $structure->id() . "]' name='agent_mail[" . $structure->id() . "]' size='1' onchange='user_mode_change_" . $structure->id() . "()'>";
-                //echo "<OPTION value=1";
-                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
-                if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT)
+
+                // Si aucun agent n'est dans la structure, on ne doit pas afficher le paramétrage des signatures des agents
+                if (count((array)$arrayagentid)>0)
                 {
-                    echo " selected='selected' ";
+                    $structure->agent_envoyer_a($codeinterne);
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Envoyer les demandes des agents au : ";
+                    echo "<SELECT id='agent_mail[" . $structure->id() . "]' name='agent_mail[" . $structure->id() . "]' size='1' onchange='user_mode_change_" . $structure->id() . "()'>";
+                    echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
+                    if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT)
+                    {
+                        echo " selected='selected' ";
+                    }
+                    echo ">Responsable G2T du service " . $structure->nomcourt() . "</OPTION>";
+                    echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_GEST_COURANT;
+                    if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+                    {
+                        echo " selected='selected' ";
+                    }
+                    echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
+                    echo "</SELECT>";
+                    echo "</td>";
+                    echo "<td>";
+                    echo "<label id='agent_send_identity[" . $structure->id() . "]' ></label>";
+                    echo "</td>";
+                    echo "</tr>";
                 }
-                echo ">Responsable G2T du service " . $structure->nomcourt() . "</OPTION>";
-//                echo "<OPTION value=2";
-                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_GEST_COURANT;
-                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT)
-                {
-                    echo " selected='selected' ";
-                }
-                echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
-                echo "</SELECT>";
-                echo "</td>";
-                echo "<td>";
-                echo "<label id='agent_send_identity[" . $structure->id() . "]' ></label>";
-                echo "</td>";
-                echo "</tr>";
 
                 $parentstruct = null;
                 $parentstruct = $structure->parentstructure();
-                $structure->resp_envoyer_a($codeinterne);
-                echo "<tr>";
-                echo "<td>";
-                echo "Envoyer les demandes du responsable G2T au : ";
-                echo "<SELECT id='resp_mail[" . $structure->id() . "]'  name='resp_mail[" . $structure->id() . "]' size='1' onchange='resp_mode_change_" . $structure->id() . "()'>";
-                if (! is_null($parentstruct)) {
-//                    echo "<OPTION value=1";
-                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_RESP_PARENT;
-                    if ($codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
-                    {
-                        echo " selected='selected' ";
-                    }
-                    echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
-//                    echo "<OPTION value=2";
-                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_PARENT;
-                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT)
-                    {
-                        echo " selected='selected' ";
-                    }
-                    echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
-                }
-//                echo "<OPTION value=3";
-                echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_COURANT;
-                if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT)
+
+                //var_dump($arrayagentid);
+                //var_dump($struct->responsable()->agentid());
+                //var_dump($struct->responsablesiham()->agentid());
+
+                // Si le responsable n'est pas affecté dans la structure, on ne doit pas proposer de gérer les demandes du responsable
+                if (key_exists($structure->responsable()->agentid(),$arrayagentid) or (key_exists($structure->responsablesiham()->agentid(),$arrayagentid)))
                 {
-                    echo " selected='selected' ";
+                    $structure->resp_envoyer_a($codeinterne);
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Envoyer les demandes du responsable G2T au : ";
+                    echo "<SELECT id='resp_mail[" . $structure->id() . "]'  name='resp_mail[" . $structure->id() . "]' size='1' onchange='resp_mode_change_" . $structure->id() . "()'>";
+                    if (! is_null($parentstruct)) {
+    //                    echo "<OPTION value=1";
+                        echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_RESP_PARENT;
+                        if ($codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                        {
+                            echo " selected='selected' ";
+                        }
+                        echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
+    //                    echo "<OPTION value=2";
+                        echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_PARENT;
+                        if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT)
+                        {
+                            echo " selected='selected' ";
+                        }
+                        echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
+                    }
+    //                echo "<OPTION value=3";
+                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_COURANT;
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                    {
+                        echo " selected='selected' ";
+                    }
+                    echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
+                    echo "</SELECT>";
+                    echo "</td>";
+                    echo "<td>";
+                    echo "<label id='resp_send_identity[" . $structure->id() . "]' ></label>";
+                    echo "</td>";
+                    echo "</tr>";
                 }
-                echo ">Gestionnaire G2T du service " . $structure->nomcourt() . "</OPTION>";
-                echo "</SELECT>";
-                echo "</td>";
-                echo "<td>";
-                echo "<label id='resp_send_identity[" . $structure->id() . "]' ></label>";
-                echo "</td>";
-                echo "</tr>";
                 echo "</table>";
 ?>
 <script>

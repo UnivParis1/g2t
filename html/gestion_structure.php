@@ -157,8 +157,14 @@
             $structure->load($structid);
 
             // On modifie les codes des envois de mail pour les agents et les responsables
-            $structure->resp_envoyer_a($_POST["resp_mail"][$structid], true);
-            $structure->agent_envoyer_a($_POST["agent_mail"][$structid], true);
+            if (isset($_POST["resp_mail"][$structid]))
+            {
+                $structure->resp_envoyer_a($_POST["resp_mail"][$structid], true);
+            }
+            if (isset($_POST["agent_mail"][$structid]))
+            {
+                $structure->agent_envoyer_a($_POST["agent_mail"][$structid], true);
+            }
 
             // On va chercher dans le LDAP la correspondance UID => AGENTID
             //echo "\$responsableliste[$structid] est soit un uid soit un numéro agent : ". $responsableliste[$structid] . " <br>";
@@ -498,64 +504,76 @@
                     echo "</td>";
                     echo "</tr>";
                 }
-                $struct->agent_envoyer_a($codeinterne);
-                echo "<tr>";
-                echo "<td>";
-                echo "Envoyer les demandes des agents au : ";
-                echo "<SELECT id='agent_mail[" . $struct->id() . "]' name='agent_mail[" . $struct->id() . "]' size='1'>";
-//                echo "<OPTION value=1";
-                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
-                if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT)
-                {
-                    echo " selected='selected' ";
-                }
-                echo ">Responsable G2T du service " . $struct->nomcourt() . "</OPTION>";
-//                echo "<OPTION value=2";
-                echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_GEST_COURANT;
-                if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT)
-                {
-                    echo " selected='selected' ";
-                }
-                echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
-                echo "</SELECT>";
-                echo "&nbsp; <label id='agent_send_identity[" . $struct->id() . "]' ></label>";
-                echo "</td>";
-                echo "</tr>";
 
+                // Si aucun agent n'est dans la structure, on ne doit pas afficher le paramétrage des signatures des agents
+                if (count((array)$arrayagentid)>0)
+                {
+                    $struct->agent_envoyer_a($codeinterne);
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Envoyer les demandes des agents au : ";
+                    echo "<SELECT id='agent_mail[" . $struct->id() . "]' name='agent_mail[" . $struct->id() . "]' size='1'>";
+                    echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_RESP_COURANT;
+                    if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT)
+                    {
+                        echo " selected='selected' ";
+                    }
+                    echo ">Responsable G2T du service " . $struct->nomcourt() . "</OPTION>";
+                    echo "<OPTION value=" . structure::MAIL_AGENT_ENVOI_GEST_COURANT;
+                    if ($codeinterne == structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+                    {
+                        echo " selected='selected' ";
+                    }
+                    echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
+                    echo "</SELECT>";
+                    echo "&nbsp; <label id='agent_send_identity[" . $struct->id() . "]' ></label>";
+                    echo "</td>";
+                    echo "</tr>";
+                }
                 $parentstruct = null;
                 $parentstruct = $struct->parentstructure();
-                echo "<tr>";
-                echo "<td>";
-                echo "Envoyer les demandes du responsable G2T au : ";
-                echo "<SELECT id='resp_mail[" . $struct->id() . "]' name='resp_mail[" . $struct->id() . "]' size='1'>";
-                if (! is_null($parentstruct)) {
-                    $struct->resp_envoyer_a($codeinterne);
-//                    echo "<OPTION value=1";
-                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_RESP_PARENT;
-                    if ($codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
-                    {
-                        echo " selected='selected' ";
-                    }
-                    echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
-//                    echo "<OPTION value=2";
-                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_PARENT;
-                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT)
-                    {
-                        echo " selected='selected' ";
-                    }
-                    echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
-                }
-//                echo "<OPTION value=3";
-                echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_COURANT;
-                if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT)
+
+                //var_dump($arrayagentid);
+                //var_dump($struct->responsable()->agentid());
+                //var_dump($struct->responsablesiham()->agentid());
+
+                // Si le responsable n'est pas affecté dans la structure, on ne doit pas proposer de gérer les demandes du responsable
+                if (key_exists($struct->responsable()->agentid(),$arrayagentid) or (key_exists($struct->responsablesiham()->agentid(),$arrayagentid)))
                 {
-                    echo " selected='selected' ";
+                    echo "<tr>";
+                    echo "<td>";
+                    echo "Envoyer les demandes du responsable G2T au : ";
+                    echo "<SELECT id='resp_mail[" . $struct->id() . "]' name='resp_mail[" . $struct->id() . "]' size='1'>";
+                    if (! is_null($parentstruct)) 
+                    {
+                        $struct->resp_envoyer_a($codeinterne);
+    //                    echo "<OPTION value=1";
+                        echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_RESP_PARENT;
+                        if ($codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                        {
+                            echo " selected='selected' ";
+                        }
+                        echo ">Responsable G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
+    //                    echo "<OPTION value=2";
+                        echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_PARENT;
+                        if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_PARENT)
+                        {
+                            echo " selected='selected' ";
+                        }
+                        echo ">Gestionnaire G2T du service " . $parentstruct->nomcourt() . "</OPTION>";
+                    }
+    //                echo "<OPTION value=3";
+                    echo "<OPTION value=" . structure::MAIL_RESP_ENVOI_GEST_COURANT;
+                    if ($codeinterne == structure::MAIL_RESP_ENVOI_GEST_COURANT)
+                    {
+                        echo " selected='selected' ";
+                    }
+                    echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
+                    echo "</SELECT>";
+                    echo "&nbsp; <label id='resp_send_identity[" . $struct->id() . "]' ></label>";
+                    echo "</td>";
+                    echo "</tr>";
                 }
-                echo ">Gestionnaire G2T du service " . $struct->nomcourt() . "</OPTION>";
-                echo "</SELECT>";
-                echo "&nbsp; <label id='resp_send_identity[" . $struct->id() . "]' ></label>";
-                echo "</td>";
-                echo "</tr>";
                 if ($infoagent != "")
                 {
                     echo "<tr><td><b><div class='infogeststruct'>$infoagent</div></b></td></tr>";
