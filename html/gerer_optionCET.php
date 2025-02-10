@@ -435,6 +435,7 @@
             }
             else
             {
+                $optionCET->statut(optionCET::STATUT_ABANDONNE);
                 $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
                 $optionCET->store();
                 
