@@ -2,6 +2,33 @@
 
 use Fpdf\Fpdf as FPDF;
 
+class etapeextrainfo
+{
+    public const PDFSIGNATURE = 'pdfImageStamp';
+    public const HIDDENVISA  = 'hiddenVisa';
+    public const VISA = 'visa';
+
+    public $stepNumber = '';
+    public $signType = 'pdfImageStamp';   //// Type de signature de eSignature = hiddenVisa, visa, pdfImageStamp, certSign, nexuSign
+    public $forceAllSign = false;
+    public $allSignToComplete = false;
+
+    public function converttoarray() : array
+    {
+        $extrainfos = array();
+
+        $extrainfos['signType'] = $this->signType;
+        $extrainfos['forceAllSign'] = $this->forceAllSign;
+        $extrainfos['allSignToComplete'] = $this->allSignToComplete;
+        if (trim($this->stepNumber) != '')
+        {
+            $extrainfos['stepNumber'] = $this->stepNumber;
+        }
+
+        return $extrainfos;
+    }
+}
+
 
 /**
  * eSignature
@@ -450,10 +477,12 @@ class esignature
         {
             $error = __CLASS__ . "::" . __FUNCTION__ . " : Erreur Curl =>  " . $error;
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+            //var_dump($error);
             return $error;
         }
         else
         {
+            //var_dump("ID = $id");
             return intval($id);
         }
 
@@ -600,6 +629,61 @@ class esignature
         return $error . "";
 
 
+    }
+
+    public function populate_pdfmodel(string $pdf_filename, array $params, string &$result_pdffilename) :bool
+    {
+        // FDF header section
+        $fdf_header = <<<FDF
+        %FDF-1.2
+        %,,oe"
+        1 0 obj
+        <<
+        /FDF << /Fields [
+        FDF;
+
+        // FDF footer section
+        $fdf_footer = <<<FDF
+        ] >> >>
+        endobj
+        trailer
+        <</Root 1 0 R>>
+        %%EOF;
+        FDF;
+
+        // On génère un nombre aléatoire pour augmenter les chances d'avoir un fichier unique en plus de la date et l'heure
+        $random = random_int(10000, 99999);
+        // Creating a temporary file for our FDF file.
+        $FDFfile = $this->fonctions->pdfpath() . "/input_data_" . date("Ymd-His") . "_" . $random . ".fdf";
+        $result_pdffilename = $this->fonctions->pdfpath() . "/populated_" . date("Ymd-His") . "_" . $random  . "_" . basename($pdf_filename);
+        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " FDFfile : $FDFfile"));
+        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " result_pdffilename : $result_pdffilename"));
+
+        // FDF content section
+        $fdf_content = "\n";
+
+        foreach($params as $key => $value)
+        {
+            $fdf_content .= "<</T($key)/V(" . $this->fonctions->utf8_decode($value) . ")>>" . "\n";
+        }
+        $content = $fdf_header . $fdf_content . $fdf_footer;
+
+        file_put_contents($FDFfile, $content);
+
+        // Merging the FDF file with the raw PDF form
+        $commandline = 'pdftk "' . $pdf_filename . '" fill_form "' . $FDFfile . '" output "' . $result_pdffilename . '"';
+        $return = exec($commandline, $output, $resultcode); 
+
+        //var_dump($return);
+        //var_dump($output);
+        //var_dump($resultcode);
+        
+        if (file_exists($FDFfile))
+        {
+            unlink($FDFfile);
+        }
+        // Exec return false en cas d'erreur => On ne doit tester que si c'est false ou pas
+        return ($return!==false);
     }
 
 

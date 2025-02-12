@@ -279,7 +279,7 @@
                 }
 
                 // Abandon dans G2T
-                $alimentationCET->statut($alimentationCET::STATUT_ABANDONNE);
+                $alimentationCET->statut(alimentationCET::STATUT_ABANDONNE);
                 $alimentationCET->motif("Annulation à la demande de ".$user->identitecomplete());
                 $alimentationCET->store();
                 $errlog .= "L'utilisateur " . $user->identitecomplete() . " (identifiant = " . $user->agentid() . ") a supprimé la demande d'alimentation du CET de ".$agent->identitecomplete()." (esignatureid = ".$esignatureid_annule.")";
@@ -348,21 +348,6 @@
 
                 $formsdata = array();
                 
-//                $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
-//                $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
-//                $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
-//                $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
-//                $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
-//                $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
-//                $formsdata["annee_ref"] = $tabinfos["agent"]["ref_year"];
-//                $formsdata["cellule_a"] = $tabinfos["informations"]["0"]["value"];
-//                $formsdata["cellule_b"] = $tabinfos["informations"]["1"]["value"];
-//                $formsdata["cellule_c"] = $tabinfos["informations"]["2"]["value"];
-//                $formsdata["cellule_d"] = $tabinfos["informations"]["3"]["value"];
-//                $formsdata["cellule_e"] = $tabinfos["informations"]["4"]["value"];
-//                $formsdata["cellule_f"] = $tabinfos["informations"]["5"]["value"];
-//                $formsdata["cellule_g"] = $tabinfos["informations"]["6"]["value"];
-
                 $formsdata["Nom"] = $tabinfos["agent"]["name"];
                 $formsdata["Prenom"] = $tabinfos["agent"]["firstname"];
                 $formsdata["Corps"] = $tabinfos["agent"]["corps"];
@@ -377,6 +362,7 @@
                 $formsdata["CETE"] = $tabinfos["informations"]["4"]["value"];
                 $formsdata["CETF"] = $tabinfos["informations"]["5"]["value"];
                 $formsdata["CETG"] = $tabinfos["informations"]["6"]["value"];
+                $formsdata["DateAgent"] = date("d/m/Y");
                 for ($index=0 ; $index<6 ; $index++)
                 {
                     $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
@@ -411,21 +397,40 @@
             	{
                     $params = $fonctions->createesignaturestepsJson($params);
 
-                    $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
-                    {
-                        is_array( $item )
-                        ? array_walk( $item, $walk, $key )
-                        // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                        : $output[] = ($parent_key ?: $key) . "=" . $item;
-                    };
-                    //echo "Param = <br>"; var_dump($params);
-                    array_walk( $params, $walk );
-                    //echo "Output = <br>"; var_export($output);
-    
                     $esignature = new esignature($dbcon);
-                    $id = $esignature->create_existing_signrequest(trim($id_model), $output);
-                    //var_dump("id creation = " . $id);
+                    // $pdf_modelpath = realpath($fonctions->pdfpath(). "/Formulaire_CET_Alimentation.pdf");
+                    $pdf_modelpath = realpath($fonctions->documentpath(). "/Formulaire_CET_Alimentation.pdf");
+                    $outputfilename='';
+                    //var_dump("Avant le populate");
+                    if ($esignature->populate_pdfmodel($pdf_modelpath,$formsdata,$outputfilename))
+                    {
+                        //var_dump("Avant le multipart");
+                        $params['multipartFiles'] = curl_file_create(realpath($outputfilename), "application/pdf", "Alimentation CET");
+                        //echo "Params = <br>"; var_export($params);
+                        //var_dump("Avant le custom");
+                        $id = $esignature->create_custom_signrequest($params);
 
+                    }
+                    else
+                    {
+                        $id = '';
+                    }
+
+                    //////////////////////////////////////////////
+                    // $params = $fonctions->createesignaturestepsJson($params);
+                    // $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
+                    // {
+                    //     is_array( $item )
+                    //     ? array_walk( $item, $walk, $key )
+                    //     // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                    //     : $output[] = ($parent_key ?: $key) . "=" . $item;
+                    // };
+                    // //echo "Param = <br>"; var_dump($params);
+                    // array_walk( $params, $walk );
+                    // //echo "Output = <br>"; var_export($output);
+                    /////$id = $esignature->create_existing_signrequest(trim($id_model), $output);
+                    //////////////////////////////////////////////
+                    //var_dump("id creation = " . $id);
                     if (is_integer($id))
                     {
                         //echo "Id de la nouvelle demande = " . $id . "<br>";
@@ -453,6 +458,10 @@
                         $erreur  = "La création de la demande d'alimentation dans eSignature a échoué ==> Pas de sauvegarde de la demande d'alimentation dans G2T.";
                         error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
                         echo $fonctions->showmessage(fonctions::MSGERROR, "$erreur");
+                    }
+                    if ($outputfilename!='' and file_exists($outputfilename))
+                    {
+                        unlink($outputfilename);
                     }
             	}
             }

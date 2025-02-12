@@ -113,12 +113,14 @@
                             $alimentationCET = new alimentationCET($dbcon);
                             $validation = alimentationCET::STATUT_INCONNU;
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
+                            $decision_found = false;
                             foreach((array)$response as $key => $value)
                             {
                                 //if (preg_match("/form_data_d.+cision/i",$key))
                                 if (stristr(strtolower($key),"form_data_d")!==false and stristr(strtolower($key),"cision")!==false) //   preg_match("/form_data_d.+cision/i",$key))
                                 {
                                     error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
+                                    $decision_found = true;
                                     if (strcasecmp((string)$value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
                                     {
                                         error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée form_data_decision vaut YES."));
@@ -174,17 +176,24 @@
                                 case 'exported' :
                                 case 'archived' :
                                 case 'cleaned' :
-                                    if ($validation == alimentationCET::STATUT_VALIDE)
+                                    if ($decision_found)
                                     {
-                                        $status = alimentationCET::STATUT_VALIDE;
-                                    }
-                                    elseif ($validation == alimentationCET::STATUT_REFUSE)
-                                    {
-                                        $status = alimentationCET::STATUT_REFUSE;
+                                        if ($validation == alimentationCET::STATUT_VALIDE)
+                                        {
+                                            $status = alimentationCET::STATUT_VALIDE;
+                                        }
+                                        elseif ($validation == alimentationCET::STATUT_REFUSE)
+                                        {
+                                            $status = alimentationCET::STATUT_REFUSE;
+                                        }
+                                        else
+                                        {
+                                            $status = alimentationCET::STATUT_INCONNU;
+                                        }
                                     }
                                     else
                                     {
-                                        $status = alimentationCET::STATUT_INCONNU;
+                                        $status = alimentationCET::STATUT_VALIDE;
                                     }
                                     break;
                                 case 'deleted' : // TODO : Attention le document est dans la corbeille

@@ -242,21 +242,6 @@
 
             $formsdata = array();
             
-//            $formsdata["nom_agent"] = $tabinfos["agent"]["name"];
-//            $formsdata["prenom_agent"] = $tabinfos["agent"]["firstname"];
-//            $formsdata["corps_agent"] = $tabinfos["agent"]["corps"];
-//            $formsdata["quotite_agent"] = $tabinfos["agent"]["activity"];
-//            $formsdata["structure_libelle"] = $tabinfos["agent"]["service"]["name"];
-//            $formsdata["adresse_agent"] = $tabinfos["agent"]["service"]["addr"];
-//            $formsdata["annee_ref"] = $tabinfos["agent"]["ref_year"];
-//            $formsdata["cellule_a"] = $tabinfos["informations"]["0"]["value"];
-//            $formsdata["cellule_g"] = $tabinfos["informations"]["1"]["value"];
-//            $formsdata["cellule_h"] = $tabinfos["informations"]["2"]["value"];
-//            $formsdata["cellule_i"] = $tabinfos["informations"]["3"]["value"];
-//            $formsdata["cellule_j"] = $tabinfos["informations"]["4"]["value"];
-//            $formsdata["cellule_k"] = $tabinfos["informations"]["5"]["value"];
-//            $formsdata["cellule_l"] = $tabinfos["informations"]["6"]["value"];
-            
             $formsdata["Nom"] = $tabinfos["agent"]["name"];
             $formsdata["Prenom"] = $tabinfos["agent"]["firstname"];
             $formsdata["Corps"] = $tabinfos["agent"]["corps"];
@@ -271,6 +256,7 @@
             $formsdata["CETJ"] = $tabinfos["informations"]["4"]["value"];
             $formsdata["CETK"] = $tabinfos["informations"]["5"]["value"];
             $formsdata["CETL"] = $tabinfos["informations"]["6"]["value"];
+            $formsdata["DateAgent"] = date("d/m/Y");
             for ($index=0 ; $index<6 ; $index++)
             {
                 $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
@@ -304,20 +290,40 @@
             {
                 $params = $fonctions->createesignaturestepsJson($params);
 
-                $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
-                {
-                    is_array( $item )
-                    ? array_walk( $item, $walk, $key )
-                    // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                    : $output[] = ($parent_key ?: $key) . "=" . $item;
-                };
-                //echo "Param = <br>"; var_dump($params);
-                array_walk( $params, $walk );
-                //echo "Output = <br>"; var_export($output);
-
                 $esignature = new esignature($dbcon);
-                $id = $esignature->create_existing_signrequest(trim($id_model), $output);
-                //var_dump("id creation = " . $id);
+                // $pdf_modelpath = realpath($fonctions->pdfpath(). "/Formulaire_CET_Option.pdf");
+                $pdf_modelpath = realpath($fonctions->documentpath(). "/Formulaire_CET_Option.pdf");
+                $outputfilename='';
+                //var_dump("Avant le populate");
+                if ($esignature->populate_pdfmodel($pdf_modelpath,$formsdata,$outputfilename))
+                {
+                    //var_dump("Avant le multipart");
+                    $params['multipartFiles'] = curl_file_create(realpath($outputfilename), "application/pdf", "Option CET");
+                    //echo "Params = <br>"; var_export($params);
+                    //var_dump("Avant le custom");
+                    $id = $esignature->create_custom_signrequest($params);
+
+                }
+                else
+                {
+                    $id = '';
+                }
+
+                // $params = $fonctions->createesignaturestepsJson($params);
+                // $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
+                // {
+                //     is_array( $item )
+                //     ? array_walk( $item, $walk, $key )
+                //     // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                //     : $output[] = ($parent_key ?: $key) . "=" . $item;
+                // };
+                // //echo "Param = <br>"; var_dump($params);
+                // array_walk( $params, $walk );
+                // //echo "Output = <br>"; var_export($output);
+
+                // $esignature = new esignature($dbcon);
+                // $id = $esignature->create_existing_signrequest(trim($id_model), $output);
+                // //var_dump("id creation = " . $id);
 
                 if (is_integer($id))
                 {
@@ -348,7 +354,11 @@
                     error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
                     echo $fonctions->showmessage(fonctions::MSGERROR, "$erreur");
                 }
-            }
+                if ($outputfilename!='' and file_exists($outputfilename))
+                {
+                    unlink($outputfilename);
+                }
+        }
         }
         else // Il y a une demande d'alim ou d'option en cours
         {
@@ -389,11 +399,12 @@
             if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
             {
                 if (strlen($errlog)>0) { $errlog = $errlog . '<br>'; }
-                $error_suppr = $error_suppr . "Impossible d'annuler la demande d'option $esignatureid_delete : $return";
+                $error_suppr = $errlog . "Impossible d'annuler la demande d'option $esignatureid_delete : $return";
                 error_log(basename(__FILE__) . " " . $fonctions->stripAccents($return));
             }
             else
             {
+                $optionCET->statut(optionCET::STATUT_ABANDONNE);
                 $optionCET->motif("Annulation à la demande de " . $user->identitecomplete());
                 $optionCET->store();
                 

@@ -98,12 +98,14 @@
 							$optionCET = new optionCET($dbcon);
 							$validation = optionCET::STATUT_INCONNU;
 							error_log(basename(__FILE__) . $fonctions->stripAccents(" On va faire la récupération des données."));
+                            $decision_found = false;
 							foreach((array)$response as $key => $value)
 							{
 								//if (preg_match("/form_data_d.+cision/i",$key))
 								if (stristr(strtolower($key),"form_data_d")!==false and stristr(strtolower($key),"cision")!==false) //   preg_match("/form_data_d.+cision/i",$key))
 								{
 									error_log(basename(__FILE__) . $fonctions->stripAccents(" La clé $key correspond à la recherche."));
+                                    $decision_found = true;
 									if (strcasecmp((string)$value,'yes')==0)  // if ($response['form_data_decision'] == 'yes')
 									{
 										error_log(basename(__FILE__) . $fonctions->stripAccents(" La donnée $key vaut YES."));
@@ -160,12 +162,25 @@
 								case 'exported' :
 								case 'archived' :
 								case 'cleaned' :
-									if ($validation == optionCET::STATUT_VALIDE)
-										$status = optionCET::STATUT_VALIDE;
-									elseif ($validation == optionCET::STATUT_REFUSE)
-									$status = optionCET::STATUT_REFUSE;
-									else
-									$status = optionCET::STATUT_INCONNU;
+                                    if ($decision_found)
+                                    {
+										if ($validation == optionCET::STATUT_VALIDE)
+										{
+											$status = optionCET::STATUT_VALIDE;
+										}
+										elseif ($validation == optionCET::STATUT_REFUSE)
+										{
+											$status = optionCET::STATUT_REFUSE;
+										}
+										else
+										{
+											$status = optionCET::STATUT_INCONNU;
+										}
+									}
+                                    else
+                                    {
+                                        $status = optionCET::STATUT_VALIDE;
+                                    }
 									break;
 								case 'deleted' :
 								case 'canceled' :
@@ -174,6 +189,7 @@
 									break;
 								default :
 									$status = optionCET::STATUT_INCONNU;
+									break;
 							}
 							error_log(basename(__FILE__) . $fonctions->stripAccents(" Le status du droit d'option $esignatureid est : $status car la validation est : $validation "));
 							//$status = mb_strtolower("$status", 'UTF-8');

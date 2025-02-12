@@ -2979,6 +2979,42 @@ class fonctions
     public function checksignatairecetliste(&$params, agent $agent)
     {
 
+        // On défini les extras-infos pour les différentes étapes de signature
+        $extrainfos = new etapeextrainfo();
+        $extrainfos->stepNumber = 1;
+        $extrainfos->signType = etapeextrainfo::PDFSIGNATURE;
+        $extrainfos->allSignToComplete = false;
+        $extrainfos->forceAllSign = false;
+        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
+
+        $extrainfos = new etapeextrainfo();
+        $extrainfos->stepNumber = 2;
+        $extrainfos->signType = etapeextrainfo::VISA;
+        $extrainfos->allSignToComplete = false;
+        $extrainfos->forceAllSign = false;
+        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
+
+        $extrainfos = new etapeextrainfo();
+        $extrainfos->stepNumber = 3;
+        $extrainfos->signType = etapeextrainfo::HIDDENVISA;
+        $extrainfos->allSignToComplete = false;
+        $extrainfos->forceAllSign = false;
+        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
+
+        $extrainfos = new etapeextrainfo();
+        $extrainfos->stepNumber = 4;
+        $extrainfos->signType = etapeextrainfo::HIDDENVISA;
+        $extrainfos->allSignToComplete = false;
+        $extrainfos->forceAllSign = false;
+        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
+
+        $extrainfos = new etapeextrainfo();
+        $extrainfos->stepNumber = 5;
+        $extrainfos->signType = etapeextrainfo::PDFSIGNATURE;
+        $extrainfos->allSignToComplete = false;
+        $extrainfos->forceAllSign = false;
+        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
+
         $maxniveau = 0;
         $arraysignataire = array();
         $resp = $agent->getsignataire(null,$respstruct,$codeinterne);
@@ -4924,6 +4960,9 @@ WHERE  table_schema = Database()
     {
         $stepsJsonArray = array();
         $currentsteps = array();
+        $previousstepnumber = null;
+
+        //var_dump($tabparam);
         if (!isset($tabparam['recipientEmails']))
         {
             return $tabparam;
@@ -4943,88 +4982,44 @@ WHERE  table_schema = Database()
             }
             else
             {
-                //// On memorise l'adresse du/des demandeur(s) 
-                //// => En théorie il n'y en a qu'un mais dans la perspective d'une évolution on peut imaginer qu'il y en a plusieurs
-                //if ($splitinfos[0]==1)
-                //{
-                //    $tabmaildemandeur[] = strtolower($splitinfos[1]);
-                //}
-                if (isset($currentsteps["stepNumber"]) and ($currentsteps["stepNumber"] != $splitinfos[0]))
+                $recipientstep = $splitinfos[0];
+                // Si on a changé d'étape de signature
+                if ($recipientstep !== $previousstepnumber)
                 {
-                    // On ajoute le currentstep dans le stepsJsonArray
-                    //echo "currentsteps = <br>"; var_dump($currentsteps);
-                    $stepsJsonArray[] = $currentsteps;
-                    // On réinitialise le currentstep à un tableau vide
+                    //var_dump("changement niveau $recipientstep");
+                    // On réinitialise le currentstep à un tableau vide car on change de niveau de signature
                     $currentsteps = array();
+
+                    // Si des extras-infos sont disponibles pour l'étape courante, on les ajoute
+                    if (isset($tabparam['levelextrainfos'][$recipientstep]))
+                    {
+                        $temparray = $tabparam['levelextrainfos'][$recipientstep]->converttoarray();
+                        foreach((array)$temparray as $extrainfoskey => $extrainfosvalue)
+                        {
+                            $currentsteps[$extrainfoskey] = $extrainfosvalue;
+                        }
+                    }
+                    // Si le "stepNumber" n'est pas défini dans les extrainfos => On le défini manuellement
+                    if (!isset($currentsteps["stepNumber"]))
+                    {
+                        $currentsteps["stepNumber"] = $recipientstep;
+                    }
                 }
-                if (!isset($currentsteps["stepNumber"]))
-                {
-                    $currentsteps = array("stepNumber" => $splitinfos[0]);
-                }
+                // On ajoute dans les recipients de l'étape en cours, l'email de recipient
                 $currentsteps["recipients"][] = array("email" => $splitinfos[1]);
+                // On ajoute l'étape dans le tableau JSON => S'il existe déjà il sera remplacé
+                // Attention : Il faut commencer à l'index 0 (en entier et non chaine de caractères) pour que le JSON le convertisse bien.
+                $stepsJsonArray[intval($recipientstep)-1] = $currentsteps;
+                // On mémorise le niveau courant de l'étape pour détecter un changement lors de la prochaine boucle
+                $previousstepnumber = $recipientstep;
             }
         }
-        // On ajoute le dernier step que l'on vient de créer
-        if (isset($currentsteps["stepNumber"]))
-        {
-            //echo "currentsteps (final) = <br>"; var_dump($currentsteps);
-            $stepsJsonArray[] = $currentsteps;
-        }
+
         if (count($stepsJsonArray)>0)
         {
-            ////var_dump("Avant le foreach stepsJsonArray");
-            //$errlog = "On va supprimer le demandeur du circuit de validation";
-            //error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            //foreach ($stepsJsonArray as $curentstepkey => $currentsteps)
-            //{
-            //    // Si on est dans un niveau > 1 et qu'il y a plus d'un recipient (<=> donc plus d'une adresse mail de validation)
-            //    //var_dump("Avant le test du niveau et le count : Step = " . $currentsteps["stepNumber"] . "  Nbre recipients = " . count($currentsteps["recipients"]));
-            //    if ($currentsteps["stepNumber"]>1 and count($currentsteps["recipients"])>1)
-            //    {
-            //        $keytoremove = array();
-            //        //var_dump("Avant le foreach recipients");
-            //        foreach ($currentsteps["recipients"] as $keymail => $mail)
-            //        {
-            //            //var_dump("keymail = "); var_dump($keymail);
-            //            //var_dump("mail = "); var_dump($mail['email']);
-            //            if (in_array(strtolower($mail['email']),$tabmaildemandeur)===true)
-            //            {
-            //                $errlog = "Il y a égalité dans le step " . $currentsteps["stepNumber"] . " => On enregistre la clé du recipient à supprimer => $keymail";
-            //                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            //                $keytoremove[] = $keymail;
-            //            }
-            //        }
-            //        
-            //        //var_dump("Avant le count keytoremove => " . count($keytoremove) . "  Nbre de recipient => "  . count($currentsteps["recipients"]));
-            //        // Si il y a des clés à enlever et qu'il en restera au moins une dans les recipients
-            //        if (count($keytoremove)>0 and count($keytoremove) < count($currentsteps["recipients"]))
-            //        {
-            //            $errlog = "On doit enlever au moins une clé";
-            //            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            //            //var_dump("currentsteps (avant) = "); var_dump($currentsteps);
-            //            foreach ($keytoremove as $keymail)
-            //            {
-            //                $errlog = "On unset la clé $keymail";
-            //                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            //                unset($currentsteps["recipients"][$keymail]);
-            //            }
-            //            //var_dump("currentsteps (apres) = "); var_dump($currentsteps);
-            //            $stepsJsonArray[$curentstepkey] = $currentsteps;
-            //        }
-            //        else
-            //        {
-            //            $errlog = "On ne fait rien sur le step " . $currentsteps["stepNumber"] . " => car soit aucune clé à enlever (count=" . count($keytoremove) . ") soit devrait enlever tous les signataires.";
-            //            error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            //        }
-            //    }
-            //    else
-            //    {
-            //        $errlog = "On ne fait rien car soit c'est le step 1 (step=" . $currentsteps["stepNumber"] . "), soit il n'y a qu'un signataire (=>count=". count($currentsteps["recipients"]) .")";
-            //        error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            //    }
-            //}
-
+            //var_export($stepsJsonArray);
             $tabparam["stepsJsonString"] = json_encode($stepsJsonArray);
+            unset($tabparam['levelextrainfos']);
             unset($tabparam["recipientEmails"]);
         }
         //var_dump("tabparam = "); var_dump($tabparam);
