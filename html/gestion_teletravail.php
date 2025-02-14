@@ -227,7 +227,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     if (!is_null($agentid) and $esignatureactive)
     {
         //echo "Avant la vérification du circuit => numéro 1 <br>";
-        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
+        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
     }
     //var_dump($maxniveau);
     if (count($taberrorcheckmail) > 0)
@@ -245,20 +245,19 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     }
     elseif (!is_null($agentid))
     {
-        $id_model = '';
-        if ($esignatureactive)
-        {
-            $id_model = trim($fonctions->getidmodelteletravail($maxniveau,$agent));
-        }
-        //var_dump($id_model);
-        if (trim($id_model) == '' and $esignatureactive)
-        {
-            if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
-            $erreur = $erreur . "Le modèle eSignature pour la création d'une convention télétravail n'a pas pu être déterminé.";
-            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
-            $disablesubmit = true;
-        }
-        
+        // $id_model = '';
+        // if ($esignatureactive)
+        // {
+        //     $id_model = trim($fonctions->getidmodelteletravail($maxniveau,$agent));
+        // }
+        // //var_dump($id_model);
+        // if (trim($id_model) == '' and $esignatureactive)
+        // {
+        //     if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
+        //     $erreur = $erreur . "Le modèle eSignature pour la création d'une convention télétravail n'a pas pu être déterminé.";
+        //     error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+        //     $disablesubmit = true;
+        // }
     }
     
     if (count((array)$cancelteletravailarray)>0) // On a cliqué sur un bouton d'annulation pour annulé une convention
@@ -875,8 +874,10 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
                     $cron = new agent($dbcon);
                     $cron->load(SPECIAL_USER_IDCRONUSER);
-                    $cron->sendmail($agent,"Changement de statut de votre demande de télétravail","Votre demande de télétravail a été " . strtolower($fonctions->teletravailstatutlibelle($teletravail->statut())) . " par " . $user->identitecomplete() . " au motif suivant :\n\n
-    $motifrefus \n");
+                    $cron->sendmail($agent,
+                                    "Changement de statut de votre demande de télétravail",
+                                    "Votre demande de télétravail a été " . strtolower($fonctions->teletravailstatutlibelle($teletravail->statut())) . " par " . $user->identitecomplete() . " au motif suivant :\n\n$motifrefus \n"
+                                   );
                 }
                 else
                 {
@@ -916,26 +917,45 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
                     $formsdata["NomPrenom"] = $tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"];
                     $formsdata["Corps"] = $tabinfos["agent"]["corps"];
-                    $formsdata["Fonction"] = $tabinfos["agent"]["rifseep"];
-                    $formsdata["QuotiteTravail"] = $tabinfos["agent"]["activity"];
-                    $formsdata["LieuTele"] = $tabinfos["agent"]["service"]["addr"];
                     $formsdata["DirectCompServ"] = $tabinfos["agent"]["service"]["name"];
+                    $formsdata["Fonction"] = $tabinfos["agent"]["rifseep"];
                     $formsdata["TypeDemande"] = $tabinfos["infosconvention"]["value"];
-                    $formsdata["infosconventioncode"] = $tabinfos["infosconvention"]["code"];
-                    $formsdata["DatedebutTele"] = $tabinfos["informations"][1]["value"];
-                    $formsdata["DatefinTele"] = $tabinfos["informations"][2]["value"];
-                    $nbjrs = $tabinfos["informations"][0]["value"];
-                    $formsdata["NbJourTravaille"] = "$nbjrs";
-                    for ($index=0 ; $index<$nbjrs ; $index++)
-                    {
-                        $formsdata["jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
-                    }
-                    $formsdata["Raisonsante"] = $tabinfos["infosconvention"]["sante"];
-                    $formsdata["Grossesse"] = $tabinfos["infosconvention"]["grossesse"];
-                    $formsdata["ProcheAidant"] = $tabinfos["infosconvention"]["aidant"];
+                    $formsdata["QuotiteTravail"] = $tabinfos["agent"]["activity"];
                     $formsdata["ActivitesTelletravaillables"] = $tabinfos["infosconvention"]["activiteteletravail"];
                     $formsdata["PeriodeExclusion"] = $tabinfos["infosconvention"]["periodeexclusion"];
                     $formsdata["PeriodeAdaptation"] = $tabinfos["infosconvention"]["periodeadaptation"];
+                    $formsdata["infosconventioncode"] = $tabinfos["infosconvention"]["code"];
+                    if ($formsdata["infosconventioncode"]==teletravail::CODE_CONVENTION_MEDICAL)
+                    {
+                        $formsdata["TelleRegimegen"] = 'No';
+                    }
+                    else
+                    {
+                        $formsdata["TelleRegimegen"] = 'Yes';
+                    }
+                    $formsdata["Raisonsante"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["sante"],true);
+                    $formsdata["Grossesse"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["grossesse"],true);
+                    $formsdata["ProcheAidant"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["aidant"],true);
+                    $formsdata["NbJourTravaille"] = $tabinfos["informations"][0]["value"];
+                    for ($index=0 ; $index<$formsdata["NbJourTravaille"] ; $index++)
+                    {
+                        $formsdata["jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
+                    }
+                    $formsdata["LieuTele"] = $tabinfos["agent"]["service"]["addr"];
+                    $formsdata["DatedebutTele"] = $tabinfos["informations"][1]["value"];
+                    $formsdata["DatefinTele"] = $tabinfos["informations"][2]["value"];
+
+                    $formsdata["AttesteCirculaire"] = "Yes";
+                    $formsdata["AttesteEspace"] = "Yes";
+                    $formsdata["AttesteElectricite"] = "Yes";
+                    $formsdata["AttesteMiseenplace"] = "Yes";
+                    $formsdata["EquipementCasque"] = "Yes";
+                    $formsdata["EquipementSac"] = "Yes";
+                    $formsdata["EquipementSouris"] = "Yes";
+                    $formsdata["EquipementBase"] =  "Yes";
+                    $formsdata["EquipementOrdinateur"] =  "Yes";
+                    $formsdata["DateSignature"] = date("d/m/Y");
+
                     for ($index=0 ; $index<6 ; $index++)
                     {
                         $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
@@ -959,7 +979,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     {
                         //echo "Avant la vérification du circuit => numéro 2 <br>";
                         //echo "Param Avant = <br>"; var_dump($params);
-                        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent,$maxniveau);
+                        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
                         //echo "Param Après = <br>"; var_dump($params);
                     }
                     if (count($taberrorcheckmail) > 0)
@@ -975,76 +995,90 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }
                     else
                     {
-                        $id_model = '';
-                        if ($esignatureactive)
+                        $params = $fonctions->createesignaturestepsJson($params);
+
+                        $esignature = new esignature($dbcon);
+                        // $pdf_modelpath = realpath($fonctions->pdfpath(). "/Formulaire_CET_Alimentation.pdf");
+                        $pdf_modelpath = realpath($fonctions->documentpath(). "/Formulaire_Teletravail.pdf");
+                        $outputfilename='';
+                        //var_dump("Avant le populate");
+                        if ($esignature->populate_pdfmodel($pdf_modelpath,$formsdata,$outputfilename))
                         {
-                            $id_model = trim($fonctions->getidmodelteletravail($maxniveau, $agent));
-                        }
-                        if (trim($id_model) == '' and $esignatureactive)
-                        {
-                            if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
-                            $erreur = $erreur . "Le modèle eSignature pour la création d'une convention télétravail n'a pas pu être déterminé.";
-                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($erreur));
+                            //var_dump("Avant le multipart");
+                            $params['multipartFiles'] = curl_file_create(realpath($outputfilename), "application/pdf", "Alimentation CET");
+                            //echo "Params = <br>"; var_export($params);
+                            //var_dump("Avant le custom");
+                            $id = $esignature->create_custom_signrequest($params);
+    
                         }
                         else
                         {
-                            $params = $fonctions->createesignaturestepsJson($params);
-                            
-                            $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
-                            {
-                                is_array( $item )
-                                ? array_walk( $item, $walk, $key )
-                                // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                                : $output[] = ($parent_key ?: $key) . "=" . $item;
-                            };
-                            //echo "Param = <br>"; var_dump($params);
-                            array_walk( $params, $walk );
-                            //echo "Output = <br>"; var_export($output);
+                            $id = '';
+                        }
+    
 
-                            $esignature = new esignature($dbcon);
+                        /////////////////////////////////////////////////////////////
+                        // $params = $fonctions->createesignaturestepsJson($params);
+                        
+                        // $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
+                        // {
+                        //     is_array( $item )
+                        //     ? array_walk( $item, $walk, $key )
+                        //     // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
+                        //     : $output[] = ($parent_key ?: $key) . "=" . $item;
+                        // };
+                        // //echo "Param = <br>"; var_dump($params);
+                        // array_walk( $params, $walk );
+                        // //echo "Output = <br>"; var_export($output);
+
+                        // $esignature = new esignature($dbcon);
+                        // if ($esignatureactive)
+                        // {
+                        //     $id = $esignature->create_existing_signrequest(trim($id_model), $output);
+                        // }
+                        // else
+                        // {
+                        //     $id = '';
+                        // }
+                        /////////////////////////////////////////////////////////////
+                        //var_dump("id creation = " . $id);
+    
+                        if (is_integer($id) or !$esignatureactive)
+                        {
+                            $teletravail->esignatureid($id);
                             if ($esignatureactive)
                             {
-                                $id = $esignature->create_existing_signrequest(trim($id_model), $output);
+                                $teletravail->esignatureurl($eSignature_url . "/user/signrequests/".$id);
+                                $teletravail->creationesignature(date('Ymd'));
                             }
                             else
                             {
-                                $id = '';
+                                $teletravail->esignatureurl(''); 
                             }
-                            //var_dump("id creation = " . $id);
-        
-                            if (is_integer($id) or !$esignatureactive)
+                            $erreur = $teletravail->store();
+                            $agent->synchroteletravail();
+                            if ($erreur <> "")
                             {
-                                $teletravail->esignatureid($id);
-                                if ($esignatureactive)
-                                {
-                                    $teletravail->esignatureurl($eSignature_url . "/user/signrequests/".$id);
-                                    $teletravail->creationesignature(date('Ymd'));
-                                }
-                                else
-                                {
-                                    $teletravail->esignatureurl(''); 
-                                }
-                                $erreur = $teletravail->store();
-                                $agent->synchroteletravail();
-                                if ($erreur <> "")
-                                {
-                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
-                                }
-                                else
-                                {
-                                    $info = "La création de la convention est réussie.";
-                                    $erreur = "";
-                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => eSignatureid = " . $id ));
-                                }
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur (création) = " . $erreur ));
+                            }
+                            else
+                            {
+                                $info = "La création de la convention est réussie.";
+                                $erreur = "";
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" $info => eSignatureid = " . $id ));
+                            }
 
-                            }
-                            else
-                            {
-                                $erreur  = "La création de la convention de télétravail dans eSignature a échoué !!==> Pas de sauvegarde de la conention télétravail dans G2T.";
-                                error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
-                            }
                         }
-                    }
+                        else
+                        {
+                            $erreur  = "La création de la convention de télétravail dans eSignature a échoué !!==> Pas de sauvegarde de la conention télétravail dans G2T.";
+                            error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
+                        }
+                        if ($outputfilename!='' and file_exists($outputfilename))
+                        {
+                            unlink($outputfilename);
+                        }
+                        }
                     /////////////////////////////////////////////////////
                     //// FIN SAUVETGARDE ESIGNATURE       ///////////////
                     /////////////////////////////////////////////////////
@@ -2269,7 +2303,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
         $agentliste = array();
         $teletravailtrouve = false;
-        foreach ($structliste as $structure)
+        foreach ((array)$structliste as $structure)
         {
             $teletravailtrouvestruct = false;
             if ($mode==MODE_RESPONSABLE)

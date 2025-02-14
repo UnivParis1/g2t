@@ -12,6 +12,11 @@ class etapeextrainfo
     public $signType = 'pdfImageStamp';   //// Type de signature de eSignature = hiddenVisa, visa, pdfImageStamp, certSign, nexuSign
     public $forceAllSign = false;
     public $allSignToComplete = false;
+    public $comment = "";
+    public $description = "";
+    public $obligatoire = true;
+    public $attachmentRequire = false;
+    private $attachmentAlert = true;
 
     public function converttoarray() : array
     {
@@ -24,6 +29,12 @@ class etapeextrainfo
         {
             $extrainfos['stepNumber'] = $this->stepNumber;
         }
+        $extrainfos['comment'] = $this->comment;
+        $extrainfos['description'] = $this->description;
+        $extrainfos['obligatoire'] = $this->obligatoire;
+        $extrainfos['attachmentRequire'] = $this->attachmentRequire;
+        // Si la pièce jointe est obligatoire alors on doit forcer l'affichage d'une alerte si le doc est absent
+        $extrainfos['attachmentAlert'] = $this->attachmentAlert;
 
         return $extrainfos;
     }
@@ -43,7 +54,12 @@ class esignature
 {
     private $fonctions = null;
     private $eSignature_url = null;
+    private $dbconnect = null;
 
+    public const TYPESIGNATAIRE_DEMANDEUR = 'DEMANDEUR';
+    public const TYPESIGNATAIRE_RESPONSABLE = 'RESPONSABLE';
+    public const TYPESIGNATAIRE_RESPONSABLE2  = 'RESPONSABLE_N+2';
+    public const TYPESIGNATAIRE_DIRECTEUR = 'DIRECTEUR_RACINE';
 
     /**
      *
@@ -53,6 +69,7 @@ class esignature
     function __construct(mysqli $db)
     {
         $this->fonctions = new fonctions($db);
+        $this->dbconnect = $db;
 
         if (is_null($this->eSignature_url))
         {
@@ -537,7 +554,7 @@ class esignature
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $this->set_curl_header($curl, "multipart/form-data");
         $json = curl_exec($curl);
-        var_dump($json);
+        //var_dump($json);
         $error = curl_error ($curl);
         $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         if ((int) $httpcode !== 200 and $error=="")
@@ -631,6 +648,17 @@ class esignature
 
     }
 
+    /**
+     * Complète le modèle de document PDF avec le tableau de paramètres.
+     * @param string $pdf_filename 
+     *          Chemin complet du fichier PDF modèle
+     * @param array $param
+     *          Le tableau des paramètres à injecter dans le modèle PDF
+     * @param string $result_pdffilename 
+     *          Chemin complet du fichier PDF résultat
+     * @return bool
+     *          Retourne TRUE si tout c'est bien passé et FALSE dans le cas contraire
+     */
     public function populate_pdfmodel(string $pdf_filename, array $params, string &$result_pdffilename) :bool
     {
         // FDF header section
@@ -680,12 +708,260 @@ class esignature
         
         if (file_exists($FDFfile))
         {
-            unlink($FDFfile);
+            //unlink($FDFfile);
         }
         // Exec return false en cas d'erreur => On ne doit tester que si c'est false ou pas
         return ($return!==false);
     }
 
+    /**
+     * Modification des signataires pour une étape d'un document eSignature
+     * @param agent $demandeur 
+     *          Objet agent du demandeur (cas où le type de signataire est DEMANDEUR ou RESPONSABLE)
+     * @param string $nomcircuit
+     *          Nom du fichier XML représentant le circuit à initialiser
+     * @param array $extrainfos
+     *          Données complémentaires relatives aux différentes étapes (type signature,....)
+     * @return array
+     *          Retourne le tableau des signataires 
+     */
+    public function createstep(agent $demandeur, string $nomcircuit, array &$extrainfostab) :array
+    {
+        $signatairearray = array();
+        $extrainfostab = array();
+        $nbstepskip = 0;
+
+        // On cherche le fichier XML représentant le circuit
+        $filename = $this->fonctions->documentpath() . "/" . $nomcircuit; 
+        if (! file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false) {
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide.");
+            return array();
+        } 
+
+        // On charge les étapes
+        $etapetab = $xml->xpath('ETAPE');
+        $etapetab_trie = array();
+        // On va trier les étapes par ordre croissant
+        foreach ($etapetab as $etape)
+        {
+            $description = trim($etape->xpath('DESCRIPTION')[0]);
+            $numero = trim($etape->xpath('NUMERO')[0]);
+            if (isset($etape['EXCLUDE_STRUCT_RACINE']))
+            {
+                $structracinetab = explode(" ",$etape['EXCLUDE_STRUCT_RACINE']);
+                //var_dump((array)$structracinetab);
+                $structid = $demandeur->structureid();
+                $struct = new structure($this->dbconnect);
+                $struct->load($structid);
+                $structracineid = $struct->structureenglobante()->id();
+                //var_dump($structracineid);
+
+                // Si la structure racine est dans le tableau des attributs EXCLUDE_STRUCT_RACINE de l'étape => On l'ignore car pas concerné
+                if (in_array($structracineid,(array)$structracinetab))
+                {
+                    //var_dump("Je ne suis pas concerné par l'étape '$description'.");
+                    // On passe à l'étape suivante
+                    continue;
+                }
+                else
+                {
+                    //var_dump("Je suis concerné par l'étape '$description'.");
+                }
+            }
+            elseif (isset($etape['INCLUDE_STRUCT_RACINE']))
+            {
+                $structracinetab = explode(" ",$etape['INCLUDE_STRUCT_RACINE']);
+                //var_dump((array)$structracinetab);
+                $structid = $demandeur->structureid();
+                $struct = new structure($this->dbconnect);
+                $struct->load($structid);
+                $structracineid = $struct->structureenglobante()->id();
+                //var_dump($structracineid);
+
+                // Si la structure racine n'est pas dans le tableau des attributs STRUCT_RACINE de l'étape => On l'ignore car pas concerné
+                if (!in_array($structracineid,(array)$structracinetab))
+                {
+                    //var_dump("Je ne suis pas concerné par l'étape '$description'.");
+                    // On passe à l'étape suivante
+                    continue;
+                }
+                else
+                {
+                    //var_dump("Je suis concerné par l'étape '$description'.");
+                }
+            }
+
+
+            if (isset($etapetab_trie[$numero]))
+            {
+                echo $this->fonctions->showmessage(fonctions::MSGERROR, "L'étape $numero est déjà défini dans le fichier " . basename($filename). ". Elle est donc ignorée.");
+            }
+            else
+            {
+                $etapetab_trie[$numero] = $etape;
+            }
+        }
+        ksort($etapetab_trie);
+        //var_dump($etapetab_trie);
+
+        foreach ($etapetab_trie as $etape)
+        {
+            // Le numéro de l'étape est le numéro de l'étape définie dans le fichier XML auquel on retranche le nombre d'étapes facultatives qu'on a ignoré
+            // On ignore les étapes qui n'ont pas de signataires et qui ne sont pas obligatoires (voir plus bas)
+
+            $description = trim($etape->xpath('DESCRIPTION')[0]);
+            $numero = trim($etape->xpath('NUMERO')[0]) - $nbstepskip;
+            $typesignature = trim($etape->xpath('TYPESIGNATURE')[0]);
+            $toutesignature = trim($etape->xpath('TOUTESIGNATURE')[0]);
+            $obligatoire = trim($etape->xpath('OBLIGATOIRE')[0]);
+            $piecejointeoblig = trim($etape->xpath('PIECEJOINTEOBLIGATOIRE')[0]);
+
+            $signatairetab = $etape->xpath('SIGNATAIRES')[0];
+            foreach ($signatairetab as $signataire)
+            {
+                $typesignataire = trim($signataire->xpath('TYPESIGNATAIRE')[0] . "");
+                $idsignataire = trim($signataire->xpath('IDSIGNATAIRE')[0] . "");
+                if (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_DEMANDEUR)
+                {
+                    // On doit mettre le demandeur dans le tableau
+                    $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $demandeur->agentid();
+                    $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$demandeur->agentid());
+
+                }
+                elseif(strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESPONSABLE)
+                {
+                    // On doit mettre le signataire du demandeur dans le tableau
+                    $resp = $demandeur->getsignataire(null,$respstruct,$codeinterne);
+                    if (!is_null($resp) and ($resp!==false))
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
+                    }
+                    if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
+                    {
+                        $respsiham = $respstruct->responsablesiham();
+                        if ($respsiham->mail() . "" != "")
+                        {
+                            $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $respsiham->agentid();
+                            $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$respsiham->agentid());
+                        }
+                    }
+                }
+                elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESPONSABLE2)
+                {
+                    $arraysignataire_n2 = array();
+                    $codeinterne = null;
+                    $respdurespstruct = null;
+                    $responsable_n2 = $demandeur->getsignataire_niveau2($respdurespstruct,$codeinterne);
+                    //var_dump($responsable_n2);
+                    if (!is_null($responsable_n2) and ($responsable_n2!==false))
+                    {
+                        $arraysignataire_n2[$responsable_n2->agentid()] = $responsable_n2;
+                    }
+                    if ($responsable_n2!==false and ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT))
+                    {
+                        $respsiham_n2 = $respdurespstruct->responsablesiham();
+                        if ($respsiham_n2->mail() . "" != "")
+                        {
+                            $arraysignataire_n2[$respsiham_n2->agentid()] = $respsiham_n2;                
+                        }
+                    }
+        
+                    //var_dump($responsable_n2);
+                    // On n'a pas trouvé de responsable n+2
+                    foreach((array)$arraysignataire_n2 as $signataire)
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $signataire->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$signataire->agentid());                        
+                    }
+                }
+                elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_DIRECTEUR)
+                {
+                    //var_dump("Je suis dans le cas d'un directeur");
+                    $structid = $demandeur->structureid();
+                    $struct = new structure($this->dbconnect);
+                    $struct->load($structid);
+                    $structracine = $struct->structureenglobante();
+                    //var_dump($structracine->responsable()->agentid());
+                    $resp = $structracine->responsable();
+                    if ($resp->agentid()!='')
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
+                        //var_dump($signatairearray[$numero][$tempid]);
+                    }
+                    $resp = $structracine->responsablesiham();
+                    if ($resp->agentid()!='')
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
+                        //var_dump($signatairearray[$numero][$tempid]);
+                    }
+                }
+                else
+                {
+                    if ($numero!='' and $typesignataire!='' and $idsignataire!='')
+                    {
+                        $tempid = $typesignataire . '_' . $idsignataire;
+                        $signatairearray[$numero][$tempid] = array($typesignataire,$idsignataire);
+                    }
+                }
+            }
+
+            if (isset($signatairearray[$numero]))
+            {
+                foreach ((array)$signatairearray[$numero] as $key => $signataire)
+                {
+                    // Si le type de signataire est un AGENT et que c'est l'id de l'utilisateur CRON
+                    if ($signataire[0]==fonctions::SIGNATAIRE_AGENT and $signataire[1]==SPECIAL_USER_IDCRONUSER)
+                    {
+                        // On le supprime
+                        unset($signatairearray[$numero][$key]);
+                    }
+                }
+            }
+
+            // Si on a des signataires dans l'étape courante
+            if (isset($signatairearray[$numero]) and count($signatairearray[$numero])>0)
+            {
+                if (!isset($extrainfostab[$numero]))
+                {
+                    $extrainfos = new etapeextrainfo();
+                    $extrainfos->stepNumber = $numero;
+                    if (!in_array($typesignature, array(etapeextrainfo::PDFSIGNATURE,etapeextrainfo::HIDDENVISA, etapeextrainfo::VISA)))
+                    {
+                        echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le type de signature " . $typesignature . " n'est pas reconnu.");
+                        return array();
+                    }
+                    $extrainfos->description = $description;
+                    // Cette ligne génère un post-it !
+                    //$extrainfos->comment = "Ceci est un commentaire";
+                    $extrainfos->signType = $typesignature;
+                    $extrainfos->allSignToComplete = $this->fonctions->convertvaluetobool($toutesignature);
+                    $extrainfos->forceAllSign = $extrainfos->allSignToComplete;
+                    $extrainfos->obligatoire = $this->fonctions->convertvaluetobool($obligatoire);
+                    $extrainfos->attachmentRequire = $this->fonctions->convertvaluetobool($piecejointeoblig);
+                    $extrainfostab[$numero] = $extrainfos;
+                }
+            }
+            // Aucun signataire n'est défini => on va regarder si l'étape est obligatoire ou pas
+            // Si elle n'est pas obligatoire c'est qu'on peut l'ignorer donc on augmente le nombre d'étape ignorée
+            elseif (!$this->fonctions->convertvaluetobool($obligatoire))
+            {
+                $nbstepskip++;
+                //var_dump("Je skip l'étape $numero");
+            }
+            else
+            {
+                echo $this->fonctions->showmessage(fonctions::MSGERROR, "L'étape '$description' du circuit de signature " . basename($filename). " est obligatoire mais est vide.");
+            }
+
+        }
+
+        //var_dump($signatairearray);
+
+        return $signatairearray;
+    }
 
 
 }

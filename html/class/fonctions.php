@@ -1173,24 +1173,31 @@ class fonctions
     /**
      *
      * @param string $codeouinon
-     *            code (o/n)
-     * @return string the oui/non label if correct / error message otherwise
+     *            Toute valeur pouvant être traduite en boolean 
+     *              O, OUI, Y, YES, ON, 1
+     *              N, NON, N, NO, OFF, 0
+     * @param bool $anglais
+     *            False => En français (valeur par défaut)
+     *            True => En anglais  
+     * @return string La chaine de caratère correspondant à la valeur $ouinon dans la langue sélectionnée (Fr/En)
      */
-    public function ouinonlibelle($codeouinon = null)
+    public function ouinonlibelle($codeouinon = null, $anglais = false)
     {
+        $ouiarray = array("Oui", "Yes");
+        $nonarray = array("Non", "No");
+
         if (is_null($codeouinon))
+        {
             return "Le codeouinon $codeouinon est inconnu";
-        switch ($codeouinon) {
-            case "o":
-            case "O":
-                return "Oui";
-                break;
-            case "n":
-            case "N":
-                return "Non";
-                break;
-            default:
-                return "Le codeouinon $codeouinon est inconnu";
+        }
+        // On utilise le fait que false = 0 et true = 1 pour récupérer le bon libellé dans le tableau
+        if ($this->convertvaluetobool($codeouinon))
+        {
+            return $ouiarray[(int)$anglais];
+        }
+        else
+        {
+            return $nonarray[(int)$anglais];
         }
     }
 
@@ -2978,162 +2985,86 @@ class fonctions
 
     public function checksignatairecetliste(&$params, agent $agent)
     {
-
-        // On défini les extras-infos pour les différentes étapes de signature
-        $extrainfos = new etapeextrainfo();
-        $extrainfos->stepNumber = 1;
-        $extrainfos->signType = etapeextrainfo::PDFSIGNATURE;
-        $extrainfos->allSignToComplete = false;
-        $extrainfos->forceAllSign = false;
-        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
-
-        $extrainfos = new etapeextrainfo();
-        $extrainfos->stepNumber = 2;
-        $extrainfos->signType = etapeextrainfo::VISA;
-        $extrainfos->allSignToComplete = false;
-        $extrainfos->forceAllSign = false;
-        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
-
-        $extrainfos = new etapeextrainfo();
-        $extrainfos->stepNumber = 3;
-        $extrainfos->signType = etapeextrainfo::HIDDENVISA;
-        $extrainfos->allSignToComplete = false;
-        $extrainfos->forceAllSign = false;
-        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
-
-        $extrainfos = new etapeextrainfo();
-        $extrainfos->stepNumber = 4;
-        $extrainfos->signType = etapeextrainfo::HIDDENVISA;
-        $extrainfos->allSignToComplete = false;
-        $extrainfos->forceAllSign = false;
-        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
-
-        $extrainfos = new etapeextrainfo();
-        $extrainfos->stepNumber = 5;
-        $extrainfos->signType = etapeextrainfo::PDFSIGNATURE;
-        $extrainfos->allSignToComplete = false;
-        $extrainfos->forceAllSign = false;
-        $params['levelextrainfos'][$extrainfos->stepNumber] = $extrainfos;
-
         $maxniveau = 0;
-        $arraysignataire = array();
-        $resp = $agent->getsignataire(null,$respstruct,$codeinterne);
-        if (!is_null($resp) and ($resp!==false))
-        {
-            $arraysignataire[$resp->agentid()] = $resp;
-        }
-        if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
-        {
-            $respsiham = $respstruct->responsablesiham();
-            if ($respsiham->mail() . "" != "")
-            {
-                $arraysignataire[$respsiham->agentid()] = $respsiham;                
-            }
-        }
-        if (isset($arraysignataire[SPECIAL_USER_IDCRONUSER]))
-        {
-            unset($arraysignataire[SPECIAL_USER_IDCRONUSER]);
-        }
-        if (count($arraysignataire)==0)
-        {
-            $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
-        }
-        else
-        {
-            $params['recipientEmails']["1*" . $agent->ldapmail()] = "1*" . $agent->ldapmail();
-            foreach($arraysignataire as $resp)
-            {
-                $params['recipientEmails']["2*" . $resp->mail()] = "2*" . $resp->mail();
-            }
+        $esignature = new esignature($this->dbconnect);
+        $extrainfostab = array();
+        $tabsignataire = $esignature->createstep($agent,"Circuit_CET.xml", $extrainfostab);
+        $params['levelextrainfos'] = $extrainfostab;
 
-            $constantename = 'CETSIGNATAIRE';
-            $signataireliste = '';
-            $tabsignataire = array();
-            if ($this->testexistdbconstante($constantename))
+        //var_dump($tabsignataire);
+
+        foreach ($tabsignataire as $niveau => $infosignataires)
+        {
+            if ($maxniveau<$niveau) $maxniveau = $niveau;
+
+            foreach ($infosignataires as $idsignataire => $infosignataire)
             {
-                $signataireliste = $this->liredbconstante($constantename);
-            }
-            if (strlen($signataireliste)>0)
-            {
-                $tabsignataire = $this->signatairetoarray($signataireliste);
-                foreach ($tabsignataire as $niveau => $infosignataires)
+                if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                 {
-                    if ($maxniveau<$niveau) $maxniveau = $niveau;
-
-                    foreach ($infosignataires as $idsignataire => $infosignataire)
+                    $agentsignataire = new agent($this->dbconnect);
+                    if ($agentsignataire->load($infosignataire[1]))
                     {
-                        if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
-                        {
-                            $agentsignataire = new agent($this->dbconnect);
-                            if ($agentsignataire->load($infosignataire[1]))
-                            {
-                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                            }
-                        }
-                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
-                        {
-                            $structuresignataire = new structure($this->dbconnect);
-                            $structuresignataire->load($infosignataire[1]);
-                            $agentsignataire = $structuresignataire->responsable();
-                            if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
-                            {
-                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                            }
-                        }
-                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
-                        {
-                            $structuresignataire = new structure($this->dbconnect);
-                            $structuresignataire->load($infosignataire[1]);
-                            $datedujour = date("d/m/Y");
-                            foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
-                            {
-                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                            }
-                        }
-                        else
-                        {
-                            echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
-                        }
-                        unset($agentsignataire);
+                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
                     }
                 }
-            }
-
-            // On passe le tableau en minuscule
-            $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
-            // On passe les clés en minuscules
-            $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
-            // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
-            $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
-            // On trie le tableau résultat par valeur de clé (donc par niveau)
-            ksort($params['recipientEmails']);
-
-            $taberrorcheckmail = array();
-            $tabniveauok = array();
-            foreach ($params['recipientEmails'] as $recipient)
-            {
-                $substr = explode('*',$recipient);
-                $mailadress = $substr[1];
-                $niveau = $substr[0];
-                // var_dump("mailadress = $mailadress");
-                if (!$this->mailexistedansldap($mailadress))
+                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
                 {
-                    $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                    $structuresignataire = new structure($this->dbconnect);
+                    $structuresignataire->load($infosignataire[1]);
+                    $agentsignataire = $structuresignataire->responsable();
+                    if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
+                    {
+                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                    }
+                }
+                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
+                {
+                    $structuresignataire = new structure($this->dbconnect);
+                    $structuresignataire->load($infosignataire[1]);
+                    $datedujour = date("d/m/Y");
+                    foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
+                    {
+                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                    }
                 }
                 else
                 {
-                    $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                    echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
                 }
+                unset($agentsignataire);
             }
+        }
 
-            // var_dump($tabniveauok);
-            // var_dump("count(tabniveauok) = " . count($tabniveauok));
-            // var_dump("maxniveau = " . $maxniveau);
+        // On passe le tableau en minuscule
+        $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
+        // On passe les clés en minuscules
+        $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
+        // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
+        $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
+        // On trie le tableau résultat par valeur de clé (donc par niveau)
+        ksort($params['recipientEmails']);
 
-            if (count($tabniveauok)!=$maxniveau)
+        $taberrorcheckmail = array();
+        $tabniveauok = array();
+        foreach ($params['recipientEmails'] as $recipient)
+        {
+            $substr = explode('*',$recipient);
+            $mailadress = $substr[1];
+            $niveau = $substr[0];
+            // var_dump("mailadress = $mailadress");
+            if (!$this->mailexistedansldap($mailadress))
             {
-                $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
+                $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
             }
+            else
+            {
+                $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+            }
+        }
+
+        if (count($tabniveauok)!=$maxniveau)
+        {
+            $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
         }
         if (count($taberrorcheckmail)>0)
         {
@@ -3143,336 +3074,248 @@ class fonctions
 
     }
 
-    public function checksignataireteletravailliste(&$params, agent $agent, &$maxniveau)
+    public function checksignataireteletravailliste(&$params, agent $agent)
     {
-
         $maxniveau = 0;
-        $arraysignataire = array();
-        $resp = $agent->getsignataire(null,$respstruct,$codeinterne);
-        if (!is_null($resp) and ($resp!==false))
-        {
-            $arraysignataire[$resp->agentid()] = $resp;
-        }
-        if ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT)
-        {
-            $respsiham = $respstruct->responsablesiham();
-            if ($respsiham->mail() . "" != "")
-            {
-                $arraysignataire[$respsiham->agentid()] = $respsiham;                
-            }
-        }
-        if (isset($arraysignataire[SPECIAL_USER_IDCRONUSER]))
-        {
-            unset($arraysignataire[SPECIAL_USER_IDCRONUSER]);
-        }
-        if (count($arraysignataire)==0)
-        {
-            $taberrorcheckmail['prob_resp'] = "Votre responsable n'est pas renseigné.";
-        }
-        else
-        {
-            $params['recipientEmails']["1*" . $agent->ldapmail()] = "1*" . $agent->ldapmail();
-            foreach($arraysignataire as $resp)
-            {
-                $params['recipientEmails']["2*" . $resp->mail()] = "2*" . $resp->mail();
-            }
+        $esignature = new esignature($this->dbconnect);
+        $extrainfostab = array();
+        $tabsignataire = $esignature->createstep($agent,"Circuit_Teletravail.xml", $extrainfostab);
+        $params['levelextrainfos'] = $extrainfostab;
 
-            ////////////////////////////////////////////////////
-            // On cherche le responsable n+2 de l'agent
-            $arraysignataire_n2 = array();
-            $responsable_n2 = $agent->getsignataire_niveau2($respdurespstruct,$codeinterne);
-            //var_dump($responsable_n2);
-            if (!is_null($responsable_n2) and ($responsable_n2!==false))
+        //var_dump($params);
+        //var_dump($tabsignataire);
+
+        foreach ($tabsignataire as $niveau => $infosignataires)
+        {
+            if ($maxniveau<$niveau) $maxniveau = $niveau;
+
+            foreach ($infosignataires as $idsignataire => $infosignataire)
             {
-                $arraysignataire_n2[$responsable_n2->agentid()] = $responsable_n2;
-            }
-            if ($responsable_n2!==false and ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT))
-            {
-                $respsiham_n2 = $respdurespstruct->responsablesiham();
-                if ($respsiham_n2->mail() . "" != "")
+                if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                 {
-                    $arraysignataire_n2[$respsiham_n2->agentid()] = $respsiham_n2;                
+                    $agentsignataire = new agent($this->dbconnect);
+                    if ($agentsignataire->load($infosignataire[1]))
+                    {
+                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                    }
+                }
+                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
+                {
+                    $structuresignataire = new structure($this->dbconnect);
+                    $structuresignataire->load($infosignataire[1]);
+                    $agentsignataire = $structuresignataire->responsable();
+                    if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
+                    {
+                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                    }
+                }
+                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
+                {
+                    $structuresignataire = new structure($this->dbconnect);
+                    $structuresignataire->load($infosignataire[1]);
+                    $datedujour = date("d/m/Y");
+                    foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
+                    {
+                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                    }
+                }
+                else
+                {
+                    echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
+                }
+                unset($agentsignataire);
+            }
+        }
+
+        // On passe le tableau en minuscule
+        $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
+        // On passe les clés en minuscules
+        $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
+        // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
+        $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
+        // On trie le tableau résultat par valeur de clé (donc par niveau)
+        ksort($params['recipientEmails']);
+
+
+        
+        /////////////////////////////////////////////////////////////
+        // On va supprimer le demandeur de tous les niveaux de signature, sauf s'il est le seul signataire dans un niveau
+        // On parcourt tous les niveaux
+        // Pour le niveau 1 (demandeur) => On mémorise les demandeurs
+        // Pour les niveaux suivants => On regarde si les demandeurs sont dans le niveau et s'il y a d'autres. Oui => On supprime les demandeurs. Non => On les laisse
+        error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer le demandeur de tous les niveaux (sauf s'il est tout seul dans un niveau)"));
+        $tabmaildemandeur = array();
+        $keytoremove = array();
+        $lastlevel = '';
+        $nbintervenant = 0;
+        $nbtrouve = 0;
+        foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+        {
+            $tabinforecipient = explode('*',$recipientstring);
+            // Si on a 2 parties 
+            if (count($tabinforecipient)==2)
+            {
+                // le niveau (donc l'index 0) est 1 (donc niveau demandeur)'
+                if ($tabinforecipient[0]=='1')
+                {
+                    //var_dump("On mémorise le demandeur : "  .strtolower($tabinforecipient[1]));
+                    $tabmaildemandeur[] = strtolower($tabinforecipient[1]);
+                }
+                // On est dans un niveau > 1 (donc N+1, N+2, RH,....)
+                else
+                {
+                    //var_dump("On est dans un niveau > 1 : " . $tabinforecipient[0]);
+                    if ($lastlevel != $tabinforecipient[0])
+                    {
+                        //var_dump("On change de niveau");
+                        // Si on a trouvé tous les demandeurs et qu'ils ne sont les seuls du niveau
+                        if (($nbintervenant>0) and ($nbintervenant<>count($tabmaildemandeur)) and ($nbtrouve==count($tabmaildemandeur)))
+                        {
+                            // On enregistre les clés des adresses des demandeurs pour les supprimer à la fin
+                            //var_dump("On a trouvé tous les demandeurs et ce n'est pas les seuls du précédent niveau");
+                            foreach($tabmaildemandeur as $emaildemandeur)
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur)));
+                                //var_dump("On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur));
+                                $keytoremove[] = $lastlevel . "*" . strtolower($emaildemandeur);
+                            }
+                        }
+                        //var_dump("On réintialise les variables et le niveau courant est " . $tabinforecipient[0]);
+                        $nbintervenant = 0;
+                        $nbtrouve = 0;
+                        $lastlevel = $tabinforecipient[0];
+                    }
+                    // Si l'adresse courante est dans la liste des demandeurs
+                    //var_dump("On va verifier sur l'adresse courante est dans les demandeurs : " . strtolower($tabinforecipient[1]));
+                    if (in_array(strtolower($tabinforecipient[1]),$tabmaildemandeur)===true)
+                    {
+                        //var_dump("On vient de le trouve => C'est un demandeur dans le niveau $lastlevel");
+                        $nbtrouve++;
+                    }
+                    //var_dump("On ajoute un intervenant dans le niveau");
+                    $nbintervenant++;
                 }
             }
-
-            //var_dump($responsable_n2);
-            if (count($arraysignataire_n2)==0)
+        }
+        // On traite le dernier élément du tableau => donc le dernier niveau
+        // Si on a trouvé tous les demandeurs et qu'ils ne sont les seuls du niveau
+        if (($nbintervenant>0) and ($nbintervenant<>count($tabmaildemandeur)) and ($nbtrouve==count($tabmaildemandeur)))
+        {
+            // On enregistre les clés des adresses des demandeurs pour les supprimer à la fin
+            foreach($tabmaildemandeur as $emaildemandeur)
             {
-                // On n'a pas trouvé de responsable n+2
-                $constantename = 'TELETRAVAILSIGNATAIRE';
+                error_log(basename(__FILE__) . $this->stripAccents(" On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur)));
+                $keytoremove[] = $lastlevel . "*" . strtolower($emaildemandeur);
+            }
+        }
+        // On supprime toutes les clés qu'on a mémorisé
+        foreach ($keytoremove as $key)
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer le demandeur des niveaux => clé = " . $key));
+            //var_dump("On va supprimer le demandeur des niveaux => clé = " . $key);
+            unset($params['recipientEmails'][$key]);
+        }
+        //var_dump($params['recipientEmails']);
+        ///////////////////////////////////////////////////////////////
+        
+        ///////////////////////////////////////////
+        // Si la 3e étape est le même que la 2e et que la 3e étape est facultative => On supprime la 3e étape
+        // Remarque : On pourrait le faire pour tous les niveaux >= 3 et qui sont facultatifs
+        // A voir pour réaliser cette évolution
+        $nbn2trouve = 0;
+        $nbn2total = 0;
+        $tabkeytoremove = array();
+        foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+        {
+            $tabinforecipient = explode('*',$recipientstring);
+            // Si on a 2 parties et que le niveau (donc l'index 0) est 3 et que le niveau est facultatif
+            if (count($tabinforecipient)==2 and $tabinforecipient[0]=='3' and $params['levelextrainfos'][$tabinforecipient[0]]->obligatoire==false)
+            {
+                $nbn2total++;
+                // On cherche dans le niveau précédent (donc le niveau 2) si l'adresse existe
+                if (in_array(($tabinforecipient[0]-1). '*' . $tabinforecipient[1],$params['recipientEmails']))
+                {
+                    // On l'a trouvé dans le niveau précédent => N+1
+                    $nbn2trouve++;
+                    // On mémorise la clé du niveau 3 à supprimer en cas de besoin
+                    $tabkeytoremove[] = $recipientkey;
+                }
+            }
+        }
+        //var_dump($tabkeytoremove);
+
+        // Si toutes les adresses de la 3e étape sont dans la 2e (on les a toutes trouvées)
+        if ($nbn2trouve == $nbn2total and $nbn2total>0)
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Les signataires de la 3e étape sont les mêmes que la 2e => On va supprimer cette étape "));
+            foreach($tabkeytoremove as $recipientkey => $recipientstring)
+            {
+                $tabinforecipient = explode('*',$recipientstring);
+                // On supprime les extras-infos correspondants au niveau
+                //var_dump("On supprime le " . $tabinforecipient[0] . "e niveau des extras-infos");
+                unset($params['levelextrainfos'][$tabinforecipient[0]]);
+                // On supprime les destinataires du niveau
+                //var_dump("On supprime le destinataire $recipientkey");
+                unset($params['recipientEmails'][$recipientkey]);
+            }
+            foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+            {
+                //var_dump("dans le foreach => Key = " . $recipientkey . "   String = " . $recipientstring);
+                $tabinforecipient = explode('*',$recipientstring);
+                // Si on a 2 parties et que le niveau (donc l'index 0) est supérieur à 3
+                // On doit descendre le niveau de 1 de tous les niveaux suivants
+                if (count($tabinforecipient)==2 and $tabinforecipient[0]>'3')
+                {
+                    //var_dump("Je renumérote...");
+                    unset($params['recipientEmails'][$recipientkey]);
+                    $params['recipientEmails'][($tabinforecipient[0]-1). '*' . $tabinforecipient[1]] = ($tabinforecipient[0]-1). '*' . $tabinforecipient[1];
+                }
+            }
+            $maxniveau--;
+            error_log(basename(__FILE__) . $this->stripAccents(" Le niveau maximal est maintenant : $maxniveau => On est dans un circuit télétravail sans N+2"));
+            //var_dump("Le niveau est maintenant : $maxniveau");
+        }
+        
+        //var_dump($params['recipientEmails']);
+        //var_dump($params['levelextrainfos']);
+        //////////////////////////////////////////
+        
+        $taberrorcheckmail = array();
+        $tabniveauok = array();
+        $levelkeys = array_keys($params['recipientEmails']);
+        foreach($levelkeys as $key)
+        {
+            $substr = explode('*',$key);
+            $mailadress = $substr[1];
+            $niveau = $substr[0];
+            $tabniveauok[$niveau] = "On a un agent dans le niveau $niveau";                
+        }
+
+        $taberrorcheckmail = array();
+        $tabniveauok = array();
+        foreach ($params['recipientEmails'] as $recipient)
+        {
+            $substr = explode('*',$recipient);
+            $mailadress = $substr[1];
+            $niveau = $substr[0];
+            // var_dump("mailadress = $mailadress");
+            if (!$this->mailexistedansldap($mailadress))
+            {
+                $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
             }
             else
             {
-                // On a trouvé de responsable n+2
-                $constantename = 'TELETRAVAILSIGNATAIRE_EVOLUE';
+                $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
             }
+        }
 
-            //var_dump($constantename);
-            
-            $signataireliste = '';
-            $tabsignataire = array();
-            if ($this->testexistdbconstante($constantename))
-            {
-                $signataireliste = $this->liredbconstante($constantename);
-            }
-            if (strlen($signataireliste)>0)
-            {
-                $tabsignataire = $this->signatairetoarray($signataireliste);
-                foreach ($tabsignataire as $niveau => $infosignataires)
-                {
-                    if ($maxniveau<$niveau) 
-                    { 
-                        $maxniveau = $niveau; 
-                    }
+        //var_dump($tabniveauok);
+        //var_dump("count(tabniveauok) = " . count($tabniveauok));
+        //var_dump("maxniveau = " . $maxniveau);
 
-                    foreach ($infosignataires as $idsignataire => $infosignataire)
-                    {
-                        if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
-                        {
-                            $agentsignataire = new agent($this->dbconnect);
-                            if ($agentsignataire->load($infosignataire[1]))
-                            {
-                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                            }
-                        }
-                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
-                        {
-                            $structuresignataire = new structure($this->dbconnect);
-                            $structuresignataire->load($infosignataire[1]);
-                            $agentsignataire = $structuresignataire->responsable();
-                            if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
-                            {
-                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                            }
-                        }
-                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
-                        {
-                            $structuresignataire = new structure($this->dbconnect);
-                            $structuresignataire->load($infosignataire[1]);
-                            $datedujour = date("d/m/Y");
-                            foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
-                            {
-                                $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                            }
-                        }
-                        elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE_N2)
-                        {
-                            ///////////////////////////////////////////////////
-                            // Si il y a un responsable de niveau 2 défini
-                            if (count($arraysignataire_n2)==0)
-                            {
-                                //echo "Pas possible de trouver le n+2 de " . $agent->identitecomplete() . "<br><br>";
-                            }
-                            else
-                            {
-                                foreach ($arraysignataire_n2 as $responsable_n2)
-                                {
-                                    //echo "Le responsable n+2 de " . $agent->identitecomplete() . " est " . $topresponsable->identitecomplete() . "<br><br>";
-                                    $params['recipientEmails'][$niveau . "*" . $responsable_n2->mail()] = $niveau . "*" . $responsable_n2->mail();
-                                }
-                            }
-                            ////////////////////////////////////////////////////
-                        }
-                        else
-                        {
-                            echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
-                        }
-                        unset($agentsignataire);
-                    }
-                }
-            }
-            
-            //////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////
-            /////  POUR TEST UNIQUEMENT //////////////////////////////////
-            
-//            echo $this->showmessage(fonctions::MSGERROR,"-- BLOC DE CODE A DESACTIVER -- UNIQUEMENT EN TEST --");
-//            
-//            $params['recipientEmails'] = array
-//            (
-//                "1*" . $agent->ldapmail() => "1*" . $agent->ldapmail(),
-//                "2*pascal.comte@univ-paris1.fr" => "2*pascal.comte@univ-paris1.fr"
-//            );
-//            $tempstr = "3*canica.sar@univ-paris1.fr";
-//            $params['recipientEmails'][$tempstr] = $tempstr;
-//            $tempstr = "4*pascal.comte@univ-paris1.fr";
-//            $params['recipientEmails'][$tempstr] = $tempstr;
-//            $tempstr = "4*eSignature.test@univ-paris1.fr";
-//            $params['recipientEmails'][$tempstr] = $tempstr;
-//            $tempstr = "5*pascal.comte@univ-paris1.fr";
-//            $params['recipientEmails'][$tempstr] = $tempstr;
-            
-            //var_dump($params);
-            //////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////
-                        
-            // On passe le tableau en minuscule
-            $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
-            // On passe les clés en minuscules
-            $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
-            // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
-            $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
-            // On trie le tableau résultat par valeur de clé (donc par niveau)
-            ksort($params['recipientEmails']);
-            
-            //var_dump($params['recipientEmails']);
-            
-            /////////////////////////////////////////////////////////////
-            // On va supprimer le demandeur de tous les niveaux de signature, sauf s'il est le seul signataire dans un niveau
-            // On parcourt tous les niveaux
-            // Pour le niveau 1 (demandeur) => On mémorise les demandeurs
-            // Pour les niveaux suivants => On regarde si les demandeurs sont dans le niveau et s'il y a d'autres. Oui => On supprime les demandeurs. Non => On les laisse
-            error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer le demandeur de tous les niveaux (sauf s'il est tout seul dans un niveau)"));
-            $tabmaildemandeur = array();
-            $keytoremove = array();
-            $lastlevel = '';
-            $nbintervenant = 0;
-            $nbtrouve = 0;
-            foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
-            {
-                $tabinforecipient = explode('*',$recipientstring);
-                // Si on a 2 parties 
-                if (count($tabinforecipient)==2)
-                {
-                    // le niveau (donc l'index 0) est 1 (donc niveau demandeur)'
-                    if ($tabinforecipient[0]=='1')
-                    {
-                        //var_dump("On mémorise le demandeur : "  .strtolower($tabinforecipient[1]));
-                        $tabmaildemandeur[] = strtolower($tabinforecipient[1]);
-                    }
-                    // On est dans un niveau > 1 (donc N+1, N+2, RH,....)
-                    else
-                    {
-                        //var_dump("On est dans un niveau > 1 : " . $tabinforecipient[0]);
-                        if ($lastlevel != $tabinforecipient[0])
-                        {
-                            //var_dump("On change de niveau");
-                            // Si on a trouvé tous les demandeurs et qu'ils ne sont les seuls du niveau
-                            if (($nbintervenant>0) and ($nbintervenant<>count($tabmaildemandeur)) and ($nbtrouve==count($tabmaildemandeur)))
-                            {
-                                // On enregistre les clés des adresses des demandeurs pour les supprimer à la fin
-                                //var_dump("On a trouvé tous les demandeurs et ce n'est pas les seuls du précédent niveau");
-                                foreach($tabmaildemandeur as $emaildemandeur)
-                                {
-                                    error_log(basename(__FILE__) . $this->stripAccents(" On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur)));
-                                    //var_dump("On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur));
-                                    $keytoremove[] = $lastlevel . "*" . strtolower($emaildemandeur);
-                                }
-                            }
-                            //var_dump("On réintialise les variables et le niveau courant est " . $tabinforecipient[0]);
-                            $nbintervenant = 0;
-                            $nbtrouve = 0;
-                            $lastlevel = $tabinforecipient[0];
-                        }
-                        // Si l'adresse courante est dans la liste des demandeurs
-                        //var_dump("On va verifier sur l'adresse courante est dans les demandeurs : " . strtolower($tabinforecipient[1]));
-                        if (in_array(strtolower($tabinforecipient[1]),$tabmaildemandeur)===true)
-                        {
-                            //var_dump("On vient de le trouve => C'est un demandeur dans le niveau $lastlevel");
-                            $nbtrouve++;
-                        }
-                        //var_dump("On ajoute un intervenant dans le niveau");
-                        $nbintervenant++;
-                    }
-                }
-            }
-            // On traite le dernier élément du tableau => donc le dernier niveau
-            // Si on a trouvé tous les demandeurs et qu'ils ne sont les seuls du niveau
-            if (($nbintervenant>0) and ($nbintervenant<>count($tabmaildemandeur)) and ($nbtrouve==count($tabmaildemandeur)))
-            {
-                // On enregistre les clés des adresses des demandeurs pour les supprimer à la fin
-                foreach($tabmaildemandeur as $emaildemandeur)
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur)));
-                    $keytoremove[] = $lastlevel . "*" . strtolower($emaildemandeur);
-                }
-            }
-            // On supprime toutes les clés qu'on a mémorisé
-            foreach ($keytoremove as $key)
-            {
-                error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer le demandeur des niveaux => clé = " . $key));
-                //var_dump("On va supprimer le demandeur des niveaux => clé = " . $key);
-                unset($params['recipientEmails'][$key]);
-            }
-            //var_dump($params['recipientEmails']);
-            ///////////////////////////////////////////////////////////////
-            
-            ///////////////////////////////////////////
-            // Si on est dans le cas d'un circuit N+2
-            if ($constantename == 'TELETRAVAILSIGNATAIRE_EVOLUE')
-            {
-                error_log(basename(__FILE__) . $this->stripAccents(" On est dans le cadre d'une demande de télétravail avec N+2 "));
-                // Si le niveau N+2 est le même que le niveau N+1 => On supprime le niveau N+2
-                // Le circuit devient alors un niveau N+1
-                $nbn2trouve = 0;
-                $nbn2total = 0;
-                $tabkeytoremove = array();
-                foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
-                {
-                    $tabinforecipient = explode('*',$recipientstring);
-                    // Si on a 2 parties et que le niveau (donc l'index 0) est 3 (donc N+2)
-                    if (count($tabinforecipient)==2 and $tabinforecipient[0]=='3')
-                    {
-                        $nbn2total++;
-                        // On cherche dans le niveau précédent (donc le niveau 2) si l'adresse existe
-                        if (in_array(($tabinforecipient[0]-1). '*' . $tabinforecipient[1],$params['recipientEmails']))
-                        {
-                            // On l'a trouvé dans le niveau précédent => N+1
-                            $nbn2trouve++;
-                            // On mémorise la clé du niveau 3 à supprimer en cas de besoin
-                            $tabkeytoremove[] = $recipientkey;
-                        }
-                    }
-                }
-                // Si toutes les adresses de niveau 3 sont dans le niveau 2 (on les a toutes trouvées)
-                if ($nbn2trouve == $nbn2total and $nbn2total>0)
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" Les signataires du niveau 3 sont les mêmes que le niveau 2 => On va supprimer le niveau 3 "));
-                    foreach($tabkeytoremove as $recipientkey)
-                    {
-                        unset($params['recipientEmails'][$recipientkey]);
-                    }
-                    foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
-                    {
-                        //var_dump("dans le foreach => Key = " . $recipientkey . "   String = " . $recipientstring);
-                        $tabinforecipient = explode('*',$recipientstring);
-                        // Si on a 2 parties et que le niveau (donc l'index 0) est supérieur à 3
-                        // On doit descendre le niveau de 1 de tous les niveaux suivants
-                        if (count($tabinforecipient)==2 and $tabinforecipient[0]>'3')
-                        {
-                            //var_dump("Je renumérote...");
-                            unset($params['recipientEmails'][$recipientkey]);
-                            $params['recipientEmails'][($tabinforecipient[0]-1). '*' . $tabinforecipient[1]] = ($tabinforecipient[0]-1). '*' . $tabinforecipient[1];
-                        }
-                    }
-                    $maxniveau--;
-                    error_log(basename(__FILE__) . $this->stripAccents(" Le niveau maximal est maintenant : $maxniveau => On est dans un circuit télétravail sans N+2"));
-                    //var_dump("Le niveau est maintenant : $maxniveau");
-                }
-            }
-            
-            //var_dump($params['recipientEmails']);
-            //////////////////////////////////////////
-            
-            $taberrorcheckmail = array();
-            $tabniveauok = array();
-            $levelkeys = array_keys($params['recipientEmails']);
-            foreach($levelkeys as $key)
-            {
-                $substr = explode('*',$key);
-                $mailadress = $substr[1];
-                $niveau = $substr[0];
-                $tabniveauok[$niveau] = "On a un agent dans le niveau $niveau";                
-            }
-
-            //var_dump($tabniveauok);
-            //var_dump("count(tabniveauok) = " . count($tabniveauok));
-            //var_dump("maxniveau = " . $maxniveau);
-
-            if (count($tabniveauok)!=$maxniveau)
-            {
-                $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
-            }
+        if (count($tabniveauok)!=$maxniveau)
+        {
+            $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
         }
         if (count($taberrorcheckmail)>0)
         {
@@ -4942,12 +4785,14 @@ WHERE  table_schema = Database()
             case 'O':
             case 'OUI':
             case '1':
+            case 'ON':
                 return true;
                 break;
             case 'N':
             case 'NO':
             case 'NON':
             case '0':
+            case 'OFF':
                 return false;
                 break;
             default:
@@ -5022,6 +4867,7 @@ WHERE  table_schema = Database()
             unset($tabparam['levelextrainfos']);
             unset($tabparam["recipientEmails"]);
         }
+
         //var_dump("tabparam = "); var_dump($tabparam);
         return $tabparam;
     }
