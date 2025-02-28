@@ -2,6 +2,76 @@
 
 use Fpdf\Fpdf as FPDF;
 
+class esignaturelog
+{
+    private $dbconnect = null;
+    private $fonctions = null;
+
+    /**
+     *
+     * @param mysqli $db
+     *            La connexion MySQL/MariaDB à la base de données
+     */
+    function __construct(mysqli $db)
+    {
+        $this->fonctions = new fonctions($db);
+        $this->dbconnect = $db;
+    }
+
+    /**
+     *
+     * @param array $esignaturequery
+     *            Le tableau des données soumisent à eSignature
+     */
+    function store(array $esignaturequery)
+    {
+        $sql = "INSERT INTO ESIGNATURELOG(ESIGNATUREID,DOCUMENTTYPE,CREATIONDATE,DOCUMENTDATA) VALUES (?, ?, SYSDATE(), ?)";
+
+        $doctype = "Type inconnu";
+        if (isset($esignaturequery['title']))
+        {
+            $doctype = $esignaturequery['title'];
+        }
+        $esignatureid = "";
+        if (isset($esignaturequery['esignatureid']))
+        {
+            $esignatureid = $esignaturequery['esignatureid'];
+        }
+
+        $params = array($esignatureid, $doctype, print_r($esignaturequery,true));
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+
+        if ($erreur != "") 
+        {
+            $errlog = __CLASS__ . "::" . __FUNCTION__ . " : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+    }
+
+    /**
+     *
+     * @param array $query
+     *            Le tableau des données soumisent à eSignature
+     */
+    function delete(string $esignatureid)
+    {
+        $sql = "DELETE FROM ESIGNATURELOG WHERE ESIGNATUREID = ?";
+
+        $params = array($esignatureid . "");
+        $query = $this->fonctions->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+
+        if ($erreur != "") 
+        {
+            $errlog = __CLASS__ . "::" . __FUNCTION__ . " : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+    }
+}
+
 class stepinfos
 {
     public const PDFSIGNATURE = 'pdfImageStamp';
@@ -456,6 +526,8 @@ class esignature
     public function create_custom_signrequest(array $params) : int|string
     {
         //var_dump($params);
+        // On sauvegarde dans la base de données les données passées à eSignature
+        $esignaturelog = new esignaturelog($this->dbconnect);
 
         $curl = curl_init();
         $opts = [
@@ -480,6 +552,7 @@ class esignature
         {
             $error = __CLASS__ . "::" . __FUNCTION__ . " : Erreur Curl =>  " . $error;
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+            //$esignaturelog->store($params);
             return $error;
         }
         $id = json_decode($json, true);
@@ -500,12 +573,15 @@ class esignature
             $error = __CLASS__ . "::" . __FUNCTION__ . " : Erreur Curl =>  " . $error;
             error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
             //var_dump($error);
+            //$esignaturelog->store($params);
             return $error;
         }
         else
         {
-            //var_dump("ID = $id");
-            return intval($id);
+            $esignatureid = intval($id);
+            $params['esignatureid'] = $esignatureid;
+            $esignaturelog->store($params);
+            return $esignatureid;
         }
 
     }
@@ -647,6 +723,8 @@ class esignature
             // Tout s'est bien passé => On sort
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " : Suppression OK"));
             $error = "";
+            $esignaturelog = new esignaturelog($this->dbconnect);
+            $esignaturelog->delete($esignatureid);
         }
         return $error . "";
 

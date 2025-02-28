@@ -965,13 +965,13 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     
                     $params = array
                     (
+                        'title' => "Convention de télétravail de " . $agent->prenom() . " " . $agent->nom(),
                         'eppn' => "$agent_eppn",
                         'createByEppn' => "$agent_eppn",
                         'targetEmails' => array("$agent_mail"),
                         'targetUrl' => "$full_g2t_ws_url",
                         'targetUrls' => array("$full_g2t_ws_url"),
-                        'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE),
-                        'title' => "Convention de télétravail de " . $agent->prenom() . " " . $agent->nom()
+                        'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
                     );
 
                     $taberrorcheckmail = array();

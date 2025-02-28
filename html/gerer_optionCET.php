@@ -266,6 +266,7 @@
 
             $params = array
             (
+                'title' => "Option CET de " . $tabinfos["agent"]["firstname"] . " " . $tabinfos["agent"]["name"],
                 'eppn' => "$agent_eppn",
                 'createByEppn' => "$agent_eppn",
                 'targetEmails' => array("$agent_mail"),

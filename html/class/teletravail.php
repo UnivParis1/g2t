@@ -748,9 +748,16 @@ class teletravail
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             
-            if ($erreur != "") {
+            if ($erreur != "")
+            {
                 $errlog = "teletravail->Store (UPDATE) : " . $erreur;
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            // Si la convention est : TELETRAVAIL_VALIDE, TELETRAVAIL_REFUSE, TELETRAVAIL_ANNULE => On supprime les données dans la table de log
+            elseif (in_array($this->statut(), array(teletravail::TELETRAVAIL_VALIDE, teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_ANNULE)))
+            {
+                $esignaturelog = new esignaturelog($this->dbconnect);
+                $esignaturelog->delete($this->esignatureid);
             }
         }
         return $erreur;

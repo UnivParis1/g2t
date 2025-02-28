@@ -544,9 +544,16 @@ class alimentationCET
             $params = array($this->esignatureid, $this->esignatureurl, $this->statut, $this->datestatut, $this->motif, $this->alimentationid);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
+            if ($erreur != "") 
+            {
                 $errlog = "alimentationCET->Store (UPDATE) : " . $erreur;
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            }
+            // Si l'alimentation CET est : STATUT_ABANDONNE, STATUT_REFUSE, STATUT_VALIDE => On supprime les données dans la table de log
+            elseif (in_array($this->statut(), array(alimentationCET::STATUT_ABANDONNE, alimentationCET::STATUT_REFUSE, alimentationCET::STATUT_VALIDE)))
+            {
+                $esignaturelog = new esignaturelog($this->dbconnect);
+                $esignaturelog->delete($this->esignatureid);
             }
         }
         return $erreur;
