@@ -2989,89 +2989,107 @@ class fonctions
         $esignature = new esignature($this->dbconnect);
         $extrainfostab = array();
         $tabsignataire = $esignature->createstep($agent,"Circuit_CET.xml", $extrainfostab);
-        $params['levelextrainfos'] = $extrainfostab;
 
-        //var_dump($tabsignataire);
-
-        foreach ($tabsignataire as $niveau => $infosignataires)
+        if (count($tabsignataire)==0)
         {
+            $taberrorcheckmail['prob_niveau'] = "Aucun niveau de signature n'a pu être déterminé.";
+            $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+            return $taberrorcheckmail;
+        }
+        unset($tabsignataire);
+
+        $params['levelextrainfos'] = $extrainfostab;
+        //var_dump($params);
+
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
+        {
+            $tempsignataires = array();
             if ($maxniveau<$niveau) $maxniveau = $niveau;
 
-            foreach ($infosignataires as $idsignataire => $infosignataire)
+            foreach ($stepinfos->signataires as $idsignataire => $infosignataire)
             {
                 if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                 {
                     $agentsignataire = new agent($this->dbconnect);
                     if ($agentsignataire->load($infosignataire[1]))
                     {
-                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                    }
-                }
-                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
-                {
-                    $structuresignataire = new structure($this->dbconnect);
-                    $structuresignataire->load($infosignataire[1]);
-                    $agentsignataire = $structuresignataire->responsable();
-                    if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
-                    {
-                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                    }
-                }
-                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
-                {
-                    $structuresignataire = new structure($this->dbconnect);
-                    $structuresignataire->load($infosignataire[1]);
-                    $datedujour = date("d/m/Y");
-                    foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
-                    {
-                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                        /////////
+                        // ATTENTION : Si on est dans le niveau 1 => On doit mettre la vraie adresse (adresseldap) de l'agent pour que la demande soit bien à lui
+                        //             même si on force l'adresse mail dans la configuration 
+                        if ($niveau == '1')
+                        {
+                            $tempsignataires[strtolower($agentsignataire->ldapmail())] = strtolower($agentsignataire->ldapmail());
+                        }
+                        else
+                        {
+                            $tempsignataires[strtolower($agentsignataire->mail())] = strtolower($agentsignataire->mail());
+                        }
+                        //var_dump($stepinfos->signataires[$idsignataire]);
+                        //var_dump("tempsignataires = "); var_dump($tempsignataires);
                     }
                 }
                 else
                 {
                     echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
                 }
+                unset($stepinfos->signataires[$idsignataire]);
                 unset($agentsignataire);
             }
+            $stepinfos->signataires = $tempsignataires;
         }
 
-        // On passe le tableau en minuscule
-        $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
-        // On passe les clés en minuscules
-        $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
-        // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
-        $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
-        // On trie le tableau résultat par valeur de clé (donc par niveau)
-        ksort($params['recipientEmails']);
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
+        {
+            //var_dump("stepinfos->signataires (avant fusion) = "); var_dump($stepinfos->signataires);
+            $stepinfos->signataires = array_merge($stepinfos->signataires,$this->explosemail($stepinfos->signataires));
+            // On vérifie que chaque adresse mail existe pas dans LDAP
+            foreach($stepinfos->signataires as $mailadress)
+            {
+                if (!$this->mailexistedansldap($mailadress))
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" L'adresse mail $mailadress n'est pas connue de LDAP => On l'ignore"));
+                    unset($stepinfos->signataires[$mailadress]);
+                }
+            }
+            //var_dump("stepinfos->signataires (après fusion) = "); var_dump($stepinfos->signataires);
+        }
 
+        // On vérifie qu'on a bien au moins un signataire dans chaque niveau
         $taberrorcheckmail = array();
         $tabniveauok = array();
-        foreach ($params['recipientEmails'] as $recipient)
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
         {
-            $substr = explode('*',$recipient);
-            $mailadress = $substr[1];
-            $niveau = $substr[0];
-            // var_dump("mailadress = $mailadress");
-            if (!$this->mailexistedansldap($mailadress))
+            // S'il n'y a pas de signataire dans le niveau => Il y a un problème
+            if (count($stepinfos->signataires) == 0)
             {
-                $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                $taberrorcheckmail["prob_niveau_$niveau"] = "Le niveau de signature $niveau n'est pas correctement renseigné";
             }
             else
             {
-                $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                // On a des signataires, mais on doit vérifier que toutes les adresses mail existent bien dans LDAP
+                foreach($stepinfos->signataires as $mailadress)
+                {
+                    // Si l'adresse n'existe pas dans LDAP
+                    if (!$this->mailexistedansldap($mailadress))
+                    {
+                        $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                    }
+                    else
+                    {
+                        $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                    }
+                }
             }
         }
+        //var_dump($tabniveauok);
+        //var_dump("count(tabniveauok) = " . count($tabniveauok));
+        //var_dump("maxniveau = " . $maxniveau);
 
-        if (count($tabniveauok)!=$maxniveau)
-        {
-            $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
-        }
-        if (count($taberrorcheckmail)>0)
+        if (count($tabniveauok)!=count($params['levelextrainfos']))
         {
             $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
         }
         return $taberrorcheckmail;
-
     }
 
     public function checksignataireteletravailliste(&$params, agent $agent)
@@ -3080,64 +3098,72 @@ class fonctions
         $esignature = new esignature($this->dbconnect);
         $extrainfostab = array();
         $tabsignataire = $esignature->createstep($agent,"Circuit_Teletravail.xml", $extrainfostab);
-        $params['levelextrainfos'] = $extrainfostab;
-
-        //var_dump($params);
-        //var_dump($tabsignataire);
-
-        foreach ($tabsignataire as $niveau => $infosignataires)
+        if (count($tabsignataire)==0)
         {
+            $taberrorcheckmail['prob_niveau'] = "Aucun niveau de signature n'a pu être déterminé.";
+            $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+            return $taberrorcheckmail;
+        }
+        unset($tabsignataire);
+
+        $params['levelextrainfos'] = $extrainfostab;
+        //var_dump($params);
+
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
+        {
+            $tempsignataires = array();
             if ($maxniveau<$niveau) $maxniveau = $niveau;
 
-            foreach ($infosignataires as $idsignataire => $infosignataire)
+            foreach ($stepinfos->signataires as $idsignataire => $infosignataire)
             {
+                //var_dump($idsignataire); var_dump($infosignataire);
                 if ($infosignataire[0]==fonctions::SIGNATAIRE_AGENT or $infosignataire[0]==fonctions::SIGNATAIRE_SPECIAL)
                 {
                     $agentsignataire = new agent($this->dbconnect);
                     if ($agentsignataire->load($infosignataire[1]))
                     {
-                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                    }
-                }
-                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_RESPONSABLE)
-                {
-                    $structuresignataire = new structure($this->dbconnect);
-                    $structuresignataire->load($infosignataire[1]);
-                    $agentsignataire = $structuresignataire->responsable();
-                    if ($agentsignataire->civilite()!='') // Si la civilité est vide => On a un problème de chargement du responsable
-                    {
-                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
-                    }
-                }
-                elseif ($infosignataire[0]==fonctions::SIGNATAIRE_STRUCTURE)
-                {
-                    $structuresignataire = new structure($this->dbconnect);
-                    $structuresignataire->load($infosignataire[1]);
-                    $datedujour = date("d/m/Y");
-                    foreach ($structuresignataire->agentlist($datedujour, $datedujour,'n') as $agentsignataire)
-                    {
-                        $params['recipientEmails'][$niveau . "*" . $agentsignataire->mail()] = $niveau . "*" . $agentsignataire->mail();
+                        /////////
+                        // ATTENTION : Si on est dans le niveau 1 => On doit mettre la vraie adresse (adresseldap) de l'agent pour que la demande soit bien à lui
+                        //             même si on force l'adresse mail dans la configuration 
+                        if ($niveau == '1')
+                        {
+                            $tempsignataires[strtolower($agentsignataire->ldapmail())] = strtolower($agentsignataire->ldapmail());
+                        }
+                        else
+                        {
+                            $tempsignataires[strtolower($agentsignataire->mail())] = strtolower($agentsignataire->mail());
+                        }
+                        //var_dump($stepinfos->signataires[$idsignataire]);
+                        //var_dump("tempsignataires = "); var_dump($tempsignataires);
                     }
                 }
                 else
                 {
                     echo $this->showmessage(fonctions::MSGERROR,"TYPE DE SIGNATAIRE inconnu !");
                 }
+                unset($stepinfos->signataires[$idsignataire]);
                 unset($agentsignataire);
             }
+            $stepinfos->signataires = $tempsignataires;
         }
 
-        // On passe le tableau en minuscule
-        $params['recipientEmails'] = array_map('strtolower', $params['recipientEmails']);
-        // On passe les clés en minuscules
-        $params['recipientEmails'] = array_change_key_case($params['recipientEmails'], CASE_LOWER);
-        // On fusionne le tableau applati avec le tableau d'origine pour récupérer les groupes qui ont été applatis
-        $params['recipientEmails'] = array_merge($params['recipientEmails'],$this->explosemail($params['recipientEmails']));
-        // On trie le tableau résultat par valeur de clé (donc par niveau)
-        ksort($params['recipientEmails']);
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
+        {
+            //var_dump("stepinfos->signataires (avant fusion) = "); var_dump($stepinfos->signataires);
+            $stepinfos->signataires = array_merge($stepinfos->signataires,$this->explosemail($stepinfos->signataires));
+            // On vérifie que chaque adresse mail existe pas dans LDAP
+            foreach($stepinfos->signataires as $mailadress)
+            {
+                if (!$this->mailexistedansldap($mailadress))
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" L'adresse mail $mailadress n'est pas connue de LDAP => On l'ignore"));
+                    //var_dump("L'adresse mail $mailadress n'est pas connue de LDAP => On l'ignore");
+                    unset($stepinfos->signataires[$mailadress]);
+                }
+            }
+            //var_dump("stepinfos->signataires (après fusion) = "); var_dump($stepinfos->signataires);
+        }
 
-
-        
         /////////////////////////////////////////////////////////////
         // On va supprimer le demandeur de tous les niveaux de signature, sauf s'il est le seul signataire dans un niveau
         // On parcourt tous les niveaux
@@ -3145,179 +3171,112 @@ class fonctions
         // Pour les niveaux suivants => On regarde si les demandeurs sont dans le niveau et s'il y a d'autres. Oui => On supprime les demandeurs. Non => On les laisse
         error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer le demandeur de tous les niveaux (sauf s'il est tout seul dans un niveau)"));
         $tabmaildemandeur = array();
-        $keytoremove = array();
-        $lastlevel = '';
-        $nbintervenant = 0;
-        $nbtrouve = 0;
-        foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+        // On cherche le premier niveau pour mémoriser les demandeurs
+        if (isset($params['levelextrainfos']['1']->signataires))
         {
-            $tabinforecipient = explode('*',$recipientstring);
-            // Si on a 2 parties 
-            if (count($tabinforecipient)==2)
+            // Le tableau des demandeurs est en fait le tableau des signataires du niveau 1
+            $tabmaildemandeur = $params['levelextrainfos']['1']->signataires;
+        }
+        // On parcours ensuite l'ensemble des niveaux (en ignorant le 1er puisque déjà traité)
+        // et on supprime l'ensemble des adresses mails contenues dans le tableau des demandeurs (en théorie 1 seule adresse mais....)
+        // Sauf si le tableau des demandeurs est le même que le tableau des signataires du niveau
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
+        {
+            // Si on est au premier niveau, on passe au suivant ca déjà traité 
+            if ($niveau=='1')
             {
-                // le niveau (donc l'index 0) est 1 (donc niveau demandeur)'
-                if ($tabinforecipient[0]=='1')
+                continue;
+            }
+            // Si on est là c'est qu'on est dans un niveau > 1
+            // On doit vérifier ques les deux tableaux sont différents sinon, il n'y aura plus personne dans le niveau
+            // Attention : tableau1 == tableau2 => vérifie que les associations clés/valeurs sont bien identiques dans les deux tableaux, peu importe l'ordre des clés et les types de clés et valeurs
+            //             tableau1 === tableau2 => vérifie que les associations clés/valeurs sont bien identiques dans les deux tableaux, dans le même ordre et du même type
+            if ($tabmaildemandeur != $stepinfos->signataires)
+            {
+                foreach ($tabmaildemandeur as $demandeurmail)
                 {
-                    //var_dump("On mémorise le demandeur : "  .strtolower($tabinforecipient[1]));
-                    $tabmaildemandeur[] = strtolower($tabinforecipient[1]);
-                }
-                // On est dans un niveau > 1 (donc N+1, N+2, RH,....)
-                else
-                {
-                    //var_dump("On est dans un niveau > 1 : " . $tabinforecipient[0]);
-                    if ($lastlevel != $tabinforecipient[0])
-                    {
-                        //var_dump("On change de niveau");
-                        // Si on a trouvé tous les demandeurs et qu'ils ne sont les seuls du niveau
-                        if (($nbintervenant>0) and ($nbintervenant<>count($tabmaildemandeur)) and ($nbtrouve==count($tabmaildemandeur)))
-                        {
-                            // On enregistre les clés des adresses des demandeurs pour les supprimer à la fin
-                            //var_dump("On a trouvé tous les demandeurs et ce n'est pas les seuls du précédent niveau");
-                            foreach($tabmaildemandeur as $emaildemandeur)
-                            {
-                                error_log(basename(__FILE__) . $this->stripAccents(" On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur)));
-                                //var_dump("On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur));
-                                $keytoremove[] = $lastlevel . "*" . strtolower($emaildemandeur);
-                            }
-                        }
-                        //var_dump("On réintialise les variables et le niveau courant est " . $tabinforecipient[0]);
-                        $nbintervenant = 0;
-                        $nbtrouve = 0;
-                        $lastlevel = $tabinforecipient[0];
-                    }
-                    // Si l'adresse courante est dans la liste des demandeurs
-                    //var_dump("On va verifier sur l'adresse courante est dans les demandeurs : " . strtolower($tabinforecipient[1]));
-                    if (in_array(strtolower($tabinforecipient[1]),$tabmaildemandeur)===true)
-                    {
-                        //var_dump("On vient de le trouve => C'est un demandeur dans le niveau $lastlevel");
-                        $nbtrouve++;
-                    }
-                    //var_dump("On ajoute un intervenant dans le niveau");
-                    $nbintervenant++;
+                    // Pas besoin de vérifier s'il existe ou pas car unset d'un élément inexistant ne fait rien
+                    error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer (s'il existe) le demandeur dand le niveau $niveau => clé = " . $demandeurmail));
+                    // var_dump("On va supprimer (s'il existe) le demandeur dand le niveau $niveau => clé = " . $demandeurmail);
+                    unset($stepinfos->signataires[$demandeurmail]);
                 }
             }
         }
-        // On traite le dernier élément du tableau => donc le dernier niveau
-        // Si on a trouvé tous les demandeurs et qu'ils ne sont les seuls du niveau
-        if (($nbintervenant>0) and ($nbintervenant<>count($tabmaildemandeur)) and ($nbtrouve==count($tabmaildemandeur)))
-        {
-            // On enregistre les clés des adresses des demandeurs pour les supprimer à la fin
-            foreach($tabmaildemandeur as $emaildemandeur)
-            {
-                error_log(basename(__FILE__) . $this->stripAccents(" On ajoute au tableau les demandeurs pour le dernier niveau : " . $lastlevel . "*" . strtolower($emaildemandeur)));
-                $keytoremove[] = $lastlevel . "*" . strtolower($emaildemandeur);
-            }
-        }
-        // On supprime toutes les clés qu'on a mémorisé
-        foreach ($keytoremove as $key)
-        {
-            error_log(basename(__FILE__) . $this->stripAccents(" On va supprimer le demandeur des niveaux => clé = " . $key));
-            //var_dump("On va supprimer le demandeur des niveaux => clé = " . $key);
-            unset($params['recipientEmails'][$key]);
-        }
-        //var_dump($params['recipientEmails']);
         ///////////////////////////////////////////////////////////////
         
         ///////////////////////////////////////////
         // Si la 3e étape est le même que la 2e et que la 3e étape est facultative => On supprime la 3e étape
         // Remarque : On pourrait le faire pour tous les niveaux >= 3 et qui sont facultatifs
         // A voir pour réaliser cette évolution
-        $nbn2trouve = 0;
-        $nbn2total = 0;
-        $tabkeytoremove = array();
-        foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
+        $levelsource = '2';
+        $leveltocheck = '3';
+        // Si le 2e et le 3e niveau de signature existe
+        if (isset($params['levelextrainfos'][$levelsource]) and isset($params['levelextrainfos'][$leveltocheck]))
         {
-            $tabinforecipient = explode('*',$recipientstring);
-            // Si on a 2 parties et que le niveau (donc l'index 0) est 3 et que le niveau est facultatif
-            if (count($tabinforecipient)==2 and $tabinforecipient[0]=='3' and $params['levelextrainfos'][$tabinforecipient[0]]->obligatoire==false)
+            // On vérifie que le niveau à controler est bien facultatif sinon on ne fait rien
+            if ($params['levelextrainfos'][$leveltocheck]->obligatoire==false)
             {
-                $nbn2total++;
-                // On cherche dans le niveau précédent (donc le niveau 2) si l'adresse existe
-                if (in_array(($tabinforecipient[0]-1). '*' . $tabinforecipient[1],$params['recipientEmails']))
+                // On vérifie si les tableaux sont identiques
+                // Attention : tableau1 == tableau2 => vérifie que les associations clés/valeurs sont bien identiques dans les deux tableaux, peu importe l'ordre des clés et les types de clés et valeurs
+                //             tableau1 === tableau2 => vérifie que les associations clés/valeurs sont bien identiques dans les deux tableaux, dans le même ordre et du même type
+                if ($params['levelextrainfos'][$levelsource]->signataires == $params['levelextrainfos'][$leveltocheck]->signataires)
                 {
-                    // On l'a trouvé dans le niveau précédent => N+1
-                    $nbn2trouve++;
-                    // On mémorise la clé du niveau 3 à supprimer en cas de besoin
-                    $tabkeytoremove[] = $recipientkey;
+                    // Donc les tableaux contiennent les mêmes valeurs et sont identiques
+                    error_log(basename(__FILE__) . $this->stripAccents(" Les signataires de la 3e étape sont les mêmes que la 2e => On va supprimer cette étape "));
+                    unset($params['levelextrainfos'][$leveltocheck]);
+                    // Il faut ensuite remonter toutes les étapes de signatures (à partir de du niveau $leveltocheck+1) d'un cran pour assurer la continuité des étapes
+                    foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
+                    {
+                        // Si le niveau est avant ou égal au $leveltocheck => On ignore car on ne doit pas le remonter
+                        if ($niveau <= $leveltocheck)
+                        {
+                            continue;
+                        }
+                        // On doit donc traiter le niveau en cours
+                        $previouslevel = ($niveau-1) . '';
+                        $params['levelextrainfos'][$previouslevel] = $params['levelextrainfos'][$niveau];
+                        unset($params['levelextrainfos'][$niveau]);
+                    }
+                    $maxniveau--;
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le niveau maximal est maintenant : $maxniveau => On est dans un circuit télétravail sans N+2"));
                 }
             }
         }
-        //var_dump($tabkeytoremove);
-
-        // Si toutes les adresses de la 3e étape sont dans la 2e (on les a toutes trouvées)
-        if ($nbn2trouve == $nbn2total and $nbn2total>0)
-        {
-            error_log(basename(__FILE__) . $this->stripAccents(" Les signataires de la 3e étape sont les mêmes que la 2e => On va supprimer cette étape "));
-            foreach($tabkeytoremove as $recipientkey => $recipientstring)
-            {
-                $tabinforecipient = explode('*',$recipientstring);
-                // On supprime les extras-infos correspondants au niveau
-                //var_dump("On supprime le " . $tabinforecipient[0] . "e niveau des extras-infos");
-                unset($params['levelextrainfos'][$tabinforecipient[0]]);
-                // On supprime les destinataires du niveau
-                //var_dump("On supprime le destinataire $recipientkey");
-                unset($params['recipientEmails'][$recipientkey]);
-            }
-            foreach ($params['recipientEmails'] as $recipientkey => $recipientstring)
-            {
-                //var_dump("dans le foreach => Key = " . $recipientkey . "   String = " . $recipientstring);
-                $tabinforecipient = explode('*',$recipientstring);
-                // Si on a 2 parties et que le niveau (donc l'index 0) est supérieur à 3
-                // On doit descendre le niveau de 1 de tous les niveaux suivants
-                if (count($tabinforecipient)==2 and $tabinforecipient[0]>'3')
-                {
-                    //var_dump("Je renumérote...");
-                    unset($params['recipientEmails'][$recipientkey]);
-                    $params['recipientEmails'][($tabinforecipient[0]-1). '*' . $tabinforecipient[1]] = ($tabinforecipient[0]-1). '*' . $tabinforecipient[1];
-                }
-            }
-            $maxniveau--;
-            error_log(basename(__FILE__) . $this->stripAccents(" Le niveau maximal est maintenant : $maxniveau => On est dans un circuit télétravail sans N+2"));
-            //var_dump("Le niveau est maintenant : $maxniveau");
-        }
-        
-        //var_dump($params['recipientEmails']);
         //var_dump($params['levelextrainfos']);
         //////////////////////////////////////////
         
+        // On vérifie qu'on a bien au moins un signataire dans chaque niveau
         $taberrorcheckmail = array();
         $tabniveauok = array();
-        $levelkeys = array_keys($params['recipientEmails']);
-        foreach($levelkeys as $key)
+        foreach ($params['levelextrainfos'] as $niveau => $stepinfos)
         {
-            $substr = explode('*',$key);
-            $mailadress = $substr[1];
-            $niveau = $substr[0];
-            $tabniveauok[$niveau] = "On a un agent dans le niveau $niveau";                
-        }
-
-        $taberrorcheckmail = array();
-        $tabniveauok = array();
-        foreach ($params['recipientEmails'] as $recipient)
-        {
-            $substr = explode('*',$recipient);
-            $mailadress = $substr[1];
-            $niveau = $substr[0];
-            // var_dump("mailadress = $mailadress");
-            if (!$this->mailexistedansldap($mailadress))
+            // S'il n'y a pas de signataire dans le niveau => Il y a un problème
+            if (count($stepinfos->signataires) == 0)
             {
-                $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                $taberrorcheckmail["prob_niveau_$niveau"] = "Le niveau de signature $niveau n'est pas correctement renseigné";
             }
             else
             {
-                $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                // On a des signataires, mais on doit vérifier que toutes les adresses mail existent bien dans LDAP
+                foreach($stepinfos->signataires as $mailadress)
+                {
+                    // Si l'adresse n'existe pas dans LDAP
+                    if (!$this->mailexistedansldap($mailadress))
+                    {
+                        $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                    }
+                    else
+                    {
+                        $tabniveauok[$niveau] = "On a un agent Ok dans le niveau $niveau";
+                    }
+                }
             }
         }
-
         //var_dump($tabniveauok);
         //var_dump("count(tabniveauok) = " . count($tabniveauok));
         //var_dump("maxniveau = " . $maxniveau);
 
-        if (count($tabniveauok)!=$maxniveau)
-        {
-            $taberrorcheckmail['prob_niveau'] = "il y a au moins un niveau de signature qui n'est pas correctement renseigné";
-        }
-        if (count($taberrorcheckmail)>0)
+        if (count($tabniveauok)!=count($params['levelextrainfos']))
         {
             $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
         }
@@ -3326,132 +3285,98 @@ class fonctions
     }
   
     
-    // $maillist doit avoir des clé de la forme : niveau*adresse_mail
-    // exemple : 5*jonh.doe@etab.fr
-    public function explosemail($maillist)
+    // $maillist est un tableau d'adresse mail avec l'adresse mail en clé et en valeur
+    public function explosemail(array $maillist) : array
     {
         //var_dump($maillist);
         
-        $returnmail = array();
-        $tabmailparniveau = array();
-        foreach ($maillist as $recipient)
+        $paramlist = '';
+        foreach ($maillist as $mailadress)
         {
-            $substr = explode('*',$recipient);
-            $mailadress = $substr[1];
-            $niveau = $substr[0];
-            
-            $tabmailparniveau[$niveau][] = $mailadress;
+            $paramlist = $paramlist . 'id[]=' . $mailadress . '&';
         }
-                    
-        foreach($tabmailparniveau as $niveau => $tabmail)
-        {
-            $paramlist = '';
-            foreach($tabmail as $mailadress)
-            {
-                $paramlist = $paramlist . 'id[]=' . $mailadress . '&';
-            }
-            $wsgroupURL = $this->liredbconstante('WSGROUPURL');
+        $wsgroupURL = $this->liredbconstante('WSGROUPURL');
 
-            // On appelle WSGroups qui se charge de lister tous les mails correspondants au paramètres
-            // https://wsgroups.etab.fr/searchUserTrusted?id[]=jonh.doe@etab.fr&id[]=mail_group@etab.fr&allowInvalidAccounts=all&allowRoles=true&attrs=member-all,mail
-            $curl = curl_init();
-            $params_string = "";
-            $wsgroupsquery = "$wsgroupURL/searchUserTrusted?$paramlist&allowInvalidAccounts=all&allowRoles=true&attrs=member-all,mail";
-            //var_dump("La reqète à WSGroups = $wsgroupsquery");
-            $opts = [
-                CURLOPT_URL => "$wsgroupsquery",
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_PROXY => ''
-            ];
-            
-            curl_setopt_array($curl, $opts);
-            curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-            
-            $dbconstante = "WSGROUPS_SECRET_TOKEN";
+        // On appelle WSGroups qui se charge de lister tous les mails correspondants au paramètres
+        // https://wsgroups.etab.fr/searchUserTrusted?id[]=jonh.doe@etab.fr&id[]=mail_group@etab.fr&allowInvalidAccounts=all&allowRoles=true&attrs=member-all,mail
+        $curl = curl_init();
+        $params_string = "";
+        $wsgroupsquery = "$wsgroupURL/searchUserTrusted?$paramlist&allowInvalidAccounts=all&allowRoles=true&attrs=member-all,mail";
+        //var_dump("La reqète à WSGroups = $wsgroupsquery");
+        $opts = [
+            CURLOPT_URL => "$wsgroupsquery",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        
+        $dbconstante = "WSGROUPS_SECRET_TOKEN";
+        if ($this->testexistdbconstante($dbconstante))
+        {
+            $accessToken = trim($this->liredbconstante($dbconstante));
+            if (strlen($accessToken)>0)
+            {
+                ///////////////////////////////////////////////////////////
+                //// ATTENTION : TOKEN DE BYPASS A METTRE EN PARAMETRE DANS LE CONFIG
+                curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer $accessToken"));
+                ///////////////////////////////////////////////////////////
+            }
+        }
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
+        {
+            $error = "Code retour HTTP => $httpcode";
+        }
+        curl_close($curl);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup searchUserTrusted agent " . $mailadress .  ") =>  " . $error));
+        }
+        $response = json_decode($json, true);
+
+        //echo "Niveau = $niveau <br>";
+        //echo print_r($response,true);
+        
+        //$response =  array_change_key_case((array)$response, CASE_LOWER); // array_map('strtolower', $response);
+        
+        $dbconstante = "FORCE_AGENT_MAIL";
+        static $forcemail = null;
+        if (is_null($forcemail))
+        {
             if ($this->testexistdbconstante($dbconstante))
             {
-                $accessToken = trim($this->liredbconstante($dbconstante));
-                if (strlen($accessToken)>0)
-                {
-                    ///////////////////////////////////////////////////////////
-                    //// ATTENTION : TOKEN DE BYPASS A METTRE EN PARAMETRE DANS LE CONFIG
-                    curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer $accessToken"));
-                    ///////////////////////////////////////////////////////////
-                }
+                $forcemail = trim($this->liredbconstante($dbconstante));
             }
-            $json = curl_exec($curl);
-            $error = curl_error ($curl);
-            $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            if ((int) $httpcode !== 200 and $error=="")
+            else
             {
-                $error = "Code retour HTTP => $httpcode";
+                $forcemail = '';
             }
-            curl_close($curl);
-            if ($error != "")
+        }
+        foreach ((array)$response as $agentinfo)
+        {
+            if (isset($agentinfo["member-all"]))
             {
-                error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup searchUserTrusted agent " . $mailadress .  ") =>  " . $error));
-            }
-            $response = json_decode($json, true);
-
-            //echo "Niveau = $niveau <br>";
-            //echo print_r($response,true);
-            
-            //$response =  array_change_key_case((array)$response, CASE_LOWER); // array_map('strtolower', $response);
-            
-            $dbconstante = "FORCE_AGENT_MAIL";
-            foreach ((array)$response as $agentinfo)
-            {
-                if (isset($agentinfo["member-all"]))
+                // C'est un groupe qui est explosé => On récupère les mails des membres
+                foreach ($agentinfo["member-all"] as $agentinfo)
                 {
-                    // C'est un groupe qui est explosé => On récupère les mails des membres
-                    foreach ($agentinfo["member-all"] as $agentinfo)
+                    // Si une adresse de forçage est définie
+                    if (strlen(trim($forcemail . ''))>0)
                     {
-                        if ($this->testexistdbconstante($dbconstante))
-                        {
-                            $mail = trim($this->liredbconstante($dbconstante));
-                            if (strlen($mail)>0)
-                            {
-                                $agentinfo["mail"] = $mail;
-                            }
-                        }
-                        if (isset($agentinfo["mail"]))
-                        {
-                            $infoadresse = $niveau . "*" . strtolower($agentinfo["mail"]);
-                            $returnmail[$infoadresse] = $infoadresse;
-                        }
-                        else
-                        {
-                            if (isset($agentinfo["key"]))
-                            {
-                                error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail pour " . $agentinfo["key"] .  ""));
-                            }
-                            else
-                            {
-                                error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail pour " . print_r($agentinfo,true) .  ""));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // On ne modifie pas l'adresse du demandeur de la convention de télétravail
-                    // même si la constante FORCE_AGENT_MAIL est activée
-                    if ($this->testexistdbconstante($dbconstante) and $niveau>1)
-                    {
-                        $mail = trim($this->liredbconstante($dbconstante));
-                        if (strlen($mail)>0)
-                        {
-                            $agentinfo["mail"] = $mail;
-                        }
-                    }
-                    // C'est un agent => On récupère l'adresse mail
-                    if (isset($agentinfo["mail"]))
-                    {
-                        $infoadresse = $niveau . "*" . strtolower($agentinfo["mail"]);
+                        $infoadresse = strtolower($forcemail);
                         $returnmail[$infoadresse] = $infoadresse;
                     }
-                    else
+                    // Sinon on va récupérer l'adresse mail du membre (si l'adresse mail est définie)
+                    elseif (isset($agentinfo["mail"]))
+                    {
+                        $infoadresse = strtolower($agentinfo["mail"]);
+                        $returnmail[$infoadresse] = $infoadresse;
+                    }
+                    else // Impossible de réucpérer l'adresse mail du membre à partir de LDAP
                     {
                         if (isset($agentinfo["key"]))
                         {
@@ -3464,9 +3389,22 @@ class fonctions
                     }
                 }
             }
-            
-        }    
-
+            else
+            {
+                // On est dans le cas d'une adresse mail d'un agent => On ne modifie rien
+                // C'est un agent => On récupère l'adresse mail
+                if (isset($agentinfo["mail"]))
+                {
+                    // On remet l'adresse mail passée en paramètre
+                    $returnmail[strtolower($mailadress)] = strtolower($mailadress);
+                }
+                else
+                {
+                    // LDAP n'a pas pu fournir d'adresse mail pour cet agent 
+                    error_log(basename(__FILE__) . $this->stripAccents(" Il n'y a pas d'adresse mail dans LDAP pour " . $mailadress . ""));
+                }
+            }
+        }
         //var_dump($returnmail);
         
         return $returnmail;
@@ -4808,37 +4746,27 @@ WHERE  table_schema = Database()
         $previousstepnumber = null;
 
         //var_dump($tabparam);
-        if (!isset($tabparam['recipientEmails']))
+        if (!isset($tabparam['levelextrainfos']))
         {
             return $tabparam;
         }
         
         //$tabmaildemandeur = array();
-        // On trie sur les clés pour avoir les niveaux dans le bon ordre (tous les niveaux 1, puis les niveaux 2, ....)
-        ksort($tabparam['recipientEmails']);
-        //var_dump($tabparam['recipientEmails']);
-        foreach ($tabparam['recipientEmails'] as $infos)
+        foreach ($tabparam['levelextrainfos'] as $niveau => $stepinfos)
         {
-            $splitinfos = explode('*',$infos);
-            if (count($splitinfos)!=2)
+            foreach ($stepinfos->signataires as $idsignataire => $adressemail)
             {
-                $errlog = "createesignaturestepsJson : Le format des infos n'est pas conforme => split sur '*' => On ignore \n";
-                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-            }
-            else
-            {
-                $recipientstep = $splitinfos[0];
                 // Si on a changé d'étape de signature
-                if ($recipientstep !== $previousstepnumber)
+                if ($niveau !== $previousstepnumber)
                 {
-                    //var_dump("changement niveau $recipientstep");
+                    //var_dump("changement niveau $niveau");
                     // On réinitialise le currentstep à un tableau vide car on change de niveau de signature
                     $currentsteps = array();
 
                     // Si des extras-infos sont disponibles pour l'étape courante, on les ajoute
-                    if (isset($tabparam['levelextrainfos'][$recipientstep]))
+                    if (isset($tabparam['levelextrainfos'][$niveau]))
                     {
-                        $temparray = $tabparam['levelextrainfos'][$recipientstep]->converttoarray();
+                        $temparray = $tabparam['levelextrainfos'][$niveau]->converttoarray();
                         foreach((array)$temparray as $extrainfoskey => $extrainfosvalue)
                         {
                             $currentsteps[$extrainfoskey] = $extrainfosvalue;
@@ -4847,16 +4775,16 @@ WHERE  table_schema = Database()
                     // Si le "stepNumber" n'est pas défini dans les extrainfos => On le défini manuellement
                     if (!isset($currentsteps["stepNumber"]))
                     {
-                        $currentsteps["stepNumber"] = $recipientstep;
+                        $currentsteps["stepNumber"] = $niveau;
                     }
                 }
                 // On ajoute dans les recipients de l'étape en cours, l'email de recipient
-                $currentsteps["recipients"][] = array("email" => $splitinfos[1]);
+                $currentsteps["recipients"][] = array("email" => $adressemail);
                 // On ajoute l'étape dans le tableau JSON => S'il existe déjà il sera remplacé
                 // Attention : Il faut commencer à l'index 0 (en entier et non chaine de caractères) pour que le JSON le convertisse bien.
-                $stepsJsonArray[intval($recipientstep)-1] = $currentsteps;
+                $stepsJsonArray[intval($niveau)-1] = $currentsteps;
                 // On mémorise le niveau courant de l'étape pour détecter un changement lors de la prochaine boucle
-                $previousstepnumber = $recipientstep;
+                $previousstepnumber = $niveau;
             }
         }
 
@@ -4865,7 +4793,6 @@ WHERE  table_schema = Database()
             //var_export($stepsJsonArray);
             $tabparam["stepsJsonString"] = json_encode($stepsJsonArray);
             unset($tabparam['levelextrainfos']);
-            unset($tabparam["recipientEmails"]);
         }
 
         //var_dump("tabparam = "); var_dump($tabparam);

@@ -13,6 +13,7 @@
 /INPUT_FILES_V3/*.xml
 !/INPUT_FILES_V3/*_exemple.xml
 /INPUT_FILES_V3/*/
+/documents/obsolete/
 html/test_esignature.php
 /html/includes/dbconnection.php
 /html/javascripts_old

@@ -2,7 +2,7 @@
 
 use Fpdf\Fpdf as FPDF;
 
-class etapeextrainfo
+class stepinfos
 {
     public const PDFSIGNATURE = 'pdfImageStamp';
     public const HIDDENVISA  = 'hiddenVisa';
@@ -16,6 +16,7 @@ class etapeextrainfo
     public $description = "";
     public $obligatoire = true;
     public $attachmentRequire = false;
+    public $signataires = array();
     private $attachmentAlert = true;
 
     public function converttoarray() : array
@@ -58,9 +59,11 @@ class esignature
 
     public const TYPESIGNATAIRE_DEMANDEUR = 'DEMANDEUR';
     public const TYPESIGNATAIRE_RESPONSABLE = 'RESPONSABLE';
-    public const TYPESIGNATAIRE_RESPONSABLE2  = 'RESPONSABLE_N+2';
+    public const TYPESIGNATAIRE_RESPONSABLE2  = 'RESPONSABLE_N2';
     public const TYPESIGNATAIRE_DIRECTEUR = 'DIRECTEUR_RACINE';
-
+    public const TYPESIGNATAIRE_AGENT = 'AGENT';
+    public const TYPESIGNATAIRE_RESP_STRUCT = 'RESPONSABLE_STRUCT';
+    
     /**
      *
      * @param mysqli $db
@@ -452,6 +455,8 @@ class esignature
      */
     public function create_custom_signrequest(array $params) : int|string
     {
+        //var_dump($params);
+
         $curl = curl_init();
         $opts = [
             CURLOPT_URL => $this->eSignature_url . '/ws/signrequests/new',
@@ -720,42 +725,118 @@ class esignature
      *          Objet agent du demandeur (cas où le type de signataire est DEMANDEUR ou RESPONSABLE)
      * @param string $nomcircuit
      *          Nom du fichier XML représentant le circuit à initialiser
-     * @param array $extrainfos
+     * @param array $stepinfos
      *          Données complémentaires relatives aux différentes étapes (type signature,....)
      * @return array
      *          Retourne le tableau des signataires 
      */
-    public function createstep(agent $demandeur, string $nomcircuit, array &$extrainfostab) :array
+    public function createstep(agent $demandeur, string $nomcircuit, array &$stepinfos) :array
     {
         $signatairearray = array();
-        $extrainfostab = array();
-        $nbstepskip = 0;
+        $stepinfos = array();
+        $xmldom = new DOMDocument();
 
         // On cherche le fichier XML représentant le circuit
         $filename = $this->fonctions->documentpath() . "/" . $nomcircuit; 
-        if (! file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false) {
-            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide.");
-            return array();
-        } 
-
-        // On charge les étapes
-        $etapetab = $xml->xpath('ETAPE');
-        $etapetab_trie = array();
-        // On va trier les étapes par ordre croissant
-        foreach ($etapetab as $etape)
+        if (!file_exists($filename))
         {
-            $description = trim($etape->xpath('DESCRIPTION')[0]);
-            $numero = trim($etape->xpath('NUMERO')[0]);
-            if (isset($etape['EXCLUDE_STRUCT_RACINE']))
-            {
-                $structracinetab = explode(" ",$etape['EXCLUDE_STRUCT_RACINE']);
-                //var_dump((array)$structracinetab);
-                $structid = $demandeur->structureid();
-                $struct = new structure($this->dbconnect);
-                $struct->load($structid);
-                $structracineid = $struct->structureenglobante()->id();
-                //var_dump($structracineid);
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le fichier " . basename($filename) . " n'existe pas.");
+            return array();
+        }
+        
+        // On charge le document XML
+        $xmldom->validateOnParse = true;
+        $valid = @$xmldom->load($filename);
+        if (!$valid)
+        {
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, "La syntaxe du fichier " . basename($filename) . " n'est pas correcte => Vérifiez la DTD.");
+            return array();
+        }
 
+        // On valide la syntaxe du fichier XML avec la DTD 
+        $valid = @$xmldom->validate();
+        if (!$valid)
+        {
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le fichier " . basename($filename) . " n'est pas un fichier XML valide => Vérifiez la DTD.");
+            return array();
+        }
+
+        // Attention : Le DOM doit être chargé au moment de la création du DOMXPath
+        // Sinon, il ne trouve aucun noeux
+        $xmlpath = new DOMXPath($xmldom);
+
+        // On récupère la structure racine de l'affectation actuelle de l'agent
+        $structid = $demandeur->structureid();
+        $struct = new structure($this->dbconnect);
+        $struct->load($structid);
+        $structracineid = $struct->structureenglobante()->id();
+
+
+        // On récupère le premier noeux 'CIRCUITS' (puisque d'après la DTD, il est présent et qu'il doit y avoir qu'un seul)
+        $circuitsrootnode = $xmlpath->query('CIRCUITS')[0];
+        //var_dump($circuitsrootnode->nodeName);
+         // On récupère toutes les noeux 'CIRCUIT' (=> descriptions de chaque circuit)
+        $circuitlist  = $xmlpath->query('CIRCUIT',$circuitsrootnode);
+        $selectedcircuit = null;
+        // On parcourt tous les circuits (donc les objets XML CIRCUIT)
+        foreach ($circuitlist as $circuit)
+        {
+            // Si l'attribut STRUCTURE_RACINE n'est pas défini ou s'il est vide => Il devient le circuit par défaut
+            if (is_null($circuit->attributes->getNamedItem('STRUCTURE_RACINE')) or trim($circuit->attributes->getNamedItem('STRUCTURE_RACINE')->nodeValue . '')=='')
+            {
+                // Si plusieurs circuits par défaut sont trouvés, on ne garde que le premier
+                if (is_null($selectedcircuit))
+                {
+                    $selectedcircuit = $circuit;
+                }
+                else
+                {
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " Attention : Un circuit par défaut a été trouvé alors qu'il est déjà configuré."));                    
+                }
+            }
+            else // l'attribut STRUCTURE_RACINE existe et n'est pas vide
+            {
+                // On découpe les structures racine contenues dans l'attribut
+                $structracinetab = explode(" ",$circuit->attributes->getNamedItem('STRUCTURE_RACINE')->nodeValue);
+                // Si la structure racine est dans le tableau des attributs STRUCTURE_RACINE du circuit => On traite ces étapes
+                if (in_array($structracineid,(array)$structracinetab))
+                {
+                    $selectedcircuit = $circuit;
+                    // On sort de la boucle foreach => On ne parcourt pas les autres noeux 'CIRCUIT'
+                    continue;
+                }
+            }
+        }
+        // Si aucun circuit n'a pu être déterminé, il y a un problème
+        if (is_null($selectedcircuit))
+        {
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, "Impossible de déterminer la liste des étapes pour la structure " . $struct->nomcourt() . " (id = $structid).");
+            return array();
+        }
+        $descriptioncircuit = trim($selectedcircuit->attributes->getNamedItem('DESCRIPTION')->nodeValue);
+        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " Le circuit sélectionné est : $descriptioncircuit."));
+
+        // On charge les étapes du circuit sélectionné
+        $etapelist = $xmlpath->query('ETAPE',$selectedcircuit);
+        $etapelist_trie = array();
+        // On va trier les étapes par ordre croissant
+        foreach ($etapelist as $etape)
+        {
+            $numero = $etape->attributes->getNamedItem('NUMERO')->nodeValue;
+            $description = trim($etape->attributes->getNamedItem('DESCRIPTION')->nodeValue);
+            // Si le numéro de l'étape représente un nombre (is_numeric) entier (float = int)
+            if (is_numeric($numero) and ((float)$numero)==(int)$numero)
+            {
+                $numero = intval($etape->attributes->getNamedItem('NUMERO')->nodeValue);
+            }
+            else
+            {
+                echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le numéro de l'étape " . $etape->attributes->getNamedItem('NUMERO')->nodeValue . " dans le circuit de la structure $structid n'est pas un nombre strictement positif.");
+                return array();    
+            }
+            if (!is_null($etape->attributes->getNamedItem('EXCLUDE_STRUCT_RACINE')) and trim($etape->attributes->getNamedItem('EXCLUDE_STRUCT_RACINE')->nodeValue . '')!='')
+            {
+                $structracinetab = explode(" ",$etape->attributes->getNamedItem('EXCLUDE_STRUCT_RACINE')->nodeValue);
                 // Si la structure racine est dans le tableau des attributs EXCLUDE_STRUCT_RACINE de l'étape => On l'ignore car pas concerné
                 if (in_array($structracineid,(array)$structracinetab))
                 {
@@ -768,15 +849,10 @@ class esignature
                     //var_dump("Je suis concerné par l'étape '$description'.");
                 }
             }
-            elseif (isset($etape['INCLUDE_STRUCT_RACINE']))
+            elseif (!is_null($etape->attributes->getNamedItem('INCLUDE_STRUCT_RACINE')) and trim($etape->attributes->getNamedItem('INCLUDE_STRUCT_RACINE')->nodeValue . '')!='')
+
             {
-                $structracinetab = explode(" ",$etape['INCLUDE_STRUCT_RACINE']);
-                //var_dump((array)$structracinetab);
-                $structid = $demandeur->structureid();
-                $struct = new structure($this->dbconnect);
-                $struct->load($structid);
-                $structracineid = $struct->structureenglobante()->id();
-                //var_dump($structracineid);
+                $structracinetab = explode(" ",$etape->attributes->getNamedItem('INCLUDE_STRUCT_RACINE')->nodeValue);
 
                 // Si la structure racine n'est pas dans le tableau des attributs STRUCT_RACINE de l'étape => On l'ignore car pas concerné
                 if (!in_array($structracineid,(array)$structracinetab))
@@ -791,46 +867,65 @@ class esignature
                 }
             }
 
-
-            if (isset($etapetab_trie[$numero]))
+            // Si on trouve plusieurs étapes avec le même numéro, on ne conserve que la première
+            if (isset($etapelist_trie[$numero]))
             {
-                echo $this->fonctions->showmessage(fonctions::MSGERROR, "L'étape $numero est déjà défini dans le fichier " . basename($filename). ". Elle est donc ignorée.");
+                echo $this->fonctions->showmessage(fonctions::MSGERROR, "L'étape $numero est déjà définie dans le fichier " . basename($filename). ". Elle est donc ignorée.");
             }
             else
             {
-                $etapetab_trie[$numero] = $etape;
+                $etapelist_trie[$numero] = $etape;
             }
         }
-        ksort($etapetab_trie);
-        //var_dump($etapetab_trie);
+        /////////////////////////////////////////////
+        // IMPORTANT : On trie le tableau des étapes par ordre d'étape => Donc par NUMERO d'étape
+        // Dans la suite du processus, on part du principe que le tableau des étapes est trié
+        ksort($etapelist_trie);
+        /////////////////////////////////////////////
 
-        foreach ($etapetab_trie as $etape)
+        $nbstepskip = 0;
+        foreach ($etapelist_trie as $etape)
         {
-            // Le numéro de l'étape est le numéro de l'étape définie dans le fichier XML auquel on retranche le nombre d'étapes facultatives qu'on a ignoré
+            // Le numéro de l'étape est le numéro de l'étape définie dans le fichier XML auquel on retranche le nombre d'étapes facultatives qu'on a ignoré (=>$nbstepskip)
             // On ignore les étapes qui n'ont pas de signataires et qui ne sont pas obligatoires (voir plus bas)
+            $numero = (intval($etape->attributes->getNamedItem('NUMERO')->nodeValue) - $nbstepskip) . "";
+            $description = trim($etape->attributes->getNamedItem('DESCRIPTION')->nodeValue);
+            $typesignature = trim($etape->attributes->getNamedItem('TYPESIGNATURE')->nodeValue);
+            $toutesignature = trim($etape->attributes->getNamedItem('TOUTESIGNATURE')->nodeValue);
+            $obligatoire = trim($etape->attributes->getNamedItem('OBLIGATOIRE')->nodeValue);
+            $piecejointeoblig = trim($etape->attributes->getNamedItem('PIECEJOINTEOBLIGATOIRE')->nodeValue);
 
-            $description = trim($etape->xpath('DESCRIPTION')[0]);
-            $numero = trim($etape->xpath('NUMERO')[0]) - $nbstepskip;
-            $typesignature = trim($etape->xpath('TYPESIGNATURE')[0]);
-            $toutesignature = trim($etape->xpath('TOUTESIGNATURE')[0]);
-            $obligatoire = trim($etape->xpath('OBLIGATOIRE')[0]);
-            $piecejointeoblig = trim($etape->xpath('PIECEJOINTEOBLIGATOIRE')[0]);
-
-            $signatairetab = $etape->xpath('SIGNATAIRES')[0];
-            foreach ($signatairetab as $signataire)
+            // On fixe le noeux de départ comme étant celui de l'étape
+            $refnode = $etape;
+            // On cherche si le noeux 'SIGNATAIRES' existe dans l'étape (il est facultatif)
+            $signataireslist = $xmlpath->query('SIGNATAIRES',$etape);
+            if (count($signataireslist)!=0)
             {
-                $typesignataire = trim($signataire->xpath('TYPESIGNATAIRE')[0] . "");
-                $idsignataire = trim($signataire->xpath('IDSIGNATAIRE')[0] . "");
+                // S'il existe on défini le noeux de référence comme étant le noeux 'SIGNATAIRES'
+                $refnode = $signataireslist[0];
+            }
+            // Dans le noeux de référence 'SIGANATAIRES' ou 'ETAPE', on récupère la liste des noeux 'SIGNATAIRE'
+            $signatairelist = $xmlpath->query('SIGNATAIRE',$refnode);
+            //var_dump($signatairelist);
+            foreach ($signatairelist as $signataire)
+            {
+                $typesignataire = trim($signataire->attributes->getNamedItem('TYPESIGNATAIRE')->nodeValue);
+                $idsignataire = trim($signataire->nodeValue);
                 if (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_DEMANDEUR)
                 {
                     // On doit mettre le demandeur dans le tableau
                     $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $demandeur->agentid();
                     $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$demandeur->agentid());
-
                 }
-                elseif(strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESPONSABLE)
+                elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_AGENT)
                 {
-                    // On doit mettre le signataire du demandeur dans le tableau
+                    // On doit mettre l'ID de l'agent dans le tableau
+                    $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $idsignataire;
+                    $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$idsignataire);
+                }
+                elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESPONSABLE)
+                {
+                    // On doit mettre le responsable du demandeur dans le tableau
                     $resp = $demandeur->getsignataire(null,$respstruct,$codeinterne);
                     if (!is_null($resp) and ($resp!==false))
                     {
@@ -849,9 +944,10 @@ class esignature
                 }
                 elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESPONSABLE2)
                 {
+                    // On doit mettre le responsable N+2 du demandeur dans le tableau
                     $arraysignataire_n2 = array();
                     $codeinterne = null;
-                    $respdurespstruct = null;
+                    $respdurespstruct = new structure($this->dbconnect);
                     $responsable_n2 = $demandeur->getsignataire_niveau2($respdurespstruct,$codeinterne);
                     //var_dump($responsable_n2);
                     if (!is_null($responsable_n2) and ($responsable_n2!==false))
@@ -875,14 +971,30 @@ class esignature
                         $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$signataire->agentid());                        
                     }
                 }
+                elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESP_STRUCT)
+                {
+                    // On met le responsable de la structure dans le tableau
+                    $structuresignataire = new structure($this->dbconnect);
+                    $structuresignataire->load($idsignataire);
+                    $agentsignataire = $structuresignataire->responsable();
+                    if ($agentsignataire->mail() . "" !="")
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $agentsignataire->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$agentsignataire->agentid());
+                    }
+                    $agentsignataire = $structuresignataire->responsablesiham();
+                    if ($agentsignataire->mail() . "" !="")
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $agentsignataire->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$agentsignataire->agentid());
+                    }
+                }
                 elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_DIRECTEUR)
                 {
                     //var_dump("Je suis dans le cas d'un directeur");
-                    $structid = $demandeur->structureid();
-                    $struct = new structure($this->dbconnect);
-                    $struct->load($structid);
                     $structracine = $struct->structureenglobante();
-                    //var_dump($structracine->responsable()->agentid());
+                    // //var_dump($structracine->responsable()->agentid());
+
                     $resp = $structracine->responsable();
                     if ($resp->agentid()!='')
                     {
@@ -924,11 +1036,11 @@ class esignature
             // Si on a des signataires dans l'étape courante
             if (isset($signatairearray[$numero]) and count($signatairearray[$numero])>0)
             {
-                if (!isset($extrainfostab[$numero]))
+                if (!isset($stepinfos[$numero]))
                 {
-                    $extrainfos = new etapeextrainfo();
+                    $extrainfos = new stepinfos();
                     $extrainfos->stepNumber = $numero;
-                    if (!in_array($typesignature, array(etapeextrainfo::PDFSIGNATURE,etapeextrainfo::HIDDENVISA, etapeextrainfo::VISA)))
+                    if (!in_array($typesignature, array(stepinfos::PDFSIGNATURE,stepinfos::HIDDENVISA, stepinfos::VISA)))
                     {
                         echo $this->fonctions->showmessage(fonctions::MSGERROR, "Le type de signature " . $typesignature . " n'est pas reconnu.");
                         return array();
@@ -941,7 +1053,8 @@ class esignature
                     $extrainfos->forceAllSign = $extrainfos->allSignToComplete;
                     $extrainfos->obligatoire = $this->fonctions->convertvaluetobool($obligatoire);
                     $extrainfos->attachmentRequire = $this->fonctions->convertvaluetobool($piecejointeoblig);
-                    $extrainfostab[$numero] = $extrainfos;
+                    $extrainfos->signataires = $signatairearray[$numero];
+                    $stepinfos[$numero] = $extrainfos;
                 }
             }
             // Aucun signataire n'est défini => on va regarder si l'étape est obligatoire ou pas
@@ -958,8 +1071,7 @@ class esignature
 
         }
 
-        //var_dump($signatairearray);
-
+        //var_dump("signatairearray = "); var_dump($signatairearray);
         return $signatairearray;
     }
 
