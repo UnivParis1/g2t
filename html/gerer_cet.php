@@ -228,14 +228,15 @@
         
         if (($alimcet->statut() == alimentationCET::STATUT_EN_COURS) or ($alimcet->statut() == alimentationCET::STATUT_PREPARE))
         {
-            $statut = $alimcet->statut() . '<br>';
+            //$statut = $alimcet->statut() . '<br>';
+            $statut = "";
             
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
 
             $esignature = new esignature($dbcon);
-            $response = $esignature->get_signrequests($alimcet->esignatureid());
+            $response = $esignature->get_signrequest($alimcet->esignatureid());
             
-            if (is_string($response) or !isset($response['parentSignBook']['liveWorkflow']['currentStep']))
+            if (is_string($response))
             {
                 // Il y a un problème dans la récupération des informations
                 // On affiche un message d'erreur
@@ -243,11 +244,14 @@
             }
             else
             {
-                $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
+                $recipienttab = $esignature->get_signrequest_recipients($alimcet->esignatureid());
+                $numstep = $esignature->get_signrequest_currentstep($alimcet->esignatureid());
+                
                 $statut = $statut . "En attente de : ";
-                foreach ((array)$currentstep['recipients'] as $recipient)
+                $step = $recipienttab[$numstep];
+                foreach ($step as $esignaturerecipient)
                 {
-                    $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                    $statut = $statut . "<br>" . $esignaturerecipient->prenom . " " . $esignaturerecipient->nom ;
                 }
                 $htmltext = $htmltext . "<tr>"
                     . "<td class='cellulesimple'>" . $agentalim->identitecomplete() . "</td>"
@@ -348,9 +352,9 @@
             
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
             $esignature = new esignature($dbcon);
-            $response = $esignature->get_signrequests($optioncet->esignatureid());
+            $response = $esignature->get_signrequest($optioncet->esignatureid());
 
-            if (is_string($response) or !isset($response['parentSignBook']['liveWorkflow']['currentStep']))
+            if (is_string($response))
             {
                 // Il y a un problème dans la récupération des informations
                 // On affiche un message d'erreur
@@ -358,11 +362,14 @@
             }
             else
             {
-                $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
+                $recipienttab = $esignature->get_signrequest_recipients($optioncet->esignatureid());
+                $numstep = $esignature->get_signrequest_currentstep($optioncet->esignatureid());
+                
                 $statut = $statut . "En attente de : ";
-                foreach ((array)$currentstep['recipients'] as $recipient)
+                $step = $recipienttab[$numstep];
+                foreach ($step as $esignaturerecipient)
                 {
-                    $statut = $statut . "<br>" . $recipient['user']['firstname'] . " " . $recipient['user']['name'];
+                    $statut = $statut . "<br>" . $esignaturerecipient->prenom . " " . $esignaturerecipient->nom ;
                 }
                 $htmltext = $htmltext . "<tr>"
                         . "<td class='cellulesimple'>" . $agentoption->identitecomplete() . "</td>"

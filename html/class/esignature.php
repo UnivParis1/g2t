@@ -111,6 +111,16 @@ class stepinfos
     }
 }
 
+class esignaturerecipient
+{
+    public $nom = '';
+    public $prenom = '';
+    public $eppn = '';
+    public $mail = '';
+    public $hassigned = false;
+    public $action = '';
+    public $actiondate = '';
+}
 
 /**
  * eSignature
@@ -126,6 +136,7 @@ class esignature
     private $fonctions = null;
     private $eSignature_url = null;
     private $dbconnect = null;
+    private $signrequestinfo = null;
 
     public const TYPESIGNATAIRE_DEMANDEUR = 'DEMANDEUR';
     public const TYPESIGNATAIRE_RESPONSABLE = 'RESPONSABLE';
@@ -221,7 +232,7 @@ class esignature
      * @return array|string
      *          Le tableau des données d'un formulaire eSignature ou la chaine explicative de l'erreur en cas de problème 
      */
-    public function get_data(string $esignatureid) :array|string
+    public function get_signrequest_data(string $esignatureid) :array|string
     {
 
         if (!$this->check_esignatureid($esignatureid))
@@ -277,7 +288,7 @@ class esignature
      * @return array|string
      *          Le tableau des données issu d'une demande de signature (SignRequest) ou la chaine explicative de l'erreur en cas de problème 
      */
-    public function get_signrequests(string $esignatureid) :array|string
+    public function get_signrequest(string $esignatureid) :array|string
     {
         if (!$this->check_esignatureid($esignatureid))
         {
@@ -313,6 +324,7 @@ class esignature
         else
         {
             $response = (array)json_decode($json, true);
+            $this->signrequestinfo = $response;
         }
 
         if (count($response)==0)
@@ -335,7 +347,8 @@ class esignature
      * @return string
      *          Le détail de l'erreur en cas de problème ou chaine vide si tout s'est bien passé
      */
-    public function get_document(string $esignatureid, string &$pdf) : string
+    public function get_signrequest_document(string $esignatureid, string &$pdf) : string
+    // public function get_document(string $esignatureid, string &$pdf) : string
     {
         $pdf = '';
         if (!$this->check_esignatureid($esignatureid))
@@ -405,7 +418,8 @@ class esignature
      * @return string|false
      *          Le statut du formulaire ou false en cas de problème 
      */
-    public function get_status(string $esignatureid) : string|false
+    public function get_signrequest_status(string $esignatureid) : string|false
+    // public function get_status(string $esignatureid) : string|false
     {
         if (!$this->check_esignatureid($esignatureid))
         {
@@ -597,6 +611,16 @@ class esignature
      * @return string
      *          La description de l'erreur en cas de problème ou chaine vide si tout s'est bien passé
      */
+    /* Usage example :
+     $params_string = array();
+     $params_string['recipientWsDtosString'] = '[{"email" : "john.doe@etab.fr"}]';
+     $params_string['stepNumber'] = 2;
+     $error = $esignature->modify_recipient($esignatureid, $params_string);
+
+     $params_string = array();
+     $params_string['recipientWsDtosString'] = '[{"email" : "john.doe@etab.fr"},{"email" : "jane.doe@etab.fr"}]';
+     $error = $esignature->modify_recipient($esignatureid, $params_string, 3);
+    */
     public function modify_recipient(string $esignatureid, array $params_string, int $stepnumber = 0) : string
     {
         if (!$this->check_esignatureid($esignatureid))
@@ -605,9 +629,6 @@ class esignature
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" $error"));
             return $error;
         }
-
-        //$params_string['recipientWsDtosString'] = '[{"email" : "aaaa.bbbb@etab.fr"},{"email" : "cccc.dddd@univ-paris1.fr"}]';
-        //$params_string['stepNumber'] = 2;
 
         $url = $this->eSignature_url . '/ws/signrequests/update-recipients/' . $esignatureid;
         if ($stepnumber > 0)
@@ -798,7 +819,7 @@ class esignature
     }
 
     /**
-     * Modification des signataires pour une étape d'un document eSignature
+     * Création d'un nouveau circuit de signature à partir du fichier XML 
      * @param agent $demandeur 
      *          Objet agent du demandeur (cas où le type de signataire est DEMANDEUR ou RESPONSABLE)
      * @param string $nomcircuit
@@ -1153,5 +1174,320 @@ class esignature
         return $signatairearray;
     }
 
+    /**
+     * Récupération du statut de chaque étape de signature
+     * @param string $esignatureid 
+     *          Identifiant du document eSignature
+     * @param string $stepnumber
+     *          Numéro de l'étape dont il faut retourner l'état (vide => tous les niveaux). Le premier niveau = 1
+     *          La valeur doit être comprise entre 1 et le nombre d'étape maximum
+     * @return array|string
+     *          Retourne un tableau des statuts de chaque niveau ou une chaine de caractère en cas de problème 
+     */
+    public function get_signrequest_stepstatus(string $esignatureid, string $stepnumber = "") :array|string
+    {
+        if (is_null($this->signrequestinfo))
+        {
+            $response = $this->get_signrequest($esignatureid);
+            if (is_string($response))
+            {
+                return $response;
+            }
+        }
+        if (strlen($stepnumber)>0)
+        {
+            if (!is_numeric($stepnumber) or intval($stepnumber)<1)
+            {
+                return "Le paramètre stepnumber doit être un entier supérieur ou égal à 1.";
+            }
+            $stepnumber = intval($stepnumber)-1; // Dans eSignature les niveaux sont numérotés à partir de 0
+        }
+
+        $recipienttab = $this->get_signrequest_recipients($esignatureid);
+        if (is_string($recipienttab))
+        {
+            return $recipienttab;
+        }
+
+        $status = array();
+        foreach ($recipienttab as $stepindex => $step)
+        {
+            // Si l'étape à vérifier est celle demandée ou si on n'a pas précisé d'étape
+            if ($stepnumber == $stepindex or $stepnumber=="")
+            {
+                $stepstatus = "";
+                foreach ($step as $recipient)
+                {
+                    switch (strtolower($recipient->action))
+                    {
+                        case 'refused' :
+                            $stepstatus = $recipient->action;
+                            // On a trouvé un 'refused => On sort de toutes les boucles (=> break 2)
+                            break 2 ;
+                        case 'signed' :
+                            $stepstatus = $recipient->action;
+                            break;
+                        default: 
+                            break;
+                    }
+                }
+                $status["$stepindex"] = $stepstatus;
+            }
+        }
+        return $status;
+    }
+
+    /**
+     * Récupération des commentaires (les post-it) liés à un document
+     * @param string $esignatureid 
+     *          Identifiant du document eSignature
+     * @return array|string
+     *          Retourne un tableau des commentaires ou une chaine de caractère en cas de problème 
+     */
+    public function get_signrequest_stepcomment(string $esignatureid) :array|string
+    {
+        if (is_null($this->signrequestinfo))
+        {
+            $response = $this->get_signrequest($esignatureid);
+            if (is_string($response))
+            {
+                return $response;
+            }
+        }
+        $comments = array();
+        if (isset($this->signrequestinfo['comments']))
+        {
+            foreach ($this->signrequestinfo['comments'] as $commentobj)
+            {
+                $comments[] = $commentobj['text'];
+            }
+        }
+        return $comments;
+    }
+
+    /**
+     * Récupération de la date de fin du circuit
+     * @param string $esignatureid 
+     *          Identifiant du document eSignature
+     * @return string
+     *          Retourne la date de fin du circuit au format YYYY-MM-DD), 1900-01-01 si la date n'a pas pu être trouvée ou le descriptif de l'erreur en cas de problème
+     */
+    public function get_signrequest_enddate(string $esignatureid) :string
+    {
+        if (is_null($this->signrequestinfo))
+        {
+            $response = $this->get_signrequest($esignatureid);
+            if (is_string($response))
+            {
+                return $response;
+            }
+        }
+
+        $enddate = "1900-01-01";
+        if (isset($this->signrequestinfo['parentSignBook']['endDate']))
+        {
+            $enddate = strtoupper($this->signrequestinfo['parentSignBook']['endDate']);
+            /// Exemple de valeur : "2025-03-05T14:35:14.339+00:00"
+            $enddate_array = explode("T", $enddate);
+            if (count($enddate_array)==2)
+            {
+                // La date est dans le premier élément du tableau
+                $enddate = reset($enddate_array);
+            }
+            else
+            {
+                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " Le format de la date de fin n'est pas conforme : $enddate."));
+            }
+        }
+        else
+        {
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " La date de fin n'est pas définie : ['parentSignBook']['endDate'] n'existe pas."));     
+        }
+        return $enddate;
+    }
+
+    /**
+     * Récupération des destinataires du circuit par étape
+     * @param string $esignatureid 
+     *          Identifiant du document eSignature
+     * @return array|string
+     *          Retourne le tableau des destinataires par étape de signature ou le descriptif de l'erreur en cas de problème
+     */
+    public function get_signrequest_recipients(string $esignatureid) :array|string
+    {
+        if (is_null($this->signrequestinfo))
+        {
+            $response = $this->get_signrequest($esignatureid);
+            if (is_string($response))
+            {
+                return $response;
+            }
+        }
+
+        $hassignedarray = array();
+        if (isset($this->signrequestinfo['recipientHasSigned']))
+        {
+            $recipienthassigned = $this->signrequestinfo['recipientHasSigned'];
+            foreach ($recipienthassigned as $key => $currentrecipient)
+            {
+                if (str_starts_with(strtolower($key),'recipient-'))
+                {
+                    $stepid = intval(str_ireplace("recipient-","",$key));
+
+                    //var_dump($currentrecipient);
+
+                    $recipientuser = $currentrecipient['user'];
+                    if ($currentrecipient['signed'] and  isset($this->signrequestinfo['recipientHasSigned']["action-$stepid"]))
+                    {
+                        $currentaction = $this->signrequestinfo['recipientHasSigned']["action-$stepid"];
+                        $date = new datetime($currentaction['date'], new DateTimeZone('UTC'));
+                        $date->setTimezone(new DateTimeZone('Europe/Paris'));
+                        $hassignedarray[$recipientuser['email']][$date->format('Y-m-d H:i:s')] = $currentaction['actionType'] . '#' . $date->format('d-m-Y H:i:s');
+                    }
+                }
+            }
+            //var_dump($hassignedarray);
+            foreach ($hassignedarray as $key => $recipientlist)
+            {
+                //var_dump($recipientlist);
+                ksort($recipientlist,SORT_STRING);
+                //var_dump($recipientlist);
+                $hassignedarray[$key] = $recipientlist;
+            }
+            ksort($hassignedarray);
+            //var_dump($hassignedarray);
+        }
+
+        $recipientlist = array();
+        if (isset($this->signrequestinfo['parentSignBook']['liveWorkflow']['liveWorkflowSteps']))
+        {
+            $liveworkflowsteps = $this->signrequestinfo['parentSignBook']['liveWorkflow']['liveWorkflowSteps'];
+
+            $indexstep=0;
+            foreach ($liveworkflowsteps as $currentstep)
+            {
+                foreach($currentstep['recipients'] as $recipient)
+                {
+                    $recipientuser = $recipient['user'];
+                    $esignaturerecipient = new esignaturerecipient();
+                    $esignaturerecipient->nom = $recipientuser['name'] . "";
+                    $esignaturerecipient->prenom = $recipientuser['firstname'] . "";
+                    $esignaturerecipient->eppn = $recipientuser['eppn'] . "";
+                    $esignaturerecipient->mail = $recipientuser['email'] . "";
+                    $esignaturerecipient->hassigned = $recipient['signed'];
+                    // var_dump($esignaturerecipient->mail);
+                    if (isset($hassignedarray[$esignaturerecipient->mail]))
+                    {
+                        if (is_array($hassignedarray[$esignaturerecipient->mail]) and count($hassignedarray[$esignaturerecipient->mail])>0)
+                        {
+                            $actioninfos = array_shift($hassignedarray[$esignaturerecipient->mail]);
+                            // var_dump($actioninfos, $hassignedarray[$esignaturerecipient->mail]);
+                            $infos = explode('#',$actioninfos);
+                            $esignaturerecipient->action = $infos[0];
+                            $esignaturerecipient->actiondate = $infos[1];
+                        }
+                        else
+                        {
+                            // var_dump("Le tableau est vide pour " . $esignaturerecipient->mail);
+                        }
+                    }
+                    else
+                    {
+                        // var_dump("Pas d'action pour " . $esignaturerecipient->mail);
+                    }
+                    $recipientlist[$indexstep][] = $esignaturerecipient;
+                }
+                $indexstep++;
+            }
+        }
+        else // On a rencontré une erreur dans la récupération du currentstep
+        {
+            return "Impossible de déterminer les destinataires des étapes du circuit $esignatureid";
+        }
+
+        // var_dump($recipientlist);
+        return ($recipientlist);
+    }
+
+
+    /**
+     * Récupération du numéro de l'étape en cours
+     * @param string $esignatureid 
+     *          Identifiant du document eSignature
+     * @return int|string
+     *          Retourne le numéro de l'étape courante (à partir de 0) ou le descriptif de l'erreur en cas de problème
+     */
+    public function get_signrequest_currentstep(string $esignatureid) :int|string
+    {
+        if (is_null($this->signrequestinfo))
+        {
+            $response = $this->get_signrequest($esignatureid);
+            if (is_string($response))
+            {
+                return $response;
+            }
+        }
+
+        if (isset($this->signrequestinfo['parentSignBook']['liveWorkflow']['currentStepNumber']))
+        {
+            $currentstepnumber = $this->signrequestinfo['parentSignBook']['liveWorkflow']['currentStepNumber'];
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(__CLASS__ . "::" . __FUNCTION__ . " Le currentstepnumber = $currentstepnumber dans la convention $esignatureid "));     
+            return intval($currentstepnumber-1);
+        }
+        else
+        {
+            return "Impossible de déterminer l'étape courante du circuit $esignatureid.";
+        }
+    }
+
+    /**
+     * Récupération des informations concernant la création d'une demande
+     * @param string $esignatureid 
+     *          Identifiant du document eSignature
+     * @param string $username
+     *          Contient l'identité du créateur du circuit
+     * @param string $date
+     *          Contient la date de création du circuit
+     * @return string
+     *          Chaine vide si tout s'est bien passé ou le descriptif de l'erreur dans le cas contraire
+     */
+    public function get_signrequest_creationinfo(string $esignatureid, string &$username, string &$date ) :string
+    {
+        if (is_null($this->signrequestinfo))
+        {
+            $response = $this->get_signrequest($esignatureid);
+            if (is_string($response))
+            {
+                return $response;
+            }
+        }
+
+        $username = "";
+        $date = "";
+        if (isset($this->signrequestinfo["parentSignBook"]["createBy"]["firstname"]) and isset($this->signrequestinfo["parentSignBook"]["createBy"]["name"]))
+        {
+            $username = $this->signrequestinfo["parentSignBook"]["createBy"]["firstname"] . " " . $this->signrequestinfo["parentSignBook"]["createBy"]["name"] ;
+        }
+        else
+        {
+            $username = "";
+            $date = "";
+            return "Impossible de déterminer le créateur du circuit $esignatureid.";
+        }
+
+        if (isset($this->signrequestinfo["parentSignBook"]["createDate"]))
+        {
+            $datetime = new datetime($this->signrequestinfo["parentSignBook"]["createDate"], new DateTimeZone('UTC'));
+            $datetime->setTimezone(new DateTimeZone('Europe/Paris'));
+            $date = $datetime->format('d/m/Y H:i:s') ;
+        }
+        else
+        {
+            $username = "";
+            $date = "";
+            return "Impossible de déterminer la date de création du circuit $esignatureid.";
+        }
+        return '';
+    }
 
 }

@@ -363,9 +363,16 @@
                 $formsdata["CETF"] = $tabinfos["informations"]["5"]["value"];
                 $formsdata["CETG"] = $tabinfos["informations"]["6"]["value"];
                 $formsdata["DateAgent"] = date("d/m/Y");
+
+                // $constantename = 'PLAFONDCET';
+                // $plafondparam = 0;
+                // if ($fonctions->testexistdbconstante($constantename)) $plafondparam = $fonctions->liredbconstante($constantename);
+                // $formsdata["PlafondCET"] = $plafondparam;
+                // $formsdata["PlafondCET2"] = $plafondparam;
+
                 for ($index=0 ; $index<6 ; $index++)
                 {
-                    $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
+                    $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . " - " . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
                 }
 
                 //echo "formsdata = <br>"; var_dump($formsdata);
@@ -400,7 +407,12 @@
 
                     $esignature = new esignature($dbcon);
                     // $pdf_modelpath = realpath($fonctions->pdfpath(). "/Formulaire_CET_Alimentation.pdf");
-                    $pdf_modelpath = realpath($fonctions->documentpath(). "/Formulaire_CET_Alimentation.pdf");
+
+                    $constantename = 'ALIMENTATIONCET_MODELE';
+                    $pdfmodele = 'Formulaire_CET_Alimentation.pdf';
+                    if ($fonctions->testexistdbconstante($constantename)) $pdfmodele = $fonctions->liredbconstante($constantename);
+                    
+                    $pdf_modelpath = realpath($fonctions->documentpath(). "/$pdfmodele");
                     $outputfilename='';
                     //var_dump("Avant le populate");
                     if ($esignature->populate_pdfmodel($pdf_modelpath,$formsdata,$outputfilename))
@@ -416,22 +428,8 @@
                     {
                         $id = '';
                     }
-
-                    //////////////////////////////////////////////
-                    // $params = $fonctions->createesignaturestepsJson($params);
-                    // $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
-                    // {
-                    //     is_array( $item )
-                    //     ? array_walk( $item, $walk, $key )
-                    //     // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                    //     : $output[] = ($parent_key ?: $key) . "=" . $item;
-                    // };
-                    // //echo "Param = <br>"; var_dump($params);
-                    // array_walk( $params, $walk );
-                    // //echo "Output = <br>"; var_export($output);
-                    /////$id = $esignature->create_existing_signrequest(trim($id_model), $output);
-                    //////////////////////////////////////////////
-                    //var_dump("id creation = " . $id);
+                    // var_dump("id creation = " . $id);
+                    
                     if (is_integer($id))
                     {
                         //echo "Id de la nouvelle demande = " . $id . "<br>";

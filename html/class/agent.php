@@ -4149,8 +4149,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	}
     	else 
     	{
-    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/alimentationWS.php";
-    		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query)) 
     		{
     			$listdemandes[$result[1]] = $result[0];
@@ -4458,11 +4456,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	}
     	else
     	{
-    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/alimentationWS.php";
-    		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query))
     		{
-    			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+    			$this->fonctions->synchronisealimentationCET($result[0] . "");
     		}
     	}
     	
@@ -4490,11 +4486,9 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	}
     	else
     	{
-    		$full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/optionWS.php";
-    		$full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
     		while ($result = mysqli_fetch_row($query))
     		{
-    			$this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+    			$this->fonctions->synchroniseoptionCET($result[0] . "");
     		}
     	}
     }
@@ -4522,23 +4516,17 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         else
         {
-            $full_g2t_ws_url = $this->fonctions->get_g2t_ws_url() . "/teletravailWS.php";
-            $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
             while ($result = mysqli_fetch_row($query))
             {
-                $erreur = '';
                 // On prend en compte le cas du null
                 $esignatureid = trim($result[0] . "");
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" : On va traiter la demande id G2T =  " . $result[1] . " eSignature $esignatureid => statut actuel : " . $result[2]));
-                if ($esignatureid != '')
+                $json_result = $this->fonctions->synchroniseconventionteletravail($esignatureid);
+
+                if ($json_result["status"]=='Error')
                 {
-                    $erreur = $this->fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid);
-                    //echo "<br>synchroteletravail => $erreur <br>";
-                    if ($erreur != "")
-                    {
-                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" : On a rencontré une erreur sur la convention de télétravail id G2T = " . $result[1]  . " eSignature $esignatureid"));
-                        return $erreur;
-                    }
+                    $erreur = $json_result["description"];
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" : On a rencontré une erreur sur la convention de télétravail id G2T = " . $result[1]  . " eSignature $esignatureid => $erreur"));
+                    return $erreur;
                 }
             }
         }

@@ -712,6 +712,9 @@
 
 </script>
 <?php
+    //$esignature = new esignature($dbcon);
+    //$esignature->get_signrequest_recipients("3224883");
+    //var_dump($esignature->get_signrequest_stepstatus(3225958));
 
 ?>
 </body>

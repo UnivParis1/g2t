@@ -179,7 +179,7 @@
             // On appelle le WS eSignature pour récupérer le document final
             $esignature = new esignature($dbcon);
             $pdf = '';
-            $error = $esignature->get_document($esignatureid, $pdf);
+            $error = $esignature->get_signrequest_document($esignatureid, $pdf);
             if ($error != "")
             {
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));

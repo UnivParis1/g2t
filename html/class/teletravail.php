@@ -65,7 +65,19 @@ class teletravail
     public const MOTIF_MEDICAL_SANTE = 0;
     public const MOTIF_MEDICAL_GROSSESSE = 1;
     public const MOTIF_MEDICAL_AIDANT = 2;
-    
+
+    public const MATERIEL_CASQUE = 1;
+    public const MATERIEL_SAC = 2;
+    public const MATERIEL_SOURIS = 4;
+    public const MATERIEL_STATION = 8;
+    public const MATERIEL_PORTABLE = 16;
+    public const MATERIEL_LIBELLE = array(
+        self::MATERIEL_CASQUE => "un casque", 
+        self::MATERIEL_SAC => "un sac de transport", 
+        self::MATERIEL_SOURIS => "une souris", 
+        self::MATERIEL_STATION => "une station d'accueil", 
+        self::MATERIEL_PORTABLE => "un ordinateur portable");
+
     private $teletravailid = null;
     private $agentid = null;
     private $datedebut = null;
@@ -79,6 +91,8 @@ class teletravail
     private $motifmedicalsante = null;
     private $motifmedicalgrossesse = null;
     private $motifmedicalaidant = null;
+    private $adresseteletravail = null;
+    private $materieldemande = null;
     private $activiteteletravail = null;
     private $periodeexclusion = null;
     private $periodeadaptation = null;
@@ -126,7 +140,9 @@ class teletravail
                        PERIODEADAPTATION,
                        STATUTRESPONSABLE,
                        CREATIONG2T,
-                       CREATIONESIGNATURE
+                       CREATIONESIGNATURE,
+                       ADRESSETELETRAVAIL,
+                       MATERIELDEMANDE
                 FROM TELETRAVAIL
                 WHERE TELETRAVAILID = ? ";
         $params = array($teletravailid);
@@ -155,19 +171,22 @@ class teletravail
         $this->esignatureid = $result[7] . '';
         $this->esignatureurl = $result[8] . '';
         $this->commentaire = $result[9] . '';
-        $this->motifmedicalsante = $result[10]  .'';
-        $this->motifmedicalgrossesse = $result[11]  .'';
-        $this->motifmedicalaidant = $result[12]  .'';
-        $this->activiteteletravail = $result[13]  .'';
-        $this->periodeexclusion = $result[14]  .'';
-        $this->periodeadaptation = $result[15]  .'';
-        $this->statutresponsable = $result[16]  .'';
-        $this->creationg2t = $result[17]  .'';
-        $this->creationesignature = $result[18]  .'';
+        $this->motifmedicalsante = $result[10] . '';
+        $this->motifmedicalgrossesse = $result[11] . '';
+        $this->motifmedicalaidant = $result[12] . '';
+        $this->activiteteletravail = $result[13] . '';
+        $this->periodeexclusion = $result[14] . '';
+        $this->periodeadaptation = $result[15] . '';
+        $this->statutresponsable = $result[16] . '';
+        $this->creationg2t = $result[17] . '';
+        $this->creationesignature = $result[18] . '';
         if ($this->creationesignature == '')
         {
             $this->creationesignature = '19000101';
         }
+        $this->adresseteletravail = $result[19] . '';
+        $this->materieldemande = $result[20] . '';
+
         
         if (trim($this->esignatureurl.'')!='')
         {
@@ -468,6 +487,46 @@ class teletravail
         }
     }
     
+    function adresseteletravail($adresseteletravail = null)
+    {
+        if (is_null($adresseteletravail)) 
+        {
+            return $this->adresseteletravail . "";
+        }
+        else
+        {
+            $this->adresseteletravail = $adresseteletravail;
+        }
+    }
+
+    function materielrequis($materielrequis = null)
+    {
+        if (is_null($materielrequis)) 
+        {
+            return $this->materieldemande . "";
+        }
+        else
+        {
+            $this->materieldemande = $materielrequis;
+        }
+    }
+
+    function demande_materiel(int $typemateriel) :bool
+    {
+        if (is_null($this->materieldemande))
+        {
+            $errlog = "teletravail->demande_materiel : Le matériel requis n'est pas initialisé (NULL) !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            return false;
+        }
+        else
+        {
+            // On fait un test logique entre le matériel demandé et le type de matériel à tester
+            return  (bool)(intval($this->materieldemande) & $typemateriel);
+        }
+    }
+
     function tabteletravail($tableau = null)
     {
         if (is_null($tableau)) {
@@ -658,8 +717,10 @@ class teletravail
                                             ACTIVITETELETRAVAIL,
                                             PERIODEEXCLUSION,
                                             PERIODEADAPTATION,
-                                            STATUTRESPONSABLE)
-                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                            STATUTRESPONSABLE,
+                                            ADRESSETELETRAVAIL,
+                                            MATERIELDEMANDE)
+                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = array($this->agentid, 
                             $this->fonctions->formatdatedb($this->creationg2t),
                             $this->fonctions->formatdatedb($this->creationesignature . ""),
@@ -677,7 +738,9 @@ class teletravail
                             $this->activiteteletravail . "",
                             $this->periodeexclusion . "",
                             $this->periodeadaptation . "",
-                            $this->statutresponsable
+                            $this->statutresponsable,
+                            $this->adresseteletravail,
+                            $this->materieldemande
                 );
 
 /*
@@ -879,7 +942,7 @@ class teletravail
         // On appelle le WS eSignature pour récupérer le document final
         $esignature = new esignature($this->dbconnect);
         $pdf = '';
-        $error = $esignature->get_document($this->esignatureid, $pdf);
+        $error = $esignature->get_signrequest_document($this->esignatureid, $pdf);
 
         if ($error != "")
         {

@@ -52,18 +52,14 @@
         $esignatureid = $valeur[1];
         if (strcasecmp((string)$valeur[0],'opt')==0)  // Si c'est une option
         {
-            $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/optionWS.php";
-            $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
-            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid);
+            $fonctions->synchroniseoptionCET($esignatureid);
 
             $currentoption = new optionCET($dbcon);
             $currentoption->load($esignatureid);
         }
         elseif (strcasecmp((string)$valeur[0],'alim')==0) // Si c'est une alimentation
         {
-            $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/alimentationWS.php";
-            $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
-            $fonctions->synchro_g2t_eSignature($full_g2t_ws_url,$esignatureid);
+            $fonctions->synchronisealimentationCET($esignatureid);
             
             $currentalim = new alimentationCET($dbcon);
             $currentalim->load($esignatureid);
@@ -184,7 +180,7 @@
         echo "Le numéro eSignatureid = $esignatureid <br>";
 
         $esignature = new esignature($dbcon);
-        $response = $esignature->get_signrequests($esignatureid);
+        $response = $esignature->get_signrequest($esignatureid);
 
         if (is_string($response))
         {
@@ -193,91 +189,71 @@
         }
         else
         {
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"]));
-            echo "<br><br>Créateur : " . $response["parentSignBook"]["createBy"]["firstname"] . " " . $response["parentSignBook"]["createBy"]["name"] . "<br>";
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Date de création : " . $response["parentSignBook"]["createDate"]));
-            $displaydate = "";
-            //echo "Date de création : " . date("d/m/Y H:i:s", substr($response["parentSignBook"]["createDate"],0,strlen($response["parentSignBook"]["createDate"])-3)) . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
-            //$displaydate = $displaydate . " " . date("d/m/Y H:i:s", strtotime($response["parentSignBook"]["createDate"])); // substr($response["parentSignBook"]["createDate"],0,10);
-            $esignaturetimestamp = $response["parentSignBook"]["createDate"];
-            if (!is_int($esignaturetimestamp))
-            {
-                $date = new DateTime($esignaturetimestamp);
-                $displaydate = $date->format("d/m/Y H:i:s");
-            }
-            elseif (strlen($esignaturetimestamp)>10)
-            {
-                $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
-                //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
-                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-            }
-            else // C'est un timestamp sur 10 caractères
-            {
-                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-            }
-            //$displaydate = $displaydate . " " . date("d/m/Y H:i:s", $esignaturetimestamp);
-            echo "Date de création : " . trim($displaydate) . " (Valeur brute : " . $response["parentSignBook"]["createDate"] . ")<br>";
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Statut de la demande : " . $response["parentSignBook"]["status"]));
-            echo "Statut de la demande : " . $response["parentSignBook"]["status"] . "<br>";
+            $creatorname = "";
+
+            $creationdate = "";
+            $esignature->get_signrequest_creationinfo($esignatureid, $creatorname, $creationdate);
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Créateur : $creatorname"));
+            echo "<br><br>Créateur : $creatorname <br>";
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Date de création : " . $creationdate));
+            echo "Date de création : " . trim($creationdate) . '<br>'; 
+
+            $currentstatus = $esignature->get_signrequest_status($esignatureid);
+            $recipienttab = $esignature->get_signrequest_recipients($esignatureid);
+
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Statut de la demande : " . $currentstatus));
+            echo "Statut de la demande : " . $currentstatus . "<br>";
             echo "<br>";
+
             $nextstep = null;
-            foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
+
+            foreach($recipienttab as $numstep => $step)
             {
                 $signedstep = false;
                 echo "<B>Etape " . ($numstep+1) . " : </B><br>";
-                foreach ($step["recipients"] as $esignatureuser)
+                foreach ($step as $esignaturerecipient)
                 {
                     $datesignature = '';
-                    if ($esignatureuser["signed"])
+                    $action = '';
+
+                    // var_dump($esignaturerecipient);
+                    // var_dump($signedrecipienttab["$numstep"]);
+
+                    if  ($esignaturerecipient->hassigned)
                     {
-                        $esignaturetimestamp = $response["auditTrail"]["auditSteps"][$numstep]["timeStampDate"];
-                        if (!is_int($esignaturetimestamp))
-                        {
-                            $date = new DateTime($esignaturetimestamp);
-                            $displaydate = $date->format("d/m/Y H:i:s");
-                        }
-                        elseif (strlen($esignaturetimestamp)>10)
-                        {
-                            $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
-                            //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
-                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-                        }
-                        else // C'est un timestamp sur 10 caractères
-                        {
-                            $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-                        }
-                        $datesignature = "le $displaydate";
-                        //echo "<br>" . print_r($response, true) . "<br>";
-                        //var_dump($esignatureuser);
                         echo " <span class='greentext'>";
                         $signedstep = true;
+
+                        $datesignature = $esignaturerecipient->actiondate;
+                        $action = $esignaturerecipient->action;
                     }
-                    echo "&emsp;" . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature <br>";
-                    if ($esignatureuser["signed"])
+
+                    echo "&emsp;" . $esignaturerecipient->prenom . " " . $esignaturerecipient->nom . " (" . $esignaturerecipient->mail . ") $datesignature $action<br>";
+                    if  ($esignaturerecipient->hassigned)
                     {
                         echo " </span>";
                     }
                 }
+                // Si c'est la première étape qui n'a pas de signature => On mémorise cette étape comme la prochaine étape attendue
                 if ($signedstep==false and is_null($nextstep))
                 {
                     $nextstep = $numstep;
                 }
             }
             echo "<br>";
-                        
-            if (!is_null($nextstep) and ($response["parentSignBook"]["status"]=='pending'))
-            {   // On affiche les infos de l'étape suivante si la demande n'est pas terminée
-                $currentstep = $response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"][$nextstep];
-                echo "<B>En attente de l'étape : " . ($nextstep+1) . "</B><br>";
-                foreach ((array)$currentstep['recipients'] as $recipient)
+            echo "<B>En attente de l'étape : ";
+            if ($currentstatus == 'pending' and !is_null($nextstep))
+            {
+                echo ($nextstep+1) . "</B><br>";
+                $step = $recipienttab[$nextstep];
+                foreach ($step as $esignaturerecipient)
                 {
-                    echo "&emsp;" . $recipient['user']['firstname'] . " " . $recipient['user']['name'] . " (" . $recipient['user']["email"] . ")<br>";
-                    //echo "&emsp;Nom de l'étape : " . $currentstep['workflowStep']["description"] . "<br>";
+                    echo "&emsp;" . $esignaturerecipient->prenom . " " . $esignaturerecipient->nom . " (" . $esignaturerecipient->mail . ")<br>";
                 }
             }
             else
             {
-                echo "<B>En attente de l'étape : Pas d'étape en attente (circuit terminé)</B><br>";
+                echo "Pas d'étape en attente (circuit terminé)</B><br>";
             }
             echo "<br><br>";
         }
@@ -311,7 +287,7 @@
 
         $esignature = new esignature($dbcon);
         $pdf = '';
-        $error = $esignature->get_document($esignatureid, $pdf);
+        $error = $esignature->get_signrequest_document($esignatureid, $pdf);
         if ($error != "")
         {
             error_log(basename(__FILE__) . $fonctions->stripAccents(" $error"));

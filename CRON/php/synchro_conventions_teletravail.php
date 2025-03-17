@@ -5,56 +5,27 @@
     echo "\nDébut de la synchronisation des conventions de télétravail " . date("d/m/Y H:i:s") . "\n";
     $fonctions = new fonctions($dbcon);
 
-    $full_g2t_ws_url = $fonctions->get_g2t_ws_url() . "/teletravailWS.php";
-    $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
-    
-    // On appelle le WS G2T en GET pour demander à G2T de mettre à jour la demande
-    $curl = curl_init();
-    $params_string = "";
-    
-    $paramWS = "status=" . teletravail::TELETRAVAIL_ATTENTE . "," . teletravail::TELETRAVAIL_VALIDE;
-    echo "Les paramètres du WS $full_g2t_ws_url sont : $paramWS \n";
-    
-    $opts = [
-        CURLOPT_URL => $full_g2t_ws_url . "?" . $paramWS,
-        CURLOPT_HEADER => 0,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT => 4,
-        CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_PROXY => ''
-    ];
-    curl_setopt_array($curl, $opts);
-    curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-    curl_setopt($curl, CURLOPT_PROXY, '');
-    curl_setopt($curl, CURLOPT_TIMEOUT,500); // 500 seconds
-    //echo "<br>CURLOPT_PROXY => " . curl_getinfo($curl,CURLOPT_PROXY) . "<br><br>";
-    $json = curl_exec($curl);
-    $error = curl_error ($curl);
-    $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    if ((int) $httpcode !== 200 and $error=="")
+
+    $tabconvention = array();
+    $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE));
+    $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_VALIDE));
+    error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre de conventions trouvées = " . count($tabconvention)));
+    if (count($tabconvention)>0)
     {
-        $error = "Code retour HTTP => $httpcode";
+        foreach($tabconvention as $teletravail)
+        {
+            if (trim($teletravail->esignatureid())!= "")
+            {
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" On va synchro la convention esignatureid = " . $teletravail->esignatureid()));
+                $result_json = $fonctions->synchroniseconventionteletravail($teletravail->esignatureid());
+                if ($result_json['status']=='Error')
+                {
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On a rencontré une erreur => On break"));
+                    break;
+                }
+            }
+        }
     }
-    curl_close($curl);
-    if ($error != "")
-    {
-        echo "Erreur Curl (synchro convention teletravail) = " . $error . "\n";
-        exit();
-    }
-    //echo "<br>Le json (synchro_g2t_eSignature) " . print_r($json,true) . "<br>";
-    $response = json_decode($json, true);
-    //echo "<br>La reponse (synchro_g2t_eSignature) " . print_r($response,true) . "<br>";
-    if (isset($response['description']))
-    {
-        echo "Fin du traitement du WS " . $response['status'] . " - " . $response['description'] . "\n";
-//        error_log(basename(__FILE__) . $fonctions->stripAccents(" La réponse du WS $full_g2t_ws_url est => " . $response['status'] . " - " . $response['description'] ));
-    }
-    else
-    {
-        echo "La réponse du WS n'est pas conforme : " . var_export($response, true) . "\n";
-//        error_log(basename(__FILE__) . $fonctions->stripAccents(" Réponse du webservice G2T non conforme (URL WS G2T = $full_g2t_ws_url) => Erreur : " . var_export($response, true) ));
-    }
-    
     
     echo "Fin de la synchronisation des conventions de télétravail " . date("d/m/Y H:i:s") . "\n";
         
@@ -74,50 +45,50 @@
         foreach($tabconvention as $convention)
         {
             $esignatureid = $convention->esignatureid();
+            // On a un identifiant eSignature
             if ($esignatureid <>'' and $esignatureid>0)
             {
-                echo "La convention (eSingatureid = $esignatureid) est dans eSignature => On récupère les informations \n";
+                echo "La convention (eSignatureid = $esignatureid) est dans eSignature => On récupère les informations \n";
 
                 $esignature = new esignature($dbcon);
-                $response = $esignature->get_signrequests($esignatureid);
+                $response = $esignature->get_signrequest($esignatureid);
 
                 if (is_string($response))
                 {
                     echo "Une erreur s'est produite dans la récupération des informations : $response \n";
                 }
-                elseif (isset($response['parentSignBook']['liveWorkflow']['currentStepNumber']))
+
+                // Le premier currentstepnumber commence à 0 !!!
+                $currentstepnumber = $esignature->get_signrequest_currentstep($esignatureid);
+                if (is_string($currentstepnumber))
                 {
-                    $currentstepnumber = $response['parentSignBook']['liveWorkflow']['currentStepNumber'];
-                    echo "Le currentstepnumber = $currentstepnumber dans la convention $esignatureid \n";
-                    if (isset($response['parentSignBook']['liveWorkflow']['liveWorkflowSteps']))
+                    echo "Une erreur s'est produite dans la récupération de l'étape courante : $currentstepnumber \n";
+                }
+
+                $recipientlist = $esignature->get_signrequest_recipients($esignatureid);
+                if (is_string($recipientlist))
+                {
+                    echo "Une erreur s'est produite dans la récupération des signataires : $recipientlist \n";
+                }
+                
+                $nbworkflowsteps = count($recipientlist);
+                echo "nbworkflowsteps = $nbworkflowsteps \n";
+                if ($currentstepnumber < $nbworkflowsteps -2)  // On ne traite pas les deux derniers niveaux de signature
+                {
+                    $currentstep = $recipientlist[$currentstepnumber]; // L'index comence à 0
+                    foreach($currentstep as $esignaturerecipient)
                     {
-                        $liveworkflowsteps = $response['parentSignBook']['liveWorkflow']['liveWorkflowSteps'];
-                        $nbworkflowsteps = count($liveworkflowsteps);
-                        echo "nbworkflowsteps = $nbworkflowsteps \n";
-                        if ($currentstepnumber <= $nbworkflowsteps -2)  // On ne traite pas les deux derniers niveaux de signature
+                        $destinataire = new agent($dbcon);
+                        if (!$destinataire->loadbyemail($esignaturerecipient->mail))
                         {
-                            $currentstep = $liveworkflowsteps[$currentstepnumber-1]; // L'index comence à 0
-                            foreach($currentstep['recipients'] as $recipient)
-                            {
-                                $recipientuser = $recipient['user'];
-                                echo "Recipient nom => " . $recipientuser['name'] . " " . $recipientuser['firstname'] . "   eppn = " . $recipientuser['eppn'] . "  mail = " . $recipientuser['email'] . " \n";
-                                $destinataire = new agent($dbcon);
-                                if (!$destinataire->loadbyemail($recipientuser['email']))
-                                {
-                                    echo "Envoi impossible au destinataire " . $recipientuser['email'] . "\n";
-                                }
-                                else
-                                {
-                                    echo "Le desitnataire est : " . $destinataire->identitecomplete() . " \n";
-                                    $tabdestinataireesignature[$destinataire->agentid()] = $destinataire;
-                                }
-                            }
+                            echo "Envoi impossible au destinataire " . $esignaturerecipient->mail . "\n";
+                        }
+                        else
+                        {
+                            echo "Le destinataire est : " . $destinataire->identitecomplete() . " \n";
+                            $tabdestinataireesignature[$destinataire->agentid()] = $destinataire;
                         }
                     }
-                }
-                else
-                {
-                    echo "Impossible de déterminer le currentstep \n";
                 }
             }
             elseif ($convention->statutresponsable() == teletravail::TELETRAVAIL_ATTENTE)

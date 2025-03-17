@@ -142,11 +142,11 @@ class alimentationCET
             else
             {
                 // On remplace éventuellement le nom du serveur par celui paramétré
-                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Avant transformation l'URL est : " . $esignatureurl));
+                //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Avant transformation l'URL est : " . $esignatureurl));
                 $eSignature_url = trim($this->fonctions->liredbconstante('ESIGNATUREURL'));
                 $urlpath = parse_url($esignatureurl,PHP_URL_PATH);
                 $this->esignatureurl = preg_replace('/([^:])(\/{2,})/', '$1/', $eSignature_url . $urlpath);
-                error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Après transformation l'URL est : " . $this->esignatureurl));
+                //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (esignatureurl) => Après transformation l'URL est : " . $this->esignatureurl));
                 
                 //$this->esignatureurl = $esignatureurl;
                 //echo "esignatureurl = " . $this->esignatureurl . "<br>";;
@@ -465,12 +465,12 @@ class alimentationCET
         $this->motif            = "$result[15]";
         
         // On remplace éventuellement le nom du serveur par celui paramétré
-        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Avant transformation l'URL est : " . $this->esignatureurl));
+        //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Avant transformation l'URL est : " . $this->esignatureurl));
         $eSignature_url = $this->fonctions->liredbconstante('ESIGNATUREURL');
         $urlpath = parse_url($this->esignatureurl,PHP_URL_PATH);
         $this->esignatureurl = $eSignature_url . $urlpath;
         $this->esignatureurl = preg_replace('/([^:])(\/{2,})/', '$1/', $eSignature_url . $urlpath);
-        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Après transformation l'URL est : " . $this->esignatureurl));
+        //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" (load) => Après transformation l'URL est : " . $this->esignatureurl));
         
         
         return $errlog;
@@ -570,7 +570,7 @@ class alimentationCET
         // On appelle le WS eSignature pour récupérer le document final
         $esignature = new esignature($this->dbconnect);
         $pdf = '';
-        $error = $esignature->get_document($this->esignatureid, $pdf);
+        $error = $esignature->get_signrequest_document($this->esignatureid, $pdf);
 
         if ($error != "")
         {

@@ -105,63 +105,50 @@
         {
             $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
 
+            $esignatureid = $teletravail->esignatureid();
             $esignature = new esignature($dbcon);
-            $response = $esignature->get_signrequests($teletravail->esignatureid());
+            $response = $esignature->get_signrequest($esignatureid);
 
             if (is_string($response))
             {
                 $enattente = $enattente . $response;
             }
-            elseif (isset($response['parentSignBook']['liveWorkflow']['currentStep']))
-            {
-                $currentstep = $response['parentSignBook']['liveWorkflow']['currentStep'];
-                foreach ((array)$currentstep['recipients'] as $recipient)
-                {
-                    $signataireidentite = $recipient['user']['firstname'] . " " . $recipient['user']['name'];
-                    if (trim($signataireidentite) != "")
-                    {
-                        $enattente = $enattente . "<br>" . $signataireidentite;
-                    }
-                }
-            }
             else
             {
-                $enattente = $enattente . "Impossible de déterminer l'acteur";
-            }
+                $recipienttab = $esignature->get_signrequest_recipients($esignatureid);
+                $numstep = $esignature->get_signrequest_currentstep($esignatureid);
+                $enattente = $enattente . "Etape " . ($numstep+1) . " : \n";
+                $step = $recipienttab[$numstep];
+                foreach ($step as $esignaturerecipient)
+                {
+                    $datesignature = "";
+                    if ($esignaturerecipient->hassigned)
+                    {
+                        $datesignature = $esignaturerecipient->actiondate;
+                    }
+                    $enattente = $enattente . "<br>" . $esignaturerecipient->prenom . " " . $esignaturerecipient->nom . " (" . $esignaturerecipient->mail . ") $datesignature";
+                }
 
-            if (isset($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"]))
-            {
-                foreach ($response["parentSignBook"]["liveWorkflow"]["liveWorkflowSteps"] as $numstep => $step)
+                foreach($recipienttab as $numstep => $step)
                 {
                     $signedstep = false;
                     $spantext = $spantext . "Etape " . ($numstep+1) . " : \n";
-                    foreach ($step["recipients"] as $esignatureuser)
+                    foreach ($step as $esignaturerecipient)
                     {
                         $datesignature = '';
-                        if ($esignatureuser["signed"])
+                        $action = '';
+    
+                        // var_dump($esignaturerecipient);
+                        // var_dump($signedrecipienttab["$numstep"]);
+    
+                        if  ($esignaturerecipient->hassigned)
                         {
-                            $esignaturetimestamp = $response["auditTrail"]["auditSteps"][$numstep]["timeStampDate"];
-                            if (!is_int($esignaturetimestamp))
-                            {
-                                $date = new DateTime($esignaturetimestamp);
-                                $displaydate = $date->format("d/m/Y H:i:s");
-                            }
-                            elseif (strlen($esignaturetimestamp)>10)
-                            {
-                                $esignaturetimestamp = intdiv($esignaturetimestamp, pow(10,strlen($esignaturetimestamp)-10));
-                                //$esignaturetimestamp = substr($esignaturetimestamp,0,10);
-                                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-                            }
-                            else // C'est un timestamp sur 10 caractères
-                            {
-                                $displaydate = date("d/m/Y H:i:s", $esignaturetimestamp);
-                            }
-                            $datesignature = "le $displaydate";
-                            //echo "<br>" . print_r($response, true) . "<br>";
-                            //var_dump($esignatureuser);
                             $signedstep = true;
+                            $datesignature = $esignaturerecipient->actiondate;
+                            $action = $esignaturerecipient->action;
                         }
-                        $spantext = $spantext . "   " . $esignatureuser["user"]["firstname"] . " " . $esignatureuser["user"]["name"] . " (" . $esignatureuser["user"]["email"] . ") $datesignature \n";
+    
+                        $spantext = $spantext . "   " . $esignaturerecipient->prenom . " " . $esignaturerecipient->nom . " (" . $esignaturerecipient->mail . ") $datesignature $action \n";
                     }
                 }
             }

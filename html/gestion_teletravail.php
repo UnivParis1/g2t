@@ -179,7 +179,33 @@
         $statutresp = $_POST["statutresp"];
     }
     
-    
+    $adresseteletravail = "";
+    if (isset($_POST["adresseteletravail"]))
+    {
+        $adresseteletravail = $_POST["adresseteletravail"];
+    }
+
+    $materieldemande = 0;
+    if (isset($_POST["materiel_casque"]))
+    {
+        $materieldemande = $materieldemande + teletravail::MATERIEL_CASQUE;
+    }
+    if (isset($_POST["materiel_sac"]))
+    {
+        $materieldemande = $materieldemande + teletravail::MATERIEL_SAC;
+    }
+    if (isset($_POST["materiel_souris"]))
+    {
+        $materieldemande = $materieldemande + teletravail::MATERIEL_SOURIS;
+    }
+    if (isset($_POST["materiel_station"]))
+    {
+        $materieldemande = $materieldemande + teletravail::MATERIEL_STATION;
+    }
+    if (isset($_POST["materiel_portable"]))
+    {
+        $materieldemande = $materieldemande + teletravail::MATERIEL_PORTABLE;
+    }
     
     require ("includes/menu.php");
     
@@ -765,7 +791,8 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
             $teletravail->motifmedicalsante($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_SANTE]);
             $teletravail->motifmedicalgrossesse($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_GROSSESSE]);
             $teletravail->motifmedicalaidant($fulltabmotifmedical[teletravail::MOTIF_MEDICAL_AIDANT]);
- 
+            $teletravail->adresseteletravail($adresseteletravail);
+            $teletravail->materielrequis($materieldemande);
             $teletravail->esignatureurl('');
             if ($esignatureactive)
             {
@@ -925,40 +952,50 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $formsdata["PeriodeExclusion"] = $tabinfos["infosconvention"]["periodeexclusion"];
                     $formsdata["PeriodeAdaptation"] = $tabinfos["infosconvention"]["periodeadaptation"];
                     $formsdata["infosconventioncode"] = $tabinfos["infosconvention"]["code"];
-                    if ($formsdata["infosconventioncode"]==teletravail::CODE_CONVENTION_MEDICAL)
-                    {
-                        $formsdata["TelleRegimegen"] = 'No';
-                    }
-                    else
-                    {
-                        $formsdata["TelleRegimegen"] = 'Yes';
-                    }
+
+                    // if ($formsdata["infosconventioncode"]==teletravail::CODE_CONVENTION_MEDICAL)
+                    // {
+                    //     $formsdata["TelleRegimegen"] = 'No';
+                    // }
+                    // else
+                    // {
+                    //     $formsdata["TelleRegimegen"] = 'Yes';
+                    // }
+                    $formsdata["TelleRegimegen"] = $fonctions->ouinonlibelle($formsdata["infosconventioncode"]!=teletravail::CODE_CONVENTION_MEDICAL,true);
+
                     $formsdata["Raisonsante"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["sante"],true);
                     $formsdata["Grossesse"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["grossesse"],true);
                     $formsdata["ProcheAidant"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["aidant"],true);
                     $formsdata["NbJourTravaille"] = $tabinfos["informations"][0]["value"];
-                    for ($index=0 ; $index<$formsdata["NbJourTravaille"] ; $index++)
-                    {
-                        $formsdata["jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
-                    }
-                    $formsdata["LieuTele"] = $tabinfos["agent"]["service"]["addr"];
                     $formsdata["DatedebutTele"] = $tabinfos["informations"][1]["value"];
                     $formsdata["DatefinTele"] = $tabinfos["informations"][2]["value"];
 
+                    //var_dump($tabinfos["informations"]);
+                    for ($index=0 ; $index<(count($tabinfos["informations"])-3) ; $index++)
+                    {
+                        $formsdata["jour" . ($index+1)] = $tabinfos["informations"][3+$index]["value"];
+                    }
+                    //var_dump($formsdata);
+
+                    $formsdata["LieuTele"] = $tabinfos["agent"]["service"]["addr"];
+                    $formsdata["DateSignature"] = date("d/m/Y");
+
+                    // On peut les forcer à YES car ce sont des cases à cocher obligatoires dans la saisie de la convention de télétravail
+                    // et par conséquent on n'e les 'a pas enregistrées ces valeurs.
                     $formsdata["AttesteCirculaire"] = "Yes";
                     $formsdata["AttesteEspace"] = "Yes";
                     $formsdata["AttesteElectricite"] = "Yes";
                     $formsdata["AttesteMiseenplace"] = "Yes";
-                    $formsdata["EquipementCasque"] = "Yes";
-                    $formsdata["EquipementSac"] = "Yes";
-                    $formsdata["EquipementSouris"] = "Yes";
-                    $formsdata["EquipementBase"] =  "Yes";
-                    $formsdata["EquipementOrdinateur"] =  "Yes";
-                    $formsdata["DateSignature"] = date("d/m/Y");
+
+                    $formsdata["EquipementCasque"] =  $fonctions->ouinonlibelle($tabinfos["infosconvention"]["equipementcasque"],true);
+                    $formsdata["EquipementSac"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["equipementsac"],true);
+                    $formsdata["EquipementSouris"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["equipementsouris"],true);
+                    $formsdata["EquipementBase"] =  $fonctions->ouinonlibelle($tabinfos["infosconvention"]["equipementbase"],true);
+                    $formsdata["EquipementOrdinateur"] = $fonctions->ouinonlibelle($tabinfos["infosconvention"]["equipementordinateur"],true);
 
                     for ($index=0 ; $index<6 ; $index++)
                     {
-                        $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . "-" . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
+                        $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . " - " . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
                     }
                     
                     //echo "formsdata = <br>"; var_dump($formsdata);
@@ -968,6 +1005,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         'title' => "Convention de télétravail de " . $agent->prenom() . " " . $agent->nom(),
                         'eppn' => "$agent_eppn",
                         'createByEppn' => "$agent_eppn",
+                        'recipientsCCEmails' => array("$agent_mail"),
                         'targetEmails' => array("$agent_mail"),
                         'targetUrl' => "$full_g2t_ws_url",
                         'targetUrls' => array("$full_g2t_ws_url"),
@@ -999,13 +1037,18 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
                         $esignature = new esignature($dbcon);
                         // $pdf_modelpath = realpath($fonctions->pdfpath(). "/Formulaire_CET_Alimentation.pdf");
-                        $pdf_modelpath = realpath($fonctions->documentpath(). "/Formulaire_Teletravail.pdf");
+
+                        $constantename = 'TELETRAVAIL_MODELE';
+                        $pdfmodele = 'Formulaire_Teletravail.pdf';
+                        if ($fonctions->testexistdbconstante($constantename)) $pdfmodele = $fonctions->liredbconstante($constantename);
+        
+                        $pdf_modelpath = realpath($fonctions->documentpath(). "/$pdfmodele");
                         $outputfilename='';
                         //var_dump("Avant le populate");
                         if ($esignature->populate_pdfmodel($pdf_modelpath,$formsdata,$outputfilename))
                         {
                             //var_dump("Avant le multipart");
-                            $params['multipartFiles'] = curl_file_create(realpath($outputfilename), "application/pdf", "Alimentation CET");
+                            $params['multipartFiles'] = curl_file_create(realpath($outputfilename), "application/pdf", "Convention télétravail");
                             //echo "Params = <br>"; var_export($params);
                             //var_dump("Avant le custom");
                             $id = $esignature->create_custom_signrequest($params);
@@ -1015,33 +1058,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         {
                             $id = '';
                         }
-    
-
-                        /////////////////////////////////////////////////////////////
-                        // $params = $fonctions->createesignaturestepsJson($params);
-                        
-                        // $walk = function( $item, $key, $parent_key = '' ) use ( &$output, &$walk )
-                        // {
-                        //     is_array( $item )
-                        //     ? array_walk( $item, $walk, $key )
-                        //     // : $output[] = http_build_query( array( $parent_key ?: $key => $item ) );
-                        //     : $output[] = ($parent_key ?: $key) . "=" . $item;
-                        // };
-                        // //echo "Param = <br>"; var_dump($params);
-                        // array_walk( $params, $walk );
-                        // //echo "Output = <br>"; var_export($output);
-
-                        // $esignature = new esignature($dbcon);
-                        // if ($esignatureactive)
-                        // {
-                        //     $id = $esignature->create_existing_signrequest(trim($id_model), $output);
-                        // }
-                        // else
-                        // {
-                        //     $id = '';
-                        // }
-                        /////////////////////////////////////////////////////////////
-                        //var_dump("id creation = " . $id);
+                        // var_dump("id creation = " . $id);
     
                         if (is_integer($id) or !$esignatureactive)
                         {
@@ -1548,7 +1565,9 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             $formdisabled = " disabled='disabled' ";
         }
     	echo "<form name='form_teletravail_creation' id='form_teletravail_creation' method='post' $formhidden $formdisabled>";
-    	echo "Création d'une nouvelle demande de convention pour : " . $agent->identitecomplete()  . " <br>";    	
+    	echo "Création d'une nouvelle demande de convention pour : " . $agent->identitecomplete()  . " <br><br>";
+        echo "<span class='boldtext redtext'>Les éléments suivis d'une </span><span class='boldtext redtext fontsize25 verticalalignmiddle'>*</span><span class='boldtext redtext'> sont obligatoires</span><br>";
+        echo "<br>";
         if ($teletravailenattente)
         {
             echo $fonctions->showmessage(fonctions::MSGWARNING, "Vous avez une demande de télétravail en attente de validation.<br>Vous ne pouvez pas en saisir une nouvelle.<br>Vous devez attendre que le circuit de validation soit terminé ou annuler la demande en attente.");
@@ -1589,7 +1608,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         if ($inputtypeconv == teletravail::CODE_CONVENTION_MEDICAL) { echo " selected "; }
     	echo ">" . teletravail::TYPE_CONVENTION_MEDICAL . "</option>";
     	
-    	echo "</select>";
+    	echo "</select><span class='boldtext redtext fontsize25'> *</span>";
 ?>
 <script>
     var oldsubmitstatus = null;
@@ -1724,6 +1743,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         	value='<?php echo $inputdatedebut ?>'
                 onchange="getnbjrsteletravail('<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?>');">
     <?php
+        echo "<span class='boldtext redtext fontsize25'>*</span>";
         echo "</td>";
     	echo "</tr>";
         echo "<tr>";
@@ -1743,6 +1763,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         	maxperiode='<?php echo $fonctions->formatdate($datefinmaxconv); ?>'
         	value='<?php echo $inputdatefin ?>'>
     <?php
+        echo "<span class='boldtext redtext fontsize25'>*</span>";
         echo "</td>";
         echo "</tr>";
         echo "</table>";
@@ -2143,6 +2164,64 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             verif_nbre_checkbox();
         </script>
 <?php
+        echo "<table>";
+        echo "<tr>";
+        echo "<td>";
+        echo "Adresse du lieu de télétravail : ";
+        echo "</td>";
+        echo "<td>";
+        echo "<textarea class='commenttextarea' rows='5' cols='50' name='adresseteletravail' id='adresseteletravail' wrap='hard' maxlength='250' required>" . str_replace(", ", "\n",strtoupper($agent->getpersonnaladdress())) . "</textarea><span class='boldtext redtext fontsize25 verticalaligntop'> *</span>";
+        echo "</td>";
+        echo "</table>";
+        echo "<br>";
+        echo "Attestations de l’agent bénéficiaire :<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='conform_elect' id='conform_elect' required><span class='boldtext redtext fontsize25'>*</span> ";
+        echo "J’atteste sur l’honneur de la conformité de mon installation électrique et de ma connexion internet.";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='espace_tele' id='espace_tele' required><span class='boldtext redtext fontsize25'>*</span> ";
+        echo "J’atteste sur l'honneur que mon domicile comporte un espace pouvant être utilisé pour le télétravail et répondant aux règles applicables en matière de santé 
+              et de sécurité au travail.";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='lecture_circulaire' id='lecture_circulaire' required><span class='boldtext redtext fontsize25'>*</span> ";
+        echo "J’atteste sur l’honneur avoir pris connaissance de la circulaire relative au télétravail en vigueur au sein de l’université et m’engage à m’y conformer et 
+              à respecter l’ensemble des obligations qui incombent au télétravailleur, et notamment les modalités de suivi de mes activités télétravaillables telles 
+              qu’arrêtées avec mon responsable hiérarchique.";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='signature_complete' id='signature_complete' required><span class='boldtext redtext fontsize25'>*</span> ";
+        echo "Je reconnais être informé(e) que la présente convention de télétravail ne pourra entrer en vigueur qu’après signature par l’ensemble des parties.";
+        echo "</input>";
+        echo "<br>";
+        echo "<br>";
+
+        echo "Equipement informatique :<br>";
+        echo "(Un ticket de demande de matériel informatique est généré automatiquement auprès de la DSIUN après signature de la convention par toutes les parties)<br>";
+        echo "L'agent bénéficiaire demande à disposer en complément de l'équipement dont il dispose déjà :<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='materiel_casque' id='materiel_casque' > ";
+        echo "d'un casque micro,";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='materiel_sac' id='materiel_sac' > ";
+        echo "d'un sac spécifique pour transporter l’ordinateur portable,";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='materiel_souris' id='materiel_souris' > ";
+        echo "d'une souris,";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='materiel_station' id='materiel_station' > ";
+        echo "d'une station d'accueil dans les locaux de l’université,";
+        echo "</input>";
+        echo "<br>";
+        echo "<input type='checkbox' class='paramradiomargingleft' name='materiel_portable' id='materiel_portable' > ";
+        echo "d'un ordinateur portable équipé des logiciels de bureautique standard et des logiciels et
+              connexion professionnels nécessaires à l’exécution des tâches en remplacement de son poste fixe.";
+        echo "</input>";
+        echo "<br><br>";
+        echo "<br>";
+
 //        echo "<input type='hidden' id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='" . $nbjoursmaxteletravailcalcule . "'>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";

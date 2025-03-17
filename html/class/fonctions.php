@@ -2074,8 +2074,6 @@ class fonctions
 
     public function get_alimCET_liste($typeconges, $listStatuts = array(), $forcesynchro = true) // $typeconges de la forme annYY
     {
-        $full_g2t_ws_url = $this->get_g2t_ws_url() . "/alimentationWS.php";
-        $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
         $sql = "SELECT ESIGNATUREID,ALIMENTATIONID FROM ALIMENTATIONCET WHERE TYPECONGES = ? ";
         if (sizeof($listStatuts) != 0)
         {
@@ -2095,12 +2093,13 @@ class fonctions
         if (mysqli_num_rows($query) == 0) {
             return $alimCETliste;
         }
-        while ($result = mysqli_fetch_row($query)) {
-            $alimid = $result[0];
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $alimid = $result[0] . "";
             $alimCETliste[$result[1]] = $alimid;
             if ($forcesynchro)
             {
-                $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+                $this->synchronisealimentationCET($alimid);
             }
         }
         return $alimCETliste;
@@ -2108,8 +2107,6 @@ class fonctions
 
     public function get_optionCET_liste($anneeref, $listStatuts = array(), $forcesynchro = true)
     {
-        $full_g2t_ws_url = $this->get_g2t_ws_url() . "/optionWS.php";
-        $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
         $sql = "SELECT ESIGNATUREID,OPTIONID FROM OPTIONCET WHERE ANNEEREF = ? ";
         if (sizeof($listStatuts) != 0)
         {
@@ -2131,11 +2128,11 @@ class fonctions
             return $optionCETliste;
         }
         while ($result = mysqli_fetch_row($query)) {
-            $optionid = $result[0];
+            $optionid = $result[0] . "";
             $optionCETliste[$result[1]] = $optionid;
             if ($forcesynchro)
             {
-                $this->synchro_g2t_eSignature($full_g2t_ws_url,$result[0]);
+                $this->synchroniseoptionCET($optionid);
             }
         }
         return $optionCETliste;
@@ -2489,7 +2486,7 @@ class fonctions
         {
             //echo "<br>load => pas de ligne dans la base de données<br>";
             //$errlog = "Aucun jour de télétravail n'est exclu pour l'agent " . $this->identitecomplete() . " dans la période $datedebut -> $datefin <br>";
-            //error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $errlog"));
+            //error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
             //echo $errlog;
         }
         else
@@ -3607,15 +3604,628 @@ class fonctions
         return $tabconvention;
     }
 
-    public function synchroniseconventionteletravail($esignatureid)
+    public function synchronisealimentationCET($esignatureid)
     {
-        $eSignature_url = $this->liredbconstante("ESIGNATUREURL");
-
         $status = "";
         $reason = "";
+        $esignature_status = '';
+        error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut de la demande =>  " . $esignatureid));
+
+        if (trim($esignatureid . "")=="")
+        {
+            $error = "L'identifiant eSignature est vide => Pas de traitement";
+            error_log(basename(__FILE__) . $this->stripAccents(" " . $error));
+            $result_json = array('status' => 'Ok', 'description' => '');
+            error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
+            return $result_json;
+        }
+
+        $alimentationCET = new alimentationCET($this->dbconnect);
+        $erreur = $alimentationCET->load($esignatureid);
+        if ($erreur != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la lecture des infos de la demande " . $esignatureid . " => Erreur = " . $erreur));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+            return $result_json;
+        }
+
+        $esignature = new esignature($this->dbconnect);
+        // Si le statut est passé dans l'appel du WS (=> Appel automatique de eSignature)
+
+        if (isset($_GET['status']))
+        {
+            $esignature_status = trim($_GET['status']);
+            error_log(basename(__FILE__) . $this->stripAccents(" Le statut est dans le GET => $esignature_status"));
+        }
+        // On récupère le statut à partir de eSignature
+        else
+        {
+            $esignature_status = $esignature->get_signrequest_status($esignatureid);
+        }
+
+        // Si la récupération du statut à partir de eSignature a échouée
+        if ($esignature_status===false)
+        {
+            $error = "Erreur dans eSignature : Impossible de récupérer le statut du document";
+            error_log(basename(__FILE__) . $this->stripAccents(" $error"));
+            // Si j'ai une erreur dans mon appel CURL on ne doit rien faire => Statut = '' et on crée le $result_json
+            $result_json = array('status' => 'Error', 'description' => $error);
+            return $result_json;
+        }
+
+        $esignature_status = str_replace("'", "", $esignature_status);
+        error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status'"));
+
+        switch (strtolower($esignature_status))
+        {
+            //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
+            case 'draft' :
+            case 'pending' :
+            case 'signed' :
+            case 'checked' :
+            case 'cleaned' :
+                $status = alimentationCET::STATUT_EN_COURS;
+                break;
+
+            case 'refused':
+                $status = alimentationCET::STATUT_REFUSE;
+                error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status' => On va chercher le commentaire"));
+                // Récupération du commentaire d'esignature
+                if (isset($_GET['comment']))
+                {
+                    $reason = trim($_GET['comment']);
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le motif est dans le GET => $reason"));
+                }
+                else
+                {
+                    $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                    if (is_array($comments))
+                    {
+                        $reason = end($comments); //implode(" ",$comments);
+                        error_log(basename(__FILE__) . $this->stripAccents(" Le motif est dans un post-it : $reason"));
+                    }
+                }
+                break;
+
+            case 'completed' :
+                $status = optionCET::STATUT_VALIDE;
+                break;
+
+            case 'deleted' : 
+            case 'canceled' :
+            case '' :
+                $status = alimentationCET::STATUT_ABANDONNE;
+                break;
+
+            case 'fully-deleted' :
+                if (!in_array($alimentationCET->statut(),array(alimentationCET::STATUT_ABANDONNE,alimentationCET::STATUT_REFUSE, alimentationCET::STATUT_VALIDE)))
+                {
+                    $status = alimentationCET::STATUT_ABANDONNE;
+                }
+                else
+                {
+                    $erreur = "";
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    return $result_json;
+                }
+                break;
+
+            case 'exported' :
+            case 'archived' :
+                // Si la demande est déjà refusé on va voir si le motif du refus a changé
+                if ($alimentationCET->statut() == alimentationCET::STATUT_REFUSE)
+                {
+                    // On récupère les commentaires sur le refus
+                    $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                    if (is_array($comments))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" On récupère les motifs de refus pour voir s'il a changé"));  
+                        $reason = end($comments); //implode(" ",$comments);
+                    }
+                    if ($alimentationCET->motif() != $reason)
+                    {
+                        $alimentationCET->motif($reason);
+                        $erreur = $alimentationCET->store();
+                        if ($erreur != "")
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la modification du droit d'option " . $esignatureid . " => Erreur = " . $erreur));
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" La modification du motif du droit d'option " . $esignatureid . " est Ok => Pas d'erreur"));
+                            $result_json = array('status' => 'Ok', 'description' => $erreur);
+                        }
+                        return $result_json;
+                    }
+                    else
+                    {
+                        $erreur = '';
+                        error_log(basename(__FILE__) . $this->stripAccents(" La demande est refusée et le motif inchangé. On ne fait rien => Pas d'erreur"));
+                        $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    }
+                    return $result_json;
+            }
+                elseif (!in_array($alimentationCET->statut(),array(alimentationCET::STATUT_ABANDONNE,alimentationCET::STATUT_REFUSE, alimentationCET::STATUT_VALIDE)))
+                {
+                    $statutlist = $esignature->get_signrequest_stepstatus($esignatureid);
+                    if (is_string($statutlist))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" $statutlist"));
+                        $result_json = array('status' => 'Error', 'description' => $statutlist);
+                        return $result_json;
+                    }
+                    foreach($statutlist as $stepindex => $stepstatut)
+                    {
+                        if (strcasecmp($stepstatut,'refused')==0)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" L'action $stepindex est refusée => On marque comme refusé"));  
+                            $status = alimentationCET::STATUT_REFUSE;
+                            // On récupère les commentaires sur le refus
+                            $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                            if (is_array($comments))
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" On récupère les motifs de refus"));  
+                                $reason = end($comments); //implode(" ",$comments);
+                            }
+                            // On a trouvé un refus de signature => On sort de la boucle
+                            break;
+                        }
+                        elseif (strcasecmp($stepstatut,'signed')==0)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" L'action $stepindex est signée => On marque comme validé")); 
+                            // Pour le moment, la demande est signée
+                            $status = alimentationCET::STATUT_VALIDE;
+                        }
+                    }
+                    // Si on n'a pas pu identifié l'ancien statut eSignature de la demande => On dit que tout est ok.
+                    if ($status == "")
+                    {
+                        $erreur = "";
+                        $result_json = array('status' => 'Ok', 'description' => $erreur);
+                        return $result_json;
+                    }
+                }
+                // Le statut G2T est déjà dans un état final (<=> pas EN_COURS) => On n'a rien fait. Tout ok
+                else
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" La convention de télétravail est déjà avec un statut correct => Pas de traitement")); 
+                    $erreur = "";
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    return $result_json;
+                }
+                break;
+
+            default :
+                $response = json_decode($esignature_status, true);
+                if (isset($response['error'])) $erreur = $response['error']; else $erreur = '';
+                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur esignature_status => $esignature_status";
+                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+                return $result_json;
+                break;
+        }
+        // En théorie, ici, on a forcément un statut G2T défini
+        if ($status == "")
+        {
+            $erreur = "Impossible de déterminer le statut G2T de la demande => eSignatureid = " . $esignatureid . " esignature_status => $esignature_status";
+            error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+            return $result_json;
+        }
+
+        // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
+        if ($status == $alimentationCET->statut())
+        {
+            $erreur = '';
+            error_log(basename(__FILE__) . $this->stripAccents(" La demande a déjà un statut $status. On ne fait rien => Pas d'erreur"));
+            $result_json = array('status' => 'Ok', 'description' => $erreur);
+            return $result_json;
+        }
+
+        // Ajout d'un contrôle qui interdit de modifier le statut de la demande, les informations de solde si la demande est déjà VALIDE, ABANDONNE ou REFUSE
+        if (!in_array($alimentationCET->statut(), array(alimentationCET::STATUT_VALIDE, alimentationCET::STATUT_ABANDONNE, alimentationCET::STATUT_REFUSE )))
+        {
+            //if (($status == $alimentationCET::STATUT_VALIDE) and ($alimentationCET->statut() == $alimentationCET::STATUT_EN_COURS or $alimentationCET->statut() == $alimentationCET::STATUT_PREPARE))
+            if (($status == alimentationCET::STATUT_VALIDE) and (in_array($alimentationCET->statut(), array(alimentationCET::STATUT_EN_COURS, alimentationCET::STATUT_PREPARE))))
+            {
+                $agent = new agent($this->dbconnect);
+                $agentid = $alimentationCET->agentid();
+                error_log(basename(__FILE__) . $this->stripAccents(" L'agent id =  " . $agentid ));
+                $agent->load($agentid);
+                $cet = new cet($this->dbconnect);
+                $erreur = $cet->load($agentid);
+                if ($erreur <> '')
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Pas de CET pour cet agent : " . $agent->identitecomplete() ." ! On le crée. "));
+                    unset($cet);
+                    $cet = new cet($this->dbconnect);
+                    $cet->agentid($agentid);
+                    $cet->cumultotal('0');
+                    $cet->cumulannuel($this->anneeref(),'0');
+                    $cet->datedebut('01/01/1900');   //date('d/m/Y'));
+                    $erreur = $cet->store();
+                    unset($cet);
+                    $cet = new cet($this->dbconnect);
+                    $cet->load($agentid);
+                }
+                $cet->cumultotal( $alimentationCET->valeur_f() + $cet->cumultotal()) ;
+                error_log(basename(__FILE__) . $this->stripAccents(" Le solde du CET sera après enregistrement de " . $cet->cumultotal()));
+                $cumulannuel = $cet->cumulannuel($this->anneeref());
+                $cumulannuel = $cumulannuel + $alimentationCET->valeur_f();
+                $cet->cumulannuel($this->anneeref(),$cumulannuel);
+                $cet->store();
+
+                $solde = new solde($this->dbconnect);
+                //error_log(basename(__FILE__) . $this->stripAccents(" Le type de congés est " . $alimentationCET->typeconges()));
+                $solde->load($agentid, $alimentationCET->typeconges());
+                //error_log(basename(__FILE__) . $this->stripAccents(" Le solde droitpris est avant : " . $solde->droitpris() . " et valeur_f = " . $alimentationCET->valeur_f()));
+                $new_solde = $solde->droitpris()+$alimentationCET->valeur_f();
+                $solde->droitpris($new_solde);
+                //error_log(basename(__FILE__) . $this->stripAccents(" Le solde droitpris est après : " . $solde->droitpris()));
+                error_log(basename(__FILE__) . $this->stripAccents(" Le solde " . $solde->typelibelle() . " sera après enregistrement de " . ($solde->droitaquis() - $solde->droitpris())));
+                $solde->store();
+
+                // Ajouter dans la table des commentaires la trace de l'opération
+                $agent->ajoutecommentaireconge($alimentationCET->typeconges(),($alimentationCET->valeur_f()*-1),"Retrait de jours pour alimentation CET");
+
+                $erreur = $alimentationCET->storepdf();
+                if ($erreur != '')
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
+                    $result_json = array('status' => 'Error', 'description' => $erreur);
+                }
+            }
+            else  // Le statut de la demande n'est pas signée
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $alimentationCET->agentid()));
+            }
+
+            error_log(basename(__FILE__) . $this->stripAccents(" Mise à jour de la demande d'alimentation du CET $esignatureid de l'agent " . $alimentationCET->agentid()));
+            $alimentationCET->statut($status);
+            if ($status <> alimentationCET::STATUT_ABANDONNE)
+            {
+                $alimentationCET->motif($reason);
+            }
+            $erreur = $alimentationCET->store();
+            if ($erreur != "")
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'enregistrement de la demande " . $esignatureid . " => Erreur = " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Traitement OK de la demande " . $esignatureid . " => Pas d'erreur"));
+                $result_json = array('status' => 'Ok', 'description' => $erreur);
+            }
+        }
+        else
+        {
+            $erreur = "Incohérence lors de la modification du statut de la demande : La demande est " . $alimentationCET->statut() . " et on veut la passer $status";
+            error_log(basename(__FILE__) . $this->stripAccents(" $erreur"));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+        }
+        error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
+        return $result_json;
+    }
+
+    public function synchroniseoptionCET($esignatureid)
+    {
+        $status = "";
+        $reason = "";
+        $esignature_status = '';
+        error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut du droit d'option =>  " . $esignatureid));
+
+        if (trim($esignatureid . "")=="")
+        {
+            $error = "L'identifiant eSignature est vide => Pas de traitement";
+            error_log(basename(__FILE__) . $this->stripAccents(" " . $error));
+            $result_json = array('status' => 'Ok', 'description' => '');
+            error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
+            return $result_json;
+        }
+
+        $optionCET = new optionCET($this->dbconnect);
+        $error = $optionCET->load($esignatureid);
+        if ($error != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" $error"));
+            $result_json = array('status' => 'Error', 'description' => $error);
+            return $result_json;
+        }
+
+        $esignature = new esignature($this->dbconnect);
+        // Si le statut est passé dans l'appel du WS (=> Appel automatique de eSignature)
+
+        if (isset($_GET['status']))
+        {
+            $esignature_status = trim($_GET['status']);
+            error_log(basename(__FILE__) . $this->stripAccents(" Le statut est dans le GET => $esignature_status"));
+        }
+        // On récupère le statut à partir de eSignature
+        else
+        {
+            $esignature_status = $esignature->get_signrequest_status($esignatureid);
+        }
+
+        // Si la récupération du statut à partir de eSignature a échouée
+        if ($esignature_status===false)
+        {
+            $error = "Erreur dans eSignature : Impossible de récupérer le statut du document";
+            error_log(basename(__FILE__) . $this->stripAccents(" $error"));
+            // Si j'ai une erreur dans mon appel CURL on ne doit rien faire => Statut = '' et on crée le $result_json
+            $result_json = array('status' => 'Error', 'description' => $error);
+            return $result_json;
+        }
+
+        $esignature_status = str_replace("'", "", $esignature_status);
+
+        error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status'"));
+        switch (strtolower($esignature_status))
+        {
+            //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
+            case 'draft' :
+            case 'pending' :
+            case 'signed' :
+            case 'checked' :
+            case 'cleaned' :
+                $status = optionCET::STATUT_EN_COURS;
+                break;
+
+            case 'refused':
+                $status = optionCET::STATUT_REFUSE;
+                error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status' => On va chercher le commentaire"));
+                // Récupération du commentaire d'esignature
+                if (isset($_GET['comment']))
+                {
+                    $reason = trim($_GET['comment']);
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le motif est dans le GET => $reason"));
+                }
+                else
+                {
+                    $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                    if (is_array($comments))
+                    {
+                        $reason = end($comments); //implode(" ",$comments);
+                        error_log(basename(__FILE__) . $this->stripAccents(" Le motif est dans un post-it : $reason"));
+                    }
+                }
+                break;
+
+            case 'completed' :
+                $status = optionCET::STATUT_VALIDE;
+                break;
+
+            case 'deleted' :
+            case 'canceled' :
+            case '' :
+                $status = optionCET::STATUT_ABANDONNE;
+                break;
+
+            case 'fully-deleted' :
+                if (!in_array($optionCET->statut(),array(optionCET::STATUT_ABANDONNE,optionCET::STATUT_REFUSE, optionCET::STATUT_VALIDE)))
+                {
+                    $status = optionCET::STATUT_ABANDONNE;
+                }
+                else
+                {
+                    $erreur = "";
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    return $result_json;
+                }
+                break;
+
+            case 'exported' :
+            case 'archived' :
+
+                // Si la demande est déjà refusé on va voir si le motif du refus a changé
+                if ($optionCET->statut() == optionCET::STATUT_REFUSE)
+                {
+                    // On récupère les commentaires sur le refus
+                    $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                    if (is_array($comments))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" On récupère les motifs de refus pour voir s'il a changé"));  
+                        $reason = end($comments); //implode(" ",$comments);
+                    }
+                    if ($optionCET->motif() != $reason)
+                    {
+                        $optionCET->motif($reason);
+                        $erreur = $optionCET->store();
+                        if ($erreur != "")
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la modification du droit d'option " . $esignatureid . " => Erreur = " . $erreur));
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" La modification du motif du droit d'option " . $esignatureid . " est Ok => Pas d'erreur"));
+                            $result_json = array('status' => 'Ok', 'description' => $erreur);
+                        }
+                        return $result_json;
+                    }
+                    else
+                    {
+                        $erreur = '';
+                        error_log(basename(__FILE__) . $this->stripAccents(" La demande est refusée et le motif inchangé. On ne fait rien => Pas d'erreur"));
+                        $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    }
+                    return $result_json;
+                }
+                elseif (!in_array($optionCET->statut(),array(optionCET::STATUT_ABANDONNE,optionCET::STATUT_REFUSE, optionCET::STATUT_VALIDE)))
+                {
+                    $statutlist = $esignature->get_signrequest_stepstatus($esignatureid);
+                    if (is_string($statutlist))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" $statutlist"));
+                        $result_json = array('status' => 'Error', 'description' => $statutlist);
+                        return $result_json;
+                    }
+                    foreach($statutlist as $stepindex => $stepstatut)
+                    {
+                        if (strcasecmp($stepstatut,'refused')==0)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" L'action $stepindex est refusée => On marque comme refusé"));  
+                            $status = optionCET::STATUT_REFUSE;
+                            // On récupère les commentaires sur le refus
+                            $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                            if (is_array($comments))
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" On récupère les motifs de refus"));  
+                                $reason = end($comments); //implode(" ",$comments);
+                            }
+                            // On a trouvé un refus de signature => On sort de la boucle
+                            break;
+                        }
+                        elseif (strcasecmp($stepstatut,'signed')==0)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" L'action $stepindex est signée => On marque comme validé")); 
+                            // Pour le moment, la demande est signée
+                            $status = optionCET::STATUT_VALIDE;
+                        }
+                    }
+                    // Si on n'a pas pu identifié l'ancien statut eSignature de la demande => On dit que tout est ok.
+                    if ($status == "")
+                    {
+                        $erreur = "";
+                        $result_json = array('status' => 'Ok', 'description' => $erreur);
+                        return $result_json;
+                    }
+                }
+                // Le statut G2T est déjà dans un état final (<=> pas EN_COURS) => On n'a rien fait. Tout ok
+                else
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" La convention de télétravail est déjà avec un statut correct => Pas de traitement")); 
+                    $erreur = "";
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    return $result_json;
+                }
+                break;
+
+            default :
+                $response = json_decode($esignature_status, true);
+                if (isset($response['error'])) $erreur = $response['error']; else $erreur = '';
+                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur esignature_status => $esignature_status";
+                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+                return $result_json;
+                break;
+        }
+        // En théorie, ici, on a forcément un statut G2T défini
+        if ($status == "")
+        {
+            $erreur = "Impossible de déterminer le statut G2T de la demande => eSignatureid = " . $esignatureid . " esignature_status => $esignature_status";
+            error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+            return $result_json;
+        }
+
+        // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
+        if ($status == $optionCET->statut()) // and $reason==$optionCET->motif())
+        {
+            $erreur = '';
+            error_log(basename(__FILE__) . $this->stripAccents(" La demande a déjà un statut $status. On ne fait rien => Pas d'erreur"));
+            $result_json = array('status' => 'Ok', 'description' => $erreur);
+            return $result_json;
+        }
+        // Ajout d'un contrôle qui interdit de modifier le statut de la demande, les informations de solde si la demande est déjà VALIDE, ABANDONNE ou REFUSE
+        if (!in_array($optionCET->statut(), array(optionCET::STATUT_VALIDE, optionCET::STATUT_ABANDONNE, optionCET::STATUT_REFUSE )))
+        {
+            // if (($status == optionCET::STATUT_VALIDE) and ($optionCET->statut() == optionCET::STATUT_EN_COURS or $optionCET->statut() == optionCET::STATUT_PREPARE))
+            if (($status == optionCET::STATUT_VALIDE) and (in_array($optionCET->statut(), array(optionCET::STATUT_EN_COURS, optionCET::STATUT_PREPARE))))
+            {
+                $agent = new agent($this->dbconnect);
+                $agentid = $optionCET->agentid();
+                error_log(basename(__FILE__) . $this->stripAccents(" L'agent id =  " . $agentid ));
+                $agent->load($agentid);
+                $cet = new cet($this->dbconnect);
+                $erreur = $cet->load($agentid);
+                if ($erreur <> '')
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Pas de CET pour cet agent : " . $agent->identitecomplete() ." ! Ce n'est pas possible. "));
+                    $result_json = array('status' => 'Error', 'description' => 'Pas de CET pour cet agent :' . $erreur);
+                    unset($cet);
+                }
+                else
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le solde du CET est avant enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
+                    // On ajuste le solde du CET et on marque dans l'historique 
+                    // On retranche le nombre de jours pour la RAFP
+                    if ($optionCET->valeur_i() > 0)
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" L'agent : " . $agent->identitecomplete() ." met " . $optionCET->valeur_i() . " jours en RAFP. "));
+                        $cet->jrspris( $cet->jrspris() + $optionCET->valeur_i() ) ;
+                        // Ajouter dans la table des commentaires la trace de l'opération
+                        $agent->ajoutecommentaireconge('cet',($optionCET->valeur_i()*-1),"Prise en compte au titre de la RAFP");
+                    }
+                    
+                    // On retranche le nombre de jours pour l'indemnisation
+                    if ($optionCET->valeur_j() > 0)
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" L'agent : " . $agent->identitecomplete() ." met " . $optionCET->valeur_j() . " jours en indemnisation. "));
+                        $cet->jrspris( $cet->jrspris() + $optionCET->valeur_j() ) ;
+                        // Ajouter dans la table des commentaires la trace de l'opération
+                        $agent->ajoutecommentaireconge('cet',($optionCET->valeur_j()*-1),"Prise en compte au titre de l'indemnistation");
+                    }
+                    
+                    // Nombre de jours à conserver dans le CET -- Juste pour info car cela ne modifie pas le solde du CET
+                    if ($optionCET->valeur_k() > 0)
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" L'agent : " . $agent->identitecomplete() ." conserve " . $optionCET->valeur_k() . " jours dans son CET. "));
+                    }
+                    
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le solde du CET sera après enregistrement de " . ($cet->cumultotal() - $cet->jrspris())));
+                    $cet->store();
+                    
+                    $erreur = $optionCET->storepdf();
+                    if ($erreur != '')
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de la récupération du PDF de la demande " . $esignatureid . " => Erreur = " . $erreur));
+                        $result_json = array('status' => 'Error', 'description' => $erreur);
+                        return $result_json;
+                    }
+                }
+            }
+            else  // Le statut du droit d'option n'est pas validée
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" On ne met pas à jour les soldes de CET de l'agent " . $optionCET->agentid()));
+            }
+
+            error_log(basename(__FILE__) . $this->stripAccents(" Mise à jour du droit d'option $esignatureid de l'agent " . $optionCET->agentid()));
+            $optionCET->statut($status);
+            if ($status <> optionCET::STATUT_ABANDONNE)
+            {
+                $optionCET->motif($reason);
+            }
+            $erreur = $optionCET->store();
+            if ($erreur != "")
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'enregistrement du droit d'option " . $esignatureid . " => Erreur = " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Traitement OK du droit d'option " . $esignatureid . " => Pas d'erreur"));
+                $result_json = array('status' => 'Ok', 'description' => $erreur);
+            }
+        }
+        else
+        {
+            $erreur = "Incohérence lors de la modification du statut de la demande : La demande est " . $optionCET->statut() . " et on veut la passer $status";
+            error_log(basename(__FILE__) . $this->stripAccents(" $erreur"));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+        }
+        error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
+        return $result_json;
+    }
+
+    public function synchroniseconventionteletravail(string $esignatureid)
+    {
+        $status = "";
+        $reason = "";
+        $esignature_status = "";
         $datesignatureresponsable = '19000101';
         $sendmailtoresp = false;
-
 
         error_log(basename(__FILE__) . $this->stripAccents(" On va modifier le statut de la convention télétravail =>  " . $esignatureid));
 
@@ -3627,286 +4237,321 @@ class fonctions
             error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
             return $result_json;
         }
-        
-        $esignature = new esignature($this->dbconnect);
-        $status = $esignature->get_status($esignatureid);
 
-        if ($status===false)
+        $teletravail = new teletravail($this->dbconnect);
+        $erreur = $teletravail->loadbyesignatureid($esignatureid);
+        // Si on a rencontré un problème lors du chargement de la convention télétravail dans G2T
+        if ($erreur===false)
+        {
+            $error = "Erreur dans le chargement de la convention télétravail (identifiant eSignature = $esignatureid)";
+            error_log(basename(__FILE__) . $this->stripAccents(" $error"));
+            // Si j'ai une erreur dans mon appel CURL on ne doit rien faire => Statut = '' et on crée le $result_json
+            $result_json = array('status' => 'Error', 'description' => $error);
+            return $result_json;
+        }
+
+        $esignature = new esignature($this->dbconnect);
+        // Si le statut est passé dans l'appel du WS (=> Appel automatique de eSignature)
+        if (isset($_GET['status']))
+        {
+            $esignature_status = trim($_GET['status']);
+            error_log(basename(__FILE__) . $this->stripAccents(" Le statut est dans le GET => $esignature_status"));
+        }
+        // On récupère le statut à partir de eSignature
+        else
+        {
+            $esignature_status = $esignature->get_signrequest_status($esignatureid);
+        }
+
+        // Si la récupération du statut à partir de eSignature a échouée
+        if ($esignature_status===false)
         {
             $error = "Erreur dans eSignature : Impossible de récupérer le statut du document";
             error_log(basename(__FILE__) . $this->stripAccents(" $error"));
-            //$status = teletravail::TELETRAVAIL_ANNULE;
             // Si j'ai une erreur dans mon appel CURL on ne doit rien faire => Statut = '' et on crée le $result_json
             $result_json = array('status' => 'Error', 'description' => $error);
-            $status = '';
+            return $result_json;
+        }
+
+        $esignature_status = str_replace("'", "", $esignature_status);
+        error_log(basename(__FILE__) . $this->stripAccents(" Le current status (eSignature) = $esignature_status  Le statut dans G2T = " . $teletravail->statut()));
+
+        switch (strtolower($esignature_status))
+        {
+            // draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned, fully-deleted
+
+            case 'draft' :
+            case 'pending' :
+            case 'signed' :
+            case 'checked' :
+            case 'cleaned' :
+                $status = teletravail::TELETRAVAIL_ATTENTE;
+                break;
+
+            case 'refused':
+                $status = teletravail::TELETRAVAIL_REFUSE;
+                error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status' => On va chercher le commentaire"));
+
+                $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                if (is_array($comments))
+                {
+                    $reason = end($comments); //implode(" ",$comments);
+                }
+                break;
+
+            case 'completed' :
+                $status = teletravail::TELETRAVAIL_VALIDE;
+                break;
+
+            case 'deleted' :
+            case 'canceled' :
+            case '' :
+                $status = teletravail::TELETRAVAIL_ANNULE;
+                break;
+
+            case 'fully-deleted' :
+                // Si le statut de la convention télétravail n'est pas TELETRAVAIL_ANNULE, TELETRAVAIL_VALIDE, TELETRAVAIL_REFUSE => On doit mettre à jour le statut
+                // En théorie on ne peut pas supprimer une convention de télétravail si le circuit de validation est terminé
+                if (!in_array($teletravail->statut(),array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_VALIDE, teletravail::TELETRAVAIL_REFUSE)))
+                {
+                    $status = teletravail::TELETRAVAIL_ANNULE;
+                }
+                else
+                {
+                    $erreur = "";
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    return $result_json;
+                }
+                break;
+
+            case 'exported' :
+            case 'archived' :
+                // Si le statut de la convention télétravail n'est pas TELETRAVAIL_ANNULE, TELETRAVAIL_VALIDE, TELETRAVAIL_REFUSE => On doit mettre à jour le statut
+                if (!in_array($teletravail->statut(),array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_VALIDE, teletravail::TELETRAVAIL_REFUSE)))
+                {
+                    $statutlist = $esignature->get_signrequest_stepstatus($esignatureid);
+                    if (is_string($statutlist))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" $statutlist"));
+                        $result_json = array('status' => 'Error', 'description' => $statutlist);
+                        return $result_json;
+                    }
+                    foreach($statutlist as $stepindex => $stepstatut)
+                    {
+                        if (strcasecmp($stepstatut,'refused')==0)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" L'action $stepindex est refusée => On marque comme refusé"));  
+                            $status = teletravail::TELETRAVAIL_REFUSE;
+                            // On récupère les commentaires sur le refus
+                            $comments = $esignature->get_signrequest_stepcomment($esignatureid);
+                            if (is_array($comments))
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" On récupère les motifs de refus"));  
+                                $reason = end($comments); //implode(" ",$comments);
+                            }
+                            // On a trouvé un refus de signature => On sort de la boucle
+                            break;
+                        }
+                        elseif (strcasecmp($stepstatut,'signed')==0)
+                        {
+                            error_log(basename(__FILE__) . $this->stripAccents(" L'action $stepindex est signée => On marque comme validé")); 
+                            // Pour le moment, la demande est signée
+                            $status = teletravail::TELETRAVAIL_VALIDE;
+                        }
+                    }
+                    // Si on n'a pas pu identifié l'ancien statut eSignature de la demande => On dit que tout est ok.
+                    if ($status == "")
+                    {
+                        $erreur = "";
+                        $result_json = array('status' => 'Ok', 'description' => $erreur);
+                        return $result_json;
+                    }
+                }
+                // Le statut G2T est déjà dans un état final (<=> pas EN_COURS) => On n'a rien fait. Tout ok
+                else
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" La convention de télétravail est déjà avec un statut correct => Pas de traitement")); 
+                    $erreur = "";
+                    $result_json = array('status' => 'Ok', 'description' => $erreur);
+                    return $result_json;
+                }
+                break;
+
+            default :
+                $response = json_decode($esignature_status, true);
+                if (isset($response['error'])) $erreur = $response['error']; else $erreur = '';
+                $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur esignature_status => $esignature_status";
+                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+                return $result_json;
+                break;
+
+        }
+        // En théorie, ici, on a forcément un statut G2T défini
+        if ($status == "")
+        {
+            $erreur = "Impossible de déterminer le statut G2T de la demande => eSignatureid = " . $esignatureid . " esignature_status => $esignature_status";
+            error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
+            return $result_json;
+        }
+
+        // error_log(basename(__FILE__) . $this->stripAccents(" statut de la convention dans eSignature = $status -> " . $this->teletravailstatutlibelle($status)));
+        // error_log(basename(__FILE__) . $this->stripAccents(" teletravail->statut() = " . $teletravail->statut() . " -> " . $this->teletravailstatutlibelle($teletravail->statut())));
+
+        // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
+        if ($status == $teletravail->statut() and $reason==$teletravail->commentaire())
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" La convention a déjà un statut $status (" . $this->teletravailstatutlibelle($status) . "). On ne fait rien => Pas d'erreur"));
+            $erreur = '';
+            $result_json = array('status' => 'Ok', 'description' => $erreur);
+            return $result_json;
+        }
+                    
+        // Si le status est VALIDE alors on va mettre la date du dernier signataire comme date de début de la convention
+        if ($status==teletravail::TELETRAVAIL_VALIDE)
+        {
+            $datesignatureresponsable = $esignature->get_signrequest_enddate($esignatureid);
+            // Si ce n'est pas une date correcte 
+            if (strtotime($datesignatureresponsable)===false)
+            {
+                $erreur = "Erreur dans la récupération de la date de fin => eSignatureid = " . $esignatureid . " => $datesignatureresponsable";
+                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $result_json = array('status' => 'Error', 'description' => $erreur);
+                return $result_json;
+            }
+            error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
+        }
+        
+        if (($status == teletravail::TELETRAVAIL_ANNULE or $status == teletravail::TELETRAVAIL_REFUSE) and $teletravail->statut() == teletravail::TELETRAVAIL_ATTENTE)
+        {
+            $sendmailtoresp = true;
+        }
+
+        if ($this->formatdatedb($datesignatureresponsable)>$this->formatdatedb($teletravail->datedebut()))
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" On passe la date de début de la convention à $datesignatureresponsable - valeur actuelle : " . $teletravail->datedebut()));
+            $teletravail->datedebut($datesignatureresponsable);
+        }
+        if ($this->formatdatedb($teletravail->datedebut())>$this->formatdatedb($teletravail->datefin()) and $status <> teletravail::TELETRAVAIL_ANNULE )
+        {
+            $status = teletravail::TELETRAVAIL_ANNULE;
+            $reason = "Il y a une incohérence dans les dates de début et de fin => On force l'annulation de la convention.";
+            error_log(basename(__FILE__) . $this->stripAccents(" $reason"));
+        }
+        error_log(basename(__FILE__) . $this->stripAccents(" On passe le statut de la convention " . $esignatureid . " à $status (" . $this->teletravailstatutlibelle($status) . ")"));
+        $ancienstatut = $teletravail->statut();
+        $teletravail->statut($status);
+        $teletravail->commentaire($reason);
+        $erreur = $teletravail->store();
+        if ($erreur != "")
+        {
+            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'enregistrement de la convention " . $esignatureid . " => Erreur = " . $erreur));
+            $result_json = array('status' => 'Error', 'description' => $erreur);
         }
         else
         {
-            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests en json"));
-            error_log(basename(__FILE__) . " " . var_export($status,true));
-            $current_status = str_replace("'", "", $status);
-
-            error_log(basename(__FILE__) . $this->stripAccents(" Réponse du WS signrequests/status"));
-            error_log(basename(__FILE__) . " " . $current_status); // var_export($current_status,true));
-
-            switch (strtolower($current_status))
+            // On va générer le PDF dans le cas ou le statut de la convention est VALIDEE ou REFUSEE
+            if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE or $teletravail->statut()==teletravail::TELETRAVAIL_REFUSE)
             {
-                //uploading, draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
-                //           draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned, fully-deleted
-                case 'draft' :
-                case 'pending' :
-                case 'signed' :
-                case 'checked' :
-                    $status = teletravail::TELETRAVAIL_ATTENTE;
-                    break;
-
-                case 'refused':
-                    $status = teletravail::TELETRAVAIL_REFUSE;
-                    error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$current_status' => On va chercher le commentaire"));
-
-                    $esignature = new esignature($this->dbconnect);
-                    $response = $esignature->get_signrequests($esignatureid);
-                    if (isset($response['comments']))
-                    {
-                        $reason = '';
-                        foreach ($response['comments'] as $comment)
-                        {
-                            $reason = $reason . " " . $comment['text'];
-                        }
-                        $reason = trim($reason);
-                    }
-                    break;
-                case 'completed' :
-                case 'exported' :
-                case 'archived' :
-                case 'cleaned' :
-                    $status = teletravail::TELETRAVAIL_VALIDE;
-                    break;
-                case 'deleted' :
-                case 'canceled' :
-                case 'fully-deleted' :
-                case '' :
-                    $status = teletravail::TELETRAVAIL_ANNULE;
-                    break;
-                default :
-                    $erreur = "";
-                    $response = json_decode($current_status, true);
-                    if (isset($response['error'])) $erreur = $response['error'];
-                    $erreur = "Erreur dans la réponse de eSignature => eSignatureid = " . $esignatureid . " erreur => $erreur current_status => $current_status";
-                    error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
-                    $status = "";
-                    $result_json = array('status' => 'Error', 'description' => $erreur);
-                    break;
-
+                $teletravail->storepdf();
             }
-        }
-        if ($status <> '')
-        {
-            //$status = mb_strtolower("$status", 'UTF-8');
-            $teletravail = new teletravail($this->dbconnect);
-            $erreur = $teletravail->loadbyesignatureid($esignatureid);
-            if ($erreur === false)
+
+            // On va récupérer les informations sur les demandes de matériel dans la convention
+            if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE)
             {
-                $erreur = "Erreur lors de la lecture des infos de la convention télétravail " . $esignatureid;
-                error_log(basename(__FILE__) . $this->stripAccents(" " . $erreur));
+                $this->creation_ticketGLPI_materiel($esignatureid);
+            }
+
+            // On va regarder si d'autres conventions se chevauchent
+            $agentid = $teletravail->agentid();
+            $agent = new agent($this->dbconnect);
+            $agent->load($agentid);
+
+            if ($sendmailtoresp)
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" On va envoyer un mail au responsable car on a annulé/refusé une convention télétravail (id G2T = " . $teletravail->teletravailid() . ")"));
+                $resp = $agent->getsignataire();
+                if (is_null($resp) or $resp===false)
+                {
+                    error_log(basename(__FILE__) . $this->stripAccents(" Aucun mail au responsable car il n'est pas défini (id G2T = " . $teletravail->teletravailid() . ")"));
+                }
+                else
+                {
+                    $cronuser = new agent($this->dbconnect);
+                    $cronuser->load(SPECIAL_USER_IDCRONUSER);
+                    $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $agent->identitecomplete(), "Une demande de convention de télétravail pour " . $agent->identitecomplete() . " a été annulée/refusée.<br>"
+                        . "Ceci est un message informatif. Vous n'avez aucune action à réaliser. <br>");
+                    error_log(basename(__FILE__) . $this->stripAccents(" Le mail au responsable (" . $resp->identitecomplete() . " " . $resp->mail() . ") a été envoyé (id G2T = " . $teletravail->teletravailid() . ")"));
+                }
+            }
+
+            $currentconventionid=$teletravail->teletravailid();
+            $datedebutteletravail = $teletravail->datedebut();
+            $datefinteletravail = $teletravail->datefin();
+            $liste = array();
+            // Si la demande de convention était déjà annulée ou refusée, cela n'a aucun impact sur les conventions actuelles
+            if ($ancienstatut != teletravail::TELETRAVAIL_ANNULE and $ancienstatut != teletravail::TELETRAVAIL_REFUSE)
+            {
+                $liste = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
+            }
+            foreach ($liste as $conventionid)
+            {
+                if ($currentconventionid <> $conventionid) // On ignore la convention qu'on vient de traiter
+                {
+                    $teletravailmodif = new teletravail($this->dbconnect);
+                    $teletravailmodif->load($conventionid);
+                    if (in_array($teletravailmodif->statut(),array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
+                    {
+                        error_log(basename(__FILE__) . $this->stripAccents(" On va changer le statut de la convention G2T $conventionid qui a actuellement le statut => " . $teletravailmodif->statut()));
+                        if ($teletravailmodif->datefin()>=$datedebutteletravail)
+                        {
+                            $veilledebut = date("d/m/Y", strtotime("-1 day", strtotime($this->formatdatedb($datedebutteletravail))));
+                            //echo "datedebutteletravail = $datedebutteletravail <br>";
+                            //echo "veilledebut = $veilledebut <br>";
+                            $teletravailmodif->datefin($veilledebut);
+                            $teletravailmodif->commentaire("Modification de la date de fin de la convention suite à création d'une nouvelle convention.");
+                            //echo "date debut  = " . $this->formatdatedb($teletravail->datedebut()) . "<br>";
+                            //echo "date fin  = " . $this->formatdatedb($teletravail->datefin()) . "<br>";
+                            if ($this->formatdatedb($teletravailmodif->datefin()) < $this->formatdatedb($teletravailmodif->datedebut()))
+                            {
+                                $return = '';
+                                if (trim($teletravailmodif->esignatureid().'')<>'')
+                                {
+                                    $esignature = new esignature($this->dbconnect);
+                                    $return = $esignature->delete_signrequest($teletravailmodif->esignatureid());
+                                    // $return = "" . $this->deleteesignaturedocument($teletravailmodif->esignatureid());
+                                }
+                                if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
+                                {
+                                    if (strlen($erreur)>0) $erreur = $erreur . '<br>';
+                                    $erreur = $erreur . $return . "";
+                                    error_log(basename(__FILE__) . " " . $this->stripAccents($return));
+                                }
+                                //echo "On passe la convetion à ANNULE<br>";
+                                $teletravailmodif->statut(teletravail::TELETRAVAIL_ANNULE);
+                                //deleteesignaturedocument($teletravail);
+                            }
+                            //echo "La convention télétravail " . $teletravail->teletravailid() . " a un statut " . $teletravail->statut() . " ( " . $this->teletravailstatutlibelle($teletravail->statut()) . " ) et une date de fin " . $teletravail->datefin() . "<br>";
+                            $teletravailmodif->store();
+                        }
+                        /*
+                            if (strlen($alerte)>0) $alerte = $alerte . '<br>';
+                            $alerte = $alerte . "La nouvelle convention de télétravail a modifié une convention existante (id = $conventionid).";
+                            */
+                    }
+                }
+            }
+            $erreur = $erreur . '';
+            if ($erreur <> '')
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'adaptation des conventions => Erreur = " . $erreur));
                 $result_json = array('status' => 'Error', 'description' => $erreur);
             }
             else
             {
-                error_log(basename(__FILE__) . $this->stripAccents(" statut de la convention dans eSignature = $status -> " . $this->teletravailstatutlibelle($status)));
-                error_log(basename(__FILE__) . $this->stripAccents(" teletravail->statut() = " . $teletravail->statut() . " -> " . $this->teletravailstatutlibelle($teletravail->statut())));
-
-                // Ajout d'un contrôle pour ne pas traiter les changements de statut pour le remplacer par le même
-                if ($status == $teletravail->statut() and $reason==$teletravail->commentaire())
-                {
-                    error_log(basename(__FILE__) . $this->stripAccents(" La convention a déjà un statut $status (" . $this->teletravailstatutlibelle($status) . "). On ne fait rien => Pas d'erreur"));
-                    $erreur = '';
-                    $result_json = array('status' => 'Ok', 'description' => $erreur);
-                }
-                else // if (in_array($statut, array(teletravail::TELETRAVAIL_REFUSE, teletravail::TELETRAVAIL_VALIDE))) // Si le statut dans eSignature est REFUSE ou VALIDE
-                {
-                    
-                    // Si le status est VALIDE alors on va mettre la date du dernier signataire comme date de début de la convention
-                    if ($status==teletravail::TELETRAVAIL_VALIDE)
-                    {
-                        $esignature = new esignature($this->dbconnect);
-                        $responsedata = $esignature->get_data($esignatureid);
-
-                        if (isset($responsedata["sign_step_5_date"]))
-                        {
-                            // On récupère la date de signature du niveau 5
-                            $splitdate = explode(" ",$responsedata["sign_step_5_date"]);
-                            // On vérifie que le format de la date est ok
-                            if (strtotime($splitdate[0])===false)
-                            {
-                                // Le format n'est pas ok
-                                $datesignatureresponsable = '19000101';
-                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 5 : Format incorrect => " . $splitdate[0]));
-                            }
-                            else
-                            {
-                                // C'est une date
-                                $datesignatureresponsable = $splitdate[0];
-                            }
-                        }
-                        elseif (isset($responsedata["sign_step_4_date"]))
-                        {
-                            // On récupère la date de signature du niveau 4
-                            $splitdate = explode(" ",$responsedata["sign_step_4_date"]);
-                            if (strtotime($splitdate[0])===false)
-                            {
-                                // Le format n'est pas ok
-                                $datesignatureresponsable = '19000101';
-                                error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du signataire niveau 4 : Format incorrect => " . $splitdate[0]));
-                            }
-                            else
-                            {
-                                // C'est une date
-                                $datesignatureresponsable = $splitdate[0];
-                            }
-                        }
-                        else
-                        {
-                            // On n'a aucune information sur la date de signature
-                            $datesignatureresponsable = '19000101';
-                            error_log(basename(__FILE__) . $this->stripAccents(" Impossible de déterminer la date du dernier signataire"));
-                            error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
-                        }
-                        error_log(basename(__FILE__) . $this->stripAccents(" La date de signature du dernier niveau est : $datesignatureresponsable"));
-                    }
-                    
-                    if (($status == teletravail::TELETRAVAIL_ANNULE or $status == teletravail::TELETRAVAIL_REFUSE) and $teletravail->statut() == teletravail::TELETRAVAIL_ATTENTE)
-                    {
-                        $sendmailtoresp = true;
-                    }
-
-                    if ($this->formatdatedb($datesignatureresponsable)>$this->formatdatedb($teletravail->datedebut()))
-                    {
-                        error_log(basename(__FILE__) . $this->stripAccents(" On passe la date de début de la convention à $datesignatureresponsable - valeur actuelle : " . $teletravail->datedebut()));
-                        $teletravail->datedebut($datesignatureresponsable);
-                    }
-                    if ($this->formatdatedb($teletravail->datedebut())>$this->formatdatedb($teletravail->datefin()) and $status <> teletravail::TELETRAVAIL_ANNULE )
-                    {
-                        $status = teletravail::TELETRAVAIL_ANNULE;
-                        $reason = "Il y a une incohérence dans les dates de début et de fin => On force l'annulation de la convention.";
-                        error_log(basename(__FILE__) . $this->stripAccents(" $reason"));
-                    }
-                    error_log(basename(__FILE__) . $this->stripAccents(" On passe le statut de la convention " . $esignatureid . " à $status (" . $this->teletravailstatutlibelle($status) . ")"));
-                    $ancienstatut = $teletravail->statut();
-                    $teletravail->statut($status);
-                    $teletravail->commentaire($reason);
-                    $erreur = $teletravail->store();
-                    if ($erreur != "")
-                    {
-                        error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'enregistrement de la convention " . $esignatureid . " => Erreur = " . $erreur));
-                        $result_json = array('status' => 'Error', 'description' => $erreur);
-                    }
-                    else
-                    {
-                        // On va générer le PDF dans le cas ou le statut de la convention est VALIDEE ou REFUSEE
-                        if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE or $teletravail->statut()==teletravail::TELETRAVAIL_REFUSE)
-                        {
-                            $teletravail->storepdf();
-                        }
-
-                        // On va récupérer les informations sur les demandes de matériel dans la convention
-                        if ($teletravail->statut()==teletravail::TELETRAVAIL_VALIDE)
-                        {
-                            $this->creation_ticketGLPI_materiel($esignatureid);
-                        }
-
-                        // On va regarder si d'autres conventions se chevauchent
-                        $agentid = $teletravail->agentid();
-                        $agent = new agent($this->dbconnect);
-                        $agent->load($agentid);
-
-                        if ($sendmailtoresp)
-                        {
-                            error_log(basename(__FILE__) . $this->stripAccents(" On va envoyer un mail au responsable car on a annulé/refusé une convention télétravail (id G2T = " . $teletravail->teletravailid() . ")"));
-                            $resp = $agent->getsignataire();
-                            if (is_null($resp) or $resp===false)
-                            {
-                                error_log(basename(__FILE__) . $this->stripAccents(" Aucun mail au responsable car il n'est pas défini (id G2T = " . $teletravail->teletravailid() . ")"));
-                            }
-                            else
-                            {
-                                $cronuser = new agent($this->dbconnect);
-                                $cronuser->load(SPECIAL_USER_IDCRONUSER);
-                                $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $agent->identitecomplete(), "Une demande de convention de télétravail pour " . $agent->identitecomplete() . " a été annulée/refusée.<br>"
-                                    . "Ceci est un message informatif. Vous n'avez aucune action à réaliser. <br>");
-                                error_log(basename(__FILE__) . $this->stripAccents(" Le mail au responsable (" . $resp->identitecomplete() . " " . $resp->mail() . ") a été envoyé (id G2T = " . $teletravail->teletravailid() . ")"));
-                            }
-                        }
-
-                        $currentconventionid=$teletravail->teletravailid();
-                        $datedebutteletravail = $teletravail->datedebut();
-                        $datefinteletravail = $teletravail->datefin();
-                        $liste = array();
-                        // Si la demande de convention était déjà annulée ou refusée, cela n'a aucun impact sur les conventions actuelles
-                        if ($ancienstatut != teletravail::TELETRAVAIL_ANNULE and $ancienstatut != teletravail::TELETRAVAIL_REFUSE)
-                        {
-                            $liste = $agent->teletravailliste($datedebutteletravail, $datefinteletravail);
-                        }
-                        foreach ($liste as $conventionid)
-                        {
-                            if ($currentconventionid <> $conventionid) // On ignore la convention qu'on vient de traiter
-                            {
-                                $teletravailmodif = new teletravail($this->dbconnect);
-                                $teletravailmodif->load($conventionid);
-                                error_log(basename(__FILE__) . $this->stripAccents(" On va changer le statut de la convention G2T $conventionid qui a actuellement le statut => " . $teletravailmodif->statut()));
-                                if (in_array($teletravailmodif->statut(),array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
-                                {
-                                    if ($teletravailmodif->datefin()>=$datedebutteletravail)
-                                    {
-                                        $veilledebut = date("d/m/Y", strtotime("-1 day", strtotime($this->formatdatedb($datedebutteletravail))));
-                                        //echo "datedebutteletravail = $datedebutteletravail <br>";
-                                        //echo "veilledebut = $veilledebut <br>";
-                                        $teletravailmodif->datefin($veilledebut);
-                                        $teletravailmodif->commentaire("Modification de la date de fin de la convention suite à création d'une nouvelle convention.");
-                                        //echo "date debut  = " . $this->formatdatedb($teletravail->datedebut()) . "<br>";
-                                        //echo "date fin  = " . $this->formatdatedb($teletravail->datefin()) . "<br>";
-                                        if ($this->formatdatedb($teletravailmodif->datefin()) < $this->formatdatedb($teletravailmodif->datedebut()))
-                                        {
-                                            $return = '';
-                                            if (trim($teletravailmodif->esignatureid().'')<>'')
-                                            {
-                                                $esignature = new esignature($this->dbconnect);
-                                                $return = $esignature->delete_signrequest($teletravailmodif->esignatureid());
-                                                // $return = "" . $this->deleteesignaturedocument($teletravailmodif->esignatureid());
-                                            }
-                                            if (strlen($return)>0) // On a rencontré une erreur dans la suppression eSignature
-                                            {
-                                                if (strlen($erreur)>0) $erreur = $erreur . '<br>';
-                                                $erreur = $erreur . $return . "";
-                                                error_log(basename(__FILE__) . " " . $this->stripAccents($return));
-                                            }
-                                            //echo "On passe la convetion à ANNULE<br>";
-                                            $teletravailmodif->statut(teletravail::TELETRAVAIL_ANNULE);
-                                            //deleteesignaturedocument($teletravail);
-                                        }
-                                        //echo "La convention télétravail " . $teletravail->teletravailid() . " a un statut " . $teletravail->statut() . " ( " . $this->teletravailstatutlibelle($teletravail->statut()) . " ) et une date de fin " . $teletravail->datefin() . "<br>";
-                                        $teletravailmodif->store();
-                                    }
-                                    /*
-                                     if (strlen($alerte)>0) $alerte = $alerte . '<br>';
-                                     $alerte = $alerte . "La nouvelle convention de télétravail a modifié une convention existante (id = $conventionid).";
-                                     */
-                                }
-                            }
-                        }
-                        $erreur = $erreur . '';
-                        if ($erreur <> '')
-                        {
-                            error_log(basename(__FILE__) . $this->stripAccents(" Erreur lors de l'adaptation des conventions => Erreur = " . $erreur));
-                            $result_json = array('status' => 'Error', 'description' => $erreur);
-                        }
-                        else
-                        {
-                            error_log(basename(__FILE__) . $this->stripAccents(" Traitement ok de la modification du statut de la convention " . $currentconventionid . " => Pas d'erreur"));
-                            $result_json = array('status' => 'Ok', 'description' => $erreur . '');
-                        }
-                    }
-                }
+                error_log(basename(__FILE__) . $this->stripAccents(" Traitement ok de la modification du statut de la convention " . $currentconventionid . " => Pas d'erreur"));
+                $result_json = array('status' => 'Ok', 'description' => $erreur . '');
             }
         }
         error_log(basename(__FILE__) . $this->stripAccents(" result_json = " . print_r($result_json,true)));
@@ -3915,91 +4560,61 @@ class fonctions
 
     function creation_ticketGLPI_materiel($esignatureid)
     {
-        $eSignature_url = $this->liredbconstante("ESIGNATUREURL");
-
-        $esignature = new esignature($this->dbconnect);
-        $response = $esignature->get_data($esignatureid);
-
-        if (is_string($response))
+        $dbconstante = 'GLPI_COLLECTEUR';
+        $mail_glpi = "";
+        if ($this->testexistdbconstante($dbconstante))
         {
-            error_log(basename(__FILE__) . $this->stripAccents(" Erreur Curl (récup info matériel télétravail) =>  " . $response));
+            $mail_glpi = $this->liredbconstante($dbconstante);
         }
-        else
+        if ($mail_glpi <> '')
         {
-            $dbconstante = 'ESIGNATURE_MATERIEL_KEY';
-            $key_materiel = "form_data_Equipement";
-            if ($this->testexistdbconstante($dbconstante))
-            {
-                $key_materiel = $this->liredbconstante($dbconstante);
-            }
-            /*
-                "form_data_EquipementOrdinateur": "on",
-                "form_data_EquipementSouris": "off",
-                "form_data_EquipementBase": "off",
-                "form_data_EquipementSac": "off",
-                "form_data_EquipementCasque": "off",
-            */
-            $tab_materiel = array_intersect_key($response, array_flip(preg_grep("/^$key_materiel/i", array_keys($response), 0)));
-            if ($tab_materiel!==false and !is_null($tab_materiel))
-            {
-                $dbconstante = 'GLPI_COLLECTEUR';
-                $mail_glpi = "";
-                if ($this->testexistdbconstante($dbconstante))
-                {
-                    $mail_glpi = $this->liredbconstante($dbconstante);
-                }
-                if ($mail_glpi <> '')
-                {
-                    $demandeur = new agent($this->dbconnect);
-                    $teletravail = new teletravail($this->dbconnect);
-                    $teletravail->loadbyesignatureid($esignatureid);
-                    $demandeur->load($teletravail->agentid());
-                    //var_dump($tab_materiel);
-                    $besoin = "";
-                    $materieldemande = false;
-                    foreach($tab_materiel as $key => $value)
-                    {
-                        $typemateriel = str_ireplace($key_materiel,'',$key);
-                        $besoin = $besoin . "&nbsp;&nbsp;&bull; ";
-                        if (strcasecmp((string)$value,'on')==0) // L'agent a demandé => valeur ON
-                        {
-                            $besoin = $besoin . "J'ai demandé ";
-                            $materieldemande = true;
-                        }
-                        else
-                        {
-                            $besoin = $besoin . "Je n'ai pas demandé ";
-                        }
-                        $besoin = $besoin . ": un(e) " . strtolower($typemateriel) . " \n";
-                    }
+            $demandeur = new agent($this->dbconnect);
+            $teletravail = new teletravail($this->dbconnect);
+            $teletravail->loadbyesignatureid($esignatureid);
+            $demandeur->load($teletravail->agentid());
+            //var_dump($tab_materiel);
+            $materieldemande = false;
+            $besoin = "";
 
-                    $destinataire = $mail_glpi;
-                    if ($materieldemande==true)
-                    {
-                        $objet = "Demande de matériel suite à validation de convention télétravail";
-                        $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : \n";
-                        $corps = $corps . "\n" . $besoin . "\n Cordialement, \n" . $demandeur->identitecomplete() . " \n";
-                        error_log(basename(__FILE__) . $this->stripAccents(" Les besoins en matériel sont : " . str_replace(array("\n","&nbsp;","&bull;"), '', $besoin) . " => $destinataire"));
-                        
-                        $constante = 'MAINTENANCE';
-                        $maintenance = $this->liredbconstante($constante);
-                        if (strcasecmp((string)$maintenance, 'n') != 0)
-                        {
-                            // Si on est en mode maintenance => On ne fait rien
-                            error_log(basename(__FILE__) . $this->stripAccents(" Création du ticket GLPI => Mode maintenance activé. On ne fait rien."));
-                        }
-                        else
-                        {
-                            $demandeur->sendmail($destinataire, $objet, $corps);
-                        }
-                    }
-                    else
-                    {
-                        error_log(basename(__FILE__) . $this->stripAccents(" Pas de materiel demande pour la convention " . $teletravail->teletravailid() . " => Pas d'envoi de mail à $destinataire"));
-                    }
+            $besoin = $besoin . "&nbsp;&nbsp;&bull; ";
+            foreach (teletravail::MATERIEL_LIBELLE as $key => $libelle)
+            {
+                if ($teletravail->demande_materiel($key))
+                {
+                    $besoin = $besoin . "J'ai demandé ";
+                    $materieldemande = true;
                 }
+                else
+                {
+                    $besoin = $besoin . "Je n'ai pas demandé ";
+                }
+                $besoin = $besoin . " : " . $libelle . "\n";
             }
 
+            $destinataire = $mail_glpi;
+            if ($materieldemande==true)
+            {
+                $objet = "Demande de matériel suite à validation de convention télétravail";
+                $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : \n";
+                $corps = $corps . "\n" . $besoin . "\n Cordialement, \n" . $demandeur->identitecomplete() . " \n";
+                error_log(basename(__FILE__) . $this->stripAccents(" Les besoins en matériel sont : " . str_replace(array("\n","&nbsp;","&bull;"), '', $besoin) . " => $destinataire"));
+                
+                $constante = 'MAINTENANCE';
+                $maintenance = $this->liredbconstante($constante);
+                if (strcasecmp((string)$maintenance, 'n') != 0)
+                {
+                    // Si on est en mode maintenance => On ne fait rien
+                    error_log(basename(__FILE__) . $this->stripAccents(" Création du ticket GLPI => Mode maintenance activé. On ne fait rien."));
+                }
+                else
+                {
+                    $demandeur->sendmail($destinataire, $objet, $corps);
+                }
+            }
+            else
+            {
+                error_log(basename(__FILE__) . $this->stripAccents(" Pas de materiel demande pour la convention " . $teletravail->teletravailid() . " => Pas d'envoi de mail à $destinataire"));
+            }
         }
     }
 
@@ -4051,20 +4666,21 @@ WHERE  table_schema = Database()
         }
     }
 
-    function convert_int_to_on_off($valeur)
+    function convert_value_to_on_off($valeur)
     {
-        if (trim($valeur)=='1')
+        // if (trim($valeur)=='1')
+        if ($this->convertvaluetobool($valeur))
         {
             return 'on';
         }
-        elseif (trim($valeur)=='0')
+        else //if (trim($valeur)=='0')
         {
             return 'off';
         }
-        else
-        {
-            return "Valeur inconnue - $valeur";
-        }
+        // else
+        // {
+        //     return "Valeur inconnue - $valeur";
+        // }
     }
 
     /**
@@ -4224,50 +4840,8 @@ WHERE  table_schema = Database()
         return $chaine;
     }
 
-//    function ajoute_crlf ($chaine, $lg_max)
-//    {
-//        //global $fonctions;
-//        if (strlen($chaine) > $lg_max)
-//        {
-//            $chaineresultat = '';
-//            while (strlen($chaine) > $lg_max)
-//            {
-//                $subchaine = substr($chaine, 0, $lg_max);
-//                // On cherche le dernier CR (<=>chr(13)) et le dernier espace.
-//                $last_space = strrpos($subchaine, " ");
-//                $last_retrun = strrpos($subchaine, chr(13));
-//                if ($last_space===false and $last_retrun===false)
-//                {
-//                    // S'il n'y a plus d'espace ou de CR, on ne tronque plus rien
-//                    //break;
-//                    $last_space = strlen($chaine);  // $lg_max;
-//                }
-//                elseif ($last_space===false and $last_retrun!==false)
-//                {
-//                    // S'il y a un CR et pas d'espace, on coupe sur le CR
-//                    $last_space = $last_retrun;
-//                }
-//                elseif ($last_space!==false and $last_retrun!==false)
-//                {
-//                    // Si on a à la fois un CR et un espace, on prend le plus petit
-//                    $last_space = min($last_space,$last_retrun);
-//                }
-//                $chaineresultat = $chaineresultat . trim(substr($chaine, 0, $last_space));
-//                // ATTENTION : Bien faire $last_space+1 afin de "sauter" le caractère de découpe (espace ou CR)
-//                $chaine = substr($chaine, $last_space+1);
-//                if (strlen($chaineresultat)>0)
-//                {
-//                    $chaineresultat = $chaineresultat . chr(13);  // chr(13) <=> Carriage return
-//                }
-//            }
-//            $chaine = $chaineresultat . trim($chaine);
-//        }
-//        return $chaine;
-//    }
-
     function ajoute_crlf ($chaine, $lg_max)
     {
-        //global $fonctions;
         if (mb_strlen($chaine) > $lg_max)
         {
             $chaineresultat = '';
@@ -4884,9 +5458,14 @@ WHERE  table_schema = Database()
                     'description' => "Type de convention de télétravail", 
                     'value' => $teletravail->libelletypeconvention($teletravail->typeconvention()), 
                     'code' => $teletravail->typeconvention(),
-                    "sante" => "" . $this->convert_int_to_on_off($teletravail->motifmedicalsante()),
-                    "grossesse" => "" . $this->convert_int_to_on_off($teletravail->motifmedicalgrossesse()), 
-                    "aidant" => "" . $this->convert_int_to_on_off($teletravail->motifmedicalaidant()),
+                    "sante" => "" . $this->convert_value_to_on_off($teletravail->motifmedicalsante()),
+                    "grossesse" => "" . $this->convert_value_to_on_off($teletravail->motifmedicalgrossesse()), 
+                    "aidant" => "" . $this->convert_value_to_on_off($teletravail->motifmedicalaidant()),
+                    "equipementcasque" => "" . $this->convert_value_to_on_off($teletravail->demande_materiel(teletravail::MATERIEL_CASQUE)),
+                    "equipementsac" => "" . $this->convert_value_to_on_off($teletravail->demande_materiel(teletravail::MATERIEL_SAC)),
+                    "equipementsouris" => "" . $this->convert_value_to_on_off($teletravail->demande_materiel(teletravail::MATERIEL_SOURIS)),
+                    "equipementbase" => "" . $this->convert_value_to_on_off($teletravail->demande_materiel(teletravail::MATERIEL_STATION)),
+                    "equipementordinateur" => "" . $this->convert_value_to_on_off($teletravail->demande_materiel(teletravail::MATERIEL_PORTABLE)),
                     "activiteteletravail" => "" . $teletravail->activiteteletravail(),
                     "periodeexclusion" => "" . $teletravail->periodeexclusion(),
                     "periodeadaptation" => "" . $teletravail->periodeadaptation(),
@@ -4927,7 +5506,15 @@ WHERE  table_schema = Database()
             if (count(array($affectationliste)) > 0)
             {
                 $affectation = current($affectationliste);
-                $agentadresse = $agent->getpersonnaladdress();
+                // On enlève les retours chariots
+                //$agentadresse = trim(preg_replace('/\s+/', ', ',$teletravail->adresseteletravail())); //   $teletravail->adresseteletravail(); // $agent->getpersonnaladdress();
+                //$agentadresse = trim(preg_replace('/\W+/', ', ',$teletravail->adresseteletravail()));   // $teletravail->adresseteletravail(); 
+                //$agentadresse = trim(preg_replace('/[[:^print:]]/', ', ', $teletravail->adresseteletravail()));
+                //$agentadresse = trim(preg_replace('/(\n)+(\r\n)+(\n\r)+(\r)+/', ', ', $teletravail->adresseteletravail()));
+                $agentadresse = trim(str_replace(["\n","\r","\t"], ', ', $teletravail->adresseteletravail()));
+                // On supprime les ', ' qui se suivent pour les remplacer par un seul
+                $agentadresse = trim(preg_replace("/(, )+/", ', ', $agentadresse));
+
                 $nameStructComplete = $structure->nomcompletcet();
                 // quotité sur la période 01/09/N-1 - 31/08/N
                 $quotite = $affectation->quotite();
