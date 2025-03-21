@@ -105,7 +105,10 @@ class stepinfos
         $extrainfos['obligatoire'] = $this->obligatoire;
         $extrainfos['attachmentRequire'] = $this->attachmentRequire;
         // Si la pièce jointe est obligatoire alors on doit forcer l'affichage d'une alerte si le doc est absent
-        $extrainfos['attachmentAlert'] = $this->attachmentAlert;
+        if ($this->attachmentRequire)
+        {
+            $extrainfos['attachmentAlert'] = $this->attachmentAlert;
+        }
 
         return $extrainfos;
     }

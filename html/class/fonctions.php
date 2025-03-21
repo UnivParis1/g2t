@@ -140,8 +140,15 @@ class fonctions
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
         } 
-        else 
+        else
         {
+            // Si la date contient des HH:MM:SS ou des HH:MM => On supprime la partie horaire de la date
+            if (preg_match("` ([0-9]{2})([^0-9]{1})([0-9]{2})([^0-9]{1})([0-9]{2})$`", $date)==1
+             or preg_match("` ([0-9]{2})([^0-9]{1})([0-9]{2})$`", $date)==1)
+            {
+                $date = explode(' ', $date)[0];
+            }
+
             // Si la date est une série de 8 chiffres (sans doute au format AAAAMMJJ)
             if (preg_match("`^([0-9]{4})([0-9]{2})([0-9]{2})$`", $date)==1)
             {

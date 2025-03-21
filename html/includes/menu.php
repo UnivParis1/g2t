@@ -1496,6 +1496,12 @@
                     </form> 
                     <a href="javascript:document.rh_struct_gest.submit();">Paramétrage des structures</a>
                 </li>
+                <li onclick='document.rh_modifcircuitesign.submit();'>
+                    <form name='rh_modifcircuitesign' method='post' action="modifieresignature.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    </form> 
+                    <a href="javascript:document.rh_modifcircuitesign.submit();">Modifier un circuit eSignature pour un agent</a>
+                </li>
 <?php 
                     if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
                     {
@@ -1812,6 +1818,12 @@
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                     </form> 
                     <a href="javascript:document.admin_gestperiodeoblig.submit();">Gérer les périodes obligatoires</a>
+                </li>
+                <li onclick='document.admin_modifcircuitesign.submit();'>
+                    <form name='admin_modifcircuitesign' method='post' action="modifieresignature.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    </form> 
+                    <a href="javascript:document.admin_modifcircuitesign.submit();">Modifier un circuit eSignature pour un agent</a>
                 </li>
             </ul>
         </li>

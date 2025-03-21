@@ -5048,6 +5048,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         
     }
 
+    /**
+     * 
+     * @param string $datedebut
+     * @param array $datefin
+     * @return array of teletravail id 
+     */
     function teletravailliste($datedebut, $datefin)
     {
         $datedebut = $this->fonctions->formatdatedb($datedebut);
