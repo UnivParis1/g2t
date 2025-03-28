@@ -1810,7 +1810,16 @@ class agent
         else
             $reportactif = FALSE;
         
-        $subparams = array();
+        $extradate = new complement($this->dbconnect);
+        $extradate->load($this->agentid, "PROLONG" . ($anneeref - 1));
+        // var_dump(($anneeref - 1));
+        // var_dump($extradate->valeur());
+        // var_dump($this->fonctions->formatdatedb($extradate->valeur()));
+        // var_dump(date('Ymd'));
+
+        $prolongationconges = false;
+    
+            $subparams = array();
         if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && (date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT") or $includereport)) && $reportactif) 
         {
             //requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND (ANNEEREF= ? OR ANNEEREF= ?))";
@@ -1820,7 +1829,14 @@ class agent
             // On n'applique plus le report de congés sur les congés complémentaires
             $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? OR ANNEEREF= ?)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
             $subparams = array($anneeref,($anneeref - 1),$anneeref);
-        } 
+        }
+        // S'il existe une date de prolongation pour cet agent pour la congés ($anneeref - 1) et que la date de prolongation est suppérieure à la date du jour
+        else if (trim($extradate->valeur()) != "" and $this->fonctions->formatdatedb($extradate->valeur()) >= date('Ymd'))
+        {
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? OR ANNEEREF= ?)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
+            $subparams = array($anneeref,($anneeref - 1),$anneeref);
+            $prolongationconges = true;
+        }
         else 
         {
             $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND ANNEEREF= ?)";
@@ -1860,6 +1876,21 @@ class agent
             while ($result = mysqli_fetch_row($query)) {
                 $solde = new solde($this->dbconnect);
                 $solde->load($this->agentid, "$result[0]");
+
+                // Si on est dans une prolongation de congés (au delà de la période de report) et que c'est un congé sur l'année de référence 
+                if ($prolongationconges and ($anneeref-1) == $this->fonctions->congesanneeref($result[0]) and $this->fonctions->estunconge($result[0]))
+                {
+                    // Si il y a plus de 20 jours dans le solde restant
+                    if ($solde->droitaquis() - $solde->droitpris() > 20)
+                    {
+                        // On laisse que 20 jours de disponible
+                        $solde->droitaquis($solde->droitpris()+20);
+                        $solde->store();
+                        $solde = new solde($this->dbconnect);
+                        $solde->load($this->agentid, "$result[0]");
+                    }
+                }
+
                 $soldeliste[$solde->typeabsenceid()] = $solde;
                 unset($solde);
             }

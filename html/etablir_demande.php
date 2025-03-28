@@ -295,10 +295,17 @@
 
             if ($errlog == '')
             {
+                $extradate = new complement($dbcon);
+                $extradate->load($agentid, "PROLONG" . $anneeref);
+        
                 // Si on est sur des congés complémentaires => On ne peut pas reporter après la fin de période 
                 if (strcasecmp((string)$listetype,recuperation::SUPP_ID . substr($anneeref,-2,2))==0)
                 {
                     $datelimite = ($anneeref + 1) . $fonctions->finperiode();
+                }
+                else if (trim($extradate->valeur()) != "" and $fonctions->formatdatedb($extradate->valeur()) >= date('Ymd'))
+                {
+                    $datelimite = $fonctions->formatdatedb($extradate->valeur());
                 }
                 else
                 {
