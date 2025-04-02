@@ -35,7 +35,6 @@ class fonctions
     public const MOMENT_MATIN = 'm';
     public const MOMENT_APRESMIDI = 'a';
 
-
     private $dbconnect = null;
 
     /**
@@ -5083,7 +5082,7 @@ WHERE  table_schema = Database()
         }
     }
     
-    function createldapagentfromagentid($agentid)
+    function createldapagentfromagentid($agentid, $store = true )
     {
         $typepopulation = "Import automatique LDAP";
         $newagent = new agent($this->dbconnect);
@@ -5166,24 +5165,31 @@ WHERE  table_schema = Database()
             $newagent->typepopulation($typepopulation);
             $newagent->uid($uid);
             $newagent->structureid('');  // On force sa structure à 'vide'
-            if (!$newagent->store($agentid)) 
+            if ($store)
             {
-                $errlog = "createldapagentfromagentid : L'agent $agentid ($civiliteagent $nomagent $prenomagent) => mail = $mailagent n'a pas pu être créé dans la base de données. \n";
-                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-                if ($this->executionbatch())
+                if (!$newagent->store($agentid)) 
                 {
-                    echo "$errlog";
+                    $errlog = "createldapagentfromagentid : L'agent $agentid ($civiliteagent $nomagent $prenomagent) => mail = $mailagent n'a pas pu être créé dans la base de données. \n";
+                    error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                    if ($this->executionbatch())
+                    {
+                        echo "$errlog";
+                    }
+                    return false;
                 }
-                return false;
+                else
+                {
+                    $errlog = "createldapagentfromagentid : L'agent $agentid ($civiliteagent $nomagent $prenomagent) a été ajouté (mail = $mailagent) \n";
+                    error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
+                    if ($this->executionbatch())
+                    {
+                        echo "$errlog";
+                    }
+                    return $newagent;
+                }
             }
             else
             {
-                $errlog = "createldapagentfromagentid : L'agent $agentid ($civiliteagent $nomagent $prenomagent) a été ajouté (mail = $mailagent) \n";
-                error_log(basename(__FILE__) . $this->stripAccents(" $errlog"));
-                if ($this->executionbatch())
-                {
-                    echo "$errlog";
-                }
                 return $newagent;
             }
         }

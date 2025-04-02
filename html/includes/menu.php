@@ -385,6 +385,10 @@
 <!-- On rend la CSS "dynamique" en lui passant en paramètre le timestamp Unix de dernière modification du fichier -->
 <!-- Donc à chaque changement de CSS, on force le chargement de la nouvelle CSS -->
 <link rel="stylesheet" type="text/css" href="css-g2t/g2t.css?<?php echo filemtime('css-g2t/g2t.css') ?>" media="all"></link>
+<!--  
+<link rel='stylesheet' type='text/css' href='css-g2t/arborescence.css?<?php echo filemtime('css-g2t/g2t.css') ?>' media='all'></link> 
+-->
+
 <!------------------------------------
 <link rel="stylesheet" type="text/css" href="style/jquery-ui.css" media="screen"></link>
 ------------------------------->
@@ -1824,6 +1828,12 @@
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                     </form> 
                     <a href="javascript:document.admin_modifcircuitesign.submit();">Modifier un circuit eSignature pour un agent</a>
+                </li>
+                <li onclick='document.admin_modifier_XMLcircuit.submit();'>
+                    <form name='admin_modifier_XMLcircuit' method='post' action="modifier_XMLcircuit.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    </form> 
+                    <a href="javascript:document.admin_modifier_XMLcircuit.submit();">Modifier les circuits eSignature</a>
                 </li>
             </ul>
         </li>

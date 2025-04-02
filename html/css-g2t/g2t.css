@@ -74,6 +74,16 @@
     height:40px;
 }
 
+.imgajout {
+    width:40px;
+    height:40px;
+}
+
+.imgsuppression {
+    width:40px;
+    height:40px;
+}
+
 .resetfont {
     font-size : unset; 
 }
@@ -734,6 +744,37 @@ textarea:required {
     border-radius: 0.5rem; /* => coins arrondis */
 }
 
+/* The div Modal (background) */
+.divmodal 
+{
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /*Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* The div Modal Content */
+.divmodelcontent
+{
+    width: fit-content; 
+    margin: auto; 
+    padding: 20px;
+}
+
+.divmodalheader {
+    padding: 1px 16px;
+    background-color:#3D95C5;
+    color: white;
+  }
+  
+
 /*************************************************
 / Image de chargement
 /*************************************************/
@@ -1220,3 +1261,75 @@ select {
 .verticalalignmiddle {
     vertical-align: middle;
 }
+
+
+
+/********************************************
+/ CSS DE L'ARBORESCENCE XML
+/*******************************************/
+
+.XMLCircuit ul, li 
+{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.XMLCircuit  ul ul
+{
+  margin-left: 40px
+}
+
+.XMLCircuit [type="checkbox"]
+{
+  display: none;
+}
+
+.XMLCircuit span:before
+{
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  display: inline-block;
+}
+
+.XMLCircuit span, label 
+{
+  cursor: pointer;
+}
+
+.XMLsignataire::before
+{
+  content: "\01F4DD" !important;
+}
+
+.XMLAddSignataire::before 
+{
+  content: "\01F517" !important;
+}
+
+.XMLAttribute::before 
+{
+  content: "\01F6AE" !important;
+}
+
+.XMLCircuit span.show ~ ul
+{
+  display:none;
+}
+
+.XMLCircuit span ~ ul
+{
+  display:block;
+}
+
+.XMLCircuit span.show:before
+{
+  content: "\01F4C1"; 
+}
+
+.XMLCircuit span:before
+{ 
+  content: "\01F4C2";
+}
+ 

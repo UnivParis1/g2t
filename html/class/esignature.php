@@ -176,6 +176,47 @@ class esignature
 
     /**
      *
+     * @param string $typesignataire 
+     *          Code du type de signataire
+     * @return string 
+     *          Le libellé correspondant au type de signataire (ou chaine vide si pas de correspondance)
+     */
+    function typesignatairelibelle(string $typesignataire, bool $un_une = false) : string
+    {
+        switch ($typesignataire)
+        {
+            case self::TYPESIGNATAIRE_DEMANDEUR :
+                $libelle = "L'agent demandeur";
+                break;
+            case self::TYPESIGNATAIRE_RESPONSABLE :
+                $libelle = "Le responable de l'agent demandeur";
+                break;
+            case self::TYPESIGNATAIRE_RESPONSABLE2 :
+                $libelle = "Le responsable N+2 de l'agent demandeur";
+                break;
+            case self::TYPESIGNATAIRE_DIRECTEUR :
+                $libelle = "Le directeur de la structure racine de l'agent demandeur";
+                break;
+            case self::TYPESIGNATAIRE_AGENT :
+                $libelle = "Un agent identifié";
+                break;
+            case self::TYPESIGNATAIRE_RESP_STRUCT :
+                $libelle = "Un responsable d'une structure identifié";
+                break;
+            default :
+                $libelle = "";
+                break;
+        }
+        if ($un_une)
+        {
+            $libelle = trim(substr($libelle,2));
+            $libelle = "Un " . $libelle;
+        }
+        return $libelle;
+    }
+
+    /**
+     *
      * @param CurlHandle &$curl 
      *          Connexion Curl
      * @param string $content_type 
@@ -678,7 +719,7 @@ class esignature
     }
 
     /**
-     * Modification des signataires pour une étape d'un document eSignature
+     * Suppression d'un document eSignature
      * @param string $esignatureid 
      *          Identifiant du document eSignature
      * @return string
@@ -1221,7 +1262,7 @@ class esignature
                 $stepstatus = "";
                 foreach ($step as $recipient)
                 {
-                    switch (strtolower($recipient->action))
+                    switch (strtolower($recipient->action . ''))
                     {
                         case 'refused' :
                             $stepstatus = $recipient->action;
@@ -1318,98 +1359,82 @@ class esignature
      */
     public function get_signrequest_recipients(string $esignatureid) :array|string
     {
-        if (is_null($this->signrequestinfo))
+
+        if (!$this->check_esignatureid($esignatureid))
         {
-            $response = $this->get_signrequest($esignatureid);
-            if (is_string($response))
-            {
-                return $response;
-            }
+            $error = __CLASS__ . "::" . __FUNCTION__ . " : L'identifiant eSignature $esignatureid n'est pas valide.";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents(" $error"));
+            return $error;
         }
 
-        $hassignedarray = array();
-        if (isset($this->signrequestinfo['recipientHasSigned']))
+        $curl = curl_init();
+        $opts = [
+            CURLOPT_URL => $this->eSignature_url . '/ws/signrequests/' . $esignatureid . '/steps',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_PROXY => ''
+        ];
+        curl_setopt_array($curl, $opts);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        $this->set_curl_header($curl);
+        $json = curl_exec($curl);
+        $error = curl_error ($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ((int) $httpcode !== 200 and $error=="")
         {
-            $recipienthassigned = $this->signrequestinfo['recipientHasSigned'];
-            foreach ($recipienthassigned as $key => $currentrecipient)
-            {
-                if (str_starts_with(strtolower($key),'recipient-'))
-                {
-                    $stepid = intval(str_ireplace("recipient-","",$key));
-
-                    //var_dump($currentrecipient);
-
-                    $recipientuser = $currentrecipient['user'];
-                    if ($currentrecipient['signed'] and  isset($this->signrequestinfo['recipientHasSigned']["action-$stepid"]))
-                    {
-                        $currentaction = $this->signrequestinfo['recipientHasSigned']["action-$stepid"];
-                        $date = new datetime($currentaction['date'], new DateTimeZone('UTC'));
-                        $date->setTimezone(new DateTimeZone('Europe/Paris'));
-                        $hassignedarray[$recipientuser['email']][$date->format('Y-m-d H:i:s')] = $currentaction['actionType'] . '#' . $date->format('d-m-Y H:i:s');
-                    }
-                }
-            }
-            //var_dump($hassignedarray);
-            foreach ($hassignedarray as $key => $recipientlist)
-            {
-                //var_dump($recipientlist);
-                ksort($recipientlist,SORT_STRING);
-                //var_dump($recipientlist);
-                $hassignedarray[$key] = $recipientlist;
-            }
-            ksort($hassignedarray);
-            //var_dump($hassignedarray);
+            $error = "Code retour HTTP => $httpcode";
         }
+        curl_close($curl);
+        if ($error != "")
+        {
+            $error = __CLASS__ . "::" . __FUNCTION__ . " : Erreur Curl =>  " . $error;
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+            return $error;
+        }
+
+        $response = (array)json_decode($json, true);
+
+        if (count($response)==0)
+        {
+            $error = __CLASS__ . "::" . __FUNCTION__ . " : Aucune information disponible dans eSignature pour le document $esignatureid";
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" " . $error));
+            return $error;
+        }
+
 
         $recipientlist = array();
-        if (isset($this->signrequestinfo['parentSignBook']['liveWorkflow']['liveWorkflowSteps']))
+        foreach ($response as $step)
         {
-            $liveworkflowsteps = $this->signrequestinfo['parentSignBook']['liveWorkflow']['liveWorkflowSteps'];
-
-            $indexstep=0;
-            foreach ($liveworkflowsteps as $currentstep)
+            $stepnumber = $step['stepNumber'];
+            foreach($step['recipientsActions'] as $steprecipient)
             {
-                foreach($currentstep['recipients'] as $recipient)
+                $recipient = new esignaturerecipient;
+                $recipient->nom = $steprecipient['userName'];
+                $recipient->prenom = $steprecipient['userFirstname'];
+                $recipient->eppn = $steprecipient['userEppn'];
+                $recipient->mail = $steprecipient['userEmail'];
+
+                switch (strtolower($steprecipient['actionType'] . ''))
                 {
-                    $recipientuser = $recipient['user'];
-                    $esignaturerecipient = new esignaturerecipient();
-                    $esignaturerecipient->nom = $recipientuser['name'] . "";
-                    $esignaturerecipient->prenom = $recipientuser['firstname'] . "";
-                    $esignaturerecipient->eppn = $recipientuser['eppn'] . "";
-                    $esignaturerecipient->mail = $recipientuser['email'] . "";
-                    $esignaturerecipient->hassigned = $recipient['signed'];
-                    // var_dump($esignaturerecipient->mail);
-                    if (isset($hassignedarray[$esignaturerecipient->mail]))
-                    {
-                        if (is_array($hassignedarray[$esignaturerecipient->mail]) and count($hassignedarray[$esignaturerecipient->mail])>0)
-                        {
-                            $actioninfos = array_shift($hassignedarray[$esignaturerecipient->mail]);
-                            // var_dump($actioninfos, $hassignedarray[$esignaturerecipient->mail]);
-                            $infos = explode('#',$actioninfos);
-                            $esignaturerecipient->action = $infos[0];
-                            $esignaturerecipient->actiondate = $infos[1];
-                        }
-                        else
-                        {
-                            // var_dump("Le tableau est vide pour " . $esignaturerecipient->mail);
-                        }
-                    }
-                    else
-                    {
-                        // var_dump("Pas d'action pour " . $esignaturerecipient->mail);
-                    }
-                    $recipientlist[$indexstep][] = $esignaturerecipient;
+                    case 'refused' :
+                    case 'signed' :
+                        $recipient->hassigned = true;
+                        $recipient->action = $steprecipient['actionType'];
+                        $date = new datetime($steprecipient['actionDate'], new DateTimeZone('UTC'));
+                        $date->setTimezone(new DateTimeZone('Europe/Paris'));
+                        $recipient->actiondate = $date->format('d-m-Y H:i:s');;
+                        break ;
+                    default: 
+                        $recipient->hassigned = false;
+                        $recipient->action = "";
+                        $recipient->actiondate = '';
+                        break;
                 }
-                $indexstep++;
+                //var_dump($recipient);
+                $recipientlist[($stepnumber-1)][] = $recipient;
             }
         }
-        else // On a rencontré une erreur dans la récupération du currentstep
-        {
-            return "Impossible de déterminer les destinataires des étapes du circuit $esignatureid";
-        }
-
-        // var_dump($recipientlist);
-        return ($recipientlist);
+        return $recipientlist;
     }
 
 
