@@ -14,6 +14,11 @@
 !/INPUT_FILES_V3/*_exemple.xml
 /INPUT_FILES_V3/*/
 /documents/obsolete/
+/documents/Modèle ODT/
+/documents/*.xml*
+!/documents/*_exemple.xml
+/documents/*.pdf*
+!/documents/*_exemple.pdf
 html/test_esignature.php
 /html/includes/dbconnection.php
 /html/javascripts_old
