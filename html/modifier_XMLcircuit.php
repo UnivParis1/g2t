@@ -60,7 +60,7 @@
     {
         $addsignatairepath = $_POST["addsignatairepath"];
     }
-    $addsignatairetype ='';
+    $addsignatairetype =null;
     if (isset($_POST["addsignatairetype"]))
     {
         $addsignatairetype = $_POST["addsignatairetype"];
@@ -92,7 +92,10 @@
         if ($filename!='')
         {
             $xmldom = new DOMDocument();
-
+            // Permet de conserver une indentation/structuration dans le fichier XML
+            $xmldom->preserveWhiteSpace = false;
+            $xmldom->formatOutput = true;
+        
             // On cherche le fichier XML représentant le circuit
             if (!file_exists($filename))
             {
@@ -121,7 +124,11 @@
             // Sinon, il ne trouve aucun noeux
             $xmlpath = new DOMXPath($xmldom);
             $signataireid= "";
-            if (!is_numeric($addsignataireid) and $addsignatairetype == esignature::TYPESIGNATAIRE_AGENT)
+            if ($addsignatairetype == '')
+            {
+                echo $fonctions->showmessage(fonctions::MSGERROR, "Vous n'avez pas sélectionné le type de signataire.");
+            }
+            elseif (!is_numeric($addsignataireid) and $addsignatairetype == esignature::TYPESIGNATAIRE_AGENT)
             {
                 $signataire = $fonctions->createldapagentfromuid($addsignataireid);
                 if ($signataire !== false)
@@ -138,7 +145,7 @@
             {
                 echo $fonctions->showmessage(fonctions::MSGERROR, "L'identifiant du signataire (agent ou structure) est vide.");
             }
-            else
+            elseif (strlen($addsignatairetype . "") > 0)
             {
                 $rootnode = $xmlpath->query($addsignatairepath)[0];
                 $newnode = $xmldom->createElement("SIGNATAIRE",$signataireid);
@@ -169,6 +176,7 @@
                     }
                     else
                     {
+                        $xmldom->normalizeDocument();
                         if ($xmldom->save($filename) === false)
                         {
                             echo $fonctions->showmessage(fonctions::MSGERROR, "Problème lors de l'enregistrement des modifications.");
@@ -184,7 +192,10 @@
         if ($filename!='')
         {
             $xmldom = new DOMDocument();
-
+            // Permet de conserver une indentation/structuration dans le fichier XML
+            $xmldom->preserveWhiteSpace = false;
+            $xmldom->formatOutput = true;
+        
             // On cherche le fichier XML représentant le circuit
             if (!file_exists($filename))
             {
@@ -230,6 +241,7 @@
                     }
                     else
                     {
+                        $xmldom->normalizeDocument();
                         if ($xmldom->save($filename) === false)
                         {
                             echo $fonctions->showmessage(fonctions::MSGERROR, "Problème lors de l'enregistrement des modifications.");
@@ -247,15 +259,13 @@
 ?>
     <!-- Fenètre modale -->
     <div id="newrecipientmodal" class="divmodal">
-        <!-- Modal content -->
-        <div class="questiondialog divmodelcontent" > <!-- modal-content -->
+        <div class="questiondialog divmodelcontent" > 
             <div class="divmodalheader">
                 <h2>
 <?php
                 $typearray = array('question','suppression','ajout', 'error');
                 foreach ($typearray as $type)
                 {
-                    //$type = 'question'; // 'suppression';
                     $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
                     if (file_exists($path))
                     {
@@ -279,21 +289,22 @@
                 </h2>
             </div>
 
-            <p> <!-- class='centeraligntext'> -->
+            <p>
                 <label id='questionlabeltext' >Question label text.</label>
             </p>
-            <div id='divselecttype'>
-                Type de signataire : 
-                <select id='newrecipienttype' name='newrecipienttype' onchange='addreciepientchangetype();'>
-                    <option value='<?php echo esignature::TYPESIGNATAIRE_DEMANDEUR; ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DEMANDEUR); ?></option>
-                    <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE); ?></option>
-                    <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE2 ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE2); ?></option>
-                    <option value='<?php echo esignature::TYPESIGNATAIRE_DIRECTEUR ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DIRECTEUR); ?></option>
-                    <option value='<?php echo esignature::TYPESIGNATAIRE_AGENT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_AGENT); ?></option>
-                    <option value='<?php echo esignature::TYPESIGNATAIRE_RESP_STRUCT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESP_STRUCT); ?></option>
-                </select>
-            </div>
             <form name='modifiercircuit'  method='post'>
+                <div id='divselecttype'>
+                    Type de signataire : 
+                    <select id='newrecipienttype' name='newrecipienttype' onchange='addreciepientchangetype();'>
+                        <option value=''><?php echo "--- Sélectionnez un type de signataire ---"; ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_DEMANDEUR; ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DEMANDEUR); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE2 ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE2); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_DIRECTEUR ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DIRECTEUR); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_AGENT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_AGENT); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESP_STRUCT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESP_STRUCT); ?></option>
+                    </select>
+                </div>
                 <div id='divagentid' name='divagentid' hidden>
                     <br>
                     Identifiant de l'intervenant :
@@ -337,8 +348,8 @@
             </form>
             <menu>
                 <center>
-                    <button id="questionconfirmBtn" value="" class='javaconfirmbutton'>Ok</button>
-                    <button id="questioncancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
+                    <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
+                    <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
                 </center>
             </menu>
         </div>
@@ -346,7 +357,7 @@
 
 
 <script>
-    // Get the modal
+    // Récupération des objets de la fenêtre modale
     var newrecipientmodal = document.getElementById("newrecipientmodal");
     var newrecipientconfirmBtn = newrecipientmodal.querySelector('#questionconfirmBtn');
     var newrecipientlabeltext = newrecipientmodal.querySelector('#questionlabeltext');
@@ -356,7 +367,11 @@
     var divselecttype = newrecipientmodal.querySelector('#divselecttype');
     var labelmodalheader = newrecipientmodal.querySelector('#labelmodalheader');
     var imgmodallist = newrecipientmodal.querySelectorAll(".imagedialog")
-    
+    var newidsignataire = newrecipientmodal.querySelector('#newidsignataire');
+    var newstructureid = newrecipientmodal.querySelector('#newstructureid');
+    var selecttype = newrecipientmodal.querySelector('#newrecipienttype');
+    var usersignataire = newrecipientmodal.querySelector('#usersignataire');
+
     function masquerimgmodal(exception = "")
     {
         for (let indeximg = 0 ; indeximg < imgmodallist.length ; indeximg++)
@@ -367,12 +382,12 @@
                 imgmodallist[indeximg].hidden = false;
             }
         }
-        //newrecipientlabeltext.classList.remove('centeraligntext');
         newrecipientlabeltext.parentElement.classList.remove('centeraligntext');
-
+        newrecipientcancelBtn.classList.remove('g2tannulerbouton');
+        newrecipientcancelBtn.classList.remove('g2tokbouton');
+        newrecipientconfirmBtn.classList.remove('g2tvalidebouton');
     }
 
-    // When the user clicks the button, open the modal 
     newrecipientcancelBtn.onclick = function() 
     {
         var inputsignatairepath = document.getElementById('removesignatairepath');
@@ -381,6 +396,7 @@
         inputsignatairepath.value = '';
         masquerimgmodal();
         newrecipientmodal.style.display = "none";
+        return false;
     }
 
     newrecipientconfirmBtn.onclick = function() 
@@ -401,23 +417,20 @@
             var inputsignatairepath = document.getElementById('addsignatairepath');
             var closestform = inputsignatairepath.closest("form");
             var addsignatairetype = closestform.querySelector('#addsignatairetype');
-            var selecttype = newrecipientmodal.querySelector('#newrecipienttype');
             addsignatairetype.value = selecttype.value;
 
             var addsignataireid = closestform.querySelector('#addsignataireid');
-            var textagentid = newrecipientmodal.querySelector('#newidsignataire');
-            var divagentid = textagentid.closest("div");
-            var selectnewstructid = newrecipientmodal.querySelector('#newstructureid');
-            var divstructid = selectnewstructid.closest("div");
+            var divagentid = newidsignataire.closest("div");
+            var divstructid = newstructureid.closest("div");
             // On doit vérifier si le DIV de l'agentid est visible ou pas
             if (!divagentid.hidden)
             {
-                addsignataireid.value = textagentid.value;
+                addsignataireid.value = newidsignataire.value;
             }
             // On doit vérifier si le DIV de la structureid est visible ou pas
             else if (!divstructid.hidden)
             {
-                addsignataireid.value = selectnewstructid.value;
+                addsignataireid.value = newstructureid.value;
             }
             else
             {
@@ -450,7 +463,6 @@
     function confirmdeletesignataire(elementid)
     {
         var activeelement = document.getElementById(elementid);
-        //console.debug(activeelement);
         divstructid.hidden = true;
         divagentid.hidden = true;
         divselecttype.hidden = true;
@@ -464,67 +476,58 @@
         var idetape = elementid.split("/");
         idetape.pop(); // Supprime le dernier élément du tableau 
         idetape = idetape.join("/");
-        //console.debug(idetape);
         var currentetape = document.getElementById(idetape);
-        //console.debug(currentetape);
         var numetape = currentetape.getAttribute('data-etape');
 
         var xmlsignatairelist = currentetape.parentElement.getElementsByClassName('XMLsignataire');
-        console.log(currentetape.id)
-        console.log(xmlsignatairelist.length)
         if (xmlsignatairelist.length <= 1)
         {
             masquerimgmodal('error');
             newrecipientcancelBtn.textContent = "Ok";
             newrecipientcancelBtn.hidden = false;
+            newrecipientcancelBtn.classList.add('g2tokbouton');
             newrecipientconfirmBtn.hidden = true;
             newrecipientlabeltext.parentElement.classList.add('centeraligntext');
             newrecipientlabeltext.innerHTML = 'Il n\'y a qu\'un seul signataire dans l\'étape ' + numetape + '<br>Vous ne pouvez pas le supprimer';
         }
         else
         {
-            //console.log(activeelement.parentElement.tagName);
+            masquerimgmodal('suppression');
             var attributelist = activeelement.parentElement.getElementsByClassName("XMLAttribute");
             var typetexte = '';
             var idtexte = '';
             for (var index = 0 ; index < attributelist.length ; index++)
             {
-                // var datatype = attributelist[index].getAttribute('data-type');
-                // console.log(datatype);
                 var datatext = attributelist[index].getAttribute('data-text');
-                //console.log(datatext);
-                //var dataid = attributelist[index].getAttribute('data-id');
-                //console.log(String(dataid));
                 var dataname = attributelist[index].getAttribute('data-name');
-                //console.log(dataname);
-
-                if (datatext != null && datatext != undefined)
+                if (datatext != null && datatext != undefined && datatext != '')
                 {
-                    typetexte = datatext.toLowerCase() + " "; // attributelist[index].innerHTML + ' ';
+                    typetexte = datatext.toLowerCase() + " ";
                 }
-                if (dataname != null && dataname != undefined)
+                if (dataname != null && dataname != undefined && dataname != '')
                 {
-                    idtexte = '(' + dataname + ') '; // attributelist[index].innerHTML
+                    idtexte = '(' + dataname + ') ';
                 }
             }
 
             newrecipientlabeltext.innerHTML = 'Confirmez vous la suppression d\'' + typetexte + idtexte + 'dans l\'étape ' + numetape + ' ? ';
-
-            masquerimgmodal('suppression');
 
             var input = document.getElementById('removesignatairepath');
             input.value = elementid
 
             newrecipientcancelBtn.textContent = "Non";
             newrecipientcancelBtn.hidden = false;
+            newrecipientcancelBtn.classList.add('g2tannulerbouton');
             newrecipientconfirmBtn.textContent = "Oui";
             newrecipientconfirmBtn.hidden = false;
+            newrecipientconfirmBtn.classList.add('g2tvalidebouton');
         }
         newrecipientmodal.style.display = "block";
     }
 
     function confirmaddsignataire(elementid)
     {
+        masquerimgmodal('ajout');
         var currentetape = document.getElementById(elementid);
         var numetape = currentetape.getAttribute('data-etape');
         newrecipientlabeltext.innerHTML = 'Veuillez indiquer les informations du nouveau signataire dans l\'étape ' + numetape + ' ? ';
@@ -536,20 +539,17 @@
         divselecttype.hidden = false;
         labelmodalheader.innerHTML = 'Ajout d\'un signataire';
 
-        masquerimgmodal('ajout');
-
         newrecipientcancelBtn.textContent = "Annuler";
         newrecipientcancelBtn.hidden = false;
+        newrecipientcancelBtn.classList.add('g2tannulerbouton');
         newrecipientconfirmBtn.textContent = "Enregistrer";
         newrecipientconfirmBtn.hidden = false;
-        var selecttype = newrecipientmodal.querySelector('#newrecipienttype');
+        newrecipientconfirmBtn.classList.add('g2tvalidebouton');
+
         selecttype.selectedIndex = 0;
-        var usersignataire = newrecipientmodal.querySelector('#usersignataire');
         usersignataire.value = '';
-        var newidsignataire = newrecipientmodal.querySelector('#newidsignataire');
         newidsignataire.value = '';
-        var newstructureid = newrecipientmodal.querySelector('#newstructureid');
-        newstructureid.selectedIndex = 0;
+        newstructureid.selectnewstructid = 0;
         newrecipientmodal.style.display = "block";
     }
 
@@ -564,7 +564,6 @@
             {
                 continue;
             }
-            // console.debug(aDossier[i]);
             if (aDossier[i].classList.contains("XMLsignataire") == false)
             {
                 aDossier[i].addEventListener('click',function(oEvent)
@@ -595,7 +594,6 @@
 
             var rootnode = document.getElementById(rootid);
             var etapeliste = rootnode.querySelectorAll(".XMLEtape");
-            //console.debug(etapeliste);
 <?php
             if ($removesignatairepath != "")
             {
@@ -611,10 +609,8 @@
                 echo "var selectedetape = '';";
             }
 ?>
-            //console.debug('selectedetape = ' + selectedetape);
             for (var index=0 ; index < etapeliste.length ; index++)
             {
-                //console.debug("Avant click event :" + etapeliste[index].id);
                 if (selectedetape != etapeliste[index].id)
                 {
                     etapeliste[index].click();
@@ -638,22 +634,42 @@
             $nodepath = $node->getNodePath();
             $typesignataire = trim($node->attributes->getNamedItem('TYPESIGNATAIRE')->nodeValue);
             $nodevalue = $node->nodeValue;
-            echo "<li><span id='$nodepath' class='XMLsignataire' data-nodepath='$nodepath' onclick='confirmdeletesignataire(\"$nodepath\");'>" . $node->localName . "</span>";
+            echo "<li>";
+            echo "<span id='$nodepath' class='XMLsignataire' data-nodepath='$nodepath' onclick='confirmdeletesignataire(\"$nodepath\");'>" . $node->localName . "</span>";
             echo "<ul>";
             $typesignatairelibelle = $esignature->typesignatairelibelle($typesignataire);
-            echo "<li><span class='XMLAttribute' data-type='$typesignataire' data-text='" . htmlspecialchars($esignature->typesignatairelibelle($typesignataire,true)) . "'>Type de signataire => " . $typesignatairelibelle . "</span></li>";
+
+            $dataname = '';
+            $dataid = '';
+            $fullname = htmlspecialchars($typesignatairelibelle);
             if ($typesignataire == esignature::TYPESIGNATAIRE_AGENT )
             {
                 $agent = $fonctions->createldapagentfromagentid($nodevalue,false);
-                echo "<li><span class='XMLAttribute' data-id='$nodevalue' data-name='" . htmlspecialchars($agent->identitecomplete()) . "'>Identité => " . $agent->identitecomplete() . "</span></li>";
+                $dataname = htmlspecialchars($agent->identitecomplete());
+                $dataid = $nodevalue;
+                $fullname = $fullname . " : " . htmlspecialchars($agent->identitecomplete());
             }
             else if ($typesignataire == esignature::TYPESIGNATAIRE_RESP_STRUCT)
             {
                 $structure = new structure($dbcon);
                 $structure->load($nodevalue);
-
-                echo "<li><span class='XMLAttribute' data-id='$nodevalue' data-name='" . htmlspecialchars($structure->nomcourt()) . "'>Structure => " . $structure->nomlong() . " (" . $structure->nomcourt() . ") </span></li>";
+                $dataname = htmlspecialchars($structure->nomcourt());
+                $dataid = $nodevalue;
+                $fullname = $fullname . " : " . htmlspecialchars($structure->nomlong() . " (" . $structure->nomcourt() . ")");
             }
+
+            echo "<li>";
+            echo "<span class='XMLAttribute' data-type='$typesignataire' data-text='" . htmlspecialchars($esignature->typesignatairelibelle($typesignataire,true)) . "' ";
+            if ($dataid != '')
+            {
+                echo " data-id='$dataid' ";
+            }
+            if ($dataname != '')
+            {
+                echo " data-name='$dataname' ";
+            }
+            echo ">" . $fullname . "</span>";
+            echo "</li>";
             echo "</ul>";
             echo "</li>";
         }
@@ -661,6 +677,7 @@
         {
             $extrainfos = "";
             $etapeinfos = "";
+            $datatitle = "";
             if ($node->localName == 'CIRCUIT')
             {
                 $extrainfos = $extrainfos . ' ' . trim($node->attributes->getNamedItem('DESCRIPTION')->nodeValue);
@@ -668,12 +685,20 @@
             elseif ($node->localName == 'ETAPE')
             {
                 $numetape = trim($node->attributes->getNamedItem('NUMERO')->nodeValue);
+                $etapeinfos = " data-etape='" . trim($numetape) . "' class='XMLEtape' ";
                 $extrainfos = $extrainfos . ' ' . $numetape . " ";
                 $extrainfos = $extrainfos . ' => ' . trim($node->attributes->getNamedItem('DESCRIPTION')->nodeValue);
-                $etapeinfos = " data-etape='" . trim($numetape) . "' class='XMLEtape' ";
+
+                $datatitle = $datatitle . 'Type de signature : ' . $esignature->typesignaturelibelle(trim($node->attributes->getNamedItem('TYPESIGNATURE')->nodeValue));
+                $datatitle = $datatitle . chr(13) . 'L\'étape est obligatoire : ' . $fonctions->ouinonlibelle(trim($node->attributes->getNamedItem('OBLIGATOIRE')->nodeValue));
+                $datatitle = $datatitle . chr(13) . 'Tous les signatataires doivent signer : ' . $fonctions->ouinonlibelle(trim($node->attributes->getNamedItem('TOUTESIGNATURE')->nodeValue));
+                $datatitle = $datatitle . chr(13) . 'Un document doit être joint à la signature : ' . $fonctions->ouinonlibelle(trim($node->attributes->getNamedItem('PIECEJOINTEOBLIGATOIRE')->nodeValue));
+                $datatitle = " <label class='XMLinfoetape' data-title='" . htmlentities($datatitle) . "'>&#128712;</label>";
             }
             $nodepath = $node->getNodePath();
-            echo "<li><span id='$nodepath' $etapeinfos>" . $node->localName . " $extrainfos</span><ul>";
+            echo "<li>";
+            echo "<span id='$nodepath' $etapeinfos>" . $node->localName . " $extrainfos</span>$datatitle";
+            echo "<ul>";
 
             $signatairetrouve = false;
             foreach($node->childNodes as $key => $childnode)
@@ -690,14 +715,19 @@
             if ($signatairetrouve)
             {
                 $idparent = $nodepath . '/new';
-                echo "<li><span id='$idparent' class='XMLAddSignataire' onclick='confirmaddsignataire(\"$nodepath\");'>Ajouter un signataire dans l'étape $numetape</span></li>";
+                echo "<li>";
+                echo "<span id='$idparent' class='XMLAddSignataire' onclick='confirmaddsignataire(\"$nodepath\");'>Ajouter un signataire dans l'étape $numetape</span>";
+                echo "</li>";
             }
-            echo "</ul></li>";
+            echo "</ul>";
+            echo "</li>";
         }
         return;
     }
 
     $xmldom = new DOMDocument();
+    // $xmldom->preserveWhiteSpace = false;
+    // $xmldom->formatOutput = true;
 
     $XMLfiles = array('Circuit_Teletravail.xml' => "Circuit télétravail",
                       'Circuit_CET.xml' => "Circuit CET");
@@ -737,6 +767,8 @@
         // Sinon, il ne trouve aucun noeux
         $xmlpath = new DOMXPath($xmldom);
 
+        $xmldom->normalizeDocument();
+
         $rootnode = $xmlpath->query('CIRCUITS')[0];
 
         $circuitlist = $xmlpath->query('CIRCUIT', $rootnode);
@@ -771,11 +803,18 @@
     if ($circuitpath != '' and $filename != '')
     {
         $xmldom = new DOMDocument();
+        // $xmldom->preserveWhiteSpace = false;
+        // $xmldom->formatOutput = true;
         @$xmldom->load($filename);
         $xmlpath = new DOMXPath($xmldom);
 
         $circuit = $xmlpath->query($circuitpath)[0];
         echo "<form name='modiferXML' method='post'>";
+        // ATTENTION : Le <span> dans le <span XMLCircuit> permet de faire afficher l'icône 'dossier' => voir la CSS
+        echo "<br>Cliquez sur une ligne '<span class='XMLCircuit'><span>ETAPE</span></span>' pour afficher/masquer le détail de celle-ci.";
+        echo "<br>Cliquez sur une ligne '<span class='XMLsignataire'>SIGNATAIRE</span>' pour supprimer le signataire.";
+        echo "<br>Cliquez sur la ligne '<span class='XMLAddSignataire'>Ajouter un signataire...</span>' pour ajouter un signataire à l'étape courante.";
+        echo "<br><br>";
         echo "<div class='XMLCircuit' id='divcircuit'><ul>";
         affichagerecursif($circuit, '0');
         echo "</ul></div>";

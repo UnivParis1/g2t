@@ -558,12 +558,14 @@
 /****************************************************
 / BULLE D'INFORMATION
 /****************************************************/
+label[data-tip],
 span[data-tip]{
     display: inline-block;
     position: relative;
     width: 100%;
 }
 
+label[data-tip]:hover:before,
 span[data-tip]:hover:before{
     content: attr(data-tip);
     position: absolute;
@@ -581,6 +583,7 @@ span[data-tip]:hover:before{
     font-size: 11px;
 }
 
+label[data-tip]:hover:after,
 span[data-tip]:hover:after {
     content: "";
     position: absolute;
@@ -598,7 +601,9 @@ span[data-tip]:hover:after {
 }
 
 span[data-title]:hover:after,
-td[data-title]:hover:after {
+td[data-title]:hover:after,
+label[data-title]:hover:after,
+li[data-title]:hover:after {
     opacity: 1;
     transition: all 0.1s ease 0.5s;
     visibility: visible;
@@ -606,7 +611,9 @@ td[data-title]:hover:after {
 }
 
 span[data-title]:after,
-td[data-title]:after {
+td[data-title]:after,
+label[data-title]:after,
+li[data-title]:after {
     content: attr(data-title);
     position: absolute;
 /*    bottom: -1.6em; */
@@ -627,7 +634,9 @@ td[data-title]:after {
 }
 
 span[data-title],
-td[data-title] {
+td[data-title],
+label[data-title],
+li[data-title] {
     position: relative;
     /* font-size: initial; */
 }
@@ -872,8 +881,20 @@ textarea:required {
     background-size: 18px;
 }
 
+.g2tannulerbouton {
+    background-image: url("images/annuler.svg");
+    width: 130px;
+    background-size: 18px;
+}
+
 .g2tdocumentbouton {
     background-image: url("images/documents.svg"); 
+    width: 130px;
+    background-size: 18px;
+}
+
+.g2tokbouton {
+    background-image: url("images/check.svg"); 
     width: 130px;
     background-size: 18px;
 }
@@ -1267,6 +1288,9 @@ select {
 /********************************************
 / CSS DE L'ARBORESCENCE XML
 /*******************************************/
+.XMLinfoetape {
+    font-size:17px;    
+}
 
 .XMLCircuit ul, li 
 {
@@ -1310,7 +1334,7 @@ select {
 
 .XMLAttribute::before 
 {
-  content: "\01F6AE" !important;
+  content: "\01F4D6" !important; /* "\01F6AE" */
 }
 
 .XMLCircuit span.show ~ ul

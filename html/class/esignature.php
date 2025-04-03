@@ -217,6 +217,33 @@ class esignature
 
     /**
      *
+     * @param string $typesignature 
+     *          Code du type de signature
+     * @return string 
+     *          Le libellé correspondant au type de signature (ou chaine vide si pas de correspondance)
+     */
+    function typesignaturelibelle(string $typesignature) : string
+    {
+        switch ($typesignature)
+        {
+            case stepinfos::HIDDENVISA :
+                $libelle = "Visa caché";
+                break;
+            case stepinfos::PDFSIGNATURE :
+                $libelle = "Signature caligraphique";
+                break;
+            case stepinfos::VISA :
+                $libelle = "Visa";
+                break;
+            default :
+                $libelle = "";
+                break;
+        }
+        return $libelle;
+    }
+
+    /**
+     *
      * @param CurlHandle &$curl 
      *          Connexion Curl
      * @param string $content_type 
