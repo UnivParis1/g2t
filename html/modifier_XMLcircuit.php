@@ -34,9 +34,18 @@
     if ($CASuserId===false)
     {
         // Ce n'est pas un administrateur
-        error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
-        echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
-        exit();
+        // On regarde si l'agent a un profil RH
+        $userid = $fonctions->useridfromCAS($uid);
+        $user = new agent($dbcon);
+        $user->load($userid);
+        
+        if (!$user->estprofilrh())
+        {
+            // Ce n'est pas un administrateur
+            error_log(basename(__FILE__) . " : Redirection vers index.php (UID de l'utilisateur=" . $uid . ") => Pas administrateur");
+            echo "<script>alert('Accès réservé aux administrateurs de l\'application !'); window.location.replace('index.php');</script>";
+            exit();
+        }
     }
     
     $user = new agent($dbcon);
@@ -87,6 +96,13 @@
 
     //var_dump($_POST);
 
+    function isEqualNode(DOMNode $sourcenode, DOMNode $comparenode) :bool
+    {
+        return ($sourcenode->nodeName == $comparenode->nodeName 
+            and $sourcenode->nodeValue == $comparenode->nodeValue
+            and $sourcenode->attributes->getNamedItem('TYPESIGNATAIRE')->nodeValue == $comparenode->attributes->getNamedItem('TYPESIGNATAIRE')->nodeValue);
+    }
+
     if ($addsignatairepath!='')
     {
         if ($filename!='')
@@ -124,6 +140,7 @@
             // Sinon, il ne trouve aucun noeux
             $xmlpath = new DOMXPath($xmldom);
             $signataireid= "";
+
             if ($addsignatairetype == '')
             {
                 echo $fonctions->showmessage(fonctions::MSGERROR, "Vous n'avez pas sélectionné le type de signataire.");
@@ -141,6 +158,8 @@
                 $signataireid = $addsignataireid;
             }
 
+            //var_dump("esignatureid = $signataireid");
+            //var_dump("addsignatairetype = $addsignatairetype");
             if ($signataireid == "" and in_array($addsignatairetype, array(esignature::TYPESIGNATAIRE_AGENT, esignature::TYPESIGNATAIRE_RESP_STRUCT)))
             {
                 echo $fonctions->showmessage(fonctions::MSGERROR, "L'identifiant du signataire (agent ou structure) est vide.");
@@ -155,7 +174,18 @@
                 $dejadedans = false;
                 foreach($signatairelist as $signataire)
                 {
-                    if ($signataire->isEqualNode($newnode))
+                    $checkisequalnode = false;
+                    // La méthode DOMNode::isEqualNode n'existe qu'à partir de PHP 8.3
+                    if (method_exists($signataire,"isEqualNode"))
+                    {
+                        $checkisequalnode = $signataire->isEqualNode($newnode);
+                    }
+                    else
+                    {
+                        // Si la méthode n'existe pas, on utilise une fonction de substitution
+                        $checkisequalnode = isEqualNode($signataire, $newnode);
+                    }
+                    if ($checkisequalnode)
                     {
                         $dejadedans = true;
                         break;
@@ -180,6 +210,10 @@
                         if ($xmldom->save($filename) === false)
                         {
                             echo $fonctions->showmessage(fonctions::MSGERROR, "Problème lors de l'enregistrement des modifications.");
+                        }
+                        else
+                        {
+                            echo $fonctions->showmessage(fonctions::MSGINFO, "La modification a été sauvegardée.");
                         }
                     }
                 }
@@ -246,6 +280,10 @@
                         {
                             echo $fonctions->showmessage(fonctions::MSGERROR, "Problème lors de l'enregistrement des modifications.");
                         }
+                        else
+                        {
+                            echo $fonctions->showmessage(fonctions::MSGINFO, "La modification a été sauvegardée.");
+                        }
                     }
                 }
                 else
@@ -257,130 +295,23 @@
     }
 
 ?>
-    <!-- Fenètre modale -->
-    <div id="divmodal" class="divmodal">
-        <div class="questiondialog divmodelcontent" > 
-            <div class="divmodalheader">
-                <h2>
-<?php
-                $typearray = array('question','suppression','ajout', 'error');
-                foreach ($typearray as $type)
-                {
-                    $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                    if (file_exists($path))
-                    {
-                        list($width, $height, $imagetype) = getimagesize("$path");
-                        $typeimage = image_type_to_extension($imagetype,false);
-                        if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
-                        {
-                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
-                            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-                        }
-                        $data = file_get_contents($path);
-                        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-                        echo "<img class='img". $type ." imagedialog' id='img". $type ."' name='img". $type ."' src='" . $base64 . "' hidden>";
-                    }
-                }
-                echo "&nbsp;";
-                $esignature = new esignature($dbcon);
-
-?>
-                <label id='labelmodalheader' name='labelmodalheader' >Modal Header</label>
-                </h2>
-            </div>
-
-            <p>
-                <label id='questionlabeltext' >Question label text.</label>
-            </p>
-            <form name='modifiercircuit'  method='post'>
-                <div id='divselecttype' hidden>
-                    Type de signataire : 
-                    <select id='newrecipienttype' name='newrecipienttype' onchange='addreciepientchangetype();'>
-                        <option value=''><?php echo "--- Sélectionnez un type de signataire ---"; ?></option>
-                        <option value='<?php echo esignature::TYPESIGNATAIRE_DEMANDEUR; ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DEMANDEUR); ?></option>
-                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE); ?></option>
-                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE2 ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE2); ?></option>
-                        <option value='<?php echo esignature::TYPESIGNATAIRE_DIRECTEUR ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DIRECTEUR); ?></option>
-                        <option value='<?php echo esignature::TYPESIGNATAIRE_AGENT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_AGENT); ?></option>
-                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESP_STRUCT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESP_STRUCT); ?></option>
-                    </select>
-                </div>
-                <div id='divagentid' name='divagentid' hidden>
-                    <br>
-                    Identifiant de l'intervenant :
-                    <input id="usersignataire" name="usersignataire" placeholder="Nom et/ou prenom" autofocus/>
-                    <input type='hidden' id="newidsignataire" name="newidsignataire" class='usersignataire' />
-                    <script>
-                        $( "#usersignataire" ).autocompleteUser(
-                            '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
-                                wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
-                    </script>
-                </div>
-                <div id='divstructid' name='divstructid' hidden>
-                    <br>
-                    Structure de l'intervenant :
-                    <select size='1' id='newstructureid' name='newstructureid' class='selectstructure' value=''>
-                        <option value=''>----- Veuillez sélectionner la structure -----</option>
-                    </select>
-                </div>
-            </form>
-            <menu>
-                <center>
-                    <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
-                    <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
-                </center>
-            </menu>
-        </div>
-    </div>
-
 
 <script>
-    // Récupération des objets de la fenêtre modale
-    var newrecipientmodal = document.getElementById("divmodal");
-    var newrecipientconfirmBtn = newrecipientmodal.querySelector('#questionconfirmBtn');
-    var newrecipientlabeltext = newrecipientmodal.querySelector('#questionlabeltext');
-    var newrecipientcancelBtn = newrecipientmodal.querySelector('#questioncancelBtn'); 
-    var divstructid = newrecipientmodal.querySelector('#divstructid');
-    var divagentid = newrecipientmodal.querySelector('#divagentid');
-    var divselecttype = newrecipientmodal.querySelector('#divselecttype');
-    var labelmodalheader = newrecipientmodal.querySelector('#labelmodalheader');
-    var imgmodallist = newrecipientmodal.querySelectorAll(".imagedialog")
-    var newidsignataire = newrecipientmodal.querySelector('#newidsignataire');
-    var newstructureid = newrecipientmodal.querySelector('#newstructureid');
-    var selecttype = newrecipientmodal.querySelector('#newrecipienttype');
-    var usersignataire = newrecipientmodal.querySelector('#usersignataire');
 
-    function masquerimgmodal(exception = "")
+    divmodalcancelBtn.onclick = function() 
     {
-        for (let indeximg = 0 ; indeximg < imgmodallist.length ; indeximg++)
-        {
-            imgmodallist[indeximg].hidden = true;
-            if (imgmodallist[indeximg].name == 'img' + exception)
-            {
-                imgmodallist[indeximg].hidden = false;
-            }
-        }
-        newrecipientlabeltext.parentElement.classList.remove('centeraligntext');
-        newrecipientcancelBtn.classList.remove('g2tannulerbouton');
-        newrecipientcancelBtn.classList.remove('g2tokbouton');
-        newrecipientconfirmBtn.classList.remove('g2tvalidebouton');
-    }
-
-    newrecipientcancelBtn.onclick = function() 
-    {
+        masquerimgmodal();
         var inputsignatairepath = document.getElementById('removesignatairepath');
         inputsignatairepath.value = '';
         var inputsignatairepath = document.getElementById('addsignatairepath');
         inputsignatairepath.value = '';
-        masquerimgmodal();
-        newrecipientmodal.style.display = "none";
+        divmodal.style.display = "none";
         return false;
     }
 
-    newrecipientconfirmBtn.onclick = function() 
+    divmodalconfirmBtn.onclick = function() 
     {
-        newrecipientmodal.style.display = "none";
-        masquerimgmodal();
+        divmodal.style.display = "none";
 
         // Si le div pour selectionner le type d'ajout n'est pas visible => On est en suppression
         if (divselecttype.hidden == true)
@@ -461,12 +392,12 @@
         if (xmlsignatairelist.length <= 1)
         {
             masquerimgmodal('error');
-            newrecipientcancelBtn.textContent = "Ok";
-            newrecipientcancelBtn.hidden = false;
-            newrecipientcancelBtn.classList.add('g2tokbouton');
-            newrecipientconfirmBtn.hidden = true;
-            newrecipientlabeltext.parentElement.classList.add('centeraligntext');
-            newrecipientlabeltext.innerHTML = 'Il n\'y a qu\'un seul signataire dans l\'étape ' + numetape + '<br>Vous ne pouvez pas le supprimer';
+            divmodalcancelBtn.textContent = "Ok";
+            divmodalcancelBtn.hidden = false;
+            divmodalcancelBtn.classList.add('g2tokbouton');
+            divmodalconfirmBtn.hidden = true;
+            divmodallabeltext.parentElement.classList.add('centeraligntext');
+            divmodallabeltext.innerHTML = 'Il n\'y a qu\'un seul signataire dans l\'étape ' + numetape + '<br>Vous ne pouvez pas le supprimer';
         }
         else
         {
@@ -488,19 +419,19 @@
                 }
             }
 
-            newrecipientlabeltext.innerHTML = 'Confirmez vous la suppression d\'' + typetexte + idtexte + 'dans l\'étape ' + numetape + ' ? ';
+            divmodallabeltext.innerHTML = 'Confirmez vous la suppression d\'' + typetexte + idtexte + 'dans l\'étape ' + numetape + ' ? ';
 
             var input = document.getElementById('removesignatairepath');
             input.value = elementid
 
-            newrecipientcancelBtn.textContent = "Non";
-            newrecipientcancelBtn.hidden = false;
-            newrecipientcancelBtn.classList.add('g2tannulerbouton');
-            newrecipientconfirmBtn.textContent = "Oui";
-            newrecipientconfirmBtn.hidden = false;
-            newrecipientconfirmBtn.classList.add('g2tvalidebouton');
+            divmodalcancelBtn.textContent = "Non";
+            divmodalcancelBtn.hidden = false;
+            divmodalcancelBtn.classList.add('g2tannulerbouton');
+            divmodalconfirmBtn.textContent = "Oui";
+            divmodalconfirmBtn.hidden = false;
+            divmodalconfirmBtn.classList.add('g2tvalidebouton');
         }
-        newrecipientmodal.style.display = "block";
+        divmodal.style.display = "block";
     }
 
     function confirmaddsignataire(elementid)
@@ -508,7 +439,7 @@
         masquerimgmodal('ajout');
         var currentetape = document.getElementById(elementid);
         var numetape = currentetape.getAttribute('data-etape');
-        newrecipientlabeltext.innerHTML = 'Veuillez indiquer les informations du nouveau signataire dans l\'étape ' + numetape + ' ? ';
+        divmodallabeltext.innerHTML = 'Veuillez indiquer les informations du nouveau signataire dans l\'étape ' + numetape + ' ? ';
         var input = document.getElementById('addsignatairepath');
         input.value = elementid;
 
@@ -517,18 +448,18 @@
         divselecttype.hidden = false;
         labelmodalheader.innerHTML = 'Ajout d\'un signataire';
 
-        newrecipientcancelBtn.textContent = "Annuler";
-        newrecipientcancelBtn.hidden = false;
-        newrecipientcancelBtn.classList.add('g2tannulerbouton');
-        newrecipientconfirmBtn.textContent = "Enregistrer";
-        newrecipientconfirmBtn.hidden = false;
-        newrecipientconfirmBtn.classList.add('g2tvalidebouton');
+        divmodalcancelBtn.textContent = "Annuler";
+        divmodalcancelBtn.hidden = false;
+        divmodalcancelBtn.classList.add('g2tannulerbouton');
+        divmodalconfirmBtn.textContent = "Enregistrer";
+        divmodalconfirmBtn.hidden = false;
+        divmodalconfirmBtn.classList.add('g2tvalidebouton');
 
         selecttype.selectedIndex = 0;
         usersignataire.value = '';
         newidsignataire.value = '';
         newstructureid.selectnewstructid = 0;
-        newrecipientmodal.style.display = "block";
+        divmodal.style.display = "block";
     }
 
     function initDossierDeplierJs(id)

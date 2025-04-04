@@ -94,7 +94,7 @@
             $responsable = new agent($dbcon);
             $responsable->load($responsableid);
             $noresponsableset = FALSE;
-            $mode='gest';
+            $mode = MODE_GESTION;
         }
     }
     
@@ -119,7 +119,7 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml"><br>';
 
-    //echo "POST = "; print_r($_POST); echo "<br>";
+    echo "POST = "; print_r($_POST); echo "<br>";
 
     $cancelbutton = array();
     if (isset($_POST["cancelbutton"]))
@@ -275,7 +275,7 @@
     } 
     elseif ($noagentset) 
     {
-        if ($mode == MODE_RESPONSABLE or $mode == 'gest')
+        if ($mode == MODE_RESPONSABLE or $mode == MODE_GESTION)
         {
             // => On est en mode "responsable" mais aucun agent n'est sélectionné
             // echo "Avant le chargement structure responsable <br>";
@@ -428,49 +428,68 @@
 
 ?>
     <script>
-        var confirmdialog = document.getElementById('confirmdialog');
-        /*
-        var confirmBtn = document.getElementById('questionconfirmBtn');
-        var labeltext = document.getElementById('questionlabeltext');
-        var cancelBtn = document.getElementById('questioncancelBtn');        
-        */
-        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
-        var labeltext = confirmdialog.querySelector('#questionlabeltext');
-        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
 
-        confirmdialog.addEventListener('close', function onClose() {
-            if (confirmdialog.returnValue!=='cancel')
-            {
-                // L'id du boutton en cours est dans la propertie value du bouton confirm
-                var submit_button = document.getElementById(confirmBtn.value);
-                submit_button.tagname = 'OK';
-                submit_button.click();
-            }
-        });
+        // On utilise la fonction par défaut sur le cancel boutton => pas besoin de la redéclarer
+        // divmodalcancelBtn.onclick = function() 
+        // {
+        //     masquerimgmodal();
+        //     divmodal.style.display = "none";
+        //     return false;
+        // }
+
+        divmodalconfirmBtn.onclick = function()
+        {
+
+            // ATTENTION : 
+            // La gestion est différente puisqu'on doit simuler l'appui sur le bouton et non le submit du formulaire
+            // ------------------------------------------------------------------------------------------------------
+            divmodal.style.display = "none";
+            var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+            //console.log(activeelementid);
+            var submit_button = document.getElementById(activeelementid);
+            submit_button.tagname = 'OK';
+            submit_button.click();
+
+            // var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+            // var activeelement = document.getElementById(activeelementid)
+            // //console.debug(activeelement.name);
+            // //console.debug(activeelement.value);
+            // var closestform = activeelement.closest("form");
+            // //console.debug(closestform.name)
+            // closestform.submit();
+        }
 
         var click_element = function(elementid)
         {
-            if (typeof confirmdialog.showModal === "function") {
-                var submit_button = document.getElementById(elementid);
-                if (submit_button.classList.contains("cancelbutton"))
-                {
-                    labeltext.innerHTML = 'Confirmez vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
-                }
-                else if (submit_button.classList.contains("cancel"))
-                {
-                    labeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
-                }
-                cancelBtn.textContent = "Non";
-                cancelBtn.hidden = false;
-                confirmBtn.textContent = "Oui";
-                confirmBtn.hidden = false;
-                confirmBtn.value = elementid;
-                confirmdialog.showModal();
-            }        
-            else {
-                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+            masquerimgmodal('question');
+
+            var submit_button = document.getElementById(elementid);
+
+            if (submit_button.classList.contains("cancelbutton"))
+            {
+                divmodallabeltext.innerHTML = 'Confirmez vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
             }
+            else if (submit_button.classList.contains("cancel"))
+            {
+                divmodallabeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+            }
+
+            divstructid.hidden = true;
+            divagentid.hidden = true;
+            divselecttype.hidden = true;
+            labelmodalheader.innerHTML = 'Confirmation';
+            divmodallabeltext.parentElement.classList.add('centeraligntext');
+            divmodalcancelBtn.textContent = "Non";
+            divmodalcancelBtn.classList.add("g2tannulerbouton");
+            divmodalcancelBtn.setAttribute('active-elementid',elementid);
+            divmodalcancelBtn.hidden = false;
+            divmodalconfirmBtn.textContent = "Oui";
+            divmodalconfirmBtn.classList.add("g2tvalidebouton");
+            divmodalconfirmBtn.setAttribute('active-elementid',elementid);
+            divmodalconfirmBtn.hidden = false;
+            divmodal.style.display = "block";
         };
+
     </script>
 <?php
     

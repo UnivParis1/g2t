@@ -536,7 +536,15 @@ class planningelement
             }
             elseif ((strcasecmp((string)$this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
             {
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
+                if ($this->couleur($noiretblanc) == planningelement::COULEUR_NOIRE)
+                {
+                    $infotodisplay = $datetext . "Absent de l'établissement";
+                }
+                else
+                {
+                    $infotodisplay = str_replace(" : ","",$datetext);
+                }
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $infotodisplay . chr(34) . ">";
                 $spanactive = true;
             }
             
@@ -592,7 +600,16 @@ class planningelement
             }
             elseif ((strcasecmp((string)$this->type(),'')==0 or in_array($this->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_VIDE))) and !$spanactive and $datetext<>'') // Si on a une case vide => On affiche juste la date
             {
-                $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
+                if ($this->couleur($noiretblanc) == planningelement::COULEUR_NOIRE)
+                {
+                    $infotodisplay = $datetext . "Absent de l'établissement";
+                }
+                else
+                {
+                    $infotodisplay = str_replace(" : ","",$datetext);
+                }
+                $htmltext = $htmltext . "<span data-tip=" . chr(34) . $infotodisplay . chr(34) . ">";
+                // $htmltext = $htmltext . "<span data-tip=" . chr(34) . str_replace(" : ","",$datetext)  . chr(34) . ">";
                 $spanactive = true;
             }
             

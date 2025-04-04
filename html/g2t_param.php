@@ -1911,8 +1911,67 @@
 	    </form>
 	    <br>
 	    <br>
+        Informations sur les serveurs :
+        <table>
+            <tbody>
+                <tr>
+                    <td>URL de connexion :</td><td><?php echo $_SERVER['HTTP_HOST']; ?></td>
+                </tr>
+                <tr>
+                    <td>Nom du serveur Web :</td><td><?php echo php_uname('n'); ?></td>
+                </tr>
+                <tr>
+                    <td>Version du serveur Web :</td><td><?php echo $_SERVER['SERVER_SOFTWARE']; ?></td>
+                </tr>
+                <tr>
+                    <td>Version de PHP :</td><td><?php echo phpversion(); ?></td>
+                </tr>
+                <tr>
+                    <td>Nom du Serveur DB :</td><td><?php echo DB_HOST; ?></td>
+                </tr>
+                <tr>
+                    <td>Type de serveur de BD :</td>
+                    <td>
+                        <?php  
+                            $sql = "SHOW VARIABLES LIKE 'version_comment'";
+                            $params = array();
+                            $query = $fonctions->prepared_select($sql, $params);
+                
+                            $erreur = mysqli_error($dbcon);
+                            if ($erreur != "") {
+                                $errlog = "Erreur lors de la lecture des paramètres du serveur de BDD : " . $erreur;
+                                echo $errlog;
+                                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                            }
+                            elseif (mysqli_num_rows($query) == 0) {
+                                $errlog = "Impossibe de déterminer la valeur";
+                                echo $errlog . "<br/>";
+                                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                            }
+                            else
+                            {
+                                $result = mysqli_fetch_row($query);
+                                echo $result[1];
+                            }
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Version du serveur de BD :</td>
+                    <td>
+                        <?php  
+                                echo mysqli_get_server_info($dbcon);
+                        ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>URL eSignature :</td><td><?php echo ESIGNATUREURL; ?></td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
 <?php 
-
+        //var_dump($dbcon);
 ?>	    
 		</div>
 <!--         

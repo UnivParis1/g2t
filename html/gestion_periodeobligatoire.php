@@ -313,120 +313,133 @@
         var nbrecongesaposer = 0;
         var nbmailaenvoyer = 0;
 
-        var confirmdialog = document.getElementById('confirmdialog');
-        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
-        var labeltext = confirmdialog.querySelector('#questionlabeltext');
-        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');   
-        
-        confirmdialog.addEventListener('close', function onClose() {
-            if (confirmdialog.returnValue!=='cancel')
+        // On utilise la fonction par défaut sur le cancel boutton => pas besoin de la redéclarer
+        // divmodalcancelBtn.onclick = function() 
+        // {
+        //     masquerimgmodal();
+        //     divmodal.style.display = "none";
+        //     return false;
+        // }
+
+        divmodalconfirmBtn.onclick = function()
+        {
+            divmodal.style.display = "none";
+            var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+            var activeelement = document.getElementById(activeelementid)
+            if (activeelement.classList.contains('structmail'))
             {
-                var currentbutton = document.activeElement;
-                //console.log('currentbutton id = ' + currentbutton.id)
-                if (currentbutton.classList.contains('structmail'))
-                {
-                    var structid = currentbutton.getAttribute("structureid");
-                    sendmail_struct(structid);
-                }
-                else if (currentbutton.classList.contains('globalmail'))
-                {
-                    sendmail_global();
-                }
-                else if (currentbutton.classList.contains('structsave'))
-                {
-                    var structid = currentbutton.getAttribute("structureid");
-                    poserconges_struct(structid);
-                }
-                else if (currentbutton.classList.contains('globalsave'))
-                {
-                    poserconges_global();
-                }
-                else
-                {
-                    alert('Le bouton n\'est pas reconnu');
-                }
+                var structid = activeelement.getAttribute("structureid");
+                //console.log('Envoi du mail à tous les agents de la structure ' + structid);
+                sendmail_struct(structid);
             }
-        });
+            else if (activeelement.classList.contains('globalmail'))
+            {
+                //console.log('Envoi du mail à tous les agents');
+                sendmail_global();
+            }
+            else if (activeelement.classList.contains('structsave'))
+            {
+                var structid = activeelement.getAttribute("structureid");
+                //console.log('On pose les congés de tous les agents de la structure ' + structid);
+                poserconges_struct(structid);
+            }
+            else if (activeelement.classList.contains('globalsave'))
+            {
+                //console.log('On pose les congés de tous les agents');
+                poserconges_global();
+            }
+            else
+            {
+                alert('Le bouton n\'est pas reconnu');
+            }
+        }
 
         var click_element = function(elementid)
         {
-            if (typeof confirmdialog.showModal === "function") {
-                var submit_button = document.getElementById(elementid);
-                if (submit_button.classList.contains("cancel"))
+            masquerimgmodal('question');
+
+            var submit_button = document.getElementById(elementid);
+
+            if (submit_button.classList.contains("cancel"))
+            {
+                divmodallabeltext.innerHTML = 'Confirmez vous l\'envoi des rappels à toutes les structures ? ';
+            }
+            else
+            {
+                if (submit_button.classList.contains('g2tenvoibouton'))
                 {
-                    labeltext.innerHTML = 'Confirmez vous l\'envoi des rappels à toutes les structures ? ';
-                }
-                else
-                {
-                    if (submit_button.classList.contains('g2tenvoibouton'))
+                    var selectperiode = document.getElementById('periodeid');
+                    var periodevalue = selectperiode.options[selectperiode.selectedIndex].text;
+                    if (selectperiode.selectedIndex > 0)
                     {
-                        var selectperiode = document.getElementById('periodeid');
-                        var periodevalue = selectperiode.options[selectperiode.selectedIndex].text;
-                        if (selectperiode.selectedIndex > 0)
-                        {
-                            periodevalue = 'la ' + periodevalue;
-                        }
-                        periodevalue = periodevalue.replaceAll("-","").toLowerCase().trim();
-                        var structtext = '';
-                        if (submit_button.classList.contains('structmail'))
-                        {
-                            var selectstruct = submit_button.closest("td").getElementsByTagName("label")[0];
-                            var structname = selectstruct.innerText;
-                            structtext = 'la structure "' + structname + '"';
-                        }
-                        else if (submit_button.classList.contains('globalmail'))
-                        {
-                            structtext = 'toutes les structures';
-                        }
-                        else
-                        {
-                            alert('Le type de bouton n\'est pas reconnu');
-                            exit;
-                        }
-                        labeltext.innerHTML = 'Confirmez vous l\'envoi des rappels à ' + structtext + ' sur ' + periodevalue + ' ? ';
+                        periodevalue = 'la ' + periodevalue;
                     }
-                    else if (submit_button.classList.contains('g2tvalidebouton'))
+                    periodevalue = periodevalue.replaceAll("-","").toLowerCase().trim();
+                    var structtext = '';
+                    if (submit_button.classList.contains('structmail'))
                     {
-                        var selectperiode = document.getElementById('periodeid');
-                        var periodevalue = selectperiode.options[selectperiode.selectedIndex].text;
-                        if (selectperiode.selectedIndex > 0)
-                        {
-                            periodevalue = 'la ' + periodevalue;
-                        }
-                        periodevalue = periodevalue.replaceAll("-","").toLowerCase().trim();
-                        var structtext = '';
-                        if (submit_button.classList.contains('structsave'))
-                        {
-                            var selectstruct = submit_button.closest("td").getElementsByTagName("label")[0];
-                            var structname = selectstruct.innerText;
-                            structtext = 'la structure "' + structname + '"';
-                        }
-                        else if (submit_button.classList.contains('globalsave'))
-                        {
-                            structtext = 'toutes les structures';
-                        }
-                        else
-                        {
-                            alert('Le type de bouton n\'est pas reconnu');
-                            exit;
-                        }
-                        labeltext.innerHTML = 'Confirmez vous le dépot des congés pour les agents de ' + structtext + ' sur ' + periodevalue + ' ? ';
+                        var selectstruct = submit_button.closest("td").getElementsByTagName("label")[0];
+                        var structname = selectstruct.innerText;
+                        structtext = 'la structure "' + structname + '"';
+                    }
+                    else if (submit_button.classList.contains('globalmail'))
+                    {
+                        structtext = 'toutes les structures';
                     }
                     else
                     {
-                        alert("Type de bouton inconnu => Impossible de modifier le texte");
+                        alert('Le type de bouton n\'est pas reconnu');
                         exit;
                     }
+                    divmodallabeltext.innerHTML = 'Confirmez vous l\'envoi des rappels à ' + structtext + ' sur ' + periodevalue + ' ? ';
                 }
-                cancelBtn.textContent = "Non";
-                cancelBtn.hidden = false;
-                confirmBtn.textContent = "Oui";
-                confirmBtn.hidden = false;
-                confirmdialog.showModal();
-            }        
-            else {
-                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                else if (submit_button.classList.contains('g2tvalidebouton'))
+                {
+                    var selectperiode = document.getElementById('periodeid');
+                    var periodevalue = selectperiode.options[selectperiode.selectedIndex].text;
+                    if (selectperiode.selectedIndex > 0)
+                    {
+                        periodevalue = 'la ' + periodevalue;
+                    }
+                    periodevalue = periodevalue.replaceAll("-","").toLowerCase().trim();
+                    var structtext = '';
+                    if (submit_button.classList.contains('structsave'))
+                    {
+                        var selectstruct = submit_button.closest("td").getElementsByTagName("label")[0];
+                        var structname = selectstruct.innerText;
+                        structtext = 'la structure "' + structname + '"';
+                    }
+                    else if (submit_button.classList.contains('globalsave'))
+                    {
+                        structtext = 'toutes les structures';
+                    }
+                    else
+                    {
+                        alert('Le type de bouton n\'est pas reconnu');
+                        exit;
+                    }
+                    divmodallabeltext.innerHTML = 'Confirmez vous le dépot des congés pour les agents de ' + structtext + ' sur ' + periodevalue + ' ? ';
+                }
+                else
+                {
+                    alert("Type de bouton inconnu => Impossible de modifier le texte");
+                    exit;
+                }
             }
+            divstructid.hidden = true;
+            divagentid.hidden = true;
+            divselecttype.hidden = true;
+            labelmodalheader.innerHTML = 'Confirmation';
+            divmodallabeltext.parentElement.classList.add('centeraligntext');
+            divmodalcancelBtn.textContent = "Non";
+            divmodalcancelBtn.classList.add("g2tannulerbouton");
+            divmodalcancelBtn.setAttribute('active-elementid',elementid);
+            divmodalcancelBtn.hidden = false;
+            divmodalconfirmBtn.textContent = "Oui";
+            divmodalconfirmBtn.classList.add("g2tvalidebouton");
+            divmodalconfirmBtn.setAttribute('active-elementid',elementid);
+            divmodalconfirmBtn.hidden = false;
+            divmodal.style.display = "block";
         };
 
         function sendmail_global()

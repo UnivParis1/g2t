@@ -207,95 +207,109 @@
                     }
                     else
                     {
+                        masquerimgmodal('error');
                         console.debug("Il manque au moins une donnée");
-                        var warningdialog = document.getElementById('warningdialog');
-                        if (warningdialog)
-                        {
-                            var warninglabeltext = warningdialog.querySelector('#warninglabeltext');
-                            warninglabeltext.innerHTML = "Vous devez choisir une étape et un agent."
-                            warningdialog.showModal();
-                        }
+
+                        divstructid.hidden = true;
+                        divagentid.hidden = true;
+                        divselecttype.hidden = true;
+                        labelmodalheader.innerHTML = 'Données manquantes';
+                        divmodalcancelBtn.textContent = "Ok";
+                        divmodalcancelBtn.hidden = false;
+                        divmodalcancelBtn.classList.add('g2tokbouton');
+                        divmodalcancelBtn.focus();
+                        divmodalconfirmBtn.hidden = true;
+                        divmodallabeltext.parentElement.classList.add('centeraligntext');
+                        divmodallabeltext.innerHTML = 'Vous devez choisir une étape et un agent.';
+                        divmodal.style.display = "block";
                     }
                 }
-
             }
         }
 
-        var confirmdialog = document.getElementById('confirmdialog');
-        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
-        var labeltext = confirmdialog.querySelector('#questionlabeltext');
-        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');   
-        
-        confirmdialog.addEventListener('close', function onClose() 
+        divmodalcancelBtn.onclick = function() 
         {
-            //console.debug(confirmdialog.returnValue);
-            if (confirmdialog.returnValue!=='cancel')
+            if (divmodalconfirmBtn.hidden)
             {
-                var activeelement = document.activeElement;
-                //console.debug(activeelement.name);
-                //console.debug(activeelement.value);
-                var closestform = activeelement.closest("form");
-                //console.debug(closestform.name)
-                closestform.submit();
+                masquerimgmodal();
+                divmodal.style.display = "none";
+                return false;
             }
             else
             {
-                var activeelement = document.activeElement;
+                var activeelementid = divmodalcancelBtn.getAttribute('active-elementid');
+                var activeelement = document.getElementById(activeelementid)
                 //console.debug(activeelement.value);
                 // On remet le choix à "non défini" pour l'élément courant
                 activeelement.selectedIndex = 0;
+                divmodal.style.display = "none";
+                return false;
             }
-        });
+        }
+
+        divmodalconfirmBtn.onclick = function()
+        {
+            divmodal.style.display = "none";
+            var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+            var activeelement = document.getElementById(activeelementid)
+            //console.debug(activeelement.name);
+            //console.debug(activeelement.value);
+            var closestform = activeelement.closest("form");
+            //console.debug(closestform.name)
+            closestform.submit();
+        }
 
         var click_element = function(elementid)
         {
-            if (typeof confirmdialog.showModal === "function") 
+            masquerimgmodal('question');
+            var activeelement = document.activeElement;
+
+            // activeelement => 
+            //  . c'est la dropdown list si on supprime un intervenant
+            //  . c'est le bouton de validation de la substitution si on remplace un agent dans une étape d'un circuit
+            //  . c'est le bouton de validation de l'ajout si on ajoute un agent dans une étape d'un circuit
+            if (activeelement.value == 'remove')
             {
-                //var submit_button = document.getElementById(elementid);
-                var activeelement = document.activeElement;
+                var currenttr = activeelement.closest("tr");
+                var nomagent = currenttr.getElementsByClassName('identiteagent')[0].innerHTML;
+                var numetape = currenttr.getElementsByClassName('numetape')[0].getAttribute('data-tip');
 
-                // activeelement => 
-                //  . c'est la dropdown list si on supprime un intervenant
-                //  . c'est le bouton de validation de la substitution si on remplace un agent dans une étape d'un circuit
-                //  . c'est le bouton de validation de l'ajout si on ajoute un agent dans une étape d'un circuit
-                if (activeelement.value == 'remove')
-                {
-                    var currenttr = activeelement.closest("tr");
-                    var nomagent = currenttr.getElementsByClassName('identiteagent')[0].innerHTML;
-                    var numetape = currenttr.getElementsByClassName('numetape')[0].getAttribute('data-tip');
-
-                    labeltext.innerHTML = 'Confirmez vous la suppression de l\'intervenant ' +  nomagent + ' dans l\'étape ' + numetape + ' ? ';
-                }
-                else if (activeelement.id == 'replacerecipientbutton')
-                {
-                    var currenttr = activeelement.closest("tr");
-                    var nomagent = currenttr.getElementsByClassName('identiteagent')[0].innerHTML;
-                    var numetape = currenttr.getElementsByClassName('numetape')[0].getAttribute('data-tip');
-                    var replaceagent = currenttr.getElementsByClassName('replaceagent')[0].value;
-
-                    labeltext.innerHTML = 'Confirmez vous le remplacement de ' + nomagent + ' par ' + replaceagent + ' dans l\'étape ' + numetape + ' ? ';
-                }
-                else if (activeelement.id == 'addrecipientbutton')
-                {
-                    var currentform = activeelement.closest("form");
-                    var numetape = currentform.getElementsByClassName('stepnumber')[0].value;
-                    var nomagent = currentform.getElementsByClassName('addagent')[0].value;
-                    labeltext.innerHTML = 'Confirmez vous l\'ajout de ' + nomagent + ' dans l\'étape ' + numetape + ' ? ';
-                }
-                else
-                {
-                    exit();
-                }
-                cancelBtn.textContent = "Non";
-                cancelBtn.hidden = false;
-                confirmBtn.textContent = "Oui";
-                confirmBtn.hidden = false;
-                confirmdialog.showModal();
-            }        
-            else 
-            {
-                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                divmodallabeltext.innerHTML = 'Confirmez vous la suppression de l\'intervenant ' +  nomagent + ' dans l\'étape ' + numetape + ' ? ';
             }
+            else if (activeelement.id == 'replacerecipientbutton')
+            {
+                var currenttr = activeelement.closest("tr");
+                var nomagent = currenttr.getElementsByClassName('identiteagent')[0].innerHTML;
+                var numetape = currenttr.getElementsByClassName('numetape')[0].getAttribute('data-tip');
+                var replaceagent = currenttr.getElementsByClassName('replaceagent')[0].value;
+
+                divmodallabeltext.innerHTML = 'Confirmez vous le remplacement de ' + nomagent + ' par ' + replaceagent + ' dans l\'étape ' + numetape + ' ? ';
+            }
+            else if (activeelement.id == 'addrecipientbutton')
+            {
+                var currentform = activeelement.closest("form");
+                var numetape = currentform.getElementsByClassName('stepnumber')[0].value;
+                var nomagent = currentform.getElementsByClassName('addagent')[0].value;
+                divmodallabeltext.innerHTML = 'Confirmez vous l\'ajout de ' + nomagent + ' dans l\'étape ' + numetape + ' ? ';
+            }
+            else
+            {
+                exit();
+            }
+            divstructid.hidden = true;
+            divagentid.hidden = true;
+            divselecttype.hidden = true;
+            labelmodalheader.innerHTML = 'Confirmation';
+            divmodallabeltext.parentElement.classList.add('centeraligntext');
+            divmodalcancelBtn.textContent = "Non";
+            divmodalcancelBtn.classList.add("g2tannulerbouton");
+            divmodalcancelBtn.setAttribute('active-elementid',activeelement.id);
+            divmodalcancelBtn.hidden = false;
+            divmodalconfirmBtn.textContent = "Oui";
+            divmodalconfirmBtn.classList.add("g2tvalidebouton");
+            divmodalconfirmBtn.setAttribute('active-elementid',activeelement.id);
+            divmodalconfirmBtn.hidden = false;
+            divmodal.style.display = "block";
         };
     </script>
 <?php

@@ -409,6 +409,7 @@
                 
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
+                echo "<input type='hidden' id='" . $struct->id() ."' value='" . $struct->id() ."'/>";
                 echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
                 echo "<span class='symbolegestionstruct cursorpointer' ";
                 if ($mode != MODE_RH)
@@ -700,53 +701,67 @@
 ?>
 
         <script>
-            var confirmdialog = document.getElementById('confirmdialog');
-            var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
-            var labeltext = confirmdialog.querySelector('#questionlabeltext');
-            var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
-            
-            confirmdialog.addEventListener('close', function onClose() {
-                document.getElementById("isdeployed").value = confirmBtn.value;
-                document.getElementById("olddeployvalue").value = labeltext.tag;
-                if (confirmdialog.returnValue!=='cancel')
-                {
-                    document.getElementById("allsubstructure").value = 'O';
-                }
-                else
-                {
-                    document.getElementById("allsubstructure").value = 'N';
-                }
-                var submit_button = document.getElementById("Modif_struct");
-                submit_button.click();
-            });
+
+            divmodalcancelBtn.onclick = function() 
+            {
+                var activeelementid = divmodalcancelBtn.getAttribute('active-elementid');
+                var activeelement = document.getElementById(activeelementid)
+
+                divmodal.style.display = "none";
+                masquerimgmodal();
+
+                document.getElementById("isdeployed").value = divmodalconfirmBtn.value;
+                document.getElementById("olddeployvalue").value = divmodallabeltext.tag;
+                document.getElementById("allsubstructure").value = 'N';
+
+                var closestform = activeelement.closest("form");
+                closestform.submit();
+            }
+
+            divmodalconfirmBtn.onclick = function()
+            {
+                document.getElementById("isdeployed").value = divmodalconfirmBtn.value;
+                document.getElementById("olddeployvalue").value = divmodallabeltext.tag;
+                document.getElementById("allsubstructure").value = 'O';
+
+                var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+                var activeelement = document.getElementById(activeelementid)
+                var closestform = activeelement.closest("form");
+                closestform.submit();
+            }
 
             var click_element = function(elementid,oldvalue)
             {
-                if (typeof confirmdialog.showModal === "function") 
+                masquerimgmodal('question');
+
+                var statuttext = '';
+                if (oldvalue.toUpperCase() === 'O')
                 {
-                    var statuttext = '';
-                    if (oldvalue.toUpperCase() === 'O')
-                    {
-                        statuttext = 'la désactivation';
-                    }
-                    else
-                    {
-                        statuttext = "l'activation";
-                    }
-                    labeltext.innerHTML = 'Appliquer ' + statuttext + ' à toutes les sous-structures ? ';
-                    labeltext.tag = oldvalue;
-                    cancelBtn.textContent = "Non";
-                    cancelBtn.hidden = false;
-                    confirmBtn.textContent = "Oui";
-                    confirmBtn.hidden = false;
-                    confirmBtn.value = elementid;
-                    confirmdialog.showModal();
-                }        
-                else 
-                {
-                    console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+                    statuttext = 'la désactivation';
                 }
+                else
+                {
+                    statuttext = "l'activation";
+                }
+                divmodallabeltext.innerHTML = 'Appliquer ' + statuttext + ' à toutes les sous-structures ? ';
+                divmodallabeltext.tag = oldvalue;
+                divmodalconfirmBtn.value = elementid;
+                divstructid.hidden = true;
+                divagentid.hidden = true;
+                divselecttype.hidden = true;
+                labelmodalheader.innerHTML = 'Confirmation';
+                divmodallabeltext.parentElement.classList.add('centeraligntext');
+                divmodalcancelBtn.textContent = "Non";
+                divmodalcancelBtn.classList.add("g2tannulerbouton");
+                divmodalcancelBtn.setAttribute('active-elementid',elementid);
+                divmodalcancelBtn.hidden = false;
+                divmodalconfirmBtn.textContent = "Oui";
+                divmodalconfirmBtn.classList.add("g2tvalidebouton");
+                divmodalconfirmBtn.setAttribute('active-elementid',elementid);
+                divmodalconfirmBtn.hidden = false;
+                divmodal.style.display = "block";
             };
+
         </script>
 
 <!--

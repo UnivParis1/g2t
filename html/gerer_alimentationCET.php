@@ -907,42 +907,55 @@
 
 
     <script>
-        var confirmdialog = document.getElementById('confirmdialog');
 
-        var confirmBtn = confirmdialog.querySelector('#questionconfirmBtn');
-        var labeltext = confirmdialog.querySelector('#questionlabeltext');
-        var cancelBtn = confirmdialog.querySelector('#questioncancelBtn');        
+        // On utilise la fonction par défaut sur le cancel boutton => pas besoin de la redéclarer
+        // divmodalcancelBtn.onclick = function() 
+        // {
+        //     masquerimgmodal();
+        //     divmodal.style.display = "none";
+        //     return false;
+        // }
 
-        confirmdialog.addEventListener('close', function onClose() {
-            if (confirmdialog.returnValue!=='cancel')
-            {
-                submit_form.submit();
-            }
-        });
+        divmodalconfirmBtn.onclick = function()
+        {
+            divmodal.style.display = "none";
+            var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+            var activeelement = document.getElementById(activeelementid)
+            //console.debug(activeelement.name);
+            //console.debug(activeelement.value);
+            var closestform = activeelement.closest("form");
+            //console.debug(closestform.name)
+            closestform.submit();
+        }
 
         var click_element = function(elementid)
         {
-            if (typeof confirmdialog.showModal === "function") {
-                var submit_button = document.getElementById(elementid);
-                submit_form = submit_button.closest("form");
-                //console.log(submit_form.id);
-                if (submit_button.classList.contains("cancel"))
-                {
-                    labeltext.innerHTML = 'Confirmez vous la suppresion de cette demande ? ';
-                }
-                else
-                {
-                    labeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
-                }
-                cancelBtn.textContent = "Non";
-                cancelBtn.hidden = false;
-                confirmBtn.textContent = "Oui";
-                confirmBtn.hidden = false;
-                confirmdialog.showModal();
-            }        
-            else {
-                console.error("L'API <dialog> n'est pas prise en charge par ce navigateur.");
+            masquerimgmodal('question');
+            
+            var submit_button = document.getElementById(elementid);
+
+            if (submit_button.classList.contains("cancel"))
+            {
+                divmodallabeltext.innerHTML = 'Confirmez vous la suppresion de cette demande ? ';
             }
+            else
+            {
+                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+            }
+            divstructid.hidden = true;
+            divagentid.hidden = true;
+            divselecttype.hidden = true;
+            labelmodalheader.innerHTML = 'Confirmation';
+            divmodallabeltext.parentElement.classList.add('centeraligntext');
+            divmodalcancelBtn.textContent = "Non";
+            divmodalcancelBtn.classList.add("g2tannulerbouton");
+            divmodalcancelBtn.setAttribute('active-elementid',elementid);
+            divmodalcancelBtn.hidden = false;
+            divmodalconfirmBtn.textContent = "Oui";
+            divmodalconfirmBtn.classList.add("g2tvalidebouton");
+            divmodalconfirmBtn.setAttribute('active-elementid',elementid);
+            divmodalconfirmBtn.hidden = false;
+            divmodal.style.display = "block";
         };
     </script>
 <?php

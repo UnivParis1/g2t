@@ -396,108 +396,133 @@
 
 <body class="bodyhtml"> 
 
-    <!-- Toutes les informations sur la boite de dialogue personnalisée en HTML --> 
-    <!-- sont sur le lien https://developer.mozilla.org/fr/docs/Web/HTML/Element/dialog -->
-
-    <dialog id="warningdialog" class="warningdialog">
-        <form method="dialog">
-            <p>
+    <!-- Fenètre modale -->
+    <div id="divmodal" class="divmodal">
+        <div class="questiondialog divmodelcontent" > 
+            <div class="divmodalheader">
+                <h2>
 <?php
-                $type = 'warning';
-                $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                list($width, $height, $imagetype) = getimagesize("$path");
-                $typeimage = image_type_to_extension($imagetype,false);
-                if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+                $typearray = array('question','suppression','ajout', 'error');
+                foreach ($typearray as $type)
                 {
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
-                    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                    $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
+                    if (file_exists($path))
+                    {
+                        list($width, $height, $imagetype) = getimagesize("$path");
+                        $typeimage = image_type_to_extension($imagetype,false);
+                        if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+                        {
+                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+                            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+                        }
+                        $data = file_get_contents($path);
+                        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+                        echo "<img class='img". $type ." imagedialog' id='img". $type ."' name='img". $type ."' src='" . $base64 . "' hidden>";
+                    }
                 }
-                $data = file_get_contents($path);
-                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-                echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
+                echo "&nbsp;";
+                $esignature = new esignature($dbcon);
+
 ?>
-                <label id='warninglabeltext'>Votre texte ne doit pas dépasser XXXX caractères! :</label>
+                <label id='labelmodalheader' name='labelmodalheader' >Modal Header</label>
+                </h2>
+            </div>
+
+            <p>
+                <label id='questionlabeltext' >Question label text.</label>
             </p>
+            <form name='modifiercircuit'  method='post'>
+                <div id='divselecttype' hidden>
+                    Type de signataire : 
+                    <select id='newrecipienttype' name='newrecipienttype' onchange='addreciepientchangetype();'>
+                        <option value=''><?php echo "--- Sélectionnez un type de signataire ---"; ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_DEMANDEUR; ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DEMANDEUR); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESPONSABLE2 ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESPONSABLE2); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_DIRECTEUR ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_DIRECTEUR); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_AGENT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_AGENT); ?></option>
+                        <option value='<?php echo esignature::TYPESIGNATAIRE_RESP_STRUCT ?>'><?php echo $esignature->typesignatairelibelle(esignature::TYPESIGNATAIRE_RESP_STRUCT); ?></option>
+                    </select>
+                </div>
+                <div id='divagentid' name='divagentid' hidden>
+                    <br>
+                    Identifiant de l'intervenant :
+                    <input id="usersignataire" name="usersignataire" placeholder="Nom et/ou prenom" autofocus/>
+                    <input type='hidden' id="newidsignataire" name="newidsignataire" class='usersignataire' />
+                    <script>
+                        $( "#usersignataire" ).autocompleteUser(
+                            '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
+                                wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
+                    </script>
+                </div>
+                <div id='divstructid' name='divstructid' hidden>
+                    <br>
+                    Structure de l'intervenant :
+                    <select size='1' id='newstructureid' name='newstructureid' class='selectstructure' value=''>
+                        <option value=''>----- Veuillez sélectionner la structure -----</option>
+                    </select>
+                </div>
+                <div id='divreportid' name ='divreportid' hidden>
+                    <br>
+                    Action à réaliser :
+                    <select id='reportchoice'>
+                        <option value=''>Ne pas reporter</option>
+                    </select>
+                </div>
+            </form>
             <menu>
                 <center>
-                    <button value="cancel" class='javaokbutton'>Ok</button>
+                    <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
+                    <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
                 </center>
             </menu>
-        </form>
-    </dialog> 
-        
-    <script>
-        const warningdialog = document.getElementById('warningdialog');
+        </div>
+    </div>
 
-        warningdialog.addEventListener('close', function onClosewarning() 
-        {
-            if (warningdialog.returnValue==='cancel')
-            {
-                return false;
-            }
-        });
-    </script>
-
-    <dialog id="confirmdialog" class="questiondialog">
-        <form method="dialog">
-            <p>
-<?php
-                $type = 'question';
-                $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                list($width, $height, $imagetype) = getimagesize("$path");
-                $typeimage = image_type_to_extension($imagetype,false);
-                if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
-                {
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
-                    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-                }
-                $data = file_get_contents($path);
-                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-                echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;"; 
-?>
-                <label id='questionlabeltext'>Confirmez vous cette action ?</label>
-            </p>
-            <menu>
-                <center>
-                    <button id="questionconfirmBtn" value="" class='javaconfirmbutton'>Ok</button>
-                    <button id="questioncancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
-                </center>
-            </menu>
-        </form>
-    </dialog>
-
-    <dialog id="reportdialog" class="questiondialog">
-        <form method="dialog">
-            <p>
-<?php
-                $type = 'question';
-                $path = $fonctions->imagepath() . "/" . $type . "_logo.png";
-                list($width, $height, $imagetype) = getimagesize("$path");
-                $typeimage = image_type_to_extension($imagetype,false);
-                if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
-                {
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
-                    $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-                }
-                $data = file_get_contents($path);
-                $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-                echo "<img class='img". $type ." imagedialog' src='" . $base64 . "'>&nbsp;";
-?>
-                <label id='reportlabeltext'>Action à réaliser :</label>
-                <select id='reportchoice' hidden='hidden'>
-                    <option value=''>Ne pas reporter</option>
-                </select>
-            </p>
-            <menu>
-                <center>
-                    <button id="reportconfirmBtn" value="" class='javaconfirmbutton'>Ok</button>
-                    <button id="reportcancelBtn" value="cancel" class='javacancelbutton'>Annuler</button>
-                </center>
-            </menu>
-        </form>
-    </dialog>
     
     <script>
+        // Récupération des objets de la fenêtre modale
+        var divmodal = document.getElementById("divmodal");
+        var divmodalconfirmBtn = divmodal.querySelector('#questionconfirmBtn');
+        var divmodallabeltext = divmodal.querySelector('#questionlabeltext');
+        var divmodalcancelBtn = divmodal.querySelector('#questioncancelBtn'); 
+        var divstructid = divmodal.querySelector('#divstructid');
+        var divreportid = divmodal.querySelector('#divreportid');
+        var divagentid = divmodal.querySelector('#divagentid');
+        var divselecttype = divmodal.querySelector('#divselecttype');
+        var labelmodalheader = divmodal.querySelector('#labelmodalheader');
+        var imgmodallist = divmodal.querySelectorAll(".imagedialog")
+        var newidsignataire = divmodal.querySelector('#newidsignataire');
+        var newstructureid = divmodal.querySelector('#newstructureid');
+        var selecttype = divmodal.querySelector('#newrecipienttype');
+        var usersignataire = divmodal.querySelector('#usersignataire');
+        var reportselect = divmodal.querySelector('#reportchoice');
+
+        // Si l'affichage change le contrôle qui a focus (voir checktextlength), on doit rendre le focus après que la fenêtre modale soit fermée
+        var previousfocuscontrol = null;
+
+
+        function masquerimgmodal(exception = "")
+        {
+            for (let indeximg = 0 ; indeximg < imgmodallist.length ; indeximg++)
+            {
+                imgmodallist[indeximg].hidden = true;
+                if (imgmodallist[indeximg].name == 'img' + exception)
+                {
+                    imgmodallist[indeximg].hidden = false;
+                }
+            }
+            divmodallabeltext.parentElement.classList.remove('centeraligntext');
+            divmodalcancelBtn.classList.remove('g2tannulerbouton');
+            divmodalcancelBtn.classList.remove('g2tokbouton');
+            divmodalconfirmBtn.classList.remove('g2tvalidebouton');
+
+            divstructid.hidden = true;
+            divreportid.hidden = true;
+            divagentid.hidden = true;
+            divselecttype.hidden = true;
+
+        }
 
         var calculateContentHeight = function( ta, scanAmount ) {
             var origHeight = ta.style.height,
@@ -564,12 +589,8 @@
             return numberOfLines;
         };
     
-    
-    
         function checktextlength(textarea, maxlength, labelrestantname)
         {
-            let warningdialog = document.getElementById('warningdialog');
-            let warninglabeltext = warningdialog.querySelector('#warninglabeltext'); // document.getElementById('warninglabeltext');
             let labelrestanttext = document.getElementById(labelrestantname);
             //console.log("function checktextlength => " + Date.now());
             if (textarea.value.length > maxlength) 
@@ -586,12 +607,25 @@
                 {
                     labelrestanttext.innerHTML = 0;
                 }
-                if (warningdialog!=null &&  typeof warningdialog.showModal === "function") 
+                if (divmodal)
                 {
-                    warninglabeltext.innerHTML = 'Votre texte ne doit pas dépasser '+maxlength+' caractères!';
-                    warningdialog.showModal();
+                    masquerimgmodal('error');
+                    divstructid.hidden = true;
+                    divagentid.hidden = true;
+                    divselecttype.hidden = true;
+                    divreportid.hidden = true;
+                    labelmodalheader.innerHTML = 'Longueur du texte';
+                    divmodalcancelBtn.textContent = "Ok";
+                    divmodalcancelBtn.hidden = false;
+                    divmodalcancelBtn.classList.add('g2tokbouton');
+                    divmodalconfirmBtn.hidden = true;
+                    divmodallabeltext.parentElement.classList.add('centeraligntext');
+                    divmodallabeltext.innerHTML = 'Votre texte ne doit pas dépasser '+maxlength+' caractères!';
+                    divmodal.style.display = "block";
+                    previousfocuscontrol = textarea;
+                    divmodalcancelBtn.focus();
                     return false;
-                } 
+                }
                 else
                 {
                     alert('Votre texte ne doit pas dépasser '+maxlength+' caractères!');
@@ -633,10 +667,23 @@
                 textarea.selectionStart = position-1;
                 textarea.selectionEnd = position-1;
 
-                if (warningdialog!=null &&  typeof warningdialog.showModal === "function") 
+                if (divmodal)
                 {
-                    warninglabeltext.innerHTML = 'Votre texte ne doit pas contenir plus de ' + maxRows + ' ligne(s).';
-                    warningdialog.showModal();
+                    masquerimgmodal('error');
+                    divstructid.hidden = true;
+                    divagentid.hidden = true;
+                    divselecttype.hidden = true;
+                    divreportid.hidden = true;
+                    labelmodalheader.innerHTML = 'Longueur du texte';
+                    divmodalcancelBtn.textContent = "Ok";
+                    divmodalcancelBtn.hidden = false;
+                    divmodalcancelBtn.classList.add('g2tokbouton');
+                    divmodalconfirmBtn.hidden = true;
+                    divmodallabeltext.parentElement.classList.add('centeraligntext');
+                    divmodallabeltext.innerHTML = 'Votre texte ne doit pas contenir plus de ' + maxRows + ' ligne(s).';
+                    divmodal.style.display = "block";
+                    previousfocuscontrol = textarea;
+                    divmodalcancelBtn.focus();
                     return false;
                 } 
                 else
@@ -647,6 +694,19 @@
             }
             return true;
         };
+
+        divmodalcancelBtn.onclick = function() 
+        {
+            divmodal.style.display = "none";
+            if (previousfocuscontrol)
+            {
+                previousfocuscontrol.focus();
+                previousfocuscontrol = null;
+            }
+            masquerimgmodal();
+            return false;
+        }
+
     </script>
 
 <?php
@@ -660,45 +720,6 @@
         return ($struct1->profondeurabsolue() < $struct2->profondeurabsolue()) ? -1 : 1;
     }
 
-    // /****************************
-    //  * 
-    //  * @deprecated
-    //  * 
-    //  ****************************/
-    // function affichestructureliste($structure, $niveau = 0)
-    // {
-    //     global $dbcon;
-    //     global $structureid;
-    //     global $fonctions;
-    //     global $showall;
-        
-    //     trigger_error('Method ' . __METHOD__ . ' is deprecated => use fonctions::afficherlistestructureindentee method instead', E_USER_DEPRECATED);
-
-    //     // $fonctions = new fonctions($dbcon);
-    //     if ($showall or ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd")))) {
-    //         echo "<option value='" . $structure->id() . "'";
-    //         if ($structure->id() == $structureid) {
-    //             echo " selected ";
-    //         }
-    //         if ($fonctions->formatdatedb($structure->datecloture()) < $fonctions->formatdatedb(date("Ymd"))) {
-    //             echo " class='redtext' ";
-    //         }
-    //         echo ">";
-    //         //echo str_pad('', strlen('&nbsp;')*4*$structure->profondeurrelative(), '&nbsp;', STR_PAD_LEFT);
-    //         for ($cpt = 0; $cpt < $niveau; $cpt ++) {
-    //             echo "&nbsp;&nbsp;&nbsp;&nbsp;";
-    //         }
-            
-    //         echo " - " . $structure->nomlong() . " (" . $structure->nomcourt() . ")";
-    //         echo "</option>";
-            
-    //         $sousstruclist = $structure->structurefille();
-    //         foreach ((array) $sousstruclist as $keystruct => $soustruct) {
-    //             affichestructureliste($soustruct, $niveau + 1);
-    //         }
-    //     }
-    // }
-    
     // On chrge le "vrai" utilisateur de l'application (Celui du ticket CAS)
     $realuser = new agent($dbcon);
     $realuserid = $fonctions->useridfromCAS($uid);
@@ -707,10 +728,9 @@
         $realuser->load($realuserid);
     }
         
-    // On verifie que la personne est autorisé à ce connecter à G2T
-    if (!$realuser->isG2tUser())
+    // On verifie que la personne est autorisé à ce connecter à G2T ou qu'elle est administrateur
+    if (!$realuser->isG2tUser() and !$realuser->estadministrateur())
     {
-        
         $errlog = "Vous n'êtes pas autorisé à vous connecter à cette application.";
         $errlog = $errlog . "<br>";
         $errlog = $errlog . "Veuillez vous rapprocher de votre gestionnaire RH ou de la DIRVAL";
@@ -1505,6 +1525,12 @@
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                     </form> 
                     <a href="javascript:document.rh_modifcircuitesign.submit();">Modifier un circuit eSignature pour un agent</a>
+                </li>
+                <li onclick='document.rh_modifier_XMLcircuit.submit();'>
+                    <form name='rh_modifier_XMLcircuit' method='post' action="modifier_XMLcircuit.php">
+                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                    </form> 
+                    <a href="javascript:document.rh_modifier_XMLcircuit.submit();">Modifier les circuits eSignature</a>
                 </li>
 <?php 
                     if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
