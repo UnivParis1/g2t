@@ -258,7 +258,7 @@
 
 ?>
     <!-- Fenètre modale -->
-    <div id="newrecipientmodal" class="divmodal">
+    <div id="divmodal" class="divmodal">
         <div class="questiondialog divmodelcontent" > 
             <div class="divmodalheader">
                 <h2>
@@ -293,7 +293,7 @@
                 <label id='questionlabeltext' >Question label text.</label>
             </p>
             <form name='modifiercircuit'  method='post'>
-                <div id='divselecttype'>
+                <div id='divselecttype' hidden>
                     Type de signataire : 
                     <select id='newrecipienttype' name='newrecipienttype' onchange='addreciepientchangetype();'>
                         <option value=''><?php echo "--- Sélectionnez un type de signataire ---"; ?></option>
@@ -321,28 +321,6 @@
                     Structure de l'intervenant :
                     <select size='1' id='newstructureid' name='newstructureid' class='selectstructure' value=''>
                         <option value=''>----- Veuillez sélectionner la structure -----</option>
-<?php
-                        $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
-                        $query = mysqli_query($dbcon, $sql);
-                        $erreur = mysqli_error($dbcon);
-                        if ($erreur != "") {
-                            $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
-                            echo $errlog . "<br/>";
-                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                        }
-                        $structureid=null;
-
-                        $structliste = array();
-                        while ($result = mysqli_fetch_row($query)) 
-                        {
-                            $struct = new structure($dbcon);
-                            $struct->load($result[0]);
-                            $structliste[$result[0]] = $struct;
-                            $structliste = $structliste + (array)$struct->structurefille(true,0);
-                        }
-                        $fonctions->afficherlistestructureindentee($structliste,false, null);
-                        unset($structliste);
-?>
                     </select>
                 </div>
             </form>
@@ -358,7 +336,7 @@
 
 <script>
     // Récupération des objets de la fenêtre modale
-    var newrecipientmodal = document.getElementById("newrecipientmodal");
+    var newrecipientmodal = document.getElementById("divmodal");
     var newrecipientconfirmBtn = newrecipientmodal.querySelector('#questionconfirmBtn');
     var newrecipientlabeltext = newrecipientmodal.querySelector('#questionlabeltext');
     var newrecipientcancelBtn = newrecipientmodal.querySelector('#questioncancelBtn'); 
@@ -618,6 +596,59 @@
             }
         }
     });
+
+    function chargerstructuredansselect(selectid)
+    {
+        var select = document.getElementById(selectid);
+        if (select)
+        {
+            var structliste = new Object(); 
+<?php
+            $sql = "SELECT STRUCTUREID FROM STRUCTURE WHERE STRUCTUREIDPARENT = '' OR STRUCTUREIDPARENT NOT IN (SELECT DISTINCT STRUCTUREID FROM STRUCTURE) ORDER BY STRUCTUREIDPARENT"; // NOMLONG
+            $query = mysqli_query($dbcon, $sql);
+            $erreur = mysqli_error($dbcon);
+            if ($erreur != "") {
+                $errlog = "Gestion Structure Chargement des structures parentes : " . $erreur;
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            }
+            $structureid=null;
+
+            $structliste = array();
+            while ($result = mysqli_fetch_row($query)) 
+            {
+                $struct = new structure($dbcon);
+                $struct->load($result[0]);
+                $structliste[$result[0]] = $struct;
+                $structliste = $structliste + (array)$struct->structurefille(true,0);
+            }
+
+            foreach($structliste as $structure)
+            {
+                if ($fonctions->formatdatedb($structure->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+                {
+                    $javatext = "structliste['" . $structure->id() . "'] = '" . str_pad('', strlen('&nbsp;')*4*$structure->profondeurrelative(), '&nbsp;', STR_PAD_LEFT);
+                    if ($structure->profondeurrelative()>0)
+                    {
+                        $javatext = $javatext . " &#x21AA; "; // &#x21B3; ";
+                    }
+                    $javatext = $javatext . htmlspecialchars($structure->nomlong() . " (" . $structure->nomcourt() . ")") . "';" . chr(13);
+                    echo $javatext;
+                }
+            }
+?>
+            for (let structid in structliste)
+            {
+                var opt = document.createElement('option');
+                opt.value = structid;
+                opt.innerHTML = structliste[structid];
+                select.appendChild(opt);
+            }
+        }
+    }
+
+    chargerstructuredansselect('newstructureid');
+
 </script>
 
 <?php
