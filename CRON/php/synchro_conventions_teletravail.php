@@ -96,39 +96,52 @@
                 echo "Le responsable n'a pas complete la convention. \n";
                 $agent = new agent($dbcon);
                 $agent->load($convention->agentid());
-                $responsable = $agent->getsignataire(null,$structresp);
-                if (is_null($responsable) or $responsable===false)
+
+                if (count($convention->listeidresponsable())>0)
                 {
-                    echo "On n'envoie pas de rappel au responsable de l'agent => car il n'est pas défini \n";
-                }
-                else
-                {
-                    echo "On envoie un rappel au responsable de l'agent => Responsable = " . $responsable->identitecomplete() . " \n";
-                    $tabdestinataireg2t[$responsable->agentid()] = $responsable;
-                }
-                ////////////////////////////
-                // Dans le cas d'une délégation, le responsable peut quand même vouloir recevoir les demandes
-                // On regarde donc s'il y a une délégation dans structure du responsable (obtenu avec agent::getsignataire)
-                if (!is_null($structresp))
-                {
-                    $delegation = $structresp->getdelegation(true);
-                    if ($fonctions->convertvaluetobool($delegation->continuesendtoresp))
+                    foreach($convention->listeidresponsable() as $respid)
                     {
-                        $responsable = $structresp->responsablesiham();
-                        if (is_null($responsable) or $responsable===false)
-                        {
-                            echo "On n'envoie pas de rappel au responsable SIHAM de la structure car il n'est pas défini \n";
-                        }
-                        else
-                        {
-                            echo "On envoie un rappel au responsable SIHAM de la structure de l'agent => Responsable = " . $responsable->identitecomplete() . " \n";
-                            $tabdestinataireg2t[$responsable->agentid()] = $responsable;
-                        }
+                        $responsable = new agent($dbcon);
+                        $responsable->load($respid);
+                        $tabdestinataireg2t[$responsable->agentid()] = $responsable;
                     }
                 }
                 else
                 {
-                    echo "La structure est inconnue => Pas de recherche de délégation \n";
+                    $responsable = $agent->getsignataire(null,$structresp);
+                    if (is_null($responsable) or $responsable===false)
+                    {
+                        echo "On n'envoie pas de rappel au responsable de l'agent => car il n'est pas défini \n";
+                    }
+                    else
+                    {
+                        echo "On envoie un rappel au responsable de l'agent => Responsable = " . $responsable->identitecomplete() . " \n";
+                        $tabdestinataireg2t[$responsable->agentid()] = $responsable;
+                    }
+                    ////////////////////////////
+                    // Dans le cas d'une délégation, le responsable peut quand même vouloir recevoir les demandes
+                    // On regarde donc s'il y a une délégation dans structure du responsable (obtenu avec agent::getsignataire)
+                    if (!is_null($structresp))
+                    {
+                        $delegation = $structresp->getdelegation(true);
+                        if ($fonctions->convertvaluetobool($delegation->continuesendtoresp))
+                        {
+                            $responsable = $structresp->responsablesiham();
+                            if (is_null($responsable) or $responsable===false)
+                            {
+                                echo "On n'envoie pas de rappel au responsable SIHAM de la structure car il n'est pas défini \n";
+                            }
+                            else
+                            {
+                                echo "On envoie un rappel au responsable SIHAM de la structure de l'agent => Responsable = " . $responsable->identitecomplete() . " \n";
+                                $tabdestinataireg2t[$responsable->agentid()] = $responsable;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        echo "La structure est inconnue => Pas de recherche de délégation \n";
+                    }
                 }
             }
             else

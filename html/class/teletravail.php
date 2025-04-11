@@ -97,6 +97,7 @@ class teletravail
     private $periodeexclusion = null;
     private $periodeadaptation = null;
     private $statutresponsable = null;
+    private $listeidresponsable = array();
     private $creationg2t = null;
     private $creationesignature = '19000101';
     
@@ -142,7 +143,8 @@ class teletravail
                        CREATIONG2T,
                        CREATIONESIGNATURE,
                        ADRESSETELETRAVAIL,
-                       MATERIELDEMANDE
+                       MATERIELDEMANDE,
+                       LISTEIDRESPONSABLE
                 FROM TELETRAVAIL
                 WHERE TELETRAVAILID = ? ";
         $params = array($teletravailid);
@@ -186,8 +188,18 @@ class teletravail
         }
         $this->adresseteletravail = $result[19] . '';
         $this->materieldemande = $result[20] . '';
-
         
+        $this->listeidresponsable = array();
+        if (trim($result[21] . '') != '')
+        {
+            // $tmparray = explode(",",$result[21] . "");
+            // foreach($tmparray as $respid)
+            // {
+            //     $this->listeidresponsable[$respid] = $respid;
+            // }
+            $this->listeidresponsable = explode(",",$result[21] . "");
+        }
+
         if (trim($this->esignatureurl.'')!='')
         {
             // On remplace éventuellement le nom du serveur par celui paramétré
@@ -486,6 +498,29 @@ class teletravail
             $this->motifmedicalaidant = $motifmedicalaidant;
         }
     }
+
+    function listeidresponsable($arrayrespid = null) :array
+    {
+        if (is_null($arrayrespid)) 
+        {
+            return $this->listeidresponsable;
+        }
+        else if (!is_array($arrayrespid))
+        {
+            $errlog = "teletravail->listeidresponsable : La liste des responsables doit être un tableau !!!";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        else
+        {
+            $this->listeidresponsable = array();
+            foreach($arrayrespid as $respid)
+            {
+                $this->listeidresponsable[$respid] = $respid;
+            }
+        }
+        return array();
+    }
     
     function adresseteletravail($adresseteletravail = null)
     {
@@ -719,8 +754,9 @@ class teletravail
                                             PERIODEADAPTATION,
                                             STATUTRESPONSABLE,
                                             ADRESSETELETRAVAIL,
-                                            MATERIELDEMANDE)
-                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                            MATERIELDEMANDE,
+                                            LISTEIDRESPONSABLE)
+                       VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params = array($this->agentid, 
                             $this->fonctions->formatdatedb($this->creationg2t),
                             $this->fonctions->formatdatedb($this->creationesignature . ""),
@@ -740,7 +776,8 @@ class teletravail
                             $this->periodeadaptation . "",
                             $this->statutresponsable,
                             $this->adresseteletravail,
-                            $this->materieldemande
+                            $this->materieldemande,
+                            implode(',',$this->listeidresponsable)
                 );
 
 /*
@@ -788,9 +825,11 @@ class teletravail
                         PERIODEEXCLUSION = ?,
                         PERIODEADAPTATION = ?,
                         STATUTRESPONSABLE = ?,
-                        CREATIONESIGNATURE = ?
+                        CREATIONESIGNATURE = ? ,
+                        LISTEIDRESPONSABLE = ?
                     WHERE TELETRAVAILID = ?";
-            //echo "SQL teletravail->Store (UPDATE) : $sql <br>";
+            // $sql = preg_replace('/\s+/', ' ', $sql);
+            // var_dump ("SQL teletravail->Store (UPDATE) : $sql");
             $params = array($this->fonctions->formatdatedb($this->datedebut), 
                             $this->fonctions->formatdatedb($this->datefin), 
                             $this->tabteletravail, 
@@ -806,8 +845,11 @@ class teletravail
                             $this->periodeadaptation . "",
                             $this->statutresponsable,
                             $this->fonctions->formatdatedb($this->creationesignature . ""),
+                            implode(',',$this->listeidresponsable),
                             $this->teletravailid
-                );
+               );
+
+            //var_dump("Statut responsable = " . $this->statutresponsable . "  Statut = " . $this->statut);
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
             

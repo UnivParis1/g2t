@@ -26,7 +26,14 @@ class fonctions
     public const SIGNATAIRE_RESPONSABLE = "3";
     public const SIGNATAIRE_SPECIAL = "4";
     public const SIGNATAIRE_RESPONSABLE_N2 = "5";
-    public const SIGNATAIRE_LIBELLE = array(fonctions::SIGNATAIRE_AGENT => "AGENT INDIVIDUEL", fonctions::SIGNATAIRE_STRUCTURE => "TOUS LES AGENTS D'UNE STRUCTURE", fonctions::SIGNATAIRE_RESPONSABLE => "RESPONSABLE DE STRUCTURE", fonctions::SIGNATAIRE_SPECIAL => "UTILISATEUR SPECIAL", fonctions::SIGNATAIRE_RESPONSABLE_N2 => "RESPONSABLE N+2");
+    //public const SIGNATAIRE_RESP_BRANCHE = "6";
+    public const SIGNATAIRE_LIBELLE = array(fonctions::SIGNATAIRE_AGENT => "AGENT INDIVIDUEL", 
+                                            fonctions::SIGNATAIRE_STRUCTURE => "TOUS LES AGENTS D'UNE STRUCTURE", 
+                                            fonctions::SIGNATAIRE_RESPONSABLE => "RESPONSABLE DE STRUCTURE", 
+                                            fonctions::SIGNATAIRE_SPECIAL => "UTILISATEUR SPECIAL", 
+                                            fonctions::SIGNATAIRE_RESPONSABLE_N2 => "RESPONSABLE N+2",
+                                            //fonctions::SIGNATAIRE_RESP_BRANCHE => "RESPONSABLE DE LA BRANCHE DE L'AGENT"
+                                           );
 
     public const MSGERROR = 'error';
     public const MSGWARNING = 'warning';
@@ -5892,8 +5899,8 @@ WHERE  table_schema = Database()
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") 
         {
-            echo "Functions->lirecommentaire : " . $erreur . "<br>";
-            error_log(basename(__FILE__) . " Functions->lirecommentaire : " . $erreur);
+            echo "Fonctions->lirecommentaire : " . $erreur . "<br>";
+            error_log(basename(__FILE__) . " Fonctions->lirecommentaire : " . $erreur);
         }
         while ($result = mysqli_fetch_row($query)) 
         {
@@ -5949,8 +5956,8 @@ WHERE  table_schema = Database()
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "") 
         {
-            echo "Functions->demandelistepartypeabsence : " . $erreur . "<br>";
-            error_log(basename(__FILE__) . " Functions->demandelistepartypeabsence : " . $erreur);
+            echo "Fonctions->demandelistepartypeabsence : " . $erreur . "<br>";
+            error_log(basename(__FILE__) . " Fonctions->demandelistepartypeabsence : " . $erreur);
         }
         while ($result = mysqli_fetch_row($query)) 
         {
@@ -5983,6 +5990,34 @@ WHERE  table_schema = Database()
         {
             curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
         }
+    }
+
+    function listestructureteletravailasigner($agentid)
+    {
+        $listestruct = array();
+        $sql = "SELECT AGENT.STRUCTUREID
+                FROM TELETRAVAIL, AGENT 
+                WHERE TELETRAVAIL.STATUTRESPONSABLE = 'a'
+                  AND TELETRAVAIL.STATUT = 'a'
+                  AND INSTR(CONCAT(',',TELETRAVAIL.LISTEIDRESPONSABLE,','),CONCAT(',',?, ','))>0
+                  AND AGENT.AGENTID = TELETRAVAIL.AGENTID";
+
+        $params = array($agentid);
+        $query = $this->prepared_select($sql, $params);
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") 
+        {
+            echo "Fonctions->listestructureteletravailasigner : " . $erreur . "<br>";
+            error_log(basename(__FILE__) . " Fonctions->listestructureteletravailasigner : " . $erreur);
+        }
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $structure = new structure($this->dbconnect);
+            $structure->load($result[0]);
+            $listestruct[$structure->id()] = $structure;
+        }
+        return $listestruct;
+
     }
 
 }

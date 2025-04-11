@@ -712,10 +712,32 @@
 
 </script>
 <?php
-    //$esignature = new esignature($dbcon);
-    //$esignature->get_signrequest_recipients("3224883");
-    //var_dump($esignature->get_signrequest_stepstatus(3225958));
-
+    // $agent = new agent($dbcon);
+    // $agent->load("9328");
+    // var_dump($agent->identitecomplete() . ' ' . $agent->agentid());
+    // $resp = $agent->get_signataire_respbranche();
+    // if ($resp != false) { var_dump($resp->identitecomplete()); } else { var_dump("Pas de responsable trouvé"); }
+    // $agent = new agent($dbcon);
+    // $agent->load("4235");
+    // var_dump($agent->identitecomplete() . ' ' . $agent->agentid());
+    // $resp = $agent->get_signataire_respbranche();
+    // if ($resp != false) { var_dump($resp->identitecomplete()); } else { var_dump("Pas de responsable trouvé"); }
+    // $agent = new agent($dbcon);
+    // $agent->load("15012");
+    // var_dump($agent->identitecomplete() . ' ' . $agent->agentid());
+    // $resp = $agent->get_signataire_respbranche();
+    // if ($resp != false) { var_dump($resp->identitecomplete()); } else { var_dump("Pas de responsable trouvé"); }
+    // $agent = new agent($dbcon);
+    // $agent->load("82933");
+    // var_dump($agent->identitecomplete() . ' ' . $agent->agentid());
+    // $resp = $agent->get_signataire_respbranche();
+    // if ($resp != false) { var_dump($resp->identitecomplete()); } else { var_dump("Pas de responsable trouvé"); }
+    // $agent = new agent($dbcon);
+    // $agent->load("59398");
+    // var_dump($agent->identitecomplete() . ' ' . $agent->agentid());
+    // $resp = $agent->get_signataire_respbranche();
+    // if ($resp != false) { var_dump($resp->identitecomplete()); } else { var_dump("Pas de responsable trouvé"); }
+   
 ?>
 </body>
 </html>

@@ -332,7 +332,13 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                     // Annulation dans G2T
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents("On modifie le statut de la convention $cancelteletravailid dans G2T"));
                     $teletravail->statut(teletravail::TELETRAVAIL_ANNULE);
+                    // var_dump($teletravail->statut());
                     $return = $teletravail->store();
+                    //////////////////////////////////////
+                    // $teletravail = new teletravail($dbcon);
+                    // $teletravail->load($cancelteletravailid);
+                    // var_dump($teletravail->statut());
+                    ///////////////////////////////////
                     if ($return != "")
                     {
                         if (strlen($erreur)>0) { $erreur = $erreur . '<br>'; }
@@ -343,18 +349,36 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                     {
                         $info = $info . "L'annulation de la convention " . $teletravail->teletravailid() . " a été enregistrée.<br>";
                         error_log(basename(__FILE__) . $fonctions->stripAccents(" On va envoyer un mail au responsable car on a annulé dans G2T une convention télétravail (id G2T = " . $teletravail->teletravailid() . ")"));
+                        $resparray = array();
                         $demandeurid = $teletravail->agentid();
                         $demandeur = new agent($dbcon);
                         $demandeur->load($demandeurid);
-                        $resp = $demandeur->getsignataire();
-                        if (is_null($resp) or $resp===false)
+                        if (count($teletravail->listeidresponsable())>0)
                         {
-                            error_log(basename(__FILE__) . $this->stripAccents(" Aucun mail au responsable car il n'est pas défini (id G2T = " . $teletravail->teletravailid() . ")"));
+                            foreach($teletravail->listeidresponsable() as $respid)
+                            {
+                                $resp = new agent($dbcon);
+                                $resp->load($respid);
+                                $resparray[$respid] = $resp;
+                            }
                         }
                         else
                         {
-                            $cronuser = new agent($dbcon);
-                            $cronuser->load(SPECIAL_USER_IDCRONUSER);
+                            $resp = $demandeur->getsignataire();
+                            if (is_null($resp) or $resp===false)
+                            {
+                                error_log(basename(__FILE__) . $this->stripAccents(" Aucun mail au responsable car il n'est pas défini (id G2T = " . $teletravail->teletravailid() . ")"));
+                            }
+                            else
+                            {
+                                $resparray[$resp->agentid()] = $resp;
+                            }
+                        }
+                        unset($resp);
+                        $cronuser = new agent($dbcon);
+                        $cronuser->load(SPECIAL_USER_IDCRONUSER);
+                        foreach($resparray as $resp)
+                        {
                             $cronuser->sendmail($resp,"Annulation/Refus d'une demande de télétravail - " . $demandeur->identitecomplete(), "Une demande de convention de télétravail pour " . $demandeur->identitecomplete() . " a été annulée/refusée.<br>"
                                     . "Ceci est un message informatif. Vous n'avez aucune action à réaliser. <br>");
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Le mail au responsable (" . $resp->identitecomplete() . " " . $resp->mail() . ") a été envoyé (id G2T = " . $teletravail->teletravailid() . ")"));
@@ -799,6 +823,33 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 //echo "eSignature est actif <br>";
                 $teletravail->statut(teletravail::TELETRAVAIL_ATTENTE);
                 $teletravail->statutresponsable(teletravail::TELETRAVAIL_ATTENTE);
+                $params = array();
+                $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
+                if (count($taberrorcheckmail) > 0)
+                {
+                    $errorcheckmailstr = '';
+                    foreach ($taberrorcheckmail as $errorcheckmail)
+                    {
+                        if (strlen($errorcheckmailstr)>0) { $errorcheckmailstr = $errorcheckmailstr . '<br>'; }
+                        $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
+                    }
+                    $erreur = "Impossible d'enregistrer la convention de télétravail car <br>$errorcheckmailstr";
+                }
+                else
+                {
+                    if (isset($params['levelextrainfos'][2]))
+                    {
+                        $stepinfo = $params['levelextrainfos'][2];
+                        $listeidresp = array();
+                        foreach($stepinfo->signataires as $mailsignataire)
+                        {
+                            $signataire = new agent($dbcon);
+                            $signataire->loadbyemail($mailsignataire);
+                            $listeidresp[] = $signataire->agentid();
+                        }
+                        $teletravail->listeidresponsable($listeidresp);
+                    }
+                }
             }
             else
             {
@@ -820,17 +871,38 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 $dummytt->load($teletravail->teletravailid());
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Suite à la synchro le statut de la convention qu'on vient de svg est " . $dummytt->statut()));
 
-                $responsable = $agent->getsignataire();
-                if (!is_null($responsable) and $responsable!==false)
+                $resparray = array();
+                $demandeurid = $teletravail->agentid();
+                $demandeur = new agent($dbcon);
+                $demandeur->load($demandeurid);
+                if (count($teletravail->listeidresponsable())>0)
                 {
-                    $cron = new agent($dbcon);
-                    $cron->load(SPECIAL_USER_IDCRONUSER);
-                    $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "
-Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' ou 'Gestionnaire' de l'application G2T.\n");
+                    foreach($teletravail->listeidresponsable() as $respid)
+                    {
+                        $resp = new agent($dbcon);
+                        $resp->load($respid);
+                        $resparray[$respid] = $resp;
+                    }
                 }
                 else
                 {
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Le responsable est null ou false => Pas d'envoi de mail au responsable de l'agent"));
+                    $resp = $demandeur->getsignataire();
+                    if (is_null($resp) or $resp===false)
+                    {
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Le responsable est null ou false => Pas d'envoi de mail au responsable de l'agent"));
+                    }
+                    else
+                    {
+                        $resparray[$resp->agentid()] = $resp;
+                    }
+                }
+                unset($resp);
+                $cron = new agent($dbcon);
+                $cron->load(SPECIAL_USER_IDCRONUSER);
+                foreach($resparray as $responsable)
+                {
+                    $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "
+Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' ou 'Gestionnaire' de l'application G2T.\n");
                 }
                 $info = "La création de la convention est réussie.";
                 $erreur = "";
@@ -2378,6 +2450,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             $structliste = $user->structgestliste();   
             //var_dump($structliste);
         }
+        $structliste = $structliste + $fonctions->listestructureteletravailasigner($user->agentid());
         if (is_array($structliste))
         {
             uasort($structliste,"triparprofondeurabsolue");
@@ -2450,6 +2523,13 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $tabdemandeteletravail = $agent->listedemandeteletravailenattente();
                     foreach($tabdemandeteletravail as $teletravail)
                     {
+                        //var_dump($user->agentid());
+                        //var_dump($teletravail->listeidresponsable());
+                        // S'il y a des responsable de défini et que l'utilisateur n'est pas dedans, il ne doit rien faire sur cette convention
+                        if (count($teletravail->listeidresponsable())>0 and (!in_array($user->agentid(),$teletravail->listeidresponsable())))
+                        {
+                            continue;
+                        }
                         if ($teletravailtrouvestruct===false)
                         {
                             echo "<table class='tableausimple'>";

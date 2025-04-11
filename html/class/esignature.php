@@ -147,6 +147,7 @@ class esignature
     public const TYPESIGNATAIRE_DIRECTEUR = 'DIRECTEUR_RACINE';
     public const TYPESIGNATAIRE_AGENT = 'AGENT';
     public const TYPESIGNATAIRE_RESP_STRUCT = 'RESPONSABLE_STRUCT';
+    public const TYPESIGNATAIRE_RESP_BRANCHE = 'RESPONSABLE_BRANCHE';
     
     /**
      *
@@ -202,6 +203,9 @@ class esignature
                 break;
             case self::TYPESIGNATAIRE_RESP_STRUCT :
                 $libelle = "Un responsable d'une structure identifié";
+                break;
+            case self::TYPESIGNATAIRE_RESP_BRANCHE :
+                $libelle = "Le responsable de la branche de l'agent";
                 break;
             default :
                 $libelle = "";
@@ -1173,6 +1177,22 @@ class esignature
                         //var_dump($signatairearray[$numero][$tempid]);
                     }
                     $resp = $structracine->responsablesiham();
+                    if ($resp->agentid()!='')
+                    {
+                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
+                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
+                        //var_dump($signatairearray[$numero][$tempid]);
+                    }
+                }
+                elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESP_BRANCHE)
+                {
+                    $structresp  = null;
+                    $codeinterne = null;
+                    $resp = $demandeur->get_signataire_respbranche($structresp,$codeinterne);
+                    $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
+                    $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
+                    // On ajoute le responsable SIHAM de la structure 
+                    $resp = $structresp->responsablesiham();
                     if ($resp->agentid()!='')
                     {
                         $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();

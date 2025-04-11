@@ -5450,6 +5450,65 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         return $respduresp;
     }
 
+    function get_signataire_respbranche(&$structresp = null, &$codeinterne = null)
+    {
+    	$structid = $this->structureid();
+    	$struct = new structure($this->dbconnect);
+    	if (!$struct->load($structid))
+        {
+            // Si on ne peut pas charger la structure => On ne peut pas définir le responsable de l'agent
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de charger la structure (id = $structid) => " . $struct->nomlong()));
+            return false;
+        }
+
+        $structracine = $struct->structureenglobante();
+        $cheminracine = $struct->nomcompletcet(false,false, true);
+        //var_dump($cheminracine);
+        $pathsplit = explode("/" . $structracine->id() . "/", "/" . $cheminracine . "/");
+        // Si on n'a pas réussi à couper le chemin vers la racine en  2 => Il y a un problème
+        if (count($pathsplit) != 2)
+        {
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer la structure racine de la branche (id = $structid) => " . $struct->nomlong()));
+            return false;
+        }
+        $structbranchearray = explode("/", $pathsplit[1]);
+        $structbrancheid = $structbranchearray[0];
+
+        //var_dump($structbrancheid);
+
+        // Si l'agent est dans la structure racine => son responsable est son signataire habituel
+        if (trim($structbrancheid . "") == "")
+        {
+            $structresp = null;
+            $codeinterne = null;
+            $resp = $this->getsignataire(null, $structresp, $codeinterne);
+        }
+        else
+        {
+            $structbranche = new structure($this->dbconnect);
+            $structbranche->load($structbrancheid);
+            $resp = $structbranche->responsable();
+            $respsiham = $structbranche->responsablesiham();
+            // Si l'agent est un responsable SIHAM ou par délagation sur la structure racine de branche
+            if ($resp->agentid() == $this->agentid() or $respsiham->agentid() == $this->agentid())
+            {
+                //var_dump("L'agent " . $this->identitecomplete() . " est responsable de la structure " . $structbranche->nomlong() . " " .  $structbranche->id());
+                // On cherche le signataire 
+                $structresp = null;
+                $codeinterne = null;
+                $resp = $this->getsignataire(null, $structresp, $codeinterne);
+            }
+            else
+            {
+                //var_dump("L'agent " . $this->identitecomplete() . " est membre de la structure (ou de la sous-structure) " . $structbranche->nomlong() . " " .  $structbranche->id());
+                // L'agent courant est un "simple" agent de l'une des sous-structures ou agent de la structure racine de branche 
+                // On renvoi le $resp (qui est déjà initialisé)
+                $structresp = $structbranche;
+                $codeinterne = null;
+            }
+        }
+        return $resp;
+    }
 
     /**
      *

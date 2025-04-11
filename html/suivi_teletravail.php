@@ -155,29 +155,47 @@
         }
         elseif($teletravail->statutresponsable()==teletravail::TELETRAVAIL_ATTENTE)
         {
-            $responsable = $agent->getsignataire();
-/*
-            //$structure = new structure($dbcon);
-            //$structure->load($agent->structureid());
-            ////var_dump($structure->nomlong());
-            //if (!is_null($structure->responsable()) and ($structure->responsable()->agentid() == $agent->agentid()))
-            //{
-            //    $responsable = $structure->resp_envoyer_a($codeinterne);
-            //}
-            //else
-            //{
-            //    $responsable = $structure->agent_envoyer_a($codeinterne);
-            //}
-*/ 
-            if (is_null($responsable) or $responsable===false)
+            $resparray = array();
+            if (count($teletravail->listeidresponsable())>0)
             {
-                $responsable = new agent($dbcon);
-                $responsable->nom("INCONNU");
-                $responsable->prenom("INCONNU");
-                $extraclass = " celerror ";
+                foreach($teletravail->listeidresponsable() as $respid)
+                {
+                    //var_dump($respid);
+                    $responsable = new agent($dbcon);
+                    $responsable->load($respid);
+                    $resparray[$responsable->agentid()] = $responsable;
+                }
+                //var_dump($resparray);
             }
-            
-            $enattente = $enattente . "<br>" . ucwords(strtolower($responsable->prenom() . " " . $responsable->nom()));
+            else
+            {
+                $responsable = $agent->getsignataire();
+    /*
+                //$structure = new structure($dbcon);
+                //$structure->load($agent->structureid());
+                ////var_dump($structure->nomlong());
+                //if (!is_null($structure->responsable()) and ($structure->responsable()->agentid() == $agent->agentid()))
+                //{
+                //    $responsable = $structure->resp_envoyer_a($codeinterne);
+                //}
+                //else
+                //{
+                //    $responsable = $structure->agent_envoyer_a($codeinterne);
+                //}
+    */ 
+                if (is_null($responsable) or $responsable===false)
+                {
+                    $responsable = new agent($dbcon);
+                    $responsable->nom("INCONNU");
+                    $responsable->prenom("INCONNU");
+                    $extraclass = " celerror ";
+                }
+                $resparray[$responsable->agentid()] = $responsable;
+            }
+            foreach($resparray as $responsable)
+            {
+                $enattente = $enattente . "<br>" . ucwords(strtolower($responsable->prenom() . " " . $responsable->nom()));
+            }
         }
         echo "<tr>";
         echo "    <td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
