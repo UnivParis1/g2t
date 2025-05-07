@@ -97,7 +97,7 @@
             $msg_erreur = "Vous ne pouvez saisir qu'un nombre entier ou un multiple de 1/2 journée dans le champs 'Droit acquis'.<br>";
             $newacquis = "";
         }
-        elseif ($newacquis == "" or $newacquis < 0) {
+        elseif ("$newacquis" == "" or $newacquis < 0) {
             $msg_erreur = "Vous n'avez pas saisi de droit acquis ou il est négatif.<br>";
         }
         if (! is_numeric($newpris))
@@ -110,10 +110,10 @@
             $msg_erreur = "Vous ne pouvez saisir qu'un nombre entier ou un multiple de 1/2 journée dans le champs 'Droit pris'.<br>";
             $newpris = "";
         }
-        elseif ($newpris == "" or $newpris < 0) {
+        elseif ("$newpris" == "" or $newpris < 0) {
             $msg_erreur = "Vous n'avez pas saisi de droit pris ou il est négatif.<br>";
         }
-        if ($newpris != "" and $newacquis != "") // Si tout est ok
+        if ("$newpris" != "" and "$newacquis" != "") // Si tout est ok
         {
             if ($newpris > $newacquis)
             {
