@@ -106,7 +106,7 @@
     {
         $previoustxt = null;
     }
-    if (strcasecmp((string)$previoustxt, "yes") == 0)
+    if ($fonctions->convertvaluetobool($previoustxt)) // (strcasecmp((string)$previoustxt, "yes") == 0)
     {
         $previous = 1;
     }
@@ -119,7 +119,7 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml"><br>';
 
-    echo "POST = "; print_r($_POST); echo "<br>";
+    //echo "POST = "; print_r($_POST); echo "<br>";
 
     $cancelbutton = array();
     if (isset($_POST["cancelbutton"]))

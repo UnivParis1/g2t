@@ -269,10 +269,17 @@
                 $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . " - " . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
             }
             
+            //////////////////////////////////////////
+            // On doit rechercher l'id du Workflow dans la base de données
+            $workflowid = "";
+            $dbconstante = "IDWORKFLOWOPTIONCET";
+            if ($fonctions->testexistdbconstante($dbconstante)) $workflowid = trim($fonctions->liredbconstante($dbconstante));
+            //////////////////////////////////////////
             //echo "formsdata = <br>"; var_dump($formsdata);
 
             $params = array
             (
+                'workflowid' => $workflowid,
                 'title' => "Option CET de " . $tabinfos["agent"]["firstname"] . " " . $tabinfos["agent"]["name"],
                 'eppn' => "$agent_eppn",
                 'createByEppn' => "$agent_eppn",

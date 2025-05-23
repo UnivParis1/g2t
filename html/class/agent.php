@@ -5386,68 +5386,105 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     
     function getsignataire_niveau2(&$respdurespstruct = null, &$codeinterne = null)
     {
-        $MODE_AGENT=1;
-        $MODE_RESP=2;
+        // $MODE_AGENT=1;
+        // $MODE_RESP=2;
+
+        // error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("On cherche le N+2 de " . $this->identitecomplete()));
+        
+    	// $structid = $this->structureid();
+    	// $struct = new structure($this->dbconnect);
+    	// if (!$struct->load($structid))
+        // {
+        //     // Si on ne peut pas charger la structure => On ne peut pas définir le responsable de l'agent
+        //     error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de charger la structure (id = $structid) => " . $struct->nomlong()));
+        //     return false;
+        // }
+    	// $struct_resp = $struct->responsablesiham(); // $struct->responsable();
+        // error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le responsable SIHAM de la structure est " . $struct_resp->identitecomplete()));
+        // if ($struct_resp->agentid() == $this->agentid())
+        // {
+        //     $mode = $MODE_RESP;
+        // }
+        // else
+        // {
+        //     $mode = $MODE_AGENT;
+        // }
+
+        // // Le N+2 d'un agent est le responsable de son responsable
+        // $respstruct = null;
+        // $codeinterne = null;
+        // $resp = $this->getsignataire(null, $respstruct, $codeinterne);
+        
+        // if ($resp===false or is_null($resp))
+        // {
+        //     error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable+2 de l'agent car impossible de déterminer le responsable+1"));
+        //     return false;
+        // }
+        // if ($mode==$MODE_AGENT and $codeinterne==structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+        // {
+        //     error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("En mode AGENT, on renvoit les demandes vers le gestionnaire => Pas de responsable+2"));
+        //     return false;
+        // }
+        // if ($mode==$MODE_RESP and ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT))
+        // {
+        //     error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("En mode RESPONSABLE, on renvoit les demandes vers un gestionnaire => Pas de responsable+2"));
+        //     return false;
+        // }
+        // // On sait que le responsable n'est pas un gestionnaire
+        // // Donc on va chercher son responsable
+        // //$respduresp=$resp->getsignataire($respstruct, $respdurespstruct, $codeinterne);
+        // $respduresp=$struct_resp->getsignataire($respstruct, $respdurespstruct, $codeinterne);
+        // if ($respduresp===false or is_null($respduresp))
+        // {
+        //     error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable du responsable " . $resp->agentid() . " => Donc pas de N+2"));
+        //     return false;
+        // }
+        // // On récupère les strucutures inclues dans la structure du responsable du responsable
+        // $tabstructure = $respdurespstruct->structureinclue();
+        // // On regarde si la structure du reponsable est dans la liste
+        // if (!isset($tabstructure[$respstruct->id()]) and $respstruct->id()!=$respdurespstruct->id())
+        // {
+        //     error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " n'est pas inclue dans la structure parente " . $respdurespstruct->id() . " => Donc pas de N+2"));
+        //     return false;
+        // }
+        // error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " est inclue dans la structure parente " . $respdurespstruct->id() . " ou c'est la même => On a un N+2"));
+        // error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+2 de l'agent " . $this->agentid() . " est " . $respduresp->agentid()));
+        // return $respduresp;
 
         error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("On cherche le N+2 de " . $this->identitecomplete()));
-        
-    	$structid = $this->structureid();
-    	$struct = new structure($this->dbconnect);
-    	if (!$struct->load($structid))
-        {
-            // Si on ne peut pas charger la structure => On ne peut pas définir le responsable de l'agent
-            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de charger la structure (id = $structid) => " . $struct->nomlong()));
-            return false;
-        }
-    	$struct_resp = $struct->responsable();
-        if ($struct_resp->agentid() == $this->agentid())
-        {
-            $mode = $MODE_RESP;
-        }
-        else
-        {
-            $mode = $MODE_AGENT;
-        }
 
-        // Le N+2 d'un agent est le responsable de son responsable
+        $respN2 = false;
         $respstruct = null;
         $codeinterne = null;
         $resp = $this->getsignataire(null, $respstruct, $codeinterne);
-        
+        $codeinterne = null;
         if ($resp===false or is_null($resp))
         {
             error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable+2 de l'agent car impossible de déterminer le responsable+1"));
-            return false;
+            // return false;
         }
-        if ($mode==$MODE_AGENT and $codeinterne==structure::MAIL_AGENT_ENVOI_GEST_COURANT)
+        else if ($respstruct->isincluded())
         {
-            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("En mode AGENT, on renvoit les demandes vers le gestionnaire => Pas de responsable+2"));
-            return false;
+            $respdurespstruct = $respstruct->parentstructure();
+            // On récupère les strucutures inclues dans la structure du responsable du responsable
+            $tabstructure = $respdurespstruct->structureinclue();
+            // On regarde si la structure du reponsable est dans la liste
+            if (!isset($tabstructure[$respstruct->id()]) and $respstruct->id()!=$respdurespstruct->id())
+            {
+                error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " n'est pas inclue dans la structure parente " . $respdurespstruct->id() . " => Donc pas de N+2"));
+                // return false;
+            }
+            $respN2 = $respdurespstruct->responsable();
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " est inclue dans la structure parente " . $respdurespstruct->id() . " => On a un N+2"));
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+2 de l'agent " . $this->agentid() . " est " . $respN2->agentid()));
         }
-        if ($mode==$MODE_RESP and ($codeinterne==structure::MAIL_RESP_ENVOI_GEST_COURANT or $codeinterne==structure::MAIL_RESP_ENVOI_GEST_PARENT))
+        else
         {
-            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("En mode RESPONSABLE, on renvoit les demandes vers un gestionnaire => Pas de responsable+2"));
-            return false;
+            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " n'est pas inclue => Donc pas de N+2"));
+            // return false;
         }
-        // On sait que le responsable n'est pas un gestionnaire
-        // Donc on va chercher son responsable
-        $respduresp=$resp->getsignataire($respstruct, $respdurespstruct, $codeinterne);
-        if ($respduresp===false or is_null($respduresp))
-        {
-            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Impossible de déterminer le responsable du responsable " . $resp->agentid() . " => Donc pas de N+2"));
-            return false;
-        }
-        // On récupère les strucutures inclues dans la structure du responsable du responsable
-        $tabstructure = $respdurespstruct->structureinclue();
-        // On regarde si la structure du reponsable est dans la liste
-        if (!isset($tabstructure[$respstruct->id()]) and $respstruct->id()!=$respdurespstruct->id())
-        {
-            error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " n'est pas inclue dans la structure parente " . $respdurespstruct->id() . " => Donc pas de N+2"));
-            return false;
-        }
-        error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("La structure " . $respstruct->id() . " du responsable " . $resp->identitecomplete() . " est inclue dans la structure parente " . $respdurespstruct->id() . " ou c'est la même => On a un N+2"));
-        error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("Le N+2 de l'agent " . $this->agentid() . " est " . $respduresp->agentid()));
-        return $respduresp;
+        return $respN2;
+
     }
 
     function get_signataire_respbranche(&$structresp = null, &$codeinterne = null)

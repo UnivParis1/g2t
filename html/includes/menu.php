@@ -905,9 +905,6 @@
                     </form>
                     <a href="javascript:document.agentannulation.submit();">Annulation de demandes</a>
                 </li>
-<?php                                    
-    }
-?>
                 <li onclick='document.agent_tpspartiel.submit();'>
                     <form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -916,6 +913,9 @@
                     </form>
                     <a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
                 </li>
+<?php                                    
+    }
+?>
                 <li onclick='document.agent_gest_teletravail.submit();'>
                     <form name='agent_gest_teletravail' method='post' action="gestion_teletravail.php">
                         <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1175,6 +1175,10 @@
             }
         }
 ?>								
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
                         <li onclick='document.resp_valid_tpspartiel.submit();'>
                             <form name='resp_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1188,10 +1192,6 @@
                                 <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                             </form> <a href="javascript:document.resp_tpspartiel.submit();">Saisir le temps partiel pour un agent</a>
                         </li>
-<?php
-        if (!$estrespdebibliotheque)
-        {
-?>
                         <li onclick='document.resp_aff_solde.submit();'>
                             <form name='resp_aff_solde' method='post' action="affiche_solde.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1389,9 +1389,6 @@
                             </form> 
                             <a href="javascript:document.gest_gest_conge.submit();">Annulation de congé ou d'absence</a>
                         </li>
-<?php
-        }
-?>
                         <li onclick='document.gest_valid_tpspartiel.submit();'>
                             <form name='gest_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
                                 <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
@@ -1399,6 +1396,9 @@
                             </form> 
                             <a href="javascript:document.gest_valid_tpspartiel.submit();">Validation des temps partiels</a>
                         </li>
+<?php
+        }
+?>
 <?php
         if (!$estgestdebibliotheque)
         {
@@ -1870,4 +1870,21 @@
 ?> 
 
 </div>
+
+<script>
+    var mainmenu = document.querySelector('#mainmenu');
+    var listesousmenu = mainmenu.querySelectorAll('li.plus');
+    if (listesousmenu.length > 0)
+    {
+        for (let index = 0 ; index < listesousmenu.length ; index++)
+        {
+            let sousmenu = listesousmenu[index];
+            if (!sousmenu.querySelector('form'))
+            {
+                sousmenu.hidden = true;
+            }
+        }
+    }
+</script>
+
 <br> <br> <br>

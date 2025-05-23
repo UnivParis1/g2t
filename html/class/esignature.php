@@ -619,13 +619,41 @@ class esignature
         $esignaturelog = new esignaturelog($this->dbconnect);
 
         $curl = curl_init();
+
+        if ($curl === false)
+        {
+            $error = "Erreur dans la création du CURL !";
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, $error );
+            return $error;
+        }
+
+        // if (isset($params['workflowid']))
+        // {
+        //     $msglog = __CLASS__ . "::" . __FUNCTION__ . " : Id du model dans les parametres =>  " . $params['workflowid'];
+        //     error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $msglog"));
+        // }
+
+        if (isset($params['workflowid']) and trim($params['workflowid'] . '') != "" and is_numeric($params['workflowid']))
+        {
+            $esignaturews = '/ws/workflows/' . intval(trim($params['workflowid'])) . '/new';
+        }
+        else
+        {
+            $esignaturews = '/ws/signrequests/new';
+        }
+        $msglog = __CLASS__ . "::" . __FUNCTION__ . " : Nom du WS utilisé =>  " . $esignaturews;
+        error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $msglog"));
+
+
         $opts = [
-            CURLOPT_URL => $this->eSignature_url . '/ws/signrequests/new',
+            CURLOPT_URL => $this->eSignature_url . $esignaturews,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $params,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_SSL_VERIFYPEER => false
         ];
+        // var_dump($opts);
         curl_setopt_array($curl, $opts);
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         $this->set_curl_header($curl, "multipart/form-data");
@@ -875,19 +903,36 @@ class esignature
         }
         $content = $fdf_header . $fdf_content . $fdf_footer;
 
-        file_put_contents($FDFfile, $content);
+        $filereturn = @file_put_contents($FDFfile, $content);
+
+        if ($filereturn===false or $filereturn==0)
+        {
+            $error = "Impossible de créer le fichier de données : $FDFfile";
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, $error);
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+            return false;
+        }
 
         // Merging the FDF file with the raw PDF form
         $commandline = 'pdftk "' . $pdf_filename . '" fill_form "' . $FDFfile . '" output "' . $result_pdffilename . '"';
         $return = exec($commandline, $output, $resultcode); 
 
-        //var_dump($return);
-        //var_dump($output);
-        //var_dump($resultcode);
+        // var_dump($return);
+        // var_dump($output);
+        // var_dump($resultcode);
+
+        // Si le code retour n'est pas 0 => Il y a eu un problème 
+        if ($resultcode!=0)
+        {
+            $error = "Impossible de fusionner le fichier de données avec le fichier PDF.<br>Vérifiez la présence de l'outil pdftk";
+            echo $this->fonctions->showmessage(fonctions::MSGERROR, $error);
+            error_log(basename(__FILE__) . $this->fonctions->stripAccents(" $error"));
+            return false;
+        }
         
         if (file_exists($FDFfile))
         {
-            //unlink($FDFfile);
+            unlink($FDFfile);
         }
         // Exec return false en cas d'erreur => On ne doit tester que si c'est false ou pas
         return ($return!==false);
@@ -1100,6 +1145,7 @@ class esignature
                 elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESPONSABLE)
                 {
                     // On doit mettre le responsable du demandeur dans le tableau
+                    $codeinterne = null;
                     $resp = $demandeur->getsignataire(null,$respstruct,$codeinterne);
                     if (!is_null($resp) and ($resp!==false))
                     {
@@ -1128,15 +1174,23 @@ class esignature
                     {
                         $arraysignataire_n2[$responsable_n2->agentid()] = $responsable_n2;
                     }
-                    if ($responsable_n2!==false and ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT))
+                    // if ($responsable_n2!==false and ($codeinterne == structure::MAIL_AGENT_ENVOI_RESP_COURANT or $codeinterne == structure::MAIL_RESP_ENVOI_RESP_PARENT))
+                    if ($responsable_n2!==false)
                     {
+                        // var_dump("respdurespstruct = " . $respdurespstruct->nomcourt());
                         $respsiham_n2 = $respdurespstruct->responsablesiham();
                         if ($respsiham_n2->mail() . "" != "")
                         {
                             $arraysignataire_n2[$respsiham_n2->agentid()] = $respsiham_n2;                
                         }
                     }
+                    else
+                    {
+                        // var_dump("Pas de N+2");
+                    }
         
+                    // var_dump($arraysignataire_n2);
+                    
                     //var_dump($responsable_n2);
                     // On n'a pas trouvé de responsable n+2
                     foreach((array)$arraysignataire_n2 as $signataire)
@@ -1165,23 +1219,34 @@ class esignature
                 }
                 elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_DIRECTEUR)
                 {
-                    //var_dump("Je suis dans le cas d'un directeur");
+                    // var_dump("Je suis dans le cas d'un directeur");
                     $structracine = $struct->structureenglobante();
-                    // //var_dump($structracine->responsable()->agentid());
+                    // var_dump($structracine->responsable()->agentid());
 
                     $resp = $structracine->responsable();
-                    if ($resp->agentid()!='')
+                    $respsiham = $structracine->responsablesiham();
+                    if ($demandeur->structureid()==$structracine->id() and ($resp->agentid()==$demandeur->agentid() or $respsiham->agentid()==$demandeur->agentid()))
                     {
-                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
-                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
-                        //var_dump($signatairearray[$numero][$tempid]);
+                        // Le demandeur est le responsable de la structure englobante => Donc on ne fait rien
+                        $msglog  = "Le demandeur est le responsable ou responsable SIHAM de la structure englobante => Donc on ne fait rien.";
+                        error_log(basename(__FILE__) . $this->fonctions->stripAccents("$msglog"));
                     }
-                    $resp = $structracine->responsablesiham();
-                    if ($resp->agentid()!='')
+                    else
                     {
-                        $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
-                        $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
-                        //var_dump($signatairearray[$numero][$tempid]);
+                        if ($resp->agentid()!='')
+                        {
+                            // var_dump("On ajoute le responsable de la structure englobante");
+                            $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();
+                            $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$resp->agentid());
+                            // var_dump($signatairearray[$numero][$tempid]);
+                        }
+                        if ($respsiham->agentid()!='')
+                        {
+                            // var_dump("On ajoute le responsable SIHAM de la structure englobante");
+                            $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $respsiham->agentid();
+                            $signatairearray[$numero][$tempid] = array(fonctions::SIGNATAIRE_AGENT,$respsiham->agentid());
+                            // var_dump($signatairearray[$numero][$tempid]);
+                        }
                     }
                 }
                 elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESP_BRANCHE)

@@ -5384,7 +5384,7 @@ WHERE  table_schema = Database()
 
         if (count($stepsJsonArray)>0)
         {
-            //var_export($stepsJsonArray);
+            // var_dump($stepsJsonArray);
             $tabparam["stepsJsonString"] = json_encode($stepsJsonArray);
             unset($tabparam['levelextrainfos']);
         }

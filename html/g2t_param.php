@@ -793,7 +793,7 @@
                 foreach ($rhcancel as $rhagentid => $rhvalue)
                 {
                     $rhagent = new agent($dbcon);
-                    if (strcasecmp((string)$rhvalue,'yes')==0 and  $rhagent->load($rhagentid))
+                    if ($fonctions->convertvaluetobool($rhvalue) and $rhagent->load($rhagentid)) // (strcasecmp((string)$rhvalue,'yes')==0 and  $rhagent->load($rhagentid))
                     {
                         $rhagent->enregistreprofilrh(array());
                     }
@@ -904,6 +904,21 @@
             $urlg2tmanuel = trim($_POST['urlg2tmanuel']);
             $constantename = "URL_G2TMANUEL";
             $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $urlg2tmanuel);
+            if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
+
+            $idworkflowalimcet = trim($_POST['idworkflowalimcet']);
+            $constantename = "IDWORKFLOWALIMCET";
+            $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $idworkflowalimcet);
+            if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
+
+            $idworkflowoptioncet = trim($_POST['idworkflowoptioncet']);
+            $constantename = "IDWORKFLOWOPTIONCET";
+            $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $idworkflowoptioncet);
+            if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
+
+            $idworkflowteletravail = trim($_POST['idworkflowteletravail']);
+            $constantename = "IDWORKFLOWTELETRAVAIL";
+            $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $idworkflowteletravail);
             if (strlen($msg_erreur)>0) $msg_erreur = $msg_erreur . '<br>';
             
             if ($msg_erreur!="")
@@ -1627,15 +1642,15 @@
             $reportteletravail = $fonctions->liredbconstante($constantename);
         }
         echo "<select id='reportteletravail' name='reportteletravail'>";
-	echo "<option value='o'";
-        if (strcasecmp((string)$reportteletravail, "o") == 0)
+	    echo "<option value='o'";
+        if ($fonctions->convertvaluetobool($reportteletravail)) // (strcasecmp((string)$reportteletravail, "o") == 0)
         {
             echo " selected ";
         }
         echo ">" . $fonctions->ouinonlibelle('o');
         echo "</option>";
-	echo "<option value='n'";
-        if (strcasecmp((string)$reportteletravail, "n") == 0)
+	    echo "<option value='n'";
+        if (!$fonctions->convertvaluetobool($reportteletravail)) // (strcasecmp((string)$reportteletravail, "n") == 0)
         {
             echo " selected ";
         }
@@ -1652,15 +1667,15 @@
             $esignatureteletravail = $fonctions->liredbconstante($constantename);
         }
         echo "<select id='esignatureteletravail' name='esignatureteletravail'>";
-	echo "<option value='o'";
-        if (strcasecmp((string)$esignatureteletravail, "o") == 0)
+	    echo "<option value='o'";
+        if ($fonctions->convertvaluetobool($esignatureteletravail)) // (strcasecmp((string)$esignatureteletravail, "o") == 0)
         {
             echo " selected ";
         }
         echo ">" . $fonctions->ouinonlibelle('o');
         echo "</option>";
-	echo "<option value='n'";
-        if (strcasecmp((string)$esignatureteletravail, "n") == 0)
+	    echo "<option value='n'";
+        if (!$fonctions->convertvaluetobool($esignatureteletravail)) // (strcasecmp((string)$esignatureteletravail, "n") == 0)
         {
             echo " selected ";
         }
@@ -1860,6 +1875,18 @@
         $urlg2tmanuel = 'https://ent.univ-paris1.fr/assets/aide/canal/g2t.html';
         if ($fonctions->testexistdbconstante($dbconstante))  $urlg2tmanuel = trim($fonctions->liredbconstante($dbconstante));
 
+        $dbconstante = "IDWORKFLOWALIMCET";
+        $idworkflowalimcet = "";
+        if ($fonctions->testexistdbconstante($dbconstante))  $idworkflowalimcet = trim($fonctions->liredbconstante($dbconstante));
+
+        $dbconstante = "IDWORKFLOWOPTIONCET";
+        $idworkflowoptioncet = "";
+        if ($fonctions->testexistdbconstante($dbconstante))  $idworkflowoptioncet = trim($fonctions->liredbconstante($dbconstante));
+
+        $dbconstante = "IDWORKFLOWTELETRAVAIL";
+        $idworkflowteletravail = "";
+        if ($fonctions->testexistdbconstante($dbconstante))  $idworkflowteletravail = trim($fonctions->liredbconstante($dbconstante));
+
 ?>
       	<br>
         <form name='form_administration' id='form_administration' method='post' >
@@ -1893,14 +1920,29 @@
                 <tr>
                     <td><span data-tip="Non = L'agent peut poser des jours de congés un mois au delà de la fin de la période de référence">Limiter la pose de congés à la période de référence : 
                         <select name='limite_conge_periode' id='limite_conge_periode'>
-                            <option value='o' <?php if (strcasecmp((string)$limitecongesperiode, "n") != 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('o'); ?></option>
-                            <option value='n' <?php if (strcasecmp((string)$limitecongesperiode, "n") == 0) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('n'); ?></option>
+                            <option value='o' <?php if ($fonctions->convertvaluetobool($limitecongesperiode)) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('o'); ?></option>
+                            <option value='n' <?php if (!$fonctions->convertvaluetobool($limitecongesperiode)) { echo " selected "; } ?> ><?php echo $fonctions->ouinonlibelle('n'); ?></option>
                         </select>
                     </td>
                 </tr>
                 <tr>
                     <td><span data-tip="URL d'accès au manuel utilisateur G2T">URL du manuel utilisateur G2T : 
                         <input type='text' name='urlg2tmanuel' size="100" value='<?php echo $urlg2tmanuel; ?>' >
+                    </td>
+                </tr>
+                <tr>
+                    <td><span data-tip="Identifiant du Workflow eSignature pour l'alimentation CET">Alimentation CET : Identifiant du Workflow eSignature : 
+                        <input type='text' name='idworkflowalimcet' size="10" value='<?php echo $idworkflowalimcet; ?>' >
+                    </td>
+                </tr>
+                <tr>
+                    <td><span data-tip="Identifiant du Workflow eSignature pour l'option CET">Option CET : Identifiant du Workflow eSignature : 
+                        <input type='text' name='idworkflowoptioncet' size="10" value='<?php echo $idworkflowoptioncet; ?>' >
+                    </td>
+                </tr>
+                <tr>
+                    <td><span data-tip="Identifiant du Workflow eSignature pour le télétravail">Télétravail : Identifiant du Workflow eSignature : 
+                        <input type='text' name='idworkflowteletravail' size="10" value='<?php echo $idworkflowteletravail; ?>' >
                     </td>
                 </tr>
 	    </table>

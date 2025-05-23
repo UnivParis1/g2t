@@ -35,7 +35,7 @@
     if ($fonctions->testexistdbconstante('ESIGNATURETELETRAVAIL')) 
     {
         $esignatureactive = $fonctions->liredbconstante('ESIGNATURETELETRAVAIL');
-        if (strcasecmp((string)$esignatureactive,'o')==0)
+        if ($fonctions->convertvaluetobool($esignatureactive)) // (strcasecmp((string)$esignatureactive,'o')==0)
         {
             $esignatureactive = true;
         }
@@ -52,7 +52,7 @@
     {
         $noesignature = $_POST["noesignature"];
     }
-    if (strcasecmp((string)$noesignature, 'yes')==0) // Si le flag $noesignature = yes => On force le $esignatureactive à false
+    if ($fonctions->convertvaluetobool($noesignature)) // (strcasecmp((string)$noesignature, 'yes')==0) // Si le flag $noesignature = yes => On force le $esignatureactive à false
     {
         $esignatureactive = false;
     }
@@ -234,7 +234,8 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     $tabteletravail = str_pad('',14,'0');
     $disablesubmit = false;
     $listeconventionchevauche = array();
-    
+    $workflowid = '';
+
     if ($fonctions->testexistdbconstante('NBJOURSMAXTELETRAVAIL')) 
     {
         $nbjoursmaxteletravail = $fonctions->liredbconstante('NBJOURSMAXTELETRAVAIL');
@@ -271,10 +272,11 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     }
     elseif (!is_null($agentid))
     {
-        // $id_model = '';
         // if ($esignatureactive)
         // {
-        //     $id_model = trim($fonctions->getidmodelteletravail($maxniveau,$agent));
+        //     $id_model = trim($fonctions->liredbconstante("IDMODELTELETRAVAIL")); // trim($fonctions->getidmodelteletravail($maxniveau,$agent));
+        //     $logmsg = "On vient de chercher le modele du télétravail => $id_model";
+        //     error_log(basename(__FILE__) . " : " . $fonctions->stripAccents($logmsg));        
         // }
         // //var_dump($id_model);
         // if (trim($id_model) == '' and $esignatureactive)
@@ -1069,11 +1071,37 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     {
                         $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . " - " . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
                     }
+
+                    // $signrequestparams = array();
+                    // $signrequestparamsinfo = array();
+                    // $signrequestparamsinfo['xPos'] = 100;
+                    // $signrequestparamsinfo['yPos'] = 500;
+                    // $signrequestparamsinfo['signPageNumber'] = 3;
+                    // $signrequestparams[] = $signrequestparamsinfo;
+                    // $signrequestparamsinfo = array();
+                    // $signrequestparamsinfo['xPos'] = 350;
+                    // $signrequestparamsinfo['yPos'] = 500;
+                    // $signrequestparamsinfo['signPageNumber'] = 3;
+                    // $signrequestparams[] = $signrequestparamsinfo;
+                    // $signrequestparamsinfo = array();
+                    // $signrequestparamsinfo['xPos'] = 600;
+                    // $signrequestparamsinfo['yPos'] = 500;
+                    // $signrequestparamsinfo['signPageNumber'] = 3;
+                    // $signrequestparams[] = $signrequestparamsinfo;
+
                     
+                    //////////////////////////////////////////
+                    // On doit rechercher l'id du Workflow dans la base de données
+                    $workflowid = "";
+                    $dbconstante = "IDWORKFLOWTELETRAVAIL";
+                    if ($fonctions->testexistdbconstante($dbconstante)) $workflowid = trim($fonctions->liredbconstante($dbconstante));
+                    //////////////////////////////////////////
+
                     //echo "formsdata = <br>"; var_dump($formsdata);
                     
                     $params = array
                     (
+                        'workflowid' => $workflowid,
                         'title' => "Convention de télétravail de " . $agent->prenom() . " " . $agent->nom(),
                         'eppn' => "$agent_eppn",
                         'createByEppn' => "$agent_eppn",
@@ -1081,16 +1109,17 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         'targetEmails' => array("$agent_mail"),
                         'targetUrl' => "$full_g2t_ws_url",
                         'targetUrls' => array("$full_g2t_ws_url"),
-                        'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+                        'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE) //,
+                        // 'signRequestParamsJsonString' => json_encode($signrequestparams) //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
                     );
 
                     $taberrorcheckmail = array();
                     if ($esignatureactive)
                     {
                         //echo "Avant la vérification du circuit => numéro 2 <br>";
-                        //echo "Param Avant = <br>"; var_dump($params);
+                        //var_dump("Param Avant = "); var_dump($params);
                         $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
-                        //echo "Param Après = <br>"; var_dump($params);
+                        // var_dump("Param Avant = "); var_dump($params);
                     }
                     if (count($taberrorcheckmail) > 0)
                     {
@@ -1121,7 +1150,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         {
                             //var_dump("Avant le multipart");
                             $params['multipartFiles'] = curl_file_create(realpath($outputfilename), "application/pdf", "Convention télétravail");
-                            //echo "Params = <br>"; var_export($params);
+                            //var_dump("Params = "); var_dump($params);
                             //var_dump("Avant le custom");
                             $id = $esignature->create_custom_signrequest($params);
     
@@ -1160,7 +1189,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         }
                         else
                         {
-                            $erreur  = "La création de la convention de télétravail dans eSignature a échoué !!==> Pas de sauvegarde de la conention télétravail dans G2T.";
+                            $erreur  = "La création de la convention de télétravail dans eSignature a échoué !!==> Pas de sauvegarde de la convention télétravail dans G2T.";
                             error_log(basename(__FILE__) . $fonctions->stripAccents("$erreur"));
                         }
                         if ($outputfilename!='' and file_exists($outputfilename))
@@ -2450,12 +2479,17 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             $structliste = $user->structgestliste();   
             //var_dump($structliste);
         }
+        //var_dump($structliste);
         $structliste = $structliste + $fonctions->listestructureteletravailasigner($user->agentid());
+        //var_dump($structliste);
         if (is_array($structliste))
         {
             uasort($structliste,"triparprofondeurabsolue");
         }
+        //var_dump($structliste);
+
         $agentliste = array();
+        $listagentaffiche = array();
         $teletravailtrouve = false;
         foreach ((array)$structliste as $structure)
         {
@@ -2520,6 +2554,14 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             {
                 if ($agent->agentid()!=$user->agentid() or $mode!=MODE_RESPONSABLE)
                 {
+                    // Si l'agent est déjà affiché précédement => On ne réafiche pas sa demande de télétravail
+                    if (isset($listagentaffiche[$agent->agentid()]))
+                    {
+                        // On passe à l'agent suivant
+                        continue;
+                    }
+                    // On mémorise le fait que l'agent a été affiché 
+                    $listagentaffiche[$agent->agentid()] = $agent->agentid();
                     $tabdemandeteletravail = $agent->listedemandeteletravailenattente();
                     foreach($tabdemandeteletravail as $teletravail)
                     {
