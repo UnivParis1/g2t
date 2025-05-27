@@ -2089,8 +2089,7 @@ class agent
         // echo "anneeref = " . $anneeref . "<br>";
         $htmltext = "<br>";
         $htmltext = $htmltext . "<div id='soldeconges'>";
-        $htmltext = $htmltext . "      <center>";
-        $htmltext = $htmltext . "      <table class='tableau'>";
+        $htmltext = $htmltext . "      <table class='tableau centertable'><tbody>";
         if (! $infoagent)
             $htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour l'année $anneeref / " . ($anneeref + 1) . "</td></tr>";
         else
@@ -2158,9 +2157,8 @@ class agent
          * $htmltext = $htmltext . " <td>". $totaldemandeattente ."</td>";
          * $htmltext = $htmltext . " </tr>";
          */
-        $htmltext = $htmltext . "      </table>";
-        $htmltext = $htmltext . "<div class='reglegestiontextcolor'>Soldes de congés donnés sous réserve du respect des règles de gestion</div>";
-        $htmltext = $htmltext . "      </center>";
+        $htmltext = $htmltext . "      </tbody></table>";
+        $htmltext = $htmltext . "<div class='reglegestiontextcolor centeraligntext'>Soldes de congés donnés sous réserve du respect des règles de gestion</div>";
         $htmltext = $htmltext . "</div>";
         $htmltext = $htmltext . "<br>";
         
@@ -2272,7 +2270,7 @@ class agent
         $demandeliste = $this->demandesliste($datedebut, $datefin);
         $htmltext = "<br>";
         $htmltext = $htmltext . "<div id='demandeliste'>";
-        $htmltext = $htmltext . "<center><table class='tableau' >";
+        $htmltext = $htmltext . "<table class='tableau centertable' ><tbody>";
         if (count($demandeliste) == 0)
         {
             $htmltext = $htmltext . "   <tr class='titre'><td>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
@@ -2428,7 +2426,7 @@ class agent
                 }
             }
         }
-        $htmltext = $htmltext . "</table></center>";
+        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "</div>";
         
         $planning = $this->planning($this->fonctions->formatdate($datedebut), $this->fonctions->formatdate($datefin));
@@ -2455,7 +2453,7 @@ class agent
             $htmltext = $htmltext . "<br>";
             // $htmltext = $htmltext . print_r($synthesetab,true);
             $htmltext = $htmltext . "<div id='demandeliste'>";
-            $htmltext = $htmltext . "<center><table class='tableau' >";
+            $htmltext = $htmltext . "<table class='tableau centertable' ><tbody>";
             $htmltext = $htmltext . "   <tr class='titre'><td colspan=2>Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin) . "</td></tr>";
             $htmltext = $htmltext . "   <tr class='entete'><td>Type de demande</td><td>Droit pris</td></tr>";
             ksort($synthesetab);
@@ -2465,7 +2463,7 @@ class agent
                 $htmltext = $htmltext . "<td>" . $nbrejrs . "</td>";
                 $htmltext = $htmltext . "</tr>";
             }
-            $htmltext = $htmltext . "</table></center>";
+            $htmltext = $htmltext . "</tbody></table>";
             $htmltext = $htmltext . "</div>";
         }
         if ($showlink == TRUE) {
@@ -3100,7 +3098,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     // echo "todisplay = $todisplay <br>";
                     if ($todisplay) {
                         if ($premieredemande) {
-                            $htmltext = $htmltext . "<table class='tableausimple' width=100%>";
+                            $htmltext = $htmltext . "<table class='tableausimple' width=100%><tbody>";
                             // Si on est en mode MODE_CONSULTANT
                             if (strcasecmp((string)$mode,MODE_CONSULTANT)==0)
                             {
@@ -3320,7 +3318,7 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             }
             if (! $premieredemande)
             {
-                $htmltext = $htmltext . "</table>";
+                $htmltext = $htmltext . "</tbody></table>";
             }
             // $htmltext = $htmltext . "<br>";
         }
@@ -3450,11 +3448,12 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             if (($showonlycomplement and ((strcasecmp((string)substr($result[5], 0, 3), recuperation::SUPP_ID)) == 0 or $result[5]==recuperation::RECUP_ID)) or ($showonlycomplement == false)) {
                 if ($premiercomment) 
                 {
+                    $centerclass = '';
                     if (!$allowremove)
                     {
-                        $htmltext = $htmltext . "<center>";
+                        $centerclass = " centertable ";
                     }
-                    $htmltext = $htmltext . "<table class='tableausimple'>";
+                    $htmltext = $htmltext . "<table class='tableausimple $centerclass'><tbody>";
                     $nbcolonne = 4;
                     if ($allowremove)
                     {
@@ -3546,11 +3545,11 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
         }
         if (!$premiercomment)
         {
-            $htmltext = $htmltext . "</table>";
+            $htmltext = $htmltext . "</tbody></table>";
         }
         if (!$allowremove)
         {
-            $htmltext = $htmltext . "</center>";
+            // Nothing to do => Center using class
         }
         if (!$premiercomment)
         {
@@ -4053,7 +4052,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
     	if (sizeof($listid) != 0)
     	{
             $htmltext = $htmltext . "<div id='demandes_alim_cet'>";
-            //$htmltext = $htmltext . "<center>";
             $htmltext = $htmltext . "<table class='tableausimple tabsynthesealim centertable'>";
             $htmltext = $htmltext . "<thead>";
             $htmltext = $htmltext . "<tr class='titresimple'>";
@@ -4080,7 +4078,6 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
             }
             $htmltext = $htmltext . "</tbody>";
             $htmltext = $htmltext . "</table><br>";
-            //$htmltext = $htmltext . "</center>";
 
             $htmltext = $htmltext . "</div>";
     	}

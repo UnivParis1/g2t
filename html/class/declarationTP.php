@@ -553,9 +553,9 @@ class declarationTP
         
         // echo "Le tableau des TP = " . $this->tabtpspartiel . "<br>";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau'>";
+        $htmltext = $htmltext . "<table class='tableau'><tbody>";
         $htmltext = $htmltext . $this->tabtpspartielhtml();
-        $htmltext = $htmltext . "</table>";
+        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "</div>";
         
         $htmltext = $htmltext . "</td>";

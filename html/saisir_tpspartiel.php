@@ -391,7 +391,7 @@
                     echo $affectation->html(true, false, $mode);
                     //echo "Apres le affectation->html <br>";
                     echo "<br>Réaliser une nouvelle déclaration de temps partiel<br>";
-                    echo "<table>";
+                    echo "<table><tbody>";
                     echo "<tr>";
                     echo "<td>Date de début de la période :</td>";
 
@@ -429,7 +429,7 @@
                     echo "<td>Date de fin de la période :</td>";
                     echo "<td width=1px><input class='calendrier' type=text name=date_fin id=" . $calendrierid_fin . " size=10 minperiode='" . $affectation->datedebut() . "' maxperiode='" . $affectation->datefin() . "'></td>";
                     echo "</tr>";
-                    echo "</table>";
+                    echo "</tbody></table>";
                     $nbredemiTP = (10 - ($affectation->quotitevaleur() * 10));
                     // echo "nbredemiTP = " . $nbredemiTP . "<br>";
                     if (strtoupper($agent->civilite()) == 'MME')
@@ -440,11 +440,11 @@
                     echo "<br>Au regard de votre quotité de travail, vous devez cocher $nbredemiTP demi-journée(s) par semaine<br><br>";
 
                     echo "<div id='planning'>";
-                    echo "<table class='tableau'>";
+                    echo "<table class='tableau'><tbody>";
                     $declaration = new declarationTP($dbcon);
                     $declaration->tabtpspartiel(str_repeat("0", 20));
                     echo $declaration->tabtpspartielhtml(true);
-                    echo "</table>";
+                    echo "</tbody></table>";
                     echo "</div>";
 
                     echo "<br>";

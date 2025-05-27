@@ -100,7 +100,7 @@
     }
 
     $count = 0;
-    echo "<table class='tableausimple' >";
+    echo "<table class='tableausimple' ><tbody>";
     echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Droit 20$annee_precedente/20$annee_courante</td><td class='titresimple'>Solde 20$annee_precedente/20$annee_courante au 31/08/20$annee_courante</td><td class='titresimple'>Congés 20$annee_precedente/20$annee_courante entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 20$annee_courante/20$annee_future</td><td class='titresimple'>Droit 20$annee_courante/20$annee_future pris</td></tr>";
     ob_flush();
     flush();
@@ -163,7 +163,7 @@
             $htmlstring = '';
         }
     }
-    $htmlstring = $htmlstring . "</table>";
+    $htmlstring = $htmlstring . "</tbody></table>";
     echo $htmlstring;
     echo "<br>";
     ob_flush();

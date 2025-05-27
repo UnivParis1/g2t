@@ -948,7 +948,7 @@
             }
             else
             {
-                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br>Souhaitez-vous continuer ? ';
             }
             divstructid.hidden = true;
             divagentid.hidden = true;

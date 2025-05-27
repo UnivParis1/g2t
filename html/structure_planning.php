@@ -614,8 +614,8 @@
 
 <?php 
 
-    echo "<form name='select_mois' id='select_mois' method='post'>";
-    echo "<center><select class='selectpadding' name='indexmois'>";
+    echo "<form name='select_mois' id='select_mois' method='post' class='centeraligntext'>";
+    echo "<select class='selectpadding' name='indexmois'>";
 
     // On reprend le mois de début de période
     $index = $moisdebutperiode;

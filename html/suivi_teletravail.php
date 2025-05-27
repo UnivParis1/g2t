@@ -73,7 +73,7 @@
     
     echo "Affichage des conventions de télétravail en attente de traitement (" . count($listeteletravail)  . " demande(s))<br>";
     $premiereligne = true;
-    echo "<table class='tableausimple'>";
+    echo "<table class='tableausimple'><tbody>";
     foreach($listeteletravail as $teletravail)
     {
         error_log(basename(__FILE__) . " " . $fonctions->stripAccents("La convention en cours de traitement est : " . $teletravail->teletravailid()));
@@ -246,7 +246,7 @@
         echo "    <td class='cellulesimple'><a href='affiche_pdf.php' target='_blank' onClick='document.forms[\"showesignaturePDF_" . $teletravail->esignatureid() . "\"].submit(); return false;'>". $teletravail->esignatureurl()."</a></td>";
         echo "</tr>";
     }
-    echo "</table>";
+    echo "</tbody></table>";
 
 ?>
     <script>

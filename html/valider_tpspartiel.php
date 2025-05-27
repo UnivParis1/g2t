@@ -173,7 +173,7 @@
                                         if ($premiereligne)
                                         {
                                             echo "<form name='frm_validation_autodecla'  method='post' >";
-                                            echo "<table class='tableausimple'>";
+                                            echo "<table class='tableausimple'><tbody>";
                                             echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong() . "</td></tr>";
                                             echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Etat de la demande</td><td class='cellulesimple'>Jours de temps partiel</td></tr>";
                                             $premiereligne = false;
@@ -188,7 +188,7 @@
             }
             if (!$premiereligne)
             {
-                echo "</table>";
+                echo "</tbody></table>";
                 echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
                 echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
                 echo "<input type='hidden' name='mode' value='" . $mode . "' />";

@@ -94,7 +94,7 @@
 
             if ($premierestructure)
             {
-                $htmltext = $htmltext . "<table class='tableausimple'>";
+                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
                 $premierestructure = false;
             }
             $nbcolonne = 5;
@@ -193,7 +193,7 @@
         }
         if (!$premierestructure)
         {
-            $htmltext = $htmltext . "</table>";
+            $htmltext = $htmltext . "</tbody></table>";
             $htmltext = $htmltext . "<br>";
         }
     }

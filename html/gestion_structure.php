@@ -334,7 +334,7 @@
             // echo "Date cloture (Structure : " . $struct->id() . ") = " . $struct->datecloture() . "<br>";
             // echo "On est dans la boucle => " . $struct->nomlong() ."<br>";
             if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true)) {
-                echo "<table style='margin-left: " . 30*$struct->profondeurrelative() . "px; border: black;border-left-style: solid;border-width: 2px; padding-left: 10px;'>";
+                echo "<table style='margin-left: " . 30*$struct->profondeurrelative() . "px; border: black;border-left-style: solid;border-width: 2px; padding-left: 10px;'><tbody>";
                 $gestionnaire = $struct->gestionnaire();
                 // echo "Apres recup du gestionnaire.... <br>";
                 
@@ -585,7 +585,7 @@
                     echo "<tr><td class='greentext'>Liste des agents de la structure  - $nbagents agent(s) :<br>$textlisteagent</td></tr>";
                 }
                 echo "<tr><td height=15></td></tr>";
-                echo "</table>";
+                echo "</tbody></table>";
             }
 
 ?>

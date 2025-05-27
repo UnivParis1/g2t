@@ -671,7 +671,7 @@
 
             $full_formulairetexte_openpdf = $full_formulairetexte_openpdf . " " . $formulairetext_openpdf;
             // var_dump($full_formulairetexte_openpdf);
-            echo "<table>";
+            echo "<table><tbody>";
             echo "<tr>";
             echo "<td>";
             echo "Voir le planning des agents des sous-structures dans le planning de la structure <b>" . $structure->nomcourt()  . "</b> (responsable G2T/gestionnaire G2T) : ";
@@ -879,7 +879,7 @@
                 }
             }
 
-            echo "</table>";
+            echo "</tbody></table>";
             echo "<br>";
 
 
@@ -892,7 +892,7 @@
                 //     $arrayagentid[$agent->agentid()] = $agent;
                 // }
 
-                echo "<table>";
+                echo "<table><tbody>";
 
                 // Si aucun agent n'est dans la structure, on ne doit pas afficher le paramétrage des signatures des agents
                 if (count((array)$arrayagentid)>0)
@@ -967,7 +967,7 @@
                     echo "</td>";
                     echo "</tr>";
                 }
-                echo "</table>";
+                echo "</tbody></table>";
 ?>
 <script>
     
@@ -1034,7 +1034,7 @@
     select_tag.dispatchEvent(e);
 </script>
 <?php
-                echo "<table>";
+                echo "<table><tbody>";
                 $gestionnaire = $structure->gestionnaire();
                 echo "\n<tr>";
                 echo "<td>Nom du gestionnaire G2T : ";
@@ -1284,7 +1284,7 @@
                     echo "<script>updatedelegue_" . $structure->id() ."();</script>";
                 }
 //                echo "<tr><td height=15></td></tr>";
-                echo "</table>";
+                echo "</tbody></table>";
             }
             //echo "<br><br><br>";
             echo "<br><br>";

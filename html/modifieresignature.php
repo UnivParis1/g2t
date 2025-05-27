@@ -461,7 +461,7 @@
 
 
         echo "<form name='form_esignature' id='form_esignature' method='post' >";
-        echo "<table class='tableausimple' id='listeesignature'>";
+        echo "<table class='tableausimple' id='listeesignature'><tbody>";
         echo "<tr><td class='titresimple'>Type</td>
             <td class='titresimple'>Date de la demande</td>
             <td class='titresimple'>Statut</td>
@@ -514,7 +514,7 @@
             echo "    <td class='cellulesimple centeraligntext'><input type='radio' id='$esignatureid' name='esignatureradioid' value='$esignatureid' onchange='this.form.submit()' $checked/></td>";
             echo "</tr>";
         }
-        echo "</table>";
+        echo "</tbody></table>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='agentid' name='agentid' value='$agentid' >";
         echo "</form>";
@@ -545,7 +545,7 @@
                 echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
                 echo "<input type='hidden' id='agentid' name='agentid' value='$agentid' >";
                 echo "<input type='hidden' id='esignatureradioid' name='esignatureradioid' value='$esignatureradioid' >";
-                echo "<table class='tableausimple' id='listerecipients'>";
+                echo "<table class='tableausimple' id='listerecipients'><tbody>";
                 echo "<tr><td class='titresimple'>Etape</td>
                           <td class='titresimple'>Identité intervenant</td>
                           <td class='titresimple'>Action intervenant</td>
@@ -597,7 +597,7 @@
                         echo "</tr>";
                     }
                 }
-                echo "</table>";
+                echo "</tbody></table>";
                 echo "</form>";
                 echo "<br><br>";
 

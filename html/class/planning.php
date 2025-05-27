@@ -595,7 +595,7 @@ class planning
         
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'>";
+        $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'><tbody>";
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
         $htmltext = $htmltext . "<tr class='entete'><td>Mois</td>";
@@ -651,7 +651,7 @@ class planning
             }
         }
         $htmltext = $htmltext . "</tr>";
-        $htmltext = $htmltext . "</table>";
+        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "</div>";
         // echo "fin de plannig->planninghtml <br>";
         

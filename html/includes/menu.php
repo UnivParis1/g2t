@@ -471,11 +471,9 @@
                     </select>
                 </div>
             </form>
-            <menu>
-                <center>
-                    <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
-                    <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
-                </center>
+            <menu class='centeraligntext'>
+                <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
+                <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
             </menu>
         </div>
     </div>
@@ -773,11 +771,11 @@
         {
             if (strcasecmp((string)$maintenance, 'n') != 0)
             {
-                echo "<CENTER><div class='redtext fontsize25' ><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div></CENTER><BR>";
+                echo "<div class='redtext fontsize25 centeraligntext' ><B><U>ATTENTION : LE MODE MAINTENANCE EST ACTIV&Eacute; -- APPLICATION EN MAINTENANCE</U></B></div><BR>";
             }
             if (strcasecmp((string)$synchro, 'n') != 0)
             {
-                echo "<CENTER><div class='redtext fontsize25'><B><U>ATTENTION : LE MODE SYNCHRONISATION EST ACTIV&Eacute; -- APPLICATION EN COURS DE SYNCHRO</U></B></div></CENTER><BR>";
+                echo "<div class='redtext fontsize25 centeraligntext'><B><U>ATTENTION : LE MODE SYNCHRONISATION EST ACTIV&Eacute; -- APPLICATION EN COURS DE SYNCHRO</U></B></div><BR>";
             }
         }
         else // C'est un utilisateur simple => Affichage de la page de maintenance
@@ -796,7 +794,7 @@
 
     if (($user->agentid() != $realuser->agentid()) and $realuser->estadministrateur())
     {
-        echo "<CENTER><div class='redtext fontsize25'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></div>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</CENTER><BR>";
+        echo "<div class='redtext fontsize25 centeraligntext'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></div>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")<BR>";
     }
     
     $arraystructpartielle = array();

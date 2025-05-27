@@ -146,6 +146,10 @@
    border-collapse:collapse;
 /*	width:50%; */
  }
+th[scope~="row"] {
+   text-align : left;
+   font-weight: normal;
+}
 .cellulesimple{
    border-width:1px;
    border-style:solid; 
@@ -1164,7 +1168,12 @@ select {
     padding-bottom:10px;
     border: 3px solid #888B8A;
     background: #E5EAE9;
-    color: red;  
+    color: red; 
+    margin : auto;
+}
+
+.periodeobligatoireliste {
+   list-style: disc; 
 }
 
 .warningsitupart {

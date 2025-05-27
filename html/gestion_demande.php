@@ -268,7 +268,7 @@
         }
         else
         {
-            echo "<center>L'agent " . $agent->identitecomplete(true) . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
+            echo "<p class='centeraligntext'>L'agent " . $agent->identitecomplete(true) . " n'a aucun congé à annuler pour la période de référence en cours.</p><br>";
             $displaysubmit = false;
         }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
@@ -377,7 +377,7 @@
         }
         else
         {
-            echo "<center>L'agent " . $agent->identitecomplete(true) . " n'a aucun congé à annuler pour la période de référence en cours.</center><br>";
+            echo "<p class='centeraligntext'>L'agent " . $agent->identitecomplete(true) . " n'a aucun congé à annuler pour la période de référence en cours.</p><br>";
             $displaysubmit = false;
         }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";
@@ -395,7 +395,7 @@
         }
         else
         {
-            echo "<center>L'agent " . $agent->identitecomplete(true) . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</center><br>";
+            echo "<p class='centeraligntext'>L'agent " . $agent->identitecomplete(true) . " n'a aucune demande de congés sur CET à annuler pour la période de référence en cours.</p><br>";
             $displaysubmit = false;
         }
         echo "<input type='hidden' name='agentid' value='" . $agentid . "'>";

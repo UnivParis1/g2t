@@ -831,22 +831,22 @@
                 $rhagent->enregistreprofilrh($tabprofilrh);
             }
             
-            $nomcronuser = $_POST['nomcronuser'];
-            $prenomcronuser = $_POST['prenomcronuser'];
-            $mailcronuser = $_POST['mailcronuser'];
+            $nomcron = $_POST['nomcron'];
+            $prenomcron = $_POST['prenomcron'];
+            $mailcron = $_POST['mailcron'];
             $cronuser = new agent($dbcon);
-            $cronuser->nom($nomcronuser);
-            $cronuser->prenom($prenomcronuser);
-            $cronuser->mail($mailcronuser);
+            $cronuser->nom($nomcron);
+            $cronuser->prenom($prenomcron);
+            $cronuser->mail($mailcron);
             $cronuser->store(SPECIAL_USER_IDCRONUSER);
 
-            $nomlisterhuser = $_POST['nomlisterhuser'];
-            $prenomlisterhuser = $_POST['prenomlisterhuser'];
-            $maillisterhuser = $_POST['maillisterhuser'];
+            $nomlisterhconges = $_POST['nomlisterhconges'];
+            $prenomlisterhconges = $_POST['prenomlisterhconges'];
+            $maillisterhconges = $_POST['maillisterhconges'];
             $listerhuser = new agent($dbcon);
-            $listerhuser->nom($nomlisterhuser);
-            $listerhuser->prenom($prenomlisterhuser);
-            $listerhuser->mail($maillisterhuser);
+            $listerhuser->nom($nomlisterhconges);
+            $listerhuser->prenom($prenomlisterhconges);
+            $listerhuser->mail($maillisterhconges);
             $listerhuser->store(SPECIAL_USER_IDLISTERHUSER);
             
             $nomlisterhteletravail = $_POST['nomlisterhteletravail'];
@@ -1021,7 +1021,7 @@
     // On crée l'entete du tableau et on affiche chaque période enregistrée
     echo "<form name='selectperiode'  method='post' >";
     echo "<br>Période de fermeture de l'établissement (dates incluses) : <br>";
-    echo "<table class='tableausimple'>";
+    echo "<table class='tableausimple'><tbody>";
     echo "<tr><td class='titresimple'>Année référence</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Supprimer</td></tr>";
     if (count($liste)>0)
     {
@@ -1077,7 +1077,7 @@
             
 <?php             
     echo "<td class='cellulesimple'></td></tr>";
-    echo "</table>";
+    echo "</tbody></table>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
@@ -1091,7 +1091,7 @@
     $anneeref = $fonctions->anneeref();
     echo "<form name='nbjoursform'  method='post' >";
     echo "Nombre de jours de congés annuels : <br>";
-    echo "<table>";
+    echo "<table><tbody>";
     echo "<tr><td><select name='anneeconge' id='anneeconge'>";
     for ($index=0; $index<$nbanneeaafficher; $index++)
     {
@@ -1101,7 +1101,7 @@
     echo "</td>";
     echo "<td><input type=text id='nbjoursannuel' name='nbjoursannuel' value='' maxlength='3' size='4'></td>";
     echo "</tr>";
-    echo "</table>";
+    echo "</tbody></table>";
     for ($index=0; $index<$nbanneeaafficher; $index++)
     {
         if ($fonctions->testexistdbconstante('NBJOURS' . ($anneeref+$index)))
@@ -1256,7 +1256,7 @@
     if ($fonctions->testexistdbconstante($dbconstante))  $finreport = $fonctions->liredbconstante($dbconstante);
     $jourreport = substr($finreport,2);
     $moisreport = substr($finreport,0,2);
-    echo "<table><tr>";
+    echo "<table><tbody><tr>";
     echo "<td>Date de fin de report des congés : "; //<input type='text' name='finreport' value='$finreport'></td>";
     echo "<select name='jourreport' id='jourreport'>";
     for ($index=1; $index<=31; $index++)
@@ -1275,7 +1275,7 @@
     }
     echo "</select>";
     echo "</td>";
-    echo "</tr></table>";
+    echo "</tr></tbody></table>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
@@ -1355,7 +1355,7 @@
             
                 <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
                 	<br>Paramétrage du calendrier de la campagne d'alimentation du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutalimcet()).' - '.$fonctions->formatdate($fonctions->finalimcet());?>)
-                	<table>
+                	<table><tbody>
         	        	<tr>
         		       		<td class='parampaddingleft'>Date d'ouverture de la campagne d'alimentation :</td>
 
@@ -1398,13 +1398,13 @@
                 			<td width=1px><input class="calendrier" type=text name='date_fin_alim'
                 				id='<?php echo $calendrierid_fin_alim ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->finalimcet()) ?>'></td>
         	    		</tr>
-            		</table>
+                    </tbody></table>
 
 <!--    AFFICHAGE DU PARAMETRAGE DU DROIT D'OPTION -->
         			<br><br>
         	        <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
                 	<br>Paramétrage du calendrier de la campagne de droit d'option du CET (dates actuelles : <?php echo $fonctions->formatdate($fonctions->debutoptioncet()).' - '.$fonctions->formatdate($fonctions->finoptioncet());?>)
-                	<table>
+                	<table><tbody>
                 		<tr>
                 			<td class='parampaddingleft'>Date d'ouverture de la campagne de droit d'option :</td>
                 		
@@ -1447,7 +1447,7 @@
             				<td width=1px><input class="calendrier" type='text' name='date_fin_option'
             					id='<?php echo $calendrierid_fin_option ?>' size='10' value='<?php echo $fonctions->formatdate($fonctions->finoptioncet()) ?>'></td>
         	    		</tr>
-        	    	</table>
+                    </tbody></table>
         	 		<br><br>
             		Augmentation maximale d'un CET sur une campagne (en jours) : <input type='text' name='maxaugmentcet' value='<?php echo $maxaugmentcet;?>'>
         	 		<br>
@@ -1476,7 +1476,7 @@
     
     echo "<form name='form_indem_delete' id='form_indem_delete' method='post' >";
     echo "<br>Liste des indemnités : <br>";
-    echo "<table class='tableausimple' id='listeindemnite'>";
+    echo "<table class='tableausimple' id='listeindemnite'><tbody>";
     echo "<tr class='centeraligntext'><td class='titresimple'>Date début</td>
                       <td class='titresimple'>Date fin</td>
                       <td class='titresimple'>Montant</td>
@@ -1536,7 +1536,7 @@
         echo "  <td class='cellulesimple centeraligntext'><input type='checkbox' value='" . $indemid . "' id='" . $indemid . "' name='cancelindem[]' ></td>";
         echo "</tr>";
     }
-    echo "</table>";
+    echo "</tbody></table>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
     echo "<br><input type='submit' name='modification' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
@@ -1572,7 +1572,7 @@
       	echo "Création d'une nouvelle indemnité de télétravail : <br>";
         echo "<form name='form_indemnite_creation' id='form_indemnite_creation' method='post' >";
 ?>
-        <table>
+        <table><tbody>
 	        <tr>
     		    <td class='parampaddingleft'>Date de début de l'indemnité de télétravail : </td>
 <?php         
@@ -1610,7 +1610,7 @@
 				<td class='parampaddingleft'>Montant de l'indemnité télétravail : </td>
 				<td><input type='text' name='montantnew' value='' maxlength='5' size='5'></td>
 		   </tr>
-	   </table>
+        </tbody></table>
 <?php
     	echo "<br>";
 	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -1706,7 +1706,7 @@
         <div class="tabs__tab <?php if ($current_tab == 'tab_utilisateurs') echo " active "; ?>" id="tab_utilisateurs" data-tab-info>
 			<form name='selectagentrh'  method='post' >
     			<br>Liste des agents ayant accés au menu "Gestion RH" : <br>
-    			<table class='tableausimple'>
+    			<table class='tableausimple'><tbody>
     				<tr><td class='titresimple'>Identité de l'agent</td><td class='titresimple'>Rôle CET</td><td class='titresimple'>Rôle CONGES</td><td class='titresimple'>Rôle TELETRAVAIL</td><td class='titresimple'>Supprimer</td></tr>
 <?php 
         $agentrhcetliste = $fonctions->listeprofilrh(agent::PROFIL_RHCET);
@@ -1743,10 +1743,10 @@
 ?>        
                     <tr>
                         <td class='cellulesimple'>
-                        	<input id="newuserrh" name="newuserrh" placeholder="Nom et/ou prenom" class='namefieldwidth' autofocus/>
-                        	<input type='hidden' id="newiduserrh" name="newiduserrh" class="newuserrh" />
+                        	<input id="newrecipientrh" name="newrecipientrh" placeholder="Nom et/ou prenom" class='namefieldwidth' autofocus/>
+                        	<input type='hidden' id="newiduserrh" name="newiduserrh" class="newrecipientrh" />
                             <script>
-                          	    $( "#newuserrh" ).autocompleteUser(
+                          	    $( "#newrecipientrh" ).autocompleteUser(
                             	       '<?php echo "$WSGROUPURL"?>/searchUserCAS', { disableEnterKey: true, select: completionAgent, wantedAttr: "uid",
                           	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                         	</script>
@@ -1765,7 +1765,7 @@
                         <td class='cellulesimple'>
                         </td>
                     </tr>
-        		</table>
+                </tbody></table>
     			<br><br>
         	    Informations sur les utilisateurs spéciaux :
         	    <br>
@@ -1818,30 +1818,34 @@
     		}
 ?>
     			<table class='tableausimple'>
-                            <tr>
-                                <td class='titresimple'>Fonction/Utilité</td>
-                                <td class='titresimple'>Nom</td>
-                                <td class='titresimple'>Prénom</td>
-                                <td class='titresimple'>Adresse mail de l'expéditeur</td>
-                            </tr>
-                            <tr>
-                                <td class='cellulesimple'><span data-tip="Utilisateur représentant l'application lors de l'envoi automatique de mails (informations, alertes, rappels aux agents, ...) ">Application G2T</td>
-                                <td class='cellulesimple'><input type='text' name='nomcronuser' value='<?php echo $cronuser->nom() ?>' size=30 ></td>
-                                <td class='cellulesimple'><input type='text' name='prenomcronuser' value='<?php echo $cronuser->prenom() ?>' size=30 ></td>
-                                <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='mailcronuser' value='<?php echo $cronuser->mailforspecialagent() ?>' size=60 ></td>
-                            </tr>
-                            <tr>
-                                <td class='cellulesimple'><span data-tip="Liste de diffusion RH pour informer un ensemble de personnes (CET, alertes sur des dossiers agents, ...)">Liste de diffusion RH congés/CET</td>
-                                <td class='cellulesimple'><input type='text' name='nomlisterhuser' value='<?php echo $listerhuser->nom() ?>' size=30 ></td>
-                                <td class='cellulesimple'><input type='text' name='prenomlisterhuser' value='<?php echo $listerhuser->prenom() ?>' size=30 ></td>
-                                <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhuser' value='<?php echo $listerhuser->mailforspecialagent() ?>' size=60 ></td>
-                            </tr>
-                            <tr>
-                                <td class='cellulesimple'><span data-tip="Liste de diffusion RH dédiée 'télétravail'">Liste de diffusion RH télétravail</td>
-                                <td class='cellulesimple'><input type='text' name='nomlisterhteletravail' value='<?php echo $listerhteletravail->nom() ?>' size=30 ></td>
-                                <td class='cellulesimple'><input type='text' name='prenomlisterhteletravail' value='<?php echo $listerhteletravail->prenom() ?>' size=30 ></td>
-                                <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhteletravail' value='<?php echo $listerhteletravail->mailforspecialagent() ?>' size=60 ></td>
-                            </tr>
+                    <thead>
+                        <tr>
+                            <th scope="col" class='titresimple'>Fonction/Utilité</th>
+                            <th scope="col" class='titresimple'>Nom</th>
+                            <th scope="col" class='titresimple'>Prénom</th>
+                            <th scope="col" class='titresimple'>Adresse mail de l'expéditeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class='cellulesimple'><span data-tip="Utilisateur représentant l'application lors de l'envoi automatique de mails (informations, alertes, rappels aux agents, ...) ">Application G2T</span></th>
+                            <td class='cellulesimple'><input type='text' name='nomcron' value='<?php echo $cronuser->nom() ?>' size=30 ></td>
+                            <td class='cellulesimple'><input type='text' name='prenomcron' value='<?php echo $cronuser->prenom() ?>' size=30 ></td>
+                            <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='mailcron' value='<?php echo $cronuser->mailforspecialagent() ?>' size=60 ></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class='cellulesimple'><span data-tip="Liste de diffusion RH pour informer un ensemble de personnes (CET, alertes sur des dossiers agents, ...)">Liste de diffusion RH congés/CET</span></th>
+                            <td class='cellulesimple'><input type='text' name='nomlisterhconges' value='<?php echo $listerhuser->nom() ?>' size=30 ></td>
+                            <td class='cellulesimple'><input type='text' name='prenomlisterhconges' value='<?php echo $listerhuser->prenom() ?>' size=30 ></td>
+                            <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhconges' value='<?php echo $listerhuser->mailforspecialagent() ?>' size=60 ></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class='cellulesimple'><span data-tip="Liste de diffusion RH dédiée 'télétravail'">Liste de diffusion RH télétravail</span></th>
+                            <td class='cellulesimple'><input type='text' name='nomlisterhteletravail' value='<?php echo $listerhteletravail->nom() ?>' size=30 ></td>
+                            <td class='cellulesimple'><input type='text' name='prenomlisterhteletravail' value='<?php echo $listerhteletravail->prenom() ?>' size=30 ></td>
+                            <td class='cellulesimple'><?php echo $spantxt; ?><input type='text' name='maillisterhteletravail' value='<?php echo $listerhteletravail->mailforspecialagent() ?>' size=60 ></td>
+                        </tr>
+                    </tbody>
     			</table>
 		        <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
         		<input type='hidden' id='current_tab' name='current_tab' value='tab_utilisateurs'>
@@ -1890,8 +1894,8 @@
 ?>
       	<br>
         <form name='form_administration' id='form_administration' method='post' >
-        <table>
-		<tr><td>Début de la période de dépot des congés annuels : 
+            <table><tbody>
+		        <tr><td>Début de la période de dépot des congés annuels : 
 <?php 
         $jourdebutperiode = substr($debutperiode,2);
         $moisdebutperiode = substr($debutperiode,0,2);
@@ -1945,7 +1949,7 @@
                         <input type='text' name='idworkflowteletravail' size="10" value='<?php echo $idworkflowteletravail; ?>' >
                     </td>
                 </tr>
-	    </table>
+            </tbody></table>
 	    <br>
 	    <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
 	    <input type='hidden' id='current_tab' name='current_tab' value='tab_admin'>

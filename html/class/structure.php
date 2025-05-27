@@ -1296,7 +1296,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
         if (is_array($resplist)) {
             $htmltext = "";
             $htmltext = $htmltext . "<div id='structplanning'>";
-            $htmltext = $htmltext . "<table class='tableau'>";
+            $htmltext = $htmltext . "<table class='tableau'><tbody>";
             
             $elementlegende = array();
             $titre_a_ajouter = TRUE;
@@ -1360,7 +1360,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 // echo "Fin boucle sur les elements <br>";
                 $htmltext = $htmltext . "</tr>";
             }
-            $htmltext = $htmltext . "</table>";
+            $htmltext = $htmltext . "</tbody></table>";
             $htmltext = $htmltext . "</div>";
 
             $mois_finperiode = substr($this->fonctions->finperiode(),0,2);
@@ -1395,7 +1395,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 $nbcolonne--;
         }
         $htmltext = "<br>";
-        $htmltext = "<table class='tableausimple'>";
+        $htmltext = "<table class='tableausimple'><tbody>";
         $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
         $htmltext = $htmltext . "<tr align=center>"
                                     . "<td class='cellulesimple'>Agent</td>"
@@ -1466,14 +1466,14 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                     // Ajout du nombre de jours "enfant malade"
                     $complement = new complement($this->dbconnect);
                     $complement->load($membre->agentid(), "ENFANTMALADE");
-                    $htmltext = $htmltext . "<td class='cellulesimple' >";
+                    $htmltext = $htmltext . "<td class='cellulesimple centeraligntext' >";
                     if ($pourmodif)
                     {
                         $htmltext = $htmltext . "<input type='text' class='centeraligntext' name=enfantmalade[" . $membre->agentid() . "] value='" . intval($complement->valeur()) . "'/>";
                     }
                     else
                     {
-                        $htmltext = $htmltext . "<center>" . intval($complement->valeur()) . "</center>";
+                        $htmltext = $htmltext . intval($complement->valeur());
                     }
                     $htmltext = $htmltext . "</td>";
                             
@@ -1603,7 +1603,7 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 }
             }
         }
-        $htmltext = $htmltext . "</table>";
+        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "<br>";
         
         return $htmltext;

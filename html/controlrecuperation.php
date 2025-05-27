@@ -60,7 +60,7 @@
 
     if (count($demandeparagent)>0)
     {
-        echo "<table class='tableausimple' id='table_recup'>";
+        echo "<table class='tableausimple' id='table_recup'><tbody>";
         echo "<tr>
                  <td class='titresimple'>Ident. SIHAM</td>
                  <td class='titresimple'>Nom agent</td>
@@ -110,7 +110,7 @@
                 </tr>";
             }
         }
-        echo "</table>";
+        echo "</tbody></table>";
     }
 
 ?>

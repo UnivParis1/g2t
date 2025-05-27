@@ -208,8 +208,7 @@
             if ($selectall == 'no')
             {
                 $htmltext = "";
-                // $htmltext = $htmltext . "<center>";
-                $htmltext = $htmltext . "<table class='tableausimple'>";
+                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
                 $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . " (id : $agentid) </td></tr>";
                 $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Ident. demande</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Traiter</td></tr>";
                 foreach ($cetliste as $demande) {
@@ -222,8 +221,7 @@
                     $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=CETaverifier[" . $demande->id() . "] value='yes' /></td>";
                     $htmltext = $htmltext . "</tr>";
                 }
-                $htmltext = $htmltext . "</table>";
-                // $htmltext = $htmltext . "</center>";
+                $htmltext = $htmltext . "</tbody></table>";
                 $htmltext = $htmltext . "<br>";
             }
             else
@@ -255,7 +253,7 @@
                             // echo $agent->affichecommentairecongehtml();
                             $htmltext = $htmltext . "<br><br>";
                         }
-                        $htmltext = $htmltext . "<table class='tableausimple'>";
+                        $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
                         $htmltext = $htmltext . "<tr><td class='titresimple' colspan=6 align=center>Demande de congés de CET à traiter pour " . $agent->identitecomplete() . " (id : " . $agent->agentid() . ")</td></tr>";
                         $htmltext = $htmltext . "<tr align=center><td class='cellulesimple'>Ident. demande</td><td class='cellulesimple'>Date début</td><td class='cellulesimple'>Date fin</td><td class='cellulesimple'>Nbre jours</td><td class='cellulesimple'>Statut</td><td class='cellulesimple'>Traiter</td></tr>";
                     }
@@ -268,7 +266,7 @@
                     $htmltext = $htmltext . "<td class='cellulesimple'><input type='checkbox' name=CETaverifier[" . $demande->id() . "] value='yes' /></td>";
                     $htmltext = $htmltext . "</tr>";
                 }
-                $htmltext = $htmltext . "</table>";
+                $htmltext = $htmltext . "</tbody></table>";
                 // $htmltext = $htmltext . "</center>";
                 $htmltext = $htmltext . "<br>";
                 // Affichage du solde de l'année précédente

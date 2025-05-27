@@ -314,7 +314,7 @@
                 $agentliste = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
             }
 
-            echo "<center><p>Liste des demandes des agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p></center>";
+            echo "<p class='centeraligntext'>Liste des demandes des agents de " . $structure->nomlong() . " (" . $structure->nomcourt() . ")</p>";
             echo "<form name='frm_validation_conge'  method='post' >";
             ////$validsousstruct = strtolower($structure->respvalidsousstruct());
             ////// echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
@@ -373,7 +373,7 @@
         }
         foreach ($listestruct as $key => $structure)
         {
-            echo "<center><p>Liste des agents de <b>" . $structure->nomlong() . " (" . $structure->nomcourt() . ")</b></p></center>";
+            echo "<p class='centeraligntext'>Liste des agents de <b>" . $structure->nomlong() . " (" . $structure->nomcourt() . ")</b></p>";
             $aumoinsunedemande = FALSE;
             $cleelement = $structure->id();
             // Si le gestionnaire ne doit pas gérer les agents et qu'il n'est pas destinataire des notifications des demandes de congés
@@ -452,7 +452,7 @@
     if (strcasecmp((string)$mode, MODE_CONSULTANT) == 0) {
         echo "<form name='frm_validation_conge'  method='post' >";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
-        echo "<center><p>Liste des agents avec une demande d'avis en attente</p></center>";
+        echo "<p class='centeraligntext'>Liste des agents avec une demande d'avis en attente</p>";
 
         // On récupère la liste des agents ou l'utilisateur est consultant
         $agentconsultliste = $user->agentconsultantliste();

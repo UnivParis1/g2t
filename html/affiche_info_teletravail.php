@@ -210,7 +210,7 @@
         //$agentlist = array('975');
         /////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////
-        echo "<table class='tableausimple' id='table_teletravail'>";
+        echo "<table class='tableausimple' id='table_teletravail'><tbody>";
         echo "<tr>
                  <td class='titresimple'>Numéro siham</td>
                  <td class='titresimple'>Nom agent</td>
@@ -328,9 +328,9 @@
                           <td class='cellulesimple'>" . $nomstruct . "</td>
                           <td class='cellulesimple'>" . $nomdirection . "</td>
                           <td class='cellulesimple'>" . str_replace('.', ',', $nbjrsteletravail) . "</td>
-                          <td class='cellulesimple'><center>" . str_replace('.', ',', $repartitionteletravail) . "</center></td>";
-//                          <td class='cellulesimple'><center>" . str_replace('.', ',', $nbjrsteletravailannuel) . "</center></td>
-//                echo "    <td class='cellulesimple'><center>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " . "</center></td>
+                          <td class='cellulesimple centeraligntext '>" . str_replace('.', ',', $repartitionteletravail) . "</td>";
+//                          <td class='cellulesimple centeraligntext'>" . str_replace('.', ',', $nbjrsteletravailannuel) . "</td>
+//                echo "    <td class='cellulesimple centeraligntext'>" . round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN) . " x " . str_replace('.',',',$montant_teletravail) . " € = " . "</td>
 //                          <td class='cellulesimple'>" . str_replace('.', ',', round($nbjrsteletravail,0,PHP_ROUND_HALF_DOWN)*str_replace(',','.',$montant_teletravail)) . " €</td>
                 $infodisplay = "";
                 $montantdisplay = 0;
@@ -344,12 +344,12 @@
                     $infodisplay =  $infodisplay . "$nbjrs x $montant €";
                     $montantdisplay = $montantdisplay + (round($nbjrs,0,PHP_ROUND_HALF_DOWN)*$montant);
                 }
-                echo "    <td class='cellulesimple'><center>" . str_replace('.', ',', $infodisplay) . "</center></td>
+                echo "    <td class='cellulesimple centeraligntext '>" . str_replace('.', ',', $infodisplay) . "</td>
                           <td class='cellulesimple'>" . str_replace('.', ',', $montantdisplay) . " €</td>
                       </tr>";
             }
         }
-        echo "</table>";
+        echo "</tbody></table>";
 ?>
 
 <script>

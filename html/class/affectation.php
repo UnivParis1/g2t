@@ -433,11 +433,11 @@ class affectation
         
         $htmltext = "Informations sur le temps partiel déclaré dans Siham pour " . $agent->identitecomplete() . "<br>";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableausimple'>";
+        $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
         $htmltext = $htmltext . "<tr><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Structure</td><td class='titresimple'>Quotité</td>";
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->datedebut() . "</td><td class='cellulesimple'>" . $this->datefin() . "</td><td class='cellulesimple'>" . $structure->nomlong() . "</td><td class='cellulesimple'>" . $this->quotite() . "</td></tr>";
-        $htmltext = $htmltext . "</table><br>";
+        $htmltext = $htmltext . "</tbody></table><br>";
         
         if ($affiche_declaTP) {
             $premiereligne = true;
@@ -451,7 +451,7 @@ class affectation
                         if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                             if ($premiereligne) {
                                 $htmltext = $htmltext . "Tableau des temps partiels déclarés dans G2T pour " . $agent->identitecomplete() . "<br>";
-                                $htmltext = $htmltext . "<table class='tableausimple'>";
+                                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
                                 $htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Etat de la demande</td><td class='titresimple'>Répartition du temps partiel</td>";
                                 // if ($pour_modif)
                                 // $htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
@@ -477,7 +477,7 @@ class affectation
                     $htmltext = $htmltext . "<B>" . $agent->identitecomplete() . " n'a aucune déclaration de temps partiel active dans G2T.</B><br>";
             }
         }
-        $htmltext = $htmltext . "</table>";
+        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "</div>";
         return $htmltext;
     }

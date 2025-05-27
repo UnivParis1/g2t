@@ -1301,8 +1301,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             
     	    $nbrelignetableauconvention=count($teletravailliste);
     	    echo "<form name='form_teletravail_delete' id='form_teletravail_delete' method='post' >";
-    	    echo "<table class='tableausimple' id='listeteletravail'>";
-    	    echo "<tr><center><td class='titresimple'>Identifiant</td>
+    	    echo "<table class='tableausimple' id='listeteletravail'><tbody>";
+    	    echo "<tr class='centeraligntext'><td class='titresimple'>Identifiant</td>
                       <td class='titresimple'>Date début</td>
                       <td class='titresimple'>Date fin</td>
                       <td class='titresimple' id ='convstatut'>Statut</td>
@@ -1322,7 +1322,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             {
                 echo "<td class='titresimple'>Générer le PDF</td>";
             }
-            echo "</center></tr>";
+            echo "</tr>";
     	    foreach($teletravailliste as $teletravailid)
     	    {
     	        $teletravail = new teletravail($dbcon);
@@ -1363,8 +1363,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         	        }
     	        }
     	        //echo "<tr><td class='cellulesimple'>" . $teletravail->teletravailid() . "</td><td class='cellulesimple'><input type='text' name='debut[]' value='" . $fonctions->formatdate($teletravail->datedebut()) . "'></td><td class='cellulesimple'><input type='text' name='fin[]' value='" . $fonctions->formatdate($teletravail->datefin()) . "'></td><td class='cellulesimple'>" . $teletravail->statut() . "</td><td class='cellulesimple'><button type='submit' value='" . $teletravail->teletravailid() ."' name='cancel[]' " . (($teletravail->statut() == teletravail::TELETRAVAIL_ANNULE) ? "disabled='disabled' ":" ") . ">Annuler</button>" . "</td></tr>";
-    	        echo "<tr><td class='cellulesimple $extraclass'> $openspan <center>" . $teletravail->teletravailid() . "</center> $closespan </td>";
-    	        //echo "    <td class='cellulesimple'><center>" . $fonctions->formatdate($teletravail->datedebut()) . "</center></td>";
+    	        echo "<tr><td class='cellulesimple centeraligntext $extraclass'> $openspan " . $teletravail->teletravailid() . " $closespan </td>";
+    	        //echo "    <td class='cellulesimple centeraligntext'>" . $fonctions->formatdate($teletravail->datedebut()) . "</td>";
 ?>
     <script>
         $(function()
@@ -1388,7 +1388,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         });
     </script>
 <?php     	        
-    	        echo "    <td class='cellulesimple'><center>";
+    	        echo "    <td class='cellulesimple centeraligntext '>";
     	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode==MODE_RH)
     	        {
                     // On peut modifier la date de début de la convention dans une période de 6 mois avant la date saisie
@@ -1407,8 +1407,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        {
     	            echo $fonctions->formatdate($teletravail->datedebut());
     	        }
-    	        echo "</center></td>";
-    	        echo "    <td class='cellulesimple'><center>";
+    	        echo "</td>";
+    	        echo "    <td class='cellulesimple centeraligntext '>";
     	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode==MODE_RH)
     	        {
 //                    $datefinminconv_tab = date("d/m/Y", strtotime("-6 month", strtotime($fonctions->formatdatedb($datefinteletravail))));
@@ -1427,7 +1427,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	        {
     	            echo $fonctions->formatdate($teletravail->datefin());
     	        }
-                echo "</center></td>";
+                echo "</td>";
                 $openspan = "";
                 $closespan = "";
                 if (strlen($teletravail->commentaire().'') != 0)
@@ -1435,8 +1435,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $openspan = "<span data-tip=" . chr(34) . htmlentities($teletravail->commentaire()) . chr(34) . ">";
                     $closespan = "</span>";
                 }
-                echo "    <td class='cellulesimple convstatut' ><span class='convstatutvalue' hidden>" .  $teletravail->statut() . "</span><center>$openspan" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . "$closespan</center></td>";
-    	        echo "    <td class='cellulesimple'><center>";
+                echo "    <td class='cellulesimple convstatut centeraligntext ' ><span class='convstatutvalue' hidden>" .  $teletravail->statut() . "</span>$openspan" . $fonctions->teletravailstatutlibelle($teletravail->statut()) . "$closespan</td>";
+    	        echo "    <td class='cellulesimple centeraligntext '>";
                 $htmltext = $teletravail->libelletabteletravail();
                 $motifmedical = '';
                 if ($teletravail->typeconvention()==teletravail::CODE_CONVENTION_MEDICAL)
@@ -1462,7 +1462,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo chr(34) . ">";
     	        echo $htmltext;
                 echo " </span>";
-    	        echo "    </center></td>";
+    	        echo "    </td>";
                 
                 if ($esignatureactive)
                 {
@@ -1471,8 +1471,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 }
                 if ($mode==MODE_RH or $esignatureactive)
                 {
-//                    echo "<td class='cellulesimple'><center><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
-                    echo "<td class='cellulesimple'><center><button type='submit' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' class='cancel g2tbouton g2tsupprbouton' ";
+//                    echo "<td class='cellulesimple centeraligntext'><input type='checkbox' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' ";
+                    echo "<td class='cellulesimple centeraligntext '><button type='submit' value='" . $teletravail->teletravailid() .  "' id='" . $teletravail->teletravailid()  .  "' name='cancel[]' class='cancel g2tbouton g2tsupprbouton' ";
                     if ($mode==MODE_RH and in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_ANNULE,teletravail::TELETRAVAIL_REFUSE))) // and $teletravail->statut()==teletravail::TELETRAVAIL_ANNULE)
                     {
                         echo " disabled='disabled' ";
@@ -1482,20 +1482,20 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         echo " disabled='disabled' ";
                     }
                     echo " onclick='if (this.tagname!=\"OK\") {click_element(\"" . $teletravail->teletravailid()  .  "\"); return false; }'>Annuler</button";
-                    echo "></center></td>";
+                    echo "></td>";
                 }
                 if ($displayPDFbutton and $esignatureactive)
                 {
-                    echo "<td class='cellulesimple'><center><input type='submit' value='Générer' name='genererpdf[" . $teletravail->teletravailid() . "]' class='g2tbouton g2tdocumentbouton'";
+                    echo "<td class='cellulesimple centeraligntext '><input type='submit' value='Générer' name='genererpdf[" . $teletravail->teletravailid() . "]' class='g2tbouton g2tdocumentbouton'";
                     if (trim($teletravail->esignatureid())=='' or trim($teletravail->esignatureurl())=='' or $teletravail->statut() == teletravail::TELETRAVAIL_ANNULE)
                     {
                         echo " disabled='disabled' ";
                     }
-                    echo "></center></td>";
+                    echo "></td>";
                 }
                 echo "</tr>";
     	    }
-            echo "</table>";
+            echo "</tbody></table>";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
     	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
@@ -1828,7 +1828,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         }
     	$datefinmaxconv = date('d/m/') . (date('Y')+2);
 
-        echo "<table>";
+        echo "<table><tbody>";
         echo "<tr>";
     	echo "<td>Date de début : </td>";
         echo "<td><span class='largerfontsize' data-tip=" . chr(34) . htmlentities("Ceci est la date de début souhaitée. La date d'effet de la convention ne pourra être antérieure à la date de signature de tous les intervenants.") . chr(34) . "> &#9432; </span></td>";
@@ -1869,7 +1869,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<span class='boldtext redtext fontsize25'>*</span>";
         echo "</td>";
         echo "</tr>";
-        echo "</table>";
+        echo "</tbody></table>";
         $teletravail = new teletravail($dbcon);
         if (strlen($inputtabteletravail . "")>0)
         {
@@ -2015,8 +2015,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }
                     echo "<input type='checkbox' $check name='motifmedical[". teletravail::MOTIF_MEDICAL_AIDANT . "]' $customstyle>Proche aidant</input><br>";
                     echo "</div>";
-                    echo "<table class='tableausimple' id='tabttnormal' ";
-                    echo ">";
+                    echo "<table class='tableausimple' id='tabttnormal' ><tbody>";
                     $moment = fonctions::MOMENT_MATIN;
                     $tabmatin = '';
                     $tabapresmidi = '';
@@ -2060,13 +2059,13 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                             $moment = fonctions::MOMENT_MATIN;
                         }
                     }
-                    echo "<tr><center>";
+                    echo "<tr class='centeraligntext'>";
                     echo $tabmatin;
-                    echo "</center></tr>";
-                    echo "<tr><center>";
+                    echo "</tr>";
+                    echo "<tr class='centeraligntext'>";
                     echo $tabapresmidi;
-                    echo "</center></tr>";
-                    echo "</table>";
+                    echo "</tr>";
+                    echo "</tbody></table>";
                 }
             }
             else
@@ -2080,9 +2079,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo "<br>";
                 // Ci-dessous : Le tableau pour les temps complets et les TP 90% et 80%
                 echo "<label id='labelmaxjrs' >Jours de télétravail : Vous pouvez déclarer jusqu'à <input type='text' class='noborder' size=1 readonly id='nbjoursmaxteletravailcalcule' name='nbjoursmaxteletravailcalcule' value='$nbjoursmaxteletravailcalcule'></input> jour(s) de télétravail.</label>";
-                echo "<table class='tableausimple' id='tabttnormal' ";
-                echo ">";
-                echo "<tr><center>";
+                echo "<table class='tableausimple' id='tabttnormal'><tbody>";
+                echo "<tr class='centeraligntext'>";
                 for ($cpt=0 ; $cpt<10 ; $cpt ++)
                 {
                     //var_dump ("cpt = $cpt");
@@ -2096,13 +2094,13 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $fermespan = '';
                     // Si l'agent n'est jamais en TP (semaine paire/impaire et matin/après-midi pour le jour courant)
                     // On affiche le jour complet pour le télétravail
-                    echo "<td class='cellulesimple widthtd90' ";
+                    echo "<td class='cellulesimple widthtd90 centeraligntext' ";
                     if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
                     and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
                     {
-                        echo "><center><input class='checkbox_jours' type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]' onclick='verif_nbre_checkbox();'";
+                        echo "><input class='checkbox_jours' type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]' onclick='verif_nbre_checkbox();'";
                         if ($teletravail->estjourteletravaille($indexjour) and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL) { echo " checked "; }
-                        echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></center></td>";
+                        echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></td>";
                     }
                     else
                     {
@@ -2112,8 +2110,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }
                     $cpt++;
                 }
-                echo "</center></tr>";
-                echo "</table>";
+                echo "</tr>";
+                echo "</tbody></table>";
                 echo "</div>";
                 // Ci-dessous le tableau pour les convention médicales
                 //echo "<br>";
@@ -2191,7 +2189,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         $moment = fonctions::MOMENT_MATIN;
                     }
                 }
-                echo "<table class='tableausimple'>";
+                echo "<table class='tableausimple'><tbody>";
                 echo "<tr>";
                 for ($cpt=1 ; $cpt <= 5 ; $cpt++)
                 {
@@ -2202,7 +2200,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 echo $tableau_matin;
                 echo "</tr><tr>";
                 echo $tableau_apresmidi;
-                echo "</tr></table>";
+                echo "</tr></tbody></table>";
                 echo "</div>";
             }
         }
@@ -2267,7 +2265,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             verif_nbre_checkbox();
         </script>
 <?php
-        echo "<table>";
+        echo "<table><tbody>";
         echo "<tr>";
         echo "<td>";
         echo "Adresse du lieu de télétravail : ";
@@ -2275,7 +2273,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<td>";
         echo "<textarea class='commenttextarea' rows='5' cols='50' name='adresseteletravail' id='adresseteletravail' wrap='hard' maxlength='250' required>" . str_replace(", ", "\n",strtoupper($agent->getpersonnaladdress())) . "</textarea><span class='boldtext redtext fontsize25 verticalaligntop'> *</span>";
         echo "</td>";
-        echo "</table>";
+        echo "</tbody></table>";
         echo "<br>";
         echo "Attestations de l’agent bénéficiaire :<br>";
         echo "<input type='checkbox' class='paramradiomargingleft' name='conform_elect' id='conform_elect' required><span class='boldtext redtext fontsize25'>*</span> ";
@@ -2574,7 +2572,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         }
                         if ($teletravailtrouvestruct===false)
                         {
-                            echo "<table class='tableausimple'>";
+                            echo "<table class='tableausimple'><tbody>";
                             echo "<tr>";
                             echo "<td class='titresimple' colspan=7>Informations sur les demandes de télétravail pour la structure : " . $structure->nomlong()  . "</td>";
                             echo "</tr>";
@@ -2631,7 +2629,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             }
             if ($teletravailtrouvestruct===true)
             {
-                echo "</table><br>";
+                echo "</tbody></table><br>";
             }
         }
         if (!$teletravailtrouve)

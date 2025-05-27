@@ -140,7 +140,7 @@
 
             if ($premierestructure)
             {
-                $htmltext = $htmltext . "<table class='tableausimple'>";
+                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
                 $premierestructure = false;
             }
 
@@ -196,7 +196,7 @@
     }
     if (!$premierestructure)
     {
-        $htmltext = $htmltext . "</table>";
+        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "<br>";
     }
     echo $htmltext;

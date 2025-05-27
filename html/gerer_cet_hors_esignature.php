@@ -541,11 +541,11 @@
 
             if (submit_button.classList.contains("optionbtn"))
             {
-                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'option CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'option CET pour cette campagne.<br>Souhaitez-vous continuer ? ';
             }
             else if (submit_button.classList.contains("alimbtn"))
             {
-                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br><center>Souhaitez-vous continuer ? </center>';
+                divmodallabeltext.innerHTML = 'Attention : Il y a déjà une demande d\'alimentation CET pour cette campagne.<br>Souhaitez-vous continuer ? ';
             }
             else
             {

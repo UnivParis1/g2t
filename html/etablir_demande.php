@@ -777,7 +777,7 @@
     	<input type="hidden" name="agentid"
     		value="<?php echo $agent->agentid(); ?>">
 
-    	<table>
+    	<table><tbody>
     		<tr>
     			<td>Date de début de la demande :</td>
     <?php
@@ -1050,7 +1050,7 @@
         ?>
     			</td>
     		</tr>
-    	</table>
+        </tbody></table>
     <?php
         echo "<br>";
         //////////////////////////////////////////////////////////////////////////////////
