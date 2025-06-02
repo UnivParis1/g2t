@@ -138,11 +138,11 @@
         if ($selectedstructid == $structure->structureenglobante()->id() or trim($selectedstructid . '') == "")
         {
 
-            if ($premierestructure)
-            {
-                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
-                $premierestructure = false;
-            }
+            // if ($premierestructure)
+            // {
+            //     $htmltext = $htmltext . "<table class='tableausimple'><thead>";
+            //     $premierestructure = false;
+            // }
 
             $premiereconventionstructure = true;
             $nbconvention = 0;
@@ -162,16 +162,20 @@
 
                         if ($premiereconventionstructure)
                         {
+                            $htmltext = $htmltext . "<table class='tableausimple'><thead>";
                             $nbcolonne = 6;
-                            $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Convention de télétravail pour " . $structure->nomlong() . " (" .  $structure->nomcourt() . ") -  Structure Id = $codestruct - <label id='label_$codestruct'></label></td></tr>";
+                            $htmltext = $htmltext . "<tr>
+                                                        <th scope='col' class='titresimple' colspan=$nbcolonne align=center>Convention de télétravail pour " . $structure->nomlong() . " (" .  $structure->nomcourt() . ") -  Structure Id = $codestruct - <label id='label_$codestruct'></label></th>
+                                                    </tr>";
                             $htmltext = $htmltext . "<tr align=center>"
-                                    . "<td class='cellulesimple'>Identifiant de l'agent</td>"
-                                    . "<td class='cellulesimple'>Identité de l'agent</td>"
-                                    . "<td class='cellulesimple'>Type de convention</td>"
-                                    . "<td class='cellulesimple'>Date de début</td>"
-                                    . "<td class='cellulesimple'>Date de fin</td>"
-                                    . "<td class='cellulesimple'>Jours en télétravail</td>";
+                                    . "<th scope='col' class='cellulesimple'>Identifiant de l'agent</th>"
+                                    . "<th scope='col' class='cellulesimple'>Identité de l'agent</th>"
+                                    . "<th scope='col' class='cellulesimple'>Type de convention</th>"
+                                    . "<th scope='col' class='cellulesimple'>Date de début</th>"
+                                    . "<th scope='col' class='cellulesimple'>Date de fin</th>"
+                                    . "<th scope='col' class='cellulesimple'>Jours en télétravail</th>";
                             $htmltext = $htmltext . "</tr>";
+                            $htmltext = $htmltext . "</thead><tbody>";
                             $premiereconventionstructure = false;
                         }
                         $htmltext = $htmltext . "<tr align=center>";
@@ -186,6 +190,8 @@
                     }
                 }
             }
+            $htmltext = $htmltext . "</tbody></table>";
+            $htmltext = $htmltext . "<br>";
             // On construit le tableau associatif code_libelle => nbre_convention pour pouvoir ensuite mettre à jour les libellés dans un javascript
             if ($javavalue != "")
             {
@@ -194,11 +200,11 @@
             $javavalue = $javavalue . "'label_$codestruct' : '$nbconvention'";
         }
     }
-    if (!$premierestructure)
-    {
-        $htmltext = $htmltext . "</tbody></table>";
-        $htmltext = $htmltext . "<br>";
-    }
+    // if (!$premierestructure)
+    // {
+    //     $htmltext = $htmltext . "</tbody></table>";
+    //     $htmltext = $htmltext . "<br>";
+    // }
     echo $htmltext;
 
 ?>

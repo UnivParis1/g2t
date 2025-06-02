@@ -189,6 +189,63 @@
         return date.toISOString().startsWith(isoFormattedStr);
     }
 
+    function sortcolumn()
+    {
+        let th = this;
+
+        //alert(th.innerHTML);
+        const currentsortindicator = th.querySelector('.sortindicator')
+
+        if (currentsortindicator!==null)
+        {
+            const table = th.closest('table');
+            const tbody = table.querySelector('tbody');
+            //alert (table.id);
+        
+            if (currentsortindicator.innerText.trim().length>0)
+            {
+                th.asc = !th.asc
+            }
+        
+            Array.from(tbody.querySelectorAll('tr'))
+                .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
+                .forEach(tr => tbody.appendChild(tr) );
+        
+            //alert(Array.from(th.parentNode.querySelectorAll('th')));    
+        
+            for (var thindex = 0 ; thindex < table.querySelector('.entete').querySelectorAll('th').length; thindex++)
+            {
+                //alert (thindex);
+                if (th.parentNode.children[thindex]!==null)
+                {
+                    //alert (th.parentNode.children[thindex].innerHTML);
+                    var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
+                    if (thsortindicator!==null)
+                    {
+                        //alert (thsortindicator.innerText);
+                        thsortindicator.innerText = ' ';
+                        //alert (thsortindicator.innerText);
+                    }
+                }
+            }
+        
+            if (currentsortindicator!==null)
+            {
+                if (th.asc)
+                {
+                    //alert ('plouf');
+                    currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
+                }
+                else
+                {
+                    //alert ('ploc');
+                    currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
+                }
+            }
+        }
+    }
+
+
 </script>
 
 <script>
@@ -471,7 +528,7 @@
                     </select>
                 </div>
             </form>
-            <menu class='centeraligntext'>
+            <menu class='nopadding centeraligntext'>
                 <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
                 <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
             </menu>
@@ -794,7 +851,7 @@
 
     if (($user->agentid() != $realuser->agentid()) and $realuser->estadministrateur())
     {
-        echo "<div class='redtext fontsize25 centeraligntext'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></div>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")<BR>";
+        echo "<div class='centeraligntext'><label class='redtext fontsize25'><B><U>ATTENTION : VOUS VOUS &Ecirc;TES SUBSTITU&Eacute; &Agrave; UNE AUTRE PERSONNE</U></B></label><br><label>" . $user->identitecomplete() . " (Agent Id = " . $user->agentid() . ")</label></div><BR>";
     }
     
     $arraystructpartielle = array();

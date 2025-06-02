@@ -334,7 +334,7 @@
             // echo "Date cloture (Structure : " . $struct->id() . ") = " . $struct->datecloture() . "<br>";
             // echo "On est dans la boucle => " . $struct->nomlong() ."<br>";
             if ($fonctions->formatdatedb($struct->datecloture()) >= $fonctions->formatdatedb(date("Ymd")) or ($showall == true)) {
-                echo "<table style='margin-left: " . 30*$struct->profondeurrelative() . "px; border: black;border-left-style: solid;border-width: 2px; padding-left: 10px;'><tbody>";
+                echo "<table style='margin-left: " . 30*$struct->profondeurrelative() . "px; border: black;border-left-style: solid;border-width: 2px; padding-left: 10px;'><thead>";
                 $gestionnaire = $struct->gestionnaire();
                 // echo "Apres recup du gestionnaire.... <br>";
                 
@@ -410,7 +410,7 @@
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<input type='hidden' id='" . $struct->id() ."' value='" . $struct->id() ."'/>";
-                echo "<td align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
+                echo "<th align=center class='titresimple'><span data-tip=" . chr(34) . $struct->nomcompletcet(true,true) . chr(34) . ">" . $struct->nomcourt() . " (" . $struct->id() . ") - " . $struct->nomlong() . " - Responsable G2T : " . $struct->responsablesiham()->identitecomplete() . " ";
                 echo "<span class='symbolegestionstruct cursorpointer' ";
                 if ($mode != MODE_RH)
                 {
@@ -433,8 +433,9 @@
                 }
                 echo "</span>";
                     
-                echo "</td>";
+                echo "</th>";
                 echo "</tr>";
+                echo "</thead><tbody>";
                 echo "<tr>";
                 echo "<td align=center>Gestionnaire G2T : ";
                 echo "<input id='infouser[" . $struct->id() . "]' name='infouser[" . $struct->id() . "]' placeholder='Nom et/ou prenom' value='";

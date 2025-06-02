@@ -173,9 +173,19 @@
                                         if ($premiereligne)
                                         {
                                             echo "<form name='frm_validation_autodecla'  method='post' >";
-                                            echo "<table class='tableausimple'><tbody>";
-                                            echo "<tr><td class='titresimple' colspan=6 >La structure est : " . $structure->nomlong() . "</td></tr>";
-                                            echo "<tr align=center><td class='cellulesimple'>Nom de l'agent</td><td class='cellulesimple'>Date de la demande</td><td class='cellulesimple'>Date de début</td><td class='cellulesimple'>Date de fin</td><td>Etat de la demande</td><td class='cellulesimple'>Jours de temps partiel</td></tr>";
+                                            echo "<table class='tableausimple'><thead>";
+                                            echo "  <tr>
+                                                        <th class='titresimple' colspan=6 >La structure est : " . $structure->nomlong() . "</th>
+                                                    </tr>";
+                                            echo "  <tr align=center>
+                                                        <th class='cellulesimple'>Nom de l'agent</th>
+                                                        <th class='cellulesimple'>Date de la demande</th>
+                                                        <th class='cellulesimple'>Date de début</th>
+                                                        <th class='cellulesimple'>Date de fin</th>
+                                                        <th class='cellulesimple'>Etat de la demande</th>
+                                                        <th class='cellulesimple'>Jours de temps partiel</th>
+                                                    </tr>";
+                                            echo "</thead><tbody>";
                                             $premiereligne = false;
                                         }
                                         echo $declaration->html(TRUE, $structure->id());

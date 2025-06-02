@@ -440,11 +440,9 @@
                     echo "<br>Au regard de votre quotité de travail, vous devez cocher $nbredemiTP demi-journée(s) par semaine<br><br>";
 
                     echo "<div id='planning'>";
-                    echo "<table class='tableau'><tbody>";
                     $declaration = new declarationTP($dbcon);
                     $declaration->tabtpspartiel(str_repeat("0", 20));
                     echo $declaration->tabtpspartielhtml(true);
-                    echo "</tbody></table>";
                     echo "</div>";
 
                     echo "<br>";

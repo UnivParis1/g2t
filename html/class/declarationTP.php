@@ -44,8 +44,9 @@ class declarationTP
     function __construct($db)
     {
         $this->dbconnect = $db;
-        if (is_null($this->dbconnect)) {
-            $errlog = "DeclarationTP->construct : La connexion à la base de données est NULL !!!";
+        if (is_null($this->dbconnect)) 
+        {
+            $errlog = "DeclarationTP->construct : La connexion à la base de données est NULL !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
@@ -58,7 +59,9 @@ class declarationTP
             $errlog = "DeclarationTP->Load : l'identifiant de la déclarationTP est NULL";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else {
+        } 
+        else 
+        {
             $sql = "SELECT DECLARATIONID,TABTPSPARTIEL,DATEDEMANDE,DATEDEBUT,DATEFIN,DATESTATUT,STATUT,AGENTID,FORCEE
                     FROM DECLARATIONTP
                     WHERE DECLARATIONID=?";
@@ -66,12 +69,14 @@ class declarationTP
             $query = $this->fonctions->prepared_select($sql, $params);
 
             $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
+            if ($erreur != "") 
+            {
                 $errlog = "DeclarationTP->Load : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            if (mysqli_num_rows($query) == 0) {
+            if (mysqli_num_rows($query) == 0) 
+            {
                 $errlog = "DeclarationTP->Load : DeclarationTP $id non trouve";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -97,12 +102,16 @@ class declarationTP
 
     function declarationTPid()
     {
-        if (is_null($this->declarationid)) {
+        if (is_null($this->declarationid)) 
+        {
             $errlog = "DeclarationTP->id : L'Id n'est pas défini !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else
+        } 
+        else
+        {
             return $this->declarationid;
+        }
     }
 
     /**
@@ -112,125 +121,197 @@ class declarationTP
     {
         trigger_error('Method ' . __METHOD__ . ' is deprecated', E_USER_DEPRECATED);
         
-        if (is_null($affectationid)) {
-            if (is_null($this->affectationid)) {
+        if (is_null($affectationid)) 
+        {
+            if (is_null($this->affectationid)) 
+            {
                 $errlog = "DeclarationTP->affectationid : L'Id de l'affectation n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->affectationid;
-        } else
+            }
+        }
+        else
+        {
             $this->affectationid = $affectationid;
+        }
     }
 
     function agentid($agentid = null)
     {
-        if (is_null($agentid)) {
+        if (is_null($agentid)) 
+        {
             //echo "declarationTP->agentid retourne : " . $this->agentid . "\n";
-            if (is_null($this->agentid)) {
+            if (is_null($this->agentid)) 
+            {
                 $errlog = "DeclarationTP->agentid : Le agentid n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->agentid;
-        } else
+            }
+        }
+        else
+        {
             $this->agentid = $agentid;
+        }
     }
     
     function numlignequotite($numlignequotite = null)
     {
-        if (is_null($numlignequotite)) {
-            if (is_null($this->numlignequotite)) {
+        if (is_null($numlignequotite)) 
+        {
+            if (is_null($this->numlignequotite)) 
+            {
                 $errlog = "DeclarationTP->numlignequotite : Le numlignequotite n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            }
+            else
+            {
                 return $this->numlignequotite;
-        } else
+            }
+        }
+        else
+        {
             $this->numlignequotite = $numlignequotite;
+        }
     }
     
     function statut($statut = null)
     {
-        if (is_null($statut)) {
-            if (is_null($this->statut)) {
+        if (is_null($statut)) 
+        {
+            if (is_null($this->statut)) 
+            {
                 $errlog = "DeclarationTP->statut : Le statut n'est pas défini !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->statut;
-        } else
+            }
+        } 
+        else
+        {
             $this->statut = $statut;
+        }
     }
 
     function datedebut($date = null)
     {
-        if (is_null($date)) {
-            if (is_null($this->datedebut)) {
+        if (is_null($date)) 
+        {
+            if (is_null($this->datedebut)) 
+            {
                 $errlog = "DeclarationTP->datedebut : La date de début n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->fonctions->formatdate($this->datedebut);
-        } else {
+            }
+        } 
+        else {
             if (is_null($this->anciendebut))
+            {
                 $this->anciendebut = $this->datedebut;
+            }
             $this->datedebut = $this->fonctions->formatdatedb($date);
         }
     }
 
     function datefin($date = null)
     {
-        if (is_null($date)) {
-            if (is_null($this->datefin)) {
+        if (is_null($date)) 
+        {
+            if (is_null($this->datefin)) 
+            {
                 $errlog = "DeclarationTP->datefin : La date de fin n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->fonctions->formatdate($this->datefin);
-        } else {
+            }
+        } 
+        else 
+        {
             if (is_null($this->ancienfin))
+            {
                 $this->ancienfin = $this->datefin;
+            }
             $this->datefin = $this->fonctions->formatdatedb($date);
         }
     }
 
     function datedemande($date = null)
     {
-        if (is_null($date)) {
-            if (is_null($this->datedemande)) {
+        if (is_null($date)) 
+        {
+            if (is_null($this->datedemande)) 
+            {
                 $errlog = "DeclarationTP->datedemande : La date de la demande n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->fonctions->formatdate($this->datedemande);
-        } else
+            }
+        } 
+        else
+        {
             $this->datedemande = $this->fonctions->formatdatedb($date);
+        }
     }
 
     function datestatut($date = null)
     {
-        if (is_null($date)) {
-            if (is_null($this->datestatut)) {
+        if (is_null($date)) 
+        {
+            if (is_null($this->datestatut)) 
+            {
                 $errlog = "DeclarationTP->datestatut : La date de fin n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->fonctions->formatdate($this->datestatut);
-        } else
+            }
+        } 
+        else
+        {
             $this->datestatut = $this->fonctions->formatdatedb($date);
+        }
     }
 
     function tabtpspartiel($tableauTP = null)
     {
-        if (is_null($tableauTP)) {
-            if (is_null($this->tabtpspartiel)) {
+        if (is_null($tableauTP)) 
+        {
+            if (is_null($this->tabtpspartiel)) 
+            {
                 $errlog = "DeclarationTP->tabtpspartiel : Le tableau des temps partiels n'est pas défini (NULL) !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->tabtpspartiel;
-        } else {
+            }
+        } 
+        else 
+        {
             $this->tabtpspartiel = $tableauTP;
         }
         // echo "DeclarationTP->initTP : "; print_r($this->tabrtt); echo "<br>";
@@ -239,30 +320,44 @@ class declarationTP
     function tabtpspartielhtml($pour_modif = false)
     {
         $htmltext = "";
+        $htmltext = $htmltext . "<table class='tableau'><thead>";
+
         $htmltext = $htmltext . "<tr class='entete'>";
-        $htmltext = $htmltext . "<td></td>";
-        for ($indexjrs = 1; $indexjrs < 6; $indexjrs ++) {
+        $htmltext = $htmltext . "<th scope='col'></th>";
+        for ($indexjrs = 1; $indexjrs < 6; $indexjrs ++) 
+        {
             // echo "indexjrs = $indexjrs <br>";
-            $htmltext = $htmltext . "<td colspan='2' class='widthtd50'>" . $this->fonctions->nomjourparindex($indexjrs) . "</td>";
+            $htmltext = $htmltext . "<th scope='col' colspan='2' class='widthtd50'>" . $this->fonctions->nomjourparindex($indexjrs) . "</th>";
         }
         $htmltext = $htmltext . "</tr>";
+        $htmltext = $htmltext . "</thead><tbody>";
         $checkboxname = null;
-        for ($semaine = 0; $semaine < 2; $semaine ++) {
-            $htmltext = $htmltext . "<tr class='ligneplanning'><td>Semaine ";
+        for ($semaine = 0; $semaine < 2; $semaine ++) 
+        {
+            $htmltext = $htmltext . "<tr class='ligneplanning'><th scope='row' class='leftaligntext'>Semaine ";
             if ($semaine == 0)
-                $htmltext = $htmltext . "paire</td>";
+            {
+                $htmltext = $htmltext . "paire</th>";
+            }
             else
-                $htmltext = $htmltext . "impaire</td>";
-            
+            {
+                $htmltext = $htmltext . "impaire</th>";
+            }
             for ($indexelement = 0; $indexelement < 10; $indexelement ++) {
                 unset($element);
                 $element = new planningelement($this->dbconnect);
                 if ($indexelement % 2 == 0)
+                {
                     $element->moment(fonctions::MOMENT_MATIN);
+                }
                 else
+                {
                     $element->moment(fonctions::MOMENT_APRESMIDI);
+                }
                 if ($pour_modif)
+                {
                     $checkboxname = $indexelement + ($semaine * 10); // $this->fonctions->nomjourparindex(((int)($indexelement/2))+1) . "_" . $element->moment() . "_" . $semaine;
+                }
                 if (substr($this->tabtpspartiel(), $indexelement + ($semaine * 10), 1) == 1) {
                     $element->type("tppar");
                     $element->info("Temps partiel");
@@ -277,6 +372,7 @@ class declarationTP
             }
             $htmltext = $htmltext . "</tr>";
         }
+        $htmltext = $htmltext . "</tbody></table>";
         return $htmltext;
     }
     
@@ -312,16 +408,20 @@ class declarationTP
 
     function enTP($date = null, $moment = null)
     {
-        if (is_null($date) or is_null($moment)) {
+        if (is_null($date) or is_null($moment)) 
+        {
             $errlog = "DeclarationTP->enTP : Au moins un des paramètres n'est pas défini (NULL) !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } elseif (is_null($this->tabtpspartiel)) {
+        } 
+        elseif (is_null($this->tabtpspartiel)) 
+        {
             $errlog = "DeclarationTP->enTP : Le tableau des TP n'est pas initialisé !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
-        if (strlen($this->tabtpspartiel) < 20) {
+        if (strlen($this->tabtpspartiel) < 20) 
+        {
             $errlog = "DeclarationTP->enTP : Le tableau ne contient pas le nombre d'élément requis !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -330,12 +430,14 @@ class declarationTP
         $datedb = $this->fonctions->formatdatedb($date);
         // recupération du numéro du jour ==> 0 dimanche ... 6 Samedi
         $numerojour = date("w", strtotime($datedb));
-        if ($numerojour == 0) {
+        if ($numerojour == 0) 
+        {
             // On force le dimanche a 7
             $numerojour = 7;
         }
         // echo "Numero jour = $numerojour <br>";
-        if ($numerojour >= 6) {
+        if ($numerojour >= 6) 
+        {
             // echo "Samedi ou Dimanche => Donc pas de TP <br>";
             return false;
         }
@@ -343,26 +445,36 @@ class declarationTP
         $numsemaine = date("W", strtotime($datedb));
         // echo "Numero de la semaine = $numsemaine <br>";
         $semainepaire = ! (bool) ($numsemaine % 2);
-        if ($semainepaire) {
+        if ($semainepaire) 
+        {
             // echo "Semaine paire <br>";
             $semaineindex = 0;
-        } else {
+        } 
+        else 
+        {
             // echo "Semaine impaire <br>";
             $semaineindex = 1;
         }
         
         if (strcasecmp((string)$moment, fonctions::MOMENT_MATIN) == 0)
+        {
             $momentindex = 0;
+        }
         else
+        {
             $momentindex = 1;
+        }
         
         $index = (($numerojour - 1) * 2) + ($momentindex) + (10 * $semaineindex);
         // echo "date = $date moment = $moment index = $index this->tabtpspartiel = " . $this->tabtpspartiel . "<br>";
         // echo "Le caractère= " . substr($this->tabtpspartiel, $index,1) . "<br>";
-        if (substr($this->tabtpspartiel, $index, 1) == "1") {
+        if (substr($this->tabtpspartiel, $index, 1) == "1") 
+        {
             // echo "Je return TRUE <br>";
             return true;
-        } else {
+        } 
+        else 
+        {
             // echo "Je return FALSE <br>";
             return false;
         }
@@ -407,9 +519,13 @@ class declarationTP
         }
         
         if (strcasecmp((string)$moment, fonctions::MOMENT_MATIN) == 0)
+        {
             $momentindex = 0;
+        }
         else
+        {
             $momentindex = 1;
+        }
                 
         $index = (($indexjour - 1) * 2) + ($momentindex) + (10 * $semaineindex);
         // echo "date = $date moment = $moment index = $index this->tabtpspartiel = " . $this->tabtpspartiel . "<br>";
@@ -445,7 +561,8 @@ class declarationTP
         // return false;
         $errlog = '';
         // echo "On teste le nbre de tabrtt = " . count($this->tabrtt) . "<br>";
-        if (strlen($this->tabtpspartiel) != 20) {
+        if (strlen($this->tabtpspartiel) != 20) 
+        {
             $errlog = "Le tableau des temps partiels n'est pas initialisé. L'enregistrement est impossible.";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             return $errlog . "<br/>";
@@ -456,7 +573,8 @@ class declarationTP
         }
         
         // echo "id est null ==> " . $this->id . "<br>";
-        if (is_null($this->declarationid)) {
+        if (is_null($this->declarationid)) 
+        {
             $this->datedemande = $this->fonctions->formatdatedb(date("d/m/Y"));
             
             $sql = "LOCK TABLES DECLARATIONTP WRITE";
@@ -486,7 +604,9 @@ class declarationTP
             mysqli_query($this->dbconnect, $sql);
             $sql = "SET AUTOCOMMIT = 1";
             mysqli_query($this->dbconnect, $sql);
-        } else {
+        } 
+        else 
+        {
             $this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
             // c'est une modification ...
             $sql = "UPDATE DECLARATIONTP SET ";
@@ -496,7 +616,8 @@ class declarationTP
             $params = array();
             $query = $this->fonctions->prepared_query($sql, $params);
             $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
+            if ($erreur != "") 
+            {
                 $errlog = "DeclarationTP->store (update) : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
@@ -513,35 +634,50 @@ class declarationTP
         $htmltext = $htmltext . "<tr>";
         
         if ($pourmodif)
+        {
             $htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->agent()->identitecomplete() . "</td>";
+        }
         
         // $htmltext = $htmltext . "<input type='hidden' name='" . $structid. "_" . $this->agent()->agentid() . "_autodeclaid_" . $this->declarationTPid() . "' value='" . $this->declarationTPid() ."'>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedemande() . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >" . $this->datedebut() . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >";
         if ($this->fonctions->formatdatedb($this->datefin()) >= date("Ymd")) // Si la date de fin est postérieur à aujourd'hui
+        {
             $htmltext = $htmltext . $this->datefin();
+        }
         else // Si la date est inférieur à aujourd'hui, on modifie la tipographie (couleur, gras....)
+        {
             $htmltext = $htmltext . "<B><div class='redtext'>" . $this->datefin() . "</div></B>";
+        }
         $htmltext = $htmltext . "</td>";
         $htmltext = $htmltext . "<td class='cellulesimple' align=center >";
-        if ($pourmodif and strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) {
+        if ($pourmodif and strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0) 
+        {
             // Affichager les selections !!!!
             $htmltext = $htmltext . "<select name='statut[" . $this->declarationTPid() . "]'>";
             $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_ATTENTE . "'";
             if (strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_ATTENTE) == 0)
+            {
                 $htmltext = $htmltext . " selected ";
+            }
             $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_ATTENTE) . "</option>";
             $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_VALIDE ."'";
             if (strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_VALIDE) == 0)
+            {
                 $htmltext = $htmltext . " selected ";
+            }
             $htmltext = $htmltext . ">" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_VALIDE) . "</option>";
             $htmltext = $htmltext . "<option value='" . declarationTP::DECLARATIONTP_REFUSE ."";
             if (strcasecmp((string)$this->statut(), declarationTP::DECLARATIONTP_REFUSE) == 0)
+            {
                 $htmltext = $htmltext . " selected ";
+            }
             $htmltext = $htmltext . "'>" . $this->fonctions->declarationTPstatutlibelle(declarationTP::DECLARATIONTP_REFUSE) . "</option>";
             $htmltext = $htmltext . "</select>";
-        } else {
+        } 
+        else 
+        {
             $htmltext = $htmltext . $this->fonctions->declarationTPstatutlibelle($this->statut());
         }
         $htmltext = $htmltext . "</td>";
@@ -553,9 +689,7 @@ class declarationTP
         
         // echo "Le tableau des TP = " . $this->tabtpspartiel . "<br>";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau'><tbody>";
         $htmltext = $htmltext . $this->tabtpspartielhtml();
-        $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "</div>";
         
         $htmltext = $htmltext . "</td>";
@@ -620,7 +754,8 @@ class declarationTP
         $cellheight = 5;
         $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode(''), 1, 0, 'L', false);
         // On affiche les 5 jours de la semaine
-        for ($cpt = 1; $cpt < 6; $cpt ++) {
+        for ($cpt = 1; $cpt < 6; $cpt ++) 
+        {
             $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode($this->fonctions->nomjourparindex($cpt)), 1, 0, 'C', false);
         }
         $element = new planningelement($this->dbconnect);
@@ -631,29 +766,47 @@ class declarationTP
         
         $pdf->Ln();
         $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode('Semaine paire'), 1, 0, 'L', false);
-        for ($cpt = 0; $cpt < 10; $cpt ++) {
+        for ($cpt = 0; $cpt < 10; $cpt ++) 
+        {
             if ($this->tabtpspartiel[$cpt] == 1)
+            {
                 $fillcel = true;
+            }
             else
+            {
                 $fillcel = false;
+            }
             
             if ($cpt % 2 == 0)
+            {
                 $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'LTB', 0, 'C', $fillcel);
+            }
             else
+            {
                 $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'RTB', 0, 'C', $fillcel);
+            }
         }
         $pdf->Ln();
         $pdf->Cell(20, $cellheight, $this->fonctions->utf8_decode('Semaine impaire'), 1, 0, 'L', false);
-        for ($cpt = 10; $cpt < 20; $cpt ++) {
+        for ($cpt = 10; $cpt < 20; $cpt ++) 
+        {
             if ($this->tabtpspartiel[$cpt] == 1)
+            {
                 $fillcel = true;
+            }
             else
+            {
                 $fillcel = false;
+            }
             
             if ($cpt % 2 == 0)
+            {
                 $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'LTB', 0, 'C', $fillcel);
+            }
             else
+            {
                 $pdf->Cell(10, $cellheight, $this->fonctions->utf8_decode(''), 'RTB', 0, 'C', $fillcel);
+            }
         }
         
         $pdf->Ln(15);

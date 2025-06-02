@@ -198,7 +198,7 @@
         {
             $htmltext = $htmltext . "<table class='tableausimple' id='table_alimentation'>";
             $htmltext = $htmltext . "<thead>";
-            $htmltext = $htmltext . "<tr>"
+            $htmltext = $htmltext . "<tr class='entete' >"
                     . "<th class='titresimple cursorpointer'>Agent <span class='sortindicator'> </span></th>"
                     . "<th class='titresimple cursorpointer'>Identifiant <span class='sortindicator'> </span></th>"
                     . "<th class='titresimple cursorpointer'>Date création <span class='sortindicator'> </span></th>"
@@ -319,7 +319,7 @@
         {
             $htmltext = $htmltext . "<table class='tableausimple' id='table_option'>";
             $htmltext = $htmltext . "<thead>";
-            $htmltext = $htmltext . "<tr>"
+            $htmltext = $htmltext . "<tr class='entete'>"
                     . "<th class='titresimple cursorpointer'>Agent <span class='sortindicator'> </span></th>"
                     . "<th class='titresimple cursorpointer'>Identifiant <span class='sortindicator'> </span></th>"
                     . "<th class='titresimple cursorpointer'>Date création <span class='sortindicator'> </span></th>"
@@ -423,123 +423,17 @@
         var table_alimentation = document.getElementById('table_alimentation');
         if (table_alimentation)
         {
-                table_alimentation.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-                const currentsortindicator = th.querySelector('.sortindicator')
-
-                if (currentsortindicator!==null)
-                {
-                    const table = th.closest('table');
-                    const tbody = table.querySelector('tbody');
-                    //alert (table.id);
-
-                    if (currentsortindicator.innerText.trim().length>0)
-                    {
-                        th.asc = !th.asc
-                    }
-
-                    Array.from(tbody.querySelectorAll('tr'))
-                        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-                        .forEach(tr => tbody.appendChild(tr) );
-                    theader = table.querySelector('theader');
-
-                    //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-
-                    for (var thindex = 0 ; thindex < table_alimentation.querySelectorAll('th').length; thindex++)
-                    {
-                        //alert (thindex);
-                        if (th.parentNode.children[thindex]!==null)
-                        {
-                            //alert (th.parentNode.children[thindex].innerHTML);
-                            var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                            if (thsortindicator!==null)
-                            {
-                                //alert (thsortindicator.innerText);
-                                thsortindicator.innerText = ' ';
-                                //alert (thsortindicator.innerText);
-                            }
-                        }
-                    }
-
-                    if (currentsortindicator!==null)
-                    {
-                        if (th.asc)
-                        {
-                            //alert ('plouf');
-                            currentsortindicator.innerHTML = '&darr;'; // flêche qui descend
-                        }
-                        else
-                        {
-                            //alert ('ploc');
-                            currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-                        }
-                    }
-                }
-            })));
-
-            table_alimentation.querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-            table_alimentation.querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
+            table_alimentation.querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+            table_alimentation.querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+            table_alimentation.querySelector('.entete').querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
         }
         
         var table_option = document.getElementById('table_option');
         if (table_option)
         {
-            table_option.querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-                const currentsortindicator = th.querySelector('.sortindicator')
-
-                if (currentsortindicator!==null)
-                {
-                    const table = th.closest('table');
-                    const tbody = table.querySelector('tbody');
-                    //alert (table.id);
-
-                    if (currentsortindicator.innerText.trim().length>0)
-                    {
-                        th.asc = !th.asc
-                    }
-
-                    Array.from(tbody.querySelectorAll('tr'))
-                        .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-                        .forEach(tr => tbody.appendChild(tr) );
-                    theader = table.querySelector('theader');
-
-                    //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-
-                    for (var thindex = 0 ; thindex < table_option.querySelectorAll('th').length; thindex++)
-                    {
-                        //alert (thindex);
-                        if (th.parentNode.children[thindex]!==null)
-                        {
-                            //alert (th.parentNode.children[thindex].innerHTML);
-                            var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                            if (thsortindicator!==null)
-                            {
-                                //alert (thsortindicator.innerText);
-                                thsortindicator.innerText = ' ';
-                                //alert (thsortindicator.innerText);
-                            }
-                        }
-                    }
-
-                    if (currentsortindicator!==null)
-                    {
-                        if (th.asc)
-                        {
-                            //alert ('plouf');
-                            currentsortindicator.innerHTML = '&darr;'; // flêche qui descend
-                        }
-                        else
-                        {
-                            //alert ('ploc');
-                            currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-                        }
-                    }
-                }
-            })));
-
-            table_option.querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-            table_option.querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
+            table_option.querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+            table_option.querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+            table_option.querySelector('.entete').querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
         }
 
         window.addEventListener("load", (event) => {

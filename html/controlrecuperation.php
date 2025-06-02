@@ -60,19 +60,20 @@
 
     if (count($demandeparagent)>0)
     {
-        echo "<table class='tableausimple' id='table_recup'><tbody>";
+        echo "<table class='tableausimple' id='table_recup'><thead>";
         echo "<tr>
-                 <td class='titresimple'>Ident. SIHAM</td>
-                 <td class='titresimple'>Nom agent</td>
-                 <td class='titresimple'>Prénom agent</td>
-                 <td class='titresimple'>Structure</td>
-                 <td class='titresimple'>Type de récupération</td>
-                 <td class='titresimple'>Statut</td>
-                 <td class='titresimple'>Nombre de jours</td>
-                 <td class='titresimple'>Date début</td>
-                 <td class='titresimple'>date fin</td>
-                 <td class='titresimple'>Période obligatoire</td>
+                 <th scope='col' class='titresimple'>Ident. SIHAM</th>
+                 <th scope='col' class='titresimple'>Nom agent</th>
+                 <th scope='col' class='titresimple'>Prénom agent</th>
+                 <th scope='col' class='titresimple'>Structure</th>
+                 <th scope='col' class='titresimple'>Type de récupération</th>
+                 <th scope='col' class='titresimple'>Statut</th>
+                 <th scope='col' class='titresimple'>Nombre de jours</th>
+                 <th scope='col' class='titresimple'>Date début</th>
+                 <th scope='col' class='titresimple'>Date fin</th>
+                 <th scope='col' class='titresimple'>Période obligatoire</th>
               </tr>";
+        echo "</thead><tbody>";
 
         foreach($demandeparagent as $demandeagent)
         {

@@ -1301,28 +1301,30 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             
     	    $nbrelignetableauconvention=count($teletravailliste);
     	    echo "<form name='form_teletravail_delete' id='form_teletravail_delete' method='post' >";
-    	    echo "<table class='tableausimple' id='listeteletravail'><tbody>";
-    	    echo "<tr class='centeraligntext'><td class='titresimple'>Identifiant</td>
-                      <td class='titresimple'>Date début</td>
-                      <td class='titresimple'>Date fin</td>
-                      <td class='titresimple' id ='convstatut'>Statut</td>
-                      <td class='titresimple'>Répartition du télétravail</td>";
+    	    echo "<table class='tableausimple' id='listeteletravail'><thead>";
+    	    echo "<tr class='centeraligntext'>
+                      <th scope='col' class='titresimple'>Identifiant</th>
+                      <th scope='col' class='titresimple'>Date début</th>
+                      <th scope='col' class='titresimple'>Date fin</th>
+                      <th scope='col' class='titresimple' id ='convstatut'>Statut</th>
+                      <th scope='col' class='titresimple'>Répartition du télétravail</th>";
             if ($esignatureactive)
             {
                 echo "
-                      <td class='titresimple'>Id. externe</td>
-                      <td class='titresimple'>URL eSignature</td>
+                      <th scope='col' class='titresimple'>Id. externe</th>
+                      <th scope='col' class='titresimple'>URL eSignature</th>
                  ";
             }
             if ($mode==MODE_RH or $esignatureactive)
             {
-                echo "<td class='titresimple'>Annuler</td>";
+                echo "<th scope='col' class='titresimple'>Annuler</th>";
             }
             if ($displayPDFbutton and $esignatureactive)
             {
-                echo "<td class='titresimple'>Générer le PDF</td>";
+                echo "<th scope='col' class='titresimple'>Générer le PDF</th>";
             }
             echo "</tr>";
+            echo "</thead><tbody>";
     	    foreach($teletravailliste as $teletravailid)
     	    {
     	        $teletravail = new teletravail($dbcon);
@@ -1830,7 +1832,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
         echo "<table><tbody>";
         echo "<tr>";
-    	echo "<td>Date de début : </td>";
+    	echo "<th scope='row'>Date de début : </th>";
         echo "<td><span class='largerfontsize' data-tip=" . chr(34) . htmlentities("Ceci est la date de début souhaitée. La date d'effet de la convention ne pourra être antérieure à la date de signature de tous les intervenants.") . chr(34) . "> &#9432; </span></td>";
     	if ($fonctions->verifiedate($inputdatedebut)) 
         {
@@ -1844,15 +1846,15 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         	minperiode='<?php echo $fonctions->formatdate($datedebutminconv); ?>'
         	maxperiode='<?php echo $fonctions->formatdate($datedebutmaxconv); ?>'
         	value='<?php echo $inputdatedebut ?>'
-                onchange="getnbjrsteletravail('<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?>');">
+            onchange="getnbjrsteletravail('<?php echo $calendrierid_deb . '[' . $agent->agentid() .']'?>');">
     <?php
         echo "<span class='boldtext redtext fontsize25'>*</span>";
         echo "</td>";
     	echo "</tr>";
         echo "<tr>";
-        echo "<td colspan=2>";
+        echo "<th scope='row' colspan=2>";
     	echo "Date de fin : ";
-        echo "</td>";
+        echo "</th>";
     	if ($fonctions->verifiedate($inputdatefin)) {
     	    $inputdatefin = $fonctions->formatdate($inputdatefin);
         }
@@ -2572,19 +2574,20 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         }
                         if ($teletravailtrouvestruct===false)
                         {
-                            echo "<table class='tableausimple'><tbody>";
+                            echo "<table class='tableausimple'><thead>";
                             echo "<tr>";
-                            echo "<td class='titresimple' colspan=7>Informations sur les demandes de télétravail pour la structure : " . $structure->nomlong()  . "</td>";
+                            echo "<th scope='col' class='titresimple' colspan=7>Informations sur les demandes de télétravail pour la structure : " . $structure->nomlong()  . "</th>";
                             echo "</tr>";
                             echo "<tr>";
-                            echo "<td class='cellulesimple'>Identité du demandeur</td>";
-                            echo "<td class='cellulesimple'>Type de demande</td>";
-                            echo "<td class='cellulesimple'>Date de création</td>";
-                            echo "<td class='cellulesimple'>Date début</td>";
-                            echo "<td class='cellulesimple'>Date fin</td>";
-                            echo "<td class='cellulesimple'>Répartition souhaitée</td>";
-                            echo "<td class='cellulesimple'>Compléter la demande</td>";
+                            echo "<th scope='col' class='cellulesimple'>Identité du demandeur</th>";
+                            echo "<th scope='col' class='cellulesimple'>Type de demande</th>";
+                            echo "<th scope='col' class='cellulesimple'>Date de création</th>";
+                            echo "<th scope='col' class='cellulesimple'>Date début</th>";
+                            echo "<th scope='col' class='cellulesimple'>Date fin</th>";
+                            echo "<th scope='col' class='cellulesimple'>Répartition souhaitée</th>";
+                            echo "<th scope='col' class='cellulesimple'>Compléter la demande</th>";
                             echo "</tr>";
+                            echo "</thead><tbody>";
                             $teletravailtrouvestruct = true;
                             $teletravailtrouve = true;
                         }

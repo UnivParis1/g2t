@@ -595,17 +595,17 @@ class planning
         
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'><tbody>";
+        $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'><thead>";
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
-        $htmltext = $htmltext . "<tr class='entete'><td>Mois</td>";
+        $htmltext = $htmltext . "<tr class='entete'><th scope='col'>Mois</th>";
         for ($indexjrs = 0; $indexjrs < 31; $indexjrs ++) 
         {
             // echo "indexjrs = $indexjrs <br>";
-            $htmltext = $htmltext . "<td colspan='2'>" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</td>";
+            $htmltext = $htmltext . "<th scope='col' colspan='2'>" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</th>";
         }
         $htmltext = $htmltext . "</tr>";
-        
+        $htmltext = $htmltext . "</thead><tbody>";
         $elementlegende = array();
         foreach ($this->listeelement as $key => $planningelement) 
         {
@@ -623,7 +623,7 @@ class planning
                 {
                     $htmltext = $htmltext . "\n<tr class='ligneplanning'>";
                 }
-                $htmltext = $htmltext . "<td>" . $monthname . "</td>";
+                $htmltext = $htmltext . "<th scope='row' class='leftaligntext'>" . $monthname . "</th>";
                 
                 $currentmonth = $month;
             }
@@ -1076,6 +1076,14 @@ class planning
                 $tabinfoindemnite["$montant"] = $tabinfoindemnite["$montant"] + 0.5; // On a une 1/2 journée de plus au montant indiqué
             }
             
+        }
+
+        foreach($tabrepartition as $type => $nbjours)
+        {
+            if ($nbjours == 0)
+            {
+                unset($tabrepartition[$type]);
+            }
         }
         
         //var_dump($tabrepartition);

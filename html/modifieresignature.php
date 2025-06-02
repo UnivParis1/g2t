@@ -461,13 +461,15 @@
 
 
         echo "<form name='form_esignature' id='form_esignature' method='post' >";
-        echo "<table class='tableausimple' id='listeesignature'><tbody>";
-        echo "<tr><td class='titresimple'>Type</td>
-            <td class='titresimple'>Date de la demande</td>
-            <td class='titresimple'>Statut</td>
-            <td class='titresimple'>URL eSignature</td>
-            <td class='titresimple'>Modifier</td>";
+        echo "<table class='tableausimple' id='listeesignature'><thead>";
+        echo "<tr>
+            <th class='titresimple'>Type</th>
+            <th class='titresimple'>Date de la demande</th>
+            <th class='titresimple'>Statut</th>
+            <th class='titresimple'>URL eSignature</th>
+            <th class='titresimple'>Modifier</th>";
         echo "</tr>";
+        echo "</thead><tbody>";
         $textformulaireaffichepdf = '';
         foreach (array_merge((array)$teletravailidtab, (array)$alimentationidtab, (array)$optionidtab) as $element)
         {
@@ -545,19 +547,20 @@
                 echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
                 echo "<input type='hidden' id='agentid' name='agentid' value='$agentid' >";
                 echo "<input type='hidden' id='esignatureradioid' name='esignatureradioid' value='$esignatureradioid' >";
-                echo "<table class='tableausimple' id='listerecipients'><tbody>";
-                echo "<tr><td class='titresimple'>Etape</td>
-                          <td class='titresimple'>Identité intervenant</td>
-                          <td class='titresimple'>Action intervenant</td>
-                          <td class='titresimple'>Date intervention</td>
-                          <td class='titresimple'>Modification</td>";
+                echo "<table class='tableausimple' id='listerecipients'><thead>";
+                echo "<tr><th scope='col' class='titresimple'>Etape</th>
+                          <th scope='col' class='titresimple'>Identité intervenant</th>
+                          <th scope='col' class='titresimple'>Action intervenant</th>
+                          <th scope='col' class='titresimple'>Date intervention</th>
+                          <th scope='col' class='titresimple'>Modification</th>";
                 echo "</tr>";
+                echo "</thead><tbody>";
                 foreach($stepstatustab as $stepindex => $stepstatus)
                 {
                     foreach($recipientstab[$stepindex] as $recipientindex => $recipient)
                     {
                         echo "<tr class='bulleinfo'>";
-                        echo "<td class='cellulesimple numetape' data-tip=" . ($stepindex+1) . ">Etape " . ($stepindex+1) . "</td>";
+                        echo "<th scope='row' class='cellulesimple numetape' data-tip=" . ($stepindex+1) . ">Etape " . ($stepindex+1) . "</th>";
                         echo "<td class='cellulesimple identiteagent'>" . $recipient->prenom . " " . $recipient->nom . "</td>";
                         echo "<td class='cellulesimple centeraligntext'>" . $recipient->action . "</td>";
                         echo "<td class='cellulesimple centeraligntext'>" . $recipient->actiondate . "</td>";

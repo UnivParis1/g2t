@@ -186,10 +186,16 @@ class complement
                 $errlog = "Complement->valeur : La valeur du complément n'est pas définie !!!";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            } else
+            } 
+            else
+            {
                 return $this->valeur;
-        } else
+            }
+        } 
+        else
+        {
             $this->valeur = $valeur;
+        }
     }
 }
 

@@ -210,19 +210,20 @@
         //$agentlist = array('975');
         /////////////////////////////////////////////////////////////////
         /////////////////////////////////////////////////////////////////
-        echo "<table class='tableausimple' id='table_teletravail'><tbody>";
+        echo "<table class='tableausimple' id='table_teletravail'><thead>";
         echo "<tr>
-                 <td class='titresimple'>Numéro siham</td>
-                 <td class='titresimple'>Nom agent</td>
-                 <td class='titresimple'>Prénom agent</td>
-                 <td class='titresimple'>Structure</td>
-                 <td class='titresimple'>Direction</td>
-                 <td class='titresimple'>Nombre de jours</td>
-                 <td class='titresimple'>Répartition</td>";
+                 <th scope='col' class='titresimple'>Numéro siham</th>
+                 <th scope='col' class='titresimple'>Nom agent</th>
+                 <th scope='col' class='titresimple'>Prénom agent</th>
+                 <th scope='col' class='titresimple'>Structure</th>
+                 <th scope='col' class='titresimple'>Direction</th>
+                 <th scope='col' class='titresimple'>Nombre de jours</th>
+                 <th scope='col' class='titresimple'>Répartition</th>";
 //                 <td class='titresimple'>Nombre de jours annuels</td>
-        echo "   <td class='titresimple'>Calcul du montant</td>
-                 <td class='titresimple'>Montant à payer</td>
+        echo "   <th scope='col' class='titresimple'>Calcul du montant</th>
+                 <th scope='col' class='titresimple'>Montant à payer</th>
               </tr>";
+        echo "</thead><tbody>";
         foreach ((array)$agentlist as $agentid)
         {
             $agent = new agent($dbcon);

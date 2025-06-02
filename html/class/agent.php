@@ -2089,13 +2089,18 @@ class agent
         // echo "anneeref = " . $anneeref . "<br>";
         $htmltext = "<br>";
         $htmltext = $htmltext . "<div id='soldeconges'>";
-        $htmltext = $htmltext . "      <table class='tableau centertable'><tbody>";
+        $htmltext = $htmltext . "      <table class='tableau centertable'><thead>";
         if (! $infoagent)
-            $htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour l'année $anneeref / " . ($anneeref + 1) . "</td></tr>";
+        {
+            $htmltext = $htmltext . "      <tr class='titre'><th scope='col' colspan=5>Etat des soldes pour l'année $anneeref / " . ($anneeref + 1) . "</th></tr>";
+        }
         else
-            $htmltext = $htmltext . "      <tr class='titre'><td colspan=5>Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+        {
+            $htmltext = $htmltext . "      <tr class='titre'><th scope='col' colspan=5>Etat des soldes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</th></tr>";
+        }
         
-        $htmltext = $htmltext . "         <tr class='entete'><td>Type de demande</td><td>Droits acquis</td><td>Droit pris</td><td>Solde actuel</td><td>Demandes en attente</td></tr>";
+        $htmltext = $htmltext . "         <tr class='entete'><th scope='col'>Type de demande</th><th scope='col'>Droits acquis</th><th scope='col'>Droit pris</th><th scope='col'>Solde actuel</th><th scope='col'>Demandes en attente</th></tr>";
+        $htmltext = $htmltext . "       </thead><tbody>";
         $totaldroitaquis = 0;
         $totaldroitpris = 0;
         $totaldroitrestant = 0;
@@ -2115,7 +2120,7 @@ class agent
                     continue;
                 }
                 $htmltext = $htmltext . "      <tr class='element'>";
-                $htmltext = $htmltext . "         <td>" . $tempsolde->typelibelle() . "</td>";
+                $htmltext = $htmltext . "         <th scope='row' class='centeraligntext'>" . $tempsolde->typelibelle() . "</th>";
                 if (strcmp((string)$tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
                 {
                     $htmltext = $htmltext . "         <td colspan='2' bgcolor='#E8E8E8' >"; // On fusionne les 2 colonnes "droit acquis" et "droit pris"
@@ -2270,22 +2275,23 @@ class agent
         $demandeliste = $this->demandesliste($datedebut, $datefin);
         $htmltext = "<br>";
         $htmltext = $htmltext . "<div id='demandeliste'>";
-        $htmltext = $htmltext . "<table class='tableau centertable' ><tbody>";
+        $htmltext = $htmltext . "<table class='tableau centertable' ><thead>";
         if (count($demandeliste) == 0)
         {
-            $htmltext = $htmltext . "   <tr class='titre'><td>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
+            $htmltext = $htmltext . "   <tr class='titre'><th scope='col'>L'agent n'a aucun congé posé pour la période de référence en cours.</th></tr>";
         }
         else {
-            $htmltext = $htmltext . "   <tr class='titre'><td colspan=7>Tableau récapitulatif des demandes</td></tr>";
+            $htmltext = $htmltext . "   <tr class='titre'><th scope='col' colspan=7>Tableau récapitulatif des demandes</th></tr>";
             $htmltext = $htmltext . "   <tr class='entete'>"
-                    . "<td>Type de demande</td>"
-                    . "<td>Date de dépot</td>"
-                    . "<td>Date de début</td>"
-                    . "<td>Date de fin</td>"
-                    . "<td>Nbr de jours</td>"
-                    . "<td>Etat de la demande</td>"
-                    . "<td>Motif (obligatoire si le congé est annulé)</td>"
+                    . "<th scope='col'>Type de demande</th>"
+                    . "<th scope='col'>Date de dépot</th>"
+                    . "<th scope='col'>Date de début</th>"
+                    . "<th scope='col'>Date de fin</th>"
+                    . "<th scope='col'>Nbr de jours</th>"
+                    . "<th scope='col'>Etat de la demande</th>"
+                    . "<th scope='col'>Motif (obligatoire si le congé est annulé)</th>"
                     . "</tr>";
+            $htmltext = $htmltext . "   </thead><tbody>";
             foreach ($demandeliste as $key => $demande) {
                 if ($demande->motifrefus() != "" or (strcasecmp((string)$demande->statut(), demande::DEMANDE_REFUSE) != 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_ANNULE) != 0)) {
                     $htmltext = $htmltext . "<tr class='element bulleinfo'>";
@@ -2453,13 +2459,14 @@ class agent
             $htmltext = $htmltext . "<br>";
             // $htmltext = $htmltext . print_r($synthesetab,true);
             $htmltext = $htmltext . "<div id='demandeliste'>";
-            $htmltext = $htmltext . "<table class='tableau centertable' ><tbody>";
-            $htmltext = $htmltext . "   <tr class='titre'><td colspan=2>Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin) . "</td></tr>";
-            $htmltext = $htmltext . "   <tr class='entete'><td>Type de demande</td><td>Droit pris</td></tr>";
+            $htmltext = $htmltext . "<table class='tableau centertable' ><thead>";
+            $htmltext = $htmltext . "   <tr class='titre'><th scope='col' colspan=2>Synthèse des types de demandes du " . $this->fonctions->formatdate($datedebut) . " au " . $this->fonctions->formatdate($datefin) . "</th></tr>";
+            $htmltext = $htmltext . "   <tr class='entete'><th scope='col'>Type de demande</th><th scope='col'>Droit pris</th></tr>";
+            $htmltext = $htmltext . "   </thead><tbody>";
             ksort($synthesetab);
             foreach ($synthesetab as $key => $nbrejrs) {
                 $htmltext = $htmltext . "<tr class='element'>";
-                $htmltext = $htmltext . "<td>" . $key . "</td>";
+                $htmltext = $htmltext . "<th scope='row' class='centeraligntext'>" . $key . "</th>";
                 $htmltext = $htmltext . "<td>" . $nbrejrs . "</td>";
                 $htmltext = $htmltext . "</tr>";
             }
@@ -2799,22 +2806,22 @@ const modifymotif = (motif, motifid) =>
                         {
                             $nbcolonne = 7;
                         }
-                        $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=$nbcolonne align=center >Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
-                        $htmltext = $htmltext . "   <tr align=center>
-                                                      <th class='cellulesimple cursorpointer'>Date de demande <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple cursorpointer'>Date de début <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple cursorpointer'>Date de fin <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple cursorpointer'>Type de demande <span class='sortindicator'> </span></th>
-                                                      <th class='cellulesimple cursorpointer'>Nbre jours <span class='sortindicator'> </span></th>";
+                        $htmltext = $htmltext . "   <tr ><th scope='col' class='titresimple' colspan=$nbcolonne align=center >Gestion des demandes pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</th></tr>";
+                        $htmltext = $htmltext . "   <tr class='entete' align=center>
+                                                      <th scope='col' class='cellulesimple cursorpointer'>Date de demande <span class='sortindicator'> </span></th>
+                                                      <th scope='col' class='cellulesimple cursorpointer'>Date de début <span class='sortindicator'> </span></th>
+                                                      <th scope='col' class='cellulesimple cursorpointer'>Date de fin <span class='sortindicator'> </span></th>
+                                                      <th scope='col' class='cellulesimple cursorpointer'>Type de demande <span class='sortindicator'> </span></th>
+                                                      <th scope='col' class='cellulesimple cursorpointer'>Nbre jours <span class='sortindicator'> </span></th>";
                         if (strcasecmp((string)$mode, MODE_AGENT) == 0)
                         {
-                            $htmltext = $htmltext . "<th class='cellulesimple cursorpointer'>Statut<span class='sortindicator'> </span></th>";
-                            $htmltext = $htmltext . "<th class='cellulesimple'>Commentaire</th>";
+                            $htmltext = $htmltext . "<th scope='col' class='cellulesimple cursorpointer'>Statut<span class='sortindicator'> </span></th>";
+                            $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Commentaire</th>";
                         }
-                        $htmltext = $htmltext . "<th class='cellulesimple'>Annuler</th>";
+                        $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Annuler</th>";
                         if (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
                         {
-                            $htmltext = $htmltext . "<th class='cellulesimple'>Motif (obligatoire si le congé est annulé) - maximum $longueurmaxmotif caractères</th>";
+                            $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Motif (obligatoire si le congé est annulé) - maximum $longueurmaxmotif caractères</th>";
                         }
                         $htmltext = $htmltext . "</tr>";
                         $htmltext = $htmltext . "</thead>";
@@ -2951,64 +2958,11 @@ const modifymotif = (motif, motifid) =>
                 $htmltext = $htmltext . "</table>";
                 $htmltext = $htmltext . "
 <script>
-                    
-// do the work...
-document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
 
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-    
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-    
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-    
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-    
-        for (var thindex = 0 ; thindex < document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+    var tablename = 'tabledemande_" . $this->agentid() . "';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
             }
@@ -3098,34 +3052,39 @@ document.getElementById('tabledemande_" . $this->agentid() . "').querySelectorAl
                     // echo "todisplay = $todisplay <br>";
                     if ($todisplay) {
                         if ($premieredemande) {
-                            $htmltext = $htmltext . "<table class='tableausimple' width=100%><tbody>";
+                            $htmltext = $htmltext . "<table class='tableausimple' width=100%><thead>";
                             // Si on est en mode MODE_CONSULTANT
                             if (strcasecmp((string)$mode,MODE_CONSULTANT)==0)
                             {
-                                $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Avis à donner pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+                                $htmltext = $htmltext . "   <tr>
+                                                                <th scope='col' class=titresimple colspan=7 align=center >Avis à donner pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</th>
+                                                            </tr>";
                             }
                             else
                             {
-                                $htmltext = $htmltext . "   <tr><td class=titresimple colspan=7 align=center >Demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</td></tr>";
+                                $htmltext = $htmltext . "   <tr>
+                                                                <th scope='col' class=titresimple colspan=7 align=center >Demandes à valider pour " . $this->civilite() . " " . $this->nom() . " " . $this->prenom() . "</th>
+                                                            </tr>";
                             }
                             $htmltext = $htmltext . "   <tr align=center>
-                                                            <td class='cellulesimple'>Date de demande</td>
-                                                            <td class='cellulesimple'>Date de début</td>
-                                                            <td class='cellulesimple'>Date de fin</td>
-                                                            <td class='cellulesimple'>Type de demande</td>
-                                                            <td class='cellulesimple'>Nbre jours</td>
-                                                            <td class='cellulesimple'>Etat de la demande</td>";
+                                                            <th scope='col' class='cellulesimple'>Date de demande</th>
+                                                            <th scope='col' class='cellulesimple'>Date de début</th>
+                                                            <th scope='col' class='cellulesimple'>Date de fin</th>
+                                                            <th scope='col' class='cellulesimple'>Type de demande</th>
+                                                            <th scope='col' class='cellulesimple'>Nbre jours</th>
+                                                            <th scope='col' class='cellulesimple'>Etat de la demande</th>";
                             // Si on est en mode MODE_CONSULTANT
                             if (strcasecmp((string)$mode,MODE_CONSULTANT)==0)
                             {
-                                $htmltext = $htmltext . "   <td class='cellulesimple'>Motif (obligatoire si l'avis est défavorable) - maximum $longueurmaxmotif caractères</td>";
+                                $htmltext = $htmltext . "   <th scope='col' class='cellulesimple'>Motif (obligatoire si l'avis est défavorable) - maximum $longueurmaxmotif caractères</th>";
                             }
                             else
                             {
-                                $htmltext = $htmltext . "   <td class='cellulesimple'>Motif (obligatoire si la demande est refusée) - maximum $longueurmaxmotif caractères</td>";
+                                $htmltext = $htmltext . "   <th scope='col' class='cellulesimple'>Motif (obligatoire si la demande est refusée) - maximum $longueurmaxmotif caractères</th>";
                             }
                             $htmltext = $htmltext . "   </tr>";
                             $premieredemande = FALSE;
+                            $htmltext = $htmltext . "   </thead><tbody>";
                         }
                         
                         $htmltext = $htmltext . "<tr align=center class='bulleinfo'>";

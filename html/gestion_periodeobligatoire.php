@@ -206,10 +206,10 @@
             echo "<table class='tableausimple tabsynthese' id='$structid' name='$structid'>";
             echo "<thead>";
             echo "   <tr class='titresimple'>"; 
-            echo "      <td colspan=7>Congés sur les périodes obligatoires pour la structure <label>" . $structure->nomlong() . "</label> (" . $structure->nomcourt() . ") ";
+            echo "      <th colspan=7>Congés sur les périodes obligatoires pour la structure <label>" . $structure->nomlong() . "</label> (" . $structure->nomcourt() . ") ";
             echo "         <input type='button' class='g2tbouton g2tenvoibouton structmail' structureid='$structid' id='rappel_struct_$structid' name='rappel_struct_$structid' value='Rappel' onclick='document.getElementById(\"errorlabel\").innerText = \"\"; click_element(this.id); return false;'/>";
             echo "         <input type='button' class='g2tbouton g2tvalidebouton structsave' structureid='$structid' id='force_struct_$structid' name='$structid' id='force_struct_$structid' value='Forcer' onclick='document.getElementById(\"errorlabel\").innerText = \"\"; click_element(this.id); return false;'/>";
-            echo "      </td>";
+            echo "      </th>";
             echo "   </tr>";
             echo "   <tr>"
                         . "<th class='cellulesimple' >Identité de l'agent</th>"
@@ -378,7 +378,7 @@
                     var structtext = '';
                     if (submit_button.classList.contains('structmail'))
                     {
-                        var selectstruct = submit_button.closest("td").getElementsByTagName("label")[0];
+                        var selectstruct = submit_button.closest("td,th").getElementsByTagName("label")[0];
                         var structname = selectstruct.innerText;
                         structtext = 'la structure "' + structname + '"';
                     }
@@ -405,7 +405,7 @@
                     var structtext = '';
                     if (submit_button.classList.contains('structsave'))
                     {
-                        var selectstruct = submit_button.closest("td").getElementsByTagName("label")[0];
+                        var selectstruct = submit_button.closest("td,th").getElementsByTagName("label")[0];
                         var structname = selectstruct.innerText;
                         structtext = 'la structure "' + structname + '"';
                     }

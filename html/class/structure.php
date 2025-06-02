@@ -1043,26 +1043,26 @@ class structure
                 $htmltext = $htmltext . "<thead>";
                 if (is_null($agentlist) or count((array)$agentlist)==0)
                 {
-                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
+                    $htmltext = $htmltext . "<tr class='entete_mois'><th scope='col' class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</th></tr>";
                 }
                 else // On a indiquer une liste d'agent spécifique
                 {
-                    $htmltext = $htmltext . "<tr class='entete_mois'><td class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Planning des agents</td></tr>";
+                    $htmltext = $htmltext . "<tr class='entete_mois'><th scope='col' class='titresimple' colspan=" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . " align=center >Planning des agents</th></tr>";
                 }
                 $monthname = $this->fonctions->nommois("01/" . $mois_annee_debut) . " " . date("Y", strtotime($this->fonctions->formatdatedb("01/" . $mois_annee_debut)));
                 // echo "Nom du mois = " . $monthname . "<br>";
-                $htmltext = $htmltext . "<tr class='entete_mois'><td colspan='" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . "'>" . $monthname . "</td></tr>";
+                $htmltext = $htmltext . "<tr class='entete_mois'><th scope='col' colspan='" . (count($planningservice[$agentid]->planning()) + $nbcolonneaajouter) . "'>" . $monthname . "</th></tr>";
                 // echo "Nbre de jour = " . count($planningservice[$agentid]->planning()) . "<br>";
-                $htmltext = $htmltext . "<tr class='entete'><th class='cellulesimple cellulemultiligne cursorpointer'>Agent<span class='sortindicator'> </span></th>";
+                $htmltext = $htmltext . "<tr class='entete'><th scope='col' class='cellulesimple cellulemultiligne cursorpointer'>Agent<span class='sortindicator'> </span></th>";
                 if ($showstructcolonne)
                 {
-                    $htmltext = $htmltext . "<th class='cellulesimple cursorpointer'>Structure<span class='sortindicator'> </span></th>";
+                    $htmltext = $htmltext . "<th scope='col' class='cellulesimple cursorpointer'>Structure<span class='sortindicator'> </span></th>";
                 }
                 for ($indexjrs = 0; $indexjrs < (count($planningservice[$agentid]->planning()) / 2); $indexjrs ++) {
                     // echo "indexjrs = $indexjrs <br>";
                     $nomjour = $this->fonctions->nomjour(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut);
                     $titre = $nomjour . " " . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . " " . $monthname;
-                    $htmltext = $htmltext . "<th class='cellulesimple' colspan='2' title='" . $titre . "'";
+                    $htmltext = $htmltext . "<th scope='col' class='cellulesimple' colspan='2' title='" . $titre . "'";
                     // echo "Date case = " . $this->fonctions->formatdatedb(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut) . " Date jour = " . date("Ymd") . "<br>";
                     if ($this->fonctions->formatdatedb(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut) == date("Ymd")) {
                         $htmltext = $htmltext . " bgcolor='#3FC6FF'";
@@ -1082,7 +1082,7 @@ class structure
             // echo "l'agent $agentid est chargé ... <br>";
             $htmltext = $htmltext . "<tr class='ligneplanning'>";
 //            $htmltext = $htmltext . "<td>" . $agent->nom() . " " . $agent->prenom() . "</td>";
-            $htmltext = $htmltext . "<td class='cellulemultiligne'>" . $agent->civilite() . " <span class='agentidentite'>" . $agent->nom() . " " . $agent->prenom() . "</span></td>"; //$agent->identitecomplete(true)
+            $htmltext = $htmltext . "<th scope='row' class='cellulemultiligne'>" . $agent->civilite() . " <span class='agentidentite'>" . $agent->nom() . " " . $agent->prenom() . "</span></th>"; //$agent->identitecomplete(true)
             if ($showstructcolonne)
             {
                 if (!isset($tabstruct[$agent->structureid()]))
@@ -1095,7 +1095,7 @@ class structure
                 {
                     $struct = $tabstruct[$agent->structureid()];
                 }
-                $htmltext = $htmltext . "<td>" . $struct->nomcourt() . "</td>";
+                $htmltext = $htmltext . "<th scope='row'>" . $struct->nomcourt() . "</th>";
             }
             // echo "Avant chargement des elements <br>";
             $listeelement = $planning->planning();
@@ -1134,70 +1134,11 @@ class structure
 
         $htmltext = $htmltext . "
 <script>
-         
-// do the work...
-document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-        
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));
-        
-        for (var thindex = 0 ; thindex < document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th')[0].click(); // On simule le clic sur la 1e colonne pour faire afficher la flêche
-    
-    
+    var tablename = 'struct_plan_" . $this->id() . "';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[0].click(); // On simule le clic sur la 1ere colonne pour faire afficher la flêche
 </script>";
-        
-        
-        
         
         $htmltext = $htmltext . "</div>";
         //var_dump($elementlegende);
@@ -1395,18 +1336,21 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 $nbcolonne--;
         }
         $htmltext = "<br>";
-        $htmltext = "<table class='tableausimple'><tbody>";
-        $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</td></tr>";
+        $htmltext = "<table class='tableausimple'><thead>";
+        $htmltext = $htmltext . "<tr>
+                                    <th scope='col' class='titresimple' colspan=$nbcolonne align=center >Gestion des dossiers pour la structure " . $this->nomlong() . " (" . $this->nomcourt() . ")</th>
+                                </tr>";
         $htmltext = $htmltext . "<tr align=center>"
-                                    . "<td class='cellulesimple'>Agent</td>"
-                                    . "<td class='cellulesimple'>Report des congés</td>"
-                                    . "<td class='cellulesimple'>Nbre jours 'Garde d'enfant'</td>"
-                                    . "<td class='cellulesimple'>Convention de télétravail</td>";
+                                    . "<th scope='col' class='cellulesimple'>Agent</th>"
+                                    . "<th scope='col' class='cellulesimple'>Report des congés</th>"
+                                    . "<th scope='col' class='cellulesimple'>Nbre jours 'Garde d'enfant'</th>"
+                                    . "<th scope='col' class='cellulesimple'>Convention de télétravail</th>";
         if ($this->fonctions->convertvaluetobool($avisfonction))
         {
-            $htmltext = $htmltext . "<td class='cellulesimple'>Solliciter un avis pour les demandes de congés/d'absences</td>";
+            $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Solliciter un avis pour les demandes de congés/d'absences</th>";
         }
         $htmltext = $htmltext . "</tr>";
+        $htmltext = $htmltext . "</thead><tbody>";
         $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
         
         // Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
@@ -1439,22 +1383,28 @@ document.getElementById('struct_plan_" . $this->id() . "').querySelectorAll('th'
                 // echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
                 if ($membre->agentid() != $responsableid) {
                     $htmltext = $htmltext . "<tr>";
-                    $htmltext = $htmltext . "<td class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</td>";
+                    $htmltext = $htmltext . "<th scope='row' class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</th>";
                     
                     $complement = new complement($this->dbconnect);
                     $complement->load($membre->agentid(), "REPORTACTIF");
                     if ($complement->valeur() == "")
+                    {
                         $complement->valeur("n"); // Si le complement n'est pas saisi, alors la valeur est "N" (non)
+                    }
                     $htmltext = $htmltext . "<td class='cellulesimple centeraligntext'>";
                     if ($pourmodif) {
                         $htmltext = $htmltext . "<select name=report[" . $membre->agentid() . "]>";
                         $htmltext = $htmltext . "<option value='n'";
-                        if (strcasecmp((string)$complement->valeur(), "n") == 0)
+                        if (!$this->fonctions->convertvaluetobool($complement->valeur()))  // (strcasecmp((string)$complement->valeur(), "n") == 0)
+                        {
                             $htmltext = $htmltext . " selected ";
+                        }
                         $htmltext = $htmltext . ">Non</option>";
                         $htmltext = $htmltext . "<option value='o'";
-                        if (strcasecmp((string)$complement->valeur(), "o") == 0)
+                        if ($this->fonctions->convertvaluetobool($complement->valeur())) // (strcasecmp((string)$complement->valeur(), "o") == 0)
+                        {
                             $htmltext = $htmltext . " selected ";
+                        }
                         $htmltext = $htmltext . ">Oui</option>";
                         $htmltext = $htmltext . "</select>";
                     } else {

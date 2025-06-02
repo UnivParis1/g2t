@@ -433,9 +433,14 @@ class affectation
         
         $htmltext = "Informations sur le temps partiel déclaré dans Siham pour " . $agent->identitecomplete() . "<br>";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
-        $htmltext = $htmltext . "<tr><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Structure</td><td class='titresimple'>Quotité</td>";
+        $htmltext = $htmltext . "<table class='tableausimple'><thead>";
+        $htmltext = $htmltext . "<tr>
+                                     <th scope='col' class='titresimple'>Date début</th>
+                                     <th scope='col' class='titresimple'>Date fin</th>
+                                     <th scope='col' class='titresimple'>Structure</th>
+                                     <th scope='col' class='titresimple'>Quotité</th>";
         $htmltext = $htmltext . "</tr>";
+        $htmltext = $htmltext . "</thead><tbody>";
         $htmltext = $htmltext . "<tr><td class='cellulesimple'>" . $this->datedebut() . "</td><td class='cellulesimple'>" . $this->datefin() . "</td><td class='cellulesimple'>" . $structure->nomlong() . "</td><td class='cellulesimple'>" . $this->quotite() . "</td></tr>";
         $htmltext = $htmltext . "</tbody></table><br>";
         
@@ -451,11 +456,15 @@ class affectation
                         if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                             if ($premiereligne) {
                                 $htmltext = $htmltext . "Tableau des temps partiels déclarés dans G2T pour " . $agent->identitecomplete() . "<br>";
-                                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
-                                $htmltext = $htmltext . "<tr><td class='titresimple'>Date demande</td><td class='titresimple'>Date début</td><td class='titresimple'>Date fin</td><td class='titresimple'>Etat de la demande</td><td class='titresimple'>Répartition du temps partiel</td>";
-                                // if ($pour_modif)
-                                // $htmltext = $htmltext . "<td class='titresimple'>Annuler</td>";
+                                $htmltext = $htmltext . "<table class='tableausimple'><thead>";
+                                $htmltext = $htmltext . "<tr>
+                                                             <th scope='col' class='titresimple'>Date demande</th>
+                                                             <th scope='col' class='titresimple'>Date début</th>
+                                                             <th scope='col' class='titresimple'>Date fin</th>
+                                                             <th scope='col' class='titresimple'>Etat de la demande</th>
+                                                             <th scope='col' class='titresimple'>Répartition du temps partiel</th>";
                                 $htmltext = $htmltext . "</tr>";
+                                $htmltext = $htmltext . "</thead><tbody>";
                                 $premiereligne = false;
                             }
                             //echo "<B>Avant le declaration->html </B><br><br>";

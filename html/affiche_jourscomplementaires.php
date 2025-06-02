@@ -94,19 +94,21 @@
 
             if ($premierestructure)
             {
-                $htmltext = $htmltext . "<table class='tableausimple'><tbody>";
+                $htmltext = $htmltext . "<table class='tableausimple'><thead>";
                 $premierestructure = false;
             }
             $nbcolonne = 5;
-            $htmltext = $htmltext . "<tr><td class='titresimple' colspan=$nbcolonne align=center>Congés complémentaires ou jours de récupération 20" . $anneeref ."/20" . ($anneeref+1) . " pour " . $structure->nomlong() . "</td></tr>";
+            $htmltext = $htmltext . "<tr>
+                                        <th scope='col' class='titresimple' colspan=$nbcolonne align=center>Congés complémentaires ou jours de récupération 20" . $anneeref ."/20" . ($anneeref+1) . " pour " . $structure->nomlong() . "</th>
+                                    </tr>";
             $htmltext = $htmltext . "<tr align=center>"
-                    . "<td class='cellulesimple'>Identifiant de l'agent</td>"
-                    . "<td class='cellulesimple'>Identité de l'agent</td>"
-                    . "<td class='cellulesimple'>Nombre de jours acquis</td>"
-                    . "<td class='cellulesimple'>Nombre de jours restants</td>"
-                    . "<td class='cellulesimple'>Motif</td>";
-            
+                    . "<th scope='col' class='cellulesimple'>Identifiant de l'agent</th>"
+                    . "<th scope='col' class='cellulesimple'>Identité de l'agent</th>"
+                    . "<th scope='col' class='cellulesimple'>Nombre de jours acquis</th>"
+                    . "<th scope='col' class='cellulesimple'>Nombre de jours restants</th>"
+                    . "<th scope='col' class='cellulesimple'>Motif</th>";
             $htmltext = $htmltext . "</tr>";
+            $htmltext = $htmltext . "</thead><tbody>";
                 
             foreach($agentlist as $agentid => $agent)
             {

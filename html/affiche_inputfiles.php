@@ -168,11 +168,9 @@
                             $htmltext = $htmltext . "<table id='table_identite' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
                             $htmltext = $htmltext . "   <tr >
-                                                        <td class='titresimple' colspan=6 align=center >
-                                                            Affichage de l'identité de l'agent " . $agent->identitecomplete() . "
-                                                        </td>
+                                                            <th class='titresimple' colspan=6 align=center >Affichage de l'identité de l'agent " . $agent->identitecomplete() . "</th>
                                                         </tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple' >Id de l'agent</th>
                                                         <th class='cellulesimple' >Civilité</th>
                                                         <th class='cellulesimple' >Nom</th>
@@ -252,9 +250,9 @@
                             $htmltext = $htmltext . "<table id='table_absence' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
                             $htmltext = $htmltext . "   <tr >
-                                                        <td class='titresimple' colspan=4 align=center >Affichage des absences de l'agent " . $agent->identitecomplete() . "</td>
+                                                            <th class='titresimple' colspan=4 align=center >Affichage des absences de l'agent " . $agent->identitecomplete() . "</th>
                                                         </tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Date début <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Date fin <span class='sortindicator'> </span></th>
@@ -281,63 +279,10 @@
                 $htmltext = $htmltext . "
 <script>
                     
-// do the work...
-document.getElementById('table_absence').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-    
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-    
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-    
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-    
-        for (var thindex = 0 ; thindex < document.getElementById('table_absence').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('table_absence').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('table_absence').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+    var tablename = 'table_absence';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
 
@@ -394,8 +339,10 @@ document.getElementById('table_absence').querySelectorAll('th')[1].click(); // O
                         {
                             $htmltext = $htmltext . "<table id='table_fonctions' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
-                            $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des fonctions de l'agent " . $agent->identitecomplete() . " (niveau dossier agent)</td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr >
+                                                            <th class='titresimple' colspan=5 align=center >Affichage des fonctions de l'agent " . $agent->identitecomplete() . " (niveau dossier agent)</th>
+                                                        </tr>";
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple' >Id de l'agent</th>
                                                         <th class='cellulesimple' >Code la fonction</th>
                                                         <th class='cellulesimple' >Libellé court</th>
@@ -482,8 +429,10 @@ document.getElementById('table_absence').querySelectorAll('th')[1].click(); // O
                         {
                             $htmltext = $htmltext . "<table id='table_fonctionsUO' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
-                            $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=8 align=center >Affichage des structures où l'agent " . $agent->identitecomplete() . " est responsable (niveau UO SIHAM)</td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr >
+                                                            <th class='titresimple' colspan=8 align=center >Affichage des structures où l'agent " . $agent->identitecomplete() . " est responsable (niveau UO SIHAM)</th>
+                                                        </tr>";
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple' >Code de la structure</th>
                                                         <th class='cellulesimple' >Nom long de la structure</th>
                                                         <th class='cellulesimple' >Nom court de la structure</th>
@@ -570,13 +519,15 @@ document.getElementById('table_absence').querySelectorAll('th')[1].click(); // O
                         {
                             $htmltext = $htmltext . "<table id='table_activite' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
-                            $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des situations/activités de l'agent " . $agent->identitecomplete() . "</td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
-                                                        <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
-                                                        <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
-                                                        <th class='cellulesimple cursorpointer' >Code situation <span class='sortindicator'> </span></th>
-                                                        <th class='cellulesimple cursorpointer' >Date de début <span class='sortindicator'> </span></th>
-                                                        <th class='cellulesimple cursorpointer' >Date de fin <span class='sortindicator'> </span></th>
+                            $htmltext = $htmltext . "   <tr >
+                                                            <th scope='col' class='titresimple' colspan=5 align=center >Affichage des situations/activités de l'agent " . $agent->identitecomplete() . "</th>
+                                                        </tr>";
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
+                                                        <th scope='col' class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
+                                                        <th scope='col' class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
+                                                        <th scope='col' class='cellulesimple cursorpointer' >Code situation <span class='sortindicator'> </span></th>
+                                                        <th scope='col' class='cellulesimple cursorpointer' >Date de début <span class='sortindicator'> </span></th>
+                                                        <th scope='col' class='cellulesimple cursorpointer' >Date de fin <span class='sortindicator'> </span></th>
                                                         ";
                             $htmltext = $htmltext . "   </tr>";
                             $htmltext = $htmltext . "</thead>";
@@ -607,63 +558,10 @@ document.getElementById('table_absence').querySelectorAll('th')[1].click(); // O
                 $htmltext = $htmltext . "
 <script>
                     
-// do the work...
-document.getElementById('table_activite').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-    
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-    
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-    
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-    
-        for (var thindex = 0 ; thindex < document.getElementById('table_activite').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('table_activite').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('table_activite').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+    var tablename = 'table_activite';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
 
@@ -720,8 +618,10 @@ document.getElementById('table_activite').querySelectorAll('th')[1].click(); // 
                         {
                             $htmltext = $htmltext . "<table id='table_modalite' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
-                            $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des modalités de travail (quotité) de l'agent " . $agent->identitecomplete() . "</td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr >
+                                                            <th class='titresimple' colspan=5 align=center >Affichage des modalités de travail (quotité) de l'agent " . $agent->identitecomplete() . "</th>
+                                                        </tr>";
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Quotité de travail <span class='sortindicator'> </span></th>
@@ -756,64 +656,11 @@ document.getElementById('table_activite').querySelectorAll('th')[1].click(); // 
 
                 $htmltext = $htmltext . "
 <script>
-                    
-// do the work...
-document.getElementById('table_modalite').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-    
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-    
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-    
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-    
-        for (var thindex = 0 ; thindex < document.getElementById('table_modalite').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('table_modalite').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('table_modalite').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+           
+    var tablename = 'table_modalite';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
 
@@ -877,8 +724,10 @@ document.getElementById('table_modalite').querySelectorAll('th')[1].click(); // 
                         {
                             $htmltext = $htmltext . "<table id='table_statut' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
-                            $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des statuts de l'agent " . $agent->identitecomplete() . "</td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr >
+                                                            <th class='titresimple' colspan=5 align=center >Affichage des statuts de l'agent " . $agent->identitecomplete() . "</th>
+                                                        </tr>";
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Statut <span class='sortindicator'> </span></th>
@@ -914,63 +763,10 @@ document.getElementById('table_modalite').querySelectorAll('th')[1].click(); // 
                 $htmltext = $htmltext . "
 <script>
                     
-// do the work...
-document.getElementById('table_statut').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-    
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-    
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-    
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-    
-        for (var thindex = 0 ; thindex < document.getElementById('table_statut').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('table_statut').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('table_statut').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+    var tablename = 'table_statut';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
 
@@ -1027,8 +823,10 @@ document.getElementById('table_statut').querySelectorAll('th')[1].click(); // On
                         {
                             $htmltext = $htmltext . "<table id='table_affectation' class='tableausimple'>";
                             $htmltext = $htmltext . "<thead>";
-                            $htmltext = $htmltext . "   <tr ><td class='titresimple' colspan=5 align=center >Affichage des affectations fonctionnelles de l'agent " . $agent->identitecomplete() . "</td></tr>";
-                            $htmltext = $htmltext . "   <tr align=center>
+                            $htmltext = $htmltext . "   <tr >
+                                                            <th class='titresimple' colspan=5 align=center >Affichage des affectations fonctionnelles de l'agent " . $agent->identitecomplete() . "</th>
+                                                        </tr>";
+                            $htmltext = $htmltext . "   <tr class='entete' align=center>
                                                         <th class='cellulesimple cursorpointer' >Id de l'agent <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Numéro de ligne SIHAM <span class='sortindicator'> </span></th>
                                                         <th class='cellulesimple cursorpointer' >Code structure <span class='sortindicator'> </span></th>
@@ -1066,63 +864,10 @@ document.getElementById('table_statut').querySelectorAll('th')[1].click(); // On
                 $htmltext = $htmltext . "
 <script>
                     
-// do the work...
-document.getElementById('table_affectation').querySelectorAll('th').forEach(th => th.addEventListener('click', (() => {
-
-    const currentsortindicator = th.querySelector('.sortindicator')
-
-    if (currentsortindicator!==null)
-    {
-        const table = th.closest('table');
-        const tbody = table.querySelector('tbody');
-        //alert (table.id);
-    
-        if (currentsortindicator.innerText.trim().length>0)
-        {
-            th.asc = !th.asc
-        }
-    
-        Array.from(tbody.querySelectorAll('tr'))
-            .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
-            .forEach(tr => tbody.appendChild(tr) );
-        theader = table.querySelector('theader');
-    
-        //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-    
-        for (var thindex = 0 ; thindex < document.getElementById('table_affectation').querySelectorAll('th').length; thindex++)
-        {
-            //alert (thindex);
-            if (th.parentNode.children[thindex]!==null)
-            {
-                //alert (th.parentNode.children[thindex].innerHTML);
-                var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
-                if (thsortindicator!==null)
-                {
-                    //alert (thsortindicator.innerText);
-                    thsortindicator.innerText = ' ';
-                    //alert (thsortindicator.innerText);
-                }
-            }
-        }
-    
-        if (currentsortindicator!==null)
-        {
-            if (th.asc)
-            {
-                //alert ('plouf');
-                currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
-            }
-            else
-            {
-                //alert ('ploc');
-                currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
-            }
-        }
-    }
-})));
-
-document.getElementById('table_affectation').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-document.getElementById('table_affectation').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
+    var tablename = 'table_affectation';
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
+    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
 
 </script>";
 

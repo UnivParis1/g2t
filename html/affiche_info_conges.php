@@ -100,8 +100,17 @@
     }
 
     $count = 0;
-    echo "<table class='tableausimple' ><tbody>";
-    echo "<tr><td class='titresimple'>Matricule</td><td class='titresimple'>Identité agent</td><td class='titresimple'>Droit 20$annee_precedente/20$annee_courante</td><td class='titresimple'>Solde 20$annee_precedente/20$annee_courante au 31/08/20$annee_courante</td><td class='titresimple'>Congés 20$annee_precedente/20$annee_courante entre le 01/09 et le 31/12</td><td class='titresimple'>Solde 20$annee_courante/20$annee_future</td><td class='titresimple'>Droit 20$annee_courante/20$annee_future pris</td></tr>";
+    echo "<table class='tableausimple' ><thead>";
+    echo "<tr>
+            <th scope='col' class='titresimple'>Matricule</th>
+            <th scope='col' class='titresimple'>Identité agent</th>
+            <th scope='col' class='titresimple'>Droit 20$annee_precedente/20$annee_courante</th>
+            <th scope='col' class='titresimple'>Solde 20$annee_precedente/20$annee_courante au 31/08/20$annee_courante</th>
+            <th scope='col' class='titresimple'>Congés 20$annee_precedente/20$annee_courante entre le 01/09 et le 31/12</th>
+            <th scope='col' class='titresimple'>Solde 20$annee_courante/20$annee_future</th>
+            <th scope='col' class='titresimple'>Droit 20$annee_courante/20$annee_future pris</th>
+         </tr>";
+    echo "</thead><tbody>";
     ob_flush();
     flush();
     $htmlstring = "";
