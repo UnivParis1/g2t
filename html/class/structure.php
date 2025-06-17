@@ -25,6 +25,8 @@ class structure
     public const MAIL_AGENT_ENVOI_RESP_COURANT = "4";
     public const MAIL_AGENT_ENVOI_GEST_COURANT = "5";
 
+    const WS_METHODE_PLANNING = 'PLANNING';
+
     private $dbconnect = null;
 
     private $structureid = null;
@@ -973,10 +975,11 @@ class structure
     {
         // echo "Je debute planninghtml <br>";
         //list ($jour, $indexmois, $annee) = split('[/.-]', '01/' . $mois_annee_debut);
+        $htmltext = "";
         list ($jour, $indexmois, $annee) = explode('/', '01/' . $mois_annee_debut);
         if (($annee . $indexmois <= date('Ym')) and ($noiretblanc == true)) 
         {
-            echo $this->fonctions->showmessage(fonctions::MSGWARNING, "Les informations antérieures à la date du jour ont été masquées.");
+            $htmltext = $htmltext . $this->fonctions->showmessage(fonctions::MSGWARNING, "Les informations antérieures à la date du jour ont été masquées.");
         }
         
         if (is_null($agentlist) or count((array)$agentlist)==0)
@@ -989,6 +992,12 @@ class structure
             $planningservice = array();
             foreach($agentlist as $membre)
             {
+                if (!is_object($membre))
+                {
+                    $membreid = $membre;
+                    $membre = new agent($this->dbconnect);
+                    $membre->load($membreid);
+                }
                 //var_dump("L'agent est " . $membre->identitecomplete());
                 $planningservice[] = $membre->planning('01/' . $mois_annee_debut, $this->fonctions->nbr_jours_dans_mois($indexmois, $annee). "/" . $mois_annee_debut, $includeteletravail, $includecongeabsence);
             }
@@ -1021,7 +1030,6 @@ class structure
         
         
         // echo "Apres le chargement du planning du service <br>";
-        $htmltext = "";
         $htmltext = $htmltext . "<div id='structplanning'>";
         $htmltext = $htmltext . "<table class='tableau' id='struct_plan_" . $this->id() . "'>";
         
@@ -1064,8 +1072,9 @@ class structure
                     $titre = $nomjour . " " . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . " " . $monthname;
                     $htmltext = $htmltext . "<th scope='col' class='cellulesimple' colspan='2' title='" . $titre . "'";
                     // echo "Date case = " . $this->fonctions->formatdatedb(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut) . " Date jour = " . date("Ymd") . "<br>";
-                    if ($this->fonctions->formatdatedb(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut) == date("Ymd")) {
-                        $htmltext = $htmltext . " bgcolor='#3FC6FF'";
+                    if ($this->fonctions->formatdatedb(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut) == date("Ymd")) 
+                    {
+                        $htmltext = $htmltext . " style='background-color:#3FC6FF'";
                     }
                     $htmltext = $htmltext . ">" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</th>";
                 }
@@ -1131,15 +1140,6 @@ class structure
         }
         $htmltext = $htmltext . "</tbody>";
         $htmltext = $htmltext . "</table>";
-
-        $htmltext = $htmltext . "
-<script>
-    var tablename = 'struct_plan_" . $this->id() . "';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[0].click(); // On simule le clic sur la 1ere colonne pour faire afficher la flêche
-</script>";
-        
         $htmltext = $htmltext . "</div>";
         //var_dump($elementlegende);
         if ($noiretblanc == false) {
@@ -1435,11 +1435,11 @@ class structure
                     $dateinferieure = date("d/m/Y",$dateinferieure);
                     $teletravailliste = $membre->teletravailliste($dateinferieure, "31/12/2099");
                     $tabconventionactive = array();
-                    foreach ($teletravailliste as $teletravailid) // On ne garde que les conventions actives
+                    foreach ($teletravailliste as $teletravailid) // On ne garde que les conventions actives ou en attente (<=> en cours de traitement)
                     {
                         $teletravail = new teletravail($this->dbconnect);
                         $teletravail->load($teletravailid);
-                        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
+                        if (in_array($teletravail->statut(), array(teletravail::TELETRAVAIL_VALIDE,teletravail::TELETRAVAIL_ATTENTE)))
                         {
                             $tabconventionactive[] = $teletravail;
                         }
@@ -1455,50 +1455,59 @@ class structure
                         {
                             if (strlen($teletravailstring)>0) $teletravailstring = $teletravailstring . "<br>";
                             
-                            $styletexte = '';
-                            $extrainfo = "";
-                            if (($convention->esignatureid() . "") != "" and !is_null($responsableid))
+                            // Si la convention est validée
+                            if ($convention->statut() == teletravail::TELETRAVAIL_VALIDE)
                             {
-                                $formulairetext_openpdf = $formulairetext_openpdf . '<form name="showesignaturePDF_' . $convention->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
-                                $formulairetext_openpdf = $formulairetext_openpdf . '<input type="hidden" name="esignatureid" value="' . $convention->esignatureid() . '">';
-                                $formulairetext_openpdf = $formulairetext_openpdf . '<input type="hidden" name="esignaturePDF" value="ok">';
-                                $formulairetext_openpdf = $formulairetext_openpdf . '</form>';
-                            }
-                            if (key($tabconventionactive)==(count($tabconventionactive)-1)) // Si on est sur le dernier élément du tableau
-                            {
-                                $datefinalerte = strtotime($this->fonctions->formatdatedb($convention->datefin())."- 1 months");
-                                $datefinalerte = date("Ymd",$datefinalerte);
-                                
-                                $datefinerreur = strtotime($this->fonctions->formatdatedb($convention->datefin())."+ 6 months");
-                                $datefinerreur = date("Ymd",$datefinerreur);
-                                if (($this->fonctions->formatdatedb($convention->datefin()) > date('Ymd')) and ($datefinalerte < date('Ymd')))
+                                $styletexte = '';
+                                $extrainfo = "";
+                                if (($convention->esignatureid() . "") != "" and !is_null($responsableid))
                                 {
-                                    // On est à moins d'un mois de la fin de la convention ===> On met un marqueur 
-                                    $styletexte = "class='warningfinconvention' ";
-                                    $extrainfo = "<span data-tip=" . chr(34) . "Cette convention se termine dans moins d'un mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
+                                    $formulairetext_openpdf = $formulairetext_openpdf . '<form name="showesignaturePDF_' . $convention->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
+                                    $formulairetext_openpdf = $formulairetext_openpdf . '<input type="hidden" name="esignatureid" value="' . $convention->esignatureid() . '">';
+                                    $formulairetext_openpdf = $formulairetext_openpdf . '<input type="hidden" name="esignaturePDF" value="ok">';
+                                    $formulairetext_openpdf = $formulairetext_openpdf . '</form>';
                                 }
-                                elseif (($this->fonctions->formatdatedb($convention->datefin()) < date('Ymd')) and ($datefinerreur > date('YMd')))
+                                if (key($tabconventionactive)==(count($tabconventionactive)-1)) // Si on est sur le dernier élément du tableau
                                 {
-                                    // On est à moins d'un mois de la fin de la convention ===> On met un marqueur
-                                    $styletexte = "class='alertfinconvention' ";
-                                    $extrainfo = "<span data-tip=" . chr(34) . "Cette convention est terminée depuis moins de six mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
+                                    $datefinalerte = strtotime($this->fonctions->formatdatedb($convention->datefin())."- 1 months");
+                                    $datefinalerte = date("Ymd",$datefinalerte);
+                                    
+                                    $datefinerreur = strtotime($this->fonctions->formatdatedb($convention->datefin())."+ 6 months");
+                                    $datefinerreur = date("Ymd",$datefinerreur);
+                                    if (($this->fonctions->formatdatedb($convention->datefin()) > date('Ymd')) and ($datefinalerte < date('Ymd')))
+                                    {
+                                        // On est à moins d'un mois de la fin de la convention ===> On met un marqueur 
+                                        $styletexte = "class='warningfinconvention' ";
+                                        $extrainfo = "<span data-tip=" . chr(34) . "Cette convention se termine dans moins d'un mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
+                                    }
+                                    elseif (($this->fonctions->formatdatedb($convention->datefin()) < date('Ymd')) and ($datefinerreur > date('YMd')))
+                                    {
+                                        // On est à moins d'un mois de la fin de la convention ===> On met un marqueur
+                                        $styletexte = "class='alertfinconvention' ";
+                                        $extrainfo = "<span data-tip=" . chr(34) . "Cette convention est terminée depuis moins de six mois et aucune prolongation n'est enregistrée." . chr(34) . ">";
+                                    }
                                 }
-                            }
-                            // $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo" . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) . "</span>";
-                            $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo";
-                            if (($convention->esignatureid() . "") != "" and !is_null($responsableid))
-                            {
-                                $teletravailstring = $teletravailstring . "<a $styletexte href='affiche_pdf.php' target='_blank' onClick='document.forms[\"showesignaturePDF_" . $convention->esignatureid() . "\"].submit(); return false;'>". $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) ."</a>";
-                            }
-                            else
-                            {
-                                $teletravailstring = $teletravailstring . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin());
-                            }
-                            if (strlen($extrainfo)>0)
-                            {
+                                // $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo" . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) . "</span>";
+                                $teletravailstring = $teletravailstring . "<span $styletexte>$extrainfo";
+                                if (($convention->esignatureid() . "") != "" and !is_null($responsableid))
+                                {
+                                    $teletravailstring = $teletravailstring . "<a $styletexte href='affiche_pdf.php' target='_blank' onClick='document.forms[\"showesignaturePDF_" . $convention->esignatureid() . "\"].submit(); return false;'>". $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin()) ."</a>";
+                                }
+                                else
+                                {
+                                    $teletravailstring = $teletravailstring . $this->fonctions->formatdate($convention->datedebut()) . " -> " . $this->fonctions->formatdate($convention->datefin());
+                                }
+                                if (strlen($extrainfo)>0)
+                                {
+                                    $teletravailstring = $teletravailstring . "</span>";
+                                }
                                 $teletravailstring = $teletravailstring . "</span>";
                             }
-                            $teletravailstring = $teletravailstring . "</span>";
+                            else /// Le statut de la convention est "en attente" (<=> en cours de traitement)
+                            {
+                                $extrainfo = "<span data-tip=" . chr(34) . htmlspecialchars("Cette convention est consultable dans le menu 'Gestion des conventions de télétravail'.") . chr(34) . ">";
+                                $teletravailstring = $teletravailstring . $extrainfo . "Une demande de télétravail est en cours de traitement." . "</span>";
+                            }
                         }
                         $htmltext = $htmltext . $teletravailstring;
                     }

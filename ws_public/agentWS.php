@@ -176,6 +176,75 @@
         return $result_json;
     }
 
+    function agent_planning()
+    {
+        global $dbcon;
+        global $fonctions;
+
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" Debut du WS agent_planning"));
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" " . var_export($_POST, true)));
+        $agentid = null;
+        $datedebutdb = null;
+        $datefindb = null;
+        // Valeurs optionnelles => Initialisation des valeurs par défaut
+        $clickable = FALSE;
+        $showpdflink = TRUE;
+        $includeteletravail = FALSE;
+        $includecongeabsence = true;
+
+        if (array_key_exists("agentid", $_POST)) // Id de l'agent
+        {
+            $agentid = $_POST["agentid"];
+        }
+        if (array_key_exists("datedebut", $_POST)) // Date de début de la période obligatoire
+        {
+            $datedebutdb = $fonctions->formatdatedb($_POST["datedebut"]);
+        }
+        if (array_key_exists("datefin", $_POST)) // Date de fin de la période obligatoire
+        {
+            $datefindb = $fonctions->formatdatedb($_POST["datefin"]);
+        }
+        // On récupère les valeurs optionnelles 
+        if (array_key_exists("clickable", $_POST)) // Planning clickable ou pas
+        {
+            $clickable = $fonctions->convertvaluetobool($_POST["clickable"]);
+        }
+        if (array_key_exists("showpdflink", $_POST)) // Affichage du lien PDF ou pas
+        {
+            $showpdflink = $fonctions->convertvaluetobool($_POST["showpdflink"]);
+        }
+        if (array_key_exists("includeteletravail", $_POST)) // Affichage du télétravail ou pas
+        {
+            $includeteletravail = $fonctions->convertvaluetobool($_POST["includeteletravail"]);
+        }
+        if (array_key_exists("includecongeabsence", $_POST)) // Inclure ou pas les congés/absences
+        {
+            $includecongeabsence = $fonctions->convertvaluetobool($_POST["includecongeabsence"]);
+        }
+
+        if (is_null($agentid) or is_null($datedebutdb) or is_null($datefindb))
+        {
+            $erreur = "Impossible de créer le planning de l'agent (agentid = $agentid datedebutdb = $datedebutdb datefindb = $datefindb)";
+            $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
+        }
+        else
+        {
+            $agent = new agent($dbcon);
+            if (!$agent->load($agentid))
+            {
+                $erreur = "Impossible de récupérer l'agent $agentid";
+                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
+            }
+            else
+            {
+                $result_json = array('status' => 'Ok', 'description' => '', 'html' => $agent->planninghtml($datedebutdb,$datefindb,$clickable,$showpdflink,$includeteletravail,$includecongeabsence));
+            }
+        }
+        return $result_json;
+    }
+
     function force_periode()
     {
         global $dbcon;
@@ -243,6 +312,7 @@
 
     }
 
+    $result_json = array();
     $errlog = '';
     $erreur = '';
     $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
@@ -252,7 +322,7 @@
     
     switch ($_SERVER['REQUEST_METHOD'])
     {
-        case 'POST': // Modifie le statut d'une exception sur une période
+        case 'POST': 
 
             $authproblem = false;
             if (!isset($uid))
@@ -267,10 +337,17 @@
                 {
                     // C'est un administrateur => C'est Ok
                     error_log(basename(__FILE__) . $fonctions->stripAccents(" L'UID est un administrateur => C'est ok !"));
+                    $user = new agent($dbcon);
+                    if (!$user->load($userid))
+                    {
+                        // On a eu un problème lors du chargement de l'utilisateur
+                        $authproblem = true;
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Impossible de charger l'utilisateur $userid !"));
+                    }
                 }
                 else
                 {
-                    // Ce n'est pas un administrateur donc on regarde si il a un profile RH !
+                    // Ce n'est pas un administrateur donc on regarde si c'est un utilisateur G2T !
                     $userid = $fonctions->useridfromCAS($uid);
                     if ($userid === false)
                     {
@@ -287,15 +364,9 @@
                             $authproblem = true;
                             error_log(basename(__FILE__) . $fonctions->stripAccents(" Impossible de charger l'utilisateur $userid !"));
                         }
-                        elseif (!$user->estprofilrh(agent::PROFIL_RHCONGE))
-                        {
-                            // Il n'a pas le bon profile => erreur !
-                            $authproblem = true;
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" L'utilisateur $userid n'a pas le bon profile RH !"));
-                        }
                         else
                         {
-                            error_log(basename(__FILE__) . $fonctions->stripAccents(" L'utilisateur $userid a le bon profile RH => C'est ok !"));
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" L'utilisateur $userid a été chargé => C'est ok !"));
                         }
                     }
                 }
@@ -311,26 +382,61 @@
             }
 
             $methode = null;
-            if (array_key_exists("methode", $_POST)) // Si le numéro de l'agent est défini
+            if (array_key_exists("methode", $_POST)) 
             {
                 $methode = $_POST["methode"];
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" La méthode du WS agentWS est : $methode"));
                 switch ($methode)
                 {
                     case agent::WS_METHODE_EXCEPTION_PERIODE : 
-                        $result_json = change_exception_periode();
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour du changement exception periode => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        if (!$user->estprofilrh(agent::PROFIL_RHCONGE) and !$user->estadministrateur())
+                        {
+                            // Il n'a pas le bon profile => erreur !
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" L'utilisateur $userid n'a pas le bon profile RH ou n'est pas administrateur !"));
+                            $erreur = "Vous n'êtes pas autorisé à utiliser ce service.";
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            $result_json = change_exception_periode();
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour du changement exception periode => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        }
                         break;
                     case agent::WS_METHODE_SEND_MAIL :
-                        $result_json = send_mail();
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour de l'envoi de mail => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        if (!$user->estprofilrh(agent::PROFIL_RHCONGE) and !$user->estadministrateur())
+                        {
+                            // Il n'a pas le bon profile => erreur !
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" L'utilisateur $userid n'a pas le bon profile RH ou n'est pas administrateur !"));
+                            $erreur = "Vous n'êtes pas autorisé à utiliser ce service.";
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            $result_json = send_mail();
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour de l'envoi de mail => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        }
                         break;
                     case agent::WS_METHODE_FORCE_PERIODE :
-                        $result_json = force_periode();
-                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour du forçage des périodes => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        if (!$user->estprofilrh(agent::PROFIL_RHCONGE) and !$user->estadministrateur())
+                        {
+                            // Il n'a pas le bon profile => erreur !
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" L'utilisateur $userid n'a pas le bon profile RH ou n'est pas administrateur !"));
+                            $erreur = "Vous n'êtes pas autorisé à utiliser ce service.";
+                            $result_json = array('status' => 'Error', 'description' => $erreur);
+                        }
+                        else
+                        {
+                            $result_json = force_periode();
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour du forçage des périodes => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        }
                         break;
                     case agent::WS_METHODE_ONOFF_ANIMATION :
                         $result_json = onoff_animation();
                         error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour de l'activation/désactivation animation => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
+                        break;
+                    case agent::WS_METHODE_PLANNING :
+                        $result_json = agent_planning();
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Retour de la création du planning => Statut = " . $result_json["status"] . " Description = " . $result_json["description"])));
                         break;
                     default:
                         $erreur = "La méthode du WS n'est pas définie ou mal définie.";
@@ -347,7 +453,18 @@
             break;
     }
     
-   
+    if (!isset($result_json['status']) or !isset($result_json['description']))
+    {
+        $erreur = "La structure du json n'est pas correcte => On retourne une erreur";
+        $result_json['status'] = 'Error';
+        $result_json['description'] = $erreur;
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" Erreur dans le WS => Erreur = " . $erreur));
+    }
+    if (!isset($result_json['html']))
+    {
+        $result_json['html'] = $result_json['description'];
+    }
+
     // headers for not caching the results
     header('Cache-Control: no-cache, must-revalidate');
     header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');

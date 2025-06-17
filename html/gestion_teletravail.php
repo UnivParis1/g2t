@@ -839,18 +839,31 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 }
                 else
                 {
-                    if (isset($params['levelextrainfos'][2]))
+                    // if (isset($params['levelextrainfos'][2]))
+                    // {
+                    //     $stepinfo = $params['levelextrainfos'][2];
+                    //     $listeidresp = array();
+                    //     foreach($stepinfo->signataires as $mailsignataire)
+                    //     {
+                    //         $signataire = new agent($dbcon);
+                    //         $signataire->loadbyemail($mailsignataire);
+                    //         $listeidresp[] = $signataire->agentid();
+                    //     }
+                    //     $teletravail->listeidresponsable($listeidresp);
+                    // }
+                    $codeinterne = null;
+                    $signataire = $agent->getsignataire(null,$structresp,$codeinterne);
+                    $listeidresp = array();
+                    if ($signataire !==false)
                     {
-                        $stepinfo = $params['levelextrainfos'][2];
-                        $listeidresp = array();
-                        foreach($stepinfo->signataires as $mailsignataire)
+                        $listeidresp[$signataire->agentid()] = $signataire->agentid();
+                        $signataire = $structresp->responsablesiham();
+                        if ($signataire->civilite() != '' and !$signataire->estutilisateurspecial())
                         {
-                            $signataire = new agent($dbcon);
-                            $signataire->loadbyemail($mailsignataire);
-                            $listeidresp[] = $signataire->agentid();
+                            $listeidresp[$signataire->agentid()] = $signataire->agentid();
                         }
-                        $teletravail->listeidresponsable($listeidresp);
                     }
+                    $teletravail->listeidresponsable($listeidresp);
                 }
             }
             else
@@ -1072,24 +1085,6 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         $formsdata["PiedPage" . ($index+1)] = date("d/m/Y") . " - " . strtoupper($tabinfos["agent"]["name"] . " " . $tabinfos["agent"]["firstname"]);
                     }
 
-                    // $signrequestparams = array();
-                    // $signrequestparamsinfo = array();
-                    // $signrequestparamsinfo['xPos'] = 100;
-                    // $signrequestparamsinfo['yPos'] = 500;
-                    // $signrequestparamsinfo['signPageNumber'] = 3;
-                    // $signrequestparams[] = $signrequestparamsinfo;
-                    // $signrequestparamsinfo = array();
-                    // $signrequestparamsinfo['xPos'] = 350;
-                    // $signrequestparamsinfo['yPos'] = 500;
-                    // $signrequestparamsinfo['signPageNumber'] = 3;
-                    // $signrequestparams[] = $signrequestparamsinfo;
-                    // $signrequestparamsinfo = array();
-                    // $signrequestparamsinfo['xPos'] = 600;
-                    // $signrequestparamsinfo['yPos'] = 500;
-                    // $signrequestparamsinfo['signPageNumber'] = 3;
-                    // $signrequestparams[] = $signrequestparamsinfo;
-
-                    
                     //////////////////////////////////////////
                     // On doit rechercher l'id du Workflow dans la base de données
                     $workflowid = "";
@@ -1109,9 +1104,34 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         'targetEmails' => array("$agent_mail"),
                         'targetUrl' => "$full_g2t_ws_url",
                         'targetUrls' => array("$full_g2t_ws_url"),
-                        'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE) //,
-                        // 'signRequestParamsJsonString' => json_encode($signrequestparams) //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+                        'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
                     );
+
+                    //////////////////////////////////////////////////
+                    // On défini la position de chacune des signatures
+                    if (false)
+                    // if (true)
+                    {
+                        $signrequestparams = array();
+                        $signrequestparamsinfo = array();
+                        $signrequestparamsinfo['xPos'] = 100;
+                        $signrequestparamsinfo['yPos'] = 500;
+                        $signrequestparamsinfo['signPageNumber'] = 3;
+                        $signrequestparams[] = $signrequestparamsinfo;
+                        $signrequestparamsinfo = array();
+                        $signrequestparamsinfo['xPos'] = 350;
+                        $signrequestparamsinfo['yPos'] = 500;
+                        $signrequestparamsinfo['signPageNumber'] = 3;
+                        $signrequestparams[] = $signrequestparamsinfo;
+                        $signrequestparamsinfo = array();
+                        $signrequestparamsinfo['xPos'] = 600;
+                        $signrequestparamsinfo['yPos'] = 500;
+                        $signrequestparamsinfo['signPageNumber'] = 3;
+                        $signrequestparams[] = $signrequestparamsinfo;
+                        $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+                    }
+                    // Fin de la position de chacune des signatures
+                    ///////////////////////////////////////////////////////
 
                     $taberrorcheckmail = array();
                     if ($esignatureactive)
@@ -2549,7 +2569,77 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             }
             ksort($agentliste);
             //var_dump($agentliste);
-            
+
+            echo '<br><br>';
+            $teletravailtrouveinfo = false;
+            foreach ((array)$agentliste as $agent)
+            {
+                $tabdemandeteletravail = $agent->teletravailliste('01/01/1900','31/12/2099'); // listedemandeteletravailenattente();
+                foreach($tabdemandeteletravail as $teletravailid)
+                {
+                    $teletravail = new teletravail($dbcon);
+                    $teletravail->load($teletravailid);
+                    if ($teletravail->statutresponsable()==teletravail::TELETRAVAIL_VALIDE and $teletravail->statut()==teletravail::TELETRAVAIL_ATTENTE)
+                    {
+                        if (!$teletravailtrouveinfo)
+                        {
+                            echo "<table class='tableausimple'><thead>";
+                            echo "<tr>";
+                            echo "<th scope='col' class='titresimple' colspan=6>Demandes de télétravail en cours de traitement : " . $structure->nomlong()  . "</th>";
+                            echo "</tr>";
+                            echo "<tr>";
+                            echo "<th scope='col' class='cellulesimple'>Identité du demandeur</th>";
+                            echo "<th scope='col' class='cellulesimple'>Type de demande</th>";
+                            echo "<th scope='col' class='cellulesimple'>Date de création</th>";
+                            echo "<th scope='col' class='cellulesimple'>Date début</th>";
+                            echo "<th scope='col' class='cellulesimple'>Date fin</th>";
+                            echo "<th scope='col' class='cellulesimple'>Répartition souhaitée</th>";
+                            echo "</tr>";
+                            echo "</thead><tbody>";
+                            $teletravailtrouveinfo = true;
+
+                        }
+                        $agent = new agent($dbcon);
+                        $agent->load($teletravail->agentid());
+                        $debutspan = "";
+                        $finspan = "";
+                        $motifmedical = "";
+                        if ($teletravail->typeconvention()==teletravail::CODE_CONVENTION_MEDICAL)
+                        {
+                            if (intval($teletravail->motifmedicalsante())>0)
+                            {
+                                $motifmedical = $motifmedical . "Raison de santé,";
+                            }
+                            if (intval($teletravail->motifmedicalgrossesse())>0)
+                            {
+                                $motifmedical = $motifmedical . " Grossesse,";
+                            }
+                            if (intval($teletravail->motifmedicalaidant())>0)
+                            {
+                                $motifmedical = $motifmedical . " Proche aidant,";
+                            }
+                            $motifmedical = trim($motifmedical);
+                            $motifmedical = substr($motifmedical,0,strlen($motifmedical)-1);
+                            $debutspan = "<span data-tip=" . chr(34) . htmlentities($motifmedical) . chr(34) . ">";
+                            $finspan = "</span>";
+                        }
+
+                        echo "<tr class='ligneteletravailinfo'>";
+                        echo "<td class='cellulesimple'>" . $agent->identitecomplete() . "</td>";
+                        echo "<td class='cellulesimple'>$debutspan" . $teletravail->libelletypeconvention()  . "$finspan</td>";
+                        echo "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->creationg2t())  . "</td>";
+                        echo "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datedebut())  . "</td>";
+                        echo "<td class='cellulesimple'>" . $fonctions->formatdate($teletravail->datefin())  . "</td>";
+                        echo "<td class='cellulesimple'>" . $teletravail->libelletabteletravail()  . "</td>";
+                        echo "</tr>";
+                    }
+                }
+            }
+            if ($teletravailtrouveinfo===true)
+            {
+                echo "</tbody></table><br>";
+            }
+
             foreach ((array)$agentliste as $agent)
             {
                 if ($agent->agentid()!=$user->agentid() or $mode!=MODE_RESPONSABLE)
@@ -2576,7 +2666,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         {
                             echo "<table class='tableausimple'><thead>";
                             echo "<tr>";
-                            echo "<th scope='col' class='titresimple' colspan=7>Informations sur les demandes de télétravail pour la structure : " . $structure->nomlong()  . "</th>";
+                            echo "<th scope='col' class='titresimple' colspan=7>Demandes de télétravail à compléter pour la structure : " . $structure->nomlong()  . "</th>";
                             echo "</tr>";
                             echo "<tr>";
                             echo "<th scope='col' class='cellulesimple'>Identité du demandeur</th>";
@@ -2634,10 +2724,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             {
                 echo "</tbody></table><br>";
             }
+
         }
+
         if (!$teletravailtrouve)
         {
-            echo "<br>Aucune demande de convention de télétravail n'est en attente.<br>";
+            echo "<br>Aucune demande de convention de télétravail n'est en attente de validation.<br>";
         }
         else
         {

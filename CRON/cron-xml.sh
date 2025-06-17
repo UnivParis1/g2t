@@ -79,5 +79,22 @@ php php/mail_alerte_teletravail.php >>$logfile 2>>$logfile
 
 php php/switch_synchronisation.php inactif >>$logfile
 
+inputdir=${chemin}/../INPUT_FILES_V3/
+archivedir=${inputdir}/archives/
+if [ -d "$archivedir" ]
+then
+   echo "Le dossier d'archive existe" >>$logfile
+else
+   mkdir -p "$archivedir"
+   echo "Le dossier d'archive est cree" >>$logfile
+fi
+if [ `find $inputdir/*_$(date +%Y%m%d).xml 2>/dev/null |wc -l` -gt 0 ]
+then
+   echo "Compression des fichiers d'interface du jour"  >>$logfile
+   tar cvzf $archivedir/backup-$(date +%Y-%m-%d).tar.gz $inputdir/*_$(date +%Y%m%d).xml 1>>$logfile 2>>$logfile
+else
+   echo "Aucun fichier d'interface a compresser a la date du jour" >>$logfile
+fi
+
 echo `date`  fin de traitement >>$logfile
 

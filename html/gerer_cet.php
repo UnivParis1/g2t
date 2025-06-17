@@ -100,17 +100,8 @@
 
     //print_r($_POST); echo "<br><br>";
 
-    $path = $fonctions->imagepath() . "/chargement.gif";
-    list($width, $height, $imagetype) = getimagesize("$path");
-    $typeimage = image_type_to_extension($imagetype,false);
-    if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
-    {
-        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-    }
-    $data = file_get_contents($path);
-    $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' class='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+    addwaitingimgdiv();
+
     // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
     if (ob_get_contents()!==false)
     {
@@ -420,21 +411,9 @@
     
  ?>
     <script>
-        var table_alimentation = document.getElementById('table_alimentation');
-        if (table_alimentation)
-        {
-            table_alimentation.querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-            table_alimentation.querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-            table_alimentation.querySelector('.entete').querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
-        }
+        sort_table_init('table_alimentation',2);
         
-        var table_option = document.getElementById('table_option');
-        if (table_option)
-        {
-            table_option.querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-            table_option.querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-            table_option.querySelector('.entete').querySelectorAll('th')[2].click(); // On simule le clic sur la 3e colonne pour faire afficher la flêche
-        }
+        sort_table_init('table_option',2);
 
         window.addEventListener("load", (event) => {
             var waiting_img = document.getElementById('waiting_img');

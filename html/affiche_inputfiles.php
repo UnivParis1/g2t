@@ -120,8 +120,6 @@
     echo "<br>";
     
     //$date = date("Ymd");
-    $bgcolor_ok = "#c5efbd"; // "#87d478";
-    $bgcolor_erreur = "#f1948a";
     
     $filemissing = false;
     $identite_trouve = false;
@@ -275,16 +273,9 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
-
-                $htmltext = $htmltext . "
-<script>
-                    
-    var tablename = 'table_absence';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
-
-</script>";
+                $htmltext = $htmltext . "<script>
+                                            sort_table_init('table_absence',1);
+                                         </script>";
 
             }
             else
@@ -554,16 +545,9 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
-
-                $htmltext = $htmltext . "
-<script>
-                    
-    var tablename = 'table_activite';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
-
-</script>";
+                $htmltext = $htmltext . "<script>
+                                            sort_table_init('table_activite',1);
+                                         </script>";
 
             }
             else
@@ -653,17 +637,9 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
-
-                $htmltext = $htmltext . "
-<script>
-           
-    var tablename = 'table_modalite';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
-
-</script>";
-
+                $htmltext = $htmltext . "<script>
+                                            sort_table_init('table_modalite',1);
+                                         </script>";
             }
             else
             {
@@ -759,16 +735,9 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
-
-                $htmltext = $htmltext . "
-<script>
-                    
-    var tablename = 'table_statut';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
-
-</script>";
+                $htmltext = $htmltext . "<script>
+                                            sort_table_init('table_statut',1);
+                                         </script>";
 
             }
             else
@@ -860,16 +829,9 @@
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
-
-                $htmltext = $htmltext . "
-<script>
-                    
-    var tablename = 'table_affectation';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
-
-</script>";
+                $htmltext = $htmltext . "<script>
+                                            sort_table_init('table_affectation',1);
+                                         </script>";
 
             }
             else

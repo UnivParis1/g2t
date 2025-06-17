@@ -35,27 +35,6 @@
     $user->load($userid);
 
     require ("includes/menu.php");
-    // echo '<html><body class="bodyhtml">';
-    $path = $fonctions->imagepath() . "/chargement.gif";
-    list($width, $height, $imagetype) = getimagesize("$path");
-    $typeimage = image_type_to_extension($imagetype,false);
-    if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
-    {
-        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
-        $typeimage = pathinfo($path, PATHINFO_EXTENSION);
-    }
-    $data = file_get_contents($path);
-    $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
-    echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' class='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
-    // On force l'affichage de l'image d'attente en vidant le cache PHP vers le navigateur
-    if (ob_get_contents()!==false)
-    {
-        ob_end_flush();
-        @ob_flush();
-        flush();
-        ob_start();
-    }
-    // Fin du forçage de l'affichage de l'image d'attente
 
     echo "<br>";
 
@@ -222,6 +201,8 @@
         
         if (isset($_POST['valid_agent']))
         {
+            addwaitingimgdiv();
+
             if ($agentselect == '')
             {
                 $structureliste = $user->structrespliste();
@@ -294,9 +275,47 @@
                             // echo "Previous = " . $previous ;
                             echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
                             if ($previous == 0)
+                            {
                                 echo $agent->affichecommentairecongehtml(true);
+                            }
                             echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
-                            echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+
+                            echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
+?>
+                            <script>
+                                var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                                $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                                    agentid : "<?php echo $agent->agentid(); ?>", 
+                                                    datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                                    datefin : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
+                                                    clickable : 'N',
+                                                    showpdflink : 'N',
+                                                    includeteletravail : 'O'
+                                                    })
+                                            .done(function( data ) {
+                                                if (data.status.toUpperCase()=='OK')
+                                                {
+                                                    var statutinfo = "OK";
+                                                }
+                                                else
+                                                {
+                                                    var statutinfo = "KO => " + data.description;
+                                                }
+                                                // console.log("Retour du WS => " + statutinfo);
+                                                let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
+                                                div.innerHTML = data.html;
+                                            })
+                                            .fail(function( xhr ) {
+                                                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                                console.log(statutinfo);
+                                            })
+                                            .always(function() {
+                                                hiddewaitingimg();
+                                            });
+
+                            </script>
+<?php                            
+                            //echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
                             
                             //$fonctions->time_elapsed("Après l'affichage de l'agent " . $agent->identitecomplete(),__METHOD__);
                             // Ligne de sÃ©paration entre les agents
@@ -323,7 +342,42 @@
                 if ($previous == 0)
                     echo $agent->affichecommentairecongehtml(true);
                 echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
-                echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+
+                echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
+?>
+                <script>
+                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                        agentid : "<?php echo $agent->agentid(); ?>", 
+                                        datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                        datefin : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
+                                        clickable : 'N',
+                                        showpdflink : 'N',
+                                        includeteletravail : 'O'
+                                        })
+                                .done(function( data ) {
+                                    if (data.status.toUpperCase()=='OK')
+                                    {
+                                        var statutinfo = "OK";
+                                    }
+                                    else
+                                    {
+                                        var statutinfo = "KO => " + data.description;
+                                    }
+                                    // console.log("Retour du WS => " + statutinfo);
+                                    let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
+                                    div.innerHTML = data.html;
+                                })
+                                .fail(function( xhr ) {
+                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                    console.log(statutinfo);
+                                })
+                                .always(function() {
+                                    hiddewaitingimg();
+                                });
+                </script>
+<?php                            
+                //echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
             }
             echo "<br>"; 
         }
@@ -382,6 +436,8 @@
                 
         if (isset($_POST['valid_agent']))
         {
+            addwaitingimgdiv();
+
             if ($agentselect == '')
             {
                 $structureliste = $user->structgestliste();
@@ -431,7 +487,44 @@
                             }
                             // echo "fonctions->anneeref() . fonctions->debutperiode() = " . $fonctions->anneeref() . $fonctions->debutperiode() . "<br>";
                             echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
-                            echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+
+                            echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
+?>
+                            <script>
+                                var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                                $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                                    agentid : "<?php echo $agent->agentid(); ?>", 
+                                                    datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                                    datefin : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
+                                                    clickable : 'N',
+                                                    showpdflink : 'N',
+                                                    includeteletravail : 'O'
+                                                    })
+                                            .done(function( data ) {
+                                                if (data.status.toUpperCase()=='OK')
+                                                {
+                                                    var statutinfo = "OK";
+                                                }
+                                                else
+                                                {
+                                                    var statutinfo = "KO => " + data.description;
+                                                }
+                                                // console.log("Retour du WS => " + statutinfo);
+                                                let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
+                                                div.innerHTML = data.html;
+                                            })
+                                            .fail(function( xhr ) {
+                                                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                                console.log(statutinfo);
+                                            })
+                                            .always(function() {
+                                                hiddewaitingimg();
+                                            });
+
+                            </script>
+<?php                            
+                            //echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+
                             echo "<hr>";
                         }
                     }
@@ -456,7 +549,42 @@
                 if ($previous == 0)
                     echo $agent->affichecommentairecongehtml(true);
                     echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
-                    echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
+
+                echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
+?>
+                <script>
+                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                        agentid : "<?php echo $agent->agentid(); ?>", 
+                                        datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                        datefin : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
+                                        clickable : 'N',
+                                        showpdflink : 'N',
+                                        includeteletravail : 'O'
+                                        })
+                                .done(function( data ) {
+                                    if (data.status.toUpperCase()=='OK')
+                                    {
+                                        var statutinfo = "OK";
+                                    }
+                                    else
+                                    {
+                                        var statutinfo = "KO => " + data.description;
+                                    }
+                                    // console.log("Retour du WS => " + statutinfo);
+                                    let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
+                                    div.innerHTML = data.html;
+                                })
+                                .fail(function( xhr ) {
+                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                    console.log(statutinfo);
+                                })
+                                .always(function() {
+                                    hiddewaitingimg();
+                                });
+                </script>
+<?php                            
+                // echo $agent->planninghtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), FALSE, FALSE,true);
             }
             echo "<br>";
         }
@@ -465,18 +593,18 @@
 ?>
 
 <script>
-    window.addEventListener("load", (event) => {
-        var waiting_img = document.getElementById('waiting_img');
-        if (waiting_img)
-        {
-            waiting_img.hidden=true;
-        }
-        var waiting_div = document.getElementById('waiting_div');
-        if (waiting_div)
-        {
-            waiting_div.hidden=true;
-        }
-    });
+    // window.addEventListener("load", (event) => {
+    //     var waiting_img = document.getElementById('waiting_img');
+    //     if (waiting_img)
+    //     {
+    //         waiting_img.hidden=true;
+    //     }
+    //     var waiting_div = document.getElementById('waiting_div');
+    //     if (waiting_div)
+    //     {
+    //         waiting_div.hidden=true;
+    //     }
+    // });
 </script>
 
 </body>

@@ -258,55 +258,17 @@ class fonctions
     public function nommois($date = null)
     {
         if (is_null($date))
-            $date = date("d/m/Y");
-//        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-//            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
-//        $monthname = strftime("%B", strtotime($this->formatdatedb($date)));
-
-        $nummonth = date("n", strtotime($this->formatdatedb($date)));
-        switch ($nummonth)
         {
-            case 1:
-                $monthname = "janvier";
-                break;
-            case 2:
-                $monthname = "février";
-                break;
-            case 3:
-                $monthname = "mars";
-                break;
-            case 4:
-                $monthname = "avril";
-                break;
-            case 5:
-                $monthname = "mai";
-                break;
-            case 6:
-                $monthname = "juin";
-                break;
-            case 7:
-                $monthname = "juillet";
-                break;
-            case 8:
-                $monthname = "août";
-                break;
-            case 9:
-                $monthname = "septembre";
-                break;
-            case 10:
-                $monthname = "octobre";
-                break;
-            case 11:
-                $monthname = "novembre";
-                break;
-            case 12:
-                $monthname = "décembre";
-                break;
+            $date = date("d/m/Y");
         }
-
-        if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
+        $nummonth = date("n", strtotime($this->formatdatedb($date)));
+        $monthname = $this->nommoisparindex($nummonth);
+        if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) 
+        {
             return ucfirst($monthname);
-        } else {
+        }
+        else
+        {
             return $this->utf8_encode(ucfirst($monthname));
         }
     }
@@ -319,18 +281,65 @@ class fonctions
      */
     public function nommoisparindex($index = null) // 1 = Janvier 12 = Décembre
     {
-        if (is_null($index)) {
+        if (is_null($index)) 
+        {
             $errlog = "Fonctions->nommoisparindex : L'index du mois est NULL";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        } else {
+        } 
+        else 
+        {
             $index = $index % 12;
-            if ($index==0) $index = 12;
-            $monthname = $this->nommois("01/" . str_pad($index,  2, "0",  STR_PAD_LEFT) . "/2012");
+            if ($index==0) 
+            {
+                $index = 12;
+            }
+            switch ($index)
+            {
+                case 1:
+                    $monthname = "janvier";
+                    break;
+                case 2:
+                    $monthname = "février";
+                    break;
+                case 3:
+                    $monthname = "mars";
+                    break;
+                case 4:
+                    $monthname = "avril";
+                    break;
+                case 5:
+                    $monthname = "mai";
+                    break;
+                case 6:
+                    $monthname = "juin";
+                    break;
+                case 7:
+                    $monthname = "juillet";
+                    break;
+                case 8:
+                    $monthname = "août";
+                    break;
+                case 9:
+                    $monthname = "septembre";
+                    break;
+                case 10:
+                    $monthname = "octobre";
+                    break;
+                case 11:
+                    $monthname = "novembre";
+                    break;
+                case 12:
+                    $monthname = "décembre";
+                    break;
+            }
 
-            if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) {
+            if (mb_detect_encoding(ucfirst($monthname), 'UTF-8', true)) 
+            {
                 return ucfirst($monthname);
-            } else {
+            } 
+            else 
+            {
                 return $this->utf8_encode(ucfirst($monthname));
             }
         }
@@ -345,41 +354,18 @@ class fonctions
     public function nomjour($date = null)
     {
         if (is_null($date))
-            $date = date("d/m/Y");
-
-//        if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-//            setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
-//        $dayname = strftime("%A", strtotime($this->formatdatedb($date)));
-
-        $numday = date("w", strtotime($this->formatdatedb($date)));
-        switch ($numday)
         {
-            case 0:
-                $dayname = "Dimanche";
-                break;
-            case 1:
-                $dayname = "lundi";
-                break;
-            case 2:
-                $dayname = "mardi";
-                break;
-            case 3:
-                $dayname = "mercredi";
-                break;
-            case 4:
-                $dayname = "jeudi";
-                break;
-            case 5:
-                $dayname = "vendredi";
-                break;
-            case 6:
-                $dayname = "samedi";
-                break;
+            $date = date("d/m/Y");
         }
 
-        if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
+        $numday = date("w", strtotime($this->formatdatedb($date)));
+        $dayname = $this->nomjourparindex($numday);
+        if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) 
+        {
             return ucfirst($dayname);
-        } else {
+        } 
+        else 
+        {
             return $this->utf8_encode(ucfirst($dayname));
         }
     }
@@ -392,23 +378,45 @@ class fonctions
      */
     public function nomjourparindex($index = null) // 1 = Lundi 7 = Dimanche
     {
-        if (is_null($index)) {
+        if (is_null($index)) 
+        {
             $errlog = "Fonctions->nomjourparindex : L'index du jour est NULL";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
-        } else {
+        } 
+        else 
+        {
             $index = $index % 7;
-//            if (setlocale(LC_TIME, 'fr_FR.UTF8') == '')
-//                setlocale(LC_TIME, 'FRA.UTF8', 'fra'); // correction problème pour windows
-                                                      // Le 01/01/2012 est un dimanche
-//            $dayname = strftime("%A", strtotime("20120101" + $index));
-
-            // Le 01/01/2012 est un dimanche
-            $dayname = $this->nomjour("20120101" + $index);
-
-            if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) {
+            switch ($index)
+            {
+                case 0:
+                    $dayname = "Dimanche";
+                    break;
+                case 1:
+                    $dayname = "lundi";
+                    break;
+                case 2:
+                    $dayname = "mardi";
+                    break;
+                case 3:
+                    $dayname = "mercredi";
+                    break;
+                case 4:
+                    $dayname = "jeudi";
+                    break;
+                case 5:
+                    $dayname = "vendredi";
+                    break;
+                case 6:
+                    $dayname = "samedi";
+                    break;
+            }
+            if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) 
+            {
                 return ucfirst($dayname);
-            } else {
+            } 
+            else 
+            {
                 return $this->utf8_encode(ucfirst($dayname));
             }
         }
@@ -1056,7 +1064,8 @@ class fonctions
                 {
                     $htmltext = $htmltext . "</tr><tr>"; 
                 }
-                $htmltext = $htmltext . "<td class='maincell'><table class='elementlegende'><tbody><tr><td><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span></td><td class='legendetexte' >" . $legende["libelle"] . "</td></tr></tbody></table></td>";
+                $htmltext = $htmltext . "<td class='maincell'><table class='elementlegende'><tbody><tr><td><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' ></span></td><td class='legendetexte' >" . $legende["libelle"] . "</td></tr></tbody></table></td>";
+                // $htmltext = $htmltext . "<td class='maincell'><table class='elementlegende'><tbody><tr><td><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span></td><td class='legendetexte' >" . $legende["libelle"] . "</td></tr></tbody></table></td>";
                 //$htmltext = $htmltext . "<td class='maincell'><span class='legendecouleur' style='background-color:" . $legende["couleur"] . ";' bgcolor=" . $legende["couleur"] . "></span><span class='legendetexte' >" . $legende["libelle"] . "</span></td>";
                 //$htmltext = $htmltext . "<td class='maincell'><div class='legendecouleur' style='background-color:" . $legende["couleur"] . "; float:left;' bgcolor=" . $legende["couleur"] . "></div><div class='legendetexte' style='float:left;'>" . $legende["libelle"] . "</div></td>";
                 $index++;

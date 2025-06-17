@@ -130,12 +130,17 @@
 
     function showwaitingimg()
     {
-        var waiting_img = document.getElementById('waiting_img');
+        let waiting_img_caption = document.getElementById('waiting_img_caption');
+        if (waiting_img_caption)
+        {
+            waiting_img_caption.hidden=false;
+        }
+        let waiting_img = document.getElementById('waiting_img');
         if (waiting_img)
         {
             waiting_img.hidden=false;
         }
-        var waiting_div = document.getElementById('waiting_div');
+        let waiting_div = document.getElementById('waiting_div');
         if (waiting_div)
         {
             waiting_div.hidden=false;
@@ -144,15 +149,32 @@
 
     function hiddewaitingimg()
     {
-        var waiting_img = document.getElementById('waiting_img');
-        if (waiting_img)
+
+        let updatefinished = true;
+        let divtocompletecollection = document.querySelectorAll('.divtocomplete');
+        if (divtocompletecollection)
         {
-            waiting_img.hidden=true;
+            divtocompletecollection.forEach((divtocomplete) => { /* console.log( divtocomplete.id + " " + divtocomplete.hasChildNodes() ); */ if (divtocomplete.hasChildNodes() == false) { updatefinished = false; }} );
         }
-        var waiting_div = document.getElementById('waiting_div');
-        if (waiting_div)
+
+        if (updatefinished)
         {
-            waiting_div.hidden=true;
+            // On va cacher le div de l'attente
+            let waiting_img_caption = document.getElementById('waiting_img_caption');
+            if (waiting_img_caption)
+            {
+                waiting_img_caption.hidden=true;
+            }
+            let waiting_img = document.getElementById('waiting_img');
+            if (waiting_img)
+            {
+                waiting_img.hidden=true;
+            }
+            let waiting_div = document.getElementById('waiting_div');
+            if (waiting_div)
+            {
+                waiting_div.hidden=true;
+            }
         }
     }
 
@@ -189,18 +211,43 @@
         return date.toISOString().startsWith(isoFormattedStr);
     }
 
+    function sort_table_init(tablename,column_number)
+    {
+        let table = document.getElementById(tablename);
+        if (table)
+        {
+            let thlist = table.querySelector('.entete').querySelectorAll('th');
+            thlist.forEach(th => { 
+                                     if (th.querySelector('.sortindicator')!==null) 
+                                     { 
+                                        th.addEventListener('click', sortcolumn) 
+                                        th.asc = true
+                                     }
+                                 });
+            if (column_number < thlist.length)
+            {
+                thlist[column_number].click(); // On simule le clic sur la colonne column_number pour faire afficher la flêche
+            }
+            else
+            {
+                console.log("Attention : La colonne " + column_number.toString() + " ne fait pas partie du tableau " + tablename);
+            }
+        }
+        else
+        {
+            console.log("Attention : La table " + tablename + " n'existe pas dans le document");
+        }
+    }
+
     function sortcolumn()
     {
         let th = this;
 
-        //alert(th.innerHTML);
         const currentsortindicator = th.querySelector('.sortindicator')
-
         if (currentsortindicator!==null)
         {
             const table = th.closest('table');
             const tbody = table.querySelector('tbody');
-            //alert (table.id);
         
             if (currentsortindicator.innerText.trim().length>0)
             {
@@ -211,20 +258,14 @@
                 .sort(comparer(Array.from(th.parentNode.children).indexOf(th), th.asc))
                 .forEach(tr => tbody.appendChild(tr) );
         
-            //alert(Array.from(th.parentNode.querySelectorAll('th')));    
-        
             for (var thindex = 0 ; thindex < table.querySelector('.entete').querySelectorAll('th').length; thindex++)
             {
-                //alert (thindex);
                 if (th.parentNode.children[thindex]!==null)
                 {
-                    //alert (th.parentNode.children[thindex].innerHTML);
                     var thsortindicator = th.parentNode.children[thindex].querySelector('.sortindicator');
                     if (thsortindicator!==null)
                     {
-                        //alert (thsortindicator.innerText);
                         thsortindicator.innerText = ' ';
-                        //alert (thsortindicator.innerText);
                     }
                 }
             }
@@ -233,12 +274,10 @@
             {
                 if (th.asc)
                 {
-                    //alert ('plouf');
                     currentsortindicator.innerHTML = '&darr;'; // flêhe qui descend
                 }
                 else
                 {
-                    //alert ('ploc');
                     currentsortindicator.innerHTML = '&uarr;'; // flêche qui monte
                 }
             }
@@ -767,6 +806,29 @@
 
 <?php
 
+    function addwaitingimgdiv()
+    {
+        global $fonctions;
+
+        $path = $fonctions->imagepath() . "/chargement.gif";
+        list($width, $height, $imagetype) = getimagesize("$path");
+        $typeimage = image_type_to_extension($imagetype,false);
+        if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+        {
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        }
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+        // echo "<div id='waiting_div' class='waiting_div' ><img id='waiting_img' class='waiting_img' src='" . $base64 . "' height='$height' width='$width' ></div>";
+        echo "<div id='waiting_div' class='waiting_div' >
+                <figure class='waiting_img'>
+                    <img id='waiting_img' src='" . $base64 . "' height='$height' width='$width' >
+                    <figcaption id='waiting_img_caption' class='boldtext fontsize18 centeraligntext' >Veuillez patienter</figcaption>
+                </figure>
+              </div>";
+    }
+
     function triparprofondeurabsolue($struct1, $struct2)
     {
         if ($struct1->profondeurabsolue()==$struct2->profondeurabsolue())
@@ -1135,7 +1197,7 @@
                         <input type="hidden" name="action" value="modif"> 
                         <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                     </form> 
-                    <a href="javascript:document.resp_parametre.submit();">Paramétrage des dossiers et des structures</a>
+                    <a href="javascript:document.resp_parametre.submit();">Paramétrage des agents et des structures</a>
                 </li>
 <?php
         }
@@ -1364,7 +1426,7 @@
                         <input type="hidden" name="action" value="modif"> 
                         <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                     </form>
-                    <a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des dossiers et des structures</a>
+                    <a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des agents et des structures</a>
                 </li>
 <?php
         }

@@ -95,9 +95,9 @@
 /* DEFINITION DU BODY (Police, taille, couleur, ...)   */
 /*******************************************************/
 .bodyhtml {
-    FONT-SIZE: 14px; 
-    FONT-FAMILY: arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
-    COLOR: #000000; 
+    font-size : 14px; 
+    font-family : arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
+    color : #000000; 
     background-color: white;
     margin-left:10px;
     margin-right:10px;
@@ -159,11 +159,11 @@ th[scope~="row"] {
    border-color:#888B8A;
    padding-left:10px;
    padding-right:10px;
-   FONT-WEIGHT: normal ; 
+   font-weight : normal ; 
 /*	width:50%; */
 }
 .titresimple{
-   FONT-WEIGHT: bold ; 
+   font-weight : bold ; 
    color : #BF3021 !important; 
    border-width:1px;
    border-style:solid; 
@@ -182,36 +182,36 @@ th[scope~="row"] {
 / MENU PRINCIPAL
 /****************************************************/
 #mainmenu {
-   FONT-FAMILY: Arial;
-   FONT-WEIGHT: bold; 
-   FONT-SIZE: 14px; 
+   font-family : Arial;
+   font-weight : bold; 
+   font-size : 14px; 
    border-collapse: collapse; 
-   COLOR: #306192; /* #336699; */
+   color : #306192; /* #336699; */
 }
 
 /* Défini l'aspect des menus de niveau 1, 2 et 3*/
 #mainmenu UL UL {
-   DISPLAY: none; 
-   POSITION: absolute; 
-   PADDING-RIGHT: 0px; 
-   PADDING-LEFT: 0px; 
-   PADDING-BOTTOM: 0px;
-   PADDING-TOP: 0px; 
-   TOP: -1px;
-   LEFT: 274px; 
-   MARGIN: 0px; 
-   Z-INDEX: 2000;
+   display : none; 
+   position : absolute; 
+   padding-right : 0px; 
+   padding-left : 0px; 
+   padding-bottom : 0px;
+   padding-top : 0px; 
+   top : -1px;
+   left : 274px; 
+   margin : 0px; 
+   z-index : 2000;
 }
 #mainmenu LI {
-   POSITION: relative; 
-   PADDING-RIGHT: 2px; 
-   PADDING-LEFT: 2px; 
-   PADDING-BOTTOM: 5px; 
-   PADDING-TOP: 5px;
-   MARGIN: 0px;
-   WIDTH: 270px; 
-   LIST-STYLE-TYPE: none; 
-   BACKGROUND-COLOR: #E5EAE9;  
+   position : relative; 
+   padding-right : 2px; 
+   padding-left : 2px; 
+   padding-bottom : 5px; 
+   padding-top : 5px;
+   margin : 0px;
+   width : 270px; 
+   list-style-type : none; 
+   background-color : #E5EAE9;  
    float: left; 
    text-align: center; 
 }
@@ -221,31 +221,31 @@ th[scope~="row"] {
 /*       sauf si elles sont définies dans le #mainmenu UL.niveau2 LI:hover, #mainmenu UL.niveau3 LI:hover */
 #mainmenu UL.niveau1 LI:hover 
 {
-   BACKGROUND-COLOR: #F9E1A4; /* #F2D99D; //#f5c95c; //#ffff70; */
+   background-color : #F9E1A4; /* #F2D99D; //#f5c95c; //#ffff70; */
    cursor: pointer; 
 }
 
 /* Défini la couleur et l'aspect des liens HTML dans le menu principal */
 #mainmenu LI A {
-   TEXT-DECORATION: none; 
-   COLOR: inherit;
+   text-decoration : none; 
+   color : inherit;
 }
 
 /* Tous les menu de niveau 1, 2 et 3 sont en mode block  */
 #mainmenu UL.niveau1 {
-   DISPLAY: block;
+   display : block;
 }
 
 /* Aspect du menu de niveau 1 */
 /* ATTENTION : La modification de ces propriétés impacte les niveau 2 et 3 */
 /*             Sauf si les valeurs sont définies dans #mainmenu UL.niveau2 LI, #mainmenu UL.niveau3 LI  */
 #mainmenu UL.niveau1 LI {
-    BACKGROUND-COLOR: #D8D8D8; 
-    TEXT-DECORATION: none;  
-    BORDER-BOTTOM: #888B8A 1px solid;  
-    BORDER-TOP: #888B8A 1px solid; 
-    BORDER-LEFT: #888B8A 1px solid;  
-    BORDER-RIGHT: #888B8A 1px solid; 
+    background-color : #D8D8D8; 
+    text-decoration : none;  
+    border-bottom : #888B8A 1px solid;  
+    border-top : #888B8A 1px solid; 
+    border-left : #888B8A 1px solid;  
+    border-right : #888B8A 1px solid; 
     margin-bottom: 0px;
     margin-left: 0px;
     margin-right: 0px;
@@ -256,28 +256,28 @@ th[scope~="row"] {
 /* Inutile de reprendre les autres propriétés, car elles sont héritées de niveau 1 */
 #mainmenu UL.niveau2 LI,
 #mainmenu UL.niveau3 LI {
-    BACKGROUND-COLOR: #E5EAE9;
+    background-color : #E5EAE9;
 }
 
 /* Position du menu de niveau 2 */
 #mainmenu LI:hover UL.niveau2 {
-   DISPLAY: block;  
-   FONT-SIZE: 11px; 
-   LEFT: -1px; 
-   TOP:27px;
+   display : block;  
+   font-size : 11px; 
+   left : -1px; 
+   top :27px;
 }
 
 /* Position du menu de niveau 3  */
 #mainmenu LI LI:hover UL.niveau3 {
-   DISPLAY: block;
+   display : block;
 }
 
 /* Défini l'aspect et la position du marqueur de 'sous-menu' ▶ */
 #mainmenu LI.plus {
-   COLOR: inherit; 
-   BACKGROUND-POSITION: right 50%; 
-   BORDER-BOTTOM: #888B8A 1px solid; 
-   BACKGROUND-REPEAT: no-repeat;
+   color : inherit; 
+   background-position : right 50%; 
+   border-bottom : #888B8A 1px solid; 
+   background-repeat : no-repeat;
 }
 #mainmenu LI.plus::after {
     text-align: center;
@@ -290,7 +290,7 @@ th[scope~="row"] {
 / TABLEAU DES SOLDES DE CONGES 
 /****************************************************/
 #soldeconges {
-    FONT-WEIGHT: normal ;
+    font-weight : normal ;
 }
 #soldeconges table {
     border-collapse : collapse; 
@@ -299,33 +299,33 @@ th[scope~="row"] {
 }
 #soldeconges TR.titre TD,
 #soldeconges TR.titre TH {
-    FONT-WEIGHT: bold ; 
+    font-weight : bold ; 
     color : #BF3021; 
-    BORDER-RIGHT: #888B8A 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: #888B8A 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: #888B8A 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: #888B8A 1px solid;
+    border-right : #888B8A 1px solid; 
+    padding-right : 4px; 
+    border-top : #888B8A 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : #888B8A 1px solid; 
+    padding-top : 2px; 
+    border-bottom : #888B8A 1px solid;
 }
 #soldeconges TR.entete TD,
 #soldeconges TR.entete TH,
 #soldeconges TR.element TD,
 #soldeconges TR.element TH {
     color: black; 
-    BORDER-RIGHT: #888B8A 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: #888B8A 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: #888B8A 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: #888B8A 1px solid;
-    FONT-WEIGHT: normal ;
+    border-right : #888B8A 1px solid; 
+    padding-right : 4px; 
+    border-top : #888B8A 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : #888B8A 1px solid; 
+    padding-top : 2px; 
+    border-bottom : #888B8A 1px solid;
+    font-weight : normal ;
 
 }
 
@@ -333,7 +333,7 @@ th[scope~="row"] {
 / TABLEAU DE L'HISTORIQUE DES DEMANDES 
 /****************************************************/
 #demandeliste {
-    FONT-WEIGHT: normal ;
+    font-weight : normal ;
     cursor : default;
 }
 #demandeliste table {
@@ -345,17 +345,17 @@ th[scope~="row"] {
 }
 #demandeliste TR.titre TD,
 #demandeliste TR.titre TH {
-    MARGIN: 0px; 
-    FONT-WEIGHT: bold ; 
+    margin : 0px; 
+    font-weight : bold ; 
     color : #BF3021; 
-    BORDER-RIGHT: #888B8A 1px solid; 
-    BORDER-TOP: #888B8A 1px solid; 
-    BORDER-LEFT: #888B8A 1px solid; 
-    BORDER-BOTTOM: #888B8A 1px solid;
-    PADDING-RIGHT: 4px; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    PADDING-TOP: 2px; 
+    border-right : #888B8A 1px solid; 
+    border-top : #888B8A 1px solid; 
+    border-left : #888B8A 1px solid; 
+    border-bottom : #888B8A 1px solid;
+    padding-right : 4px; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    padding-top : 2px; 
 }
 #demandeliste TR.entete TD, 
 #demandeliste TR.entete TH,
@@ -363,23 +363,23 @@ th[scope~="row"] {
 #demandeliste TR.element TH
 {
     color: black; 
-    BORDER-RIGHT: #888B8A 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: #888B8A 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: #888B8A 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: #888B8A 1px solid;
-    FONT-WEIGHT: normal;
+    border-right : #888B8A 1px solid; 
+    padding-right : 4px; 
+    border-top : #888B8A 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : #888B8A 1px solid; 
+    padding-top : 2px; 
+    border-bottom : #888B8A 1px solid;
+    font-weight : normal;
 }
 
 /****************************************************
 / PLANNING D'UN AGENT 
 /****************************************************/
 #planning {
-    FONT-WEIGHT: normal ;
+    font-weight : normal ;
 }
 
 #planning table.tableau {
@@ -393,17 +393,17 @@ th[scope~="row"] {
 #planning TR.ligneplanning TH {
 
     color: black; 
-    BORDER-RIGHT: black 1px solid; 
-    PADDING-RIGHT: 4px;
-    BORDER-TOP: black 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: black 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: black 1px solid;  
+    border-right : black 1px solid; 
+    padding-right : 4px;
+    border-top : black 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : black 1px solid; 
+    padding-top : 2px; 
+    border-bottom : black 1px solid;  
     text-align : center;
-    FONT-WEIGHT: normal;
+    font-weight : normal;
 }
 
 #planning TR.ligneplanning {
@@ -414,15 +414,15 @@ th[scope~="row"] {
 
 #planning TR.ligneplanning TD {
     color: black;
-    BORDER-RIGHT: black 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: black 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: black 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: black 1px solid;  
+    border-right : black 1px solid; 
+    padding-right : 4px; 
+    border-top : black 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : black 1px solid; 
+    padding-top : 2px; 
+    border-bottom : black 1px solid;  
     text-align : left; 
     height:15px;
 }
@@ -433,8 +433,8 @@ th[scope~="row"] {
     border-top:2px solid black; 
     border-right:0px solid black; 
     border-bottom:2px solid black; 
-    PADDING-RIGHT: 1px; 
-    PADDING-LEFT: 1px;
+    padding-right : 1px; 
+    padding-left : 1px;
     /*	width:250px; */   
 }
 
@@ -444,8 +444,8 @@ th[scope~="row"] {
     border-top:2px solid black; 
     border-right:2px solid black; 
     border-bottom:2px solid black;  
-    PADDING-RIGHT: 1px; 
-    PADDING-LEFT: 1px;
+    padding-right : 1px; 
+    padding-left : 1px;
     /*	width:250px; */   
 }
 
@@ -455,8 +455,8 @@ th[scope~="row"] {
     border-top:3px solid red; 
     border-right:0px solid red; 
     border-bottom:3px solid red; 
-    PADDING-RIGHT: 1px; 
-    PADDING-LEFT: 1px;
+    padding-right : 1px; 
+    padding-left : 1px;
 }
 
 #planning TR.ligneplanning TD.planningelement_jour_aprem {
@@ -465,65 +465,71 @@ th[scope~="row"] {
     border-top:3px solid red; 
     border-right:3px solid red; 
     border-bottom:3px solid red; 
-    PADDING-RIGHT: 1px; 
-    PADDING-LEFT: 1px;
+    padding-right : 1px; 
+    padding-left : 1px;
 }
 
 #planning TR.ligneplanning TD.hidde_tip
 {
     pointer-events: none;
 }
+
+#planning .dummyelement
+{
+    background:repeating-linear-gradient(135deg, #000000, #000000 6px,#514f4f 6px, #514f4f 12px ) !important;
+    /* background: repeating-linear-gradient(135deg, #000000, #000000 6px,#bdbf10 6px, #bdbf10 12px ) !important; */
+}
 /****************************************************
 / PLANNING D'UNE STRUCTURE
 /****************************************************/
 #structplanning {
-    FONT-WEIGHT: normal ;
+    font-weight : normal ;
 }
 #structplanning table.tableau {
     border-spacing : 0px; 
 }
 #structplanning TR.entete TD {
     color: black; 
-    BORDER-RIGHT: black 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: black 1px solid;
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: black 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: black 1px solid;  
+    border-right : black 1px solid; 
+    padding-right : 4px; 
+    border-top : black 1px solid;
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : black 1px solid; 
+    padding-top : 2px; 
+    border-bottom : black 1px solid;  
     text-align : center; 
 }
 #structplanning TR.entete_mois TD,
 #structplanning TR.entete_mois TH {
     color: black; 
-    FONT-WEIGHT: bold ; 
-    BORDER-RIGHT: black 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: black 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px; 
-    MARGIN: 0px; 
-    BORDER-LEFT: black 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: black 1px solid;  
+    font-weight : bold ; 
+    border-right : black 1px solid; 
+    padding-right : 4px; 
+    border-top : black 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px; 
+    margin : 0px; 
+    border-left : black 1px solid; 
+    padding-top : 2px; 
+    border-bottom : black 1px solid;  
     text-align : center; 
 }
 #structplanning TR.ligneplanning TD,
 #structplanning TR.ligneplanning TH {
     color: black; 
-    BORDER-RIGHT: black 1px solid; 
-    PADDING-RIGHT: 4px; 
-    BORDER-TOP: black 1px solid; 
-    PADDING-LEFT: 4px; 
-    PADDING-BOTTOM: 2px;
-    MARGIN: 0px; 
-    BORDER-LEFT: black 1px solid; 
-    PADDING-TOP: 2px; 
-    BORDER-BOTTOM: black 1px solid;  
+    border-right : black 1px solid; 
+    padding-right : 4px; 
+    border-top : black 1px solid; 
+    padding-left : 4px; 
+    padding-bottom : 2px;
+    margin : 0px; 
+    border-left : black 1px solid; 
+    padding-top : 2px; 
+    border-bottom : black 1px solid;  
     text-align : left;
-    FONT-WEIGHT: normal ; 
+    font-weight : normal ; 
 }
 #structplanning TR.ligneplanning TD.planningelement_matin {
     cursor:pointer; 
@@ -567,10 +573,10 @@ th[scope~="row"] {
 
 #structplanning TR.ligneplanning:hover td,
 #structplanning TR.ligneplanning:hover th {
-    /* BORDER-RIGHT: red 1px solid !important; */
-    /* BORDER-LEFT: red 1px solid !important; */
-    BORDER-TOP: #00ff00 2px solid; /* !important; /* #b1f5b9 */
-    BORDER-BOTTOM: #00ff00 2px solid; /* !important;  /* #b1f5b9 */
+    /* border-right : red 1px solid !important; */
+    /* border-left : red 1px solid !important; */
+    border-top : #00ff00 2px solid; /* !important; /* #b1f5b9 */
+    border-bottom : #00ff00 2px solid; /* !important;  /* #b1f5b9 */
 }
 
 .rayureplanning {
@@ -712,8 +718,8 @@ textarea:required {
 
 .tabs {
     color: #336699; /* rgb(255, 255, 255); */
-    FONT-FAMILY: arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
-    FONT-WEIGHT: bold;
+    font-family : arial; /* trebuchet ms,arial,tahoma,verdana,sans-serif; */
+    font-weight : bold;
     display: flex;
     margin: 0;
 }
@@ -723,14 +729,14 @@ textarea:required {
     padding: 10px;
     /* border: 1px solid rgb(255, 255, 255); */
     border:1px solid black;
-    WIDTH: 150px;
+    width : 150px;
     text-align: center;
 }
 
 .tabs span:hover {
     /* background: rgb(29, 185, 112);*/
     cursor: pointer;
-    BACKGROUND: #D6D6D6;
+    background : #D6D6D6;
     /* color: black; */
 }
 
@@ -1100,6 +1106,10 @@ select {
     font-size:15px;
 }
 
+.fontsize18 {
+    font-size:18px;
+}
+
 .fontsize25 {
     font-size:25px;    
 }
@@ -1186,7 +1196,7 @@ select {
 }
 
 .periodeobligatoirebloc {
-    DISPLAY: block;
+    display : block;
     width: 700px; 
     padding-top:10px; 
     padding-bottom:10px;
@@ -1327,7 +1337,8 @@ select {
     font-size:17px;    
 }
 
-.XMLCircuit ul, li 
+.XMLCircuit ul,
+.XMLCircuit li 
 {
   list-style: none;
   margin: 0;
@@ -1352,7 +1363,8 @@ select {
   display: inline-block;
 }
 
-.XMLCircuit span, label 
+.XMLCircuit span, 
+.XMLCircuit label 
 {
   cursor: pointer;
 }

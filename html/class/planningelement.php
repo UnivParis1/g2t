@@ -451,15 +451,22 @@ class planningelement
             $datadatefr = " data-datefr='" .  $this->fonctions->formatdate($this->date) . "' ";
         }
         if ($clickable)
+        {
             $clickabletext = "oncontextmenu=\"planning_rclick('" . $this->date() . "','" . $this->moment() . "');return false;\" onclick=\"planning_lclick('" . $this->date() . "','" . $this->moment() . "')\" ";
+        }
         else
+        {
             $clickabletext = "";
+        }
             
         if (! is_null($checkboxname))
+        {
             $checkboxtext = "<input type='checkbox' name='elmtcheckbox[" . $checkboxname . "]' value='1'>";
+        }
         else
+        {
             $checkboxtext = "";
-        
+        }
         // Si on est en affichage N&B et que c'est une convention médicale alors on modifie l'info à afficher avec juste 'Teletravail'
         if ($this->typeconvention()===teletravail::CODE_CONVENTION_MEDICAL and $noiretblanc)
         {
@@ -489,14 +496,18 @@ class planningelement
                 $clickabletext = $clickabletext . "";
             }
         }
-        
-        if ($this->moment == fonctions::MOMENT_MATIN) {
+        $styletext = '';
+        if ($this->moment == fonctions::MOMENT_MATIN) 
+        {
             //echo "this->date = " . $this->date . "   date du jour : " . date("Ymd") . "<br>";
-            // $htmltext = $htmltext ."<td class='planningelement_matin' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
-            if ($this->date == date("Ymd")) {
+            if ($this->date == date("Ymd")) 
+            {
                 //echo "Le matin du jour " . $this->date . " <br>";
-                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $this->couleur($noiretblanc) . "' >";
-            } else {
+                $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
+                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
+            } 
+            else 
+            {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) 
                 {
@@ -504,7 +515,8 @@ class planningelement
                 } 
                 else 
                 {
-                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $htmlbackcolor . "' >";
+                    $styletext = "background-color:" . $htmlbackcolor . " !important; ";
+                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
                 }
             }
             $spanactive = false;
@@ -549,26 +561,39 @@ class planningelement
             }
             
             if (strlen($checkboxtext) != 0)
+            {
                 $htmltext = $htmltext . $checkboxtext;
+            }
             else
+            {
                 $htmltext = $htmltext . "&nbsp;";
+            }
             
             if ($spanactive) 
             {
                 $htmltext = $htmltext . "</span>";
             }
             $htmltext = $htmltext . "</td>";
-        } else {
-            // $htmltext = $htmltext ."<td class='planningelement_aprem' " . $clickabletext . " bgcolor='" . $this->couleur() . "' title=\"" . $this->info() . "\" >" . $checkboxtext ."</td>";
-            if ($this->date == date("Ymd")) {
+        } 
+        else 
+        {
+            if ($this->date == date("Ymd")) 
+            {
                 // echo "Le soir du jour " . $this->date . " <br>";
-                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $this->couleur($noiretblanc) . "' >";
-            } else {
+                $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
+                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
+            } 
+            else 
+            {
                 $htmlbackcolor = $this->couleur($noiretblanc);
-                if ($htmlbackcolor == self::COULEUR_HACHURE) {
+                if ($htmlbackcolor == self::COULEUR_HACHURE) 
+                {
                     $htmltext = $htmltext . "<td class='planningelement_aprem rayureplanning' " . $clickabletext . " $datadatefr >";
-                } else {
-                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr bgcolor='" . $this->couleur($noiretblanc) . "' >";
+                } 
+                else 
+                {
+                    $styletext = "background-color:" . $htmlbackcolor . " !important; ";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
                 }
             }
             $spanactive = false;
@@ -614,16 +639,20 @@ class planningelement
             }
             
             if (strlen($checkboxtext) != 0)
+            {
                 $htmltext = $htmltext . $checkboxtext;
+            }
             else
+            {
                 $htmltext = $htmltext . "&nbsp;";
+            }
             if ($spanactive)
             {
                 $htmltext = $htmltext . "</span>";
             }
             $htmltext = $htmltext . "</td>";
         }
-         return $htmltext;
+        return $htmltext;
     }
 }
 

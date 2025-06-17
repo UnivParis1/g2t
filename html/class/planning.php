@@ -572,6 +572,21 @@ class planning
     
     function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE, $includeteletravail = FALSE)
     {
+        function adddummyelement(int $mois,int $annee)
+        {
+            global $fonctions;
+
+            $nbjoursdansmois = $fonctions->nbr_jours_dans_mois($mois, $annee);
+            if ($nbjoursdansmois < 31)
+            {
+                $colspan = 2*(31-$nbjoursdansmois);
+                return "<td colspan=$colspan class='planningelement_matin planningelement_aprem dummyelement'><span data-tip='Date invalide'>&nbsp;</span></td>";
+                // $htmltext = $htmltext . "<td colspan=$colspan class='planningelement_matin planningelement_aprem' style='background: repeating-linear-gradient(135deg, #000000, #000000 6px,#bdbf10 6px, #bdbf10 12px ) !important; '></td>";
+            }
+            return '';
+        }
+
+
         //$this->fonctions->time_elapsed("Début de la fonction planninghtml", __METHOD__, true);
         // echo "datedebut = $datedebut datefin = $datefin <br>";
         // $this->listeelement = null;
@@ -597,6 +612,7 @@ class planning
         $htmltext = $htmltext . "<div id='planning'>";
         $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'><thead>";
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
+        $currentyear = date("Y", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
         $htmltext = $htmltext . "<tr class='entete'><th scope='col'>Mois</th>";
         for ($indexjrs = 0; $indexjrs < 31; $indexjrs ++) 
@@ -614,18 +630,24 @@ class planning
             // echo "month = $month monthfin = $monthfin currentmonth = $currentmonth <br>";
             if ($month != $currentmonth) 
             {
-                $monthname = $this->fonctions->nommois($planningelement->date()) . " " . date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
                 if ($currentmonth != "")
                 {
+                    $htmltext = $htmltext . adddummyelement($currentmonth, $currentyear);
                     $htmltext = $htmltext . "</tr>\n<tr class='ligneplanning'>";
                 }
                 else
                 {
                     $htmltext = $htmltext . "\n<tr class='ligneplanning'>";
                 }
-                $htmltext = $htmltext . "<th scope='row' class='leftaligntext'>" . $monthname . "</th>";
-                
+                if (intval($month) < intval($currentmonth))
+                {
+                    $currentyear = $currentyear+1;
+                }
+                // $monthname = $this->fonctions->nommois($planningelement->date()) . " " . date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
                 $currentmonth = $month;
+                $monthname = $this->fonctions->nommoisparindex($currentmonth) . " " . $currentyear; // $this->fonctions->nommois($planningelement->date()) . " " . $currentyear;
+                $htmltext = $htmltext . "<th scope='row' class='leftaligntext'>" . $monthname . "</th>";
+                // $currentyear = date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
             }
             $htmltext = $htmltext . $planningelement->html($clickable, null, $noiretblanc);
 
@@ -650,6 +672,10 @@ class planning
                 }
             }
         }
+
+        // Si le dernier élement n'est pas le 31 => Il faut compléter le mois avec des cases DUMMY jusqu'au 31
+        $htmltext = $htmltext . adddummyelement($currentmonth, $currentyear);
+
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</tbody></table>";
         $htmltext = $htmltext . "</div>";

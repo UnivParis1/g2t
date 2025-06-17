@@ -54,6 +54,7 @@ class agent
     const WS_METHODE_SEND_MAIL = 'SEND_MAIL';
     const WS_METHODE_FORCE_PERIODE = 'FORCE_PERIODE';
     const WS_METHODE_ONOFF_ANIMATION = 'ONOFF_ANIMATION';
+    const WS_METHODE_PLANNING = "PLANNING";
     
     private $agentid = null;
     private $eppn = null;
@@ -1152,10 +1153,10 @@ class agent
      *            ending date of the planning
      * @return object the planning object.
      */
-    function planning($debut_interval, $fin_interval, $incudeteletravail = false, $includecongeabsence = true)
+    function planning($debut_interval, $fin_interval, $includeteletravail = false, $includecongeabsence = true)
     {
         $planning = new planning($this->dbconnect);
-        $planning->load($this->agentid, $debut_interval, $fin_interval, $incudeteletravail, $includecongeabsence);
+        $planning->load($this->agentid, $debut_interval, $fin_interval, $includeteletravail, $includecongeabsence);
         return $planning;
     }
 
@@ -1171,10 +1172,10 @@ class agent
      *            optional true means that a link to display planning in pdf format is allowed. false means the link is hidden
      * @return string the planning html text.
      */
-    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $incudeteletravail = FALSE, $includecongeabsence = true)
+    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $includeteletravail = FALSE, $includecongeabsence = true)
     {
         $planning = new planning($this->dbconnect);
-        $htmltext = $planning->planninghtml($this->agentid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $incudeteletravail, $includecongeabsence);
+        $htmltext = $planning->planninghtml($this->agentid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $includeteletravail, $includecongeabsence);
         return $htmltext;
     }
 
@@ -1666,7 +1667,7 @@ class agent
         return $structliste;
     }
 
-    function agentconsultantliste() :array
+    function agentconsultantliste(bool $id_only = false) :array
     {
         $agentliste = array();
         if ($this->estconsultant()) {
@@ -1683,10 +1684,17 @@ class agent
             }
             while ($result = mysqli_fetch_row($query)) {
                 // echo "Je charge la structure " . $result[0] . " <br>";
-                $agent = new agent($this->dbconnect);
-                $agent->load("$result[0]");
-                $agentliste[$agent->agentid()] = $agent;
-                unset($agent);
+                if ($id_only)
+                {
+                    $agentliste[] = "$result[0]";
+                }
+                else
+                {
+                    $agent = new agent($this->dbconnect);
+                    $agent->load("$result[0]");
+                    $agentliste[$agent->agentid()] = $agent;
+                    unset($agent);
+                }
             }
         }
         return $agentliste;
@@ -2123,7 +2131,7 @@ class agent
                 $htmltext = $htmltext . "         <th scope='row' class='centeraligntext'>" . $tempsolde->typelibelle() . "</th>";
                 if (strcmp((string)$tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
                 {
-                    $htmltext = $htmltext . "         <td colspan='2' bgcolor='#E8E8E8' >"; // On fusionne les 2 colonnes "droit acquis" et "droit pris"
+                    $htmltext = $htmltext . "         <td colspan='2' style='background-color:#E8E8E8 !important; ' >"; // On fusionne les 2 colonnes "droit acquis" et "droit pris"
                 }
                 else
                 {
@@ -2956,15 +2964,9 @@ const modifymotif = (motif, motifid) =>
             {
                 $htmltext = $htmltext . "</tbody>";
                 $htmltext = $htmltext . "</table>";
-                $htmltext = $htmltext . "
-<script>
-
-    var tablename = 'tabledemande_" . $this->agentid() . "';
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(th => th.addEventListener('click', sortcolumn));
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th').forEach(element => element.asc = true); //  On initialise le tri des colonnes en ascendant
-    document.getElementById(tablename).querySelector('.entete').querySelectorAll('th')[1].click(); // On simule le clic sur la 2e colonne pour faire afficher la flêche
-
-</script>";
+                $htmltext = $htmltext . "<script>
+                                            sort_table_init('tabledemande_" . $this->agentid() . "',1);
+                                         </script>";
             }
         }
         if ($premieredemande)

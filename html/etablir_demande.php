@@ -488,7 +488,10 @@
         echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
-    } else {
+    } 
+    else 
+    {
+        addwaitingimgdiv();
 
         if (strcasecmp((string)$typedemande, "conges") == 0) {
             $fonctions->afficheperiodesobligatoires();
@@ -771,16 +774,16 @@
         echo "</P>";
         echo "</span>";
 
-        ?>
-    <form name="frm_demande_conge" method="post">
+?>
+        <form name="frm_demande_conge" method="post">
 
-    	<input type="hidden" name="agentid"
-    		value="<?php echo $agent->agentid(); ?>">
+            <input type="hidden" name="agentid"
+                value="<?php echo $agent->agentid(); ?>">
 
-    	<table><tbody>
-    		<tr>
-    			<td>Date de début de la demande :</td>
-    <?php
+            <table><tbody>
+                <tr>
+                    <td>Date de début de la demande :</td>
+<?php
         // Définition des ID des calendriers puis génération des scripts "personnalisés" pour l'affichage (mindate, maxdate...)
         $calendrierid_deb = "date_debut";
         $calendrierid_fin = "date_fin";
@@ -1283,7 +1286,7 @@
             checktextlength(commentaire,<?php echo $fonctions->logueurmaxcolonne('DEMANDE','COMMENTAIRE'); ?>,"commentairerestant");
         }
 
-        const listetype=document.getElementById("listetype");
+        var listetype=document.getElementById("listetype");
         
         function updatedisplay()
         {
@@ -1354,7 +1357,43 @@
         {
             for ($index=$rh_annee_previous; $index>=0; $index--)
             {
-                echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE,false);
+                // Div qui sera mis à jour avec le retour HTML du WS
+                echo "<div id='planningagent_" . $agent->agentid() . "_" . ($fonctions->anneeref() - $index) . "' class='divtocomplete'></div>";
+?>
+                <script>
+                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                        agentid : "<?php echo $agent->agentid(); ?>", 
+                                        datedebut : "<?php echo ($fonctions->anneeref() - $index) . $fonctions->debutperiode(); ?>" , 
+                                        datefin : "<?php echo ($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode(); ?>",
+                                        clickable : 'O',
+                                        showpdflink : 'N',
+                                        includeteletravail : 'N'
+                                        })
+                                .done(function( data ) {
+                                    if (data.status.toUpperCase()=='OK')
+                                    {
+                                        var statutinfo = "OK";
+                                    }
+                                    else
+                                    {
+                                        var statutinfo = "KO => " + data.description;
+                                    }
+                                    // console.log("Retour du WS => " + statutinfo);
+                                    let div = document.getElementById('planningagent_<?php echo $agent->agentid() . "_" . ($fonctions->anneeref() - $index); ?>');
+                                    div.innerHTML = data.html;
+                                })
+                                .fail(function( xhr ) {
+                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                    console.log(statutinfo);
+                                })
+                                .always(function() {
+                                    hiddewaitingimg();
+                                });
+                </script>
+<?php                            
+                // echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE,false);
+
                 echo $agent->soldecongeshtml($fonctions->anneeref() - $index);
                 echo "<br>";
             }
@@ -1366,12 +1405,85 @@
             $datetemp = date("Ymd", strtotime("+1month", $timestamp)); // On passe au mois suivant
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("-1days", $timestamp)); // On passe à la veille
-            echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE,true,false);
+
+            // Div qui sera mis à jour avec le retour HTML du WS
+            echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
+?>
+            <script>
+                var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                    agentid : "<?php echo $agent->agentid(); ?>", 
+                                    datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                    datefin : "<?php echo $datetemp; ?>",
+                                    clickable : 'O',
+                                    showpdflink : 'O',
+                                    includeteletravail : 'N'
+                                    })
+                            .done(function( data ) {
+                                if (data.status.toUpperCase()=='OK')
+                                {
+                                    var statutinfo = "OK";
+                                }
+                                else
+                                {
+                                    var statutinfo = "KO => " + data.description;
+                                }
+                                // console.log("Retour du WS => " + statutinfo);
+                                let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
+                                div.innerHTML = data.html;
+                            })
+                            .fail(function( xhr ) {
+                                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                console.log(statutinfo);
+                            })
+                            .always(function() {
+                                hiddewaitingimg();
+                            });
+            </script>
+<?php                            
+            // echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE,true,false);
             echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
         } 
         else
         {
-            echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode()), TRUE,true, false);
+            // Div qui sera mis à jour avec le retour HTML du WS
+            echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
+?>
+            <script>
+                var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+                $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                    agentid : "<?php echo $agent->agentid(); ?>", 
+                                    datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                    datefin : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
+                                    clickable : 'O',
+                                    showpdflink : 'O',
+                                    includeteletravail : 'N'
+                                    })
+                            .done(function( data ) {
+                                if (data.status.toUpperCase()=='OK')
+                                {
+                                    var statutinfo = "OK";
+                                }
+                                else
+                                {
+                                    var statutinfo = "KO => " + data.description;
+                                }
+                                // console.log("Retour du WS => " + statutinfo);
+                                let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
+                                div.innerHTML = data.html;
+                            })
+                            .fail(function( xhr ) {
+                                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                                console.log(statutinfo);
+                            })
+                            .always(function() {
+                                hiddewaitingimg();
+                            });
+            </script>
+<?php                            
+
+
+            // echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode()), TRUE,true, false);
             echo $agent->soldecongeshtml($fonctions->anneeref() - $previous);
         }
         echo $agent->affichecommentairecongehtml();
@@ -1382,6 +1494,11 @@
         function showhideperiodeoblig()
         {
             var select = document.getElementById('listetype');
+
+            if (!select)
+            {
+                return;
+            }
             //console.log(select.value);
             var planningliste = document.getElementsByClassName('<?php echo trim(planningelement::HTML_CLASS_PERIODEOBLIGATOIRE); ?>');
             if (planningliste.length>0)
@@ -1426,7 +1543,11 @@
         // On déclenche l'évènement onchange pour initialiser la classe du <select>
         var event = document.createEvent('HTMLEvents');
         event.initEvent('change', false, true); // onchange event 
-        listetype.dispatchEvent(event);
+        var listetype=document.getElementById("listetype");
+        if (listetype)
+        {
+            listetype.dispatchEvent(event);
+        }
     </script>    
     
 <!--

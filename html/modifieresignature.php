@@ -528,6 +528,10 @@
         if ($esignatureradioid . "" != '')
         {
             $esignature = new esignature($dbcon);
+            $currentstep = $esignature->get_signrequest_currentstep($esignatureradioid);
+            // La numérotation de currentstep commence à 0.
+            //var_dump("L'étape courante est : $currentstep");
+
             $recipientstab = $esignature->get_signrequest_recipients($esignatureradioid);
             if (is_string($recipientstab))
             {
@@ -557,8 +561,16 @@
                 echo "</thead><tbody>";
                 foreach($stepstatustab as $stepindex => $stepstatus)
                 {
+                    // ATTENTION : stepindex commence à 0 -> nbre d'étape -1
                     foreach($recipientstab[$stepindex] as $recipientindex => $recipient)
                     {
+                        // Si l'étape $stepindex est inférieure à $currentstep alors on ne peut pas modifier les signataires
+                        // car l'étape est déjà finie ! On positionne donc $recipient->hassigned à TRUE pour empécher la modification
+                        if ($stepindex < $currentstep)
+                        {
+                            $recipient->hassigned = true;
+                        }
+
                         echo "<tr class='bulleinfo'>";
                         echo "<th scope='row' class='cellulesimple numetape' data-tip=" . ($stepindex+1) . ">Etape " . ($stepindex+1) . "</th>";
                         echo "<td class='cellulesimple identiteagent'>" . $recipient->prenom . " " . $recipient->nom . "</td>";
@@ -589,8 +601,8 @@
                           	                          wsParams: { filter_eduPersonAffiliation: "employee|staff" } });
                             </script>
 <?php
-                        echo "<input type='button' id='replacerecipientbutton' name='replacerecipientbutton' class='g2tbouton g2tvalidebouton' value='Enregistrer' onclick='click_element(\"$idintervenant\");'>";
-                        echo "</div>";
+                            echo "<input type='button' id='replacerecipientbutton' name='replacerecipientbutton' class='g2tbouton g2tvalidebouton' value='Enregistrer' onclick='click_element(\"$idintervenant\");'>";
+                            echo "</div>";
                         }
                         else
                         {
