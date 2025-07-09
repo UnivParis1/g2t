@@ -1109,26 +1109,48 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
                     //////////////////////////////////////////////////
                     // On défini la position de chacune des signatures
-                    if (false)
-                    // if (true)
+                    // if (false)
+                    if (true)
                     {
                         $signrequestparams = array();
-                        $signrequestparamsinfo = array();
-                        $signrequestparamsinfo['xPos'] = 100;
-                        $signrequestparamsinfo['yPos'] = 500;
-                        $signrequestparamsinfo['signPageNumber'] = 3;
-                        $signrequestparams[] = $signrequestparamsinfo;
-                        $signrequestparamsinfo = array();
-                        $signrequestparamsinfo['xPos'] = 350;
-                        $signrequestparamsinfo['yPos'] = 500;
-                        $signrequestparamsinfo['signPageNumber'] = 3;
-                        $signrequestparams[] = $signrequestparamsinfo;
-                        $signrequestparamsinfo = array();
-                        $signrequestparamsinfo['xPos'] = 600;
-                        $signrequestparamsinfo['yPos'] = 500;
-                        $signrequestparamsinfo['signPageNumber'] = 3;
-                        $signrequestparams[] = $signrequestparamsinfo;
-                        $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+                        if (defined('TELETRAVAIL_SIGN_POSITION'))
+                        {
+                            $arrayposition = json_decode(TELETRAVAIL_SIGN_POSITION);
+                            foreach ((array)$arrayposition as $signinfo)
+                            {
+                                $signrequestparamsinfo = array();
+                                $signrequestparamsinfo['xPos'] = $signinfo[0];
+                                $signrequestparamsinfo['yPos'] = $signinfo[1];
+                                $signrequestparamsinfo['signPageNumber'] = $signinfo[2];;
+                                $signrequestparams[] = $signrequestparamsinfo;
+                            }
+                            if (is_null($arrayposition))
+                            {
+                                $erreur = "Erreur de syntaxe lors de la détermination des positions de signatures.";
+                            }
+                        }
+                        else
+                        {
+                            $signrequestparamsinfo = array();
+                            $signrequestparamsinfo['xPos'] = 80;
+                            $signrequestparamsinfo['yPos'] = 475;
+                            $signrequestparamsinfo['signPageNumber'] = 3;
+                            $signrequestparams[] = $signrequestparamsinfo;
+                            $signrequestparamsinfo = array();
+                            $signrequestparamsinfo['xPos'] = 300;
+                            $signrequestparamsinfo['yPos'] = 475;
+                            $signrequestparamsinfo['signPageNumber'] = 3;
+                            $signrequestparams[] = $signrequestparamsinfo;
+                            $signrequestparamsinfo = array();
+                            $signrequestparamsinfo['xPos'] = 509;
+                            $signrequestparamsinfo['yPos'] = 475;
+                            $signrequestparamsinfo['signPageNumber'] = 3;
+                            $signrequestparams[] = $signrequestparamsinfo;
+                        }
+                        if (count($signrequestparams)>0)
+                        {
+                            $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+                        }
                     }
                     // Fin de la position de chacune des signatures
                     ///////////////////////////////////////////////////////
@@ -1141,7 +1163,12 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
                         // var_dump("Param Avant = "); var_dump($params);
                     }
-                    if (count($taberrorcheckmail) > 0)
+                    if ($erreur <> "")
+                    {
+                        // On a eu une erreur de syntaxe dans le décodage des positions des signature => On ne doit rien faire 
+                        echo $fonctions->showmessage(fonctions::MSGERROR,$erreur);
+                    }
+                    else if (count($taberrorcheckmail) > 0)
                     {
                         // var_dump("errorcheckmail = $errorcheckmail");
                         $errorcheckmailstr = '';

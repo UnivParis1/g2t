@@ -148,6 +148,7 @@
         
     require ("includes/menu.php");
 
+
     // var_dump($_POST);
 //    echo "<br>" . print_r($_POST,true);
 //    echo "<br><br><br>";
@@ -395,10 +396,63 @@
                     'targetUrls' => array("$full_g2t_ws_url"),
                     'formDatas' =>  json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
                 );
-	            	            	
+
+                //////////////////////////////////////////////////
+                // On défini la position de chacune des signatures
+                // if (false)
+                if (true)
+                {
+                    $signrequestparams = array();
+                    if (defined('ALIMENTATIONCET_SIGN_POSITION'))
+                    {
+                        $arrayposition = json_decode(ALIMENTATIONCET_SIGN_POSITION);
+                        foreach ((array)$arrayposition as $signinfo)
+                        {
+                            $signrequestparamsinfo = array();
+                            $signrequestparamsinfo['xPos'] = $signinfo[0];
+                            $signrequestparamsinfo['yPos'] = $signinfo[1];
+                            $signrequestparamsinfo['signPageNumber'] = $signinfo[2];;
+                            $signrequestparams[] = $signrequestparamsinfo;
+                        }
+                        if (is_null($arrayposition))
+                        {
+                            $erreur = "Erreur de syntaxe lors de la détermination des positions de signatures.";
+                        }
+                    }
+                    else
+                    {
+                        $signrequestparamsinfo = array();
+                        $signrequestparamsinfo['xPos'] = 95;
+                        $signrequestparamsinfo['yPos'] = 919;
+                        $signrequestparamsinfo['signPageNumber'] = 1;
+                        $signrequestparams[] = $signrequestparamsinfo;
+                        $signrequestparamsinfo = array();
+                        $signrequestparamsinfo['xPos'] = 298;
+                        $signrequestparamsinfo['yPos'] = 919;
+                        $signrequestparamsinfo['signPageNumber'] = 1;
+                        $signrequestparams[] = $signrequestparamsinfo;
+                        $signrequestparamsinfo = array();
+                        $signrequestparamsinfo['xPos'] = 500;
+                        $signrequestparamsinfo['yPos'] = 919;
+                        $signrequestparamsinfo['signPageNumber'] = 1;
+                        $signrequestparams[] = $signrequestparamsinfo;
+                    }
+                    if (count($signrequestparams)>0)
+                    {
+                        $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+                    }
+                }
+                // Fin de la position de chacune des signatures
+                ///////////////////////////////////////////////////////
+
                 $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
 
-            	if (count($taberrorcheckmail) > 0)
+                if ($erreur <> "")
+                {
+                    // On a eu une erreur de syntaxe dans le décodage des positions des signature => On ne doit rien faire 
+                    echo $fonctions->showmessage(fonctions::MSGERROR,$erreur);
+                }
+            	elseif (count($taberrorcheckmail) > 0)
             	{
             	    // var_dump("errorcheckmail = $errorcheckmail");
             	    $errorcheckmailstr = '';
