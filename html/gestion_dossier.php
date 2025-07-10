@@ -1027,11 +1027,14 @@
     select_tag.dispatchEvent(e);
 
     var select_tag = document.getElementById('resp_mail[<?php echo $structure->id()?>]');
-    select_tag.addEventListener('change', () =>
-        resp_mode_change_<?php echo $structure->id(); ?>()
-        );
-    var e = new Event("change");
-    select_tag.dispatchEvent(e);
+    if (select_tag)
+    {
+        select_tag.addEventListener('change', () =>
+            resp_mode_change_<?php echo $structure->id(); ?>()
+            );
+        var e = new Event("change");
+        select_tag.dispatchEvent(e);
+    }
 </script>
 <?php
                 echo "<table><tbody>";
