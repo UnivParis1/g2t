@@ -397,54 +397,10 @@
                     'formDatas' =>  json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
                 );
 
-                //////////////////////////////////////////////////
-                // On défini la position de chacune des signatures
-                // if (false)
-                if (true)
-                {
-                    $signrequestparams = array();
-                    if (defined('ALIMENTATIONCET_SIGN_POSITION'))
-                    {
-                        $arrayposition = json_decode(ALIMENTATIONCET_SIGN_POSITION);
-                        foreach ((array)$arrayposition as $signinfo)
-                        {
-                            $signrequestparamsinfo = array();
-                            $signrequestparamsinfo['xPos'] = $signinfo[0];
-                            $signrequestparamsinfo['yPos'] = $signinfo[1];
-                            $signrequestparamsinfo['signPageNumber'] = $signinfo[2];;
-                            $signrequestparams[] = $signrequestparamsinfo;
-                        }
-                        if (is_null($arrayposition))
-                        {
-                            $erreur = "Erreur de syntaxe lors de la détermination des positions de signatures.";
-                        }
-                    }
-                    else
-                    {
-                        $signrequestparamsinfo = array();
-                        $signrequestparamsinfo['xPos'] = 95;
-                        $signrequestparamsinfo['yPos'] = 919;
-                        $signrequestparamsinfo['signPageNumber'] = 1;
-                        $signrequestparams[] = $signrequestparamsinfo;
-                        $signrequestparamsinfo = array();
-                        $signrequestparamsinfo['xPos'] = 298;
-                        $signrequestparamsinfo['yPos'] = 919;
-                        $signrequestparamsinfo['signPageNumber'] = 1;
-                        $signrequestparams[] = $signrequestparamsinfo;
-                        $signrequestparamsinfo = array();
-                        $signrequestparamsinfo['xPos'] = 500;
-                        $signrequestparamsinfo['yPos'] = 919;
-                        $signrequestparamsinfo['signPageNumber'] = 1;
-                        $signrequestparams[] = $signrequestparamsinfo;
-                    }
-                    if (count($signrequestparams)>0)
-                    {
-                        $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
-                    }
-                }
-                // Fin de la position de chacune des signatures
-                ///////////////////////////////////////////////////////
-
+                $xmlfilename = "";
+                $dbconstante = "ALIMENTATIONCET_XML";
+                if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
+                $params['xmlfilename'] = "$xmlfilename";
                 $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
 
                 if ($erreur <> "")
@@ -785,6 +741,10 @@
 
                 if (is_null($cree_demande))
                 {
+                    $xmlfilename = "";
+                    $dbconstante = "ALIMENTATIONCET_XML";
+                    if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
+                    $params['xmlfilename'] = "$xmlfilename";
                     $taberrorcheckmail = $fonctions->checksignatairecetliste($params,$agent);
                     if (count($taberrorcheckmail) > 0)
                     {

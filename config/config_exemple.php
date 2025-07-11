@@ -136,22 +136,6 @@ define('LDAP_AGENT_ADDRESS_ATTR', 'postaladdress');
 define('LDAP_AGENT_PERSO_ADDRESS_ATTR', 'homepostaladdress');
 define('LDAP_AGENT_UID_ATTR', 'uid');
 
-define('LDAP_AGENT_EPPN_ATTR', 'edupersonprincipalname'); /* OBSOLETE */
-define('LDAP_AGENT_RIFSEEP_ATTR', 'supannactivite'); /* OBSOLETE */
-define('LDAPMEMBERATTR', 'memberof'); /* OBSOLETE */
-define('LDAPGROUPNAME', 'cn=applications.g2t.users,ou=groups,dc=etab,dc=fr'); /* OBSOLETE */
-define('LDAP_STRUCT_SEARCH_BASE', 'ou=structures,dc=etab,dc=fr'); /* OBSOLETE */
-define('LDAP_STRUCT_CODE_ENTITE_ATTR', 'supanncodeentite'); /* OBSOLETE */
-define('LDAP_STRUCT_IS_INCLUDED_ATTR', 'up1flags'); /* OBSOLETE */
-define('LDAP_STRUCT_BUSINESSCATE_ATTR', 'businesscategory'); /* OBSOLETE */
-define('LDAP_FONCTION_SEARCH_BASE', 'ou=supannrolegenerique,ou=tables,dc=etab,dc=fr'); /* OBSOLETE */
-define('LDAP_FONCTION_POIDS_ATTR', 'up1flags'); /* OBSOLETE */
-define('LDAP_RIFSEEP_SEARCH_BASE','ou=supannActivite,ou=tables,dc=etab,dc=fr'); /* OBSOLETE */
-define('LDAP_RIFSEEP_NAME_ATTR','up1tablekey'); /* OBSOLETE */
-define('LDAP_RIFSEEP_LIBELLE_ATTR','displayname'); /* OBSOLETE */
-define('LDAP_GROUP_SEARCHBASE','ou=groups,dc=etab,dc=fr'); /* OBSOLETE */
-define('LDAP_GROUP_CN_ATTR','cn'); /* OBSOLETE */
-
 // Connexion au serveur CAS
 define('CASSERVER', 'cas.etab.fr');
 define('CASPATH', '/cas');
@@ -167,6 +151,15 @@ define('URLCALENDAR', 'https://courrier-test.etab.fr/kronolith/lib/import-icals.
 // URL d'accès au serveur eSignature
 define('ESIGNATUREURL', 'https://esignature-ppd.etab.fr');
 define('ESIGNATURETOKEN','');
+define('IDWORKFLOWOPTIONCET','');
+define('IDWORKFLOWALIMCET','');
+define('IDWORKFLOWTELETRAVAIL','');
+define('TELETRAVAIL_MODELE', 'Formulaire_Teletravail_v2.pdf');
+define('ALIMENTATIONCET_MODELE', 'Formulaire_CET_Alimentation.pdf');
+define('OPTIONCET_MODELE', 'Formulaire_CET_Option.pdf');
+define('TELETRAVAIL_XML','Circuit_Teletravail_exemple.xml');
+define('ALIMENTATIONCET_XML','Circuit_Alimentation_CET_exemple.xml');
+define('OPTIONCET_XML','Circuit_Option_CET_exemple.xml');
 
 // Adresse mail du collecteur GLPI pour la création d'un ticket suite validation de la convention télétravail
 define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@etab.fr');

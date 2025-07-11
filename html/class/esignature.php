@@ -72,6 +72,13 @@ class esignaturelog
     }
 }
 
+class signatureposition
+{
+    public $x = '';
+    public $y = '';
+    public $page = '';
+}
+
 class stepinfos
 {
     public const PDFSIGNATURE = 'pdfImageStamp';
@@ -87,7 +94,13 @@ class stepinfos
     public $obligatoire = true;
     public $attachmentRequire = false;
     public $signataires = array();
+    public $signatureposition = null; 
     private $attachmentAlert = true;
+
+    function __construct()
+    {
+        $signatureposition = new signatureposition;
+    }
 
     public function converttoarray() : array
     {
@@ -994,6 +1007,23 @@ class esignature
         // On récupère le premier noeux 'CIRCUITS' (puisque d'après la DTD, il est présent et qu'il doit y avoir qu'un seul)
         $circuitsrootnode = $xmlpath->query('CIRCUITS')[0];
         //var_dump($circuitsrootnode->nodeName);
+
+        // On va récupérer tous les noeux SIGNATURES (pour faire un tableau des positions)
+        $arraysignatureposition = array();
+        $signatureslist  = $xmlpath->query('SIGNATURES',$circuitsrootnode);
+        foreach ($signatureslist as $signatures)
+        {
+            $positionlist  = $xmlpath->query('POSITION',$signatures);
+            foreach ($positionlist as $position)
+            {
+                $signatureposition = new signatureposition();
+                $signatureposition->x  = $xmlpath->query('X',$position)[0]->nodeValue;
+                $signatureposition->y  = $xmlpath->query('Y',$position)[0]->nodeValue;
+                $signatureposition->page  = $xmlpath->query('PAGE',$position)[0]->nodeValue;
+                $arraysignatureposition[] = $signatureposition;
+            }
+        }
+
          // On récupère toutes les noeux 'CIRCUIT' (=> descriptions de chaque circuit)
         $circuitlist  = $xmlpath->query('CIRCUIT',$circuitsrootnode);
         $selectedcircuit = null;
@@ -1309,6 +1339,12 @@ class esignature
                     $extrainfos->obligatoire = $this->fonctions->convertvaluetobool($obligatoire);
                     $extrainfos->attachmentRequire = $this->fonctions->convertvaluetobool($piecejointeoblig);
                     $extrainfos->signataires = $signatairearray[$numero];
+                    $extrainfos->signatureposition = null;
+                    // Si la signature/le visa doit être visible => On mémorise la position
+                    if (in_array($typesignature, array(stepinfos::PDFSIGNATURE, stepinfos::VISA)))
+                    {
+                        $extrainfos->signatureposition = array_shift($arraysignatureposition);
+                    }
                     $stepinfos[$numero] = $extrainfos;
                 }
             }

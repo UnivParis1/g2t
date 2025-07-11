@@ -3004,10 +3004,17 @@ class fonctions
 
     public function checksignatairecetliste(&$params, agent $agent)
     {
+        if (!isset($params['xmlfilename']) or trim($params['xmlfilename'] . '') == '')
+        {
+            $taberrorcheckmail['prob_fichier'] = "Aucun nom de fichier XML n'est défini pour le CET (option et/ou alimentation).";
+            $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+            return $taberrorcheckmail;
+        }
+
         $maxniveau = 0;
         $esignature = new esignature($this->dbconnect);
         $extrainfostab = array();
-        $tabsignataire = $esignature->createstep($agent,"Circuit_CET.xml", $extrainfostab);
+        $tabsignataire = $esignature->createstep($agent,trim($params['xmlfilename'] . ''), $extrainfostab);
 
         if (count($tabsignataire)==0)
         {
@@ -3108,15 +3115,27 @@ class fonctions
         {
             $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
         }
+        $erreur = $this->setsignatureposition($params);
+        if ($erreur != '')
+        {
+            $taberrorcheckmail['erreur_position_signature'] = $erreur;
+        }
         return $taberrorcheckmail;
     }
 
     public function checksignataireteletravailliste(&$params, agent $agent)
     {
+        if (!isset($params['xmlfilename']) or trim($params['xmlfilename'] . '') == '')
+        {
+            $taberrorcheckmail['prob_fichier'] = "Aucun nom de fichier XML n'est défini pour le télétravail.";
+            $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+            return $taberrorcheckmail;
+        }
+
         $maxniveau = 0;
         $esignature = new esignature($this->dbconnect);
         $extrainfostab = array();
-        $tabsignataire = $esignature->createstep($agent,"Circuit_Teletravail.xml", $extrainfostab);
+        $tabsignataire = $esignature->createstep($agent,trim($params['xmlfilename'] . ''), $extrainfostab);
         if (count($tabsignataire)==0)
         {
             $taberrorcheckmail['prob_niveau'] = "Aucun niveau de signature n'a pu être déterminé.";
@@ -3299,8 +3318,48 @@ class fonctions
         {
             $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
         }
+        $erreur = $this->setsignatureposition($params);
+        if ($erreur != '')
+        {
+            $taberrorcheckmail['erreur_position_signature'] = $erreur;
+        }
         return $taberrorcheckmail;
+    }
 
+    public function setsignatureposition(array &$params) :string
+    {
+        //////////////////////////////////////////////////
+        // On défini la position de chacune des signatures
+        $erreur = '';
+        // if (false)
+        if (true)
+        {
+            $signrequestparams = array();
+            foreach ($params['levelextrainfos'] as $extrainfos)
+            {
+                if (!is_null($extrainfos->signatureposition))
+                {
+                    $signrequestparamsinfo = array();
+                    $signrequestparamsinfo['xPos'] = $extrainfos->signatureposition->x;
+                    $signrequestparamsinfo['yPos'] = $extrainfos->signatureposition->y;
+                    $signrequestparamsinfo['signPageNumber'] = $extrainfos->signatureposition->page;
+                    $signrequestparams[] = $signrequestparamsinfo;
+                    // error_log(basename(__FILE__) . $this->stripAccents(" Création des positions à partir des extrainfos " . var_export($signrequestparamsinfo,true)));
+                }
+            }
+            if (count($signrequestparams)>0)
+            {
+                $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
+            }
+            else
+            {
+                $erreur = "Aucune position de signature n'est définie.";
+                error_log(basename(__FILE__) . $this->stripAccents(" $erreur"));
+            }
+        }
+        // Fin de la position de chacune des signatures
+        ///////////////////////////////////////////////////////
+        return $erreur;
     }
   
     

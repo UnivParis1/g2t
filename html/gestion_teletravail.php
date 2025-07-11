@@ -254,6 +254,10 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     if (!is_null($agentid) and $esignatureactive)
     {
         //echo "Avant la vérification du circuit => numéro 1 <br>";
+        $xmlfilename = "";
+        $dbconstante = "TELETRAVAIL_XML";
+        if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
+        $params['xmlfilename'] = "$xmlfilename";
         $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
     }
     //var_dump($maxniveau);
@@ -826,6 +830,10 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 $teletravail->statut(teletravail::TELETRAVAIL_ATTENTE);
                 $teletravail->statutresponsable(teletravail::TELETRAVAIL_ATTENTE);
                 $params = array();
+                $xmlfilename = "";
+                $dbconstante = "TELETRAVAIL_XML";
+                if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
+                $params['xmlfilename'] = "$xmlfilename";
                 $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
                 if (count($taberrorcheckmail) > 0)
                 {
@@ -1107,61 +1115,17 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         'formDatas' => json_encode($formsdata,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
                     );
 
-                    //////////////////////////////////////////////////
-                    // On défini la position de chacune des signatures
-                    // if (false)
-                    if (true)
-                    {
-                        $signrequestparams = array();
-                        if (defined('TELETRAVAIL_SIGN_POSITION'))
-                        {
-                            $arrayposition = json_decode(TELETRAVAIL_SIGN_POSITION);
-                            foreach ((array)$arrayposition as $signinfo)
-                            {
-                                $signrequestparamsinfo = array();
-                                $signrequestparamsinfo['xPos'] = $signinfo[0];
-                                $signrequestparamsinfo['yPos'] = $signinfo[1];
-                                $signrequestparamsinfo['signPageNumber'] = $signinfo[2];;
-                                $signrequestparams[] = $signrequestparamsinfo;
-                            }
-                            if (is_null($arrayposition))
-                            {
-                                $erreur = "Erreur de syntaxe lors de la détermination des positions de signatures.";
-                            }
-                        }
-                        else
-                        {
-                            $signrequestparamsinfo = array();
-                            $signrequestparamsinfo['xPos'] = 80;
-                            $signrequestparamsinfo['yPos'] = 475;
-                            $signrequestparamsinfo['signPageNumber'] = 3;
-                            $signrequestparams[] = $signrequestparamsinfo;
-                            $signrequestparamsinfo = array();
-                            $signrequestparamsinfo['xPos'] = 300;
-                            $signrequestparamsinfo['yPos'] = 475;
-                            $signrequestparamsinfo['signPageNumber'] = 3;
-                            $signrequestparams[] = $signrequestparamsinfo;
-                            $signrequestparamsinfo = array();
-                            $signrequestparamsinfo['xPos'] = 509;
-                            $signrequestparamsinfo['yPos'] = 475;
-                            $signrequestparamsinfo['signPageNumber'] = 3;
-                            $signrequestparams[] = $signrequestparamsinfo;
-                        }
-                        if (count($signrequestparams)>0)
-                        {
-                            $params['signRequestParamsJsonString'] = json_encode($signrequestparams); //,JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE)
-                        }
-                    }
-                    // Fin de la position de chacune des signatures
-                    ///////////////////////////////////////////////////////
-
                     $taberrorcheckmail = array();
                     if ($esignatureactive)
                     {
                         //echo "Avant la vérification du circuit => numéro 2 <br>";
-                        //var_dump("Param Avant = "); var_dump($params);
-                        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
                         // var_dump("Param Avant = "); var_dump($params);
+                        $xmlfilename = "";
+                        $dbconstante = "TELETRAVAIL_XML";
+                        if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
+                        $params['xmlfilename'] = "$xmlfilename";
+                        $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
+                        // var_dump("Param Après = "); var_dump($params);
                     }
                     if ($erreur <> "")
                     {

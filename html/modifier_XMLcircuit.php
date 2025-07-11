@@ -94,7 +94,7 @@
     
     require ("includes/menu.php");
 
-    //var_dump($_POST);
+    // var_dump($_POST);
 
     function isEqualNode(DOMNode $sourcenode, DOMNode $comparenode) :bool
     {
@@ -691,14 +691,23 @@
     // $xmldom->preserveWhiteSpace = false;
     // $xmldom->formatOutput = true;
 
-    $XMLfiles = array('Circuit_Teletravail.xml' => "Circuit télétravail",
-                      'Circuit_CET.xml' => "Circuit CET");
+    $arrayXMLFileConstName = array('TELETRAVAIL_XML','ALIMENTATIONCET_XML','OPTIONCET_XML');
+    $XMLfiles = array();
+    foreach($arrayXMLFileConstName as $dbconstante)
+    {
+        $xmlfilename = "";
+        if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
+        if ($xmlfilename != "")
+        {
+            $XMLfiles[] = "$xmlfilename";
+        }
+    }
 
     echo "<form name='selectcircuit' id='selectcircuit' method='post'>";
     echo "Sélectionnez un circuit pour le modifier : ";
     echo "<select id='circuitpath' name='circuitpath'>";
     echo "<option value=''>--- Sélectionnez un circuit ---</option>";
-    foreach($XMLfiles as $XMLfilename => $description)
+    foreach($XMLfiles as $XMLfilename)
     {
         // On cherche le fichier XML représentant le circuit
         $XMLfilename = $fonctions->documentpath() . "/" . $XMLfilename;
@@ -724,7 +733,6 @@
             echo $fonctions->showmessage(fonctions::MSGERROR, "Le fichier " . basename($XMLfilename) . " n'est pas un fichier XML valide => Vérifiez la DTD.");
             exit;
         }
-        echo "<optgroup label='$description' filepath='$XMLfilename'>";
         // Attention : Le DOM doit être chargé au moment de la création du DOMXPath
         // Sinon, il ne trouve aucun noeux
         $xmlpath = new DOMXPath($xmldom);
@@ -733,11 +741,15 @@
 
         $rootnode = $xmlpath->query('CIRCUITS')[0];
 
+        $descriptionnode = $xmlpath->query('DESCRIPTION', $rootnode)[0];
+        $description = $descriptionnode->nodeValue;
+        echo "<optgroup label='$description' filepath='$XMLfilename'>";
+
         $circuitlist = $xmlpath->query('CIRCUIT', $rootnode);
         foreach($circuitlist as $key => $circuit)
         {
             $selected = '';
-            if ($circuitpath == $circuit->getNodePath())
+            if ($circuitpath == $circuit->getNodePath() and realpath($filename) == realpath($XMLfilename))
             {
                 $selected = ' selected ';
             }
