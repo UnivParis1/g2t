@@ -126,6 +126,7 @@
 //        if (defined('TAB_ANIMATION') and stripos($structure->id(),'DGH')===0)  // Ne fonctionne que pour la DSIUN et ses sous-structures dont le code commence par DGH
         if (defined('TAB_ANIMATION'))
         {
+            echo "<div class='divanimation' >"; //style='display:none;'
             $currentyear = date('Y');
             $currentdate = date('md');
             $script_actif = false;
@@ -290,6 +291,16 @@
                     echo "</div>";
                 }
             }
+            echo "</div>";
+?>
+        <script>
+            var divanimation = document.querySelector('.divanimation');
+            if (divanimation)
+            {
+                divanimation.style.visibility = 'hidden';
+            }
+        </script>
+<?php
         }
     } 
     else
@@ -363,8 +374,13 @@
         if (animationliste.length > 0 )
         {
             var body = document.getElementsByTagName('body')[0];
-            var menu = document.getElementById('mainmenu');
-            var rect = menu.getBoundingClientRect();
+            var rect = new DOMRect(300,100,1,1);
+            // On cherche la position du menu principal => objet avec la classe mainmenu
+            var menu = document.querySelector('.mainmenu');
+            if (menu)
+            {
+                var rect = menu.getBoundingClientRect();
+            }
             var animbuttonoff = document.createElement("button");
             animbuttonoff.setAttribute("id","animbuttonoff");
             animbuttonoff.setAttribute("class","g2tbouton g2tboutonwidthauto onoffanimationbtn");
@@ -709,6 +725,12 @@
         }
 ?>
     };
+    var divanimation = document.querySelector('.divanimation');
+    if (divanimation)
+    {
+        divanimation.style.visibility = 'visible';
+    }
+
 
 </script>
 <?php

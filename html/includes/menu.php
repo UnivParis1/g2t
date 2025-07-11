@@ -974,98 +974,104 @@
 
 ?>
 
+<link rel="stylesheet" type="text/css" href="css-g2t/menubar-navigation.css?<?php echo filemtime('css-g2t/menubar-navigation.css') ?>" media="all"></link>
+<script src="javascript/menubar-navigation.js?<?php echo filemtime('javascript/menubar-navigation.js') ?>"></script>
 
-<div id="mainmenu">
-    <ul class="niveau1">
-<!--        <li onclick="">MENU AGENT -->
-        <li>MENU AGENT
-            <ul class="niveau2">
-                <li onclick='document.accueil.submit();'>
-                    <form name='accueil' method='post' action="index.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.accueil.submit();">Accueil</a>
-                </li>
+<div name="mainmenunew" id="mainmenunew" class="mainmenu">
+    <nav aria-label="G2T Menu Principal">
+        <ul class="menubar-navigation niveau1" role="menubar" aria-label="G2T Menu Principal">
+<!---------------------------------------------------
+                  Menu Agent  
+---------------------------------------------------->
+            <li role="none">
+                <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#agent">
+                    MENU AGENT
+                    <svg xmlns="http://www.w3.org/2000/svg" class="down" width="12" height="9" viewBox="0 0 12 9">
+                        <polygon points="1 0, 11 0, 6 8"></polygon>
+                    </svg>
+                </a>
+                <ul role="menu" aria-label="agent" class="niveau2">
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'index.php'; ?>
+                        <form name='accueil' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Accueil</a>
+                    </li>
 <?php
     if (!$agentstructure->estbibliotheque())
     {
 ?>
-                <li onclick='document.planning.submit();' <?php echo $hidemenu; ?> >
-                    <form name='planning' method='post' action="affiche_planning.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form>
-                    <a href="javascript:document.planning.submit();">Planning de l'agent</a>
-                </li>
-                <li onclick='document.dem_conge.submit();' <?php echo $hidemenu; ?> >
-                    <form name='dem_conge' method='post' action="etablir_demande.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="typedemande" value="conges">
-                    </form> 
-                    <a href="javascript:document.dem_conge.submit();">Saisir une demande de congé</a>
-                </li>
-                <li onclick='document.dem_absence.submit();'>
-                    <form name='dem_absence' method='post' action="etablir_demande.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="typedemande" value="absence">
-                    </form>
-<!--
-                    <a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence ou de télétravail</a>
--->
-                    <a href="javascript:document.dem_absence.submit();">Saisir une demande d'absence</a>
-                </li>
-                <li onclick='document.agentannulation.submit();'>
-                    <form name='agentannulation' method='post' action="gestion_demande.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                        <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>">
-                    </form>
-                    <a href="javascript:document.agentannulation.submit();">Annulation de demandes</a>
-                </li>
-                <li onclick='document.agent_tpspartiel.submit();'>
-                    <form name='agent_tpspartiel' method='post' action="saisir_tpspartiel.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
-                    </form>
-                    <a href="javascript:document.agent_tpspartiel.submit();">Gestion des temps partiels</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_planning.php'; ?>
+                        <form name='planning' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de l'agent</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'etablir_demande.php'; ?>
+                        <form name='dem_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="typedemande" value="conges">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'etablir_demande.php'; ?>
+                        <form name='dem_absence' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="typedemande" value="absence">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_demande.php'; ?>
+                        <form name='agentannulation' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de demandes</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'saisir_tpspartiel.php'; ?>
+                        <form name='agent_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des temps partiels</a>
+                    </li>
 <?php                                    
     }
 ?>
-                <li onclick='document.agent_gest_teletravail.submit();'>
-                    <form name='agent_gest_teletravail' method='post' action="gestion_teletravail.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="">
-                    </form>
-                    <a href="javascript:document.agent_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_teletravail.php'; ?>
+                        <form name='agent_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
+                    </li>
 <?php
     if (strcasecmp((string)$agentstructure->affichetoutagent(), "o") == 0 and !$agentstructure->estbibliotheque()) 
-    // if ($user->structure()->affichetoutagent() == "o")
     {
 ?>
-                <li onclick='document.agent_struct_planning.submit();' <?php echo $hidemenu; ?> >
-                    <form name='agent_struct_planning' method='post' action="structure_planning.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                        <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
-                        <input type="hidden" name="previous" value="no">
-                    </form>
-                    <a href="javascript:document.agent_struct_planning.submit();">Planning de la structure</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'structure_planning.php'; ?>
+                        <form name='agent_struct_planning' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
+                            <input type="hidden" name="previous" value="no">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
+                    </li>
 <?php
     }
 ?>	
 <?php
-    // Si la date limite d'utilisation des reliquats est dépassée on n'affiche pas l'alimentation et le droit d'option sur CET
-    //$constante = 'FIN_REPORT';
-    //if ($fonctions->testexistdbconstante($constante))
-    //{
-    //    $res = $fonctions->liredbconstante($constante);
-    //    $datereliq = ($fonctions->anneeref()+1).$res;
-    //    if (date("Ymd") <= $datereliq) 
-    //    {
-
     $constante = 'DEBUTALIMCET';
     $debutcet = '19000101';
     if ($fonctions->testexistdbconstante($constante))
@@ -1076,21 +1082,19 @@
     $fincet = '19000101';
     if ($fonctions->testexistdbconstante($constante))
     {
-        //$fincet = $fonctions->liredbconstante($constante);
         $fincet = date('Ymd',strtotime('+3 month',strtotime($fonctions->liredbconstante($constante))));
-        //var_dump("fincet ALIM = $fincet");
     }
     if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet and !$agentstructure->estbibliotheque())
     {    
-
 ?>  
-                <li onclick='document.alim_cet.submit();'>
-                    <form name='alim_cet' method='post' action="gerer_alimentationCET.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-                    </form>
-                    <a href="javascript:document.alim_cet.submit();">Alimentation du CET</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gerer_alimentationCET.php'; ?>
+                        <form name='alim_cet' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Alimentation du CET</a>
+                    </li>
 <?php
     }
     $constante = 'DEBUTOPTIONCET';
@@ -1103,21 +1107,19 @@
     $fincet = '19000101';
     if ($fonctions->testexistdbconstante($constante))
     {
-        //$fincet = $fonctions->liredbconstante($constante);
         $fincet = date('Ymd',strtotime('+3 month',strtotime($fonctions->liredbconstante($constante))));
-        //var_dump("fincet OPTION = $fincet");
     }
     if (date("Ymd")>=$debutcet and date("Ymd")<=$fincet and !$agentstructure->estbibliotheque())
     {    
-
 ?>
-                <li onclick='document.option_cet.submit();'>
-                    <form name='option_cet' method='post' action="gerer_optionCET.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
-                    </form>
-                    <a href="javascript:document.option_cet.submit();">Droit d'option sur CET</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gerer_optionCET.php'; ?>
+                        <form name='option_cet' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Droit d'option sur CET</a>
+                    </li>
 <?php
     }
     $dbconstante = 'URL_G2TMANUEL';
@@ -1126,50 +1128,58 @@
     if (trim($urlg2tmanuel)!='')
     {
 ?>
-                <li onclick='document.agent_aide.submit();'>
-                    <form name='agent_aide' method='get' TARGET=_BLANK action="<?php echo $urlg2tmanuel; ?>">
-                    </form> 
-                    <a href="javascript:document.agent_aide.submit();">Manuel utilisateur</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <form name='agent_aide' method='get' TARGET=_BLANK action="<?php echo $urlg2tmanuel; ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo $urlg2tmanuel; ?>" onclick="this.parentNode.click(); return false;">Manuel utilisateur</a>
+                    </li>
 <?php
     }
 ?>
-            </ul>
-        </li>
-    </ul>
-    
+                </ul>
+            </li>
+<!---------------------------------------------------
+                  Menu Consultant  
+---------------------------------------------------->
 <?php
     if ($user->estconsultant()) 
     {
 ?>
-    <ul class="niveau1">
-        <li>MENU CONSULTANT
-            <ul class="niveau2">
-                <li onclick='document.consult_valid_conge.submit();'>
-                    <form name='consult_valid_conge' method='post' action="valider_demande.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>"> 
-                        <input type="hidden" name="previous" value="no">
-                    </form> 
-                    <a href="javascript:document.consult_valid_conge.submit();">Avis sur des demandes en attente</a>
-                </li>
-                <li onclick='document.consult_struct_planning.submit();'>
-                    <form name='consult_struct_planning' method='post' action="structure_planning.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>">
-                        <input type="hidden" name="previous" value="no">
-                    </form> 
-                    <a href="javascript:document.consult_struct_planning.submit();">Planning</a>
-                </li>
-            </ul>
-        </li>
-    </ul>
-   
+            <li role="none">
+                <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#consultant">
+                    MENU CONSULTANT
+                    <svg xmlns="http://www.w3.org/2000/svg" class="down" width="12" height="9" viewBox="0 0 12 9">
+                        <polygon points="1 0, 11 0, 6 8"></polygon>
+                    </svg>
+                </a>
+                <ul role="menu" aria-label="consultant" class="niveau2">
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'valider_demande.php'; ?>
+                        <form name='consult_valid_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>"> 
+                            <input type="hidden" name="previous" value="no">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Avis sur des demandes en attente</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'structure_planning.php'; ?>
+                        <form name='consult_struct_planning' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>">
+                            <input type="hidden" name="previous" value="no">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning</a>
+                    </li>
+                </ul>
+            </li>
 <?php
     }
-    // Fin du menu Consultant
-    
-    
+?>
+<!---------------------------------------------------
+                  Menu Responsable  
+---------------------------------------------------->
+<?php
     if ($user->estresponsable()) 
     {
         $structrespliste = $user->structrespliste();
@@ -1183,111 +1193,123 @@
             }
         }
 ?> 
-    <ul class="niveau1">
-<!--        <li onclick="">MENU RESPONSABLE -->
-        <li>MENU RESPONSABLE
-            <ul class="niveau2">
+            <li role="none">
+                <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#responsable">
+                    MENU RESPONSABLE
+                    <svg xmlns="http://www.w3.org/2000/svg" class="down" width="12" height="9" viewBox="0 0 12 9">
+                        <polygon points="1 0, 11 0, 6 8"></polygon>
+                    </svg>
+                </a>
+                <ul role="menu" aria-label="Responsable" class="niveau2">
 <?php
         if (!$estrespdebibliotheque)
         {
 ?>
-                <li onclick='document.resp_parametre.submit();'>
-                    <form name='resp_parametre' method='post' action="gestion_dossier.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="action" value="modif"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
-                    </form> 
-                    <a href="javascript:document.resp_parametre.submit();">Paramétrage des agents et des structures</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_dossier.php'; ?>
+                        <form name='resp_parametre' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="action" value="modif"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des agents et des structures</a>
+                    </li>
 <?php
         }
 ?>
-                <li onclick='document.resp_gest_teletravail.submit();'>
-                    <form name='resp_gest_teletravail' method='post' action="gestion_teletravail.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
-                    </form>
-                    <a href="javascript:document.resp_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
-                </li>
-                <li class="plus"><a>Gestion de l'année en cours</a>
-                    <ul class="niveau3">
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_teletravail.php'; ?>
+                        <form name='resp_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
+                    </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#anneecourante">
+                            Gestion de l'année en cours
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="anneecourante" class="niveau3">  <!-- class="niveau3" -->
 <?php
         if (!$estrespdebibliotheque)
         {
 ?>
-                        <li onclick='document.resp_struct_planning.submit();'>
-                            <form name='resp_struct_planning' method='post' action="structure_planning.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.resp_struct_planning.submit();">Planning de la structure</a>
-                        </li>
-                        <li onclick='document.resp_valid_conge.submit();'>
-                            <form name='resp_valid_conge' method='post' action="valider_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.resp_valid_conge.submit();">Validation des demandes en attente</a>
-                        </li>
-                        <li onclick='document.resp_gest_conge.submit();'>
-                            <form name='resp_gest_conge' method='post' action="gestion_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.resp_gest_conge.submit();">Annulation de congé ou d'absence</a>
-                        </li>
-                        <li onclick='document.resp_conge.submit();'>
-                            <form name='resp_conge' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges">
-                                <input type="hidden" name="previous" value="no">
-                            </form>
-                            <a href="javascript:document.resp_conge.submit();">Saisir une demande de congé pour un agent</a>
-                        </li>
-                        <li onclick='document.resp_absence.submit();'>
-                            <form name='resp_absence' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="absence"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-<!--
-                            <a href="javascript:document.resp_absence.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
--->
-                            <a href="javascript:document.resp_absence.submit();">Saisir une demande d'absence pour un agent</a>
-                        </li>
-                        <li onclick='document.resp_ajout_conge.submit();'>
-                            <form name='resp_ajout_conge' method='post' action="ajouter_conges.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
-                            </form> 
-<!--
-                            <a href="javascript:document.resp_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
--->
-                            <a href="javascript:document.resp_ajout_conge.submit();">Gestion des jours de récupération pour un agent</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'structure_planning.php'; ?>
+                                <form name='resp_struct_planning' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_demande.php'; ?>
+                                <form name='resp_valid_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_demande.php'; ?>
+                                <form name='resp_gest_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='resp_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges">
+                                    <input type="hidden" name="previous" value="no">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='resp_absence' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="absence"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'ajouter_conges.php'; ?>
+                                <form name='resp_ajout_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des jours de récupération pour un agent</a>
+                            </li>
 <?php
             // Si on est 6 mois avant la fin de la période ==> On peut saisir des jours par anticipation
             $datetemp = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("-6month", $timestamp)); // On remonte de 6 mois
-                                                                        // echo "TimeStamp = " . $datetemp . "<br>";
             if (date("Ymd") > $datetemp) 
             {
 ?>				
-                        <li onclick='document.resp_conge_anticipe.submit();'>
-                            <form name='resp_conge_anticipe' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges"> 
-                                <input type="hidden" name="congeanticipe" value="yes">
-                            </form> 
-                            <a href="javascript:document.resp_conge_anticipe.submit();">Saisir une demande de congé par anticipation pour un agent</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='resp_conge_anticipe' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges"> 
+                                    <input type="hidden" name="congeanticipe" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé par anticipation pour un agent</a>
+                            </li>
 <?php
             }
         }
@@ -1296,107 +1318,118 @@
         if (!$estrespdebibliotheque)
         {
 ?>
-                        <li onclick='document.resp_valid_tpspartiel.submit();'>
-                            <form name='resp_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
-                            </form>
-                            <a href="javascript:document.resp_valid_tpspartiel.submit();">Validation des temps partiels</a>
-                        </li>
-                        <li onclick='document.resp_tpspartiel.submit();'>
-                            <form name='resp_tpspartiel' method='post' action="saisir_tpspartiel.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
-                            </form> <a href="javascript:document.resp_tpspartiel.submit();">Saisir le temps partiel pour un agent</a>
-                        </li>
-                        <li onclick='document.resp_aff_solde.submit();'>
-                            <form name='resp_aff_solde' method='post' action="affiche_solde.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.resp_aff_solde.submit();">Affichage du solde des agents de la structure</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_tpspartiel.php'; ?>
+                                <form name='resp_valid_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des temps partiels</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'saisir_tpspartiel.php'; ?>
+                                <form name='resp_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir le temps partiel pour un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_solde.php'; ?>
+                                <form name='resp_aff_solde' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
+                            </li>
 <?php
         }
 ?>
-                    </ul>
-                </li>
+                        </ul>
+                    </li>
 <?php
         if (!$estrespdebibliotheque)
         {
 ?>
-                <li class="plus"><a>Gestion de l'année précédente</a>
-                    <ul class="niveau3">
-                        <li onclick='document.resp_struct_planning_previous.submit();'>
-                            <form name='resp_struct_planning_previous' method='post' action="structure_planning.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.resp_struct_planning_previous.submit();">Planning de la structure</a>
-                        </li>
-                        <li onclick='document.resp_valid_conge_previous.submit();'>
-                            <form name='resp_valid_conge_previous' method='post' action="valider_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.resp_valid_conge_previous.submit();">Validation des demandes en attente</a>
-                        </li>
-                        <li onclick='document.resp_gest_conge_previous.submit();'>
-                            <form name='resp_gest_conge_previous' method='post' action="gestion_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.resp_gest_conge_previous.submit();">Annulation de congé ou d'absence</a>
-                        </li>
-                        <li onclick='document.resp_conge_previous.submit();'>
-                            <form name='resp_conge_previous' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.resp_conge_previous.submit();">Saisir une demande de congé pour un agent</a>
-                        </li>
-                        <li onclick='document.resp_absence_previous.submit();'>
-                            <form name='resp_absence_previous' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="absence"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-<!--
-                            <a href="javascript:document.resp_absence_previous.submit();">Saisir une demande d'absence ou de télétravail pour un agent</a>
--->
-                            <a href="javascript:document.resp_absence_previous.submit();">Saisir une demande d'absence pour un agent</a>
-                        </li>
-                        <li onclick='document.resp_aff_solde_previous.submit();'>
-                            <form name='resp_aff_solde_previous' method='post' action="affiche_solde.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.resp_aff_solde_previous.submit();">Affichage du solde des agents de la structure</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#anneeprecedente">
+                            Gestion de l'année précédente
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="anneeprecedente" class="niveau3">  <!-- class="niveau3" -->
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'structure_planning.php'; ?>
+                                <form name='resp_struct_planning_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_demande.php'; ?>
+                                <form name='resp_valid_conge_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_demande.php'; ?>
+                                <form name='resp_gest_conge_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='resp_conge_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='resp_absence_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="absence"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_solde.php'; ?>
+                                <form name='resp_aff_solde_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
+                            </li>
+                        </ul>
+                    </li>
 <?php
         }
-    // Un agent responsable (sens strict) peut modifier le paramétrage de la structure
-    // if ($user->estresponsable(false))
-    // {
-?> 
-<?php
-    // }
 ?>
-            </ul>
-        </li>
-    </ul> 
+                </ul>
+            </li>
 <?php
     }
+?> 
+<!------------------------------------------------------------
+                Menu Gestionnaire
+------------------------------------------------------------->
+<?php
     if ($user->estgestionnaire()) 
     {
         $structgestliste = $user->structgestliste();
@@ -1409,49 +1442,60 @@
                 break;
             }
         }
-
-
 ?>
-    <ul class="niveau1">
-<!--        <li onclick="">MENU GESTIONNAIRE -->
-            <li>MENU GESTIONNAIRE
-            <ul class="niveau2">
+            <li role="none">
+                <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#gestionnaire">
+                    MENU GESTIONNAIRE
+                    <svg xmlns="http://www.w3.org/2000/svg" class="down" width="12" height="9" viewBox="0 0 12 9">
+                        <polygon points="1 0, 11 0, 6 8"></polygon>
+                    </svg>
+                </a>
+                <ul role="menu" aria-label="Gestionnaire" class="niveau2">
 <?php
         if (!$estgestdebibliotheque)
         {
 ?>
-                <li onclick='document.gest_parametre_modif.submit();'>
-                    <form name='gest_parametre_modif' method='post' action="gestion_dossier.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="action" value="modif"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
-                    </form>
-                    <a href="javascript:document.gest_parametre_modif.submit();">Paramétrage des agents et des structures</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_dossier.php'; ?>
+                        <form name='gest_parametre_modif' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="action" value="modif"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des agents et des structures</a>
+                    </li>
 <?php
         }
 ?>
-                <li onclick='document.gest_gest_teletravail.submit();'>
-                    <form name='gest_gest_teletravail' method='post' action="gestion_teletravail.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                        <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
-                    </form>
-                    <a href="javascript:document.gest_gest_teletravail.submit();">Gestion des conventions de télétravail</a>
-                </li>
-                <li class="plus"><a>Gestion de l'année en cours</a>
-                    <ul class="niveau3">
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_teletravail.php'; ?>
+                        <form name='gest_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
+                    </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#gestanneecourante">
+                            Gestion de l'année en cours
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="gestanneecourante" class="niveau3">   <!-- class="niveau3" -->
 <?php
         if (!$estgestdebibliotheque)
         {
 ?>
-                        <li onclick='document.gest_struct_planning.submit();'>
-                            <form name='gest_struct_planning' method='post' action="structure_planning.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.gest_struct_planning.submit();">Planning de la structure</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'structure_planning.php'; ?>
+                                <form name='gest_struct_planning' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
+                            </li>
 <?php
             $structgestliste = $user->structgestliste();
             $code = null;
@@ -1467,52 +1511,54 @@
             if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
             {
 ?>
-                        <li onclick='document.gest_conge.submit();'>
-                            <form name='gest_conge' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges">
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.gest_conge.submit();">Saisir une demande de congé pour un responsable</a>
-                        </li>
-                        <li onclick='document.gest_absence.submit();'>
-                            <form name='gest_absence' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="absence"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form>
-<!--
-                            <a href="javascript:document.gest_absence.submit();">Saisir une demande d'absence ou de télétravail pour un responsable</a>
--->
-                            <a href="javascript:document.gest_absence.submit();">Saisir une demande d'absence pour un responsable</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='gest_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges">
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un responsable</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='gest_absence' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="absence"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un responsable</a>
+                            </li>
 <?php
             }
 ?>
-                        <li onclick='document.gest_valid_conge.submit();'>
-                            <form name='gest_valid_conge' method='post' action="valider_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
-                            </form> 
-                            <a href="javascript:document.gest_valid_conge.submit();">Validation des demandes en attente</a>
-                        </li>
-                        <li onclick='document.gest_gest_conge.submit();'>
-                            <form name='gest_gest_conge' method='post' action="gestion_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="gestionnaireid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.gest_gest_conge.submit();">Annulation de congé ou d'absence</a>
-                        </li>
-                        <li onclick='document.gest_valid_tpspartiel.submit();'>
-                            <form name='gest_valid_tpspartiel' method='post' action="valider_tpspartiel.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
-                            </form> 
-                            <a href="javascript:document.gest_valid_tpspartiel.submit();">Validation des temps partiels</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_demande.php'; ?>
+                                <form name='gest_valid_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_demande.php'; ?>
+                                <form name='gest_gest_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="gestionnaireid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_tpspartiel.php'; ?>
+                                <form name='gest_valid_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des temps partiels</a>
+                            </li>
 <?php
         }
 ?>
@@ -1520,34 +1566,40 @@
         if (!$estgestdebibliotheque)
         {
 ?>
-
-                        <li onclick='document.gest_aff_solde.submit();'>
-                            <form name='gest_aff_solde' method='post' action="affiche_solde.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
-                            </form>
-                            <a href="javascript:document.gest_aff_solde.submit();">Affichage du solde des agents de la structure</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_solde.php'; ?>
+                                <form name='gest_aff_solde' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
+                            </li>
 <?php
         }
 ?>
-                    </ul>
-                </li>
+                        </ul>
+                    </li>
 <?php
         if (!$estgestdebibliotheque)
         {
 ?>
-
-                <li class="plus"><a>Gestion de l'année précédente</a>
-                    <ul class="niveau3">
-                        <li onclick='document.gest_struct_planning_previous.submit();'>
-                            <form name='gest_struct_planning_previous' method='post' action="structure_planning.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.gest_struct_planning_previous.submit();">Planning de la structure</a>
-                        </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#gestanneeprecedente">
+                            Gestion de l'année précédente
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="gestanneeprecedente" class="niveau3">  <!-- class="niveau3" -->
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'structure_planning.php'; ?>
+                                <form name='gest_struct_planning_previous' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
+                            </li>
 <?php
             $structgestliste = $user->structgestliste();
             $code = null;
@@ -1563,234 +1615,281 @@
             if ($code == structure::MAIL_RESP_ENVOI_GEST_COURANT) 
             {
 ?>
-                        <li onclick='document.gest_conge_prev.submit();'>
-                            <form name='gest_conge_prev' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges">
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.gest_conge_prev.submit();">Saisir une demande de congé pour un responsable</a>
-                        </li>
-                        <li onclick='document.gest_absence_prev.submit();'>
-                            <form name='gest_absence_prev' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="absence"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form>
-<!--
-                            <a href="javascript:document.gest_absence_prev.submit();">Saisir une demande d'absence ou de télétravail pour un responsable</a>
--->
-                            <a href="javascript:document.gest_absence_prev.submit();">Saisir une demande d'absence pour un responsable</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='gest_conge_prev' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges">
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un responsable</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='gest_absence_prev' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="gestionnaire" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="absence"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un responsable</a>
+                            </li>
 <?php
             }
 ?>
-                        <li onclick='document.gest_valid_conge_prev.submit();'>
-                            <form name='gest_valid_conge_prev' method='post' action="valider_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.gest_valid_conge_prev.submit();">Validation des demandes en attente</a>
-                        </li>
-                        <li onclick='document.gest_aff_solde_ant.submit();'>
-                            <form name='gest_aff_solde_ant' method='post' action="affiche_solde.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
-                                <input type="hidden" name="previous" value="yes">
-                            </form> 
-                            <a href="javascript:document.gest_aff_solde_ant.submit();">Affichage du solde des agents de la structure</a>
-                        </li>
-                    </ul>
-                </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_demande.php'; ?>
+                                <form name='gest_valid_conge_prev' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_solde.php'; ?>
+                                <form name='gest_aff_solde_ant' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
+                                    <input type="hidden" name="previous" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
+                            </li>
+                        </ul>
+                    </li>
 <?php
         }
 ?>
-            </ul>
-        </li>
-    </ul>
+                </ul>
+            </li>
 <?php
     }
+?>
+<!------------------------------------------------------------
+                Menu Gestion RH
+------------------------------------------------------------->
+<?php
     if ($user->estprofilrh()) 
     {
 ?>
-    <ul class="niveau1">
-<!--        <li onclick="">MENU GESTION RH  -->
-            <li>MENU GESTION RH
-            <ul class="niveau2"> 
+            <li role="none">
+                <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#gestionrh">
+                    MENU GESTION RH
+                    <svg xmlns="http://www.w3.org/2000/svg" class="down" width="12" height="9" viewBox="0 0 12 9">
+                        <polygon points="1 0, 11 0, 6 8"></polygon>
+                    </svg>
+                </a>
+                <ul role="menu" aria-label="GestionRH" class="niveau2">
 <?php
                 // PROFIL RH ==> GESTIONNAIRE RH DE CET / GESTIONNAIRE RH DE CONGES / GESTIONNAIRE RH DE TELETRAVAIL
                 if ($user->estprofilrh(agent::PROFIL_RHCET) or $user->estprofilrh(agent::PROFIL_RHCONGE) or $user->estprofilrh(agent::PROFIL_RHTELETRAVAIL)) 
                 {
 ?>
-                <li onclick='document.rh_gest_deleg.submit();'>
-                    <form name='rh_gest_deleg' method='post' action="gestion_delegation.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form>
-                    <a href="javascript:document.rh_gest_deleg.submit();">Gestion des délégations sur les structures</a>
-                </li>
-                <li onclick='document.rh_struct_gest.submit();'>
-                    <form name='rh_struct_gest' method='post' action="gestion_structure.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                        <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                    </form> 
-                    <a href="javascript:document.rh_struct_gest.submit();">Paramétrage des structures</a>
-                </li>
-                <li onclick='document.rh_modifcircuitesign.submit();'>
-                    <form name='rh_modifcircuitesign' method='post' action="modifieresignature.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.rh_modifcircuitesign.submit();">Modifier un circuit eSignature pour un agent</a>
-                </li>
-                <li onclick='document.rh_modifier_XMLcircuit.submit();'>
-                    <form name='rh_modifier_XMLcircuit' method='post' action="modifier_XMLcircuit.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.rh_modifier_XMLcircuit.submit();">Modifier les circuits eSignature</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_delegation.php'; ?>
+                        <form name='rh_gest_deleg' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des délégations sur les structures</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_structure.php'; ?>
+                        <form name='rh_struct_gest' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des structures</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'modifieresignature.php'; ?>
+                        <form name='rh_modifcircuitesign' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier un circuit eSignature pour un agent</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'modifier_XMLcircuit.php'; ?>
+                        <form name='rh_modifier_XMLcircuit' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier les circuits eSignature</a>
+                    </li>
 <?php 
                     if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
                     {
 ?>					
-                <li class="plus"><a>Gestion du télétravail</a>  <!-- Gestion du télétravail et paramétrage -->
-                    <ul class="niveau3">
-                        <li onclick='document.rh_gest_teletravail_noesignature.submit();'>
-                            <form name='rh_gest_teletravail_noesignature' method='post' action="gestion_teletravail.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                                <input type="hidden" name="noesignature" value="yes">
-                            </form>
-                            <a href="javascript:document.rh_gest_teletravail_noesignature.submit();">Gestion des conventions de télétravail<br>(hors eSignature)</a>
-                        </li>
-                        <li onclick='document.rh_gest_teletravail.submit();'>
-                            <form name='rh_gest_teletravail' method='post' action="gestion_teletravail.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form>
-                            <a href="javascript:document.rh_gest_teletravail.submit();">Gestion des conventions de télétravail<br>(avec eSignature)</a>
-                        </li>
-                        <li onclick='document.rh_affiche_info_teletravail.submit();'>
-                            <form name='rh_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            </form> 
-                            <a href="javascript:document.rh_affiche_info_teletravail.submit();">Nombre de jours de télétravail</a>
-                        </li>
-                        <li onclick='document.rh_suivi_teletravail.submit();'>
-                            <form name='rh_suivi_teletravail' method='post' action="suivi_teletravail.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            </form> 
-                            <a href="javascript:document.rh_suivi_teletravail.submit();">Suivi de l'avancement des demandes de télétravail</a>
-                        </li>
-                        <li onclick='document.rh_affiche_teletravail.submit();'>
-                            <form name='rh_affiche_teletravail' method='post' action="affiche_teletravail.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            </form> 
-                            <a href="javascript:document.rh_affiche_teletravail.submit();">Afficher les conventions de télétravail par structure</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#teletravail">
+                            Gestion du télétravail
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="teletravail" class="niveau3">  <!-- class="niveau3" -->
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_teletravail.php'; ?>
+                                <form name='rh_gest_teletravail_noesignature' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type="hidden" name="noesignature" value="yes">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail<br>(hors eSignature)</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_teletravail.php'; ?>
+                                <form name='rh_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail<br>(avec eSignature)</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_info_teletravail.php'; ?>
+                                <form name='rh_affiche_info_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Nombre de jours de télétravail</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'suivi_teletravail.php'; ?>
+                                <form name='rh_suivi_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Suivi de l'avancement des demandes de télétravail</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_teletravail.php'; ?>
+                                <form name='rh_affiche_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les conventions de télétravail par structure</a>
+                            </li>
+                        </ul>
+                    </li>
 <?php 
                     } // Fin du test si utilisateur est PROFIL_RHTELETRAVAIL
                     if ($user->estprofilrh(agent::PROFIL_RHCET))
                     {
 ?>					
-                <li class="plus"><a>Gestion des CET</a>  <!-- Gestion des CET et paramétrage -->
-                    <ul class="niveau3">
-                        <li onclick='document.gestrh_utilisationcet.submit();'>
-                            <form name='gestrh_utilisationcet' method='post' action="utilisation_cet.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form> 
-                            <a href="javascript:document.gestrh_utilisationcet.submit();">Validation des congés sur CET</a>
-                        </li>
-                        <li onclick='document.gestrh_gestcet.submit();'>
-                            <form name='gestrh_gestcet' method='post' action="gerer_cet.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form> 
-                            <a href="javascript:document.gestrh_gestcet.submit();">Gestion d'un CET</a>
-                        </li>
-                        <li onclick='document.gestrh_gestcet_hors_esignature.submit();'>
-                            <form name='gestrh_gestcet_hors_esignature' method='post' action="gerer_cet_hors_esignature.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form> 
-                            <a href="javascript:document.gestrh_gestcet_hors_esignature.submit();">Gestion d'un CET (hors eSignature)</a>
-                        </li>
-                        <li onclick='document.gestrh_creercet.submit();'>
-                            <form name='gestrh_creercet' method='post' action="creer_cet.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form> 
-                            <a href="javascript:document.gestrh_creercet.submit();">Reprise d'un CET existant</a>
-                        </li>
-                        <li onclick='document.rh_alimentation_cet.submit();'>
-                            <form name='rh_alimentation_cet' method='post' action="gerer_alimentationCET.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form>
-                            <a href="javascript:document.rh_alimentation_cet.submit();">Alimentation du CET</a>
-                        </li>          
-                        <li onclick='document.rh_option_cet.submit();'>
-                            <form name='rh_option_cet' method='post' action="gerer_optionCET.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form>
-                            <a href="javascript:document.rh_option_cet.submit();">Droit d'option sur CET</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#cet">
+                            Gestion des CET
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="cet" class="niveau3">  <!-- class="niveau3" -->
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'utilisation_cet.php'; ?>
+                                <form name='gestrh_utilisationcet' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des congés sur CET</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gerer_cet.php'; ?>
+                                <form name='gestrh_gestcet' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion d'un CET</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gerer_cet_hors_esignature.php'; ?>
+                                <form name='gestrh_gestcet_hors_esignature' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion d'un CET (hors eSignature)</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'creer_cet.php'; ?>
+                                <form name='gestrh_creercet' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Reprise d'un CET existant</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gerer_alimentationCET.php'; ?>
+                                <form name='rh_alimentation_cet' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Alimentation du CET</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gerer_optionCET.php'; ?>
+                                <form name='rh_option_cet' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Droit d'option sur CET</a>
+                            </li>
+                        </ul>
+                    </li>
 <?php 
                     } // Fin du test si utilisateur est PROFIL_RHCET
                     if ($user->estprofilrh(agent::PROFIL_RHCONGE))
                     {
 ?>
-                <li class="plus"><a>Gestion des congés</a>
-                    <ul class="niveau3">
-                        <li onclick='document.rh_conge.submit();'>
-                            <form name='rh_conge' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges"> 
-                                <input type="hidden" name="previous" value="no">
-                                <input type="hidden" name="rh_mode" value="yes">
-                                <input type="hidden" name="show_cet" value="no">
-                            </form> 
-                            <a href="javascript:document.rh_conge.submit();">Saisir une demande de congés (hors CET)</a>
-                        </li>
-                        <li onclick='document.rh_conge_cet.submit();'>
-                            <form name='rh_conge_cet' method='post' action="etablir_demande.php">
-                                <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="typedemande" value="conges"> 
-                                <input type="hidden" name="previous" value="no">
-                                <input type="hidden" name="rh_mode" value="yes">
-                                <input type="hidden" name="show_cet" value="yes">
-                            </form> 
-                            <a href="javascript:document.rh_conge_cet.submit();">Saisir une demande de congés sur CET</a>
-                        </li>
-                        <li onclick='document.rh_gest_conge.submit();'>
-                            <form name='rh_gest_conge' method='post' action="gestion_demande.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-                            <a href="javascript:document.rh_gest_conge.submit();">Annulation de congés imputés sur le CET</a>
-                        </li>
-                        <li onclick='document.affiche_info_agent.submit();'>
-                            <form name='affiche_info_agent' method='post' action="affiche_info_agent.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
-                            </form> 
-                            <a href="javascript:document.affiche_info_agent.submit();">Consultation des congés d'un agent</a>
-                        </li>
-                        <li onclick='document.modif_solde.submit();'>
-                            <form name='modif_solde' method='post' action="modif_solde.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
-                            </form> 
-                            <a href="javascript:document.modif_solde.submit();">Modification du solde de congés d'un agent</a>
-                        </li>
+                    <li role="none">
+                        <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#conges">
+                            Gestion des congés
+                            <svg xmlns="http://www.w3.org/2000/svg" class="right" width="9" height="12" viewBox="0 0 9 12">
+                                <polygon points="0 1, 0 11, 8 6"></polygon>
+                            </svg>
+                        </a>
+                        <ul role="menu" aria-label="conges" class="niveau3">  <!-- class="niveau3" -->
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='rh_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges"> 
+                                    <input type="hidden" name="previous" value="no">
+                                    <input type="hidden" name="rh_mode" value="yes">
+                                    <input type="hidden" name="show_cet" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congés (hors CET)</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'etablir_demande.php'; ?>
+                                <form name='rh_conge_cet' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="typedemande" value="conges"> 
+                                    <input type="hidden" name="previous" value="no">
+                                    <input type="hidden" name="rh_mode" value="yes">
+                                    <input type="hidden" name="show_cet" value="yes">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congés sur CET</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_demande.php'; ?>
+                                <form name='rh_gest_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congés imputés sur le CET</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_info_agent.php'; ?>
+                                <form name='affiche_info_agent' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Consultation des congés d'un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'modif_solde.php'; ?>
+                                <form name='modif_solde' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification du solde de congés d'un agent</a>
+                            </li>
 <?php
                     $dbconstante = "FONCTIONCONGSUP";
                     $congessuppfonction = 'n';
@@ -1799,206 +1898,229 @@
                     if ($fonctions->convertvaluetobool($congessuppfonction))
                     {
 ?>
-                        <li onclick='document.rh_valid_congesup.submit();'>
-                            <form name='rh_valid_congesup' method='post' action="valider_jourscomplementaires.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form> 
-<!--
-                            <a href="javascript:document.rh_valid_congesup.submit();">Validation des jours complémentaires</a>
--->
-                            <a href="javascript:document.rh_valid_congesup.submit();">Validation des jours de récupération</a>
-                        </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_jourscomplementaires.php'; ?>
+                                <form name='rh_valid_congesup' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des jours de récupération</a>
+                            </li>
 <?php
                     }
 ?>
-                        <li onclick='document.rh_ajout_conge.submit();'>
-                            <form name='rh_ajout_conge' method='post' action="ajouter_conges.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
-                            </form> 
-<!--
-                            <a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours supplémentaires pour un agent</a>
--->
-                            <a href="javascript:document.rh_ajout_conge.submit();">Gestion des jours de récupération pour un agent</a>
-
-                        </li>
-                        <li onclick='document.rh_controlrecup.submit();'>
-                            <form name='rh_controlrecup' method='post' action="controlrecuperation.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            </form> 
-                            <a href="javascript:document.rh_controlrecup.submit();">Contrôler les recupérations</a>
-                        </li>
-                        <li onclick='document.rh_aff_solde.submit();'>
-                            <form name='rh_aff_solde' method='post' action="affiche_solde.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
-                                <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
-                                <input type="hidden" name="previous" value="no">
-                            </form>
-                            <a href="javascript:document.rh_aff_solde.submit();">Affichage du solde des agents d'une structure</a>
-                        </li>
-                        <li onclick='document.rh_affiche_jourscomplementaires.submit();'>
-                            <form name='rh_affiche_jourscomplementaires' method='post' action="affiche_jourscomplementaires.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            </form> 
-                            <a href="javascript:document.rh_affiche_jourscomplementaires.submit();">Afficher les jours complémentaires</a>
-                        </li>
-                        <li onclick='document.rh_gestperiodeoblig.submit();'>
-                            <form name='rh_gestperiodeoblig' method='post' action="gestion_periodeobligatoire.php">
-                                <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                            </form> 
-                            <a href="javascript:document.rh_gestperiodeoblig.submit();">Gérer les périodes obligatoires</a>
-                        </li>
-                    </ul>
-                </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'ajouter_conges.php'; ?>
+                                <form name='rh_ajout_conge' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des jours de récupération pour un agent</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'controlrecuperation.php'; ?>
+                                <form name='rh_controlrecup' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôler les recupérations</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_solde.php'; ?>
+                                <form name='rh_aff_solde' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents d'une structure</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'affiche_jourscomplementaires.php'; ?>
+                                <form name='rh_affiche_jourscomplementaires' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les jours complémentaires</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'gestion_periodeobligatoire.php'; ?>
+                                <form name='rh_gestperiodeoblig' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gérer les périodes obligatoires</a>
+                            </li>
+                        </ul>
+                    </li>
 <?php
                     } // Fin du test si utilisateur est PROFIL_RHCONGE
 ?>
-                <li onclick='document.rh_affiche_inputfiles.submit();'>
-                    <form name='rh_affiche_inputfiles' method='post' action="affiche_inputfiles.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.rh_affiche_inputfiles.submit();">Afficher les données d'interface</a>
-                </li>
-                <li onclick='document.rh_affiche_g2t_param.submit();'>
-                    <form name='rh_affiche_g2t_param' method='post' action="g2t_param.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.rh_affiche_g2t_param.submit();">Paramétrage</a>
-                </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_inputfiles.php'; ?>
+                        <form name='rh_affiche_inputfiles' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les données d'interface</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'g2t_param.php'; ?>
+                        <form name='rh_affiche_g2t_param' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage</a>
+                    </li>
+                </ul>
 <?php
-        }
+                }
 ?>
-            </ul>
-        </li>
-    </ul>
+            </li>
 <?php
     }
+?>
+<!------------------------------------------------------------
+                Menu Administrateur
+------------------------------------------------------------->
+<?php
     if ($realuser->estadministrateur()) 
     {
 ?>
-    <ul class="niveau1">
-<!--        <li onclick="">MENU ADMINISTRATEUR -->
-        <li>MENU ADMINISTRATEUR
-            <ul class="niveau2">
-                <li onclick='document.admin_mode_maintenance.submit();'>
-                    <form name='admin_mode_maintenance' method='post' action="admin_maintenance.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_mode_maintenance.submit();">Activer/désactiver maintenance</a>
-                </li>
-                <li onclick='document.admin_struct_gest.submit();'>
-                    <form name='admin_struct_gest' method='post' action="gestion_structure.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                        <input type="hidden" name="mode" value="">
-                    </form> 
-                    <a href="javascript:document.admin_struct_gest.submit();">Paramétrage des structures</a>
-                </li>
-                <li onclick='document.admin_subst_agent.submit();'>
-                    <form name='admin_subst_agent' method='post' action="admin_substitution.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_subst_agent.submit();">Se faire passer pour un autre agent</a>
-                </li>
-                <li onclick='document.admin_import_conges.submit();'>
-                    <form name='admin_import_conges' method='post' action="import_conges.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_import_conges.submit();">Importer des congés</a>
-                </li>
-                <li onclick='document.admin_solde_conges.submit();'>
-                    <form name='admin_solde_conges' method='post' action="affiche_info_conges.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_solde_conges.submit();">Synthèse des congés</a>
-                </li>
-                <li onclick='document.admin_affiche_demandeCET.submit();'>
-                    <form name='admin_affiche_demandeCET' method='post' action="affiche_demandeCET.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_affiche_demandeCET.submit();">Afficher une demande sur CET/eSignature</a>
-                </li>
-                <li onclick='document.admin_affiche_info_teletravail.submit();'>
-                    <form name='admin_affiche_info_teletravail' method='post' action="affiche_info_teletravail.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_affiche_info_teletravail.submit();">Nombre théorique de jours de télétravail</a>
-                </li>
-                <li onclick='document.admin_affiche_g2t_param.submit();'>
-                    <form name='admin_affiche_g2t_param' method='post' action="g2t_param.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_affiche_g2t_param.submit();">Paramétrage</a>
-                </li>
-                <li onclick='document.admin_suivi_teletravail.submit();'>
-                    <form name='admin_suivi_teletravail' method='post' action="suivi_teletravail.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_suivi_teletravail.submit();">Suivi de l'avancement des demandes de télétravail</a>
-                </li>
-                <li onclick='document.admin_affiche_inputfiles.submit();'>
-                    <form name='admin_affiche_inputfiles' method='post' action="affiche_inputfiles.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_affiche_inputfiles.submit();">Afficher les données d'interface</a>
-                </li>
-                <li onclick='document.admin_affiche_jourscomplementaires.submit();'>
-                    <form name='admin_affiche_jourscomplementaires' method='post' action="affiche_jourscomplementaires.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_affiche_jourscomplementaires.submit();">Afficher les jours complémentaires</a>
-                </li>
-                <li onclick='document.admin_affiche_teletravail.submit();'>
-                    <form name='admin_affiche_teletravail' method='post' action="affiche_teletravail.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_affiche_teletravail.submit();">Afficher les conventions de télétravail par structure</a>
-                </li>
-                <li onclick='document.admin_controlrecup.submit();'>
-                    <form name='admin_controlrecup' method='post' action="controlrecuperation.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_controlrecup.submit();">Contrôler les recupérations</a>
-                </li>
-                <li onclick='document.admin_gestperiodeoblig.submit();'>
-                    <form name='admin_gestperiodeoblig' method='post' action="gestion_periodeobligatoire.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_gestperiodeoblig.submit();">Gérer les périodes obligatoires</a>
-                </li>
-                <li onclick='document.admin_modifcircuitesign.submit();'>
-                    <form name='admin_modifcircuitesign' method='post' action="modifieresignature.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_modifcircuitesign.submit();">Modifier un circuit eSignature pour un agent</a>
-                </li>
-                <li onclick='document.admin_modifier_XMLcircuit.submit();'>
-                    <form name='admin_modifier_XMLcircuit' method='post' action="modifier_XMLcircuit.php">
-                        <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
-                    </form> 
-                    <a href="javascript:document.admin_modifier_XMLcircuit.submit();">Modifier les circuits eSignature</a>
-                </li>
-            </ul>
-        </li>
-    </ul>  
+            <li role="none">
+                <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#admin">
+                    MENU ADMINISTRATEUR
+                    <svg xmlns="http://www.w3.org/2000/svg" class="down" width="12" height="9" viewBox="0 0 12 9">
+                        <polygon points="1 0, 11 0, 6 8"></polygon>
+                    </svg>
+                </a>
+                <ul role="menu" aria-label="Administrateur" class="niveau2">
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'admin_maintenance.php'; ?>
+                        <form name='admin_mode_maintenance' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Activer/désactiver maintenance</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_structure.php'; ?>
+                        <form name='admin_struct_gest' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type="hidden" name="mode" value="">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des structures</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'admin_substitution.php'; ?>
+                        <form name='admin_subst_agent' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Se faire passer pour un autre agent</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'import_conges.php'; ?>
+                        <form name='admin_import_conges' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Importer des congés</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_demandeCET.php'; ?>
+                        <form name='admin_affiche_demandeCET' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher une demande sur CET/eSignature</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_info_teletravail.php'; ?>
+                        <form name='admin_affiche_info_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Nombre théorique de jours de télétravail</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'g2t_param.php'; ?>
+                        <form name='admin_affiche_g2t_param' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'suivi_teletravail.php'; ?>
+                        <form name='admin_suivi_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Suivi de l'avancement des demandes de télétravail</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_inputfiles.php'; ?>
+                        <form name='admin_affiche_inputfiles' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les données d'interface</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_jourscomplementaires.php'; ?>
+                        <form name='admin_affiche_jourscomplementaires' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les jours complémentaires</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_teletravail.php'; ?>
+                        <form name='admin_affiche_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les conventions de télétravail par structure</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'controlrecuperation.php'; ?>
+                        <form name='admin_controlrecup' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôler les recupérations</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'gestion_periodeobligatoire.php'; ?>
+                        <form name='admin_gestperiodeoblig' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gérer les périodes obligatoires</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'modifieresignature.php'; ?>
+                        <form name='admin_modifcircuitesign' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier un circuit eSignature pour un agent</a>
+                    </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'modifier_XMLcircuit.php'; ?>
+                        <form name='admin_modifier_XMLcircuit' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier les circuits eSignature</a>
+                    </li>
+                </ul>
+            </li>
 <?php
 	}
 ?> 
-
+        </ul>
+    </nav>
 </div>
 
 <script>
-    var mainmenu = document.querySelector('#mainmenu');
-    var listesousmenu = mainmenu.querySelectorAll('li.plus');
-    if (listesousmenu.length > 0)
+    var mainmenu = document.querySelector('.mainmenu');
+    if (mainmenu)
     {
-        for (let index = 0 ; index < listesousmenu.length ; index++)
+        var listesousmenu = mainmenu.querySelectorAll('[role=menuitem][aria-haspopup=true]');
+        // ==> On a ici la liste des <a> de type menuitem et qui ont un sous-menu. Donc on va chercher s'il y a un formulaire dans le parent
+        if (listesousmenu.length > 0)
         {
-            let sousmenu = listesousmenu[index];
-            if (!sousmenu.querySelector('form'))
+            for (let index = 0 ; index < listesousmenu.length ; index++)
             {
-                sousmenu.hidden = true;
+                let sousmenu = listesousmenu[index].parentNode;
+                if (!sousmenu.querySelector('form'))
+                {
+                    sousmenu.hidden = true;
+                    sousmenu.style.display = "none";
+                }
             }
         }
     }

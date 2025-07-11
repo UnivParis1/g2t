@@ -1,0 +1,244 @@
+@charset "utf-8";
+
+
+.menubar-navigation {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* background-color: #eee; */
+  /* border: #eee solid 1px; */
+  /* padding: 2px; */
+
+  font-family : Arial;
+  font-weight : bold; 
+  font-size : 14px; 
+  border-collapse: collapse; 
+  color : #306192; /* #336699; */
+}
+
+.menubar-navigation li {
+  list-style: none;
+  position : relative; 
+  padding-right : 2px; 
+  padding-left : 2px; 
+  padding-bottom : 5px; 
+  padding-top : 5px;
+  margin : 0px;
+  width : 270px; 
+  list-style-type : none; 
+  background-color : #E5EAE9;  
+  float: left; 
+  text-align: center; 
+}
+
+.menubar-navigation > li {
+  display: inline-block;
+  position: relative;
+}
+
+.menubar-navigation > li li {
+  display: block;
+}
+
+.menubar-navigation > li > [role="menuitem"] {
+  display: inline-block;
+  margin: 2px;
+  padding: 4px;
+  padding-bottom: 8px;
+  background-color: #eee;
+}
+
+.menubar-navigation [role="separator"] {
+  padding-top: 3px;
+  background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cline x1='0' y1='6' x2='12' y2='6' style='stroke:black;stroke-width:1' /%3E%3C/svg%3E%0A");
+  background-size: 10px 10px;
+  background-position: center;
+  background-repeat: repeat-x;
+}
+
+.menubar-navigation [role="menu"] [role="menuitem"],
+.menubar-navigation [role="menu"] [role="separator"] {
+  display: block;
+  width: 12em;
+  margin: 2px;
+  padding: 4px;
+  padding-left: 8px;
+  background-color: #eee;
+}
+
+.menubar-navigation [role="menuitem"] svg {
+  fill: currentcolor;
+  stroke: currentcolor;
+}
+
+.menubar-navigation [role="menuitem"] svg.down {
+  padding-left: 0.125em;
+}
+
+.menubar-navigation [role="menuitem"] svg.right {
+	position: absolute;
+	right: 0.75em;
+	padding: 0px;
+	margin: 0px;
+}
+.menubar-navigation [role="menuitem"][aria-expanded="true"] svg.down {
+  transform: rotate(180deg);
+  color: #f22bf2;
+}
+
+.menubar-navigation [role="menuitem"][aria-expanded="true"] svg.right {
+  color: #f22bf2;
+}
+
+.menubar-navigation [role="menu"] {
+  display: none;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  padding: 7px 4px;
+  background-color: #eee;
+}
+
+.menubar-navigation [role="group"] {
+  margin: 0;
+  padding: 0;
+}
+
+/* aria-current styling */
+
+.menubar-navigation > li > [role="menuitem"][aria-current],
+.menubar-navigation > li > [role="menuitem"].aria-current-path {
+  padding-bottom: 2px;
+}
+
+.menubar-navigation [role="menu"] [role="menuitem"].aria-current-path,
+.menubar-navigation [role="menu"] [role="menuitem"][aria-current] {
+  padding-left: 4px;
+}
+
+/* focus styling */
+
+.menubar-navigation.focus {
+  padding: 0;
+}
+
+.menubar-navigation > li > [aria-expanded="true"],
+.menubar-navigation > li > [role="menuitem"]:focus,
+.menubar-navigation > li > [role="menuitem"]:hover {
+  outline: none;
+  background-color: #ccc;
+}
+
+.menubar-navigation > li > [role="menuitem"]:focus,
+.menubar-navigation > li > [role="menuitem"]:hover {
+  text-align: inherit;
+  background-color : #F9E1A4 !important; 
+
+}
+
+.menubar-navigation.niveau1 li:focus,
+.menubar-navigation.niveau1 li:hover {
+  background-color : #F9E1A4 !important; 
+}
+
+.menubar-navigation [role="menu"] [aria-expanded="true"],
+.menubar-navigation [role="menu"] [role="menuitem"]:focus,
+.menubar-navigation [role="menu"] [role="menuitem"]:hover {
+  outline: none;
+  background-color: #ccc;
+}
+
+.menubar-navigation [role="menu"] [role="menuitem"]:focus,
+.menubar-navigation [role="menu"] [role="menuitem"]:hover {
+  padding: 2px;
+  padding-left: 6px;
+  background-color : #F9E1A4 !important; 
+}
+
+.menubar-navigation > li > [aria-expanded="true"].aria-current-path,
+.menubar-navigation > li > [role="menuitem"].aria-current-path:focus,
+.menubar-navigation > li > [role="menuitem"].aria-current-path:hover,
+.menubar-navigation > li > [role="menuitem"][aria-current]:focus,
+.menubar-navigation > li > [role="menuitem"][aria-current]:hover {
+  padding-bottom: 2px;
+}
+
+.menubar-navigation [role="menu"] [aria-expanded="true"].aria-current-path,
+.menubar-navigation [role="menu"] [role="menuitem"].aria-current-path:focus,
+.menubar-navigation [role="menu"] [role="menuitem"].aria-current-path:hover,
+.menubar-navigation [role="menu"] [role="menuitem"][aria-current]:focus,
+.menubar-navigation [role="menu"] [role="menuitem"][aria-current]:hover {
+  padding-left: 4px;
+}
+
+.menubar-navigation.niveau1 .niveau2 {
+  font-weight: bold !important;
+  font-size: 11px !important;
+  display : none; 
+  position : absolute; 
+  padding-right : 0px; 
+  padding-left : 0px; 
+  padding-bottom : 0px;
+  padding-top : 0px; 
+  margin : 0px; 
+  z-index : 2000;
+}
+
+.menubar-navigation.niveau1 .niveau2 .niveau3 {
+  font-weight: bold !important;
+  font-size: 11px !important; 
+  margin-left: 1px !important;
+  margin-top: -1px !important;
+  display : none; 
+  position : absolute; 
+  padding-right : 0px; 
+  padding-left : 0px; 
+  padding-bottom : 0px;
+  padding-top : 0px; 
+  z-index : 2000;
+}
+
+.menubar-navigation.niveau1 a {
+	width: 100% !important;
+	height: 100% !important;
+	padding-top: 5px !important;
+	padding-bottom: 4px !important;
+	padding-right: 0px !important;
+	padding-left: 0px !important; 
+	background: transparent !important;
+	margin: 0px !important;
+}
+
+.menubar-navigation li [role="none"] {
+	padding-top: 0px !important;
+	padding-bottom: 0px !important;
+	padding-left: 0px !important; 
+	padding-right: 0px !important;
+}
+
+/* Défini la couleur et l'aspect des liens HTML dans le menu principal */
+.menubar-navigation A {
+   text-decoration : none; 
+   color : inherit;
+}
+
+/* Aspect du menu de niveau 1 */
+.menubar-navigation.niveau1 LI {
+    background-color : #D8D8D8; 
+    text-decoration : none;  
+    border-bottom : #888B8A 1px solid;  
+    border-top : #888B8A 1px solid; 
+    border-left : #888B8A 1px solid;  
+    border-right : #888B8A 1px solid; 
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding: 0px !important;
+}
+
+/* Aspect du menu de niveau 2 et de niveau 3 */
+.menubar-navigation.niveau1 .niveau2 LI,
+.menubar-navigation.niveau1 .niveau2 .niveau3 LI {
+    background-color : #E5EAE9 !important;
+}
