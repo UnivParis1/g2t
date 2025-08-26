@@ -1131,7 +1131,8 @@
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <form name='agent_aide' method='get' TARGET=_BLANK action="<?php echo $urlg2tmanuel; ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo $urlg2tmanuel; ?>" onclick="this.parentNode.click(); return false;">Manuel utilisateur</a>
+                        <a role="menuitem" href="<?php echo $urlg2tmanuel; ?>" onclick="return false;">Manuel utilisateur</a>
+<!--                        <a role="menuitem" href="<?php echo $urlg2tmanuel; ?>" onclick="this.parentNode.click(); return false;">Manuel utilisateur</a> -->
                     </li>
 <?php
     }
