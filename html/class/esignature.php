@@ -1358,6 +1358,7 @@ class esignature
             else
             {
                 echo $this->fonctions->showmessage(fonctions::MSGERROR, "L'étape '$description' du circuit de signature " . basename($filename). " est obligatoire mais est vide.");
+                return array();
             }
 
         }
