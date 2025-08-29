@@ -259,6 +259,20 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
         if ($fonctions->testexistdbconstante($dbconstante)) $xmlfilename = trim($fonctions->liredbconstante($dbconstante));
         $params['xmlfilename'] = "$xmlfilename";
         $taberrorcheckmail = $fonctions->checksignataireteletravailliste($params,$agent);
+
+        // On vérifie qu'un agent responsable est défini pour compléter la demande de télétravail. C'est le N+1 de l'agent.
+        if (count($taberrorcheckmail) == 0)
+        {
+            $structresp = null;
+            $codeinterne = null;
+            $signataire = $agent->getsignataire(null,$structresp,$codeinterne);
+            $listeidresp = array();
+            if ($signataire ===false)
+            {
+                $taberrorcheckmail['signataire_manquant'] = "Aucun agent responsable n'est défini pour compléter la demande de télétravail.";
+                $taberrorcheckmail['info_contact_drh'] = "Contactez le service de la DRH pour faire vérifier le paramétrage de l'application.";
+            }
+        }
     }
     //var_dump($maxniveau);
     if (count($taberrorcheckmail) > 0)
@@ -270,7 +284,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
             if (strlen($errorcheckmailstr)>0) { $errorcheckmailstr = $errorcheckmailstr . '<br>'; }
             $errorcheckmailstr = $errorcheckmailstr . $errorcheckmail;
         }
-        $erreur = "Impossible de créer une convention de télétravail car <br>$errorcheckmailstr";
+        $erreur = "Impossible de créer une convention de télétravail : <br>$errorcheckmailstr";
         error_log(basename(__FILE__) . " : " . $fonctions->stripAccents($erreur));        
         $disablesubmit = true;
     }

@@ -3301,7 +3301,7 @@ class fonctions
                     // Si l'adresse n'existe pas dans LDAP
                     if (!$this->mailexistedansldap($mailadress))
                     {
-                        $taberrorcheckmail[$mailadress] = "l'adresse mail $mailadress n'est pas connue de LDAP";
+                        $taberrorcheckmail[$mailadress] = "L'adresse mail $mailadress n'est pas connue de LDAP";
                     }
                     else
                     {
