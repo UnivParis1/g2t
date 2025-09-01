@@ -55,7 +55,14 @@
         echo "###############################################################\n";
         echo "On est sur l'agent : " . $agent->identitecomplete() . " (id = $agentid) \n";
         $solde = $agent->calculsoldeannuel($fonctions->anneeref(),true, false, true); // On calcule le solde de l'année courante + on met à jour le solde en base + on n'ecrit pas les traces d'exécution + on les affiche
-        echo "Le solde annuel de l'agent " . $agent->identitecomplete() . " (id = " . $agent->agentid() . ") pour l'annee " .  $fonctions->anneeref() . "-" . ($fonctions->anneeref()+1)  . " est de $solde jours.\n";
+        if (is_null($solde))
+        {
+           echo "Impossible de calculer le solde de l'agent " . $agent->identitecomplete() . " (id = " . $agent->agentid() . "). Vérifiez que le nombre de congés est bien déclaré pour l'année " .  $fonctions->anneeref() . "-" . ($fonctions->anneeref()+1)  . ".\n";
+        }
+        else
+        {
+            echo "Le solde annuel de l'agent " . $agent->identitecomplete() . " (id = " . $agent->agentid() . ") pour l'annee " .  $fonctions->anneeref() . "-" . ($fonctions->anneeref()+1)  . " est de $solde jours.\n";
+        }
         $numrows++;
     }
     echo "$numrows soldes ont été calculés. \n";

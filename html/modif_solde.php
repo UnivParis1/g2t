@@ -161,9 +161,16 @@
             $info = $info . "Le forçage du solde $anneeref/" . ($anneeref+1) . " a été désactivé.<br>";
         }
         $complement->delete($agent->agentid(),complement::FORCE_SOLDE_LABEL . $anneeref);
-        $droitacquis = $agent->calculsoldeannuel($anneeref, true, true, false);
         //$droitacquis = $agent->newcalculsoldeannuel($anneeref, true, true, false);
-        $info = $info . "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
+        $droitacquis = $agent->calculsoldeannuel($anneeref, true, true, false);
+        if (is_null($droitacquis))
+        {
+            $msg_erreur = $msg_erreur . " Impossible de calculer le solde de l'agent. Vérifiez que le nombre de congés est bien déclaré pour l'année $anneeref/" . ($anneeref+1) . ".";
+        }
+        else
+        {
+            $info = $info . "Les droits acquis $anneeref/" . ($anneeref+1) . " ont été recalculés pour " . $agent->identitecomplete()  . " => $droitacquis jour(s).";
+        }
     }
     
     echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);

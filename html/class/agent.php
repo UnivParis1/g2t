@@ -5549,6 +5549,15 @@ const modifymotif = (motif, motifid) =>
         $date_fin_period = ($anneeref + 1) . $this->fonctions->finperiode();
         $this->fonctions->log_traces($loginfo,$displayinfo,"date_deb_period = $date_deb_period   date_fin_period = $date_fin_period");
 
+        // Si le nombre de jours offerts n'est pas déclaré => On sort de la fonction car impossible de calculer (return NULL)
+        if (!$this->fonctions->testexistdbconstante("NBJOURS" . substr($date_deb_period, 0, 4)))
+        {
+            $this->fonctions->log_traces($loginfo,$displayinfo,"Le nombre de congés annuels pour " . substr($date_deb_period, 0, 4) . " n'est pas défini.");
+            $this->fonctions->log_traces($loginfo,$displayinfo,"Pas de calcul de solde pour l'agent " . $this->identitecomplete() . " (Agentid = " . $this->agentid() . ").");
+            return null;
+        }
+
+
         // Calcul du nombre de jours dans la période => Typiquement 365 ou 366 jours.
         $nbre_jour_periode = $this->fonctions->nbjours_deux_dates($date_deb_period, $date_fin_period);
         $this->fonctions->log_traces($loginfo,$displayinfo,"nbre_jour_periode = $nbre_jour_periode");
