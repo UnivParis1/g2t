@@ -10,23 +10,38 @@
     $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE));
     $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_VALIDE));
     error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre de conventions trouvées = " . count($tabconvention)));
+
+    $nbconvetionstraitees = 0;
     if (count($tabconvention)>0)
     {
+        $datelimite = $fonctions->formatdatedb(date("Y-m-d", strtotime("-2 month")));
         foreach($tabconvention as $teletravail)
         {
             if (trim($teletravail->esignatureid())!= "")
             {
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" On va synchro la convention esignatureid = " . $teletravail->esignatureid()));
-                $result_json = $fonctions->synchroniseconventionteletravail($teletravail->esignatureid());
-                if ($result_json['status']=='Error')
+                // Si la date de fin est récente (moins de 2 mois) ou dans le futur
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Date limite = " . $datelimite));
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Date de fin de la convention : " . $fonctions->formatdatedb($teletravail->datefin())));
+                if ($fonctions->formatdatedb($teletravail->datefin()) >= $datelimite)
                 {
-                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On a rencontré une erreur => On break"));
-                    break;
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" On va synchro la convention esignatureid = " . $teletravail->esignatureid() . " Date de fin : " . $teletravail->datefin()));
+                    $result_json = $fonctions->synchroniseconventionteletravail($teletravail->esignatureid());
+                    if ($result_json['status']=='Error')
+                    {
+                        error_log(basename(__FILE__) . $fonctions->stripAccents(" On a rencontré une erreur => On break"));
+                        break;
+                    }
+                    $nbconvetionstraitees++;
+                }
+                // La convention est dans le passée (elle est terminée depuis plus de 2 mois) => Pas de synchronisation
+                else
+                {
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(" La convention de télétravail " . $teletravail->esignatureid() . " est déjà terminée (date fin : " . $teletravail->datefin() . ") donc pas de synchronisation nécessaire."));
                 }
             }
         }
     }
-    
+    error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre de conventions synchronisées : $nbconvetionstraitees "));
     echo "Fin de la synchronisation des conventions de télétravail " . date("d/m/Y H:i:s") . "\n";
         
     echo "Envoi du mail de rappel aux agents suivants qui doivent signer la convention \n";
