@@ -505,19 +505,45 @@ class teletravail
         {
             return $this->listeidresponsable;
         }
-        else if (!is_array($arrayrespid))
+        else if (is_bool($arrayrespid) and $arrayrespid===true)
         {
-            $errlog = "teletravail->listeidresponsable : La liste des responsables doit être un tableau !!!";
-            echo $errlog . "<br/>";
-            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            $agent = new agent($this->dbconnect);
+            $agent->load($this->agentid());
+
+            // On efface la liste des responsables
+            $this->listeidresponsable = array();
+
+            $codeinterne = null;
+            $structresp = null;
+            $signataire = $agent->getsignataire(null,$structresp,$codeinterne);
+            if ($signataire !==false)
+            {
+                $this->listeidresponsable[$signataire->agentid()] = $signataire->agentid();
+                $signataire = $structresp->responsablesiham();
+                if ($signataire->civilite() != '' and !$signataire->estutilisateurspecial())
+                {
+                    $this->listeidresponsable[$signataire->agentid()] = $signataire->agentid();
+                }
+            }
+            // Si le demandeur de télétravail est présent dans le tableau et n'est pas le seul responsable => On le supprime 
+            if (count($this->listeidresponsable)>1 and isset($this->listeidresponsable[$this->agentid()]))
+            {
+                unset($this->listeidresponsable[$this->agentid()]);
+            }
         }
-        else
+        else if (is_array($arrayrespid))
         {
             $this->listeidresponsable = array();
             foreach($arrayrespid as $respid)
             {
                 $this->listeidresponsable[$respid] = $respid;
             }
+        }
+        else
+        {
+            $errlog = "teletravail->listeidresponsable : La liste des responsables doit être un tableau ou la valeur boolean TRUE";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         return array();
     }

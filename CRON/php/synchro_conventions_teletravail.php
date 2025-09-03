@@ -17,7 +17,17 @@
         $datelimite = $fonctions->formatdatedb(date("Y-m-d", strtotime("-2 month")));
         foreach($tabconvention as $teletravail)
         {
-            if (trim($teletravail->esignatureid())!= "")
+            if (trim($teletravail->esignatureid()) == "" and $teletravail->statut() == teletravail::TELETRAVAIL_ATTENTE and $teletravail->statutresponsable() == teletravail::TELETRAVAIL_ATTENTE)
+            {
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Actualisation des signataires de la convention télétravail " . $teletravail->teletravailid()));
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" L'ancienne liste des signataires => " . implode(',',$teletravail->listeidresponsable())));
+                // La valeur TRUE force l'actualisation des id des responsables en fonction du paramétrage de la structure.
+                $teletravail->listeidresponsable(true);
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" La nouvelle liste des signataires => " . implode(',',$teletravail->listeidresponsable())));
+                $teletravail->store();
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Enregistrement terminé"));
+            }
+            else if (trim($teletravail->esignatureid())!= "")
             {
                 // Si la date de fin est récente (moins de 2 mois) ou dans le futur
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Date limite = " . $datelimite));

@@ -352,6 +352,8 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                     // Annulation dans G2T
                     error_log(basename(__FILE__) . " " . $fonctions->stripAccents("On modifie le statut de la convention $cancelteletravailid dans G2T"));
                     $teletravail->statut(teletravail::TELETRAVAIL_ANNULE);
+                    // La valeur TRUE force l'actualisation des id des responsables en fonction du paramétrage de la structure.
+                    $teletravail->listeidresponsable(true);
                     // var_dump($teletravail->statut());
                     $return = $teletravail->store();
                     //////////////////////////////////////
@@ -873,19 +875,25 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                     //     }
                     //     $teletravail->listeidresponsable($listeidresp);
                     // }
-                    $codeinterne = null;
-                    $signataire = $agent->getsignataire(null,$structresp,$codeinterne);
-                    $listeidresp = array();
-                    if ($signataire !==false)
-                    {
-                        $listeidresp[$signataire->agentid()] = $signataire->agentid();
-                        $signataire = $structresp->responsablesiham();
-                        if ($signataire->civilite() != '' and !$signataire->estutilisateurspecial())
-                        {
-                            $listeidresp[$signataire->agentid()] = $signataire->agentid();
-                        }
-                    }
-                    $teletravail->listeidresponsable($listeidresp);
+
+
+                    // $codeinterne = null;
+                    // $signataire = $agent->getsignataire(null,$structresp,$codeinterne);
+                    // $listeidresp = array();
+                    // if ($signataire !==false)
+                    // {
+                    //     $listeidresp[$signataire->agentid()] = $signataire->agentid();
+                    //     $signataire = $structresp->responsablesiham();
+                    //     if ($signataire->civilite() != '' and !$signataire->estutilisateurspecial())
+                    //     {
+                    //         $listeidresp[$signataire->agentid()] = $signataire->agentid();
+                    //     }
+                    // }
+                    // $teletravail->listeidresponsable($listeidresp);
+                    
+                    // La valeur TRUE force l'actualisation des id des responsables en fonction du paramétrage de la structure.
+                    $teletravail->listeidresponsable(true);
+
                 }
             }
             else
