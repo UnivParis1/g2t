@@ -1317,11 +1317,9 @@ class structure
         return $htmltext;
     }
 
-    function dossierhtml($pourmodif = FALSE, $responsableid = NULL, &$formulairetext_openpdf = '')
+    function dossierhtml(array $agentliste, bool $pourmodif = FALSE, string|null $responsableid = NULL, string &$formulairetext_openpdf = '')
     {
         
-        // echo "strucutre->dossierhtml : Non refaite !!!!! <br>";
-        // return null;
         $WSGROUPURL = $this->fonctions->liredbconstante("WSGROUPURL");
 
         $formulairetext_openpdf = '';
@@ -1351,36 +1349,13 @@ class structure
         }
         $htmltext = $htmltext . "</tr>";
         $htmltext = $htmltext . "</thead><tbody>";
-        $agentliste = $this->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
-        
-        // Si on est en mode 'responsable' <=> le code du responsable de la structure est passé en paramètre
-        if (! is_null($responsableid)) {
-            // On ajoute les responsables de structures filles
-            $structureliste = $this->structurefille();
-            $responsableliste = array();
-            if (is_array($structureliste)) 
-            {
-                foreach ($structureliste as $key => $structure) 
-                {
-                    if ($this->fonctions->formatdatedb($structure->datecloture()) >= $this->fonctions->formatdatedb(date("Ymd"))) 
-                    {
-                        $responsable = $structure->responsable();
-                        if ($responsable->agentid() != SPECIAL_USER_IDCRONUSER) 
-                        {
-                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                            $responsableliste[$responsable->nom() . " " . $responsable->prenom() . " " . $responsable->agentid()] = $responsable;
-                            // /$responsableliste[$responsable->agentid()] = $responsable;
-                        }
-                    }
-                }
-            }
-            $agentliste = array_merge((array) $agentliste, (array) $responsableliste);
-            ksort($agentliste);
-        }
-        if (is_array($agentliste)) 
+
+        // On ne prend pas la responsabilité de trier le tableau des agents, car on ne sait pas le format des clés (=> Mais sans doute "AGENTID" et non pas "NOM PRENOM AGENTID")
+        // ksort($agentliste);
+
+        if (is_array($agentliste) and count($agentliste)>0) 
         {
             foreach ($agentliste as $key => $membre) {
-                // echo "Structure->dossierhtml : Je suis dans l'agent " . $membre->nom() . "<br>";
                 if ($membre->agentid() != $responsableid) {
                     $htmltext = $htmltext . "<tr>";
                     $htmltext = $htmltext . "<th scope='row' class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</th>";

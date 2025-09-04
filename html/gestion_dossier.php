@@ -626,47 +626,73 @@
         uasort($structliste,"triparprofondeurabsolue");
     }
     // echo "Structure liste = "; print_r($structliste); echo "<br>";
-    foreach ($structliste as $key => $structure) {
-        $responsableliste = array();
-        // On ajoute les responsables de structures filles
+    foreach ($structliste as $key => $structure) 
+    {
+        // $responsableliste = array();
+        // // On ajoute les responsables de structures filles
+        // if ($mode == MODE_RESPONSABLE)
+        // {
+        //     $structurefilleliste = $structure->structurefille();
+        //     if (is_array($structurefilleliste)) 
+        //     {
+        //         foreach ($structurefilleliste as $key => $structurefille) 
+        //         {
+        //             if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
+        //             {
+        //                 $respstructfille = $structurefille->responsable();
+        //                 if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) 
+        //                 {
+        //                     // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
+        //                     $responsableliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
+        //                     // /$responsableliste[$responsable->agentid()] = $responsable;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        
+        // $arrayagent = $structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
+        // $arrayagentid = array();
+        // foreach ((array)$arrayagent as $agent)
+        // {
+        //     $arrayagentid[$agent->agentid()] = $agent;
+        // }
+
+        // var_dump(array_keys($arrayagent));
+        // var_dump(array_keys($responsableliste));
+        // var_dump(array_keys($user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"))));
+
+        // if (count((array)$arrayagent) or count($responsableliste)>0) 
+        // {
+
         if ($mode == MODE_RESPONSABLE)
         {
-            $structurefilleliste = $structure->structurefille();
-            if (is_array($structurefilleliste)) 
-            {
-                foreach ($structurefilleliste as $key => $structurefille) 
-                {
-                    if ($fonctions->formatdatedb($structurefille->datecloture()) >= $fonctions->formatdatedb(date("Ymd"))) 
-                    {
-                        $respstructfille = $structurefille->responsable();
-                        if ($respstructfille->agentid() != SPECIAL_USER_IDCRONUSER) 
-                        {
-                            // La clé NOM + PRENOM + AGENTID permet de trier les éléments par ordre alphabétique
-                            $responsableliste[$respstructfille->nom() . " " . $respstructfille->prenom() . " " . $respstructfille->agentid()] = $respstructfille;
-                            // /$responsableliste[$responsable->agentid()] = $responsable;
-                        }
-                    }
-                }
-            }
+            $arrayagent = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"),$structure);
         }
-        
-        $arrayagent = $structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
+        else
+        {
+            $arrayagent = $user->listeagentengestion(date("d/m/Y"), date("d/m/Y"),$structure);
+        }
+        // Les clés des agents sont sous la forme "NOM PRENOM AGENTID" => On les trie pas ordre alphabétique 
+        ksort($arrayagent);
+
+        // On transforme les clés du tableau résultat en "AGENTID" pour vérifier l'existance d'un agent dans le tableau (voir plus loin dans le code)
         $arrayagentid = array();
         foreach ((array)$arrayagent as $agent)
         {
             $arrayagentid[$agent->agentid()] = $agent;
         }
 
-        if (count((array)$arrayagent) or count($responsableliste)>0) 
+        if (count($arrayagentid)>0)
         {
             $formulairetext_openpdf = '';
             if ($mode == MODE_RESPONSABLE)
             {
-                echo $structure->dossierhtml(($action == 'modif'), $userid, $formulairetext_openpdf);
+                echo $structure->dossierhtml($arrayagentid, ($action == 'modif'), $userid, $formulairetext_openpdf);
             }
             else
             {
-                echo $structure->dossierhtml(($action == 'modif'), null);
+                echo $structure->dossierhtml($arrayagentid, ($action == 'modif'), null);
             }
 
             $full_formulairetexte_openpdf = $full_formulairetexte_openpdf . " " . $formulairetext_openpdf;
@@ -885,13 +911,6 @@
 
             if ($mode == MODE_RESPONSABLE) 
             {
-                // $arrayagent = $structure->agentlist(date('d/m/Y'), date('d/m/Y'), 'n');
-                // $arrayagentid = array();
-                // foreach ((array)$arrayagent as $agent)
-                // {
-                //     $arrayagentid[$agent->agentid()] = $agent;
-                // }
-
                 echo "<table><tbody>";
 
                 // Si aucun agent n'est dans la structure, on ne doit pas afficher le paramétrage des signatures des agents
@@ -924,10 +943,6 @@
 
                 $parentstruct = null;
                 $parentstruct = $structure->parentstructure();
-
-                //var_dump($arrayagentid);
-                //var_dump($struct->responsable()->agentid());
-                //var_dump($struct->responsablesiham()->agentid());
 
                 // Si le responsable n'est pas affecté dans la structure, on ne doit pas proposer de gérer les demandes du responsable
                 if (key_exists($structure->responsable()->agentid(),$arrayagentid) or (key_exists($structure->responsablesiham()->agentid(),$arrayagentid)))
