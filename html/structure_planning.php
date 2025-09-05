@@ -191,6 +191,9 @@
             }
             
             $exclusion = $agent->estjourteletravailexclu($date_selected, $moment_selected);
+            // var_dump("date_selected = $date_selected");
+            // var_dump("moment_selected = $moment_selected");
+            // var_dump("exclusion = $exclusion");
             if ($exclusion===false)
             {   // On n'a pas trouvé la date dans la liste
                 $reportpossible = true;
@@ -199,21 +202,24 @@
                     $planning = new planning($dbcon);
                     $planning->load($agentid_selected, $report_date, $report_date, true, true, true);
                     $planningelementliste = $planning->planning();
+                    // ATTENTION :
+                    // On doit vérifier que la date cible n'est pas une journée de télétravail exclue
+                    // Donc pour chaque planningelement on regarde si la classe HTML_CLASS_EXCLUSION est dans les htmlextraclass
                     if ($report_moment==fonctions::MOMENT_MATIN)
                     {
                         $planningelement = current($planningelementliste);
-                        $reportpossible = ($planningelement->type()=='');
+                        $reportpossible = ($planningelement->type()=='' and !str_contains($planningelement->htmlextraclass(), planningelement::HTML_CLASS_EXCLUSION));
                     }
                     elseif ($report_moment==fonctions::MOMENT_APRESMIDI)
                     {
                         $planningelement = next($planningelementliste);
-                        $reportpossible = ($planningelement->type()=='');                        
+                        $reportpossible = ($planningelement->type()=='' and !str_contains($planningelement->htmlextraclass(), planningelement::HTML_CLASS_EXCLUSION));                        
                     }
                     else
                     {
                         foreach ($planning->planning() as $planningelement)
                         {
-                            if ($planningelement->type()!='')
+                            if ($planningelement->type()!='' or str_contains($planningelement->htmlextraclass(), planningelement::HTML_CLASS_EXCLUSION))
                             {
                                 $reportpossible = false;
                                 break;
@@ -235,6 +241,10 @@
                     {
                         echo $fonctions->showmessage(fonctions::MSGINFO,"La suppression de la journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete() . " est enregistrée.");
                     }
+                }
+                else if (str_contains($planningelement->htmlextraclass(), planningelement::HTML_CLASS_EXCLUSION))
+                {
+                    echo $fonctions->showmessage(fonctions::MSGERROR,"Impossible de déplacer la journée de télétravail du " . $fonctions->formatdate($date_selected) . " pour l'agent " . $agent->identitecomplete() . " : La date souhaitée (le " . $fonctions->formatdate($report_date) . ") est un jour de télétravail déplacé.");
                 }
                 else
                 {
@@ -333,6 +343,8 @@
         
         var dbclick_element = function(elementid, agentid, date,moment,typeconvention)
         {
+            // console.log('je suis dans dbclick_element ' + elementid );
+
             var element = document.getElementById(elementid);
             var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
             var tableau = element.closest("table");
@@ -365,7 +377,12 @@
             {
                 return;
             }
-            
+
+            // console.log('dbclick_element : déplacement => ' + deplacement );
+            // console.log('dbclick_element : couleur de element => ' + element.bgColor);
+            // console.log('dbclick_element : Tag de element => ' + element.tagName);
+            // console.log('dbclick_element : tableau => ' + tableau.id);
+
             if (tableau.classList.contains('<?php echo planningelement::JAVA_CLASS_TELETRAVAIL_HIDDEN; ?>'))
             {
                 // Si la classe teletravail_hidden est définie dans le tableau => On ne peut pas modifier une journée de télétravail
@@ -399,8 +416,15 @@
 *                }        
 *            }
 */
-            else if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler/déplacer
+
+
+            // else if (element.bgColor == '<?php echo $couleur ?>') // C'est un teletravail à annuler/déplacer
+            else if (element.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') 
+                  && !element.classList.contains('<?php echo trim(planningelement::HTML_CLASS_DEPLACE); ?>') 
+                  && !element.classList.contains('<?php echo trim(planningelement::HTML_CLASS_EXCLUSION); ?>'))
             {
+                // console.log('dbclick_element : On veut déplacer un élément' );
+
 <?php
                 $reportteletravail = 'n';
                 $constantename = 'REPORTTELETRAVAIL';
@@ -549,7 +573,12 @@
                 }
 ?>
             }
-            else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé => On veut le réactiver
+
+            // else if (element.bgColor == '<?php echo planningelement::COULEUR_VIDE ?>') // C'est un teletravail déjà annulé => On veut le réactiver
+            else if (element.classList.contains('<?php echo trim(planningelement::HTML_CLASS_TELETRAVAIL); ?>') 
+                  && element.classList.contains('<?php echo trim(planningelement::HTML_CLASS_EXCLUSION); ?>')
+                  && !element.classList.contains('<?php echo trim(planningelement::HTML_CLASS_DEPLACE); ?>') 
+)
             {
 
                 if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')

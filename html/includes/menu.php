@@ -326,20 +326,23 @@
     {
         //alert ('Plouf !');
         var tableau = document.getElementById(nomtableau);
-        //alert (tableau.id);
+        // console.log('hide_teletravail : id du tableau => ' + tableau.id);
     	var checkboxvalue = document.activeElement.checked;
         for (var indexcellule = 0; indexcellule < tableau.querySelectorAll('.teletravail').length; indexcellule++)
         {
-            //alert(indexcellule);
+            // console.log('hide_teletravail : Index de la cellule = ' + indexcellule);
             var currenttd = tableau.querySelectorAll('.teletravail')[indexcellule];
+            // console.log('hide_teletravail : currenttd id = ' + currenttd.id);
+
 
             // ATTENTION : On TRIM la classe exclusion car il ne faut pas les espaces quand on vérifie si la classe est là
             // Soit on a demander à le masquer, soit c'est une date exclue (<=> classe exclusion)
             if (checkboxvalue || currenttd.classList.contains('<?php echo trim(planningelement::HTML_CLASS_EXCLUSION); ?>'))  
             {
-                //alert('Suppression de la couleur');
+                // console.log('hide_teletravail : Suppression de la couleur => Couleur actuelle = ' + currenttd.bgColor);
                 // C'est du télétravail et on doit le masquer ou la date est exclue
                 currenttd.bgColor = '<?php echo planningelement::COULEUR_VIDE ?>';
+                // console.log('hide_teletravail : Suppression de la couleur => Nouvelle couleur = ' + currenttd.bgColor);
                 // On ajoute la classe hidde_tip afin de masquer la bulle d'information => voir CSS
                 //currenttd.classList.add('hidde_tip');
                 if (currenttd.getElementsByTagName('span').length>0)
@@ -357,7 +360,9 @@
             {
                 //alert('On remet la couleur');
                 // C'est du télétravail et on doit le montrer
+                //console.log('hide_teletravail : Réactivation de la couleur => Couleur actuelle = ' + currenttd.bgColor);
                 currenttd.bgColor = '<?php echo "$couleur"  ?>';
+                //console.log('hide_teletravail : Réactivation de la couleur => Nouvelle couleur = ' + currenttd.bgColor);
                 // On supprime la classe hidde_tip afin d'autoriser l'affichage de la bulle d'information => voir CSS
                 //currenttd.classList.remove('hidde_tip');
                 if (currenttd.getElementsByTagName('span').length>0)

@@ -6,15 +6,16 @@
     $fonctions = new fonctions($dbcon);
 
 
+    $datelimite = $fonctions->formatdatedb(date("Y-m-d", strtotime("-2 month")));
+    error_log(basename(__FILE__) . $fonctions->stripAccents(" Date limite = " . $datelimite));
     $tabconvention = array();
-    $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE));
-    $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_VALIDE));
+    $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE,$datelimite));
+    $tabconvention = array_merge($tabconvention,$fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_VALIDE, $datelimite));
     error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre de conventions trouvées = " . count($tabconvention)));
 
     $nbconvetionstraitees = 0;
     if (count($tabconvention)>0)
     {
-        $datelimite = $fonctions->formatdatedb(date("Y-m-d", strtotime("-2 month")));
         foreach($tabconvention as $teletravail)
         {
             if (trim($teletravail->esignatureid()) == "" and $teletravail->statut() == teletravail::TELETRAVAIL_ATTENTE and $teletravail->statutresponsable() == teletravail::TELETRAVAIL_ATTENTE)
@@ -30,7 +31,6 @@
             else if (trim($teletravail->esignatureid())!= "")
             {
                 // Si la date de fin est récente (moins de 2 mois) ou dans le futur
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Date limite = " . $datelimite));
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Date de fin de la convention : " . $fonctions->formatdatedb($teletravail->datefin())));
                 if ($fonctions->formatdatedb($teletravail->datefin()) >= $datelimite)
                 {
@@ -65,7 +65,10 @@
     {
         $tabdestinataireesignature = array();
         $tabdestinataireg2t = array();
-        $tabconvention = $fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE);
+        $datelimite = $fonctions->formatdatedb(date("Y-m-d", strtotime("-2 month")));
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" Date limite = " . $datelimite));
+        $tabconvention = $fonctions->listeconventionteletravailavecstatut(teletravail::TELETRAVAIL_ATTENTE,$datelimite);
+        error_log(basename(__FILE__) . $fonctions->stripAccents(" Nombre de conventions trouvées = " . count($tabconvention)));
         $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
         foreach($tabconvention as $convention)
         {

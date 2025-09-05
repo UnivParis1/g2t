@@ -1074,7 +1074,7 @@ class structure
                     // echo "Date case = " . $this->fonctions->formatdatedb(str_pad(($indexjrs + 1),2,"0",STR_PAD_LEFT) . "/" . $mois_annee_debut) . " Date jour = " . date("Ymd") . "<br>";
                     if ($this->fonctions->formatdatedb(str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "/" . $mois_annee_debut) == date("Ymd")) 
                     {
-                        $htmltext = $htmltext . " style='background-color:#3FC6FF'";
+                        $htmltext = $htmltext . " bgcolor='#3FC6FF' ";
                     }
                     $htmltext = $htmltext . ">" . str_pad(($indexjrs + 1), 2, "0", STR_PAD_LEFT) . "</th>";
                 }

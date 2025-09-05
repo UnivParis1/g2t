@@ -2131,7 +2131,7 @@ class agent
                 $htmltext = $htmltext . "         <th scope='row' class='centeraligntext'>" . $tempsolde->typelibelle() . "</th>";
                 if (strcmp((string)$tempsolde->typeabsenceid(), 'cet') == 0) // Si c'est un CET, on n'affiche pas le droits acquis
                 {
-                    $htmltext = $htmltext . "         <td colspan='2' style='background-color:#E8E8E8 !important; ' >"; // On fusionne les 2 colonnes "droit acquis" et "droit pris"
+                    $htmltext = $htmltext . "         <td colspan='2' bgcolor='#E8E8E8' >"; // On fusionne les 2 colonnes "droit acquis" et "droit pris"
                 }
                 else
                 {
@@ -2139,7 +2139,9 @@ class agent
                     if (strcmp((string)substr($tempsolde->typeabsenceid(), 0, 3), 'ann') == 0) // Si c'est un congé annuel
                     {
                         if ($demande = $this->aunedemandecongesbonifies('20' . substr($tempsolde->typeabsenceid(), 3, 2))) // On regarde si il y a une demande de congés bonifiés
+                        {
                             $htmltext = $htmltext . " (C. BONIF.)";
+                        }
                     }
                 }
                 $htmltext = $htmltext . "             </td>";

@@ -2584,12 +2584,12 @@ class fonctions
         $params = array($agentid, $date, $moment);
 
         $query = $this->prepared_select($sql, $params);
-        /*
-        var_dump("SQL = $sql ");
-        var_dump("agentid = $agentid ");
-        var_dump("date = $date ");
-        var_dump("moment = $moment ");
-         */
+        
+        // error_log(basename(__FILE__) . $this->stripAccents(" SQL = $sql"));
+        // error_log(basename(__FILE__) . $this->stripAccents(" Agentid = $agentid"));
+        // error_log(basename(__FILE__) . $this->stripAccents(" Date = $date"));
+        // error_log(basename(__FILE__) . $this->stripAccents(" Moment = $moment"));
+        
         $erreur = mysqli_error($this->dbconnect);
         if ($erreur != "")
         {
@@ -3656,14 +3656,24 @@ class fonctions
         return $erreur;
     }
 
-    public function listeconventionteletravailavecstatut($statut)
+    public function listeconventionteletravailavecstatut($statut, $apresdatefin = null)
     {
         $tabconvention = array();
         $sql = "SELECT TELETRAVAILID
                 FROM TELETRAVAIL
                 WHERE STATUT = ? ";
 
-        $params = array($statut);
+        if (!is_null($apresdatefin))
+        {
+            $apresdatefin = $this->formatdatedb($apresdatefin);
+            $sql = $sql . " AND DATEFIN >= ?";
+            $params = array($statut,$apresdatefin);
+        }
+        else
+        {
+            $params = array($statut);
+        }
+
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);
@@ -6086,6 +6096,48 @@ WHERE  table_schema = Database()
         return $listestruct;
 
     }
+
+    function clean_ms($texz) {
+        $texz = stripslashes(stripslashes($texz));
+        $find = array();
+        $replace = array();
+        $find[] = "\342\200\176";
+        $find[] = "\342\200\177";
+        $find[] = "\342\200\230";
+        $find[] = "\342\200\231";
+        $find[] = "\342\200\232";
+        $find[] = "\342\200\233";
+        $find[] = "\342\200\234";
+        $find[] = "\342\200\235";
+        $find[] = "\342\200\041";
+        $find[] = "\342\200\174";
+        $find[] = "\342\200\220";
+        $find[] = "\342\200\223";
+        $find[] = "\342\200\224";
+        $find[] = "\342\200\225";
+        $find[] = "\342\200\042";
+        $find[] = "\342\200\246";
+
+        $replace[] = "'";
+        $replace[] = "'";
+        $replace[] = "'";
+        $replace[] = "'";
+        $replace[] = ',';
+        $replace[] = "'";
+        $replace[] = '"';
+        $replace[] = '"';
+        $replace[] = '-';
+        $replace[] = '-';
+        $replace[] = '-';
+        $replace[] = '-';
+        $replace[] = '--';
+        $replace[] = '--';
+        $replace[] = '--';
+        $replace[] = '...';
+
+        $texz = str_replace($find, $replace,$texz);
+        return $texz;
+    }    
 
 }
 

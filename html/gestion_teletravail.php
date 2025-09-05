@@ -1006,9 +1006,13 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
 
                 if ($statutresp==teletravail::TELETRAVAIL_VALIDE)
                 {
-                    $teletravail->periodeexclusion($periodeexclusion);
-                    $teletravail->periodeadaptation($periodeadaptation);
-                    $teletravail->activiteteletravail($activitetele);
+                    // $teletravail->periodeexclusion(str_replace(mb_chr(8217),"'",$periodeexclusion));
+                    // $teletravail->periodeadaptation(str_replace(mb_chr(8217),"'",$periodeadaptation));
+                    // $teletravail->activiteteletravail(str_replace(mb_chr(8217),"'",$activitetele));
+                    
+                    $teletravail->periodeexclusion($fonctions->clean_ms($periodeexclusion));
+                    $teletravail->periodeadaptation($fonctions->clean_ms($periodeadaptation));
+                    $teletravail->activiteteletravail($fonctions->clean_ms($activitetele));
                 }
                 elseif ($statutresp==teletravail::TELETRAVAIL_REFUSE)
                 {

@@ -503,8 +503,8 @@ class planningelement
             if ($this->date == date("Ymd")) 
             {
                 //echo "Le matin du jour " . $this->date . " <br>";
-                $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
-                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
+                // $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
+                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $this->couleur($noiretblanc) . "'>";
             } 
             else 
             {
@@ -515,8 +515,8 @@ class planningelement
                 } 
                 else 
                 {
-                    $styletext = "background-color:" . $htmlbackcolor . " !important; ";
-                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
+                    // $styletext = "background-color:" . $htmlbackcolor . " !important; ";
+                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $htmlbackcolor . "'>";
                 }
             }
             $spanactive = false;
@@ -580,8 +580,8 @@ class planningelement
             if ($this->date == date("Ymd")) 
             {
                 // echo "Le soir du jour " . $this->date . " <br>";
-                $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
-                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
+                // $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
+                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $this->couleur($noiretblanc) . "'>";
             } 
             else 
             {
@@ -592,8 +592,8 @@ class planningelement
                 } 
                 else 
                 {
-                    $styletext = "background-color:" . $htmlbackcolor . " !important; ";
-                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' >";
+                    // $styletext = "background-color:" . $htmlbackcolor . " !important; ";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $htmlbackcolor . "'>";
                 }
             }
             $spanactive = false;
