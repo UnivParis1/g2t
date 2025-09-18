@@ -160,9 +160,9 @@
                                     }
                                 }
         
-                                $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.\n";
-                                $corpmail = $corpmail . "La raison de ce refus est : \n" . trim($motif[$commentaireid]) . ".\n\n";
-                                $corpmail = $corpmail . "Suite à ce refus, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                                $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.<br>";
+                                $corpmail = $corpmail . "La raison de ce refus est : <br>" . trim($motif[$commentaireid]) . ".<br><br>";
+                                $corpmail = $corpmail . "Suite à ce refus, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                                 $cronuser->sendmail($currentagent, "Refus d'ajout de jours de récupération", $corpmail);
         
                                 // Envoi du mail au demandeur
@@ -170,9 +170,9 @@
                                 $erreur = $currentsignataire->load($commentaire->auteurid);
                                 if ($erreur !== false)
                                 {
-                                    $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . ".\n";
-                                    $corpmail = $corpmail . "La raison de ce refus est : \n" . trim($motif[$commentaireid]) . ".\n\n";
-                                    $corpmail = $corpmail . "Suite à ce refus, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                                    $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . ".<br>";
+                                    $corpmail = $corpmail . "La raison de ce refus est : <br>" . trim($motif[$commentaireid]) . ".<br><br>";
+                                    $corpmail = $corpmail . "Suite à ce refus, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                                     $cronuser->sendmail($currentsignataire, "Refus d'ajout de jours de récupération", $corpmail);
                                 }
         
@@ -182,9 +182,9 @@
                                 // On vérifie que le signataire n'est pas l'auteur pour éviter l'envoie en double du mail
                                 if ($currentsignataire !== false and $currentsignataire->agentid()!=$commentaire->auteurid)
                                 {
-                                    $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . ".\n";
-                                    $corpmail = $corpmail . "La raison de ce refus est : \n" . trim($motif[$commentaireid]) . ".\n\n";
-                                    $corpmail = $corpmail . "Suite à ce refus, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                                    $corpmail = $user->identitecomplete() . " vient de refuser l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . ".<br>";
+                                    $corpmail = $corpmail . "La raison de ce refus est : <br>" . trim($motif[$commentaireid]) . ".<br><br>";
+                                    $corpmail = $corpmail . "Suite à ce refus, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                                     $cronuser->sendmail($currentsignataire, "Refus d'ajout de jours de récupération", $corpmail);
                                 }
                             }
@@ -266,10 +266,10 @@
                         $findatevalidite = $fonctions->finvaliditerecuperation($commentaire->dateajout,$commentaire->typeabsenceid);
                         $findatevalidite = $fonctions->formatdate($findatevalidite);
 
-                        $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.\n";
-                        $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                        $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.\n\n";
-                        $corpmail = $corpmail . "Suite à cette validation, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                        $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération.<br>";
+                        $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : <br>" . $commentaire->commentaire . ".<br><br>";
+                        $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.<br><br>";
+                        $corpmail = $corpmail . "Suite à cette validation, votre solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                         $cronuser->sendmail($currentagent, "Validation d'ajout de jours de récupération", $corpmail);
 
                         // Envoi du mail au demandeur
@@ -277,10 +277,10 @@
                         $erreur = $currentsignataire->load($commentaire->auteurid);
                         if ($erreur !== false)
                         {
-                            $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..\n";
-                            $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                            $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.\n\n";
-                            $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                            $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..<br>";
+                            $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : <br>" . $commentaire->commentaire . ".<br><br>";
+                            $corpmail = $corpmail . "<b>IMPORTANT</b> : La fin de validité de cette récupération est le $findatevalidite.<br><br>";
+                            $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                             $cronuser->sendmail($currentsignataire, "Validation d'ajout de jours de récupération", $corpmail);
                         }
 
@@ -290,9 +290,9 @@
                         // On vérifie que le signataire n'est pas l'auteur pour éviter l'envoie en double du mail
                         if ($currentsignataire !== false and $currentsignataire->agentid()!=$commentaire->auteurid)
                         {
-                            $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..\n";
-                            $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : \n" . $commentaire->commentaire . ".\n\n";
-                            $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                            $corpmail = $user->identitecomplete() . " vient de valider l'ajout de " . $commentaire->nbjoursajoute . " jour(s) de récupération à " . $currentagent->identitecomplete() . "..<br>";
+                            $corpmail = $corpmail . "Pour rappel, le motif de cet ajout est : <br>" . $commentaire->commentaire . ".<br><br>";
+                            $corpmail = $corpmail . "Suite à cette validation, le solde de jours de récupération est de " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                             $cronuser->sendmail($currentsignataire, "Validation d'ajout de jours de récupération", $corpmail);
                         }
                     }

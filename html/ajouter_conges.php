@@ -184,8 +184,8 @@
                         //$corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) complémentaire(s).\n";
                         //$corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . $nouveau_solde . " jour(s).\n";
                         //$cronuser->sendmail($agent, "Annulation de jours complémentaires", $corpmail);
-                        $corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) de récupération.\n";
-                        $corpmail = $corpmail . "Votre solde de jours de récupération est maintenant de : " . $nouveau_solde . " jour(s).\n";
+                        $corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) de récupération.<br>";
+                        $corpmail = $corpmail . "Votre solde de jours de récupération est maintenant de : " . $nouveau_solde . " jour(s).<br>";
                         $cronuser->sendmail($agent, "Annulation de jours de récupération", $corpmail);
 
                         // Envoi du mail à tous les agents RHCONGE
@@ -195,8 +195,8 @@
                             //$corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) complémentaire(s) à " . $agent->identitecomplete() . ".\n";
                             //$corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . $nouveau_solde . " jour(s).\n";
                             //$cronuser->sendmail($agentrh, "Annulation de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
-                            $corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) de récupération à " . $agent->identitecomplete() . ".\n";
-                            $corpmail = $corpmail . "Le solde de jours de récupération est maintenant de : " . $nouveau_solde . " jour(s).\n";
+                            $corpmail = $user->identitecomplete() . " vient d'annuler un ajout de jour(s) de récupération à " . $agent->identitecomplete() . ".<br>";
+                            $corpmail = $corpmail . "Le solde de jours de récupération est maintenant de : " . $nouveau_solde . " jour(s).<br>";
                             $cronuser->sendmail($agentrh, "Annulation de jours de récupération pour " . $agent->identitecomplete(), $corpmail);
                         }
 
@@ -366,10 +366,10 @@
 
                     $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout,$commentaireconge->typeabsenceid);
 
-                    $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) de récupération.\n";
-                    $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
-                    $corpmail = $corpmail . "<b>IMPORTANT</b> : La durée de validité de cette récupération est de " . $validrecup . " mois (fin de validité : $findatevalidite).\n\n";
-                    $corpmail = $corpmail . "Votre solde de jours de récupération est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                    $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) de récupération.<br>";
+                    $corpmail = $corpmail . "Le motif de cet ajout est : <br>" . $commentaire_supp . ".<br><br>";
+                    $corpmail = $corpmail . "<b>IMPORTANT</b> : La durée de validité de cette récupération est de " . $validrecup . " mois (fin de validité : $findatevalidite).<br><br>";
+                    $corpmail = $corpmail . "Votre solde de jours de récupération est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                     $cronuser->sendmail($agent, "Ajout de jours de récupération", $corpmail);
 
                     // Envoi du mail à tous les agents RHCONGE
@@ -379,10 +379,10 @@
                         //$corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
                         //$corpmail = $corpmail . "Le solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
                         //$cronuser->sendmail($agentrh, "Ajout de jours complémentaires pour " . $agent->identitecomplete(), $corpmail);
-                        $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) de récupération à " . $agent->identitecomplete() . ".\n";
-                        $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
-                        $corpmail = $corpmail . "<b>IMPORTANT</b> : La durée de validité de cette récupération est de " . $validrecup . " mois (fin de validité : $findatevalidite).\n\n";
-                        $corpmail = $corpmail . "Le solde de jours de récupération est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
+                        $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) de récupération à " . $agent->identitecomplete() . ".<br>";
+                        $corpmail = $corpmail . "Le motif de cet ajout est : <br>" . $commentaire_supp . ".<br><br>";
+                        $corpmail = $corpmail . "<b>IMPORTANT</b> : La durée de validité de cette récupération est de " . $validrecup . " mois (fin de validité : $findatevalidite).<br><br>";
+                        $corpmail = $corpmail . "Le solde de jours de récupération est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).<br>";
                         $cronuser->sendmail($agentrh, "Ajout de jours de récupération pour " . $agent->identitecomplete(), $corpmail);
                     }
                 }
@@ -399,10 +399,10 @@
                     //$corpmail = $corpmail . "Cette demande de jours complémentaires doit maintenant être validée par la Direction des Ressources Humaines.\n";
                     //$corpmail = $corpmail . "Suite à cette validation, votre solde de jours compléméntaires sera actualisé.\nDans l'intervalle, votre solde est inchangé.\n";
                     //$cronuser->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
-                    $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) de récupération.\n";
-                    $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
-                    $corpmail = $corpmail . "Cette demande de jours de récupération doit maintenant être validée par la Direction des Ressources Humaines.\n";
-                    $corpmail = $corpmail . "Suite à cette validation, votre solde de jours de récupération sera actualisé.\nDans l'intervalle, votre solde est inchangé.\n";
+                    $corpmail = $user->identitecomplete() . " vient de vous ajouter $nbr_jours_conges jour(s) de récupération.<br>";
+                    $corpmail = $corpmail . "Le motif de cet ajout est : <br>" . $commentaire_supp . ".<br><br>";
+                    $corpmail = $corpmail . "Cette demande de jours de récupération doit maintenant être validée par la Direction des Ressources Humaines.<br>";
+                    $corpmail = $corpmail . "Suite à cette validation, votre solde de jours de récupération sera actualisé.<br>Dans l'intervalle, votre solde est inchangé.<br>";
                     $cronuser->sendmail($agent, "Ajout de jours de récupération", $corpmail);
 
                     // Envoi du mail à tous les agents RHCONGE
@@ -412,9 +412,9 @@
                         //$corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
                         //$corpmail = $corpmail . "Vous devez maintenant valider cette demande d'ajout à partir du menu 'Gestion RH/Gestion des congés/Validation des jours complémentaires'.\n";
                         //$cronuser->sendmail($agentrh, "Ajout de jours complémentaires en attente de validation pour " . $agent->identitecomplete(), $corpmail);
-                        $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) de récupération à " . $agent->identitecomplete() . ".\n";
-                        $corpmail = $corpmail . "Le motif de cet ajout est : \n" . $commentaire_supp . ".\n\n";
-                        $corpmail = $corpmail . "Vous devez maintenant valider cette demande d'ajout à partir du menu 'Gestion RH/Gestion des congés/Validation des jours de récupération'.\n";
+                        $corpmail = $user->identitecomplete() . " vient d'ajouter $nbr_jours_conges jour(s) de récupération à " . $agent->identitecomplete() . ".<br>";
+                        $corpmail = $corpmail . "Le motif de cet ajout est : <br>" . $commentaire_supp . ".<br><br>";
+                        $corpmail = $corpmail . "Vous devez maintenant valider cette demande d'ajout à partir du menu 'Gestion RH/Gestion des congés/Validation des jours de récupération'.<br>";
                         $cronuser->sendmail($agentrh, "Ajout de jours de récupération en attente de validation pour " . $agent->identitecomplete(), $corpmail);
                     }
 

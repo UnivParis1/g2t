@@ -104,8 +104,8 @@
                 $msg_erreur = $msg_erreur . "Erreur lors de l'enregistrement du CET : $erreur <br>";
             } else // La sauvegarde du CET est correcte.
             {
-                $text = "Votre CET vient d'être repris dans l'application de gestion des congés.\n";
-                $text = $text . "Le solde de votre CET est de $nbr_jours_cet jour(s). \n";
+                $text = "Votre CET vient d'être repris dans l'application de gestion des congés.<br>";
+                $text = $text . "Le solde de votre CET est de $nbr_jours_cet jour(s). <br>";
                 // / ATTENTION : On doit recharger le CET pour avoir toutes les propriétés initialisées (Cet->jrspris,Cet->cumulannuel ,Cet->idtotal)
                 unset($cet);
                 $cet = new cet($dbcon);

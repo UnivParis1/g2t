@@ -1031,7 +1031,7 @@ class structure
         
         // echo "Apres le chargement du planning du service <br>";
         $htmltext = $htmltext . "<div id='structplanning'>";
-        $htmltext = $htmltext . "<table class='tableau' id='struct_plan_" . $this->id() . "'>";
+        $htmltext = $htmltext . "<table class='tableau " . planning::TYPE_STRUCTURE . "' id='struct_plan_" . $this->id() . "'>";
         
         $titre_a_ajouter = TRUE;
         $elementlegende = array();

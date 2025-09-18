@@ -2,11 +2,87 @@
 
 class ttexception
 {
+    public const STATUT_VALIDE = 'v';
+    public const STATUT_ENATTENTE = 'a';
+    public const STATUT_REFUSE = 'r';
+
+    public const ACTION_DESACTIVE = 'desactive';
+    public const ACTION_REACTIVE = 'reactive';
+    public const ACTION_ANNULE = 'annule';
+    public const ACTION_SUPPRIME = 'supprime';
+    public const ACTION_VALIDE = 'valide';
+    public const ACTION_REFUSE = 'refuse';
+    public const ACTION_DEPLACEMENT = 'deplacement';
+
     public $agentid = null;
     public $dateorigine = null;
     public $momentorigine = null;
     public $dateremplacement = null;
     public $momentremplacement = null;
+    public $statut = null;
+    public $motif = '';
+
+    
+    public function id() :string
+    {
+        global $fonctions;
+
+        $idelement = $fonctions->formatdatedb($this->dateorigine);
+        switch ($this->momentorigine)
+        {
+            case fonctions::MOMENT_MATIN :
+                $idelement = $idelement . '1';
+                break;
+            case fonctions::MOMENT_APRESMIDI :
+                $idelement = $idelement . '2';
+                break;
+            default :
+                $idelement = $idelement . '0';
+                break;
+        }
+        return $idelement;
+    }
+
+    public function infosfromid($id) :bool // l'Id a forcément un format YYYYMMDD + N° moment
+    {
+        global $fonctions;
+
+        if (strlen($id . '') != 9)
+        {
+            $errlog = "ttexception::infosfromid : Le format de l'Id n'est pas correct => id = $id";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            return false;
+        }
+        $datedb = substr($id,0,8);
+        $idmoment = substr($id,-1,1);
+        $this->dateorigine = $fonctions->formatdatedb($datedb);
+        if (is_null($this->dateorigine))
+        {
+            $errlog = "ttexception::infosfromid : La date n'est pas correcte => id = $id";
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+            return false;
+        }
+        switch ($idmoment)
+        {
+            case 0 :
+                $this->momentorigine = "";
+                break;
+            case 1 :
+                $this->momentorigine = fonctions::MOMENT_MATIN;
+                break;
+            case 2 :
+                $this->momentorigine = fonctions::MOMENT_APRESMIDI;
+                break;
+            default :
+                $errlog = "ttexception::infosfromid : La date n'est pas correcte => id = $id";
+                echo $errlog . "<br/>";
+                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                return false;
+        }
+        return true;
+    }
 }
 
 /**
@@ -1189,6 +1265,9 @@ class fonctions
             case fonctions::MOMENT_APRESMIDI:
                 return "après-midi";
                 break;
+            case '' :
+                return "toute la journée";
+                break;
         }
     }
 
@@ -1393,6 +1472,7 @@ class fonctions
      */
     public function my_real_escape_utf8($texte)
     {
+        $texte = $texte . '';
         //return mysqli_real_escape_string($this->dbconnect, $this->utf8_encode($texte));
         if (mb_detect_encoding($texte, 'UTF-8', true)===false) // Ce n'est pas de l'UTF-8
         {
@@ -2482,13 +2562,13 @@ class fonctions
         }
     }
 
-    public function listejoursteletravailexclus($agentid, $datedebut, $datefin)
+    public function listejoursteletravailexclus($agentid, $datedebut, $momentdebut, $datefin, $momentfin, $explodettexception = true)
     {
         $datedebut = $this->formatdatedb($datedebut);
         $datefin = $this->formatdatedb($datefin);
 
         $listteletravail = array();
-        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT, STATUT
                 FROM TTEXCEPTION
                 WHERE AGENTID = ?
                   AND DATEORIGINE >= ?
@@ -2515,30 +2595,71 @@ class fonctions
         {
             while ($result = mysqli_fetch_row($query))
             {
-                $exception = new ttexception();
-                $exception->agentid = $agentid;
-                $exception->dateorigine = $result[0];
-                $exception->dateremplacement = '';
-                $exception->momentremplacement = '';
-                if ($result[1] == '') // On a exclu/déplacé la journée entière => On doit découper en 2 moment
+                if ($explodettexception)
                 {
-                    $exception->momentorigine = fonctions::MOMENT_MATIN;
-                    $listteletravail[] = $exception;
                     $exception = new ttexception();
                     $exception->agentid = $agentid;
                     $exception->dateorigine = $result[0];
-                    $exception->dateremplacement = '';
-                    $exception->momentremplacement = '';
-                    $exception->momentorigine = fonctions::MOMENT_APRESMIDI;
-                    $listteletravail[] = $exception;
+                    $exception->dateremplacement = $result[2];
+                    $exception->momentremplacement = fonctions::MOMENT_MATIN;
+                    $exception->statut = $result[4];
+                    if ($result[1] == '') // On a exclu/déplacé la journée entière => On doit découper en 2 moment
+                    {
+                        $exception->momentorigine = ''; // fonctions::MOMENT_MATIN;
+                        if ($this->formatdatedb($exception->dateorigine)==$datedebut and $momentdebut == fonctions::MOMENT_APRESMIDI)
+                        {
+                            // On skip cette exception car on ne doit prendre que l'après-midi du premier jour
+                        }
+                        else
+                        {
+                            $listteletravail[] = $exception;
+                        }
+                        $exception = new ttexception();
+                        $exception->agentid = $agentid;
+                        $exception->dateorigine = $result[0];
+                        $exception->dateremplacement = $result[2];
+                        $exception->momentremplacement = fonctions::MOMENT_APRESMIDI;
+                        $exception->statut = $result[4];
+                        $exception->momentorigine = ''; // fonctions::MOMENT_APRESMIDI;
+                        if ($this->formatdatedb($exception->dateorigine)==$datefin and $momentfin == fonctions::MOMENT_MATIN)
+                        {
+                            // On skip cette exception car on ne doit prendre que le matin du dernier jour
+                        }
+                        else
+                        {
+                            $listteletravail[] = $exception;
+                        }
+                    }
+                    else
+                    {
+                        $exception->momentorigine = $result[1];
+                        $exception->momentremplacement = $result[3];
+                        if (($this->formatdatedb($exception->dateorigine)==$datedebut and $momentdebut == fonctions::MOMENT_APRESMIDI and $exception->momentorigine == fonctions::MOMENT_MATIN)
+                        or ($this->formatdatedb($exception->dateorigine)==$datefin and $momentfin == fonctions::MOMENT_MATIN and $exception->momentorigine == fonctions::MOMENT_APRESMIDI))
+                        {
+                            // On skip cette exception car elle n'est pas comprise dans l'interval datedébut/momentdebut -> datefin/momentfin
+                        }
+                        else
+                        {
+                            $listteletravail[] = $exception;
+                        }
+                    }
                 }
-                else
+                else  // On explose pas les ttexception 
                 {
-                    $exception->momentorigine = $result[1];
+                    $exception = new ttexception();
+                    $exception->agentid = $agentid;
+                    $exception->dateorigine = $result[0];
+                    $exception->momentorigine = $result[1] . '';
+                    $exception->dateremplacement = $result[2] . '';
+                    $exception->momentremplacement = $result[3] . '';
+                    $exception->statut = $result[4];
                     $listteletravail[] = $exception;
                 }
             }
         }
+        // error_log(basename(__FILE__) . $this->stripAccents(" listejoursteletravailexclus : " . var_export($listteletravail,true)));
+
         return $listteletravail;
     }
 
@@ -2570,11 +2691,12 @@ class fonctions
         return $errlog;
     }
 
-    public function estjourteletravailexclu($agentid, $date, $moment)
+    public function estjourteletravailexclu($agentid, $date, $moment, &$statut)
     {
         $date = $this->formatdatedb($date);
+        $statut = '';
 
-        $sql = "SELECT AGENTID
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT,STATUT
                 FROM TTEXCEPTION
                 WHERE AGENTID = ?
                   AND DATEORIGINE = ?
@@ -2602,8 +2724,21 @@ class fonctions
         }
         else
         {
-            return true;
+            $result = mysqli_fetch_row($query);
+            $ttexception = new ttexception;
+            $ttexception->agentid = $agentid;
+            $ttexception->dateorigine = $result[0];
+            $ttexception->momentorigine = $result[1];
+            $ttexception->dateremplacement = $result[2];
+            $ttexception->momentremplacement = $result[3];
+            $ttexception->statut = $result[4];
+            $statut = $ttexception->statut;
+
+            // error_log(basename(__FILE__) . $this->stripAccents(" estjourteletravailexclu : Agent = $agentid Date = $date Moment = $moment  Statut = $statut"));
+            return $ttexception;
         }
+
+        return false;
     }
 
     public function estjourteletravaildeplace($agentid, $date, $moment)
@@ -2612,14 +2747,15 @@ class fonctions
         {
             $date = $this->formatdatedb($date);
         }
-        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT, STATUT
                 FROM TTEXCEPTION
                 WHERE AGENTID = ?
+                  AND STATUT = ?
                   AND DATEREMPLACEMENT = ?
                   AND ( MOMENTREMPLACEMENT = ?
                      OR MOMENTREMPLACEMENT = '')";
 
-        $params = array($agentid,$date,$moment);
+        $params = array($agentid,ttexception::STATUT_VALIDE,$date,$moment);
 
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
@@ -2642,11 +2778,12 @@ class fonctions
             $exception->momentorigine = $result[1];
             $exception->dateremplacement = $result[2];
             $exception->momentremplacement = $result[3];
+            $exception->statut = $result[4];
             return $exception;
         }
     }
 
-    function ajoutjoursteletravailexclus($agentid, $dateorigine, $momentorigine, $dateremplacement = NULL, $momentremplacement = '')
+    function ajoutjoursteletravailexclus($agentid, $dateorigine, $momentorigine, $dateremplacement = NULL, $momentremplacement = '', $statut = ttexception::STATUT_VALIDE) :string|ttexception
     {
         $dateorigine = $this->formatdatedb($dateorigine);
         if ($dateremplacement . "" != "")
@@ -2659,8 +2796,10 @@ class fonctions
         }
         $errlog = '';
 
-        $sql = 'INSERT INTO TTEXCEPTION(AGENTID, DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT) VALUES(?, ?, ?, ?, ?)';
-        $params = array($agentid,$dateorigine,$momentorigine,$dateremplacement,$momentremplacement);
+        $this->supprjourteletravailexclu($agentid, $dateorigine, $momentorigine);
+
+        $sql = 'INSERT INTO TTEXCEPTION(AGENTID, DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT, STATUT) VALUES(?, ?, ?, ?, ?, ?)';
+        $params = array($agentid,$dateorigine,$momentorigine,$dateremplacement,$momentremplacement, $statut);
         $query = $this->prepared_select($sql, $params);
         //echo "<br>SQL = $sql <br>";
         $erreur = mysqli_error($this->dbconnect);
@@ -2668,8 +2807,16 @@ class fonctions
         {
             $errlog = "Problème SQL dans l'enregistrement de l'exclusion : " . $erreur;
             echo $errlog;
+            return $errlog;
         }
-        return $errlog;
+        $ttexception = new ttexception;
+        $ttexception->agentid = $agentid;
+        $ttexception->dateorigine = $dateorigine;
+        $ttexception->momentorigine = $momentorigine;
+        $ttexception->dateremplacement = $dateremplacement; 
+        $ttexception->momentremplacement = $momentremplacement; 
+        $ttexception->statut = $statut;
+        return $ttexception;
     }
 
     public function typeabsencelistecomplete()
@@ -3695,6 +3842,50 @@ class fonctions
         return $tabconvention;
     }
 
+    public function listettexceptionavecstatut($statut, $apresdateorigine = null)
+    {
+        $listettexception = array();
+        $sql = "SELECT AGENTID, DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT, STATUT
+                FROM TTEXCEPTION
+                WHERE STATUT = ?";
+
+        if (!is_null($apresdateorigine))
+        {
+            $apresdateorigine = $this->formatdatedb($apresdateorigine);
+            $sql = $sql . " AND DATEORIGINE >= ?";
+            $params = array($statut,$apresdateorigine);
+        }
+        else
+        {
+            $params = array($statut);
+        }
+
+        $query = $this->prepared_select($sql, $params);
+        //echo "<br>SQL = $sql <br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "")
+        {
+            $errlog = "listettexceptionavecstatut => Problème SQL dans le chargement des exceptions de télétravail : " . $erreur;
+            error_log(basename(__FILE__) . " " . $this->stripAccents($errlog));
+            echo $errlog;
+        }
+        elseif (mysqli_num_rows($query) > 0)
+        {
+            while ($result = mysqli_fetch_row($query))
+            {
+                    $exception = new ttexception();
+                    $exception->agentid = $result[0] . '';
+                    $exception->dateorigine = $result[1] . '' ;
+                    $exception->momentorigine = $result[2] . '';
+                    $exception->dateremplacement = $result[3] . '';
+                    $exception->momentremplacement = $result[4] . '';
+                    $exception->statut = $result[5] . '';
+                    $listettexception[$exception->agentid . "_" . $exception->id()] = $exception;
+            }
+        }
+        return $listettexception;
+    }
+
     public function synchronisealimentationCET($esignatureid)
     {
         $status = "";
@@ -3746,6 +3937,15 @@ class fonctions
 
         $esignature_status = str_replace("'", "", $esignature_status);
         error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status'"));
+
+        // Si le statut de eSignature n'a pas pu être récupéré on ne fait aucune modification du statut de G2T
+        if ($esignature_status == '')
+        {
+            $error = " Pas de statut récupéré de eSignature => On ne modifie pas le statut dans G2T";
+            error_log(basename(__FILE__) . $this->stripAccents($error));
+            $result_json = array('status' => 'Ok', 'description' => $error);
+            return $result_json;
+        }
 
         switch (strtolower($esignature_status))
         {
@@ -4050,8 +4250,18 @@ class fonctions
         }
 
         $esignature_status = str_replace("'", "", $esignature_status);
-
         error_log(basename(__FILE__) . $this->stripAccents(" Le statut de la demande $esignatureid dans eSignature est '$esignature_status'"));
+
+        // Si le statut de eSignature n'a pas pu être récupéré on ne fait aucune modification du statut de G2T
+        if ($esignature_status == '')
+        {
+            $error = " Pas de statut récupéré de eSignature => On ne modifie pas le statut dans G2T";
+            error_log(basename(__FILE__) . $this->stripAccents($error));
+            $result_json = array('status' => 'Ok', 'description' => $error);
+            return $result_json;
+        }
+
+
         switch (strtolower($esignature_status))
         {
             //draft, pending, canceled, checked, signed, refused, deleted, completed, exported, archived, cleaned
@@ -4366,6 +4576,15 @@ class fonctions
 
         $esignature_status = str_replace("'", "", $esignature_status);
         error_log(basename(__FILE__) . $this->stripAccents(" Le current status (eSignature) = $esignature_status  Le statut dans G2T = " . $teletravail->statut()));
+
+        // Si le statut de eSignature n'a pas pu être récupéré on ne fait aucune modification du statut de G2T
+        if ($esignature_status == '')
+        {
+            $error = " Pas de statut récupéré de eSignature => On ne modifie pas le statut dans G2T";
+            error_log(basename(__FILE__) . $this->stripAccents($error));
+            $result_json = array('status' => 'Ok', 'description' => $error);
+            return $result_json;
+        }
 
         switch (strtolower($esignature_status))
         {
@@ -4686,8 +4905,8 @@ class fonctions
             if ($materieldemande==true)
             {
                 $objet = "Demande de matériel suite à validation de convention télétravail";
-                $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : \n";
-                $corps = $corps . "\n" . $besoin . "\n Cordialement, \n" . $demandeur->identitecomplete() . " \n";
+                $corps = "Suite à la validation de ma demande de convention de télétravail numéro " . $teletravail->teletravailid() . ", je vous remercie de bien vouloir prendre note que : <br>";
+                $corps = $corps . "<br>" . $besoin . "<br> Cordialement, <br>" . $demandeur->identitecomplete() . " <br>";
                 error_log(basename(__FILE__) . $this->stripAccents(" Les besoins en matériel sont : " . str_replace(array("\n","&nbsp;","&bull;"), '', $besoin) . " => $destinataire"));
                 
                 $constante = 'MAINTENANCE';
@@ -6098,7 +6317,7 @@ WHERE  table_schema = Database()
     }
 
     function clean_ms($texz) {
-        $texz = stripslashes(stripslashes($texz));
+        // $texz = stripslashes(stripslashes($texz));
         $find = array();
         $replace = array();
         $find[] = "\342\200\176";
@@ -6137,8 +6356,8 @@ WHERE  table_schema = Database()
 
         $texz = str_replace($find, $replace,$texz);
         return $texz;
-    }    
-
+    }   
+    
 }
 
 ?>

@@ -76,7 +76,7 @@
                 echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour ajouter l'affectation de l'agent. \n";
                 $cronuser->sendmail($drhuser,"Un agent a une demande de congés/d'absence mais pas d'affectation dans G2T","L'agent " . $demandeur->identitecomplete() . " (" . $demandeur->agentid() . ") a une demande de congés/d'absence mais n'a pas d'affectation à une structure dans G2T.
 Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
-Merci de contrôler son dossier.\n");
+Merci de contrôler son dossier.<br>");
             }
             continue;
         }
@@ -94,7 +94,7 @@ Merci de contrôler son dossier.\n");
                     echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
                     $cronuser->sendmail($drhuser,"Un agent a une demande de congés/d'absence mais pas de responsable","L'agent " . $demandeur->identitecomplete() . " (" . $demandeur->agentid() . ") a une demande de congés/d'absence mais n'a pas de responsable dans G2T.
 Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
-Merci de contrôler son dossier.\n");
+Merci de contrôler son dossier.<br>");
                     $arraydemandeur[] = $demandeur->agentid();
                 }
                 else
@@ -188,7 +188,7 @@ Merci de contrôler son dossier.\n");
                         $corpsmail = "Le $typesignataire de la structure " . $structure->nomlong() . " (" . $structure->nomcourt()  . ") a une demande à valider. Cependant celui-ci n'est pas défini.
 Dans le cas du responsable, cela est généralement dû à une fonction manquante dans le dossier RH.
 Dans le cas d'un gestionnaire, il faut que le responsable de la structure modifie le paramétrage de la structure dans G2T (Menu responsable/Paramétrage des dossiers et des structures).
-Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G2T.\n";
+Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G2T.<br>";
                         $cronuser->sendmail($drhuser,"Pas de $typesignataire défini pour une structure",$corpsmail);
                         $arraystruct[] = $structure->id();
                     }
@@ -221,10 +221,10 @@ Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G
         $nbredemande = substr_count($listedemande, ',');
         echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " agentid = " . $responsable->agentid() . ") : Il y a $nbredemande demandes en attente \n";
 
-        $corpsmail = "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n";
-        $corpsmail = $corpsmail . "Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.\n";
-        $corpsmail = $corpsmail . "\n";
-        $corpsmail = $corpsmail . "Informations sur les demandes en attente :\n";
+        $corpsmail = "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.<br>";
+        $corpsmail = $corpsmail . "Merci de bien vouloir les valider dès que possible à partir du menu 'Responsable'.<br>";
+        $corpsmail = $corpsmail . "<br>";
+        $corpsmail = $corpsmail . "Informations sur les demandes en attente :<br>";
         $tablistedemande = explode(',',$listedemande);
         $corpsmail = $corpsmail . "<ul>";
         foreach ($tablistedemande as $demandeid)
@@ -233,7 +233,7 @@ Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G
             {
                 $demande = new demande($dbcon);
                 $demande->load($demandeid);
-                $corpsmail = $corpsmail . "<li>" . $demande->agent()->identitecomplete() . " : Demande déposée le " . $demande->date_demande() . " " . $demande->heure_demande() . " - période du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n</li>";
+                $corpsmail = $corpsmail . "<li>" . $demande->agent()->identitecomplete() . " : Demande déposée le " . $demande->date_demande() . " " . $demande->heure_demande() . " - période du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br></li>";
             }
         }
         $corpsmail = $corpsmail . "</ul>";
@@ -248,10 +248,10 @@ Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G
         $nbredemande = substr_count($listedemande, ',');
         echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " agentid = " . $gestionnaire->agentid() . ") : Il y a $nbredemande demandes en attente \n";
 
-        $corpsmail = "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.\n";
-        $corpsmail = $corpsmail . "Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.\n";
-        $corpsmail = $corpsmail . "\n";
-        $corpsmail = $corpsmail . "Informations sur les demandes en attente :\n";
+        $corpsmail = "Il y a $nbredemande demande(s) de congés ou d'autorisation d'absence en attente de validation.<br>";
+        $corpsmail = $corpsmail . "Merci de bien vouloir les valider dès que possible à partir du menu 'Gestionnaire'.<br>";
+        $corpsmail = $corpsmail . "<br>";
+        $corpsmail = $corpsmail . "Informations sur les demandes en attente :<br>";
         $tablistedemande = explode(',',$listedemande);
         $corpsmail = $corpsmail . "<ul>";
         foreach ($tablistedemande as $demandeid)
@@ -260,7 +260,7 @@ Merci de contrôler le dossier RH du responsable ou le gestionnaire saisi dans G
             {
                 $demande = new demande($dbcon);
                 $demande->load($demandeid);
-                $corpsmail = $corpsmail . "<li>" . $demande->agent()->identitecomplete() . " : Demande déposée le " . $demande->date_demande() . " " . $demande->heure_demande() . " - période du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n</li>";
+                $corpsmail = $corpsmail . "<li>" . $demande->agent()->identitecomplete() . " : Demande déposée le " . $demande->date_demande() . " " . $demande->heure_demande() . " - période du " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . " au " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br></li>";
             }
         }
         $corpsmail = $corpsmail . "</ul>";

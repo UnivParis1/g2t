@@ -126,7 +126,7 @@
 
         $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
         foreach ($arrayagentrh as $gestrh) {
-            $cronmail->sendmail($gestrh, 'Historique des demandes de congés de CET', "Veuillez trouver ci-joint le récapitulatif des demandes de CET depuis $datedebut à la date du " . date("d/m/Y") . ".\n", $filename);
+            $cronmail->sendmail($gestrh, 'Historique des demandes de congés de CET', "Veuillez trouver ci-joint le récapitulatif des demandes de CET depuis $datedebut à la date du " . date("d/m/Y") . ".<br>", $filename);
         }
     }
     echo "Historique des demandes de congés de CET - Fin de la génération - " . date("d/m/Y H:i:s") . "\n";

@@ -23,6 +23,7 @@ class planningelement
     const HTML_CLASS_PERIODENONDECLA = ' periodenondecla ';
     const HTML_CLASS_SANSACTIVITE = ' sansactivite ';
     const HTML_CLASS_PERIODEOBLIGATOIRE = ' periodeoblig ';
+    const HTML_CLASS_DEPLACEMENT_ENATTENTE = ' en_attente ';
 
     const JAVA_CLASS_TELETRAVAIL_HIDDEN = 'teletravail_hidden';
     
@@ -51,6 +52,8 @@ class planningelement
     private $htmlextraclass = '';
 
     private $fonctions = null;
+
+    private $htmlextradata = '';
 
     function __construct($db)
     {
@@ -273,6 +276,15 @@ class planningelement
             $this->htmlextraclass = $htmlextraclass;
         }
     }
+
+    function htmlextradata($htmlextradata = null)
+    {
+        if (is_null($htmlextradata)) {
+            return $this->htmlextradata;
+        } else {
+            $this->htmlextradata = $htmlextradata;
+        }
+    }
     
     function parenttype()
     {
@@ -478,6 +490,7 @@ class planningelement
         }
         
         //$extraclass = '';        
+        $htmlextradata = $this->htmlextradata() . '';
         $extraclass = $this->htmlextraclass();
         $exclusion = (stripos(" " . $this->htmlextraclass() . " ", planningelement::HTML_CLASS_EXCLUSION)!==false);
         $deplace = (stripos(" " . $this->htmlextraclass() . " ", planningelement::HTML_CLASS_DEPLACE)!==false);
@@ -489,7 +502,25 @@ class planningelement
             // Si l'élément est déplacé on ne permet pas le dbclick 
             if ($dbclickable and !$deplace)
             {
-                $clickabletext = $clickabletext . " id='" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "' ondblclick=\"dbclick_element('" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "','" . $this->agentid()  . "','" . $this->date() . "','" . $this->moment() . "','" . $this->typeconvention() . "');\" ";
+                static $reportteletravail = null;
+                if (is_null($reportteletravail))
+                {
+                    $constantename = 'REPORTTELETRAVAIL';
+                    if ($this->fonctions->testexistdbconstante($constantename))
+                    {
+                        $reportteletravail = $this->fonctions->convertvaluetobool($this->fonctions->liredbconstante($constantename));
+                    }
+                    else
+                    {
+                        $reportteletravail = false;
+                    }
+                }
+
+                $clickabletext = $clickabletext . " id='" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "' ";
+                // if (!str_contains($extraclass . "", planningelement::HTML_CLASS_DEPLACEMENT_ENATTENTE))
+                // {
+                    $clickabletext = $clickabletext . " ondblclick=\"dbclick_element('" . $this->agentid() . "_" . $this->fonctions->formatdatedb($this->date()) . "_" . $this->moment()  . "','" . $this->agentid()  . "','" . $this->date() . "','" . $this->moment() . "','" . $this->typeconvention() . "',$reportteletravail);\" ";
+                // }
             }
             else
             {
@@ -504,19 +535,19 @@ class planningelement
             {
                 //echo "Le matin du jour " . $this->date . " <br>";
                 // $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
-                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $this->couleur($noiretblanc) . "'>";
+                $htmltext = $htmltext . "<td class='planningelement_jour_matin $extraclass' " . $clickabletext . " $datadatefr $htmlextradata style='$styletext' bgcolor='" . $this->couleur($noiretblanc) . "'>";
             } 
             else 
             {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) 
                 {
-                    $htmltext = $htmltext . "<td class='planningelement_matin rayureplanning' " . $clickabletext . " $datadatefr >";
+                    $htmltext = $htmltext . "<td class='planningelement_matin rayureplanning' " . $clickabletext . " $datadatefr $htmlextradata >";
                 } 
                 else 
                 {
                     // $styletext = "background-color:" . $htmlbackcolor . " !important; ";
-                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $htmlbackcolor . "'>";
+                    $htmltext = $htmltext . "<td class='planningelement_matin $extraclass' " . $clickabletext . " $datadatefr $htmlextradata style='$styletext' bgcolor='" . $htmlbackcolor . "'>";
                 }
             }
             $spanactive = false;
@@ -581,19 +612,19 @@ class planningelement
             {
                 // echo "Le soir du jour " . $this->date . " <br>";
                 // $styletext = "background-color:" . $this->couleur($noiretblanc) . " !important; ";
-                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $this->couleur($noiretblanc) . "'>";
+                $htmltext = $htmltext . "<td class='planningelement_jour_aprem $extraclass' " . $clickabletext . " $datadatefr $htmlextradata style='$styletext' bgcolor='" . $this->couleur($noiretblanc) . "'>";
             } 
             else 
             {
                 $htmlbackcolor = $this->couleur($noiretblanc);
                 if ($htmlbackcolor == self::COULEUR_HACHURE) 
                 {
-                    $htmltext = $htmltext . "<td class='planningelement_aprem rayureplanning' " . $clickabletext . " $datadatefr >";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem rayureplanning' " . $clickabletext . " $datadatefr $htmlextradata >";
                 } 
                 else 
                 {
                     // $styletext = "background-color:" . $htmlbackcolor . " !important; ";
-                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr style='$styletext' bgcolor='" . $htmlbackcolor . "'>";
+                    $htmltext = $htmltext . "<td class='planningelement_aprem $extraclass' " . $clickabletext . " $datadatefr $htmlextradata style='$styletext' bgcolor='" . $htmlbackcolor . "'>";
                 }
             }
             $spanactive = false;

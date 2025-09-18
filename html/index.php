@@ -461,7 +461,7 @@
                             {
                                 var statutinfo = "KO => " + data.description;
                             }
-                            console.log("Retour du WS => " + statutinfo);
+                            // console.log("Retour du WS => " + statutinfo);
                         })
                         .fail(function( xhr ) {
                             var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?> - " + xhr.status + " " + xhr.statusText;

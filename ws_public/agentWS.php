@@ -181,14 +181,15 @@
         global $dbcon;
         global $fonctions;
 
-        error_log(basename(__FILE__) . $fonctions->stripAccents(" Debut du WS agent_planning"));
-        error_log(basename(__FILE__) . $fonctions->stripAccents(" " . var_export($_POST, true)));
+        // error_log(basename(__FILE__) . $fonctions->stripAccents(" Debut du WS agent_planning"));
+        // error_log(basename(__FILE__) . $fonctions->stripAccents(" " . var_export($_POST, true)));
         $agentid = null;
         $datedebutdb = null;
         $datefindb = null;
         // Valeurs optionnelles => Initialisation des valeurs par défaut
         $clickable = FALSE;
         $showpdflink = TRUE;
+        $dbclickable = FALSE;
         $includeteletravail = FALSE;
         $includecongeabsence = true;
 
@@ -208,6 +209,12 @@
         if (array_key_exists("clickable", $_POST)) // Planning clickable ou pas
         {
             $clickable = $fonctions->convertvaluetobool($_POST["clickable"]);
+        }
+        if (array_key_exists("dbclickable", $_POST)) // Planning double clickable ou pas
+        {
+            // error_log(basename(__FILE__) . $fonctions->stripAccents(" Double clickable = " . $_POST["dbclickable"]));
+            $dbclickable = $fonctions->convertvaluetobool($_POST["dbclickable"]);
+            // error_log(basename(__FILE__) . $fonctions->stripAccents(" Double clickable en boolean = " . ($dbclickable ? 'true' : 'false')));
         }
         if (array_key_exists("showpdflink", $_POST)) // Affichage du lien PDF ou pas
         {
@@ -239,7 +246,7 @@
             }
             else
             {
-                $result_json = array('status' => 'Ok', 'description' => '', 'html' => $agent->planninghtml($datedebutdb,$datefindb,$clickable,$showpdflink,$includeteletravail,$includecongeabsence));
+                $result_json = array('status' => 'Ok', 'description' => '', 'html' => $agent->planninghtml($datedebutdb,$datefindb,$clickable,$showpdflink,$includeteletravail,$includecongeabsence, $dbclickable));
             }
         }
         return $result_json;

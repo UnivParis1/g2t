@@ -59,38 +59,39 @@
     echo "<br>";
 
 ?>
-<script>
-    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
-                         agentid : "<?php echo $user->agentid(); ?>", 
-                         datedebut : "<?php echo $fonctions->formatdatedb($datedebut); ?>" , 
-                         datefin : "<?php echo $fonctions->formatdatedb($datefin); ?>",
-                         clickable : 'N',
-                         showpdflink : 'O',
-                         includeteletravail : 'O'
-                        })
-                .done(function( data ) {
-                    if (data.status.toUpperCase()=='OK')
-                    {
-                        var statutinfo = "OK";
-                    }
-                    else
-                    {
-                        var statutinfo = "KO => " + data.description;
-                    }
-                    // console.log("Retour du WS => " + statutinfo);
-                    let div = document.getElementById('planningagent_<?php echo $user->agentid(); ?>');
-                    div.innerHTML = data.html;
-                })
-                .fail(function( xhr ) {
-                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                    console.log(statutinfo);
-                })
-                .always(function() {
-                    hiddewaitingimg();
-                });
+    <script>
+        var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+        $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                            agentid : "<?php echo $user->agentid(); ?>", 
+                            datedebut : "<?php echo $fonctions->formatdatedb($datedebut); ?>" , 
+                            datefin : "<?php echo $fonctions->formatdatedb($datefin); ?>",
+                            clickable : 'N',
+                            dbclickable : 'N',
+                            showpdflink : 'O',
+                            includeteletravail : 'O'
+                            })
+                    .done(function( data ) {
+                        if (data.status.toUpperCase()=='OK')
+                        {
+                            var statutinfo = "OK";
+                        }
+                        else
+                        {
+                            var statutinfo = "KO => " + data.description;
+                        }
+                        // console.log("Retour du WS => " + statutinfo);
+                        let div = document.getElementById('planningagent_<?php echo $user->agentid(); ?>');
+                        div.innerHTML = data.html;
+                    })
+                    .fail(function( xhr ) {
+                        var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
+                        console.log(statutinfo);
+                    })
+                    .always(function() {
+                        hiddewaitingimg();
+                    });
 
-</script>
+    </script>
 
 
 </body>

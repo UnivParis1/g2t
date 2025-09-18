@@ -10,6 +10,8 @@ use Fpdf\Fpdf as FPDF;
 
 class planning
 {
+    const TYPE_AGENT = 'agent';
+    const TYPE_STRUCTURE = 'structure';
 
     private $listeelement = null;
 
@@ -276,7 +278,7 @@ class planning
         // On fusionne le tableau précédent avec les absences RH (converties sous forme de demande typées 'harp')
         /////////////////////////////////////////////////////
         /////// IMPORTANT ///////////////////////////////////
-        // LORS DE LA FUSION ON DOIT POISTIONNER LES ABSENCES RH EN PREMIER ET ENSUITE LES DEMANDE 'NORMALES'
+        // LORS DE LA FUSION ON DOIT POSITIONNER LES ABSENCES RH EN PREMIER ET ENSUITE LES DEMANDE 'NORMALES'
         // SINON BUG LORS DE LA CONSTRUCTION DU PLANNING => LES ABSENCES RH NE SONT PAS CHARGEES
         /////////////////////////////////////////////////////
         $demandeliste = array_merge($agent->absencerhliste($datedebut, $datefin),(array)$demandeliste );
@@ -415,13 +417,17 @@ class planning
 
             foreach ($fulldatetheorique as $arraydate)
             {
+                // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Load boucle date théorique : Date = " . $arraydate[0] . " Moment = " . $arraydate[1]));
                 $element = $this->getelement($arraydate[0], $arraydate[1]);
                 if (!is_null($element))
                 {
                     if ($element->type() == '')
                     {
-                        if (!$this->fonctions->estjourteletravailexclu($agentid,$arraydate[0],$arraydate[1]))
+                        // Si il n'y a pas d'exception ou si l'exception est en attente de validation
+                        $ttexception = $this->fonctions->estjourteletravailexclu($agentid,$arraydate[0],$arraydate[1], $statut);
+                        if ($ttexception===false or $statut == ttexception::STATUT_ENATTENTE)
                         {
+                            // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Load : Agent = $agentid Date = " . $arraydate[0] . " Moment = " . $arraydate[1] . "  Statut = $statut"));
                             $element->type('teletrav');
                             $extraclass = $element->htmlextraclass();
                             $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL);
@@ -440,12 +446,76 @@ class planning
                                     $element->info(TABCOULEURPLANNINGELEMENT[$element->type()]['libelle'] . '  pour raison médicale');
                                 }
                             }
+                            $infotmp = $element->info() . '';
+                            if (trim($infotmp)!='' and $statut == ttexception::STATUT_ENATTENTE)
+                            {
+                                $ttexceptionlist = $this->fonctions->listejoursteletravailexclus($agentid,$arraydate[0],$element->moment(), $arraydate[0], $element->moment(),false);
+                                $htmlextradata = $element->htmlextradata();
+                                if ($ttexceptionlist[0]->dateremplacement . '' != '')
+                                {
+                                    $infotmp = $infotmp . " - Déplacement en attente de validation vers le " . $this->fonctions->formatdate($ttexceptionlist[0]->dateremplacement);
+                                    $htmlextradata = $htmlextradata . " data-depladatecible=\"" . $this->fonctions->formatdate($ttexceptionlist[0]->dateremplacement) . "\" ";
+
+                                    if ($ttexceptionlist[0]->momentremplacement . "" != "")
+                                    {
+                                        // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Planning::Load => le moment de remplacement = " . $ttexceptionlist[0]->momentremplacement));
+                                        $infotmp = $infotmp . " " . $this->fonctions->nommoment($ttexceptionlist[0]->momentremplacement);
+                                        $htmlextradata = $htmlextradata . " data-deplamomentcible=\"" . $this->fonctions->nommoment($ttexceptionlist[0]->momentremplacement) . "\" ";
+                                    }
+                                    else
+                                    {
+                                        $htmlextradata = $htmlextradata . " data-deplamomentcible=\"" . $this->fonctions->nommoment($ttexceptionlist[0]->momentremplacement) . "\" ";
+                                    }
+                                }
+                                else
+                                {
+                                    $infotmp = $infotmp . " - Suppression en attente de validation";
+                                }
+                                $element->info($infotmp);
+                                $extraclass = $element->htmlextraclass();
+                                $element->htmlextradata($htmlextradata);
+                                $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_DEPLACEMENT_ENATTENTE);
+                            }
                             $element->typeconvention($arraydate[2]); // On ajoute le type de convention de télétravail
                         }
                         else // L'élement est un jour de télétravail mais il est exclu => il ne s'affichera pas en rose dans le planning
                         {
                             $extraclass = $element->htmlextraclass();
                             $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_EXCLUSION);
+
+                            // On va ajouter un texte pour expliquer que c'est une ancienne occurrence de télétravail qui a été déplacée/annulée.
+                            $infotmp = $element->info() . '';
+                            $htmlextradata = $element->htmlextradata();
+                            if ($ttexception->momentorigine == '')
+                            {
+                                $infotmp = $infotmp . 'Journée de télétravail';
+                            }
+                            else
+                            {
+                                $infotmp = $infotmp . 'Demie journée de télétravail';
+                            }
+
+                            if ($ttexception->dateremplacement . '' != '')
+                            {
+                                $infotmp = $infotmp . " déplacée vers le " . $this->fonctions->formatdate($ttexception->dateremplacement);
+                                $htmlextradata = $htmlextradata . " data-depladatecible=\"" . $this->fonctions->formatdate($ttexception->dateremplacement) . "\" ";
+
+                                if ($ttexception->momentremplacement . "" != "")
+                                {
+                                    // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Planning::Load => le moment de remplacement = " . $ttexceptionlist[0]->momentremplacement));
+                                    $infotmp = $infotmp . " " . $this->fonctions->nommoment($ttexception->momentremplacement);
+                                    $htmlextradata = $htmlextradata . " data-deplamomentcible=\"" . $this->fonctions->nommoment($ttexception->momentremplacement) . "\" ";
+                                }
+                                else
+                                {
+                                    $htmlextradata = $htmlextradata . " data-deplamomentcible=\"" . $this->fonctions->nommoment($ttexception->momentremplacement) . "\" ";
+                                }
+                            }
+                            else
+                            {
+                                $infotmp = $infotmp . " supprimée et non reportée";
+                            }
+                            $element->info($infotmp);
 
                             //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_EXCLUSION);
                         }
@@ -466,48 +536,93 @@ class planning
             $ttdeplaceliste = $agent->teletravaildeplaceliste($datedebut, $datefin);
             foreach ($ttdeplaceliste as $ttexception)
             {
-                if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_MATIN)
+                if ($ttexception->dateremplacement . '' == '')
                 {
-                    $momentremplacement = fonctions::MOMENT_MATIN;
-                    $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
-                    if ($element->type() == '')
-                    {
-                        $element->type('teletrav');
-                        if ($ttexception->momentorigine == '')
-                        {
-                            $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine));                        
-                        }
-                        else
-                        {
-                            $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine) . ' ' . $this->fonctions->nommoment($ttexception->momentorigine));
-                        }
-                        // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
-                        $extraclass = $element->htmlextraclass();
-                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                    // Si  aucune date de remplacement n'est définie => On a supprimé le jour de télétravail donc on ne fait rien
+                    continue;
+                }
 
-                        //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                // error_log(basename(__FILE__) . $this->fonctions->stripAccents(" Exception info : Statut = " . $ttexception->statut));
+                if ($ttexception->statut == ttexception::STATUT_VALIDE)
+                {
+                    if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_MATIN)
+                    {
+                        $momentremplacement = fonctions::MOMENT_MATIN;
+                        $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
+                        if ($element->type() == '')
+                        {
+                            $element->type('teletrav');
+                            if ($ttexception->momentorigine == '')
+                            {
+                                $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine));                        
+                            }
+                            else
+                            {
+                                $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine) . ' ' . $this->fonctions->nommoment($ttexception->momentorigine));
+                            }
+                            // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
+                            $extraclass = $element->htmlextraclass();
+                            $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+
+                            //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                        }
+                    }
+                    if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_APRESMIDI)
+                    {
+                        $momentremplacement = fonctions::MOMENT_APRESMIDI;
+                        $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
+                        if ($element->type() == '')
+                        {
+                            $element->type('teletrav');
+                            if ($ttexception->momentorigine == '')
+                            {
+                                $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine));                        
+                            }
+                            else
+                            {
+                                $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine) . ' ' . $this->fonctions->nommoment($ttexception->momentorigine));
+                            }
+                            // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
+                            $extraclass = $element->htmlextraclass();
+                            $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+
+                            //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                        }
                     }
                 }
-                if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_APRESMIDI)
+                else
                 {
-                    $momentremplacement = fonctions::MOMENT_APRESMIDI;
-                    $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
-                    if ($element->type() == '')
+                    if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_MATIN)
                     {
-                        $element->type('teletrav');
-                        if ($ttexception->momentorigine == '')
-                        {
-                            $element->info('Journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine));                        
-                        }
-                        else
-                        {
-                            $element->info('Demie journée de télétravail déplacée du ' . $this->fonctions->formatdate($ttexception->dateorigine) . ' ' . $this->fonctions->nommoment($ttexception->momentorigine));
-                        }
-                        // L'élement est un jour de télétravail mais il est deplace => il n'est pas clicable dans le planning 
+                        $momentremplacement = fonctions::MOMENT_MATIN;
+                        $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
                         $extraclass = $element->htmlextraclass();
-                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_DEPLACEMENT_ENATTENTE);
 
-                        //$element->htmlextraclass(planningelement::HTML_CLASS_TELETRAVAIL . ' ' . planningelement::HTML_CLASS_DEPLACE);
+                        $infotmp = $element->info() . '';
+                        $infotmp = $infotmp . "Déplacement télétravail en attente de validation (" . $this->fonctions->formatdate($ttexception->dateorigine);
+                        if ($ttexception->momentorigine . "" != "")
+                        {
+                            $infotmp = $infotmp . " " . $this->fonctions->nommoment($ttexception->momentorigine);
+                        }
+                        $infotmp = $infotmp . ")";
+                        $element->info($infotmp);
+                    }
+                    if ($ttexception->momentremplacement == '' or $ttexception->momentremplacement == fonctions::MOMENT_APRESMIDI)
+                    {
+                        $momentremplacement = fonctions::MOMENT_APRESMIDI;
+                        $element = $listplaningelement[$this->fonctions->formatdatedb($ttexception->dateremplacement) . $momentremplacement];
+                        $extraclass = $element->htmlextraclass();
+                        $element->htmlextraclass($extraclass . " " . planningelement::HTML_CLASS_DEPLACEMENT_ENATTENTE);
+
+                        $infotmp = $element->info() . '';
+                        $infotmp = $infotmp . "Déplacement télétravail en attente de validation (" . $this->fonctions->formatdate($ttexception->dateorigine);
+                        if ($ttexception->momentorigine . "" != "")
+                        {
+                            $infotmp = $infotmp . " " . $this->fonctions->nommoment($ttexception->momentorigine);
+                        }
+                        $infotmp = $infotmp . ")";
+                        $element->info($infotmp);
                     }
                 }
             }
@@ -570,7 +685,7 @@ class planning
     }
     
     
-    function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE, $includeteletravail = FALSE)
+    function planninghtml($agentid, $datedebut, $datefin, $clickable = FALSE, $showpdflink = TRUE, $noiretblanc = FALSE, $includeteletravail = FALSE, $dbclickable = false)
     {
         function adddummyelement(int $mois,int $annee)
         {
@@ -586,6 +701,8 @@ class planning
             return '';
         }
 
+        $agent = new agent($this->dbconnect);
+        $agent->load($agentid);
 
         //$this->fonctions->time_elapsed("Début de la fonction planninghtml", __METHOD__, true);
         // echo "datedebut = $datedebut datefin = $datefin <br>";
@@ -610,7 +727,7 @@ class planning
         
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."'><thead>";
+        $htmltext = $htmltext . "<table class='tableau " . self::TYPE_AGENT . "' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."' data-agentname='". htmlentities($agent->identitecomplete()) . "' ><thead>";
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentyear = date("Y", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
@@ -649,7 +766,8 @@ class planning
                 $htmltext = $htmltext . "<th scope='row' class='leftaligntext'>" . $monthname . "</th>";
                 // $currentyear = date("Y", strtotime($this->fonctions->formatdatedb($planningelement->date())));
             }
-            $htmltext = $htmltext . $planningelement->html($clickable, null, $noiretblanc);
+
+            $htmltext = $htmltext . $planningelement->html($clickable, null, $noiretblanc, $dbclickable);
 
             if (!in_array($planningelement->couleur($noiretblanc), array(planningelement::COULEUR_HACHURE,planningelement::COULEUR_NOIRE, planningelement::COULEUR_WE, planningelement::COULEUR_VIDE)))
             {

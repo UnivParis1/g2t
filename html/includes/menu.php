@@ -419,6 +419,7 @@
 	
     var validdemandemotif = function (motif, index)
     {
+        // console.log('validdemandemotif : ' + index);
         const select = document.getElementById('statut[' +  index + ']');
         //console.log("function validdemandemotif => " + Date.now());
         //console.log('Select id = ' + select.id + ' value = ' + select.value);
@@ -810,7 +811,6 @@
     </script>
 
 <?php
-
     function addwaitingimgdiv()
     {
         global $fonctions;
@@ -1021,7 +1021,7 @@
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="typedemande" value="conges">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'etablir_demande.php'; ?>
@@ -1030,7 +1030,7 @@
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="typedemande" value="absence">
                         </form>
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'gestion_demande.php'; ?>
@@ -1061,6 +1061,19 @@
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
                     </li>
 <?php
+    if (!$agentstructure->estbibliotheque())
+    {
+?>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'deplacer_teletravail.php'; ?>
+                        <form name='agent_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification d'un jour de télétravail</a>
+                    </li>
+<?php
+    }
     if (strcasecmp((string)$agentstructure->affichetoutagent(), "o") == 0 and !$agentstructure->estbibliotheque()) 
     {
 ?>
@@ -1271,6 +1284,14 @@
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'deplacer_teletravail.php'; ?>
+                                <form name='resp_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des modifications de jours de télétravail</a>
+                            </li>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
                                 <form name='resp_conge' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="responsable" value="<?php echo $user->agentid(); ?>">
@@ -1278,7 +1299,7 @@
                                     <input type="hidden" name="typedemande" value="conges">
                                     <input type="hidden" name="previous" value="no">
                                 </form>
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un agent</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un agent</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
@@ -1288,7 +1309,7 @@
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="no">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un agent</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un agent</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'ajouter_conges.php'; ?>
@@ -1314,7 +1335,7 @@
                                     <input type="hidden" name="typedemande" value="conges"> 
                                     <input type="hidden" name="congeanticipe" value="yes">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé par anticipation pour un agent</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé par anticipation pour un agent</a>
                             </li>
 <?php
             }
@@ -1338,7 +1359,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                                 </form>
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir le temps partiel pour un agent</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'un temps partiel pour un agent</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'affiche_solde.php'; ?>
@@ -1401,7 +1422,7 @@
                                     <input type="hidden" name="typedemande" value="conges"> 
                                     <input type="hidden" name="previous" value="yes">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un agent</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un agent</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
@@ -1411,7 +1432,7 @@
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="yes">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un agent</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un agent</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'affiche_solde.php'; ?>
@@ -1525,7 +1546,7 @@
                                     <input type="hidden" name="typedemande" value="conges">
                                     <input type="hidden" name="previous" value="no">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un responsable</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un responsable</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
@@ -1535,7 +1556,7 @@
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="no">
                                 </form>
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un responsable</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un responsable</a>
                             </li>
 <?php
             }
@@ -1564,6 +1585,15 @@
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des temps partiels</a>
+                            </li>
+
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'deplacer_teletravail.php'; ?>
+                                <form name='gest_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                                    <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                </form>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des modifications de jours de télétravail</a>
                             </li>
 <?php
         }
@@ -1629,7 +1659,7 @@
                                     <input type="hidden" name="typedemande" value="conges">
                                     <input type="hidden" name="previous" value="yes">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congé pour un responsable</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un responsable</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
@@ -1639,7 +1669,7 @@
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="yes">
                                 </form>
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande d'absence pour un responsable</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un responsable</a>
                             </li>
 <?php
             }
@@ -1712,14 +1742,14 @@
                         <form name='rh_modifcircuitesign' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier un circuit eSignature pour un agent</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification d'un circuit eSignature pour un agent</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'modifier_XMLcircuit.php'; ?>
                         <form name='rh_modifier_XMLcircuit' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier les circuits eSignature</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification des circuits eSignature</a>
                     </li>
 <?php 
                     if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
@@ -1769,7 +1799,7 @@
                                 <form name='rh_affiche_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les conventions de télétravail par structure</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des conventions de télétravail par structure</a>
                             </li>
                         </ul>
                     </li>
@@ -1859,7 +1889,7 @@
                                     <input type="hidden" name="rh_mode" value="yes">
                                     <input type="hidden" name="show_cet" value="no">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congés (hors CET)</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congés (hors CET)</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
@@ -1871,7 +1901,7 @@
                                     <input type="hidden" name="rh_mode" value="yes">
                                     <input type="hidden" name="show_cet" value="yes">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisir une demande de congés sur CET</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congés sur CET</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'gestion_demande.php'; ?>
@@ -1929,7 +1959,7 @@
                                 <form name='rh_controlrecup' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôler les recupérations</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôle des recupérations</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'affiche_solde.php'; ?>
@@ -1945,14 +1975,14 @@
                                 <form name='rh_affiche_jourscomplementaires' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les jours complémentaires</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des jours complémentaires</a>
                             </li>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'gestion_periodeobligatoire.php'; ?>
                                 <form name='rh_gestperiodeoblig' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                 </form> 
-                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gérer les périodes obligatoires</a>
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des périodes obligatoires</a>
                             </li>
                         </ul>
                     </li>
@@ -1964,7 +1994,7 @@
                         <form name='rh_affiche_inputfiles' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les données d'interface</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des données d'interface</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'g2t_param.php'; ?>
@@ -2001,7 +2031,7 @@
                         <form name='admin_mode_maintenance' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Activer/désactiver maintenance</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Activation/désactivation maintenance</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'gestion_structure.php'; ?>
@@ -2023,14 +2053,14 @@
                         <form name='admin_import_conges' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Importer des congés</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Import des congés</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'affiche_demandeCET.php'; ?>
                         <form name='admin_affiche_demandeCET' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher une demande sur CET/eSignature</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage d'une demande sur CET/eSignature</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'affiche_info_teletravail.php'; ?>
@@ -2058,49 +2088,49 @@
                         <form name='admin_affiche_inputfiles' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les données d'interface</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des données d'interface</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'affiche_jourscomplementaires.php'; ?>
                         <form name='admin_affiche_jourscomplementaires' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les jours complémentaires</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des jours complémentaires</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'affiche_teletravail.php'; ?>
                         <form name='admin_affiche_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Afficher les conventions de télétravail par structure</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Liste des conventions de télétravail par structure</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'controlrecuperation.php'; ?>
                         <form name='admin_controlrecup' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôler les recupérations</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôle des recupérations</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'gestion_periodeobligatoire.php'; ?>
                         <form name='admin_gestperiodeoblig' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gérer les périodes obligatoires</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des périodes obligatoires</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'modifieresignature.php'; ?>
                         <form name='admin_modifcircuitesign' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier un circuit eSignature pour un agent</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification d'un circuit eSignature pour un agent</a>
                     </li>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'modifier_XMLcircuit.php'; ?>
                         <form name='admin_modifier_XMLcircuit' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                         </form> 
-                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modifier les circuits eSignature</a>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification des circuits eSignature</a>
                     </li>
                 </ul>
             </li>

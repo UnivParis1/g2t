@@ -218,7 +218,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     exit();
 */
     
-    // echo "<br>" . print_r($_POST, true) . "<br><br>";
+    //echo "<br>" . print_r($_POST, true) . "<br><br>";
     
     //echo "$cancelteletravailarray = ";
     //var_export($cancelteletravailarray);
@@ -947,7 +947,7 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
                 foreach($resparray as $responsable)
                 {
                     $cron->sendmail($responsable,"Demande de télétravail - " . $agent->identitecomplete(),"Une demande de télétravail vient d'être réalisée pour " . $agent->identitecomplete() . "
-Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' ou 'Gestionnaire' de l'application G2T.\n");
+Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable' ou 'Gestionnaire' de l'application G2T.<br>");
                 }
                 $info = "La création de la convention est réussie.";
                 $erreur = "";
@@ -1024,7 +1024,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $cron->load(SPECIAL_USER_IDCRONUSER);
                     $cron->sendmail($agent,
                                     "Changement de statut de votre demande de télétravail",
-                                    "Votre demande de télétravail a été " . strtolower($fonctions->teletravailstatutlibelle($teletravail->statut())) . " par " . $user->identitecomplete() . " au motif suivant :\n\n$motifrefus \n"
+                                    "Votre demande de télétravail a été " . strtolower($fonctions->teletravailstatutlibelle($teletravail->statut())) . " par " . $user->identitecomplete() . " au motif suivant :<br><br>$motifrefus <br>"
                                    );
                 }
                 else
@@ -1825,7 +1825,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                 // keydate => date saisie dans le calendrier
                 if (debut <= keydate && keydate <= fin)
                 {
-                    console.log ('debut = ' + debut + '  fin = ' + fin +  '   keydate = ' + keydate + '   value = ' + value);
+                    //console.log ('debut = ' + debut + '  fin = ' + fin +  '   keydate = ' + keydate + '   value = ' + value);
                     valuetodisplay = value;
                 }
             }

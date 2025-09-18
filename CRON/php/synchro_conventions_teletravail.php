@@ -183,7 +183,7 @@
             echo "On va envoyer un mail au responsable " . $destinataire->identitecomplete() . " car il n'a pas complete la convention dans G2T.\n";
             $cronagent->sendmail($destinataire,
                                  "Convention de télétravail à compléter dans G2T", 
-                                 "Vous avez une ou plusieurs conventions de télétravail à compléter dans G2T.\nVous pouvez les consulter dans votre menu 'Responsable' ou 'Gestionnaire'.\n"
+                                 "Vous avez une ou plusieurs conventions de télétravail à compléter dans G2T.<br>Vous pouvez les consulter dans votre menu 'Responsable' ou 'Gestionnaire'.<br>"
                                  );
         }
         foreach($tabdestinataireesignature as $destinataire)
@@ -191,12 +191,44 @@
             echo "On va envoyer un mail a l'agent " . $destinataire->identitecomplete() . " car il n'a pas signe/vise une convention dans eSignature ($eSignature_url).\n";
             $cronagent->sendmail($destinataire->mail(),
                                  "Convention de télétravail à signer/viser dans eSignature", 
-                                 "Vous avez une ou plusieurs conventions de télétravail à signer/viser dans eSignature.\nVous pouvez les consulter directement à l'adresse suivante : <a href='$eSignature_url'>$eSignature_url</a>.\n\nCordialement.\n" . $cronagent->identitecomplete() . "\n"
-//                                 "Vous avez une ou plusieurs conventions de télétravail à signer/viser dans eSignature.\nVous pouvez les consulter directement à l'adresse suivante : $eSignature_url.\n\nCordialement.\n" . $cronagent->identitecomplete() . "\n"
+                                 "Vous avez une ou plusieurs conventions de télétravail à signer/viser dans eSignature.<br>Vous pouvez les consulter directement à l'adresse suivante : <a href='$eSignature_url'>$eSignature_url</a>.<br><br>Cordialement.<br>" . $cronagent->identitecomplete() . "<br>"
                                  );
         }
         
     }
     echo "Fin de l'envoi du mail de rappel aux agents suivants qui doivent signer la convention \n";
-	
+
+    echo "Envoi du mail de rappel aux responsables qui doivent valider des déplacements/annulations de jours de télétravail \n";
+    $tabdestinataireg2t = array();
+    $cronagent = new agent($dbcon);
+    if (!$cronagent->load(SPECIAL_USER_IDCRONUSER))
+    {
+        echo "Impossible de charger l'utilisateur CRON";
+    }
+    else
+    {
+        $ttexceptionliste = $fonctions->listettexceptionavecstatut(ttexception::STATUT_ENATTENTE, $fonctions->anneeref() . $fonctions->debutperiode());
+        foreach($ttexceptionliste as $ttexception)
+        {
+            $agent = new agent($dbcon);
+            if ($agent->load($ttexception->agentid))
+            {
+                $signataire = $agent->getsignataire();
+                if ($signataire !== false)
+                {
+                    $tabdestinataireg2t[$signataire->agentid()] = $signataire;
+                }
+            }
+        }
+        foreach($tabdestinataireg2t as $destinataire)
+        {
+            echo "On va envoyer un mail au signataire " . $destinataire->identitecomplete() . " car il n'a pas validé/refusé une demande de modification du télétravail.\n";
+            $cronagent->sendmail($destinataire,
+                                 "Modification d'une occurrence de télétravail en attente", 
+                                 "Vous avez une ou plusieurs demandes de modification de télétravail en attente dans G2T.<br>Vous pouvez les consulter dans votre menu 'Responsable' ou 'Gestionnaire'.<br>"
+                                );
+        }
+    }
+    echo "Fin de l'envoi du mail de rappel aux responsables qui doivent valider des déplacements/annulations de jours de télétravail \n";
+
 ?>

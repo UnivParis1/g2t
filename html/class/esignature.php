@@ -912,6 +912,12 @@ class esignature
 
         foreach($params as $key => $value)
         {
+            // On doit convertir les caractères "(" et ")" dans leurs codes octal car sinon
+            // ils sont interprétés par le pdftk comme des ouvertures/fermetures de balises (ticket GLPI 209032)
+            $value = str_replace("\\","\134\134",$value);
+            $value = str_replace("(","\050",$value);
+            $value = str_replace(")","\051",$value);
+            // $value = str_replace($search, $replace, $value);
             $fdf_content .= "<</T($key)/V(" . $this->fonctions->utf8_decode($value) . ")>>" . "\n";
         }
         $content = $fdf_header . $fdf_content . $fdf_footer;

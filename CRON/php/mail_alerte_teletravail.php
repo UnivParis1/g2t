@@ -67,10 +67,10 @@
                         {
                             // On doit envoyer un mail de rappel à l'agent !
                             echo "Tout est ok... On peut envoyer le mail \n";
-                            $corpsdumail="Votre convention de télétravail arrive bientôt à son terme.\n";
-                            $corpsdumail=$corpsdumail . "Si vous souhaitez renouveler votre convention de télétravail, veuillez prendre contact avec le service de la DRH afin de connaitre les modalités.\n";
-                            $corpsdumail=$corpsdumail . "Dans le cas contraire, vous ne serez plus en télétravail après le " . $fonctions->formatdate($convention->datefin()) . ".\n";
-                            $corpsdumail=$corpsdumail . "\n";
+                            $corpsdumail="Votre convention de télétravail arrive bientôt à son terme.<br>";
+                            $corpsdumail=$corpsdumail . "Si vous souhaitez renouveler votre convention de télétravail, veuillez prendre contact avec le service de la DRH afin de connaitre les modalités.<br>";
+                            $corpsdumail=$corpsdumail . "Dans le cas contraire, vous ne serez plus en télétravail après le " . $fonctions->formatdate($convention->datefin()) . ".<br>";
+                            $corpsdumail=$corpsdumail . "<br>";
                             //echo "Avant l'envoi \n";
                             $agentcron->sendmail($agent, "Alerte : Fin de votre convention de télétravail", $corpsdumail, null, null, false);
                             //echo "Apres l'envoi \n";

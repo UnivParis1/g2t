@@ -11,8 +11,8 @@
         global $fonctions;
         global $user;
 
-        error_log(basename(__FILE__) . $fonctions->stripAccents(" Debut du WS structure_planning"));
-        error_log(basename(__FILE__) . $fonctions->stripAccents(" " . var_export($_POST, true)));
+        // error_log(basename(__FILE__) . $fonctions->stripAccents(" Debut du WS structure_planning"));
+        // error_log(basename(__FILE__) . $fonctions->stripAccents(" " . var_export($_POST, true)));
 
         $structureid = null;
         $mois_annee_debut = null;

@@ -141,13 +141,13 @@
         }
         else
         {
-            $demandeur->sendmail($resp,"Demande d'annulation d'une demande", "Merci de bien vouloir annuler ma demande de congés ou d'absence établie le " . $fonctions->formatdate($demande->date_demande()) . " :\n"
+            $demandeur->sendmail($resp,"Demande d'annulation d'une demande", "Merci de bien vouloir annuler ma demande de congés ou d'absence établie le " . $fonctions->formatdate($demande->date_demande()) . " :<br>"
               . "<ul>"
               . "<li>Début : " . $fonctions->formatdate($demande->datedebut()) . " " . $fonctions->nommoment($demande->moment_debut()) . "</li>"
               . "<li>Fin : " . $fonctions->formatdate($demande->datefin()) . " " . $fonctions->nommoment($demande->moment_fin()) . "</li>"
               . "<li>Nombre de jours : " . $demande->nbrejrsdemande() . "</li>"
               . "<li>Type de demande : " . $demande->typelibelle() . "</li>"
-              . "</ul>\n");
+              . "</ul><br>");
             $demande->datemailannulation(date('d/m/Y'));
             $demande->store();
             echo $fonctions->showmessage(fonctions::MSGINFO, "La demande d'annulation a été envoyée à " . $resp->identitecomplete());
@@ -195,7 +195,7 @@
                         $agentdemande = $demande->agent();
                         $ics = null;
                         $ics = $demande->ics($agentdemande->mail());
-                        $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".\n\n";
+                        $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".<br><br>";
                         // $corpmail = $corpmail . "Pensez à supprimer manuellement l'évènement dans votre agenda.\n";
                         $user->sendmail($agentdemande, "Annulation d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
                     }
@@ -215,12 +215,12 @@
                         if (is_null($responsableid) == false) {
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
-                                $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".\n";
-                                $corpmail = $corpmail . "\n";
-                                $corpmail = $corpmail . "Détail de la demande :\n";
-                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
-                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
-                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
+                                $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".<br>";
+                                $corpmail = $corpmail . "<br>";
+                                $corpmail = $corpmail . "Détail de la demande :<br>";
+                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
+                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
+                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
                                 // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
                                 $user->sendmail($gestrh, "Changement de statut d'une demande de congés sur CET", $corpmail);
                             }

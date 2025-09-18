@@ -1172,10 +1172,10 @@ class agent
      *            optional true means that a link to display planning in pdf format is allowed. false means the link is hidden
      * @return string the planning html text.
      */
-    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $includeteletravail = FALSE, $includecongeabsence = true)
+    function planninghtml($debut_interval, $fin_interval, $clickable = FALSE, $showpdflink = TRUE, $includeteletravail = FALSE, $includecongeabsence = true, $dbclickable = false)
     {
         $planning = new planning($this->dbconnect);
-        $htmltext = $planning->planninghtml($this->agentid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $includeteletravail, $includecongeabsence);
+        $htmltext = $planning->planninghtml($this->agentid, $debut_interval, $fin_interval, $clickable, $showpdflink, false, $includeteletravail, $dbclickable);
         return $htmltext;
     }
 
@@ -1379,8 +1379,8 @@ class agent
 	            $msg .= "<br><br><p style='font-size: 0.75em;'>La pièce jointe est un fichier iCalendar contenant plus d'informations concernant l'événement.<br>Si votre client de courrier supporte les requêtes iTip vous pouvez utiliser ce fichier pour mettre à jour votre copie locale de l'événement.</p>";
 	            $msg .= "\r\n";
 	            $msg .= "--$boundary\r\n";
-	            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\n";
-	            $msg .= "Content-Transfer-Encoding: 8bit\n\n";
+	            $msg .= "Content-Type: text/calendar;name=\"conge.ics\";method=REQUEST;charset=\"utf-8\"\r\n";
+	            $msg .= "Content-Transfer-Encoding: 8bit\r\n\r\n";
 	            $msg .= preg_replace("#UID:(.*)#", "UID:EXTERNAL-$1", $ics);
 	            $msg .= "\r\n\r\n";
 	            // }
@@ -1473,6 +1473,11 @@ class agent
                     $errorlog .= "contenu du mail : ".$message."\n";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errorlog));
                     */
+
+                    // On ajoute une regex qui remplace les éventuels "\n" restants en "\r\n"
+                    // En théorie ce n'est possible mais une erreur est tjrs possible
+                    $msg = preg_replace('#(?<!\r)\n#si', "\r\n", $msg);
+
                     if (is_object($destinataire))
                     {
                         mail($destinataire->prenom() . " " . $destinataire->nom() . " <" . $destinataire->mail() . ">", "$encoded_subject", "$msg", "$header");
@@ -5097,14 +5102,14 @@ const modifymotif = (motif, motifid) =>
             $liste = $teletravailliste;
         }
         $reponse = false;
-        $exclusion  = $this->estjourteletravailexclu($date,$moment);  //listejoursteletravailexclus($date, $date);
+        $exclusion  = $this->estjourteletravailexclu($date,$moment, $statut);  //listejoursteletravailexclus($date, $date);
         foreach ($liste as $teletravailid)
         {
             $teletravail = new teletravail($this->dbconnect);
             $teletravail->load($teletravailid);
             if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE)
             {
-                if ($teletravail->estteletravaille($date,$moment) and  !$exclusion) // (array_search($date,(array)$exclusion)===false))  // Si c'est un jour de télétravail et qu'il n'est pas exclu
+                if ($teletravail->estteletravaille($date,$moment) and $exclusion===false) // (array_search($date,(array)$exclusion)===false))  // Si c'est un jour de télétravail et qu'il n'est pas exclu
                 {
                     $reponse = true;
                 }
@@ -5119,14 +5124,14 @@ const modifymotif = (motif, motifid) =>
         return $planning->nbjoursteletravail($this->agentid, $datedebut, $datefin, $reel);
     }
     
-    function ajoutjoursteletravailexclus($dateorigine, $momentorigine, $dateremplacement = '', $momentremplacement = '')
+    function ajoutjoursteletravailexclus($dateorigine, $momentorigine, $dateremplacement = '', $momentremplacement = '', $statut = ttexception::STATUT_VALIDE) :string|ttexception
     {
-        return $this->fonctions->ajoutjoursteletravailexclus($this->agentid, $dateorigine, $momentorigine, $dateremplacement ,$momentremplacement);
+        return $this->fonctions->ajoutjoursteletravailexclus($this->agentid, $dateorigine, $momentorigine, $dateremplacement ,$momentremplacement, $statut);
     }
     
-    function listejoursteletravailexclus($datedebut,$datefin)
+    function listejoursteletravailexclus($datedebut, $momentdebut,$datefin, $momentfin)
     {
-        return $this->fonctions->listejoursteletravailexclus($this->agentid, $datedebut,$datefin);
+        return $this->fonctions->listejoursteletravailexclus($this->agentid, $datedebut,$momentdebut, $datefin, $momentfin);
     }
 
     function supprjourteletravailexclu($date, $moment)
@@ -5134,9 +5139,9 @@ const modifymotif = (motif, motifid) =>
         return $this->fonctions->supprjourteletravailexclu($this->agentid,$date, $moment );
     }
     
-    function estjourteletravailexclu($date, $moment)
+    function estjourteletravailexclu($date, $moment, &$statut)
     {
-        return $this->fonctions->estjourteletravailexclu($this->agentid,$date, $moment);
+        return $this->fonctions->estjourteletravailexclu($this->agentid,$date, $moment, $statut);
     }
     
     function historiqueaffectation($datedebut,$datefin)
@@ -6119,7 +6124,7 @@ const modifymotif = (motif, motifid) =>
     function teletravaildeplaceliste($datedebut, $datefin)
     {
         $ttliste = array();
-        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT
+        $sql = "SELECT DATEORIGINE, MOMENTORIGINE, DATEREMPLACEMENT, MOMENTREMPLACEMENT, STATUT
                 FROM TTEXCEPTION
                 WHERE AGENTID = ?
                 AND DATEREMPLACEMENT BETWEEN ? AND ?";
@@ -6142,6 +6147,7 @@ const modifymotif = (motif, motifid) =>
             $exception->momentorigine = $result[1];
             $exception->dateremplacement = $result[2];
             $exception->momentremplacement = $result[3];
+            $exception->statut = $result[4];
             $ttliste[] = $exception;
         }
         return $ttliste;

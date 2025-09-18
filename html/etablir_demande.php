@@ -632,10 +632,10 @@
                         {
                             // On ajoute le fichier PDF d'utilisation du CET en congés
                             $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
-                            $corpmail = $corpmail . "\n\nVous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :\n";
+                            $corpmail = $corpmail . "<br><br>Vous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :<br>";
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
-                                $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "\n";
+                                $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "<br>";
                             }
                         }
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
@@ -645,12 +645,12 @@
                         {
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
                             foreach ($arrayagentrh as $gestrh) {
-                                $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".\n";
-                                $corpmail = $corpmail . "\n";
-                                $corpmail = $corpmail . "Détail de la demande :\n";
-                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
-                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
-                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
+                                $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".<br>";
+                                $corpmail = $corpmail . "<br>";
+                                $corpmail = $corpmail . "Détail de la demande :<br>";
+                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
+                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
+                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
                                 // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
                                 $user->sendmail($gestrh, "Changement de statut d'une demande de congés sur CET", $corpmail);
                             }
@@ -660,12 +660,12 @@
                         {
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
                             foreach ($arrayagentrh as $gestrh) {
-                                $corpmail = "Une demande de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".\n";
-                                $corpmail = $corpmail . "\n";
-                                $corpmail = $corpmail . "Détail de la demande :\n";
-                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "\n";
-                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "\n";
-                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "\n";
+                                $corpmail = "Une demande de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".<br>";
+                                $corpmail = $corpmail . "<br>";
+                                $corpmail = $corpmail . "Détail de la demande :<br>";
+                                $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
+                                $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
+                                $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
                                 // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
                                 $user->sendmail($gestrh, "Changement de statut d'une demande de 'Télétravail pour raison de santé'", $corpmail);
                             }

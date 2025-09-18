@@ -53,11 +53,11 @@
             $struct = new structure($dbcon);
             $affectation = current($affectationarray);
             $struct->load($affectation->structureid());
-            $corpmail = "L'application G2T a détecté que le solde de congés " . $agentid[4] . " pour l'agent " . $agent->identitecomplete() . " est négatif.\n";
-            $corpmail = $corpmail . "Cette situation peut se présenter lors d'une modification de temps partiel ou lors d'un passage à temps partiel.\n";
-            $corpmail = $corpmail . "\n";
-            $corpmail = $corpmail . "Nous vous invitons donc prendre contact avec l'agent " . $agent->identitecomplete() . " afin de régulariser la situation.\n";
-            $corpmail = $corpmail . "\n";
+            $corpmail = "L'application G2T a détecté que le solde de congés " . $agentid[4] . " pour l'agent " . $agent->identitecomplete() . " est négatif.<br>";
+            $corpmail = $corpmail . "Cette situation peut se présenter lors d'une modification de temps partiel ou lors d'un passage à temps partiel.<br>";
+            $corpmail = $corpmail . "<br>";
+            $corpmail = $corpmail . "Nous vous invitons donc prendre contact avec l'agent " . $agent->identitecomplete() . " afin de régulariser la situation.<br>";
+            $corpmail = $corpmail . "<br>";
             // ////////////////////////////////////
             $cron->sendmail($struct->responsable(), "Solde de congés négatif pour l'agent " . $agent->identitecomplete(), $corpmail);
             // ////////////////////////////////////
@@ -107,13 +107,13 @@
             unset($demande);
         }
         if ($text != "") {
-            $corpmail = "L'application G2T a détecté des incohérences entre le nombre de jours calculés au moment où la demande a été faite et le nombre de jours recalculé avec la situation actuelle de votre dossier dans l'application.\n";
-            $corpmail = $corpmail . "Cette situation peut se présenter lors d'une modification de temps partiel, lors d'un passage à temps partiel ou à temps complet.\n";
-            $corpmail = $corpmail . "Cette différence peut également se présenter si vous avez bénéficié d'un arrêt de travail (maladie) lors d'une période de congés.\n";
-            $corpmail = $corpmail . "\n";
-            $corpmail = $corpmail . "Afin de rectifier votre demande, vous devez demander, à votre responsable de service, d'annuler votre demande de congés.\n";
-            $corpmail = $corpmail . "Il vous faudra ensuite recréer la demande, via l'application. Le nombre de jours correct sera alors calculé.\n";
-            $corpmail = $corpmail . "\n";
+            $corpmail = "L'application G2T a détecté des incohérences entre le nombre de jours calculés au moment où la demande a été faite et le nombre de jours recalculé avec la situation actuelle de votre dossier dans l'application.<br>";
+            $corpmail = $corpmail . "Cette situation peut se présenter lors d'une modification de temps partiel, lors d'un passage à temps partiel ou à temps complet.<br>";
+            $corpmail = $corpmail . "Cette différence peut également se présenter si vous avez bénéficié d'un arrêt de travail (maladie) lors d'une période de congés.<br>";
+            $corpmail = $corpmail . "<br>";
+            $corpmail = $corpmail . "Afin de rectifier votre demande, vous devez demander, à votre responsable de service, d'annuler votre demande de congés.<br>";
+            $corpmail = $corpmail . "Il vous faudra ensuite recréer la demande, via l'application. Le nombre de jours correct sera alors calculé.<br>";
+            $corpmail = $corpmail . "<br>";
             $corpmail = $corpmail . $text;
             echo "Corps du mail = " . $corpmail;
             $cron->sendmail($agent, "Incohérence dans une ou plusieurs demandes", $corpmail);

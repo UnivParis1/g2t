@@ -647,13 +647,13 @@
             $gestionnaire->load($gestionnaireid);
             $structure->gestionnaire("");
             $structure->store();
-            echo "Le gestionnaire de la structure " . $structure->id()  . " (" . $gestionnaire->identitecomplete() . ") a été supprimé => Il est responsable de cette structure. \n";
-            $corpsdumail="Votre fonction 'Gestionnaire G2T' a été supprimée pour la structure '" . $structure->nomlong() . "' \n";
-            $corpsdumail=$corpsdumail . "car en tant que responsable G2T de la structure vous ne pouvez être défini comme gestionnaire G2T de cette même structure.\n";
-            $corpsdumail=$corpsdumail . "Vous ne perdez pas votre statut de responsable G2T et vous avez toujours la gestion de G2T.\n";
-            $corpsdumail=$corpsdumail . "\n";
-            $corpsdumail=$corpsdumail . "Nous vous invitons à déclarer un nouveau gestionnaire G2T respectant cette règle de gestion.\n";
-            $corpsdumail=$corpsdumail . "\n";
+            echo "Le gestionnaire de la structure " . $structure->id()  . " (" . $gestionnaire->identitecomplete() . ") a été supprimé => Il est responsable de cette structure. <br>";
+            $corpsdumail="Votre fonction 'Gestionnaire G2T' a été supprimée pour la structure '" . $structure->nomlong() . "' <br>";
+            $corpsdumail=$corpsdumail . "car en tant que responsable G2T de la structure vous ne pouvez être défini comme gestionnaire G2T de cette même structure.<br>";
+            $corpsdumail=$corpsdumail . "Vous ne perdez pas votre statut de responsable G2T et vous avez toujours la gestion de G2T.<br>";
+            $corpsdumail=$corpsdumail . "<br>";
+            $corpsdumail=$corpsdumail . "Nous vous invitons à déclarer un nouveau gestionnaire G2T respectant cette règle de gestion.<br>";
+            $corpsdumail=$corpsdumail . "<br>";
             $cronuser->sendmail($gestionnaire,"Suppression de la fonction de gestionnaire G2T", $corpsdumail,null,null,false);
         }
 

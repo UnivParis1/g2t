@@ -99,10 +99,10 @@
                         {
                             $solderestant = $solde->droitaquis() - $solde->droitpris();
                             echo "Tout est ok... On peut envoyer le mail ==> Solde restant = $solderestant \n";
-                            $corpsdumail="Il vous reste " . $solderestant  . " jours sur votre solde de congés annuels " . ($fonctions->anneeref() - 1) . "/" . $fonctions->anneeref() . ".\n";
-                            $corpsdumail=$corpsdumail . "Vous devez impérativement les consommer avant le " . $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->liredbconstante("FIN_REPORT")) . ".\n";
-                            $corpsdumail=$corpsdumail . "Dans la cas contraire, votre reliquat sera définitivement perdu.\n";
-                            $corpsdumail=$corpsdumail . "\n";
+                            $corpsdumail="Il vous reste " . $solderestant  . " jours sur votre solde de congés annuels " . ($fonctions->anneeref() - 1) . "/" . $fonctions->anneeref() . ".<br>";
+                            $corpsdumail=$corpsdumail . "Vous devez impérativement les consommer avant le " . $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->liredbconstante("FIN_REPORT")) . ".<br>";
+                            $corpsdumail=$corpsdumail . "Dans la cas contraire, votre reliquat sera définitivement perdu.<br>";
+                            $corpsdumail=$corpsdumail . "<br>";
 
                             $agentcron->sendmail($agent, "Alerte : Rappel sur l'utilisation des reliquats", $corpsdumail, null, null, true);
                         }

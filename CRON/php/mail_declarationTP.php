@@ -53,7 +53,7 @@
                 echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour ajouter l'affectation de l'agent. \n";
                 $cronuser->sendmail($drhuser,"Un agent a une demande de déclaration de temps partiel mais pas d'affectation dans G2T","L'agent " . $agent->identitecomplete() . " (" . $agent->agentid() . ") a une demande de déclaration de temps partiel mais n'a pas d'affectation à une structure dans G2T.
 Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
-Merci de contrôler son dossier.\n");
+Merci de contrôler son dossier.<br>");
             }
             continue;
         }
@@ -70,7 +70,7 @@ Merci de contrôler son dossier.\n");
                     echo "CRON G2T envoie le mail à la DRH (" . $drhuser->mail() . ") pour information\n";
                     $cronuser->sendmail($drhuser,"Un agent a une demande de déclaration de temps partiel mais pas de responsable","L'agent " . $agent->identitecomplete() . " (" . $agent->agentid() . ") a une demande de déclaration de temps partiel mais n'a pas de responsable dans G2T.
 Cela est généralement dû à une affectation fonctionnelle manquante dans le dossier RH de l'agent.
-Merci de contrôler son dossier.\n");
+Merci de contrôler son dossier.<br>");
                     $arraydemandeur[] = $agent->agentid();
                 }
             }
@@ -113,7 +113,7 @@ Merci de contrôler son dossier.\n");
                     echo "CRON G2T envoie le mail a la DRH (" . $drhuser->mail() . ") pour signaler que la structure " . $structure->nomcourt() . " n'a pas de responsable \n";
                     $cronuser->sendmail($drhuser,"Pas de responsable défini pour une structure","La structure " . $structure->nomlong() . " (" . $structure->nomcourt() . ") n'a pas de responsable dans G2T, alors que des déclarations de temps partiels sont sasies.
 Cela est généralement dû à une fonction manquante dans le dossier RH du responsable.
-Merci de contrôler le dossier RH du responsable.\n");
+Merci de contrôler le dossier RH du responsable.<br>");
                     $arraystruct[] = $agent->structureid();
                 }
             }
@@ -230,7 +230,7 @@ Merci de contrôler le dossier RH du responsable.\n");
         $responsable->load($agentid);
         echo "Avant le sendmail mail (Responsable) = " . $responsable->mail() . " (" . $responsable->identitecomplete() . " agentid = " . $responsable->agentid() . ") \n";
 
-        $agentcron->sendmail($responsable, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que responsable de structure, merci de bien vouloir les valider dès que possible.\n", null);
+        $agentcron->sendmail($responsable, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.<br>En tant que responsable de structure, merci de bien vouloir les valider dès que possible.<br>", null);
         unset($responsable);
     }
     foreach ($mail_gest as $agentid => $nbredemande) {
@@ -238,7 +238,7 @@ Merci de contrôler le dossier RH du responsable.\n");
         $gestionnaire->load($agentid);
         echo "Avant le sendmail mail (Gestionnaire) = " . $gestionnaire->mail() . " (" . $gestionnaire->identitecomplete() . " agentid = " . $gestionnaire->agentid() . ") \n";
 
-        $agentcron->sendmail($gestionnaire, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.\nEn tant que gestionnaire de structure, merci de bien vouloir les valider dès que possible.\n", null);
+        $agentcron->sendmail($gestionnaire, "Des demandes de temps partiel sont en attente", "Il y a $nbredemande demande(s) de temps-partiel en attente de validation.<br>En tant que gestionnaire de structure, merci de bien vouloir les valider dès que possible.<br>", null);
         unset($gestionnaire);
     }
 
