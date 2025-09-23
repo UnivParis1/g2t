@@ -1812,16 +1812,7 @@ class agent
         // echo "this->fonctions->debutperiode() = " . $this->fonctions->debutperiode() . "<br>";
         // echo "this->fonctions->liredbconstante(FIN_REPORT) = " . $this->fonctions->liredbconstante("FIN_REPORT") . "<br>";
         
-        // $reportactif = ($this->fonctions->liredbconstante("REPORTACTIF") == 'O');
-        // if ($reportactif) echo "ReportActif = true<br>"; else echo "ReportActif = false<br>";
-        
-        $complement = new complement($this->dbconnect);
-        $complement->load($this->agentid, "REPORTACTIF");
-        // Si le complement n'est pas initialisé (NULL ou "") alors on active le report
-        if (strcasecmp((string)$complement->valeur(), "O") == 0) // or strlen($complement->valeur()) == 0)
-            $reportactif = true;
-        else
-            $reportactif = FALSE;
+        $reportactif = $this->reportactif();
         
         $extradate = new complement($this->dbconnect);
         $extradate->load($this->agentid, "PROLONG" . ($anneeref - 1));
@@ -1832,7 +1823,7 @@ class agent
 
         $prolongationconges = false;
     
-            $subparams = array();
+        $subparams = array();
         if ((date("Ymd") >= $anneeref . $this->fonctions->debutperiode() && (date("Ymd") <= $annee_recouvr . $this->fonctions->liredbconstante("FIN_REPORT") or $includereport)) && $reportactif) 
         {
             //requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND (ANNEEREF= ? OR ANNEEREF= ?))";
@@ -6390,6 +6381,25 @@ const modifymotif = (motif, motifid) =>
         }
         $returndesc = $returndesc . "\n";
         return $returncode;
+    }
+
+    function reportactif()
+    {
+        $complement = new complement($this->dbconnect);
+        $complement->load($this->agentid, "REPORTACTIF");
+        // Si le complement n'est pas initialisé (NULL ou "") alors on active le report
+        //if (strcasecmp((string)$complement->valeur(), "O") == 0)
+        $dbconstante = 'REPORTACTIFGENERAL';
+        if (trim((string)$complement->valeur()) == "")
+        {
+            $reportgeneral = 'N';
+            if ($this->fonctions->testexistdbconstante($dbconstante))
+            {
+                $reportgeneral = $this->fonctions->liredbconstante($dbconstante);
+            }
+            return $this->fonctions->convertvaluetobool($reportgeneral);
+        }
+        return $this->fonctions->convertvaluetobool((string)$complement->valeur());
     }
     
 }

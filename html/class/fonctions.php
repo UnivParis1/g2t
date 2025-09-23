@@ -5604,6 +5604,11 @@ WHERE  table_schema = Database()
 
     function convertvaluetobool($value)
     {
+        if (is_bool($value))
+        {
+            return $value;
+        }
+
         switch (trim(strtoupper($value . '')))
         {
             case '':

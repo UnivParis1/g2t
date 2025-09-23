@@ -248,6 +248,16 @@
             }
         }
 
+        
+        /////////////////////////////////////////////
+        // Mise à jour du report général de congés
+        if (isset($_POST['reportgeneral']))
+        {
+            $reportgeneral = trim($_POST['reportgeneral']);
+            $constantename = 'REPORTACTIFGENERAL';
+            $msg_erreur = $fonctions->enregistredbconstante($constantename, $reportgeneral);
+        }
+
         /////////////////////////////////////////////
         // Mise à jour de la date des reports de congés
         if (isset($_POST['valid_report']))
@@ -1241,12 +1251,36 @@
     // Affichage de la date de fin de report des congés
     echo "<br>";
     echo "<form name='reportform'  method='post' >";
+
+    echo "<table><tbody><tr>";
+    echo "<td>Activer le report des congés par défaut à tous les agents : ";
+    $dbconstante = 'REPORTACTIFGENERAL';
+    $reportgeneral = 'N';
+    if ($fonctions->testexistdbconstante($dbconstante))  $reportgeneral = $fonctions->liredbconstante($dbconstante);
+    echo "<select id='reportgeneral' name='reportgeneral'>";
+    echo "<option value='o'";
+    if ($fonctions->convertvaluetobool($reportgeneral))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('o');
+    echo "</option>";
+    echo "<option value='n'";
+    if (!$fonctions->convertvaluetobool($reportgeneral))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('n');
+    echo "</option>";
+    echo "</select>";
+    echo "</td></tr>";
+
+    echo "<tr>";
     $dbconstante = 'FIN_REPORT';
     $finreport = '';
     if ($fonctions->testexistdbconstante($dbconstante))  $finreport = $fonctions->liredbconstante($dbconstante);
     $jourreport = substr($finreport,2);
     $moisreport = substr($finreport,0,2);
-    echo "<table><tbody><tr>";
     echo "<td>Date de fin de report des congés : "; //<input type='text' name='finreport' value='$finreport'></td>";
     echo "<select name='jourreport' id='jourreport'>";
     for ($index=1; $index<=31; $index++)

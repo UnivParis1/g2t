@@ -1360,30 +1360,29 @@ class structure
                     $htmltext = $htmltext . "<tr>";
                     $htmltext = $htmltext . "<th scope='row' class='cellulesimple centeraligntext' >" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</th>";
                     
-                    $complement = new complement($this->dbconnect);
-                    $complement->load($membre->agentid(), "REPORTACTIF");
-                    if ($complement->valeur() == "")
-                    {
-                        $complement->valeur("n"); // Si le complement n'est pas saisi, alors la valeur est "N" (non)
-                    }
+                    $reportactif = $membre->reportactif();
+
                     $htmltext = $htmltext . "<td class='cellulesimple centeraligntext'>";
                     if ($pourmodif) {
                         $htmltext = $htmltext . "<select name=report[" . $membre->agentid() . "]>";
                         $htmltext = $htmltext . "<option value='n'";
-                        if (!$this->fonctions->convertvaluetobool($complement->valeur()))  // (strcasecmp((string)$complement->valeur(), "n") == 0)
+                        // if (!$this->fonctions->convertvaluetobool($complement->valeur()))  // (strcasecmp((string)$complement->valeur(), "n") == 0)
+                        if (!$this->fonctions->convertvaluetobool($reportactif))  
                         {
                             $htmltext = $htmltext . " selected ";
                         }
                         $htmltext = $htmltext . ">Non</option>";
                         $htmltext = $htmltext . "<option value='o'";
-                        if ($this->fonctions->convertvaluetobool($complement->valeur())) // (strcasecmp((string)$complement->valeur(), "o") == 0)
+                        // if ($this->fonctions->convertvaluetobool($complement->valeur())) // (strcasecmp((string)$complement->valeur(), "o") == 0)
+                        if ($this->fonctions->convertvaluetobool($reportactif)) 
                         {
                             $htmltext = $htmltext . " selected ";
                         }
                         $htmltext = $htmltext . ">Oui</option>";
                         $htmltext = $htmltext . "</select>";
                     } else {
-                        $htmltext = $htmltext . $this->fonctions->ouinonlibelle($complement->valeur());
+                        // $htmltext = $htmltext . $this->fonctions->ouinonlibelle($complement->valeur());
+                        $htmltext = $htmltext . $this->fonctions->ouinonlibelle($reportactif);
                     }
                     $htmltext = $htmltext . "</td></center>";
                     unset($complement);

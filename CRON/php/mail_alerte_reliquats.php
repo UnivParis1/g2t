@@ -78,13 +78,7 @@
                 // Le tableau des affectations n'est pas vide (<==> En théorie ca ne sert à rien mais plus fiable)
                 {
                     // L'agent est bien affecté à la date du jour
-                    $complement = new complement($dbcon);
-                    $complement->load($agent->agentid(), "REPORTACTIF");
-                    // Si le complement n'est pas initialisé (NULL ou "") alors on active le report
-                    if (strcasecmp((string)$complement->valeur(), "O") == 0) // or strlen($complement->valeur()) == 0)
-                        $reportactif = true;
-                    else
-                        $reportactif = FALSE;
+                    $reportactif = $agent->reportactif();
 
                     if ($reportactif)
                     {
