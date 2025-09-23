@@ -8,8 +8,18 @@
 
     echo "\nDébut de l'envoi des mail de déclaration de TP " . date("d/m/Y H:i:s") . "\n";
 
+    $datedebut = $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode());
+    // On met la date de fin dans le futur (+99 ans) afin de prendre en compte les déclarations qui sont dans le futur => Ticket GLPI 76387
+    $datefin = $fonctions->formatdate(($fonctions->anneeref() + 99) . $fonctions->finperiode());
+
     // On selectionne les demandes en attente de validation
-    $sql = "SELECT DECLARATIONID FROM DECLARATIONTP WHERE STATUT = '" . declarationTP::DECLARATIONTP_ATTENTE . "' AND AGENTID IN (SELECT AGENTID FROM AGENT)";
+    $sql = "SELECT DECLARATIONID 
+            FROM DECLARATIONTP 
+            WHERE STATUT = '" . declarationTP::DECLARATIONTP_ATTENTE . "' 
+              AND AGENTID IN (SELECT AGENTID FROM AGENT)
+              AND DATEDEBUT >= '" . $fonctions->formatdatedb($datedebut)  . "'
+              AND DATEFIN <= '" . $fonctions->formatdatedb($datefin) . "'";
+
     $query = mysqli_query($dbcon, $sql);
     $erreur_requete = mysqli_error($dbcon);
     if ($erreur_requete != "")
