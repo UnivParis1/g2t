@@ -84,6 +84,7 @@
                 if (is_string($response))
                 {
                     echo "Une erreur s'est produite dans la récupération des informations : $response \n";
+                    continue;
                 }
 
                 // Le premier currentstepnumber commence à 0 !!!
@@ -91,12 +92,14 @@
                 if (is_string($currentstepnumber))
                 {
                     echo "Une erreur s'est produite dans la récupération de l'étape courante : $currentstepnumber \n";
+                    continue;
                 }
 
                 $recipientlist = $esignature->get_signrequest_recipients($esignatureid);
                 if (is_string($recipientlist))
                 {
                     echo "Une erreur s'est produite dans la récupération des signataires : $recipientlist \n";
+                    continue;
                 }
                 
                 $nbworkflowsteps = count($recipientlist);
