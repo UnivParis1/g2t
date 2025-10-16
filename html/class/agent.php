@@ -1814,8 +1814,32 @@ class agent
         
         $reportactif = $this->reportactif();
         
-        $extradate = new complement($this->dbconnect);
-        $extradate->load($this->agentid, "PROLONG" . ($anneeref - 1));
+        $sql = "SELECT COMPLEMENTID FROM COMPLEMENT WHERE AGENTID = ? AND COMPLEMENTID LIKE 'PROLONG%' AND VALEUR >= DATE_FORMAT(CURDATE(),'%Y%m%d')";
+        $params = array($this->fonctions->my_real_escape_utf8($this->agentid));
+        $query = $this->fonctions->prepared_select($sql, $params);
+        // echo "sql = " . $sql . "<br>";
+        $erreur = mysqli_error($this->dbconnect);
+        if ($erreur != "") {
+            $errlog = "Agent->soldecongesliste (AGENT) : " . $erreur;
+            echo $errlog . "<br/>";
+            error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        }
+        $arraycomplementid = array();
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            $arraycomplementid[] = "$result[0]";
+        }
+
+        // var_dump($arraycomplementid);
+        $arrayextradate = array();
+        foreach($arraycomplementid as $complementid)
+        {
+            $extradate = new complement($this->dbconnect);
+            $extradate->load($this->agentid, $complementid);
+            $arrayextradate[str_replace('PROLONG', '', $complementid)] = $extradate;
+        }
+        // var_dump($arrayextradate);
+
         // var_dump(($anneeref - 1));
         // var_dump($extradate->valeur());
         // var_dump($this->fonctions->formatdatedb($extradate->valeur()));
@@ -1831,20 +1855,56 @@ class agent
             /////////////////////////////
             // On limite la prise des congés complémtaires à l'année de reférence
             // On n'applique plus le report de congés sur les congés complémentaires
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? OR ANNEEREF= ?)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
-            $subparams = array($anneeref,($anneeref - 1),$anneeref);
-        }
-        // S'il existe une date de prolongation pour cet agent pour la congés ($anneeref - 1) et que la date de prolongation est suppérieure à la date du jour
-        else if (trim($extradate->valeur()) != "" and $this->fonctions->formatdatedb($extradate->valeur()) >= date('Ymd'))
-        {
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? OR ANNEEREF= ?)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
-            $subparams = array($anneeref,($anneeref - 1),$anneeref);
-            $prolongationconges = true;
+            $TOCOMPLETE_TAG = '##TOCOMPLETE##';
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? OR ANNEEREF= ? $TOCOMPLETE_TAG)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
+            $subparams = array($anneeref,($anneeref - 1));
+
+            // S'il existe des dates de prolongation de congés pour cet agent
+            if (count($arrayextradate)>0)
+            {
+                // var_dump("Dans la boucle qui m'interresse");
+                $req_partie = explode("$TOCOMPLETE_TAG", $requ_sel_typ_conge);
+
+                $requ_sel_typ_conge = $req_partie[0];
+                foreach($arrayextradate as $key => $extradate)
+                {
+                    $requ_sel_typ_conge = $requ_sel_typ_conge . " OR ANNEEREF= ?";
+                    $subparams[] = $key;  // On convertie la clé en chaine de caractère
+                }
+                $requ_sel_typ_conge = $requ_sel_typ_conge . $req_partie[1];
+                $prolongationconges = true;
+            }
+            $requ_sel_typ_conge = str_replace("$TOCOMPLETE_TAG", '', $requ_sel_typ_conge);
+            $subparams[] = $anneeref;
+            //var_dump($requ_sel_typ_conge);
+            // var_dump($subparams);
         }
         else 
         {
-            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND ANNEEREF= ?)";
+            $TOCOMPLETE_TAG = '##TOCOMPLETE##';
+            $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' AND (ANNEEREF= ? $TOCOMPLETE_TAG)) OR (SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%' AND ANNEEREF= ?)) ";
             $subparams = array($anneeref);
+
+            // S'il existe des dates de prolongation de congés pour cet agent
+            if (count($arrayextradate)>0)
+            {
+                // var_dump("Dans la boucle qui m'interresse");
+                $req_partie = explode("$TOCOMPLETE_TAG", $requ_sel_typ_conge);
+
+                $requ_sel_typ_conge = $req_partie[0];
+                foreach($arrayextradate as $key => $extradate)
+                {
+                    $requ_sel_typ_conge = $requ_sel_typ_conge . " OR ANNEEREF= ?";
+                    $subparams[] = $key;  // On convertie la clé en chaine de caractère
+                }
+                $requ_sel_typ_conge = $requ_sel_typ_conge . $req_partie[1];
+                $prolongationconges = true;
+            }
+            $requ_sel_typ_conge = str_replace("$TOCOMPLETE_TAG", '', $requ_sel_typ_conge);
+            $subparams[] = $anneeref;
+
+            // $requ_sel_typ_conge = "((SOLDE.TYPEABSENCEID LIKE 'ann%' OR SOLDE.TYPEABSENCEID LIKE '" . recuperation::SUPP_ID . "%') AND ANNEEREF= ?)";
+            // $subparams = array($anneeref);
         }
         
         $sql = "SELECT SOLDE.TYPEABSENCEID FROM SOLDE,TYPEABSENCE WHERE AGENTID= ? AND SOLDE.TYPEABSENCEID=TYPEABSENCE.TYPEABSENCEID  AND " . $requ_sel_typ_conge;
