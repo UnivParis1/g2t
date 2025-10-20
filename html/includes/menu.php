@@ -1835,6 +1835,17 @@
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification des circuits eSignature</a>
                     </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'saisir_tpspartiel.php'; ?>
+                        <form name='resp_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
+                        </form>
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'un temps partiel pour un agent</a>
+                    </li>
+
+
 <?php 
                     if ($user->estprofilrh(agent::PROFIL_RHTELETRAVAIL))
                     {

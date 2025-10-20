@@ -95,7 +95,7 @@
         {
             $agentid = null;
         }
-        $nbmonthsprevious = 12;
+        $nbmonthsprevious = 60; // 12 x 5 => On peut remonter à 5 ans en arrière pour la saisie d'une convention de télétravail par la DRH
     }
     elseif ($mode==MODE_RESPONSABLE or $mode==MODE_GESTION)
     {

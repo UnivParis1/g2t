@@ -384,29 +384,7 @@
                     $infoagent = "Aucun agent n'est un utilisateur G2T valide => Structure non déployée ?<br>";
                     $sign = "&#128711;";
                 }
-                
-//                // Pour chaque agent de la structure, on regarde si c'est un G2Tuser
-//                foreach ((array)$agentliste as $structagent)
-//                {
-//                    if (!$structagent->isG2tUser())
-//                    {
-//                        $nbprobleme = $nbprobleme + 1;
-//
-//                        $infoagent = $infoagent . "L'agent " . $structagent->identitecomplete() . " n'est pas un utilisateur G2T valide.<br>";
-//                        $sign = "&#9888;";
-//                    }
-//                    else
-//                    {
-//                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : L'agent " . $structagent->identitecomplete() . " est ok."));
-//                    }
-//                }
-//                error_log(basename(__FILE__) . " " . $fonctions->stripAccents("Pour la structure " . $struct->nomcourt() . " " . $struct->nomlong()  . " : J'ai " . count((array)$agentliste) . " agents dans la structure et $nbprobleme sont erronés."));
-//                if (count((array)$agentliste) == $nbprobleme)
-//                {
-//                    $infoagent = "Aucun agent n'est dans un groupe valide.<br>";
-//                    $sign = "&#128711;";
-//                }
-                
+
                 echo "<tr>";
                 // echo "Avant l'affichage du nom...<br>";
                 echo "<input type='hidden' id='" . $struct->id() ."' value='" . $struct->id() ."'/>";
@@ -586,6 +564,71 @@
                     echo "<tr><td class='greentext'>Liste des agents de la structure  - $nbagents agent(s) :<br>$textlisteagent</td></tr>";
                 }
                 echo "<tr><td height=15></td></tr>";
+
+
+                echo "<tr class='bulleinfo'>";
+                echo "<td>";
+                echo "Voir le planning des agents des sous-structures dans le planning de la structure <b>" . $struct->nomcourt()  . "</b> (responsable G2T/gestionnaire G2T) : ";
+                echo "</td><td>";
+                echo $fonctions->ouinonlibelle($struct->sousstructure());
+                echo "</td>";
+                echo "</tr>";
+
+                if (!$struct->isincluded())
+                {
+//                    echo "<br>";
+                    echo "<tr class='bulleinfo'>";
+                    echo "<td>";
+                    echo "Afficher le solde de tous les agents des sous-structures (responsable G2T uniquement) : ";
+                    echo "</td><td>";
+                    echo $fonctions->ouinonlibelle($struct->respaffsoldesousstruct());
+                    echo "</td>";
+                    echo "</tr>";
+                    echo "<tr class='bulleinfo'>";
+                    echo "<td>";
+                    echo "Gérer les demandes de congés de tous les agents des sous-structures (responsable G2T uniquement) : ";
+                    echo "</td><td>";
+                    echo $fonctions->ouinonlibelle($struct->respaffdemandesousstruct());
+                    echo "</td>";
+                    echo "</tr>";
+                    echo "<tr class='bulleinfo'>";
+                    echo "<td>";
+                    echo "Dans le planning de la structure (menu Agent), permettre de voir le planning des agents de la structure <b>" . $struct->nomcourt()  . "</b> : ";
+                    echo "</td><td>";
+                    echo $fonctions->ouinonlibelle($struct->agentaffplanningdirection());
+                    echo "</td>";
+                    echo "</tr>";
+                }
+                echo "<tr class='bulleinfo'>";
+                echo "<td>";
+                echo "Autoriser la consultation du planning de la structure <b>" . $struct->nomcourt() . "</b> par tous les agents de celle-ci : ";
+                echo "</td><td>";
+                echo $fonctions->ouinonlibelle($struct->affichetoutagent());
+                echo "</td>";
+                echo "</tr>";
+                echo "<tr class='bulleinfo'>";
+                echo "<td>";
+                echo "Autoriser la validation des demandes des agents de la structure <b>" . $struct->nomcourt() . "</b> par le gestionnaire G2T : ";
+                echo "</td><td>";
+                echo $fonctions->ouinonlibelle($struct->gestvalidagent());
+                echo "</td>";
+                echo "</tr>";
+
+                // Si la structure n'a pas de structures filles => On n'affiche pas ce paramétrage
+                $structlistefille = $struct->structurefille();
+                //if (count((array)$structlistefille)>0 and false)
+                if (count((array)$structlistefille)>0 and date('Ymd') >= '20240901')
+                {
+                    echo "<tr class='bulleinfo'>";
+                    echo "<td>";
+                    echo "Autoriser la validation des demandes du responsable des structures filles par le gestionnaire G2T de <b>" . $struct->nomcourt() . "</b> :";
+                    echo "</td><td>";
+                    echo $fonctions->ouinonlibelle($struct->gestvalidrespstructfille());
+                    echo "</td>";
+                    echo "</tr>";
+                }
+                echo "<tr><td height=15></td></tr>";
+
                 echo "</tbody></table>";
             }
 

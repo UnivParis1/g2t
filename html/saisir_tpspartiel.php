@@ -280,7 +280,14 @@
         $declaration->numlignequotite($numquotiteligne);
         // echo "Avant le initTP <br>";
         $declaration->tabtpspartiel(implode($tabTP));
-        $declaration->statut(declarationTP::DECLARATIONTP_ATTENTE);
+        if ($mode == MODE_RH)
+        {
+            $declaration->statut(declarationTP::DECLARATIONTP_VALIDE);
+        }
+        else
+        {
+            $declaration->statut(declarationTP::DECLARATIONTP_ATTENTE);
+        }
         if ($nocheckquotite == 'yes') // Si on demande à ne pas vérifier la répartition de la quotité => on force 
         {
             $declaration->forcee('O');
@@ -298,8 +305,19 @@
         // echo "Avant le Store <br>";
         $msg = $declaration->store();
         if ($msg != "")
+        {
             $msg_erreur = $msg_erreur . $msg;
-        else {
+        }
+        else 
+        {
+            if ($declaration->statut() == declarationTP::DECLARATIONTP_VALIDE)
+            {
+                $TPid = $declaration->declarationTPid();
+                $declaration = new declarationTP($dbcon);
+                $declaration->load($TPid);
+                $pdffilename = $declaration->pdf($user->agentid());
+                $user->sendmail($declaration->agent(), "Validation d'un temps-partiel", "La demande de temps-partiel du " . $declaration->datedebut() . " au " . $declaration->datefin() . " est " . mb_strtolower($fonctions->declarationTPstatutlibelle($declaration->statut()),'UTF-8') . ".", $pdffilename);
+            }
             $errlog = "La déclaration de temps partiel est bien enregistrée.";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
             echo $fonctions->showmessage(fonctions::MSGINFO, $errlog);
@@ -309,32 +327,36 @@
     if ($agentid == "") {
         echo "<form name='autodeclarationforagent'  method='post' >";
 
-        $agentlistefull = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
-        
-        
-//        $structureliste = $user->structrespliste();
-//        if (is_array($structureliste))
-//        {
-//            uasort($structureliste,"triparprofondeurabsolue");
-//        }
-//        // echo "Liste de structure = "; print_r($structureliste); echo "<br>";
-//        $agentlistefull = array();
-//        foreach ($structureliste as $structure) {
-//            $agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"));
-//            // echo "Liste de agents = "; print_r($agentliste); echo "<br>";
-//            $agentlistefull = array_merge((array) $agentlistefull, (array) $agentliste);
-//            // echo "fin du select <br>";
-//        }
-        ksort($agentlistefull);
-        echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
-        foreach ($agentlistefull as $keyagent => $membre) 
+        if ($mode == MODE_RESPONSABLE)
         {
-            if (!$membre->estutilisateurspecial())
+            $agentlistefull = $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
+            ksort($agentlistefull);
+            echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
+            foreach ($agentlistefull as $keyagent => $membre) 
             {
-                echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                if (!$membre->estutilisateurspecial())
+                {
+                    echo "<OPTION value='" . $membre->agentid() . "'>" . $membre->civilite() . " " . $membre->nom() . " " . $membre->prenom() . "</OPTION>";
+                }
             }
+            echo "</SELECT>";
         }
-        echo "</SELECT>";
+        else
+        {
+            $agentlistefull = $fonctions->listeagentsg2t(true,false); // $user->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
+            echo "<select class='listeagentg2t' size='1' id='agentid' name='agentid'>";
+            echo "<option value=''>----- Veuillez sélectionner un agent -----</option>";
+            foreach ($agentlistefull as $key => $identite)
+            {
+                echo "<option value='$key' ";
+                if ($agentid == $key)
+                {
+                    echo " selected ";
+                }
+                echo " >$identite</option>";
+            }
+            echo "</select>";
+        }
         echo "<br>";
 
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
@@ -446,7 +468,7 @@
                     echo "</div>";
 
                     echo "<br>";
-                    if (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0) {
+                    if (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0 or strcasecmp((string)$mode, MODE_RH) == 0) {
                         echo "<br>";
                         echo "<input type='checkbox' name='nocheckquotite' value='yes'> Ne pas vérifier la répartition des jours de temps partiel. <br>";
                         echo "Cette fonction permet, par exemple, de saisir 3 jours de TP une semaine et 2 jours la semaine suivante pour une personne à 50% <br>";
