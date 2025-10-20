@@ -412,7 +412,16 @@
     var demandestatutchange = function (select, index)
     {
     	//alert('Index = ' + index);
-        const motifinput = document.getElementById('motif[' +  index + ']');
+        let motifinput;
+        // Si l'index n'est pas un nombre alors on doit l'encadrer par des guillemets
+        if (isNaN(index))
+        {
+            motifinput = document.getElementById('motif["' +  index + '"]');
+        }
+        else
+        {
+            motifinput = document.getElementById('motif[' +  index + ']');
+        }
         //alert('Motif id = ' + motifinput.id);
         validdemandemotif(motifinput,index);
     };
@@ -420,7 +429,16 @@
     var validdemandemotif = function (motif, index)
     {
         // console.log('validdemandemotif : ' + index);
-        const select = document.getElementById('statut[' +  index + ']');
+        let select;
+        // Si l'index n'est pas un nombre alors on doit l'encadrer par des guillemets
+        if (isNaN(index))
+        {
+            select = document.getElementById('statut["' +  index + '"]');
+        }
+        else
+        {
+            select = document.getElementById('statut[' +  index + ']');
+        }
         //console.log("function validdemandemotif => " + Date.now());
         //console.log('Select id = ' + select.id + ' value = ' + select.value);
         if (select.value == '<?php echo demande::DEMANDE_REFUSE; ?>')
@@ -982,6 +1000,21 @@
 <link rel="stylesheet" type="text/css" href="css-g2t/menubar-navigation.css?<?php echo filemtime('css-g2t/menubar-navigation.css') ?>" media="all"></link>
 <script src="javascript/menubar-navigation.js?<?php echo filemtime('javascript/menubar-navigation.js') ?>"></script>
 
+<?php
+    // On affiche le pagepath s'il existe dans le $_POST sinon on essaie de le déterminer
+    if (isset($_POST['pagepath']))
+    {
+        echo "<label class='headerpagepath'>" . $_POST['pagepath'] . "</label>";
+    }
+    else
+    {
+        // echo "<label class='headerpagepath'>MENU AGENT - Accueil</label>";
+        echo "<label class='headerpagepath'></label>";
+    }
+?>
+
+<br> <br>
+
 <div name="mainmenunew" id="mainmenunew" class="mainmenu">
     <nav aria-label="G2T Menu Principal">
         <ul class="menubar-navigation niveau1" role="menubar" aria-label="G2T Menu Principal">
@@ -1000,6 +1033,7 @@
                         <?php $destpagename = 'index.php'; ?>
                         <form name='accueil' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Accueil</a>
                     </li>
@@ -1011,6 +1045,7 @@
                         <?php $destpagename = 'affiche_planning.php'; ?>
                         <form name='planning' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de l'agent</a>
                     </li>
@@ -1020,6 +1055,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="typedemande" value="conges">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé</a>
                     </li>
@@ -1029,6 +1065,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="typedemande" value="absence">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence</a>
                     </li>
@@ -1037,6 +1074,7 @@
                         <form name='agentannulation' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de demandes</a>
                     </li>
@@ -1046,6 +1084,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des temps partiels</a>
                     </li>
@@ -1057,6 +1096,7 @@
                         <form name='agent_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
                     </li>
@@ -1069,6 +1109,7 @@
                         <form name='agent_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification d'un jour de télétravail</a>
                     </li>
@@ -1083,6 +1124,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                             <input type="hidden" name="mode" value="<?php echo MODE_AGENT; ?>">
                             <input type="hidden" name="previous" value="no">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                     </li>
@@ -1110,6 +1152,7 @@
                         <form name='alim_cet' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Alimentation du CET</a>
                     </li>
@@ -1135,6 +1178,7 @@
                         <form name='option_cet' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="agentid" value="<?php echo $user->agentid(); ?>"> 
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Droit d'option sur CET</a>
                     </li>
@@ -1178,6 +1222,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>"> 
                             <input type="hidden" name="previous" value="no">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Avis sur des demandes en attente</a>
                     </li>
@@ -1187,6 +1232,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_CONSULTANT; ?>">
                             <input type="hidden" name="previous" value="no">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning</a>
                     </li>
@@ -1230,6 +1276,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="action" value="modif"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des agents et des structures</a>
                     </li>
@@ -1241,6 +1288,7 @@
                         <form name='resp_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
                     </li>
@@ -1262,6 +1310,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                             </li>
@@ -1271,6 +1320,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
                             </li>
@@ -1280,6 +1330,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
                             </li>
@@ -1288,6 +1339,7 @@
                                 <form name='resp_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des modifications de jours de télétravail</a>
                             </li>
@@ -1298,6 +1350,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="conges">
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un agent</a>
                             </li>
@@ -1308,6 +1361,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un agent</a>
                             </li>
@@ -1316,6 +1370,7 @@
                                 <form name='resp_ajout_conge' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des jours de récupération pour un agent</a>
                             </li>
@@ -1334,6 +1389,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="conges"> 
                                     <input type="hidden" name="congeanticipe" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé par anticipation pour un agent</a>
                             </li>
@@ -1350,6 +1406,7 @@
                                 <form name='resp_valid_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des temps partiels</a>
                             </li>
@@ -1358,6 +1415,7 @@
                                 <form name='resp_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'un temps partiel pour un agent</a>
                             </li>
@@ -1367,6 +1425,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>">
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
                             </li>
@@ -1393,6 +1452,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                             </li>
@@ -1402,6 +1462,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
                             </li>
@@ -1411,6 +1472,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="responsableid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
                             </li>
@@ -1421,6 +1483,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="conges"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un agent</a>
                             </li>
@@ -1431,6 +1494,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un agent</a>
                             </li>
@@ -1440,6 +1504,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RESPONSABLE; ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
                             </li>
@@ -1488,6 +1553,7 @@
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="action" value="modif"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des agents et des structures</a>
                     </li>
@@ -1499,6 +1565,7 @@
                         <form name='gest_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                             <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail</a>
                     </li>
@@ -1520,6 +1587,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                             </li>
@@ -1545,6 +1613,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="conges">
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un responsable</a>
                             </li>
@@ -1555,6 +1624,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un responsable</a>
                             </li>
@@ -1566,6 +1636,7 @@
                                 <form name='gest_valid_conge' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
                             </li>
@@ -1575,6 +1646,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="gestionnaireid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
                             </li>
@@ -1583,6 +1655,7 @@
                                 <form name='gest_valid_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des temps partiels</a>
                             </li>
@@ -1592,6 +1665,7 @@
                                 <form name='gest_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des modifications de jours de télétravail</a>
                             </li>
@@ -1607,6 +1681,7 @@
                                 <form name='gest_aff_solde' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
                             </li>
@@ -1633,6 +1708,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                             </li>
@@ -1658,6 +1734,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="conges">
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un responsable</a>
                             </li>
@@ -1668,6 +1745,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="typedemande" value="absence"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un responsable</a>
                             </li>
@@ -1680,6 +1758,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des demandes en attente</a>
                             </li>
@@ -1689,6 +1768,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_GESTION; ?>"> 
                                     <input type="hidden" name="previous" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
                             </li>
@@ -1726,6 +1806,7 @@
                         <?php $destpagename = 'gestion_delegation.php'; ?>
                         <form name='rh_gest_deleg' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des délégations sur les structures</a>
                     </li>
@@ -1734,6 +1815,7 @@
                         <form name='rh_struct_gest' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                             <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des structures</a>
                     </li>
@@ -1741,6 +1823,7 @@
                         <?php $destpagename = 'modifieresignature.php'; ?>
                         <form name='rh_modifcircuitesign' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification d'un circuit eSignature pour un agent</a>
                     </li>
@@ -1748,6 +1831,7 @@
                         <?php $destpagename = 'modifier_XMLcircuit.php'; ?>
                         <form name='rh_modifier_XMLcircuit' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification des circuits eSignature</a>
                     </li>
@@ -1769,6 +1853,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
                                     <input type="hidden" name="noesignature" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail<br>(hors eSignature)</a>
                             </li>
@@ -1777,6 +1862,7 @@
                                 <form name='rh_gest_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des conventions de télétravail<br>(avec eSignature)</a>
                             </li>
@@ -1784,6 +1870,7 @@
                                 <?php $destpagename = 'affiche_info_teletravail.php'; ?>
                                 <form name='rh_affiche_info_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Nombre de jours de télétravail</a>
                             </li>
@@ -1791,6 +1878,7 @@
                                 <?php $destpagename = 'suivi_teletravail.php'; ?>
                                 <form name='rh_suivi_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Suivi de l'avancement des demandes de télétravail</a>
                             </li>
@@ -1798,6 +1886,7 @@
                                 <?php $destpagename = 'affiche_teletravail.php'; ?>
                                 <form name='rh_affiche_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des conventions de télétravail par structure</a>
                             </li>
@@ -1821,6 +1910,7 @@
                                 <form name='gestrh_utilisationcet' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des congés sur CET</a>
                             </li>
@@ -1829,6 +1919,7 @@
                                 <form name='gestrh_gestcet' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion d'un CET</a>
                             </li>
@@ -1837,6 +1928,7 @@
                                 <form name='gestrh_gestcet_hors_esignature' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion d'un CET (hors eSignature)</a>
                             </li>
@@ -1845,6 +1937,7 @@
                                 <form name='gestrh_creercet' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Reprise d'un CET existant</a>
                             </li>
@@ -1853,6 +1946,7 @@
                                 <form name='rh_alimentation_cet' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Alimentation du CET</a>
                             </li>
@@ -1861,6 +1955,7 @@
                                 <form name='rh_option_cet' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Droit d'option sur CET</a>
                             </li>
@@ -1888,6 +1983,7 @@
                                     <input type="hidden" name="previous" value="no">
                                     <input type="hidden" name="rh_mode" value="yes">
                                     <input type="hidden" name="show_cet" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congés (hors CET)</a>
                             </li>
@@ -1900,6 +1996,7 @@
                                     <input type="hidden" name="previous" value="no">
                                     <input type="hidden" name="rh_mode" value="yes">
                                     <input type="hidden" name="show_cet" value="yes">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congés sur CET</a>
                             </li>
@@ -1909,6 +2006,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congés imputés sur le CET</a>
                             </li>
@@ -1916,6 +2014,7 @@
                                 <?php $destpagename = 'affiche_info_agent.php'; ?>
                                 <form name='affiche_info_agent' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Consultation des congés d'un agent</a>
                             </li>
@@ -1923,6 +2022,7 @@
                                 <?php $destpagename = 'modif_solde.php'; ?>
                                 <form name='modif_solde' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">					
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification du solde de congés d'un agent</a>
                             </li>
@@ -1940,6 +2040,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des jours de récupération</a>
                             </li>
@@ -1951,6 +2052,7 @@
                                 <form name='rh_ajout_conge' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des jours de récupération pour un agent</a>
                             </li>
@@ -1958,6 +2060,7 @@
                                 <?php $destpagename = 'controlrecuperation.php'; ?>
                                 <form name='rh_controlrecup' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôle des recupérations</a>
                             </li>
@@ -1967,6 +2070,7 @@
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>"> 
                                     <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
                                     <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents d'une structure</a>
                             </li>
@@ -1974,6 +2078,7 @@
                                 <?php $destpagename = 'affiche_jourscomplementaires.php'; ?>
                                 <form name='rh_affiche_jourscomplementaires' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des jours complémentaires</a>
                             </li>
@@ -1981,6 +2086,7 @@
                                 <?php $destpagename = 'gestion_periodeobligatoire.php'; ?>
                                 <form name='rh_gestperiodeoblig' method='post' action="<?php echo "$destpagename"; ?>">
                                     <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des périodes obligatoires</a>
                             </li>
@@ -1993,6 +2099,7 @@
                         <?php $destpagename = 'affiche_inputfiles.php'; ?>
                         <form name='rh_affiche_inputfiles' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des données d'interface</a>
                     </li>
@@ -2000,6 +2107,7 @@
                         <?php $destpagename = 'g2t_param.php'; ?>
                         <form name='rh_affiche_g2t_param' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage</a>
                     </li>
@@ -2030,6 +2138,7 @@
                         <?php $destpagename = 'admin_maintenance.php'; ?>
                         <form name='admin_mode_maintenance' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Activation/désactivation maintenance</a>
                     </li>
@@ -2038,6 +2147,7 @@
                         <form name='admin_struct_gest' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
                             <input type="hidden" name="mode" value="">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage des structures</a>
                     </li>
@@ -2045,6 +2155,7 @@
                         <?php $destpagename = 'admin_substitution.php'; ?>
                         <form name='admin_subst_agent' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Se faire passer pour un autre agent</a>
                     </li>
@@ -2052,6 +2163,7 @@
                         <?php $destpagename = 'import_conges.php'; ?>
                         <form name='admin_import_conges' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Import des congés</a>
                     </li>
@@ -2059,6 +2171,7 @@
                         <?php $destpagename = 'affiche_demandeCET.php'; ?>
                         <form name='admin_affiche_demandeCET' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage d'une demande sur CET/eSignature</a>
                     </li>
@@ -2066,6 +2179,7 @@
                         <?php $destpagename = 'affiche_info_teletravail.php'; ?>
                         <form name='admin_affiche_info_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Nombre théorique de jours de télétravail</a>
                     </li>
@@ -2073,6 +2187,7 @@
                         <?php $destpagename = 'g2t_param.php'; ?>
                         <form name='admin_affiche_g2t_param' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Paramétrage</a>
                     </li>
@@ -2080,6 +2195,7 @@
                         <?php $destpagename = 'suivi_teletravail.php'; ?>
                         <form name='admin_suivi_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Suivi de l'avancement des demandes de télétravail</a>
                     </li>
@@ -2087,6 +2203,7 @@
                         <?php $destpagename = 'affiche_inputfiles.php'; ?>
                         <form name='admin_affiche_inputfiles' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des données d'interface</a>
                     </li>
@@ -2094,6 +2211,7 @@
                         <?php $destpagename = 'affiche_jourscomplementaires.php'; ?>
                         <form name='admin_affiche_jourscomplementaires' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage des jours complémentaires</a>
                     </li>
@@ -2101,6 +2219,7 @@
                         <?php $destpagename = 'affiche_teletravail.php'; ?>
                         <form name='admin_affiche_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Liste des conventions de télétravail par structure</a>
                     </li>
@@ -2108,6 +2227,7 @@
                         <?php $destpagename = 'controlrecuperation.php'; ?>
                         <form name='admin_controlrecup' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Contrôle des recupérations</a>
                     </li>
@@ -2115,6 +2235,7 @@
                         <?php $destpagename = 'gestion_periodeobligatoire.php'; ?>
                         <form name='admin_gestperiodeoblig' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des périodes obligatoires</a>
                     </li>
@@ -2122,6 +2243,7 @@
                         <?php $destpagename = 'modifieresignature.php'; ?>
                         <form name='admin_modifcircuitesign' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification d'un circuit eSignature pour un agent</a>
                     </li>
@@ -2129,6 +2251,7 @@
                         <?php $destpagename = 'modifier_XMLcircuit.php'; ?>
                         <form name='admin_modifier_XMLcircuit' method='post' action="<?php echo "$destpagename"; ?>">
                             <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification des circuits eSignature</a>
                     </li>
@@ -2160,6 +2283,60 @@
             }
         }
     }
+
+    // On construit tous les chemins des pages dans le menu (input hidden pagepath)
+    function getpagepath(element)
+    {
+        if (element.classList.contains('pagepath'))
+        {
+            let link = element.parentElement.nextElementSibling;
+            return getpagepath(link);
+        }
+        if (element.classList.contains('mainmenu'))
+        {
+            return '';
+        }
+        if (element.tagName.toUpperCase() == 'A')
+        {
+            let previouselement = element.parentElement;  
+            let parentpath = getpagepath(previouselement);
+            if (parentpath.trim().length > 0)
+            {
+                parentpath = parentpath + " &rarr; "; // ' - '
+            }
+            return  parentpath + element.outerText.trim();
+        }
+        else
+        {
+            let previouselement = element.previousElementSibling;
+            if (!previouselement)
+            {
+                previouselement = element.parentElement;
+            }
+            return getpagepath(previouselement);
+        }
+    }
+
+    let pagepathlist = mainmenu.getElementsByClassName('pagepath');
+    for (let index = 0 ; index < pagepathlist.length ; index++)
+    {
+        let pagepath = pagepathlist[index];
+        let pathvalue = getpagepath(pagepath);
+        pagepath.value = pathvalue;
+    }
+
+    // Si on n'a pas trouvé le chemin de la page (<=> headerpagepath est vide) on cherche le chemin dans le menu de la page courante
+    let headerpagepath = document.querySelector('.headerpagepath'); 
+    if (headerpagepath.innerHTML.trim() == '')
+    {
+        let selector = "form[action='<?php echo basename($_SERVER["PHP_SELF"]); ?>']";
+        let accueilform = document.querySelector('.mainmenu').querySelectorAll(selector)[0];
+        if (accueilform)
+        {
+            headerpagepath.innerHTML = accueilform.querySelector('.pagepath').value;
+        }
+    }
 </script>
 
-<br> <br> <br>
+
+<br><br><br>

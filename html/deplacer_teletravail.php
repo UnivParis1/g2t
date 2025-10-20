@@ -103,63 +103,92 @@
         $motifarray = $_POST['motif'];
     }
 
+    $fullagentlist = array();
+    if (isset($_POST['fullagentlist']))
+    {
+        $fullagentlist = explode(',',$_POST['fullagentlist']);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////
     // Le responsable a modifié le statut d'une demande d'adaptation de télétravail => On est en forcément en mode RESPONSABLE
     if (isset($_POST['savemodif']) and $mode==MODE_RESPONSABLE)
     {
-        $agent = new agent($dbcon);
-        $agent->load($agentid);
-
         $error = '';
         $info = '';
-        foreach ($statutarray as $ttexceptionid => $statut)
+        foreach ($statutarray as $ttexceptionkey => $statut)
         {
             // Si le statut est en attente => On ne fait rien
             if ($statut == ttexception::STATUT_ENATTENTE)
             {
                 continue;
             }
+
+            $tempttexceptionkey = str_replace('"', '',$ttexceptionkey);
+            $idarray = explode("_", $tempttexceptionkey);
+            $tempagentid = $idarray[0];
+            $ttexceptionid = $idarray[1];
+            // var_dump($ttexceptionkey);
+            // var_dump($tempttexceptionkey);
+            // var_dump($ttexceptionid);
+            // var_dump($tempagentid);
+
+/*
+            // On récupère l'agentid et l'id de l'exception car le ttexceptionkey est de la forme 
+            // <agentid><ttexceptionid> où ttexceptionid est de la forme YYYYMMDDP où P = 0, 1 ou 2.
+            // => Donc la longueur de ttexceptionid est connue (= 9 caractères)
+            // Le reste c'est le numéro de l'agent.
+            $ttexceptionid = substr($ttexceptionkey,-9);
+            $tempagentid = substr_replace($ttexceptionkey,"",-9);
+            // var_dump($ttexceptionkey);
+            // var_dump($ttexceptionid);
+            // var_dump($tempagentid);
+*/
+            $agent = new agent($dbcon);
+            $agent->load($tempagentid);
+
             $ttexception = new ttexception;
             $ttexception->infosfromid($ttexceptionid);
-            $ttexceptionliste = $fonctions->listejoursteletravailexclus($agentid,$ttexception->dateorigine, $ttexception->momentorigine,$ttexception->dateorigine, $ttexception->momentorigine,FALSE);
+            $ttexceptionliste = $fonctions->listejoursteletravailexclus($tempagentid,$ttexception->dateorigine, $ttexception->momentorigine,$ttexception->dateorigine, $ttexception->momentorigine,FALSE);
             // var_dump($ttexceptionliste);
             if ($statut == ttexception::STATUT_VALIDE)
             {
-                $tmperror = $fonctions->ajoutjoursteletravailexclus($agentid,$ttexceptionliste[0]->dateorigine, $ttexceptionliste[0]->momentorigine,$ttexceptionliste[0]->dateremplacement, $ttexceptionliste[0]->momentremplacement,$statut);
+                $tmperror = $fonctions->ajoutjoursteletravailexclus($tempagentid,$ttexceptionliste[0]->dateorigine, $ttexceptionliste[0]->momentorigine,$ttexceptionliste[0]->dateremplacement, $ttexceptionliste[0]->momentremplacement,$statut);
                 if (is_string($tmperror) and ($tmperror . '' != ''))
                 {
                     $error = $error . '<br>' . $tmperror;
                 }
                 else
                 {
-                    $info = $info . "<br>" . "La demande de déplacement de télétravail du " . $fonctions->formatdate($ttexceptionliste[0]->dateorigine) . " " . $fonctions->nommoment($ttexceptionliste[0]->momentorigine) . " a été validée.";
+                    $info = $info . "<br>" . "La demande de déplacement de télétravail du " . $fonctions->formatdate($ttexceptionliste[0]->dateorigine) . " " . $fonctions->nommoment($ttexceptionliste[0]->momentorigine) . " a été validée pour " . $agent->identitecomplete()  . ".";
                     modiftt_envoyermailagent($ttexceptionliste[0], ttexception::ACTION_VALIDE);
                 }
             }
             elseif ($statut == ttexception::STATUT_REFUSE)
             {
                 $motif = '';
-                if (isset($motifarray[$ttexceptionid]))
+                if (isset($motifarray[$ttexceptionkey]))
                 {
-                    $motif = trim($motifarray[$ttexceptionid] . '');
+                    $motif = trim($motifarray[$ttexceptionkey] . '');
+                    // var_dump($motif);
                 }
                 if (strlen($motif . '' != ''))
                 {
-                    $tmperror = $fonctions->supprjourteletravailexclu($agentid,$ttexceptionliste[0]->dateorigine, $ttexceptionliste[0]->momentorigine);
+                    // var_dump($ttexceptionliste);
+                    $tmperror = $fonctions->supprjourteletravailexclu($tempagentid,$ttexceptionliste[0]->dateorigine, $ttexceptionliste[0]->momentorigine);
                     if ($tmperror . '' != '')
                     {
                         $error = $error . '<br>' . $tmperror;
                     }
                     else
                     {
-                        $info = $info . "<br>" . "La demande de déplacement de télétravail du " . $fonctions->formatdate($ttexceptionliste[0]->dateorigine) . " " . $fonctions->nommoment($ttexceptionliste[0]->momentorigine) . " a été refusée.";
+                        $info = $info . "<br>" . "La demande de déplacement de télétravail du " . $fonctions->formatdate($ttexceptionliste[0]->dateorigine) . " " . $fonctions->nommoment($ttexceptionliste[0]->momentorigine) . " a été refusée pour " . $agent->identitecomplete()  . ".";
                         $ttexceptionliste[0]->motif = $motif;
                         modiftt_envoyermailagent($ttexceptionliste[0], ttexception::ACTION_REFUSE);
                     }
                 }
                 else // Le motif est vide ! Ca ne devrait pas arriver mais on fait quand même le test
                 {
-                    $error = $error . '<br>' . "Le motif n'a pas été saisi pour le refus du " . $fonctions->formatdate($ttexceptionliste[0]->dateorigine) . " " . $fonctions->nommoment($ttexceptionliste[0]->momentorigine);
+                    $error = $error . '<br>' . "Le motif n'a pas été saisi pour le refus du " . $fonctions->formatdate($ttexceptionliste[0]->dateorigine) . " " . $fonctions->nommoment($ttexceptionliste[0]->momentorigine) . " pour " . $agent->identitecomplete()  . ".";
                 }
             }
         }
@@ -321,7 +350,10 @@
     {
         addwaitingimgdiv();
         echo "<br>Planning de l'agent " . $user->civilite() . " " . $user->nom() . " " . $user->prenom() . " <br>";
-
+        echo "<br>";
+        echo "Pour déplacer ou supprimer une journée de télétravail, veuillez double-cliquer sur une journée de télétravail.<br>";
+        echo "Pour annuler une demande de déplacement ou de suppression d'une journée de télétravail, vous devez double-cliquer sur la date initiale du télétravail.<br>";
+        echo "<br>";
         //echo $user->planninghtml($datedebut, $datefin,false,true,true);
         //var_dump ("$datedebut, $datefin");
         // Div qui sera mis à jour avec le retour HTML du WS
@@ -423,6 +455,7 @@
         else
         {
             $tmpstruct = null;
+            $fullagentlist = array();
             echo "<form name='selectagent_form' id='selectagent_form' method='post' >";
             echo "<SELECT class='listeagentg2t' size='1' id='agentid' name='agentid' style='width: 350px;'>";
             foreach ($agentlistefull as $keyagent => $membre) 
@@ -431,7 +464,7 @@
                 {
                     if (is_null($tmpstruct))
                     {
-                        echo "<OPTION value=''>--- Sélectionnez un agent ---</OPTION>";
+                        echo "<OPTION value='all'>Tous les agents</OPTION>";
                         $tmpstruct = new structure($dbcon);
                         $tmpstruct->load($membre->structureid());
                         echo "<optgroup label='" . $tmpstruct->nomcourt() . "'>";
@@ -449,10 +482,12 @@
                         echo " selected ";
                     }
                     echo ">" . $membre->identitecomplete(true) . "</OPTION>";
+                    $fullagentlist[$membre->agentid()] = $membre->agentid();
                     $selectagentbutton = true;
                     $displaysubmit = false;
                 }
             }
+
             if (!is_null($tmpstruct))
             {
                 echo "</optgroup>";
@@ -461,6 +496,7 @@
             echo "<br>";
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
             echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+            echo "<input type='hidden' name='fullagentlist' value='" . implode(",",$fullagentlist)  . "' />";
             echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' />";
             echo "</form>";
             echo "<br><br>";
@@ -468,106 +504,124 @@
 
         if ($agentid != '')
         {
-            $agent = new agent($dbcon);
-            $agent->load($agentid);
-
-            $datedebut = $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode());
-            $datefin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
-            $ttexceptionliste = $fonctions->listejoursteletravailexclus($agentid,$datedebut, fonctions::MOMENT_MATIN, $datefin, fonctions::MOMENT_APRESMIDI, false); // $agent->teletravaildeplaceliste($datedebut, $datefin);
-            // var_dump($ttexceptionliste);
-            $htmltext = "";
-            $premiereligne = true;
-            $taillemaxcommentaire = 250;
-            echo "<form name='modifstatut_form' id='modifstatut_form' method='post' >";
-            foreach($ttexceptionliste as $ttexception)
+            if ($agentid != 'all')
             {
-                if ($ttexception->statut == ttexception::STATUT_ENATTENTE)
-                {
-                    if ($premiereligne)
-                    {
-                        $htmltext = $htmltext . "<table class='tableausimple' width='100%'>";
-                        $htmltext = $htmltext . "	<thead>";
-                        $htmltext = $htmltext . "		<tr>";
-                        $htmltext = $htmltext . "			<th scope='col' class='titresimple' colspan='4' align='center'>Demandes à valider pour " . $agent->identitecomplete() . "</th>";
-                        $htmltext = $htmltext . "		</tr>";
-                        $htmltext = $htmltext . "		<tr align='center'>";
-                        $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Date d'origine</th>";
-                        $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Date du report</th>";
-                        $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Etat de la demande</th>";
-                        $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Motif (obligatoire si la demande est refusée) - maximum $taillemaxcommentaire caractères</th>";
-                        $htmltext = $htmltext . "		</tr>";
-                        $htmltext = $htmltext . "	</thead>";
-                        $htmltext = $htmltext . "	<tbody>";
-                        $premiereligne = false;
-                    }
-
-                    $htmltext = $htmltext . "		<tr align='center' class='bulleinfo'>";
-                    $htmltext = $htmltext . "			<td class='cellulesimple'>" . $fonctions->formatdate($ttexception->dateorigine) . "  " . $fonctions->nommoment($ttexception->momentorigine) . "</td>";
-                    $htmltext = $htmltext . "			<td class='cellulesimple'>";
-                    if ($ttexception->dateremplacement . '' != '')
-                    {
-                        $htmltext = $htmltext . $fonctions->formatdate($ttexception->dateremplacement) . "  " . $fonctions->nommoment($ttexception->momentremplacement);
-                    }
-                    else
-                    {
-                        $htmltext = $htmltext . "Non reportée";
-                    }
-                    $htmltext = $htmltext . "			</td>";
-                    $htmltext = $htmltext . "			<td class='cellulesimple'>";
-                    $idelement = $ttexception->id();
-                    $htmltext = $htmltext . "				<select name='statut[$idelement]' id='statut[$idelement]' onchange='demandestatutchange(this,$idelement);'>";
-                    $htmltext = $htmltext . "                   <option value='" . ttexception::STATUT_ENATTENTE . "' ";
-                    if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_ENATTENTE)
-                    {
-                        $htmltext = $htmltext . " selected ";
-                    }
-                    $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(ttexception::STATUT_ENATTENTE)  . "</option>";
-                    $htmltext = $htmltext . "                   <option value='" . ttexception::STATUT_VALIDE . "' ";
-                    if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_VALIDE)
-                    {
-                        $htmltext = $htmltext . " selected ";
-                    }
-                    $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(ttexception::STATUT_VALIDE)  . "</option>";
-                    $htmltext = $htmltext . "                   <option value='" . ttexception::STATUT_REFUSE . "' ";
-                    if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_REFUSE)
-                    {
-                        $htmltext = $htmltext . " selected ";
-                    }
-                    $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(ttexception::STATUT_REFUSE)  . "</option>";
-                    $htmltext = $htmltext . "				</select>";
-                    $htmltext = $htmltext . "			</td>";
-                    $htmltext = $htmltext . "			<td class='cellulesimple'>";
-
-                    $textareastyle = " class='commenttextarea";
-                    $disabletext = " disabled ";
-                    if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_REFUSE)
-                    {
-                        $textareastyle = $textareastyle . " commentobligatoirebackground";
-                        $disabletext = "";
-                    }
-                    $textareastyle = $textareastyle . "'";
-
-
-                    $htmltext = $htmltext . "				<textarea name='motif[$idelement]' id='motif[$idelement]' rows='2' cols='130' $textareastyle oninput='checktextlength(this,$taillemaxcommentaire); validdemandemotif(this,$idelement);' $disabletext></textarea>";
-                    $htmltext = $htmltext . "			</td>";
-                    $htmltext = $htmltext . "		</tr>";
-                }
+                $fullagentlist = array($agentid);
             }
-            if (!$premiereligne)
+
+            $aumoinsunagent = false;
+            foreach ($fullagentlist as $tempagentid)
             {
-                $htmltext = $htmltext . "	</tbody>";
-                $htmltext = $htmltext . "</table>";
+                $agent = new agent($dbcon);
+                $agent->load($tempagentid);
+
+                $datedebut = $fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode());
+                $datefin = $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode());
+                $ttexceptionliste = $fonctions->listejoursteletravailexclus($tempagentid,$datedebut, fonctions::MOMENT_MATIN, $datefin, fonctions::MOMENT_APRESMIDI, false); // $agent->teletravaildeplaceliste($datedebut, $datefin);
+                // var_dump($ttexceptionliste);
+                $htmltext = "";
+                $premiereligne = true;
+                $taillemaxcommentaire = 250;
+                echo "<form name='modifstatut_form' id='modifstatut_form' method='post' >";
+                foreach($ttexceptionliste as $ttexception)
+                {
+                    if ($ttexception->statut == ttexception::STATUT_ENATTENTE)
+                    {
+                        if ($premiereligne)
+                        {
+                            $htmltext = $htmltext . "<table class='tableausimple' width='100%'>";
+                            $htmltext = $htmltext . "	<thead>";
+                            $htmltext = $htmltext . "		<tr>";
+                            $htmltext = $htmltext . "			<th scope='col' class='titresimple' colspan='4' align='center'>Demandes à valider pour " . $agent->identitecomplete() . "</th>";
+                            $htmltext = $htmltext . "		</tr>";
+                            $htmltext = $htmltext . "		<tr align='center'>";
+                            $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Date d'origine</th>";
+                            $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Date du report</th>";
+                            $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Etat de la demande</th>";
+                            $htmltext = $htmltext . "			<th scope='col' class='cellulesimple'>Motif (obligatoire si la demande est refusée) - maximum $taillemaxcommentaire caractères</th>";
+                            $htmltext = $htmltext . "		</tr>";
+                            $htmltext = $htmltext . "	</thead>";
+                            $htmltext = $htmltext . "	<tbody>";
+                            $premiereligne = false;
+                        }
+
+                        $htmltext = $htmltext . "		<tr align='center' class='bulleinfo'>";
+                        $htmltext = $htmltext . "			<td class='cellulesimple'>" . $fonctions->formatdate($ttexception->dateorigine) . "  " . $fonctions->nommoment($ttexception->momentorigine) . "</td>";
+                        $htmltext = $htmltext . "			<td class='cellulesimple'>";
+                        if ($ttexception->dateremplacement . '' != '')
+                        {
+                            $htmltext = $htmltext . $fonctions->formatdate($ttexception->dateremplacement) . "  " . $fonctions->nommoment($ttexception->momentremplacement);
+                        }
+                        else
+                        {
+                            $htmltext = $htmltext . "Non reportée";
+                        }
+                        $htmltext = $htmltext . "			</td>";
+                        $htmltext = $htmltext . "			<td class='cellulesimple'>";
+                        $idelement = $tempagentid . '_' . $ttexception->id();
+                        $htmltext = $htmltext . "				<select name='statut[\"$idelement\"]' id='statut[\"$idelement\"]' onchange='demandestatutchange(this,\"$idelement\");'>";
+                        $htmltext = $htmltext . "                   <option value='" . ttexception::STATUT_ENATTENTE . "' ";
+                        if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_ENATTENTE)
+                        {
+                            $htmltext = $htmltext . " selected ";
+                        }
+                        $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(ttexception::STATUT_ENATTENTE)  . "</option>";
+                        $htmltext = $htmltext . "                   <option value='" . ttexception::STATUT_VALIDE . "' ";
+                        if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_VALIDE)
+                        {
+                            $htmltext = $htmltext . " selected ";
+                        }
+                        $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(ttexception::STATUT_VALIDE)  . "</option>";
+                        $htmltext = $htmltext . "                   <option value='" . ttexception::STATUT_REFUSE . "' ";
+                        if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_REFUSE)
+                        {
+                            $htmltext = $htmltext . " selected ";
+                        }
+                        $htmltext = $htmltext . ">" . $fonctions->demandestatutlibelle(ttexception::STATUT_REFUSE)  . "</option>";
+                        $htmltext = $htmltext . "				</select>";
+                        $htmltext = $htmltext . "			</td>";
+                        $htmltext = $htmltext . "			<td class='cellulesimple'>";
+
+                        $textareastyle = " class='commenttextarea";
+                        $disabletext = " disabled ";
+                        if (isset($statutarray[$idelement]) and $statutarray[$idelement] == ttexception::STATUT_REFUSE)
+                        {
+                            $textareastyle = $textareastyle . " commentobligatoirebackground";
+                            $disabletext = "";
+                        }
+                        $textareastyle = $textareastyle . "'";
+
+
+                        $htmltext = $htmltext . "				<textarea name='motif[\"$idelement\"]' id='motif[\"$idelement\"]' rows='2' cols='130' $textareastyle oninput='checktextlength(this,$taillemaxcommentaire); validdemandemotif(this,\"$idelement\");' $disabletext></textarea>";
+                        $htmltext = $htmltext . "			</td>";
+                        $htmltext = $htmltext . "		</tr>";
+                    }
+                }
+                if (!$premiereligne)
+                {
+                    $htmltext = $htmltext . "	</tbody>";
+                    $htmltext = $htmltext . "</table>";
+                    $htmltext = $htmltext . "<br>";
+                    $aumoinsunagent = true;
+                }
+                if ($htmltext == '' and $agentid != 'all')
+                {
+                    $htmltext = "<br>Cet agent n'a pas de demande de déplacement de télétravail <br>";
+                }
+                echo $htmltext;
+            }
+            if ($aumoinsunagent == true)
+            {
+                $htmltext = '';
                 $htmltext = $htmltext . "<br>";
                 $htmltext = $htmltext . "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
                 $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "' />";
                 $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $agentid . "' />";
+                $htmltext = $htmltext . "<input type='hidden' name='fullagentlist' value='" . implode(",",$fullagentlist)  . "' />";
                 $htmltext = $htmltext . "<input type='submit' id='savemodif' name='savemodif' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
+                echo $htmltext;
             }
-            if ($htmltext == '')
-            {
-                $htmltext = "Cet agent n'a pas de demande de déplacement de télétravail <br>";
-            }
-            echo $htmltext;
+
             echo "</form>";
             echo "<br><br>";
         }

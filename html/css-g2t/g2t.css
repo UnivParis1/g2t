@@ -1222,6 +1222,12 @@ select {
     padding: unset !important;
 }
 
+.headerpagepath {
+    color :rgb(207, 31, 169);
+    font-weight: bold;
+    font-size: 110%;
+}
+
 /********************************************
 / CSS DE L'ARBORESCENCE XML
 /*******************************************/
