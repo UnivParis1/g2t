@@ -546,11 +546,11 @@
                         }
 
                         $htmltext = $htmltext . "		<tr align='center' class='bulleinfo'>";
-                        $htmltext = $htmltext . "			<td class='cellulesimple'>" . $fonctions->formatdate($ttexception->dateorigine) . "  " . $fonctions->nommoment($ttexception->momentorigine) . "</td>";
+                        $htmltext = $htmltext . "			<td class='cellulesimple'>" . $fonctions->nomjour($ttexception->dateorigine) . " " . $fonctions->formatdate($ttexception->dateorigine) . "  " . $fonctions->nommoment($ttexception->momentorigine) . "</td>";
                         $htmltext = $htmltext . "			<td class='cellulesimple'>";
                         if ($ttexception->dateremplacement . '' != '')
                         {
-                            $htmltext = $htmltext . $fonctions->formatdate($ttexception->dateremplacement) . "  " . $fonctions->nommoment($ttexception->momentremplacement);
+                            $htmltext = $htmltext . $fonctions->nomjour($ttexception->dateremplacement) . " " . $fonctions->formatdate($ttexception->dateremplacement) . "  " . $fonctions->nommoment($ttexception->momentremplacement);
                         }
                         else
                         {

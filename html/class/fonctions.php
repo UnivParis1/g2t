@@ -427,7 +427,7 @@ class fonctions
      *            date
      * @return string the (french) day name corresponding to the date
      */
-    public function nomjour($date = null)
+    public function nomjour($date = null, $length = null)
     {
         if (is_null($date))
         {
@@ -435,7 +435,7 @@ class fonctions
         }
 
         $numday = date("w", strtotime($this->formatdatedb($date)));
-        $dayname = $this->nomjourparindex($numday);
+        $dayname = $this->nomjourparindex($numday, $length);
         if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) 
         {
             return ucfirst($dayname);
@@ -452,7 +452,7 @@ class fonctions
      *            index of the day (1=Monday 7=Sunday)
      * @return string the (french) day name corresponding to the index
      */
-    public function nomjourparindex($index = null) // 1 = Lundi 7 = Dimanche
+    public function nomjourparindex($index = null, $length = null) // 1 = Lundi 7 = Dimanche
     {
         if (is_null($index)) 
         {
@@ -486,6 +486,10 @@ class fonctions
                 case 6:
                     $dayname = "samedi";
                     break;
+            }
+            if (!is_null($length) and $length<strlen($dayname) and $length>0)
+            {
+                $dayname = substr($dayname,0,$length) . ".";
             }
             if (mb_detect_encoding(ucfirst($dayname), 'UTF-8', true)) 
             {
