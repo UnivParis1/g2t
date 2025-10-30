@@ -87,7 +87,7 @@
                     }
                     else
                     {
-                        $corpsmail = $corpsmail . mb_convert_case($responsable->identitecomplete(), MB_CASE_TITLE) . " vient de valider la demande de suppresion de l'occurrence de télétravail du " . $fonctions->formatdate($ttexception->dateorigine) . " " . $fonctions->nommoment($ttexception->momentorigine) . ".<br>";
+                        $corpsmail = $corpsmail . mb_convert_case($responsable->identitecomplete(), MB_CASE_TITLE) . " vient de valider la demande de suppression de l'occurrence de télétravail du " . $fonctions->formatdate($ttexception->dateorigine) . " " . $fonctions->nommoment($ttexception->momentorigine) . ".<br>";
                     }
                     break;
                 case ttexception::ACTION_REFUSE :
@@ -97,7 +97,7 @@
                     }
                     else
                     {
-                        $corpsmail = $corpsmail . mb_convert_case($responsable->identitecomplete(), MB_CASE_TITLE) . " vient de refuser la demande de suppresion de l'occurrence de télétravail du " . $fonctions->formatdate($ttexception->dateorigine) . " " . $fonctions->nommoment($ttexception->momentorigine) . " <br>";
+                        $corpsmail = $corpsmail . mb_convert_case($responsable->identitecomplete(), MB_CASE_TITLE) . " vient de refuser la demande de suppression de l'occurrence de télétravail du " . $fonctions->formatdate($ttexception->dateorigine) . " " . $fonctions->nommoment($ttexception->momentorigine) . " <br>";
                     }
                     $corpsmail = $corpsmail . "<br>Le motif est : <br>" . $ttexception->motif . ".<br>";
                     break;
