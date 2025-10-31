@@ -192,6 +192,36 @@
         }
     }
 
+    function frenchdate_to_isoformat(datestring)
+    {
+        datestring = datestring.trim();
+        if (datestring == "")
+        {
+            return datestring;
+        }
+        if (!dateIsValid(datestring))
+        {
+            return false;
+        }
+        return datestring.replace(/^(\d{2})(.)(\d{2})(.)(\d{4})$/g,"$5-$3-$1");
+    }
+
+    function dbdate_to_frenchformat(datestring)
+    {
+        datestring = datestring.trim();
+
+        const regex = /^(\d{4})(\d{2})(\d{2})$/;
+        if (datestring.match(regex) === null) {
+            return false;
+        }
+        let frenchdate = datestring.replace(/^(\d{4})(\d{2})(\d{2})$/g,"$3/$2/$1");
+        if (!dateIsValid(frenchdate))
+        {
+            return false;
+        }
+        return frenchdate;
+    }
+
     function dateIsValid(dateStr) {
         // Syntawxe : Utilisation d'un littéral d'expression régulière, qui consiste en un modèle entouré de barres obliques
         const regex = /^\d{2}\/\d{2}\/\d{4}$/;
@@ -589,6 +619,11 @@
                     <select id='reportchoice'>
                         <option value=''>Ne pas reporter</option>
                     </select>
+                    <br>
+                    <input type='hidden' id='indexjroblig' name='indexjroblig' />
+                    <p class='centeraligntext nomargin' id='labelreport' name='labelreport' hidden>
+                    <!-- <label id='labelreport' name='labelreport' hidden></label> -->
+                    </p>
                 </div>
             </form>
             <menu class='nopadding centeraligntext'>
@@ -616,6 +651,8 @@
         var selecttype = divmodal.querySelector('#newrecipienttype');
         var usersignataire = divmodal.querySelector('#usersignataire');
         var reportselect = divmodal.querySelector('#reportchoice');
+        var labelreport = divmodal.querySelector('#labelreport');
+        var indexjroblig = divmodal.querySelector('#indexjroblig');
 
         // Si l'affichage change le contrôle qui a focus (voir checktextlength), on doit rendre le focus après que la fenêtre modale soit fermée
         var previousfocuscontrol = null;
@@ -640,7 +677,9 @@
             divreportid.hidden = true;
             divagentid.hidden = true;
             divselecttype.hidden = true;
-
+            labelreport.hidden = true;
+            labelreport.innerHTML = '';
+            labelreport.classList.remove("warnbackgroundtext");
         }
 
         var calculateContentHeight = function( ta, scanAmount ) {

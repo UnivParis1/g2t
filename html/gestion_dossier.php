@@ -240,6 +240,23 @@
         }
     }
 
+    $array_presenceoblig = null;
+    if (isset($_POST['presenceoblig']))
+    {
+        $array_presenceoblig = $_POST['presenceoblig'];
+    }
+    if (isset($array_presenceoblig))
+    {
+        // On sauvegarde le jour de présence obligatoire pour le télétravail
+        foreach ($array_presenceoblig as $structkey => $jourindex) 
+        {
+            $structure = new structure($dbcon);
+            $structure->load($structkey);
+            $structure->jourpresenceobligatoire($jourindex);
+            $structure->store();
+        }
+    }
+
     $arraygestionnaire = null;
     if (isset($_POST["gestion"]))
     {
@@ -908,6 +925,27 @@
             echo "</tbody></table>";
             echo "<br>";
 
+            echo "<table><tbody>";
+            echo "<tr>";
+            echo "<td>";
+            echo "Jour de présence obligatoire (dans le cadre du télétravail) : ";
+            echo "<SELECT id='presenceoblig[" . $structure->id() . "]' name='presenceoblig[" . $structure->id() . "]' size='1' >";
+            echo "<OPTION value='' >Aucun jour obligatoire</OPTION>";
+            for ($index = 1 ; $index < 6 ; $index++)
+            {
+                echo "<OPTION value='$index' ";
+                if ($structure->jourpresenceobligatoire() == $index)
+                {
+                    echo " selected='selected' ";
+                }
+                echo ">" . $fonctions->nomjourparindex($index) . "</OPTION>";
+            }
+            echo "</SELECT>";
+
+            echo "</td>";
+            echo "</tr>";
+            echo "</tbody></table>";
+            echo "<br>";
 
             if ($mode == MODE_RESPONSABLE) 
             {

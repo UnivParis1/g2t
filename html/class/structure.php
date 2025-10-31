@@ -79,6 +79,8 @@ class structure
     
     private $isdeployed = null;
 
+    private $jourpresenceobligatoire = null;
+
     function __construct($db)
     {
         $this->dbconnect = $db;
@@ -113,7 +115,8 @@ class structure
                            EXTERNALID,
                            ISDEPLOYED,
                            AGENTAFFPLANNINGDIRECTION,
-                           GESTVALIDRESPSTRUCTFILLE
+                           GESTVALIDRESPSTRUCTFILLE,
+                           JOURPRESENCEOBLIG
                     FROM STRUCTURE 
                     WHERE STRUCTUREID=?";
             $params = array($structureid);
@@ -159,7 +162,7 @@ class structure
             $this->isdeployed = "$result[18]";
             $this->agentaffplanningdirection = "$result[19]";
             $this->gestvalidrespstructfille = "$result[20]";
-            
+            $this->jourpresenceobligatoire = "$result[21]";
             $this->profondeurrelative = 0;
             
             // Prise en compte du cas de la délégation
@@ -414,6 +417,18 @@ class structure
         else
         {
             $this->respaffdemandesousstruct = $valide;
+        }
+    }
+
+    function jourpresenceobligatoire($index = null)
+    {
+        if (is_null($index)) 
+        {
+            return $this->jourpresenceobligatoire . '';
+        } 
+        else
+        {
+            $this->jourpresenceobligatoire = $index;
         }
     }
     
@@ -1028,10 +1043,10 @@ class structure
             }
         }
         
-        
+        $indexjroblig = $this->jourpresenceobligatoire();
         // echo "Apres le chargement du planning du service <br>";
         $htmltext = $htmltext . "<div id='structplanning'>";
-        $htmltext = $htmltext . "<table class='tableau " . planning::TYPE_STRUCTURE . "' id='struct_plan_" . $this->id() . "'>";
+        $htmltext = $htmltext . "<table class='tableau " . planning::TYPE_STRUCTURE . "' id='struct_plan_" . $this->id() . "' data-indexjroblig = '" . $indexjroblig . "'>";
         
         $titre_a_ajouter = TRUE;
         $elementlegende = array();
@@ -1573,7 +1588,8 @@ class structure
                     RESPAFFDEMANDESOUSSTRUCT=?,
                     ISDEPLOYED=?,
                     AGENTAFFPLANNINGDIRECTION=?,
-                    GESTVALIDRESPSTRUCTFILLE=?
+                    GESTVALIDRESPSTRUCTFILLE=?,
+                    JOURPRESENCEOBLIG=?
                 WHERE STRUCTUREID=?";
         // echo "SQL = " . $sql . "<br>";
         $params = array($this->sousstructure(),
@@ -1584,6 +1600,7 @@ class structure
                         $this->isdeployed(),
                         $this->agentaffplanningdirection(),
                         $this->gestvalidrespstructfille(),
+                        $this->jourpresenceobligatoire(),
                         $this->id());
         $query = $this->fonctions->prepared_query($sql, $params);
         $erreur = mysqli_error($this->dbconnect);

@@ -550,7 +550,18 @@
                         $htmltext = $htmltext . "			<td class='cellulesimple'>";
                         if ($ttexception->dateremplacement . '' != '')
                         {
-                            $htmltext = $htmltext . $fonctions->nomjour($ttexception->dateremplacement) . " " . $fonctions->formatdate($ttexception->dateremplacement) . "  " . $fonctions->nommoment($ttexception->momentremplacement);
+                            $nomdujour = $fonctions->nomjour($ttexception->dateremplacement);
+                            $htmltext = $htmltext . $nomdujour . " " . $fonctions->formatdate($ttexception->dateremplacement) . "  " . $fonctions->nommoment($ttexception->momentremplacement);
+                            $agentstruct = new structure($dbcon);
+                            $indexjroblig = "";
+                            if ($agentstruct->load($agent->structureid()))
+                            {
+                                $indexjroblig = $agentstruct->jourpresenceobligatoire();
+                            }
+                            if ($indexjroblig != '' and $nomdujour == $fonctions->nomjourparindex($indexjroblig))
+                            {
+                                $htmltext = $htmltext . "<p class='centeraligntext nomargin warnbackgroundtext'>Attention : Jour de présence obligatoire.</p>";
+                            }
                         }
                         else
                         {

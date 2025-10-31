@@ -170,25 +170,44 @@
         {
             divmodal.style.display = "none";
 
-            var report_info = reportselect.value.split('_'); // <=> confirmBtn.value.split('_');
-            console.log(report_info);
-            var input = document.getElementById('report_date');
-            input.value = report_info[0];
-            var input = document.getElementById('report_moment');
-            if (report_info.length>=2)
+            // On a demandé le report d'une occurence de télétravail => Le div est visible
+            if (divreportid.hidden==false)
             {
-                input.value = report_info[1];
+                var report_info = reportselect.value.split('_'); // <=> confirmBtn.value.split('_');
+                var input = document.getElementById('report_date');
+                input.value = report_info[0];
+                var input = document.getElementById('report_moment');
+                if (report_info.length>=2)
+                {
+                    input.value = report_info[1];
+                }
+                else
+                {
+                    input.value = '';
+                }
+                var submit_form = input.closest('form');
+                submit_form.submit();
+            }
+        }
+
+        reportselect.addEventListener('change', function onSelect(e) 
+        {
+            divmodalconfirmBtn.value = reportselect.value;
+            let report_info = reportselect.value.split('_');
+            let indexdate = new Date(frenchdate_to_isoformat(report_info[0])).getDay();
+
+            if (indexdate == indexjroblig.value && indexjroblig.value != '') // Le 2e test est en théorie inutil car indexdate est tjrs != ''
+            {
+                labelreport.classList.add("warnbackgroundtext");
+                labelreport.hidden = false;
+                labelreport.innerHTML = 'Attention : Jour de présence obligatoire.';
             }
             else
             {
-                input.value = '';
+                labelreport.hidden = true;
+                labelreport.innerHTML = '';
+                labelreport.classList.remove("warnbackgroundtext");
             }
-            var submit_form = input.closest('form');
-            submit_form.submit();
-        }
-
-        reportselect.addEventListener('change', function onSelect(e) {
-            divmodalconfirmBtn.value = reportselect.value;
         });
         
         var dbclick_element = function(elementid, agentid, date,moment,typeconvention, reportteletravail)
@@ -200,10 +219,12 @@
             if (tableau.classList.contains('<?php echo planning::TYPE_STRUCTURE; ?>'))
             {
                 var identiteagent = element.closest(".ligneplanning").firstChild.innerText;
+                indexjroblig.value = tableau.getAttribute('data-indexjroblig');
             }
             else if (tableau.classList.contains('<?php echo planning::TYPE_AGENT; ?>'))
             {
                 var identiteagent = tableau.getAttribute('data-agentname');
+                indexjroblig.value = tableau.getAttribute('data-indexjroblig');
             }
             else
             {

@@ -1065,6 +1065,10 @@ select {
     text-align: left !important;
 }
 
+.nomargin {
+    margin : 0px !important;
+}
+
 .textstrike {
     text-decoration: line-through solid rgb(199, 37, 37);
     text-decoration-thickness: 2px;

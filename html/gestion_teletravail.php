@@ -245,6 +245,21 @@ Nous mettons tout en œuvre pour résoudre au plus vite cet incident.";
     {
         $agent = new agent($dbcon);
         $agent->load($agentid);
+        $agentstructure = new structure($dbcon);
+
+        if ($agent->structureid() != '')
+        {
+            if ($agentstructure->load($agent->structureid()) == false)
+            {
+                $agentstructure->affichetoutagent("n"); // Si impossible de charger la structure => On force la valeur à 'n'
+                $agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
+            }
+        }
+        else 
+        {
+            $agentstructure->affichetoutagent("n");
+            $agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
+        }
     }
 
     // On vérifie que le circuit est correctement paramétré
@@ -2070,7 +2085,14 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         $fermeinput = "";
                         $fermespan = '';
                         $tmpcellule  = '';
-                        $tmpcellule = $tmpcellule . "    <td class='cellulesimple' ";
+
+                        $extraclasspresenceoblig = '';
+                        if ($agentstructure->jourpresenceobligatoire() == $indexjour)
+                        {
+                            $extraclasspresenceoblig = " presenceobligatoire ";
+                        }
+
+                        $tmpcellule = $tmpcellule . "    <td class='cellulesimple $extraclasspresenceoblig' ";
                         if (!is_null($declaration) and ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false)))
                         {
                             $fermespan = "</span>";
@@ -2079,8 +2101,16 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                         }
                         else
                         {
+                            $spantext = '';
+                            if ($extraclasspresenceoblig != '')
+                            {
+                                $spantext = "<span data-tip=" . chr(34) . 'Attention - jour de présence obligatoire.' . chr(34) . "</span>";
+                            }
+                            $tmpcellule = $tmpcellule . ">$spantext<input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
+                            // $fermespan = "</span>";
+                            // $spantext = "<span data-tip=" . chr(34) . 'Attention - jour de présence obligatoire.' . chr(34);
                             $fermeinput = '</input>';
-                            $tmpcellule = $tmpcellule . "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
+                            // $tmpcellule = $tmpcellule . "><input type='checkbox' value='" . ($cpt+1) . "' id='creation_" . ($cpt+1) . "' name='demijours[]'";
                             if ($teletravail->estjourteletravaille($indexjour,$moment))
                             {
                                 $tmpcellule = $tmpcellule . " checked ";
@@ -2133,11 +2163,23 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     $fermespan = '';
                     // Si l'agent n'est jamais en TP (semaine paire/impaire et matin/après-midi pour le jour courant)
                     // On affiche le jour complet pour le télétravail
-                    echo "<td class='cellulesimple widthtd90 centeraligntext' ";
+                    $extraclasspresenceoblig = '';
+                    if ($agentstructure->jourpresenceobligatoire() == $indexjour)
+                    {
+                        $extraclasspresenceoblig = " presenceobligatoire ";
+                    }
+
+                    $spantext = '';
+                    if ($extraclasspresenceoblig != '')
+                    {
+                        $spantext = "<span data-tip=" . chr(34) . 'Attention - jour de présence obligatoire.' . chr(34) . "</span>";
+                    }
+
+                    echo "<td class='cellulesimple widthtd90 centeraligntext $extraclasspresenceoblig' ";
                     if (!$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_MATIN,false)
                     and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,true) and !$declaration->enTPindexjour($indexjour,fonctions::MOMENT_APRESMIDI,false))
                     {
-                        echo "><input class='checkbox_jours' type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]' onclick='verif_nbre_checkbox();'";
+                        echo ">$spantext<input class='checkbox_jours' type='checkbox' value='$indexjour' id='creation_$indexjour' name='jours[]' onclick='verif_nbre_checkbox();'";
                         if ($teletravail->estjourteletravaille($indexjour) and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL) { echo " checked "; }
                         echo ">" . $fonctions->nomjourparindex($indexjour) . "</input></td>";
                     }
@@ -2199,7 +2241,14 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
                     }
                     $fermeinput = "";
                     $fermespan = '';
-                    $tableau_demiejour .= "    <td class='cellulesimple' ";
+
+                    $extraclasspresenceoblig = '';
+                    if ($agentstructure->jourpresenceobligatoire() == $indexjour)
+                    {
+                        $extraclasspresenceoblig = " presenceobligatoire ";
+                    }
+
+                    $tableau_demiejour .= "    <td class='cellulesimple $extraclasspresenceoblig' ";
                     if ($declaration->enTPindexjour($indexjour,$moment,true) or $declaration->enTPindexjour($indexjour,$moment,false))
                     {
                         $fermespan = "</span>";

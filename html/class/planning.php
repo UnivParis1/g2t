@@ -725,9 +725,16 @@ class planning
         }
         //var_dump($listeabs);
         
+        $agentstruct = new structure($this->dbconnect);
+        $indexjroblig = "";
+        if ($agentstruct->load($agent->structureid()))
+        {
+            $indexjroblig = $agentstruct->jourpresenceobligatoire();
+        }
+
         $htmltext = "";
         $htmltext = $htmltext . "<div id='planning'>";
-        $htmltext = $htmltext . "<table class='tableau " . self::TYPE_AGENT . "' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."' data-agentname='". htmlentities($agent->identitecomplete()) . "' ><thead>";
+        $htmltext = $htmltext . "<table class='tableau " . self::TYPE_AGENT . "' id='tab_agent_" . $agentid . "_" . $this->fonctions->formatdatedb($datedebut) ."' data-agentname='". htmlentities($agent->identitecomplete()) . "' data-indexjroblig = '" . $indexjroblig . "'><thead>";
         $month = date("m", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentyear = date("Y", strtotime($this->fonctions->formatdatedb($datedebut)));
         $currentmonth = "";
