@@ -170,9 +170,9 @@
         {
             divmodal.style.display = "none";
 
-            // On a demandé le report d'une occurence de télétravail => Le div est visible
-            if (divreportid.hidden==false)
-            {
+            // // On a demandé le report d'une occurence de télétravail => Le div est visible
+            // if (divreportid.hidden==false)
+            // {
                 var report_info = reportselect.value.split('_'); // <=> confirmBtn.value.split('_');
                 var input = document.getElementById('report_date');
                 input.value = report_info[0];
@@ -187,7 +187,7 @@
                 }
                 var submit_form = input.closest('form');
                 submit_form.submit();
-            }
+            // }
         }
 
         reportselect.addEventListener('change', function onSelect(e) 

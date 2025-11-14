@@ -401,72 +401,34 @@
                 echo "<div id='planningstruct_" . $structure->id() . "' class='divtocomplete'></div>";
 ?>
                 <script>
-                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/structureWS.php";
-                    $.post(fullWSURL , { methode : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
-                                        structureid : "<?php echo $structure->id(); ?>", 
-                                        mois_annee_debut : "<?php echo $indexmois . "/" . $annee; ?>" , 
-                                        showsousstruct : "<?php echo $structure->sousstructure(); ?>",
-                                        noiretblanc : '<?php echo $planninggris ?>',
-                                        includeteletravail : 'O',
-                                        dbclickable : 'O'
-                                        })
-                                .done(function( data ) {
-                                    if (data.status.toUpperCase()=='OK')
-                                    {
-                                        var statutinfo = "OK";
-                                    }
-                                    else
-                                    {
-                                        var statutinfo = "KO => " + data.description;
-                                    }
-                                    // console.log("Retour du WS => " + statutinfo);
 
+                    // Initialisation des paramètres pour l'affichage du planning de la structure
+                    var params = {  "methode" : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
+                                    "structureid" : "<?php echo $structure->id(); ?>", 
+                                    "structurenomlong" : "<?php echo htmlspecialchars($structure->nomlong()); ?>", 
+                                    "structurenomcourt" : "<?php echo htmlspecialchars($structure->nomcourt()); ?>", 
+                                    "mois_annee_debut" : "<?php echo $indexmois . "/" . $annee; ?>" , 
+                                    "indexmois" : "<?php echo $indexmois; ?>",
+                                    "showsousstruct" : "<?php echo $structure->sousstructure(); ?>",
+                                    "userid" : "<?php echo htmlspecialchars($user->agentid()); ?>",
+                                    "mode" : "<?php echo htmlspecialchars($mode); ?>",
+                                    "previoustxt" : "<?php echo htmlspecialchars($previoustxt); ?>",
+                                    "noiretblanc" : '<?php echo $planninggris ?>',
+                                    "includeteletravail" : 'O',
+                                    "dbclickable" : 'O'
+                                 };
 <?php
-                                    if ($structure->responsable()->agentid() == $user->agentid() and !$structure->isincluded() and trim($planninghtml) != "")
-                                    {
+                    // Si la structure n'est pas incluse et que le responsable est l'utilisateur courant
+                    if ($structure->responsable()->agentid() == $user->agentid() and !$structure->isincluded())
+                    {
 ?>
-                                        data.html = data.html + "<br>";
-                                        data.html = data.html + "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
-                                        data.html = data.html + "<input type='hidden' name='indexmois' value='<?php echo htmlspecialchars($indexmois); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='userid' value='<?php echo htmlspecialchars($user->agentid()); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='mode' value='<?php echo htmlspecialchars($mode); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='previous' value='<?php echo htmlspecialchars($previoustxt); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='structureid' value='<?php echo htmlspecialchars($structure->id()); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='datedebut' value='<?php echo htmlspecialchars((date('Y')-1) . '1001'); ?>' />"; // Date de début du dernier trimestre de l'année d'avant
-                                        data.html = data.html + "<input type='hidden' name='datefin' value='<?php echo htmlspecialchars((date('Y')-1) . '1231'); ?>' />";  // Date de fin du dernier trimestre de l'année d'avant
-                                        
-                                        //echo "Afficher le document 'télétravail' pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
-                                        data.html = data.html + "Afficher le document 'télétravail' pour la structure <?php echo htmlspecialchars($structure->nomlong() . " (" . $structure->nomcourt() . ")");  ?><br>";
-                                        data.html = data.html + "<input type='submit' name='teletravailPDF' id='teletravailPDF' class='g2tbouton g2tdocumentbouton g2tboutonwidthauto' value='Afficher un PDF'/>";
-                                        data.html = data.html + "</form>";
-
-                                        data.html = data.html + "<form name='form_teletravailmail' id='form_teletravailmail' method='post'>";
-                                        data.html = data.html + "<input type='hidden' name='indexmois' value='<?php echo htmlspecialchars($indexmois); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='userid' value='<?php echo htmlspecialchars($user->agentid()); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='mode' value='<?php echo htmlspecialchars($mode); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='previous' value='<?php echo htmlspecialchars($previoustxt); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='structureid' value='<?php echo htmlspecialchars($structure->id()); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='datedebut' value='<?php echo htmlspecialchars((date('Y')-1) . '1001'); ?>' />"; // Date de début du dernier trimestre de l'année d'avant
-                                        data.html = data.html + "<input type='hidden' name='datefin' value='<?php echo htmlspecialchars((date('Y')-1) . '1231'); ?>' />";  // Date de fin du dernier trimestre de l'année d'avant
-                                        
-                                        //echo "Envoyer par mail le document 'télétravail' pour la structure " . $structure->nomlong() . " (du " . $fonctions->formatdate($datedebut) . " au " . $fonctions->formatdate($datefin)  . ")<br>";
-                                        data.html = data.html + "Envoyer par mail le document 'télétravail' pour la structure <?php echo htmlspecialchars($structure->nomlong() . " (" . $structure->nomcourt()); ?>)<br>";
-                                        data.html = data.html + "<input type='submit' name='teletravailmail' id='teletravailmail' class='g2tbouton g2tenvoibouton g2tboutonwidthauto' value='Envoyer un PDF'/>";
-                                        data.html = data.html + "</form>";
+                        // On ajoute le paramètre pour permettre l'affichage des exports PDF et mail du télétravail
+                        params['teletravailexport']  = 'O'
 <?php
-                                    }
+                    }
 ?>
-                                    let div = document.getElementById('planningstruct_<?php echo $structure->id(); ?>');
-                                    div.innerHTML = data.html;
-                                    sort_table_init('struct_plan_<?php echo $structure->id(); ?>',0);
-                                })
-                                .fail(function( xhr ) {
-                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                                    console.log(statutinfo);
-                                })
-                                .always(function() {
-                                    hiddewaitingimg();
-                                });
+                    // Appel de la fonction asynchrone 
+                    showstructureplanning(params,document.getElementById('planningstruct_<?php echo $structure->id(); ?>'));
 
                 </script>
 <?php                
@@ -518,37 +480,23 @@
                 echo "<div id='planningstruct_" . $structure->id() . "' class='divtocomplete'></div>";
 ?>
                 <script>
-                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/structureWS.php";
-                    $.post(fullWSURL , { methode : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
-                                        structureid : "<?php echo $structure->id(); ?>", 
-                                        mois_annee_debut : "<?php echo $indexmois . "/" . $annee; ?>" , 
-                                        showsousstruct : "O",
-                                        noiretblanc : '<?php echo $planninggris ?>',
-                                        includeteletravail : 'O',
-                                        dbclickable : 'O'
-                                        })
-                                .done(function( data ) {
-                                    if (data.status.toUpperCase()=='OK')
-                                    {
-                                        var statutinfo = "OK";
-                                    }
-                                    else
-                                    {
-                                        var statutinfo = "KO => " + data.description;
-                                    }
-                                    // console.log("Retour du WS => " + statutinfo);
-                                    let div = document.getElementById('planningstruct_<?php echo $structure->id(); ?>');
-                                    div.innerHTML = data.html;
-                                    sort_table_init('struct_plan_<?php echo $structure->id(); ?>',0);
-                                })
-                                .fail(function( xhr ) {
-                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                                    console.log(statutinfo);
-                                })
-                                .always(function() {
-                                    hiddewaitingimg();
-                                });
-
+                    // Initialisation des paramètres pour l'affichage du planning de la structure
+                    var params = {  "methode" : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
+                                    "structureid" : "<?php echo $structure->id(); ?>", 
+                                    "structurenomlong" : "<?php echo htmlspecialchars($structure->nomlong()); ?>", 
+                                    "structurenomcourt" : "<?php echo htmlspecialchars($structure->nomcourt()); ?>", 
+                                    "mois_annee_debut" : "<?php echo $indexmois . "/" . $annee; ?>" , 
+                                    "indexmois" : "<?php echo $indexmois; ?>",
+                                    "showsousstruct" : "O",
+                                    "userid" : "<?php echo htmlspecialchars($user->agentid()); ?>",
+                                    "mode" : "<?php echo htmlspecialchars($mode); ?>",
+                                    "previoustxt" : "<?php echo htmlspecialchars($previoustxt); ?>",
+                                    "noiretblanc" : '<?php echo $planninggris ?>',
+                                    "includeteletravail" : 'O',
+                                    "dbclickable" : 'O'
+                                 };
+                    // Appel de la fonction asynchrone 
+                    showstructureplanning(params,document.getElementById('planningstruct_<?php echo $structure->id(); ?>'));
                 </script>
 <?php                
                 // $planninghtml = $structure->planninghtml($indexmois . "/" . $annee,'o',$planninggris,true,true);
@@ -567,39 +515,25 @@
         echo "<div id='planningstruct_" . $structure->id() . "' class='divtocomplete'></div>";
 ?>
         <script>
-            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/structureWS.php";
-            $.post(fullWSURL , { methode : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
-                                structureid : "<?php echo $structure->id(); ?>", 
-                                mois_annee_debut : "<?php echo $indexmois . "/" . $annee; ?>" , 
-                                showsousstruct : "N",
-                                noiretblanc : 'O',
-                                includeteletravail : 'O',
-                                dbclickable : 'N',
-                                includecongeabsence : 'O',
-                                agentlist : <?php echo json_encode($agentconsultliste); ?>
-                                })
-                        .done(function( data ) {
-                            if (data.status.toUpperCase()=='OK')
-                            {
-                                var statutinfo = "OK";
-                            }
-                            else
-                            {
-                                var statutinfo = "KO => " + data.description;
-                            }
-                            // console.log("Retour du WS => " + statutinfo);
-                            let div = document.getElementById('planningstruct_<?php echo $structure->id(); ?>');
-                            div.innerHTML = data.html;
-                            sort_table_init('struct_plan_<?php echo $structure->id(); ?>',0);
-                        })
-                        .fail(function( xhr ) {
-                            var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                            console.log(statutinfo);
-                        })
-                        .always(function() {
-                            hiddewaitingimg();
-                        });
-
+            // Initialisation des paramètres pour l'affichage du planning de la structure
+            var params = {  "methode" : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
+                            "structureid" : "<?php echo $structure->id(); ?>", 
+                            "structurenomlong" : "<?php echo htmlspecialchars($structure->nomlong()); ?>", 
+                            "structurenomcourt" : "<?php echo htmlspecialchars($structure->nomcourt()); ?>", 
+                            "mois_annee_debut" : "<?php echo $indexmois . "/" . $annee; ?>" , 
+                            "indexmois" : "<?php echo $indexmois; ?>",
+                            "showsousstruct" : "N",
+                            "userid" : "<?php echo htmlspecialchars($user->agentid()); ?>",
+                            "mode" : "<?php echo htmlspecialchars($mode); ?>",
+                            "previoustxt" : "<?php echo htmlspecialchars($previoustxt); ?>",
+                            "noiretblanc" : 'O',
+                            "includeteletravail" : 'O',
+                            "dbclickable" : 'N',
+                            "includecongeabsence" : 'O',
+                            "agentlist" : <?php echo json_encode($agentconsultliste); ?>
+                         };
+            // Appel de la fonction asynchrone 
+            showstructureplanning(params,document.getElementById('planningstruct_<?php echo $structure->id(); ?>'));
         </script>
 <?php                
 
@@ -636,67 +570,37 @@
                 echo "<div id='planningstruct_" . $structure->id() . "' class='divtocomplete'></div>";
 ?>
                 <script>
-                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/structureWS.php";
-                    $.post(fullWSURL , { methode : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
-                                        structureid : "<?php echo $structure->id(); ?>", 
-                                        mois_annee_debut : "<?php echo $indexmois . "/" . $annee; ?>" , 
-                                        showsousstruct : "<?php echo $showsousstruct; ?>",
-                                        noiretblanc : 'O',
-                                        includeteletravail : 'O'
-                                        })
-                                .done(function( data ) {
-                                    // console.log(data);
-                                    if (data.status.toUpperCase()=='OK')
-                                    {
-                                        var statutinfo = "OK";
-                                    }
-                                    else
-                                    {
-                                        var statutinfo = "KO => " + data.description;
-                                    }
-                                    // console.log("Retour du WS => " + statutinfo);
+                    // Initialisation des paramètres pour l'affichage du planning de la structure
+                    var params = {  "methode" : "<?php echo structure::WS_METHODE_PLANNING; ?>", 
+                                    "structureid" : "<?php echo $structure->id(); ?>", 
+                                    "structurenomlong" : "<?php echo htmlspecialchars($structure->nomlong()); ?>", 
+                                    "structurenomcourt" : "<?php echo htmlspecialchars($structure->nomcourt()); ?>", 
+                                    "mois_annee_debut" : "<?php echo $indexmois . "/" . $annee; ?>" , 
+                                    "indexmois" : "<?php echo $indexmois; ?>",
+                                    "showsousstruct" : "<?php echo $showsousstruct; ?>",
+                                    "userid" : "<?php echo htmlspecialchars($user->agentid()); ?>",
+                                    "mode" : "<?php echo htmlspecialchars($mode); ?>",
+                                    "previoustxt" : "<?php echo htmlspecialchars($previoustxt); ?>",
+                                    "noiretblanc" : 'O',
+                                    "includeteletravail" : 'O',
+                                    "dbclickable" : 'N',
+                                    "includecongeabsence" : 'O',
+                                };
 <?php
-                                    $structparent = $structure->structureenglobante();
-                                    if ($fonctions->convertvaluetobool($structparent->agentaffplanningdirection()) and $structparent->id() != $affstructureid)
-                                    {
+                    $structparent = $structure->structureenglobante();
+                    if ($fonctions->convertvaluetobool($structparent->agentaffplanningdirection()) and $structparent->id() != $affstructureid)
+                    {
 ?>
-                                        // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
-                                        data.html = data.html + "<br>";
-                                        data.html = data.html + "<form name='form_showroot' id='form_showroot' method='post'>";
-                                        data.html = data.html + "<input type='hidden' name='indexmois' value='<?php echo htmlspecialchars($indexmois); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='userid' value='<?php echo htmlspecialchars($user->agentid()); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='mode' value='<?php echo htmlspecialchars($mode); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='previous' value='<?php echo htmlspecialchars($previoustxt); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='rootid' value='<?php echo htmlspecialchars($structparent->id()); ?>' />";
-                                        data.html = data.html + "<input type='hidden' name='structureid' value='<?php echo htmlspecialchars($affstructureid); ?>' />";
-                                        data.html = data.html + "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
+                        // On ajoute le paramètre pour permettre l'affichage de la case à cocher 'voir tout le planning de la structure root'
+                        params['showallstructure']  = 'O';
+                        params['rootid'] = "<?php echo $structparent->id(); ?>";
+                        params['rootnomcourt'] = "<?php echo htmlspecialchars($structparent->nomcourt()); ?>";
+                        params['check_showroot'] = '<?php if ($check_showroot == 'on') echo "O"; else echo "N"; ?>';
 <?php
-                                        if ($check_showroot == 'on')
-                                        {
+                    }
 ?>
-                                            data.html = data.html + " checked ";
-<?php
-                                        }
-?>
-                                        data.html = data.html + "/>";
-                                        //echo "Voir l'intégralité du planning de la structure \"racine\" => " . $structparent->nomcourt();
-                                        data.html = data.html + "Voir l'intégralité du planning de la structure <b><?php echo htmlspecialchars($structparent->nomcourt()); ?></b>";
-                                        data.html = data.html + "</form>";
-<?php
-                                    }
-?>
-                                    let div = document.getElementById('planningstruct_<?php echo $structure->id(); ?>');
-                                    div.innerHTML = data.html;
-                                    sort_table_init('struct_plan_<?php echo $structure->id(); ?>',0);
-                                })
-                                .fail(function( xhr ) {
-                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                                    console.log(statutinfo);
-                                })
-                                .always(function() {
-                                    hiddewaitingimg();
-                                });
-
+                    // Appel de la fonction asynchrone 
+                    showstructureplanning(params,document.getElementById('planningstruct_<?php echo $structure->id(); ?>'));
                 </script>
 <?php                
             }

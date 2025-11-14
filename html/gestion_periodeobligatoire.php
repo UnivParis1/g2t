@@ -452,8 +452,6 @@
         function sendmail_struct(structid)
         {
             //console.log('sendmail_struct => ' + structid);
-            //var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-
             var currenttab = document.getElementById(structid);
             if (currenttab)
             {
@@ -489,7 +487,7 @@
             }
         }
 
-        function sendmail_agent(button)
+        async function sendmail_agent(button)
         {
             //console.log('sendmail_struct => ' + structid);
             var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
@@ -516,32 +514,86 @@
                     nbmailaenvoyer++;
                     showwaitingimg();
 
-                    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_SEND_MAIL; ?>", expediteurid: expediteurid, destinataireid: destinataireid, corpsmail: mailbody })
-                        .done(function( data ) {
-                            if (data.status.toUpperCase()=='OK')
+                    var params = { "methode" : "<?php echo agent::WS_METHODE_SEND_MAIL; ?>", 
+                                   "expediteurid" : expediteurid, 
+                                   "destinataireid" : destinataireid, 
+                                   "corpsmail" : mailbody 
+                                 };
+                    try {
+                        postparams = { method: "POST",
+                                    headers: {
+                                                'Accept': 'application/json',
+                                                'Content-Type': 'application/json'
+                                                },
+                                        body: JSON.stringify(params)
+                                    };
+                        var reponse = await fetch(fullWSURL,postparams);
+                        var data = await reponse.json();
+                    } 
+                    catch (exception) 
+                    {
+                        var currenttr = button.closest("tr");
+                        if (currenttr)
+                        {
+                            var tdliste = currenttr.getElementsByTagName("td");
+                            var extraclass = 'redtext';
+                            for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                             {
-                                var statutinfo = "OK";
+                                currenttd = tdliste[indextd];
+                                currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                                currenttd.classList.add(extraclass);
+                                if (currenttd.classList.contains("statutinfo"))
+                                {
+                                    console.log("Erreur = " + reponse.status + " " + reponse.statusText);
+                                    currenttd.innerText = "Erreur WS : " + reponse.status + " " + reponse.statusText + " => L'action n'a pas été enregistrée.";
+                                }
                             }
-                            else
+                        }
+                        nbmailaenvoyer--;
+                        if (nbmailaenvoyer==0)
+                        {
+                            hiddewaitingimg();
+                        }
+                        return;
+                    }
+
+                    // L'appel du WS s'est bien passé => On a eu une réponse (ok ou pas mais on a une réponse)
+                    if (reponse.ok !== true)
+                    {
+                        var currenttr = button.closest("tr");
+                        if (currenttr)
+                        {
+                            var tdliste = currenttr.getElementsByTagName("td");
+                            var extraclass = 'redtext';
+                            for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                             {
-                                var statutinfo = "KO => " + data.description;
+                                currenttd = tdliste[indextd];
+                                currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                                currenttd.classList.add(extraclass);
+                                if (currenttd.classList.contains("statutinfo"))
+                                {
+                                    console.log("Erreur = " + reponse.status + " " + reponse.statusText);
+                                    currenttd.innerText = "Erreur WS : " + reponse.status + " " + reponse.statusText + " => L'action n'a pas été enregistrée.";
+                                }
                             }
-                            //console.log("Retour du WS pour " + destinataireid + " => " + statutinfo);
-                        })
-                        .fail(function( xhr ) {
-                            var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_SEND_MAIL; ?> - Agent : " + agentnametd.innerText + " : " + xhr.status + " " + xhr.statusText;
-                            console.log(statutinfo);
-                            var labelerror = document.getElementById("errorlabel");
-                            if (labelerror.innerText.length > 0) { labelerror.innerHTML = labelerror.innerHTML + "<br>"; }
-                            labelerror.innerHTML = labelerror.innerHTML + statutinfo;
-                        })
-                        .always(function() {
-                            nbmailaenvoyer--;
-                            if (nbmailaenvoyer==0)
-                            {
-                                hiddewaitingimg();
-                            }
-                        });
+                        }
+                    }
+                    else 
+                    {
+                        if (data.status.toUpperCase()=='OK')
+                        {
+                            var statutinfo = "OK";
+                        }
+                        else
+                        {
+                            var statutinfo = "KO => " + data.description;
+                        }
+                    }
+                    nbmailaenvoyer--;
+                    if (nbmailaenvoyer==0)
+                    {
+                        hiddewaitingimg();
+                    }
                 }
             }
         }
@@ -565,9 +617,6 @@
 
         function poserconges_struct(structid)
         {
-            //console.log('sendmail_struct => ' + structid);
-            //var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-
             var currenttab = document.getElementById(structid);
             if (currenttab)
             {
@@ -603,7 +652,7 @@
             }
         }
 
-        function poserconges_agent(button)
+        async function poserconges_agent(button)
         {
             //console.log('poserconges_agent => ' + button.id);
             var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
@@ -629,79 +678,122 @@
                     nbrecongesaposer++;
                     showwaitingimg();
 
-                    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_FORCE_PERIODE; ?>", agentid : agentid , periodeid : periodeid , datedebut : datedebut , datefin : datefin })
-                        .done(function( data ) {
-                            const statusok = ['<?php echo agent::CHECK_PERIODE_COUVERTE ?>', '<?php echo agent::CHECK_PERIODE_AJOUTEE ?>'];
-                            if (statusok.includes(data.status))
+                    var params = { "methode" : "<?php echo agent::WS_METHODE_FORCE_PERIODE; ?>", 
+                                   "agentid" : agentid , 
+                                   "periodeid" : periodeid , 
+                                   "datedebut" : datedebut , 
+                                   "datefin" : datefin 
+                                 };
+                    try {
+                        postparams = { method: "POST",
+                                    headers: {
+                                                'Accept': 'application/json',
+                                                'Content-Type': 'application/json'
+                                                },
+                                        body: JSON.stringify(params)
+                                    };
+                        var reponse = await fetch(fullWSURL,postparams);
+                        var data = await reponse.json();
+                    } 
+                    catch (exception) 
+                    {
+                        var currenttr = button.closest("tr");
+                        if (currenttr)
+                        {
+                            var tdliste = currenttr.getElementsByTagName("td");
+                            var extraclass = 'redtext';
+                            for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                             {
-                                var extraclass = 'okbackgroundtext';
-                                var statutinfo = "OK";
-                            }
-                            else if (data.status=='<?php echo agent::CHECK_PERIODE_NONCOUVERTE ?>')
-                            {
-                                var extraclass = 'kobackgroundtext';
-                                var statutinfo = "KO";
-                            }
-                            else if (data.status=='<?php echo agent::CHECK_PERIODE_EXCEPTION ?>')
-                            {
-                                var extraclass = 'warnbackgroundtext';
-                                var statutinfo = "OK";
-                            }
-                            else
-                            {
-                                var extraclass = 'redtext';
-                                var statutinfo = "Erreur lors de la pose du congé : " + data.description + "";
-                            }
-                            var currenttr = button.closest("tr");
-                            if (currenttr)
-                            {
-                                //console.log(currenttr.innerText);
-                                var tdliste = currenttr.getElementsByTagName("td");
-                                for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
+                                currenttd = tdliste[indextd];
+                                currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                                currenttd.classList.add(extraclass);
+                                if (currenttd.classList.contains("statutinfo"))
                                 {
-                                    currenttd = tdliste[indextd];
-                                    currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
-                                    currenttd.classList.add(extraclass);
-                                    if (currenttd.classList.contains("statutinfo"))
-                                    {
-                                        currenttd.innerText = statutinfo;
-                                    }
+                                    console.log("Erreur = " + reponse.status + " " + reponse.statusText);
+                                    currenttd.innerText = "Erreur WS : " + reponse.status + " " + reponse.statusText + " => L'action n'a pas été enregistrée.";
                                 }
                             }
+                        }
+                        nbrecongesaposer--;
+                        if (nbrecongesaposer==0)
+                        {
+                            hiddewaitingimg();
+                        }
+                        return;
+                    }
 
-                        })
-                        .fail(function( xhr ) {
-                            var currenttr = button.closest("tr");
-                            if (currenttr)
+                    // L'appel du WS s'est bien passé => On a eu une réponse (ok ou pas mais on a une réponse)
+                    if (reponse.ok !== true)
+                    {
+                        var currenttr = button.closest("tr");
+                        if (currenttr)
+                        {
+                            var tdliste = currenttr.getElementsByTagName("td");
+                            var extraclass = 'redtext';
+                            for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                             {
-                                var tdliste = currenttr.getElementsByTagName("td");
-                                var extraclass = 'redtext';
-                                for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
+                                currenttd = tdliste[indextd];
+                                currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                                currenttd.classList.add(extraclass);
+                                if (currenttd.classList.contains("statutinfo"))
                                 {
-                                    currenttd = tdliste[indextd];
-                                    currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
-                                    currenttd.classList.add(extraclass);
-                                    if (currenttd.classList.contains("statutinfo"))
-                                    {
-                                        console.log("Erreur = " + xhr.status + " " + xhr.statusText);
-                                        currenttd.innerText = "Erreur WS : " + xhr.status + " " + xhr.statusText + " => L'action n'a pas été enregistrée.";
-                                    }
+                                    console.log("Erreur = " + reponse.status + " " + reponse.statusText);
+                                    currenttd.innerText = "Erreur WS : " + reponse.status + " " + reponse.statusText + " => L'action n'a pas été enregistrée.";
                                 }
                             }
-                        })
-                        .always(function() {
-                            nbrecongesaposer--;
-                            if (nbrecongesaposer==0)
+                        }
+                    }
+                    else 
+                    {
+                        const statusok = ['<?php echo agent::CHECK_PERIODE_COUVERTE ?>', '<?php echo agent::CHECK_PERIODE_AJOUTEE ?>'];
+                        if (statusok.includes(data.status))
+                        {
+                            var extraclass = 'okbackgroundtext';
+                            var statutinfo = "OK";
+                        }
+                        else if (data.status=='<?php echo agent::CHECK_PERIODE_NONCOUVERTE ?>')
+                        {
+                            var extraclass = 'kobackgroundtext';
+                            var statutinfo = "KO";
+                        }
+                        else if (data.status=='<?php echo agent::CHECK_PERIODE_EXCEPTION ?>')
+                        {
+                            var extraclass = 'warnbackgroundtext';
+                            var statutinfo = "OK";
+                        }
+                        else
+                        {
+                            var extraclass = 'redtext';
+                            var statutinfo = "Erreur lors de la pose du congé : " + data.description + "";
+                        }
+                        var currenttr = button.closest("tr");
+                        if (currenttr)
+                        {
+                            //console.log(currenttr.innerText);
+                            var tdliste = currenttr.getElementsByTagName("td");
+                            for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                             {
-                                hiddewaitingimg();
+                                currenttd = tdliste[indextd];
+                                currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                                currenttd.classList.add(extraclass);
+                                if (currenttd.classList.contains("statutinfo"))
+                                {
+                                    currenttd.innerText = statutinfo;
+                                }
                             }
-                        });
+                        }
+                    }
+                    nbrecongesaposer--;
+                    if (nbrecongesaposer==0)
+                    {
+                        hiddewaitingimg();
+                    }
                 }
             }
 
         }
 
-        function modifieperiode(selectobject, agentid, periodeid)
+        async function modifieperiode(selectobject, agentid, periodeid)
         {
             var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
             var currentindx = selectobject.selectedIndex;
@@ -709,69 +801,107 @@
 
             document.getElementById('errorlabel').innerText = '';
             showwaitingimg();
-            $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_EXCEPTION_PERIODE; ?>", agentid: agentid, periodeid: periodeid, newvalue: optionvalue })
-                .done(function( data ) {
-                    //console.log( "Data Loaded: " + data.status + " " + data.description);
 
-                    if (data.status=='<?php echo agent::CHECK_PERIODE_COUVERTE ?>')
+            var params = { "methode" : "<?php echo agent::WS_METHODE_EXCEPTION_PERIODE; ?>", 
+                           "agentid" : agentid, 
+                           "periodeid" : periodeid, 
+                           "newvalue" : optionvalue 
+                         };
+            try {
+                postparams = { method: "POST",
+                            headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                        },
+                                body: JSON.stringify(params)
+                            };
+                var reponse = await fetch(fullWSURL,postparams);
+                var data = await reponse.json();
+            } 
+            catch (exception) 
+            {
+                var currenttr = selectobject.closest("tr");
+                if (currenttr)
+                {
+                    var tdliste = currenttr.getElementsByTagName("td");
+                    var extraclass = 'redtext';
+                    for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                     {
-                        var extraclass = 'okbackgroundtext';
-                        var statutinfo = "OK";
-                    }
-                    else if (data.status=='<?php echo agent::CHECK_PERIODE_NONCOUVERTE ?>')
-                    {
-                        var extraclass = 'kobackgroundtext';
-                        var statutinfo = "KO";
-                    }
-                    else if (data.status=='<?php echo agent::CHECK_PERIODE_EXCEPTION ?>')
-                    {
-                        var extraclass = 'warnbackgroundtext';
-                        var statutinfo = "OK";
-                    }
-                    else
-                    {
-                        var extraclass = 'redtext';
-                        var statutinfo = "Erreur lors de l'étude des congés : " + data.description + "";
-                    }
-                    var currenttr = selectobject.closest("tr");
-                    if (currenttr)
-                    {
-                        //console.log(currenttr.innerText);
-                        var tdliste = currenttr.getElementsByTagName("td");
-                        for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
+                        currenttd = tdliste[indextd];
+                        currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                        currenttd.classList.add(extraclass);
+                        if (currenttd.classList.contains("statutinfo"))
                         {
-                            currenttd = tdliste[indextd];
-                            currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
-                            currenttd.classList.add(extraclass);
-                            if (currenttd.classList.contains("statutinfo"))
-                            {
-                                currenttd.innerText = statutinfo;
-                            }
+                            console.log("Erreur = " + reponse.status + " " + reponse.statusText);
+                            currenttd.innerText = "Erreur WS : " + reponse.status + " " + reponse.statusText + " => L'action n'a pas été enregistrée.";
                         }
                     }
-                })
-                .fail(function( xhr ) {
-                    var currenttr = selectobject.closest("tr");
-                    if (currenttr)
+                }
+                hiddewaitingimg();
+                return;
+            }
+
+            // L'appel du WS s'est bien passé => On a eu une réponse (ok ou pas mais on a une réponse)
+            if (reponse.ok !== true)
+            {
+                var currenttr = selectobject.closest("tr");
+                if (currenttr)
+                {
+                    var tdliste = currenttr.getElementsByTagName("td");
+                    var extraclass = 'redtext';
+                    for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
                     {
-                        var tdliste = currenttr.getElementsByTagName("td");
-                        var extraclass = 'redtext';
-                        for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
+                        currenttd = tdliste[indextd];
+                        currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                        currenttd.classList.add(extraclass);
+                        if (currenttd.classList.contains("statutinfo"))
                         {
-                            currenttd = tdliste[indextd];
-                            currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
-                            currenttd.classList.add(extraclass);
-                            if (currenttd.classList.contains("statutinfo"))
-                            {
-                                console.log("Erreur = " + xhr.status + " " + xhr.statusText);
-                                currenttd.innerText = "Erreur WS : " + xhr.status + " " + xhr.statusText + " => L'action n'a pas été enregistrée.";
-                            }
+                            console.log("Erreur = " + reponse.status + " " + reponse.statusText);
+                            currenttd.innerText = "Erreur WS : " + reponse.status + " " + reponse.statusText + " => L'action n'a pas été enregistrée.";
                         }
                     }
-                })
-                .always(function() {
-                    hiddewaitingimg();
-                });
+                }
+            }
+            else 
+            {
+                if (data.status=='<?php echo agent::CHECK_PERIODE_COUVERTE ?>')
+                {
+                    var extraclass = 'okbackgroundtext';
+                    var statutinfo = "OK";
+                }
+                else if (data.status=='<?php echo agent::CHECK_PERIODE_NONCOUVERTE ?>')
+                {
+                    var extraclass = 'kobackgroundtext';
+                    var statutinfo = "KO";
+                }
+                else if (data.status=='<?php echo agent::CHECK_PERIODE_EXCEPTION ?>')
+                {
+                    var extraclass = 'warnbackgroundtext';
+                    var statutinfo = "OK";
+                }
+                else
+                {
+                    var extraclass = 'redtext';
+                    var statutinfo = "Erreur lors de l'étude des congés : " + data.description + "";
+                }
+                var currenttr = selectobject.closest("tr");
+                if (currenttr)
+                {
+                    //console.log(currenttr.innerText);
+                    var tdliste = currenttr.getElementsByTagName("td");
+                    for (indextd = 1 ; indextd < tdliste.length ; indextd++) // On commence à la 2e colonne (<=> index = 1)
+                    {
+                        currenttd = tdliste[indextd];
+                        currenttd.classList.remove("okbackgroundtext","kobackgroundtext","warnbackgroundtext", "redtext" );
+                        currenttd.classList.add(extraclass);
+                        if (currenttd.classList.contains("statutinfo"))
+                        {
+                            currenttd.innerText = statutinfo;
+                        }
+                    }
+                }
+            }
+            hiddewaitingimg();
         }
 
         function periodefilter()

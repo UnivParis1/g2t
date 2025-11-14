@@ -1361,35 +1361,18 @@
                 echo "<div id='planningagent_" . $agent->agentid() . "_" . ($fonctions->anneeref() - $index) . "' class='divtocomplete'></div>";
 ?>
                 <script>
-                    var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-                    $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
-                                        agentid : "<?php echo $agent->agentid(); ?>", 
-                                        datedebut : "<?php echo ($fonctions->anneeref() - $index) . $fonctions->debutperiode(); ?>" , 
-                                        datefin : "<?php echo ($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode(); ?>",
-                                        clickable : 'O',
-                                        showpdflink : 'N',
-                                        includeteletravail : 'N'
-                                        })
-                                .done(function( data ) {
-                                    if (data.status.toUpperCase()=='OK')
-                                    {
-                                        var statutinfo = "OK";
-                                    }
-                                    else
-                                    {
-                                        var statutinfo = "KO => " + data.description;
-                                    }
-                                    // console.log("Retour du WS => " + statutinfo);
-                                    let div = document.getElementById('planningagent_<?php echo $agent->agentid() . "_" . ($fonctions->anneeref() - $index); ?>');
-                                    div.innerHTML = data.html;
-                                })
-                                .fail(function( xhr ) {
-                                    var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                                    console.log(statutinfo);
-                                })
-                                .always(function() {
-                                    hiddewaitingimg();
-                                });
+                    // Initialisation des paramètres pour l'affichage du planning de l'agent
+                    var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                    "agentid" : "<?php echo $agent->agentid(); ?>", 
+                                    "datedebut" : "<?php echo ($fonctions->anneeref() - $index) . $fonctions->debutperiode(); ?>" , 
+                                    "datefin" : "<?php echo ($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode(); ?>",
+                                    "clickable" : 'O',
+                                    "dbclickable" : 'N',
+                                    "showpdflink" : 'N',
+                                    "includeteletravail" : 'N'
+                                };
+                    // Appel de la fonction asynchrone 
+                    showagentplanning(params,document.getElementById('planningagent_<?php echo $agent->agentid() . "_" . ($fonctions->anneeref() - $index); ?>'));
                 </script>
 <?php                            
                 // echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $index) . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode()), TRUE, FALSE,false);
@@ -1410,35 +1393,18 @@
             echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
 ?>
             <script>
-                var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-                $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
-                                    agentid : "<?php echo $agent->agentid(); ?>", 
-                                    datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
-                                    datefin : "<?php echo $datetemp; ?>",
-                                    clickable : 'O',
-                                    showpdflink : 'O',
-                                    includeteletravail : 'N'
-                                    })
-                            .done(function( data ) {
-                                if (data.status.toUpperCase()=='OK')
-                                {
-                                    var statutinfo = "OK";
-                                }
-                                else
-                                {
-                                    var statutinfo = "KO => " + data.description;
-                                }
-                                // console.log("Retour du WS => " + statutinfo);
-                                let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
-                                div.innerHTML = data.html;
-                            })
-                            .fail(function( xhr ) {
-                                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                                console.log(statutinfo);
-                            })
-                            .always(function() {
-                                hiddewaitingimg();
-                            });
+                // Initialisation des paramètres pour l'affichage du planning de l'agent
+                var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                "agentid" : "<?php echo $agent->agentid(); ?>", 
+                                "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                "datefin" : "<?php echo $datetemp; ?>",
+                                "clickable" : 'O',
+                                "dbclickable" : 'N',
+                                "showpdflink" : 'O',
+                                "includeteletravail" : 'N'
+                            };
+                // Appel de la fonction asynchrone 
+                showagentplanning(params,document.getElementById('planningagent_<?php echo $agent->agentid(); ?>'));
             </script>
 <?php                            
             // echo $agent->planninghtml($fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode()), $datetemp, TRUE,true,false);
@@ -1450,35 +1416,18 @@
             echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
 ?>
             <script>
-                var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-                $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
-                                    agentid : "<?php echo $agent->agentid(); ?>", 
-                                    datedebut : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
-                                    datefin : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
-                                    clickable : 'O',
-                                    showpdflink : 'O',
-                                    includeteletravail : 'N'
-                                    })
-                            .done(function( data ) {
-                                if (data.status.toUpperCase()=='OK')
-                                {
-                                    var statutinfo = "OK";
-                                }
-                                else
-                                {
-                                    var statutinfo = "KO => " + data.description;
-                                }
-                                // console.log("Retour du WS => " + statutinfo);
-                                let div = document.getElementById('planningagent_<?php echo $agent->agentid(); ?>');
-                                div.innerHTML = data.html;
-                            })
-                            .fail(function( xhr ) {
-                                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + xhr.status + " " + xhr.statusText;
-                                console.log(statutinfo);
-                            })
-                            .always(function() {
-                                hiddewaitingimg();
-                            });
+                // Initialisation des paramètres pour l'affichage du planning de l'agent
+                var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                "agentid" : "<?php echo $agent->agentid(); ?>", 
+                                "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
+                                "datefin" : "<?php echo $datetemp; ?>",
+                                "clickable" : 'O',
+                                "dbclickable" : 'N',
+                                "showpdflink" : 'O',
+                                "includeteletravail" : 'N'
+                            };
+                // Appel de la fonction asynchrone 
+                showagentplanning(params,document.getElementById('planningagent_<?php echo $agent->agentid(); ?>'));
             </script>
 <?php                            
 

@@ -91,6 +91,13 @@
     $erreur = '';
     $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
 
+    if (count($_POST) == 0)
+    {
+        // Autre façon de récupérer les variables $_POST
+        $_POST = json_decode(file_get_contents('php://input'), true);
+    }
+
+
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));
     error_log(basename(__FILE__) . " GET = " . str_replace("\n","",var_export($_GET,true)));
     

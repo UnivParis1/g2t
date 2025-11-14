@@ -448,29 +448,50 @@
             }
         }
 
-        function AppelWSAgent(display_flag)
+        async function AppelWSAgent(display_flag)
         {
-            var fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
-            $.post(fullWSURL , { methode : "<?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?>", agentid: <?php echo $user->agentid(); ?>, display: display_flag })
-                        .done(function( data ) {
-                            if (data.status.toUpperCase()=='OK')
-                            {
-                                var statutinfo = "OK";
-                            }
-                            else
-                            {
-                                var statutinfo = "KO => " + data.description;
-                            }
-                            // console.log("Retour du WS => " + statutinfo);
-                        })
-                        .fail(function( xhr ) {
-                            var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?> - " + xhr.status + " " + xhr.statusText;
-                            console.log(statutinfo);
-                        })
-                        .always(function() {
-                            // Nothing to do
-                        });
+            var params = { "methode" : "<?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?>", 
+                           "agentid" : <?php echo $user->agentid(); ?>, 
+                           "display" : display_flag 
+                         };
 
+            let fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+            try {
+                postparams = { method: "POST",
+                               headers: {
+                                         'Accept': 'application/json',
+                                         'Content-Type': 'application/json'
+                                        },
+                                body: JSON.stringify(params)
+                             };
+                var reponse = await fetch(fullWSURL,postparams);
+                var data = await reponse.json();
+            } 
+            catch (exception) 
+            {
+                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?> - " + reponse.status + " " + reponse.statusText;
+                console.log(statutinfo);
+                return;
+            }
+
+            // L'appel du WS s'est bien passé => On a eu une réponse (ok ou pas mais on a une réponse)
+            if (reponse.ok !== true)
+            {
+                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_ONOFF_ANIMATION; ?> - " + reponse.status + " " + reponse.statusText;
+                console.log(statutinfo);
+            }
+            else 
+            {
+                if (data.status.toUpperCase()=='OK')
+                {
+                    var statutinfo = "OK";
+                }
+                else
+                {
+                    var statutinfo = "KO => " + data.description;
+                }
+                // console.log("Retour du WS => " + statutinfo);
+            }
         }
 
         function modifieranimation_click()

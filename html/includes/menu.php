@@ -865,6 +865,160 @@
             return false;
         }
 
+        async function showagentplanning(params, divtoupdate)
+        {
+            if (!divtoupdate)
+            {
+                console.log("Impossible d'identifier le div à mettre à jour.");
+                return;
+            }
+
+            let fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
+            try {
+                postparams = { method: "POST",
+                               headers: {
+                                         'Accept': 'application/json',
+                                         'Content-Type': 'application/json'
+                                        },
+                                body: JSON.stringify(params)
+                             };
+                var reponse = await fetch(fullWSURL,postparams);
+                var data = await reponse.json();
+            } 
+            catch (exception) 
+            {
+                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + reponse.status + " " + reponse.statusText;
+                console.log(statutinfo);
+                hiddewaitingimg();
+                return;
+            }
+
+            // L'appel du WS s'est bien passé => On a eu une réponse (ok ou pas mais on a une réponse)
+            if (reponse.ok !== true)
+            {
+                var statutinfo = "Erreur WS - méthode : <?php echo agent::WS_METHODE_PLANNING; ?> - " + reponse.status + " " + reponse.statusText;
+                console.log(statutinfo);
+            }
+            else 
+            {
+                if (data.status.toUpperCase()=='OK')
+                {
+                    var statutinfo = "OK";
+                }
+                else
+                {
+                    var statutinfo = "KO => " + data.description;
+                }
+                // console.log("Retour du WS => " + statutinfo);
+                divtoupdate.innerHTML = data.html;
+            }
+            hiddewaitingimg();
+        }
+
+        async function showstructureplanning(params, divtoupdate)
+        {
+            if (!divtoupdate)
+            {
+                console.log("Impossible d'identifier le div à mettre à jour.");
+                return;
+            }
+
+            let fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/structureWS.php";
+            try {
+                postparams = { method: "POST",
+                               headers: {
+                                         'Accept': 'application/json',
+                                         'Content-Type': 'application/json'
+                                        },
+                                body: JSON.stringify(params)
+                             };
+                var reponse = await fetch(fullWSURL,postparams);
+                var data = await reponse.json();
+            } 
+            catch (exception) 
+            {
+                var statutinfo = "Erreur WS - méthode : <?php echo structure::WS_METHODE_PLANNING; ?> - " + reponse.status + " " + reponse.statusText;
+                console.log(statutinfo);
+                hiddewaitingimg();
+                return;
+            }
+
+            // L'appel du WS s'est bien passé => On a eu une réponse (ok ou pas mais on a une réponse)
+            if (reponse.ok !== true)
+            {
+                var statutinfo = "Erreur WS - méthode : <?php echo structure::WS_METHODE_PLANNING; ?> - " + reponse.status + " " + reponse.statusText;
+                console.log(statutinfo);
+            }
+            else 
+            {
+                if (data.status.toUpperCase()=='OK')
+                {
+                    var statutinfo = "OK";
+                }
+                else
+                {
+                    var statutinfo = "KO => " + data.description;
+                }
+                // console.log("Retour du WS => " + statutinfo);
+
+                if (params['showallstructure'] && params['showallstructure'].toUpperCase() == 'O' && data.html.trim() != "")
+                {
+                    // On ajoute la checkbox pour afficher tous les agents de la structure "racine"
+                    data.html = data.html + "<br>";
+                    data.html = data.html + "<form name='form_showroot' id='form_showroot' method='post'>";
+                    data.html = data.html + "<input type='hidden' name='indexmois' value='" + params['indexmois'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='userid' value='" + params['userid'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='mode' value='" + params['mode'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='previous' value='" + params['previoustxt'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='rootid' value='" + params['rootid'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='structureid' value='" + params['structureid'] + "' />";
+                    data.html = data.html + "<input type='checkbox' id='check_showroot' name='check_showroot' onclick='this.form.submit()' ";
+                    if (params['check_showroot'] && params['check_showroot'].toUpperCase() == 'O')
+                    {
+                        data.html = data.html + " checked ";
+                    }
+                    data.html = data.html + "/>";
+                    //echo "Voir l'intégralité du planning de la structure \"racine\" => " . $structparent->nomcourt();
+                    data.html = data.html + "Voir l'intégralité du planning de la structure <b>" + params['rootnomcourt'] + "</b>";
+                    data.html = data.html + "</form>";
+                }
+                
+                if (params['teletravailexport'] && params['teletravailexport'].toUpperCase() == 'O' && data.html.trim() != "")
+                {
+                    data.html = data.html + "<br>";
+                    data.html = data.html + "<form name='form_teletravailPDF' id='form_teletravailPDF' method='post' action='affiche_pdf.php' target='_blank'>";
+                    data.html = data.html + "<input type='hidden' name='indexmois' value='" + params['indexmois'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='userid' value='" + params['userid'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='mode' value='" + params['mode'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='previous' value='" + params['previoustxt'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='structureid' value='" + params['structureid'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='datedebut' value='<?php echo htmlspecialchars((date('Y')-1) . '1001'); ?>' />"; // Date de début du dernier trimestre de l'année d'avant
+                    data.html = data.html + "<input type='hidden' name='datefin' value='<?php echo htmlspecialchars((date('Y')-1) . '1231'); ?>' />";  // Date de fin du dernier trimestre de l'année d'avant
+                    
+                    data.html = data.html + "Afficher le document 'télétravail' pour la structure " + params['structurenomlong'] +  " (" + params['structurenomcourt'] + ")<br>";
+                    data.html = data.html + "<input type='submit' name='teletravailPDF' id='teletravailPDF' class='g2tbouton g2tdocumentbouton g2tboutonwidthauto' value='Afficher un PDF'/>";
+                    data.html = data.html + "</form>";
+
+                    data.html = data.html + "<form name='form_teletravailmail' id='form_teletravailmail' method='post'>";
+                    data.html = data.html + "<input type='hidden' name='indexmois' value='" + params['indexmois'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='userid' value='" + params['userid'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='mode' value='" + params['mode'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='previous' value='" + params['previoustxt'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='structureid' value='" + params['structureid'] + "' />";
+                    data.html = data.html + "<input type='hidden' name='datedebut' value='<?php echo htmlspecialchars((date('Y')-1) . '1001'); ?>' />"; // Date de début du dernier trimestre de l'année d'avant
+                    data.html = data.html + "<input type='hidden' name='datefin' value='<?php echo htmlspecialchars((date('Y')-1) . '1231'); ?>' />";  // Date de fin du dernier trimestre de l'année d'avant
+                    
+                    data.html = data.html + "Envoyer par mail le document 'télétravail' pour la structure " + params['structurenomlong'] +  " (" + params['structurenomcourt'] + ")<br>";
+                    data.html = data.html + "<input type='submit' name='teletravailmail' id='teletravailmail' class='g2tbouton g2tenvoibouton g2tboutonwidthauto' value='Envoyer un PDF'/>";
+                    data.html = data.html + "</form>";
+                }
+
+                divtoupdate.innerHTML = data.html;
+                sort_table_init('struct_plan_' + params['structureid'] ,0);
+            }
+            hiddewaitingimg();
+        }
+
     </script>
 
 <?php
