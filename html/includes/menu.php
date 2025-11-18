@@ -883,6 +883,8 @@
                                 body: JSON.stringify(params)
                              };
                 var reponse = await fetch(fullWSURL,postparams);
+
+                // var reponse = await fetch(fullWSURL + "?" + new URLSearchParams(params).toString());
                 var data = await reponse.json();
             } 
             catch (exception) 
@@ -933,11 +935,17 @@
                                 body: JSON.stringify(params)
                              };
                 var reponse = await fetch(fullWSURL,postparams);
+
+                // var reponse = await fetch(fullWSURL + "?" + new URLSearchParams(params).toString());
                 var data = await reponse.json();
             } 
             catch (exception) 
             {
-                var statutinfo = "Erreur WS - méthode : <?php echo structure::WS_METHODE_PLANNING; ?> - " + reponse.status + " " + reponse.statusText;
+                var statutinfo = "Erreur WS - méthode : <?php echo structure::WS_METHODE_PLANNING; ?> - ";
+                if (reponse)
+                {
+                    statutinfo = statutinfo + reponse.status + " " + reponse.statusText;
+                }
                 console.log(statutinfo);
                 hiddewaitingimg();
                 return;
