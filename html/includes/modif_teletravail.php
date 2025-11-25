@@ -231,6 +231,20 @@
                 var identiteagent = '';
             }
 
+            // Si l'agent essaie de déplacer un de ses propres jours de télétravail à partir du planning de la structure => Impossible
+            if (agentid == '<?php echo $user->agentid()?>' && tableau.classList.contains('<?php echo planning::TYPE_STRUCTURE; ?>'))
+            {
+                masquerimgmodal('error');
+                divmodalcancelBtn.textContent = "Ok";
+                divmodalcancelBtn.hidden = false;
+                divmodalcancelBtn.classList.add('g2tokbouton');
+                divmodalconfirmBtn.hidden = true;
+                divmodallabeltext.parentElement.classList.add('centeraligntext');
+                divmodallabeltext.innerHTML = 'Vous ne pouvez pas déplacer vos propres jours de télétravail à partir de ce planning';
+                divmodal.style.display = "block";
+                return;
+            }
+
             if (moment==='<?php echo fonctions::MOMENT_MATIN; ?>')
             {
                 var matin = element;
