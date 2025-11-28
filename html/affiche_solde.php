@@ -134,7 +134,8 @@
         $structureliste = $fonctions->enleverstructuresinclues_soldes($structureliste);
         if (is_array($structureliste))
         {
-            uasort($structureliste,"triparprofondeurabsolue");
+            // uasort($structureliste,"triparprofondeurabsolue");
+            uasort($structureliste,array($fonctions,"triparprofondeurabsolue"));
         }
         
         //var_dump("Apres appel enleverstructuresinclues_soldes");
@@ -209,7 +210,8 @@
                 $structureliste = $fonctions->enleverstructuresinclues_soldes($structureliste);
                 if (is_array($structureliste))
                 {
-                    uasort($structureliste,"triparprofondeurabsolue");
+                    // uasort($structureliste,"triparprofondeurabsolue");
+                    uasort($structureliste,array($fonctions,"triparprofondeurabsolue"));
                 }
                 foreach ($structureliste as $structkey => $structure) 
                 {
@@ -285,6 +287,7 @@
                             <script>
                                 // Initialisation des paramètres pour l'affichage du planning de l'agent
                                 var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                                "mode" : "<?php echo $mode; ?>",
                                                 "agentid" : "<?php echo $agent->agentid(); ?>", 
                                                 "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
                                                 "datefin" : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
@@ -321,7 +324,9 @@
                 echo "<br>";
                 echo $agent->soldecongeshtml(($fonctions->anneeref() - $previous), TRUE);
                 if ($previous == 0)
+                {
                     echo $agent->affichecommentairecongehtml(true);
+                }
                 echo $agent->demandeslistehtml(($fonctions->anneeref() - $previous) . $fonctions->debutperiode(), ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(), $structure->id(), FALSE);
 
                 echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
@@ -329,6 +334,7 @@
                 <script>
                     // Initialisation des paramètres pour l'affichage du planning de l'agent
                     var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                    "mode" : "<?php echo $mode; ?>",
                                     "agentid" : "<?php echo $agent->agentid(); ?>", 
                                     "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
                                     "datefin" : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
@@ -354,7 +360,8 @@
         $structureliste = $user->structgestliste();
         if (is_array($structureliste))
         {
-            uasort($structureliste,"triparprofondeurabsolue");
+            // uasort($structureliste,"triparprofondeurabsolue");
+            uasort($structureliste,array($fonctions,"triparprofondeurabsolue"));
         }
         foreach ($structureliste as $structkey => $structure)
         {
@@ -406,7 +413,8 @@
                 $structureliste = $user->structgestliste();
                 if (is_array($structureliste))
                 {
-                    uasort($structureliste,"triparprofondeurabsolue");
+                    // uasort($structureliste,"triparprofondeurabsolue");
+                    uasort($structureliste,array($fonctions,"triparprofondeurabsolue"));
                 }
                 foreach ($structureliste as $structkey => $structure) {
                     echo "<br>";
@@ -456,13 +464,15 @@
                             <script>
                                 // Initialisation des paramètres pour l'affichage du planning de l'agent
                                 var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                                "mode" : "<?php echo $mode; ?>",
                                                 "agentid" : "<?php echo $agent->agentid(); ?>", 
+                                                "structureid" : "<?php echo $structure->id() ?>",
                                                 "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
                                                 "datefin" : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
                                                 "clickable" : 'N',
                                                 "showpdflink" : 'N',
                                                 "includeteletravail" : 'O'
-                                                }
+                                             }
                                 // Appel de la fonction asynchrone 
                                 showagentplanning(params,document.getElementById('planningagent_<?php echo $agent->agentid(); ?>'));
                             </script>
@@ -499,7 +509,9 @@
                 <script>
                     // Initialisation des paramètres pour l'affichage du planning de l'agent
                     var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                    "mode" : "<?php echo $mode; ?>",
                                     "agentid" : "<?php echo $agent->agentid(); ?>", 
+                                    "structureid" : "<?php echo $agent->structureid() ?>",
                                     "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
                                     "datefin" : "<?php echo ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode(); ?>",
                                     "clickable" : 'N',

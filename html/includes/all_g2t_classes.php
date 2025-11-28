@@ -44,7 +44,7 @@
     {
         define('MODE_GESTION', 'gest');
     }
-    if (!defined('MODE_RESPONSALBE'))
+    if (!defined('MODE_RESPONSABLE'))
     {
         define('MODE_RESPONSABLE', 'resp');
     }

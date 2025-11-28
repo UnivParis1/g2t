@@ -180,9 +180,11 @@
     {
         global $dbcon;
         global $fonctions;
+        global $user;
 
         // error_log(basename(__FILE__) . $fonctions->stripAccents(" Debut du WS agent_planning"));
         $agentid = null;
+        $mode = null;
         $datedebutdb = null;
         $datefindb = null;
         // Valeurs optionnelles => Initialisation des valeurs par défaut
@@ -191,12 +193,23 @@
         $dbclickable = FALSE;
         $includeteletravail = FALSE;
         $includecongeabsence = true;
+        $structureid = null;
+
+        $erreur = "";
 
         if (isset($_POST) and count($_POST)>0)
         {
             if (array_key_exists("agentid", $_POST)) // Id de l'agent
             {
                 $agentid = $_POST["agentid"];
+            }
+            if (array_key_exists("mode", $_POST)) // Mode d'affichage du planning de l'agent
+            {
+                $mode = $_POST["mode"];
+            }
+            if (array_key_exists("structureid", $_POST)) // Id de la structure (pour le mode GESTIONNAIRE)
+            {
+                $structureid = $_POST["structureid"];
             }
             if (array_key_exists("datedebut", $_POST)) // Date de début de la période obligatoire
             {
@@ -236,6 +249,14 @@
             {
                 $agentid = $_GET["agentid"];
             }
+            if (array_key_exists("mode", $_GET)) // Mode d'affichage du planning de l'agent
+            {
+                $mode = $_GET["mode"];
+            }
+            if (array_key_exists("structureid", $_GET)) // Id de la structure (pour le mode GESTIONNAIRE)
+            {
+                $structureid = $_GET["structureid"];
+            }
             if (array_key_exists("datedebut", $_GET)) // Date de début de la période obligatoire
             {
                 $datedebutdb = $fonctions->formatdatedb($_GET["datedebut"]);
@@ -269,11 +290,11 @@
             }
         }
 
-        if (is_null($agentid) or is_null($datedebutdb) or is_null($datefindb))
+        if (is_null($agentid) or is_null($mode) or is_null($datedebutdb) or is_null($datefindb))
         {
-            $erreur = "Impossible de créer le planning de l'agent (agentid = $agentid datedebutdb = $datedebutdb datefindb = $datefindb)";
+            $erreur = "Impossible de créer le planning de l'agent (agentid = $agentid datedebutdb = $datedebutdb datefindb = $datefindb mode = $mode)";
             $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
-            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
+            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS => Erreur = " . $erreur));
         }
         else
         {
@@ -282,9 +303,117 @@
             {
                 $erreur = "Impossible de récupérer l'agent $agentid";
                 $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
-                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
+                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS => Erreur = " . $erreur));
             }
             else
+            {
+                // Si l'utilisateur est n'est pas admin => On va vérifier la cohérence des paramètres en fonction du mode d'affichage et de l'utilisateur
+                if (!$user->estadministrateur())
+                {
+                    switch ($mode)
+                    {
+                        case MODE_AGENT :
+                            if ($agentid != $user->agentid())
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning d'un autre agent";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            break;
+                        case MODE_RESPONSABLE :
+                            if (!$user->estresponsable())
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning d'un autre agent";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            else
+                            {
+                                $agentliste = $user->listeagentenresponsabilite($fonctions->formatdate($datedebutdb),$fonctions->formatdate($datefindb));
+                                $agentfound = false;
+                                foreach ($agentliste as $key => $member)
+                                {
+                                    if ($member->agentid() == $agentid)
+                                    {
+                                        $agentfound = true;
+                                        break;
+                                    }
+                                }
+                                if (!$agentfound)
+                                {
+                                    $erreur = "Vous ne pouvez pas récupérer le planning de l'agent $agentid";
+                                    $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                                }
+                            }
+                            break;
+                        case MODE_GESTION :
+                            if (!$user->estgestionnaire())
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning d'un autre agent";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            else
+                            {
+                                if (is_null($structureid))
+                                {
+                                    $erreur = "Impossible d'identifier la structure de référence";
+                                    $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                    error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                                }
+                                else
+                                {
+                                    $structure = new structure($dbcon);
+                                    if (!$structure->load($structureid))
+                                    {
+                                        $erreur = "Impossible de charger la structure de référence $structureid";
+                                        $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                                    }
+                                    else
+                                    {
+                                        $agentliste = $structure->agentlist($fonctions->formatdate($datedebutdb), $fonctions->formatdate($datefindb),'n',true);
+                                        $agentfound = false;
+                                        if (in_array($agentid, (array)$agentliste))
+                                        {
+                                            $agentfound = true;
+                                        }
+                                        // foreach ((array)$agentliste as $key => $member)
+                                        // {
+                                        //     if ($member->agentid() == $agentid)
+                                        //     {
+                                        //         $agentfound = true;
+                                        //         break;
+                                        //     }
+                                        // }
+                                        if (!$agentfound)
+                                        {
+                                            $erreur = "Vous ne pouvez pas récupérer le planning de l'agent $agentid";
+                                            $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        case MODE_RH :
+                            if (!$user->estprofilrh())
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning d'un autre agent";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            break;
+                        default :
+                            $erreur = "Le mode d'affichage du planning pour l'agent $agentid n'a pas pu être identifié";
+                            $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                        break;
+                    }
+                }
+            }
+            if (trim($erreur) == '')
             {
                 $result_json = array('status' => 'Ok', 'description' => '', 'html' => $agent->planninghtml($datedebutdb,$datefindb,$clickable,$showpdflink,$includeteletravail,$includecongeabsence, $dbclickable));
             }
@@ -423,7 +552,7 @@
     if (count($_POST) == 0)
     {
         // Autre façon de récupérer les variables $_POST
-        $_POST = json_decode(file_get_contents('php://input'), true);
+        $_POST = (array)json_decode(file_get_contents('php://input'), true);
     }
 
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));

@@ -144,10 +144,12 @@
                     // On ne peut pas mettre le responsable de la structure comme délégué
                     if ($agentid == $resp->agentid()) {
                         // On récupère la liste des structures ou l'utilisateur est responsable (sens strict)
-                        $structrespliste = $resp->structrespliste(false);
+                        $structrespliste = $resp->structrespliste(false,true);
                         // Si la structure courante est définie dans le tableau des structures
                         // On ne peut pas le mettre délégué
-                        if (isset($structrespliste[$structureid])) {
+                        // if (isset($structrespliste[$structureid])) 
+                        if (in_array($structureid, $structrespliste))
+                        {
                             $resp_est_delegue = true;
                         }
                     }

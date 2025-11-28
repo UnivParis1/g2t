@@ -377,6 +377,7 @@
         <script>
             // Initialisation des paramètres pour l'affichage du planning de l'agent
             var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                            "mode" : "<?php echo $mode; ?>",
                             "agentid" : "<?php echo $user->agentid(); ?>", 
                             "datedebut" : "<?php echo $fonctions->formatdatedb($datedebut); ?>" , 
                             "datefin" : "<?php echo $fonctions->formatdatedb($datefin); ?>",

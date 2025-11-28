@@ -15,6 +15,7 @@
 
         $structureid = null;
         $mois_annee_debut = null;
+        $mode = null;
         // Valeurs optionnelles => Initialisation des valeurs par défaut
         $showsousstruct = null;
         $noiretblanc = false;
@@ -23,7 +24,9 @@
         $includecongeabsence = true;
         $agentlist = null;
 
-        if (isset($_POST) and count($_POST)>0)
+        $erreur = "";
+
+        if (count($_POST)>0)
         {
             if (array_key_exists("structureid", $_POST)) // Identifiant de la structure
             {
@@ -32,6 +35,10 @@
             if (array_key_exists("mois_annee_debut", $_POST)) // Mois + Année (format MM/AAAA)
             {
                 $mois_annee_debut = $_POST["mois_annee_debut"];
+            }
+            if (array_key_exists("mode", $_POST)) // Mode d'affichage => RESP, AGENT, GEST, RH
+            {
+                $mode = $_POST["mode"];
             }
 
             // On récupère les valeurs optionnelles 
@@ -72,6 +79,10 @@
             {
                 $mois_annee_debut = $_GET["mois_annee_debut"];
             }
+            if (array_key_exists("mode", $_GET)) // Mode d'affichage => RESP, AGENT, GEST, RH
+            {
+                $mode = $_GET["mode"];
+            }
 
             // On récupère les valeurs optionnelles 
             if (array_key_exists("showsousstruct", $_GET)) // Affichage ou pas des sous-structures
@@ -97,14 +108,15 @@
             if (array_key_exists("agentlist", $_GET)) // Liste des agents à afficher
             {
                 // Agentlist est un json représentant un tableau d'id d'agent à afficher => Initialisé avec json_encode(array('9328','24606','644'));
+                // error_log(basename(__FILE__) . $fonctions->stripAccents(" AgentList => " . print_r($_GET["agentlist"],true)));
                 $agentlist = json_decode($_GET["agentlist"]);
                 // error_log(basename(__FILE__) . $fonctions->stripAccents(" AgentList => " . implode(',',$agentlist)));
             }
         }
 
-        if (is_null($structureid) or is_null($mois_annee_debut))
+        if (is_null($structureid) or is_null($mois_annee_debut) or is_null($mode))
         {
-            $erreur = "Impossible de créer le planning de la structure (structureid = $structureid mois_annee_debut = $mois_annee_debut)";
+            $erreur = "Impossible de créer le planning de la structure (structureid = $structureid mois_annee_debut = $mois_annee_debut mode = $mode)";
             $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
             error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
         }
@@ -117,10 +129,99 @@
                 $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
                 error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode POST => Erreur = " . $erreur));
             }
-            else
+            else 
             {
-                $html_texte = $structure->planninghtml($mois_annee_debut, $showsousstruct, $noiretblanc, $includeteletravail, $dbclickable, $includecongeabsence, $agentlist);
-                $result_json = array('status' => 'Ok', 'description' => '', 'html' => $html_texte);
+                // Si l'utilisateur est n'est pas admin => On va vérifier la cohérence des paramètres en fonction du mode d'affichage et de l'utilisateur
+                if (!$user->estadministrateur())
+                {
+                    switch ($mode)
+                    {
+                        case MODE_AGENT :
+                            // Si l'utilisateur veut afficher autre chose que sa structure courante ou sa structure racine => Erreur
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" structureid = $structureid  user->structureid =" . $user->structureid() . "  structure->structureenglobante()->id() =  " . $structure->structureenglobante()->id() . "   structure->isincluded() = " . ($structure->isincluded() ? 'TRUE' :  'FALSE') ));
+                            $structureagent = new structure($dbcon);
+                            if (!$structureagent->load($user->structureid()))
+                            {
+                                $erreur = "Impossible de charger la structure de l'agent : " . $user->structureid();
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                                break;
+                            }
+                            $structureracine = $structureagent->structureenglobante();
+                            if ($user->structureid() != $structureid and (is_null($structureracine) or $structureracine->id() != $structureid))
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning de la structure $structureid";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            // En mode MODE_AGENT le planning de la structure doit obligatoirement être en noir&blanc et non dbclickable 
+                            $noiretblanc = true;
+                            $dbclickable = false;
+                            break;
+                        case MODE_RESPONSABLE :
+                            // On charge toutes les structures dont l'utilisateur est responsable 
+                            $structliste = $user->structrespliste(true, true);
+                            // Si la structure demandée n'est pas dans la liste => Erreur
+                            // if (!isset($structliste[$structureid])) 
+                            if (!in_array($structureid, $structliste))
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning de la structure $structureid";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            break;
+                        case MODE_GESTION :
+                            // On charge toutes les structures dont l'utilisateur est gestionnaire 
+                            $structliste = $user->structgestliste(true);
+                            // Si la structure demandée n'est pas dans la liste => Erreur
+                            // if (!isset($structliste[$structureid])) 
+                            if (!in_array($structureid, $structliste))
+                            {
+                                $erreur = "Vous ne pouvez pas récupérer le planning de la structure $structureid";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            break;
+                        case MODE_CONSULTANT :
+                            // error_log(basename(__FILE__) . $fonctions->stripAccents(" agentlist = " . print_r($agentlist,true)));
+                            if (count((array)$agentlist)==0)
+                            {
+                                $erreur = "La liste des agents à visualiser est vide";
+                                $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            }
+                            else
+                            {
+                                $agentconsult = $user->agentconsultantliste(true);
+                                // On parcourt toute la liste des agents passés en paramètre
+                                foreach($agentlist as $agentlistid)
+                                {
+                                    // Si on trouve un agent qui n'est pas dans la liste des agents en "consultation" => Erreur
+                                    if (!in_array($agentlistid,$agentconsult))
+                                    {
+                                        $erreur = "Vous ne pouvez pas récupérer le planning des agents de la structure $structureid";
+                                        $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                                        error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                                        break;
+                                    }
+                                }
+                            }
+                            $noiretblanc = true;
+                            $dbclickable = false;
+                            $showsousstruct = false;
+                            break;
+                        default :
+                            $erreur = "Le mode d'affichage du planning de la structure $structureid n'a pas pu être identifié";
+                            $result_json = array('status' => 'Error', 'description' => $erreur, 'html' => $erreur);
+                            error_log(basename(__FILE__) . $fonctions->stripAccents(" Appel du WS en mode $mode => Erreur = " . $erreur));
+                            break;
+                    }
+                }
+                if ($erreur == '')
+                {
+                    $html_texte = $structure->planninghtml($mois_annee_debut, $showsousstruct, $noiretblanc, $includeteletravail, $dbclickable, $includecongeabsence, $agentlist);
+                    $result_json = array('status' => 'Ok', 'description' => '', 'html' => $html_texte);
+                }
             }
         }
         return $result_json;
@@ -191,7 +292,7 @@
     if (count($_POST) == 0)
     {
         // Autre façon de récupérer les variables $_POST
-        $_POST = json_decode(file_get_contents('php://input'), true);
+        $_POST = (array)json_decode(file_get_contents('php://input'), true);
     }
 
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));
@@ -231,6 +332,12 @@
                             break;
                     }
                 }
+                else
+                {
+                    $erreur = "La méthode du WS n'est pas définie ou mal définie.";
+                    $result_json = array('status' => 'Error', 'description' => $erreur);
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Appel du WS en mode POST => Erreur = " . $erreur)));
+                }
                 break;
             case 'GET':
                 $methode = null;
@@ -250,6 +357,12 @@
                             error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Appel du WS en mode GET => Erreur = " . $erreur)));
                             break;
                     }
+                }
+                else
+                {
+                    $erreur = "La méthode du WS n'est pas définie ou mal définie.";
+                    $result_json = array('status' => 'Error', 'description' => $erreur);
+                    error_log(basename(__FILE__) . $fonctions->stripAccents(preg_replace('~[[:cntrl:]]~', ''," Appel du WS en mode GET => Erreur = " . $erreur)));
                 }
                 break;
         }

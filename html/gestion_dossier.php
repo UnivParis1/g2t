@@ -509,10 +509,11 @@
                     // On ne peut pas mettre le responsable de la structure comme délégué
                     if ($agentid == $user->agentid()) {
                         // On récupère la liste des structures ou l'utilisateur est responsable (sens strict)
-                        $structrespliste = $user->structrespliste(false);
+                        $structrespliste = $user->structrespliste(false,true);
                         // Si la structure courante est définie dans le tableau des structures
                         // On ne peut pas le mettre délégué
-                        if (isset($structrespliste[$structureid])) 
+                        // if (isset($structrespliste[$structureid])) 
+                        if (in_array($structureid, $structrespliste))
                         {
                             $resp_est_delegue = true;
                         }
@@ -640,7 +641,8 @@
     }
     if (is_array($structliste))
     {
-        uasort($structliste,"triparprofondeurabsolue");
+        // uasort($structliste,"triparprofondeurabsolue");
+        uasort($structliste,array($fonctions,"triparprofondeurabsolue"));
     }
     // echo "Structure liste = "; print_r($structliste); echo "<br>";
     foreach ($structliste as $key => $structure) 

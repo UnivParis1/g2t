@@ -2570,7 +2570,8 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         //var_dump($structliste);
         if (is_array($structliste))
         {
-            uasort($structliste,"triparprofondeurabsolue");
+            // uasort($structliste,"triparprofondeurabsolue");
+            uasort($structliste,array($fonctions,"triparprofondeurabsolue"));
         }
         //var_dump($structliste);
 

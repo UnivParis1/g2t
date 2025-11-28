@@ -875,16 +875,16 @@
 
             let fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/agentWS.php";
             try {
-                postparams = { method: "POST",
-                               headers: {
-                                         'Accept': 'application/json',
-                                         'Content-Type': 'application/json'
-                                        },
-                                body: JSON.stringify(params)
-                             };
-                var reponse = await fetch(fullWSURL,postparams);
+                // postparams = { method: "POST",
+                //                headers: {
+                //                          'Accept': 'application/json',
+                //                          'Content-Type': 'application/json'
+                //                         },
+                //                 body: JSON.stringify(params)
+                //              };
+                // var reponse = await fetch(fullWSURL,postparams);
 
-                // var reponse = await fetch(fullWSURL + "?" + new URLSearchParams(params).toString());
+                var reponse = await fetch(fullWSURL + "?" + new URLSearchParams(params).toString());
                 var data = await reponse.json();
             } 
             catch (exception) 
@@ -927,16 +927,16 @@
 
             let fullWSURL = "<?php echo $fonctions->get_g2t_ws_public_url() ?>/structureWS.php";
             try {
-                postparams = { method: "POST",
-                               headers: {
-                                         'Accept': 'application/json',
-                                         'Content-Type': 'application/json'
-                                        },
-                                body: JSON.stringify(params)
-                             };
-                var reponse = await fetch(fullWSURL,postparams);
+                // postparams = { method: "POST",
+                //                headers: {
+                //                          'Accept': 'application/json',
+                //                          'Content-Type': 'application/json'
+                //                         },
+                //                 body: JSON.stringify(params)
+                //              };
+                // var reponse = await fetch(fullWSURL,postparams);
 
-                // var reponse = await fetch(fullWSURL + "?" + new URLSearchParams(params).toString());
+                var reponse = await fetch(fullWSURL + "?" + new URLSearchParams(params).toString());
                 var data = await reponse.json();
             } 
             catch (exception) 
@@ -1053,14 +1053,15 @@
               </div>";
     }
 
-    function triparprofondeurabsolue($struct1, $struct2)
-    {
-        if ($struct1->profondeurabsolue()==$struct2->profondeurabsolue())
-        {
-            return 0;
-        }
-        return ($struct1->profondeurabsolue() < $struct2->profondeurabsolue()) ? -1 : 1;
-    }
+    // Obsolete => Déplacée dans la class fonctions
+    // function triparprofondeurabsolue($struct1, $struct2)
+    // {
+    //     if ($struct1->profondeurabsolue()==$struct2->profondeurabsolue())
+    //     {
+    //         return 0;
+    //     }
+    //     return ($struct1->profondeurabsolue() < $struct2->profondeurabsolue()) ? -1 : 1;
+    // }
 
     // On chrge le "vrai" utilisateur de l'application (Celui du ticket CAS)
     $realuser = new agent($dbcon);

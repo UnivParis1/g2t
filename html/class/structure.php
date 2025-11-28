@@ -580,7 +580,7 @@ class structure
         }
     }
 
-    function agentlist($datedebut, $datefin, $sousstrucuture = null)
+    function agentlist($datedebut, $datefin, $sousstrucuture = null, $id_only = false)
     {
         $agentliste = null;
         if ((strcasecmp((string)$this->sousstructure(), 'o') == 0 and strcasecmp((string)$sousstrucuture, 'n') != 0) or (strcasecmp((string)$sousstrucuture, 'o') == 0)) {
@@ -624,16 +624,24 @@ class structure
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
         }
         // echo "Avant le while...<br>";
-        while ($result = mysqli_fetch_row($query)) {
-            $agent = new agent($this->dbconnect);
-            // echo "Apres le new et avant le load =" . $result[0] . "<br>";
-            if ($agent->load("$result[0]")) {
-                // echo "Apres le load...<br>";
-                // La clé est NOM + PRENOM + AGENTID => permet de trier les tableaux par ordre alphabétique
-                $agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->agentid()] = $agent;
-                // / $agentliste[$agent->agentid()] = $agent;
-                // echo "Apres la mise dans le tableau <br>";
-                unset($agent);
+        while ($result = mysqli_fetch_row($query)) 
+        {
+            if ($id_only)
+            {
+                $agentliste["$result[0]"] = "$result[0]";
+            }
+            else
+            {
+                $agent = new agent($this->dbconnect);
+                // echo "Apres le new et avant le load =" . $result[0] . "<br>";
+                if ($agent->load("$result[0]")) {
+                    // echo "Apres le load...<br>";
+                    // La clé est NOM + PRENOM + AGENTID => permet de trier les tableaux par ordre alphabétique
+                    $agentliste[$agent->nom() . " " . $agent->prenom() . " " . $agent->agentid()] = $agent;
+                    // / $agentliste[$agent->agentid()] = $agent;
+                    // echo "Apres la mise dans le tableau <br>";
+                    unset($agent);
+                }
             }
         }
         // echo "<br>agentliste = "; print_r((array)$agentliste); echo "<br>";

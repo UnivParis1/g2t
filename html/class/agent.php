@@ -1594,7 +1594,7 @@ class agent
      *            optional if true delegated agent get responsable structure list.
      * @return array list of objects structure where the agent is responsable
      */
-    function structrespliste($includedeleg = true)
+    function structrespliste($includedeleg = true, $id_only = false)
     {
         $structliste = null;
         if ($this->estresponsable()) {
@@ -1609,12 +1609,20 @@ class agent
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            while ($result = mysqli_fetch_row($query)) {
-                // On charge la structure
-                $struct = new structure($this->dbconnect);
-                $struct->load("$result[0]");
-                $structliste[$struct->id()] = $struct;
-                unset($struct);
+            while ($result = mysqli_fetch_row($query)) 
+            {
+                if ($id_only)
+                {
+                    $structliste["$result[0]"] = "$result[0]";
+                }
+                else
+                {
+                    // On charge la structure
+                    $struct = new structure($this->dbconnect);
+                    $struct->load("$result[0]");
+                    $structliste[$struct->id()] = $struct;
+                    unset($struct);
+                }
             }
             
             if ($includedeleg) {
@@ -1628,12 +1636,20 @@ class agent
                     echo $errlog . "<br/>";
                     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                 }
-                while ($result = mysqli_fetch_row($query)) {
-                    // On charge la structure
-                    $struct = new structure($this->dbconnect);
-                    $struct->load("$result[0]");
-                    $structliste[$struct->id()] = $struct;
-                    unset($struct);
+                while ($result = mysqli_fetch_row($query)) 
+                {
+                    if ($id_only)
+                    {
+                        $structliste["$result[0]"] = "$result[0]";
+                    }
+                    else
+                    {
+                        // On charge la structure
+                        $struct = new structure($this->dbconnect);
+                        $struct->load("$result[0]");
+                        $structliste[$struct->id()] = $struct;
+                        unset($struct);
+                    }
                 }
             }
         }
@@ -1646,7 +1662,7 @@ class agent
      * @param
      * @return array list of objects structure where the agent is manager
      */
-    function structgestliste()
+    function structgestliste($id_only = false)
     {
         $structliste = null;
         if ($this->estgestionnaire()) {
@@ -1661,12 +1677,20 @@ class agent
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
             }
-            while ($result = mysqli_fetch_row($query)) {
-                // echo "Je charge la structure " . $result[0] . " <br>";
-                $struct = new structure($this->dbconnect);
-                $struct->load("$result[0]");
-                $structliste[$struct->id()] = $struct;
-                unset($struct);
+            while ($result = mysqli_fetch_row($query)) 
+            {
+                if ($id_only)
+                {
+                    $structliste["$result[0]"] = "$result[0]";
+                }
+                else
+                {
+                    // echo "Je charge la structure " . $result[0] . " <br>";
+                    $struct = new structure($this->dbconnect);
+                    $struct->load("$result[0]");
+                    $structliste[$struct->id()] = $struct;
+                    unset($struct);
+                }
             }
         }
         return $structliste;
@@ -1720,7 +1744,8 @@ class agent
             $structgestliste = $this->structgestliste();
             if (is_array($structgestliste))
             {
-                uasort($structgestliste,"triparprofondeurabsolue");
+                // uasort($structgestliste,"triparprofondeurabsolue");
+                uasort($structgestliste,array($this->fonctions,"triparprofondeurabsolue"));
             }
             //echo "<br>structgestliste = "; print_r((array) $structgestliste) ; echo "<br>";
             //var_dump('Liste des structures où je suis gestionnaire : '); foreach((array)$structgestliste as $tmpstruct) { var_dump(__METHOD__ . ' ' . $tmpstruct->id() . ' ' . $tmpstruct->nomcourt()); }
@@ -5470,7 +5495,7 @@ const modifymotif = (motif, motifid) =>
         error_log( basename(__FILE__) . " " . $this->fonctions->stripAccents("On cherche le N+2 de " . $this->identitecomplete()));
 
         $respN2 = false;
-        $respstruct = null;
+        $respstruct = new structure($this->dbconnect);
         $codeinterne = null;
         $resp = $this->getsignataire(null, $respstruct, $codeinterne);
         $codeinterne = null;
@@ -5884,7 +5909,8 @@ const modifymotif = (motif, motifid) =>
                 $structureliste = array_merge((array)$structureliste,(array)$listegeststruct);
                 if (is_array($structureliste))
                 {
-                    uasort($structureliste,"triparprofondeurabsolue");
+                    // uasort($structureliste,"triparprofondeurabsolue");
+                    uasort($structureliste,array($this->fonctions,"triparprofondeurabsolue"));
                 }
             }
             else
@@ -6030,7 +6056,8 @@ const modifymotif = (motif, motifid) =>
                 $structureliste = $this->structrespliste();
                 if (is_array($structureliste))
                 {
-                    uasort($structureliste,"triparprofondeurabsolue");
+                    // uasort($structureliste,"triparprofondeurabsolue");
+                    uasort($structureliste,array($this->fonctions,"triparprofondeurabsolue"));
                 }
             }
             else

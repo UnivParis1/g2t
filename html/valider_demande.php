@@ -289,7 +289,8 @@
         $listestruct = $fonctions->enleverstructuresinclues_demandes($listestruct);
         if (is_array($listestruct))
         {
-            uasort($listestruct,"triparprofondeurabsolue");
+            // uasort($listestruct,"triparprofondeurabsolue");
+            uasort($listestruct,array($fonctions,"triparprofondeurabsolue"));
         }
         // print_r($listestruct); echo "<br>";
         echo "<form name='frm_validation_conge'  method='post' >";
@@ -369,7 +370,8 @@
         $listestruct = array_merge((array)$listestruct,(array)$listegeststruct);
         if (is_array($listestruct))
         {
-            uasort($listestruct,"triparprofondeurabsolue");
+            // uasort($listestruct,"triparprofondeurabsolue");
+            uasort($listestruct,array($fonctions,"triparprofondeurabsolue"));
         }
         foreach ($listestruct as $key => $structure)
         {

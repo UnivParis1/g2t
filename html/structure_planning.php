@@ -359,7 +359,8 @@
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
         if (is_array($structureliste))
         {
-            uasort($structureliste,"triparprofondeurabsolue");
+            // uasort($structureliste,"triparprofondeurabsolue");
+            uasort($structureliste,array($fonctions,"triparprofondeurabsolue"));
         }
         foreach ($structureliste as $structkey => $structure) 
         {
@@ -439,7 +440,8 @@
         $structureliste = $fonctions->enleverstructuresinclues_planning($structureliste);
         if (is_array($structureliste))
         {
-            uasort($structureliste,"triparprofondeurabsolue");
+            // uasort($structureliste,"triparprofondeurabsolue");
+            uasort($structureliste,array($fonctions,"triparprofondeurabsolue"));
         }
         foreach ($structureliste as $structkey => $structure)
         {

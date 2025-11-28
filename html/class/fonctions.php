@@ -6365,7 +6365,17 @@ WHERE  table_schema = Database()
 
         $texz = str_replace($find, $replace,$texz);
         return $texz;
-    }   
+    } 
+    
+    function triparprofondeurabsolue($struct1, $struct2)
+    {
+        if ($struct1->profondeurabsolue()==$struct2->profondeurabsolue())
+        {
+            return 0;
+        }
+        return ($struct1->profondeurabsolue() < $struct2->profondeurabsolue()) ? -1 : 1;
+    }
+
     
 }
 

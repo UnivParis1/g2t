@@ -98,7 +98,8 @@
     }
     if (is_array($structlist))
     {
-        uasort($structlist,"triparprofondeurabsolue");
+        // uasort($structlist,"triparprofondeurabsolue");
+        uasort($structlist,array($fonctions,"triparprofondeurabsolue"));
     }
 
     if (is_array($structlist)) 

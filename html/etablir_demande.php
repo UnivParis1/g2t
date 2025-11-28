@@ -41,6 +41,7 @@
         $responsableid = $_POST["responsable"];
         $responsable = new agent($dbcon);
         $responsable->load($responsableid);
+        $mode = MODE_RESPONSABLE;
         //var_dump("On est en mode RESPONSABLE.");
     }
     // Récupération de l'agent gestionnaire... ==> On le colle dans l'objet responsable
@@ -48,10 +49,12 @@
         $responsableid = $_POST["gestionnaire"];
         $responsable = new agent($dbcon);
         $responsable->load($responsableid);
+        $mode = MODE_GESTION;
         //var_dump("On est en mode GESTIONNAIRE.");
     } else {
         $responsableid = null;
         $responsable = null;
+        $mode = MODE_AGENT;
     }
     
     
@@ -81,10 +84,12 @@
         $rh_mode = 'no';
         $rh_annee_previous = 0;
     }
+
     // Si on est en mode RH on fixe $previous à $rh_annee_previous
     if ($fonctions->convertvaluetobool($rh_mode))
     {
         $previous = $rh_annee_previous;
+        $mode = MODE_RH;
     }
     
     $show_cet = '';
@@ -382,7 +387,7 @@
 
     require ("includes/menu.php");
     
-    //echo "<br>"; print_r($_POST); echo "<br>";
+    // echo "<br>"; print_r($_POST); echo "<br>";
     ?>
     <script type="text/javascript">
     	// fonction pour le click gauche
@@ -1363,6 +1368,7 @@
                 <script>
                     // Initialisation des paramètres pour l'affichage du planning de l'agent
                     var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                    "mode" : "<?php echo $mode; ?>",
                                     "agentid" : "<?php echo $agent->agentid(); ?>", 
                                     "datedebut" : "<?php echo ($fonctions->anneeref() - $index) . $fonctions->debutperiode(); ?>" , 
                                     "datefin" : "<?php echo ($fonctions->anneeref() + 1 - $index) . $fonctions->finperiode(); ?>",
@@ -1395,6 +1401,7 @@
             <script>
                 // Initialisation des paramètres pour l'affichage du planning de l'agent
                 var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                "mode" : "<?php echo $mode; ?>",
                                 "agentid" : "<?php echo $agent->agentid(); ?>", 
                                 "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
                                 "datefin" : "<?php echo $datetemp; ?>",
@@ -1418,6 +1425,7 @@
             <script>
                 // Initialisation des paramètres pour l'affichage du planning de l'agent
                 var params = {  "methode" : "<?php echo agent::WS_METHODE_PLANNING; ?>", 
+                                "mode" : "<?php echo $mode; ?>",
                                 "agentid" : "<?php echo $agent->agentid(); ?>", 
                                 "datedebut" : "<?php echo ($fonctions->anneeref() - $previous) . $fonctions->debutperiode(); ?>" , 
                                 "datefin" : "<?php echo $datetemp; ?>",
