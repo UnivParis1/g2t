@@ -491,6 +491,7 @@
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
         echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     } 
@@ -1272,6 +1273,7 @@
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
         echo "<input type='hidden' name='rh_mode' value='" . $rh_mode . "'>";
         echo "<input type='hidden' name='show_cet' value='" . $show_cet . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         if ($erreurCET != '')
         {
             echo $fonctions->showmessage(fonctions::MSGWARNING, $erreurCET);
