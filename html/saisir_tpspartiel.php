@@ -372,7 +372,14 @@
         // echo "Avant le dossieractif<br>";
         // $dossier = $agent->dossieractif();
         // echo "apres le dossier actif <br>";
-        $debut_interval = $fonctions->anneeref() . $fonctions->debutperiode();
+        if ($mode == MODE_RH)
+        {
+            $debut_interval = $fonctions->anneeref()-1 . $fonctions->debutperiode();
+        }
+        else
+        {
+            $debut_interval = $fonctions->anneeref() . $fonctions->debutperiode();        
+        }
         $fin_interval = ($fonctions->anneeref() + 1) . $fonctions->finperiode();
         $affectationliste = $agent->affectationliste($debut_interval, $fin_interval);
         

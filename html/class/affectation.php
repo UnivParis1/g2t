@@ -452,7 +452,7 @@ class affectation
                 foreach ($declarationliste as $key => $declaration) {
                     // Si on est en mode MODE_RESPONSABLE (responsable de service) on affiche toutes les déclarations de TP
                     // qui sont liés à cette affectation
-                    if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp((string)$mode, MODE_RESPONSABLE) == 0) {
+                    if (($this->fonctions->formatdatedb($declaration->datefin()) >= ($this->fonctions->anneeref() . $this->fonctions->debutperiode())) or strcasecmp((string)$mode, MODE_RESPONSABLE) == 0 or strcasecmp((string)$mode, MODE_RH) == 0) {
                         if (strcasecmp((string)$declaration->statut(), declarationTP::DECLARATIONTP_REFUSE) != 0) {
                             if ($premiereligne) {
                                 $htmltext = $htmltext . "Tableau des temps partiels déclarés dans G2T pour " . $agent->identitecomplete() . "<br>";
