@@ -2549,7 +2549,65 @@
             headerpagepath.innerHTML = accueilform.querySelector('.pagepath').value;
         }
     }
+
+<?php
+    if (date('m') == 12 or (date('m') == 1 and date('d') < 16))
+    {
+        $path = $fonctions->etablissementimagepath() . "/Chapeau_Noel.png";
+        list($width, $height, $imagetype) = getimagesize("$path");
+        $typeimage = image_type_to_extension($imagetype,false);
+        if ($typeimage===false) // Si on n'a pas pu déterminé le type d'image => On récupère l'extension du fichier
+        {
+            error_log(basename(__FILE__) . " " . $fonctions->stripAccents("imagetype = $imagetype => extension non définie"));
+            $typeimage = pathinfo($path, PATHINFO_EXTENSION);
+        }
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $typeimage . ';base64,' . base64_encode($data);
+?>
+        window.addEventListener("load", displayeventimg, true);
+
+        function displayeventimg()
+        {
+            var mainmenu = document.querySelector('.mainmenu');
+            if (mainmenu)
+            {
+                let imgnoel = document.createElement("img");
+                imgnoel.style.display = 'block';
+                imgnoel.style.position = 'absolute';
+                imgnoel.src = '<?php echo $base64; ?>';
+                imgnoel.style.margin = 0;
+                imgnoel.style.padding = 0;
+                imgnoel.style.width = '<?php echo $width; ?>px'; // '60px';
+                imgnoel.style.height = '<?php echo $height; ?>px'; //imgnoel.style.width;
+                document.body.appendChild(imgnoel);
+                // var imgnoel = document.getElementById('imagenoel');
+                // imgnoel.style.transform = 'rotate(25deg)';
+                var menuniveau1 = mainmenu.querySelectorAll('.niveau1>li')
+                if (menuniveau1 && menuniveau1.length>0)
+                {
+                    var lastniveau1 = menuniveau1[menuniveau1.length-1];
+                    var bodyRect = document.body.getBoundingClientRect();
+                    var elemRect = lastniveau1.getBoundingClientRect();
+                    var imgnoelRect = imgnoel.getBoundingClientRect();
+                    console.log(parseInt(imgnoelRect.width), parseInt(imgnoelRect.height));
+                    var cornerY  = elemRect.top - bodyRect.top - parseInt(imgnoelRect.height/2);
+                    var cornerX = elemRect.left - bodyRect.left + elemRect.width - parseInt(imgnoelRect.width/2);
+                    // console.log(cornerY, cornerX);
+                    console.log(parseInt(cornerY) + 'px');
+                    imgnoel.style.top = parseInt(cornerY) + 'px';
+                    console.log(parseInt(cornerX) + 'px');
+                    imgnoel.style.left = parseInt(cornerX) + 'px';
+                }
+            }
+        }
+<?php
+    }
+?>
+
 </script>
-
-
 <br><br><br>
+
+<?php
+    // echo "<img id='imagenoel' class='imagenoel' src='" . $base64 . "' />";
+    // echo "<img id='imagenoel' src='" . $base64 . "' style='display: none' />";
+?>

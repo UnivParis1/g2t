@@ -365,10 +365,13 @@
     echo $user->affichecommentairecongehtml();
     echo $user->demandeslistehtml($fonctions->formatdate($fonctions->anneeref() . $fonctions->debutperiode()), $fonctions->formatdate(($fonctions->anneeref() + 1) . $fonctions->finperiode()));
 
-
 ?>
 <script>
-    window.onload = (event) => {
+
+    window.addEventListener("load", displayanimationmain, true);
+
+    function displayanimationmain()
+    {
 
         var animationliste = document.getElementsByClassName('animation');
         if (animationliste.length > 0 )
