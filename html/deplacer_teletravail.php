@@ -479,6 +479,7 @@
             echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
             echo "<input type='hidden' name='mode' value='" . $mode . "' />";
             echo "<input type='hidden' name='fullagentlist' value='" . implode(",",$fullagentlist)  . "' />";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' />";
             echo "</form>";
             echo "<br><br>";
@@ -611,6 +612,7 @@
                 $htmltext = $htmltext . "<input type='hidden' name='mode' value='" . $mode . "' />";
                 $htmltext = $htmltext . "<input type='hidden' name='agentid' value='" . $agentid . "' />";
                 $htmltext = $htmltext . "<input type='hidden' name='fullagentlist' value='" . implode(",",$fullagentlist)  . "' />";
+                if (isset($_POST['pagepath'])) $htmltext = $htmltext . "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
                 $htmltext = $htmltext . "<input type='submit' id='savemodif' name='savemodif' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
                 echo $htmltext;
             }

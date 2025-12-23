@@ -771,6 +771,7 @@
 <?php
     echo "<input type='hidden' id='xmlfilename' name='xmlfilename' value='$filename' >";
     echo "<input type='hidden' id='userid' name='userid' value='$userid'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' name='btnselectcircuit' id='btnselectcircuit' class='g2tbouton g2tsuivantbouton' value='Suivant' hidden>";
     echo "</form>";
     echo "<br>";

@@ -117,6 +117,7 @@
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<br>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
@@ -368,6 +369,7 @@
             echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
             echo "<input type='hidden' name='ajoutcet' value='yes'>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             if ($msg_bloquant == "")
             {
                 echo "<input type='submit' name='cree_alim_btn' id='cree_alim_btn' class='g2tbouton g2tvalidebouton alimbtn' value='Enregistrer' onclick='return alertuser(\"demandes_alim_cet\");' >";
@@ -409,6 +411,7 @@
                 echo "<input type='hidden' name='nbrejoursdispo' value='" . $nbrejoursdispo . "'>";
                 echo "<input type='hidden' name='retraitcet' value='yes'>";
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+                if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 
                 if ($msg_bloquant == "")
                 {

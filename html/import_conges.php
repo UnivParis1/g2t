@@ -168,8 +168,9 @@
     <form name='postconge_liste' method='post'>
 
     	<textarea name="conge_liste" cols="60" rows="20" class='commenttextarea'><?php echo $liste_conges ?></textarea>
-    <?php
+<?php
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 ?>
 <input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer'>
 </form>

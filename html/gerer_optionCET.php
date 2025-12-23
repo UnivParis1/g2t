@@ -181,6 +181,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
@@ -825,6 +826,7 @@
             echo "</select>";
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 //            echo "<input type='submit' name='esignature_delete' id='esignature_delete' value='Suppression de la demande' onclick=\"return confirm('Annuler la demande ?')\">";
             echo "<input type='submit' class='cancel g2tbouton g2tsupprbouton' name='esignature_delete' id='esignature_delete' value='Supprimer' onclick=\"click_element('esignature_delete'); return false; \">";
             echo "</form>";
@@ -889,6 +891,7 @@
             echo "Solde du CET après option : <input type=text placeholder='Case L' name=valeur_l id=valeur_l size=4 readonly class='inputdataoptionCET' ><label id=label_l class='erroroptionCETlabel'></label>";
             echo "<br><br>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' class='g2tbouton g2tvalidebouton' name='cree_option' id='cree_option' value='Enregistrer' disabled>";
             echo "</form>";
         }

@@ -323,12 +323,14 @@
     echo "</select>";
     
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "<input type='hidden' name='selectall' value='no'>";
     echo "</form>";
     echo "<form name='selectall'  method='post' >";
     echo "<br>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton g2tboutonwidthauto' value='Tout afficher' >";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' name='selectall' value='yes'>";
@@ -465,6 +467,7 @@
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
         }
         echo "<input type='hidden' name='selectall' value='" . $selectall . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         if (strlen(trim($htmltext))>0)
         {
             echo "<input type='submit' name='button_valid' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";

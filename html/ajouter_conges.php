@@ -229,6 +229,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
@@ -252,6 +253,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>"; 
     } 
@@ -479,6 +481,7 @@
         echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
         echo "<input type='hidden' name='nbrecommentairesupp' value='" . count($listcongessupp) . "'>";
         echo "<br>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' name='button_ajout' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
         echo "</form>";
         echo "<br>";
@@ -507,6 +510,7 @@
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
             echo "<input type='hidden' name='ancienacquis_supp' value='" . $solde->droitaquis() . "'>";
             echo "<input type='hidden' name='nbrecommentairesupp' value='" . count($listcongessupp) . "'>";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' name='button_delete' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' >";
             echo "</form>";
             echo "<br>";

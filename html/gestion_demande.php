@@ -416,6 +416,7 @@
     echo "<input type='hidden' name='userid' value='" . $userid . "'>";
     echo "<input type='hidden' name='previous' value='" . $previoustxt . "'>";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     if ($selectagentbutton)
     {
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' />";

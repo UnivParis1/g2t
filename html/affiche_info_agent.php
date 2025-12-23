@@ -106,6 +106,7 @@
     }
     echo "</select>";
     echo "<br><br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
 

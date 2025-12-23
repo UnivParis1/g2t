@@ -1352,6 +1352,7 @@
     echo "<input type='hidden' name='userid' value=" . $user->agentid() . ">";
     echo "<input type='hidden' name='action' value=" . $action . ">";
     echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 
 //    echo "<br><br>action = $action <br><br>";
     if ($action == 'modif')

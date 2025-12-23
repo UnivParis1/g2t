@@ -212,6 +212,7 @@
     }
     echo "</select>";
     echo "<br><br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
 
@@ -223,6 +224,7 @@
         echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "' class='agent' /> ";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='annee_ref' value='" . $_POST["annee_ref"] . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' id='calculdroit' name='calculdroit' class='g2tbouton g2tvalidebouton' value='Recalculer' >";
         echo "</form>";
         echo "<br><br>";
@@ -276,6 +278,7 @@
             {
                 echo "<label class='redtext'>Le solde " . $solde->typelibelle() . " de l'agent est déjà forcé.<br>Appuyez sur le bouton 'Recalculer' pour annuler le forçage du solde.</label><br><br>";
             }
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' id='newsolde' name='newsolde' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
             echo "</form>";
         }

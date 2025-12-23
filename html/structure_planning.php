@@ -350,6 +350,7 @@
     echo "<input type='hidden' name='action' id='action' value='' />";
     echo "<input type='hidden' name='check_showroot' id='check_showroot' value='" . $check_showroot . "' />";
     echo "<input type='hidden' name='rootid' id='rootid' value='" . $rootstruct . "' />";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Sélectionner'  /></center>";
     echo "</form>";
     

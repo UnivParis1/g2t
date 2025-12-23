@@ -145,6 +145,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
@@ -183,9 +184,13 @@
             // echo "<input type='hidden' name='ajoutcet' value='yes'>";
             echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         }
-        if ($msg_bloquant == "") {
+        if ($msg_bloquant == "") 
+        {
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<br><input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
-        } else {
+        } 
+        else 
+        {
             $cet = null;
         }
         echo "</form>";

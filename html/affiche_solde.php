@@ -101,6 +101,7 @@
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='previous' value='no'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "<br>";
 
@@ -195,6 +196,7 @@
         }
         echo "'>";
         echo "<br>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' name= 'valid_agent' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         // Ligne de séparation
@@ -399,6 +401,7 @@
         }
         echo "'>";
         echo "<br>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' name= 'valid_agent' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         // Ligne de séparation

@@ -199,6 +199,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
@@ -787,6 +788,7 @@
                 }
                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
                 echo "<input type='hidden' name='creation_form' value = 'newdemande' >";
+                if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
                 echo "<input type='submit' name='cree_demande' id='cree_demande' class='g2tbouton g2tvalidebouton' value='Enregistrer' onclick='return alertuser();' disabled>";
                 echo "</form>";
                 echo "<br>";
@@ -841,6 +843,7 @@
                                 echo "</select>";
                                 echo "<br><br>";
                                 echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+                                if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     //                            echo "<input type='submit' class='cancel' name='annuler_demande' id='annuler_demande' value='Annuler la demande' onclick=\"return confirm('Annuler la demande ?')\">";
                                 echo "<input type='submit' name='annuler_demande' id='annuler_demande' class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick=\"click_element('annuler_demande'); return false; \">";
     //                            echo "<button class='cancel' name='annuler_demande' id='annuler_demande' onclick='alert(\"plouf\"); if (this.tagname!=\"OK\") {alert(\"truc\"); click_element(\"annuler_demande\"); alert(\"toto\"); return false; } alert(\"zozo\");'>Annuler la demande</button>";

@@ -294,6 +294,7 @@
         }
         // print_r($listestruct); echo "<br>";
         echo "<form name='frm_validation_conge'  method='post' >";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         foreach ($listestruct as $key => $structure) {
             $aumoinsunedemande = False;
@@ -353,6 +354,7 @@
         echo "<input type='hidden' name='mode' value='" . $mode . "' />";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
@@ -362,6 +364,7 @@
 
     if ($user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
         echo "<form name='frm_validation_conge'  method='post' >";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
         // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
@@ -443,6 +446,7 @@
         echo "<input type='hidden' name='mode' value='" . $mode . "' />";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
@@ -453,6 +457,7 @@
     //var_dump ("mode = $mode");
     if (strcasecmp((string)$mode, MODE_CONSULTANT) == 0) {
         echo "<form name='frm_validation_conge'  method='post' >";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "<p class='centeraligntext'>Liste des agents avec une demande d'avis en attente</p>";
 
@@ -483,6 +488,7 @@
         echo "<input type='hidden' name='mode' value='" . $mode . "' />";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
         echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";

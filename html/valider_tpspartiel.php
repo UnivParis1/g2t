@@ -200,9 +200,10 @@
             if (!$premiereligne)
             {
                 echo "</tbody></table>";
-                echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
                 echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
                 echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+                if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+                echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
                 echo "</form>";
                 echo "<br>";
             }

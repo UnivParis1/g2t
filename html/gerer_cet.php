@@ -128,6 +128,7 @@
         
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' name='btnselectagent' id='btnselectagent' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
         echo "<br>";
@@ -135,6 +136,7 @@
         echo "<form name='allagentcet'  method='post' >";
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' name='mode' value='" . $mode . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' name='btnallagent' id='btnallagent' class='g2tbouton g2tsuivantbouton g2tboutonwidthauto' value='Tous les agents' >";
         echo "</form>";
         echo "<br>";
@@ -273,6 +275,7 @@
         $htmltext = $htmltext . '<form name="showesignaturePDF_' . $alimcet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
         $htmltext = $htmltext . '<input type="hidden" name="esignatureid" value="' . $alimcet->esignatureid() . '">';
         $htmltext = $htmltext . '<input type="hidden" name="esignaturePDF" value="ok">';
+        if (isset($_POST['pagepath'])) $htmltext = $htmltext . "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         $htmltext = $htmltext . "<input type='submit' name='alim_" . $alimcet->esignatureid() . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
         if ($alimcet->statut() != alimentationCET::STATUT_VALIDE and $alimcet->statut() != alimentationCET::STATUT_REFUSE)
         {
@@ -393,6 +396,7 @@
         $htmltext = $htmltext . '<form name="showesignaturePDF_' . $optioncet->esignatureid() . '" method="post" action="affiche_pdf.php" target="_blank">';
         $htmltext = $htmltext . '<input type="hidden" name="esignatureid" value="' . $optioncet->esignatureid() . '">';
         $htmltext = $htmltext . '<input type="hidden" name="esignaturePDF" value="ok">';
+        if (isset($_POST['pagepath'])) $htmltext = $htmltext . "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         $htmltext = $htmltext . "<input type='submit' name='alim_" . $optioncet->esignatureid() . "' class='g2tbouton g2tdocumentbouton' value='Générer'";
         if ($optioncet->statut() != optioncet::STATUT_VALIDE and $optioncet->statut() != optioncet::STATUT_REFUSE)
         {

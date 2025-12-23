@@ -61,6 +61,7 @@
         echo "<option value='$key'>$identite</option>";
     }
     echo "</select>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 ?>
 	<br>
 	<!--  <input type='text' name='userid' >

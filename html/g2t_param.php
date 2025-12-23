@@ -1081,6 +1081,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' name='valid_periode' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
@@ -1117,6 +1118,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' name='valid_nbjours' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
@@ -1243,6 +1245,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' name='valid_activationfonction' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
 
@@ -1303,6 +1306,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' name='valid_report' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
@@ -1329,6 +1333,7 @@
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<input type='submit' name='valid_synchroferies' class='g2tbouton g2tvalidebouton' value='Enregistrer' >";
     echo "</form>";
     
@@ -1481,6 +1486,9 @@
             		<br><br>
                     <input type='hidden' id='current_tab' name='current_tab' value='tab_cet'>
                     <input type='hidden' name='userid' value='<?php echo $user->agentid();?>'>
+<?php
+                    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+?>
             		<input type='submit' name='valider_param_cet' id='valider_param_cet' class='g2tbouton g2tvalidebouton' value='Enregistrer' <?php echo $disablebuttonsubmit;?>/>
             </form>
             <br><br>
@@ -1563,6 +1571,7 @@
     echo "</tbody></table>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo "<br><input type='submit' name='modification' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
     echo "</form>";
 
@@ -1639,6 +1648,7 @@
     	echo "<br>";
 	    echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 	    echo "<input type='submit' name='creation_indem' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
 	    echo "</form>";
 	    
@@ -1711,6 +1721,7 @@
         echo "<br><br>";
     	echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
 	    echo "<input type='hidden' id='current_tab' name='current_tab' value='tab_teletravail'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
 	    echo "<input type='submit' name='updateinfo_teletravail' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
 ?>        
         </form>
@@ -1874,6 +1885,9 @@
 		        <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
         		<input type='hidden' id='current_tab' name='current_tab' value='tab_utilisateurs'>
     			<br>
+<?php
+                if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+?>
         		<input type='submit' name='valid_specialuser' class='g2tbouton g2tvalidebouton' value='Enregistrer' >
     		</form>
         </div>
@@ -1977,7 +1991,10 @@
 	    <br>
 	    <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
 	    <input type='hidden' id='current_tab' name='current_tab' value='tab_admin'>
-	    <input type='submit' name='modif_adminform' class='g2tbouton g2tvalidebouton' value='Enregistrer' />
+<?php
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+?>
+        <input type='submit' name='modif_adminform' class='g2tbouton g2tvalidebouton' value='Enregistrer' />
 	    </form>
 	    <br>
 	    <br>
@@ -2111,11 +2128,6 @@
         });
     </script>    
 
-<!-- 
-    <input type='hidden' name='userid' value='<?php echo $user->agentid(); ?>'>
-    <input type='hidden' id='current_tab' name='current_tab' value='tab_conges'>
-    <input type='submit' value='Soumettre' name='selection'/>
--->
 	</form>
 
 </body>

@@ -1317,6 +1317,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
         echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";        
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
         echo "</form>";
     }
@@ -1554,6 +1555,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     	    echo "<input type='hidden' id='agentid' name='agentid' value='" . $agent->agentid() . "'>";
     	    echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'>";
             echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     	    if (!$disablesubmit and ($mode != ''))
     	    {
     	       echo "<input type='submit' id='modification' name='modification' class='g2tbouton g2tvalidebouton g2tboutonwidthauto' value='Enr. modif. date' onclick='if (this.tagname!=\"OK\") {click_element(\"modification\"); return false; }'/>";
@@ -2421,6 +2423,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<input type='hidden' id='datefinminconv' name='datefinminconv' value='" . $datefinminconv . "'>";
         echo "<input type='hidden' id='datefinmaxconv' name='datefinmaxconv' value='" . $datefinmaxconv . "'>";
         echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         
         $hiddentext = '';
         if ($disablesubmit and $mode!=MODE_RH and $inputtypeconv != teletravail::CODE_CONVENTION_MEDICAL )
@@ -2873,6 +2876,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
             echo "<input type='hidden' id='mode' name='mode' value='" . $mode . "'></input>";
             echo "<input type='hidden' id='idconvention' name='idconvention' value=''></input>";
             echo "<input type='hidden' id='noesignature'  name='noesignature' value='" . $noesignature . "'>";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' name='but_resp_statut' id='but_resp_statut' class='g2tbouton g2tvalidebouton' value='Enregistrer' ></input>";
             echo "</form>";
 ?>

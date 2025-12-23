@@ -234,6 +234,7 @@
     echo "</select>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
     echo "<br>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo " <input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     echo "<br>";
@@ -460,6 +461,7 @@
         echo "<input type='hidden' name='userid' value=" . $user->agentid() . ">";
         echo "<input type='hidden' name='structureid' value=" . $structureid . ">";
         echo "<br><br>";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
     }

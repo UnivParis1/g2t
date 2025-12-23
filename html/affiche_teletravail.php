@@ -90,6 +90,7 @@
     echo "</select>";
     echo "<br>";
     echo "<input type='hidden' name='userid' value='" . $user->agentid() . "'>";
+    if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
     echo " <input type='submit' name= 'Valid_struct' class='g2tbouton g2tsuivantbouton' value='Suivant' >";
     echo "</form>";
     echo "<br><br>";
