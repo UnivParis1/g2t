@@ -2468,6 +2468,14 @@
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Modification des circuits eSignature</a>
                     </li>
+                    <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                        <?php $destpagename = 'affiche_info_conges.php'; ?>
+                        <form name='admin_solde_conges' method='post' action="<?php echo "$destpagename"; ?>">
+                            <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                            <input type='hidden' class='pagepath' name='pagepath' value=''>
+                        </form> 
+                        <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Synthèse des congés</a>
+                    </li>
                 </ul>
             </li>
 <?php

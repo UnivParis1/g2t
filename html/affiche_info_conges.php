@@ -138,7 +138,7 @@
         //echo "error = YYYY" . $error . "YYYY <br>";
         if ( $error != "")
         {
-            $solde2021->droitaquis(0);
+            $solde_courant->droitaquis(0);
         }
         
         //echo "Aquis 2020 = " . $solde2020->droitaquis() . "   Aquis 2021 = " . $solde2021->droitaquis() . "<br>";
