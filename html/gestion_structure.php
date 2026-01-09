@@ -480,7 +480,7 @@
 
                     $delegue = new agent($dbcon);
                     $delegue->load($delegueid);
-                    $info = "Il exite une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg."; 
+                    $info = "Il existe une délégation : " . $delegue->identitecomplete() . " depuis le $datedebutdeleg jusqu'au $datefindeleg."; 
                     echo $fonctions->showmessage(fonctions::MSGWARNING, $info);
                     echo "</td>";
                     echo "</tr>";
