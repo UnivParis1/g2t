@@ -43,6 +43,7 @@
     {
         $mode = $_POST["mode"];
     }
+    // var_dump($mode);
 
     $date_selected = '';
     if (isset($_POST["date_selected"]))
@@ -110,8 +111,9 @@
     }
 
     //////////////////////////////////////////////////////////////////////////////////
-    // Le responsable a modifié le statut d'une demande d'adaptation de télétravail => On est en forcément en mode RESPONSABLE
-    if (isset($_POST['savemodif']) and $mode==MODE_RESPONSABLE)
+    // Le responsable a modifié le statut d'une demande d'adaptation de télétravail 
+    // ou c'est le gestionnaire qui a modifié le statut de la demande d'adaptation du télétravail
+    if (isset($_POST['savemodif']) and ($mode==MODE_RESPONSABLE or $mode == MODE_GESTION))
     {
         $error = '';
         $info = '';
