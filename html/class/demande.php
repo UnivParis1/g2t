@@ -551,11 +551,22 @@ class demande
             $listelement = $planning->planning();
 
             //echo "<br>Liste des elements => " . print_r($listelement,true) . "\n<br>";
-            foreach ((array) $listelement as $element) 
+            foreach ((array) $listelement as $key => $element) 
             {
-                //echo "Dans la boucle .... Id de la demande courante = ". $this->demandeid . " L'element Id = " . $element->demandeid() . "\n<br>";
-                //echo "Dans la boucle .... Type de la demande courante = ". $this->type() . " L'element type = " . $element->type() . "\n<br>";
+                // echo "Dans la boucle .... Id de la demande courante = ". $this->demandeid . " L'element Id = " . $element->demandeid() . "\n<br>";
+                // echo "Dans la boucle .... Type de la demande courante = ". $this->type() . " L'element type = " . $element->type() . "\n<br>";
+                // echo "Dans la boucle .... Key = $key \n<br>";
                 // var_dump("On est sur l'element : " . $element->id());
+                if ($this->moment_debut()==fonctions::MOMENT_APRESMIDI and $key==array_key_first($listelement))
+                {
+                    // echo "On skip le premier element du tableau car on commence l'après midi \n<br>";
+                    continue;
+                }
+                if ($this->moment_fin()==fonctions::MOMENT_MATIN and $key==array_key_last($listelement))
+                {
+                    // echo "On skip le dernier element du tableau car on fini le matin \n<br>";
+                    continue;
+                }
                 if ($element->demandeid() == $this->demandeid or ($element->type() == 'atten' and $this->statut() == demande::DEMANDE_ATTENTE)) 
                 { 
                     // On vérifie que l'agent est en activité => Si non on ne doit pas compter cet élément
@@ -570,7 +581,7 @@ class demande
             }
             
             $nbrejrscalcule = $nbredemiejrs / 2;
-            //echo "Fin de la boucle nbrejrscalcules = $nbrejrscalcule nbrejrsdemande = " . $this->nbrejrsdemande() . "\n<br>";
+            // echo "Fin de la boucle nbrejrscalcules = $nbrejrscalcule nbrejrsdemande = " . $this->nbrejrsdemande() . "\n<br>";
             if ($nbrejrscalcule != $this->nbrejrsdemande()) 
             {
                 return false;
