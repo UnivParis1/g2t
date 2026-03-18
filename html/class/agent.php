@@ -2990,11 +2990,11 @@ const modifymotif = (motif, motifid) =>
                             if ($datetorepostmail > date('Y-m-d'))
                             {
                                 $disable = " disabled ";
-                                $datatitletxt = "Votre demande est validée et vous avez déjà solicité votre responsable.\nVous ne pourrez lui renvoyer un mail qu'à partir du " . $this->fonctions->formatdate($datetorepostmail)  . ".";                                
+                                $datatitletxt = "Votre demande est validée et vous avez déjà sollicité votre responsable.\nVous ne pourrez lui renvoyer un mail qu'à partir du " . $this->fonctions->formatdate($datetorepostmail)  . ".";                                
                             }
                             else
                             {
-                                $datatitletxt = "Votre demande est validée.\nVous devez demander à votre responsable d'annuler votre demande.\nCette solicitation sera faite automatiquement par mail.";
+                                $datatitletxt = "Votre demande est validée.\nVous devez demander à votre responsable d'annuler votre demande.\nCette sollicitation sera faite automatiquement par mail.";
                             }
                             $htmltext = $htmltext . "<td class='cellulesimple' "
                                 . " data-title=" . chr(34) . $datatitletxt . chr(34) . ">"
