@@ -66,6 +66,10 @@
     //error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
     
     // var_dump($client_service_name);
+
+    // Ticket GLPI 244574 => Le cookie PHPSESSID devrait être "secure" et "httponly"
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.cookie_secure', 1);
     phpCAS::client(CAS_VERSION_2_0, $CAS_SERVER, $CAS_PORT, $CAS_PATH,$client_service_name, true);
 
     phpCAS::setNoCasServerValidation();

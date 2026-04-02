@@ -477,6 +477,38 @@
                     // => C'est le responsable qui peut le faire à partir du planning de la structure
                     if (tableau.classList.contains('<?php echo trim(planning::TYPE_AGENT); ?>'))
                     {
+
+                        if (divmodal)
+                        {
+                            masquerimgmodal('error');
+                            divstructid.hidden = true;
+                            divagentid.hidden = true;
+                            divselecttype.hidden = true;
+                            divreportid.hidden = true;
+                            labelmodalheader.innerHTML = 'Réactivation impossible';
+                            divmodalcancelBtn.textContent = "Ok";
+                            divmodalcancelBtn.hidden = false;
+                            divmodalcancelBtn.classList.add('g2tokbouton');
+                            divmodalconfirmBtn.hidden = true;
+                            divmodallabeltext.parentElement.classList.add('centeraligntext');
+
+                            if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
+                            {
+                                divmodallabeltext.innerHTML = 'Vous ne pouvez pas réactiver votre matinée de télétravail car cette modification a été validée.<br>Demandez à votre responsable de le faire.';
+                            }
+                            else if (deplacement === '<?php echo fonctions::MOMENT_APRESMIDI; ?>')
+                            {
+                                divmodallabeltext.innerHTML = 'Vous ne pouvez pas réactiver votre après-midi de télétravail car cette modification a été validée.<br>Demandez à votre responsable de le faire.';
+                            }
+                            else
+                            {
+                                divmodallabeltext.innerHTML = 'Vous ne pouvez pas réactiver votre journée de télétravail car cette modification a été validée.<br>Demandez à votre responsable de le faire.';
+                            }
+
+                            divmodal.style.display = "block";
+                            divmodalcancelBtn.focus();
+                            return false;
+                        }
                         return;
                     }
                     if (deplacement === '<?php echo fonctions::MOMENT_MATIN; ?>')
