@@ -8,7 +8,20 @@
 
     echo "\nDébut de l'envoi des mail de conges " . date("d/m/Y H:i:s") . "\n";
 
-    // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente) mais qui ne sont pas postérieure à la période en cours (< Anneeref +1 + debut_période)
+     $cronuser = new agent($dbcon);
+    if (!$cronuser->load(SPECIAL_USER_IDCRONUSER))   // Utilisateur CRON G2T
+    {
+        echo "Impossible de charger l'utilisateur CRON => Pas d'envoi de mail \n";
+        $cronuser = null;
+    }
+    $drhuser = new agent($dbcon);
+    if (!$drhuser->load(SPECIAL_USER_IDLISTERHUSER))  // Utilisateur Gestion de temps <=> DRH
+    {
+        echo "Impossible de charger l'utilisateur DRH => Pas d'envoi de mail \n";
+        $drhuser = null;
+    }
+
+   // On selectionne les demandes en attente de validation qui débutent il y a moins de 2 ans (année en cours et année précédente) mais qui ne sont pas postérieure à la période en cours (< Anneeref +1 + debut_période)
     // Les demandes plus anciennes ne sont pas remontées car le responsable/gestionnaire ne peut plus les valider.
     $sql = "SELECT DEMANDEID FROM DEMANDE WHERE STATUT = '" . demande::DEMANDE_ATTENTE . "' AND DATEDEBUT >='" . ($fonctions->anneeref() - 1) . $fonctions->debutperiode() . "' AND DATEDEBUT < '" . ($fonctions->anneeref() + 1) . $fonctions->debutperiode() . "'";
     // echo "SQL des demandes = $sql \n";
@@ -25,19 +38,6 @@
     $arraydemandeur = array();
 
     $codeinterne = null;
-    
-    $cronuser = new agent($dbcon);
-    if (!$cronuser->load(SPECIAL_USER_IDCRONUSER))   // Utilisateur CRON G2T
-    {
-        echo "Impossible de charger l'utilisateur CRON => Pas d'envoi de mail \n";
-        $cronuser = null;
-    }
-    $drhuser = new agent($dbcon);
-    if (!$drhuser->load(SPECIAL_USER_IDLISTERHUSER))  // Utilisateur Gestion de temps <=> DRH
-    {
-        echo "Impossible de charger l'utilisateur DRH => Pas d'envoi de mail \n";
-        $drhuser = null;
-    }
 
     while ($result = mysqli_fetch_row($query)) 
     {
@@ -81,6 +81,7 @@ Merci de contrôler son dossier.<br>");
             continue;
         }
 
+        $structresp = new structure($dbcon);
         $destinatairemail = $demandeur->getsignataire(null,$structresp,$codeinterne);
         if (is_null($destinatairemail) or $destinatairemail===false)
         {

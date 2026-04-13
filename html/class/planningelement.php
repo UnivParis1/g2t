@@ -196,13 +196,16 @@ class planningelement
                 return $this->info;
             }
         } 
-        elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) != 0)
-        {
-            $this->info = $info;
-        }
-        elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0)
+        elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or 
+                strcasecmp((string)$this->statut, demande::DEMANDE_VALID_RH) == 0)
         {
             $this->info = $this->info . "  " . $info;
+            // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("info = > " . $this->info));
+        }
+        elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) != 0 and
+                strcasecmp((string)$this->statut, demande::DEMANDE_VALID_RH) != 0)
+        {
+            $this->info = $info;
         }
         else 
         {
@@ -352,13 +355,34 @@ class planningelement
         // if ($this->typeelement != 'ferie' and $this->typeelement != 'teletrav' )  // and $this->typeelement != 'tppar')
         if (strcasecmp((string)$this->typeelement, "ferie") != 0 and strcasecmp((string)$this->typeelement, "teletrav") != 0 and strcasecmp((string)$this->typeelement, "nondec") != 0)
         {
+            // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('this->parenttype = ' . $this->parenttype()));
+            // if ($this->parenttype() != '' and !$this->fonctions->estunconge((string)$this->parenttype()))
+            // {
+            //     error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('this => ' . print_r($this,true)));
+            //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('this->statut = ' . $this->statut));
+            //     // if ($this->demande->statut() == demande::DEMANDE_VALID_RH)
+            //     if ($this->statut == demande::DEMANDE_VALID_RH)
+            //     {
+            //         if (!$noiretblanc)
+            //         {
+            //             $this->couleur = TABCOULEURPLANNINGELEMENT['atten']['couleur'];
+            //             return $this->couleur;
+            //         }
+            //         else
+            //         {
+            //             $this->couleur = self::COULEUR_NOIRE;;
+            //             return $this->couleur;
+            //         }
+            //     }
+            // }
             if (strcasecmp((string)$this->parenttype(),'teletravHC')==0) // Si le type du parent de l'element est teletravHC
             {
                 // Même si on doit afficher l'élément en N&B, les élémenet dont le parent est 'teletravHC' doivent être affiché en couleur
                 $noiretblanc = false; 
             }
             // Si on est en N&B et si la demande en attente et qu'on dispose de quoi identifier la demande d'origine => On va vérifier le type de la demande
-            elseif (strcasecmp((string)$this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)) and $noiretblanc)
+            // elseif (strcasecmp((string)$this->type(),'atten')==0 and ($this->demandeid().'' != '' or !is_null($this->demande)) and $noiretblanc)
+            elseif (in_array(strtolower((string)$this->type()),array('atten')) and ($this->demandeid().'' != '' or !is_null($this->demande)) and $noiretblanc)
             {
                 if (!is_null($this->demande))
                 {
@@ -385,6 +409,7 @@ class planningelement
         }
         if (is_null($this->couleur))
         {
+            // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents("L'element type (date=". $this->id() . ")=> " . $this->typeelement));
             // Si le tableau des couleurs des elements du planning est défini et que le type de l'élément existe
             if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['couleur']))
             {
@@ -432,22 +457,55 @@ class planningelement
             $this->statut = $statut;
             if (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0) {
                 $this->type("atten");
-                $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
-                $params = array($this->typeelement);
-                $query = $this->fonctions->prepared_select($sql, $params);
-                $erreur = mysqli_error($this->dbconnect);
-                if ($erreur != "") {
-                    $errlog = "PlanningElement->statut : " . $erreur;
-                    echo $errlog . "<br/>";
-                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['libelle']))
+                {
+                    $this->info = TABCOULEURPLANNINGELEMENT[$this->typeelement]['libelle'] . " : " . $this->info;
                 }
-                if (mysqli_num_rows($query) == 0) {
-                    $errlog = "PlanningElement->statut : Le libellé pour le type de congé " . $this->typeelement . " non trouvé";
-                    echo $errlog . "<br/>";
-                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                else
+                {
+                    $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+                    $params = array($this->typeelement);
+                    $query = $this->fonctions->prepared_select($sql, $params);
+                    $erreur = mysqli_error($this->dbconnect);
+                    if ($erreur != "") {
+                        $errlog = "PlanningElement->statut : " . $erreur;
+                        echo $errlog . "<br/>";
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    }
+                    if (mysqli_num_rows($query) == 0) {
+                        $errlog = "PlanningElement->statut : Le libellé pour le type de congé " . $this->typeelement . " non trouvé";
+                        echo $errlog . "<br/>";
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    }
+                    $result = mysqli_fetch_row($query);
+                    $this->info = $result[1] . " : " . $this->info;
                 }
-                $result = mysqli_fetch_row($query);
-                $this->info = $result[1] . " : " . $this->info;
+            }
+            elseif (strcasecmp((string)$this->statut, demande::DEMANDE_VALID_RH) == 0) {
+                $this->type("attenrh");
+                if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeelement]['libelle']))
+                {
+                    $this->info = TABCOULEURPLANNINGELEMENT[$this->typeelement]['libelle'] . " : " . $this->info;
+                }
+                else
+                {
+                    $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID = ?";
+                    $params = array($this->typeelement);
+                    $query = $this->fonctions->prepared_select($sql, $params);
+                    $erreur = mysqli_error($this->dbconnect);
+                    if ($erreur != "") {
+                        $errlog = "PlanningElement->statut : " . $erreur;
+                        echo $errlog . "<br/>";
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    }
+                    if (mysqli_num_rows($query) == 0) {
+                        $errlog = "PlanningElement->statut : Le libellé pour le type de congé " . $this->typeelement . " non trouvé";
+                        echo $errlog . "<br/>";
+                        error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                    }
+                    $result = mysqli_fetch_row($query);
+                    $this->info = $result[1] . " : " . $this->info;
+                }
             }
         }
     }
@@ -574,6 +632,14 @@ class planningelement
                    )
                ) 
             {
+                // if ($this->statut==demande::DEMANDE_VALID_RH or $this->statut==demande::DEMANDE_ATTENTE)
+                // {
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('this->statut = ' . $this->statut));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('datetext = ' . $datetext));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('info = ' . $this->info()));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('parenttype = ' . $this->parenttype()));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('libelle = ' . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle']));
+                // }
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }
@@ -651,6 +717,14 @@ class planningelement
                     )
                 )
             {
+                // if ($this->statut==demande::DEMANDE_VALID_RH or $this->statut==demande::DEMANDE_ATTENTE)
+                // {
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('this->statut = ' . $this->statut));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('datetext = ' . $datetext));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('info = ' . $this->info()));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('parenttype = ' . $this->parenttype()));
+                //     // error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents('libelle = ' . TABCOULEURPLANNINGELEMENT[$this->parenttype()]['libelle']));
+                // }
                 $htmltext = $htmltext . "<span data-tip=" . chr(34) . $datetext . " " . $this->info() . chr(34) . ">";
                 $spanactive = true;
             }

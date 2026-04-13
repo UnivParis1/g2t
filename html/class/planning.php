@@ -294,7 +294,7 @@ class planning
                 }
             }
             
-            if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE)) 
+            if (($demande->statut() == demande::DEMANDE_VALIDE) or ($demande->statut() == demande::DEMANDE_ATTENTE) or ($demande->statut() == demande::DEMANDE_VALID_RH)) 
             {
                 $demandedatedeb = $this->fonctions->formatdate($demande->datedebut());
                 $demandedatefin = $this->fonctions->formatdate($demande->datefin());
@@ -336,6 +336,13 @@ class planning
                             $element->moment($moment);
                             $element->type($demande->type());
                             $element->statut($demande->statut());
+                            // Si la demande est un type 'atten' (en attente de validation) et que le statut précise que c'est par la DRH (demande::DEMANDE_VALID_RH)
+                            // ==> On force le type de l'élément à 'attenrh'
+                            if (!$this->fonctions->estunconge($demande->type()) and $demande->statut()==demande::DEMANDE_VALID_RH)
+                            {
+                                $element->type('attenrh');
+                            }
+
                             if ($demande->type()=='harp')
                             {
                                 $element->info($demande->commentaire()); // motifrefus()
@@ -344,6 +351,10 @@ class planning
                             {
                                 $element->info($demande->typelibelle()); // motifrefus()
                             }
+                            // if ($element->statut() == demande::DEMANDE_VALID_RH)
+                            // {
+                            //     $element->info($element->info() . " - En attente de validation par la DRH");
+                            // }
                             $element->agentid($agentid);
                             $element->demandeid($demande->id());
                             $element->demande($demande);

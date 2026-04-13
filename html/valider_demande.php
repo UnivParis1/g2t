@@ -66,15 +66,81 @@
         $motifliste = $_POST['motif'];
     }
 
-/*
-     echo "_POST = "; print_r($_POST); echo "<br>";
-     var_dump($statutliste);
-     var_dump($motifliste);
-*/
+
+    //  echo "_POST = "; print_r($_POST); echo "<br>";
+    //  var_dump($statutliste);
+    //  var_dump($motifliste);
+
 
     if (is_array($statutliste))
     {
-        if (strcasecmp((string)$mode,MODE_CONSULTANT)==0)
+        if (strcasecmp((string)$mode,MODE_RH)==0)
+        {
+            $cron = new agent($dbcon);
+            $cron->load(SPECIAL_USER_IDCRONUSER);
+            foreach ($statutliste as $demandeid => $statut)
+            {
+                $demandemodifiee = false;
+                if (strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0 )
+                {
+                    //var_dump("La demande $demandeid est validée => On va l'enregistrer");
+                    $demande = new demande($dbcon);
+                    $demande->load($demandeid);
+                    $demande->statut($statut);
+                    $demande->store();
+                    $demandemodifiee = true;
+                }
+                elseif (strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 )
+                {
+                    $motif = '';
+                    if (isset($motifliste["$demandeid"]))
+                    {
+                        $motif = $motifliste["$demandeid"];
+                    }
+                    if ((strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
+                    {
+                        $errlog = "Le motif du refus est obligatoire.";
+                        echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+                        error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                    } 
+                    else 
+                    {
+                        $demande = new demande($dbcon);
+                        $demande->load($demandeid);
+                        $demande->statut($statut);
+                        $demande->motifrefus($motif);
+                        $demande->store();
+                        $demandemodifiee = true;
+                    }
+                }
+                if ($demandemodifiee)
+                {
+                    // On envoie un mail à l'agent                     
+                    $ics = null;
+                    $pdffilename[0] = $demande->pdf($user->agentid());
+                    $agent = $demande->agent();
+                    //echo "<br>Le statut de la demande est : $statut <br><br>";
+                    if (strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
+                    {
+                        $ics = $demande->ics($agent->mail());
+                    }
+                    $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
+                    $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
+
+
+                    // $corpmail = "La demande ci-dessous a été modifiée par " . $user->identitecomplete() . " :<br>";
+                    // $corpmail = $corpmail . "<br>";
+                    // $corpmail = $corpmail . "Demandeur : " . $agent->identitecomplete() . "<br>";
+                    // $corpmail = $corpmail . "Type de demande : " . $demande->typelibelle()  . "<br>";
+                    // $corpmail = $corpmail . "Début : " . $fonctions->formatdate($demande->datedebut()) .  " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
+                    // $corpmail = $corpmail . "Fin : " . $fonctions->formatdate($demande->datefin()) .  " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
+                    // $corpmail = $corpmail . "<br>";
+                    
+                    // $cron->sendmail($signataire, "Un avis a été déposé sur une demande de congés ou d'absence", $corpmail);
+                }
+            }
+        }
+        elseif (strcasecmp((string)$mode,MODE_CONSULTANT)==0)
         {
             $cron = new agent($dbcon);
             $cron->load(SPECIAL_USER_IDCRONUSER);
@@ -194,86 +260,104 @@
                     }
                     else
                     {
-                        $demande->statut($statut);
-                        if ((strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
+                        $dbconstante = 'FONCTIONABSENCE';
+                        $absencefonction = 'n';
+                        if ($fonctions->testexistdbconstante($dbconstante)) { $absencefonction = $fonctions->liredbconstante($dbconstante); }
+                        // Si ce n'est pas un congés (=> C'est une absence), que la fonction de demande de validation par DRH est activé et que le statut est DEMANDE_VALIDEE
+                        if (!$fonctions->estunconge($demande->type()) and $fonctions->convertvaluetobool($absencefonction) and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
                         {
-                            $errlog = "Le motif du refus est obligatoire.";
-                            echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-                            error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
-                        } else {
+                            // On doit passer la demande d'absence avec le statut DEMANDE_VALID_RH
+                            $demande->statut(demande::DEMANDE_VALID_RH);
                             $msgerreur = "";
                             $msgerreur = $demande->store();
                             if ($msgerreur != "")
                             {
                                 echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de sauvegarde car " . $msgerreur);
                             }
-                            else {
-                                $ics = null;
-                                $pdffilename[0] = $demande->pdf($user->agentid());
-                                $agent = $demande->agent();
-                                //echo "<br>Le statut de la demande est : $statut <br><br>";
-                                if ((strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0) or (strcmp((string)$statut, demande::DEMANDE_ANNULE) == 0)) {
-                                    $ics = $demande->ics($agent->mail());
-                                }
-                                elseif ((strcmp((string)$statut, demande::DEMANDE_REFUSE) == 0)) {
-                                    // On refuse une demande => On doit mettre à jour l'agenda car la demande est en statut "TENTATIVE"
-                                    $ics = $demande->ics($agent->mail());
-                                }
-                                $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
-
-                                if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
+                        }
+                        else
+                        {
+                            $demande->statut($statut);
+                            if ((strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0) and $motif == "")
+                            {
+                                $errlog = "Le motif du refus est obligatoire.";
+                                echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
+                                error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                            } else {
+                                $msgerreur = "";
+                                $msgerreur = $demande->store();
+                                if ($msgerreur != "")
                                 {
-                                    /*
-                                    // On remplace les '\' par des '/' et on cherche la position du dernier '/'
-                                    $position = strrpos(str_replace('\\', '/', $pdffilename[0]), '/');
-                                    // La base du chemin PDF est donc la sous-chaine du nom du fichier PDF de la demande !!
-                                    $basepdfpath = substr($pdffilename[0], 0, $position);
-                                    // On ajoute le fichier PDF d'utilisation du CET en congés
-                                    $pdffilename[1] = $basepdfpath . '/../../documents/Utilisation_CET_Conges.pdf';
-                                    */
-
-                                    // On ajoute le fichier PDF d'utilisation du CET en congés
-                                    $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
-                                    $corpmail = $corpmail . "<br><br>Vous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :<br>";
-                                    $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
-                                    foreach ($arrayagentrh as $gestrh) {
-                                        $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "<br>";
-                                    }
+                                    echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de sauvegarde car " . $msgerreur);
                                 }
-
-                                $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
-                                // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
-                                if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
-                                {
-                                    $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
-                                    foreach ($arrayagentrh as $gestrh) {
-                                        $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".<br>";
-                                        $corpmail = $corpmail . "<br>";
-                                        $corpmail = $corpmail . "Détail de la demande :<br>";
-                                        $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
-                                        $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
-                                        $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
-                                        // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
-                                        $user->sendmail($gestrh, "Changement de statut d'une demande de congés sur CET", $corpmail);
+                                else {
+                                    $ics = null;
+                                    $pdffilename[0] = $demande->pdf($user->agentid());
+                                    $agent = $demande->agent();
+                                    //echo "<br>Le statut de la demande est : $statut <br><br>";
+                                    if ((strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0) or (strcmp((string)$statut, demande::DEMANDE_ANNULE) == 0)) {
+                                        $ics = $demande->ics($agent->mail());
                                     }
-                                }
-                                // Si c'est une demande de type télétravail HC raison médical  et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
-                                elseif (strcasecmp((string)$demande->type(), "telesante") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0)
-                                {
-                                    $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
-                                    foreach ($arrayagentrh as $gestrh) {
-                                        $corpmail = "Une demande d'absence de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".<br>";
-                                        $corpmail = $corpmail . "<br>";
-                                        $corpmail = $corpmail . "Détail de la demande :<br>";
-                                        $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
-                                        $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
-                                        $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
-                                        // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
-                                        $user->sendmail($gestrh, "Changement de statut d'une demande de 'Télétravail pour raison de santé'", $corpmail);
+                                    elseif ((strcmp((string)$statut, demande::DEMANDE_REFUSE) == 0)) {
+                                        // On refuse une demande => On doit mettre à jour l'agenda car la demande est en statut "TENTATIVE"
+                                        $ics = $demande->ics($agent->mail());
                                     }
-                                }
+                                    $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
 
-                                error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
+                                    if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
+                                    {
+                                        /*
+                                        // On remplace les '\' par des '/' et on cherche la position du dernier '/'
+                                        $position = strrpos(str_replace('\\', '/', $pdffilename[0]), '/');
+                                        // La base du chemin PDF est donc la sous-chaine du nom du fichier PDF de la demande !!
+                                        $basepdfpath = substr($pdffilename[0], 0, $position);
+                                        // On ajoute le fichier PDF d'utilisation du CET en congés
+                                        $pdffilename[1] = $basepdfpath . '/../../documents/Utilisation_CET_Conges.pdf';
+                                        */
+
+                                        // On ajoute le fichier PDF d'utilisation du CET en congés
+                                        $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
+                                        $corpmail = $corpmail . "<br><br>Vous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :<br>";
+                                        $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                                        foreach ($arrayagentrh as $gestrh) {
+                                            $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "<br>";
+                                        }
+                                    }
+
+                                    $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
+                                    // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                                    if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$statut, demande::DEMANDE_VALIDE) == 0)
+                                    {
+                                        $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
+                                        foreach ($arrayagentrh as $gestrh) {
+                                            $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".<br>";
+                                            $corpmail = $corpmail . "<br>";
+                                            $corpmail = $corpmail . "Détail de la demande :<br>";
+                                            $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
+                                            $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
+                                            $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
+                                            // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
+                                            $user->sendmail($gestrh, "Changement de statut d'une demande de congés sur CET", $corpmail);
+                                        }
+                                    }
+                                    // Si c'est une demande de type télétravail HC raison médical  et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
+                                    elseif (strcasecmp((string)$demande->type(), "telesante") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0)
+                                    {
+                                        $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
+                                        foreach ($arrayagentrh as $gestrh) {
+                                            $corpmail = "Une demande d'absence de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".<br>";
+                                            $corpmail = $corpmail . "<br>";
+                                            $corpmail = $corpmail . "Détail de la demande :<br>";
+                                            $corpmail = $corpmail . "- Date de début : " . $demande->datedebut() . " " . $fonctions->nommoment($demande->moment_debut()) . "<br>";
+                                            $corpmail = $corpmail . "- Date de fin : " . $demande->datefin() . " " . $fonctions->nommoment($demande->moment_fin()) . "<br>";
+                                            $corpmail = $corpmail . "Nombre de jours demandés : " . $demande->nbrejrsdemande() . "<br>";
+                                            // $corpmail = $corpmail . "La demande est actuellement en attente de validation.\n";
+                                            $user->sendmail($gestrh, "Changement de statut d'une demande de 'Télétravail pour raison de santé'", $corpmail);
+                                        }
+                                    }
+
+                                    error_log("Sauvegarde la demande " . $demande->id() . " avec le statut " . $fonctions->demandestatutlibelle($demande->statut()));
+                                }
                             }
                         }
                     }
@@ -492,9 +576,49 @@
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
-
-        
     }
+
+    if ($user->estprofilrh(agent::PROFIL_RHCONGE) and (strcasecmp((string)$mode, MODE_RH) == 0)) 
+    {
+        $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
+        $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
+        $demandeliste = $fonctions->demandesaverifier($debut);
+        $aumoinsunedemande = false;
+        if (count($demandeliste)>0)
+        {
+            echo "<form name='frm_validation_conge'  method='post' >";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+            echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
+            foreach ((array)$demandeliste as $demande);
+            {
+                $membre = $demande->agent();
+                $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null,$mode);
+                if ($htmltodisplay . "" != "")
+                {
+                    echo "$htmltodisplay";
+                    echo "<br>";
+                    $aumoinsunedemande = true;
+                }
+            }
+        }
+        if ($aumoinsunedemande) 
+        {
+            echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+            echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+            echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+            echo "<br>";
+            echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
+        }
+        else
+        {
+            echo "<br>Aucune demande n'est en attente de validation par la DRH.";
+        }
+        echo "</form>";
+    } elseif (! $user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
+        echo "Vous n'êtes pas gestionnaire RH, vous ne pouvez pas valider les demandes de congés/d'absence <br>";
+    }
+
 
 ?>
 <br>

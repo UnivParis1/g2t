@@ -2259,6 +2259,25 @@
                             </li>
 <?php
                     }
+                    $dbconstante = "FONCTIONABSENCE";
+                    $absencefonction = 'n';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $absencefonction = $fonctions->liredbconstante($dbconstante); }
+                    // Si la fonction de demande de validation des absences par la DRH n'est pas activée => On fait comme d'habitude
+                    if ($fonctions->convertvaluetobool($absencefonction))
+                    {
+?>
+                            <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
+                                <?php $destpagename = 'valider_demande.php'; ?>
+                                <form name='rh_valid_demande' method='post' action="<?php echo "$destpagename"; ?>">
+                                    <input type="hidden" name="userid" value="<?php echo $user->agentid(); ?>">
+                                    <input type="hidden" name="mode" value="<?php echo MODE_RH; ?>"> 
+                                    <input type="hidden" name="previous" value="no">
+                                    <input type='hidden' class='pagepath' name='pagepath' value=''>
+                                </form> 
+                                <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Validation des autorisations d'absence</a>
+                            </li>
+<?php
+                    }
 ?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'ajouter_conges.php'; ?>

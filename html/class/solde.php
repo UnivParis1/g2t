@@ -141,24 +141,33 @@ class solde
             $errlog = "Solde->typelibelle : Le type de congés n'est pas défini !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else {
-            $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID=?";
-            $params = array($this->typeabsenceid);
-            $query = $this->fonctions->prepared_select($sql, $params);
+        } 
+        else 
+        {
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeabsenceid]['libelle']))
+            {
+                $this->typelibelle = TABCOULEURPLANNINGELEMENT[$this->typeabsenceid]['libelle'];
+            }
+            else
+            {
+                $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID=?";
+                $params = array($this->typeabsenceid);
+                $query = $this->fonctions->prepared_select($sql, $params);
 
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                $errlog = "Solde->typelibelle : " . $erreur;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    $errlog = "Solde->typelibelle : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                if (mysqli_num_rows($query) == 0) {
+                    $errlog = "Solde->typelibelle : Libellé du solde $this->typeabsenceid non trouvé";
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                $result = mysqli_fetch_row($query);
+                $this->typelibelle = "$result[0]";
             }
-            if (mysqli_num_rows($query) == 0) {
-                $errlog = "Solde->typelibelle : Libellé du solde $this->typeabsenceid non trouvé";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-            }
-            $result = mysqli_fetch_row($query);
-            $this->typelibelle = "$result[0]";
         }
         return $this->typelibelle;
     }

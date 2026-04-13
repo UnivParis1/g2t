@@ -1,16 +1,17 @@
 <?php
 
-class soldeinsuffisantinfos
+use Fpdf\Fpdf as FPDF;
+
+use function PHPSTORM_META\elementType;
+
+class soldeinsuffinfos
 {
     public $typeabsenceid = null;
     public $message = null;
     public $nbjrsdemande = null;
     public $solderestant = null;
+
 }
-
-use Fpdf\Fpdf as FPDF;
-
-use function PHPSTORM_META\elementType;
 
 class demande
 {
@@ -20,6 +21,7 @@ class demande
     public const DEMANDE_ATTENTE = "a";
     public const DEMANDE_ANNULE = "x";
     public const DEMANDE_AVIS = "c";
+    public const DEMANDE_VALID_RH = 'd';
 
     private const ARRAYCOMMENTAIREKEY = 'commentaire';
     private const ARRAYCOMMENTAIREJRSUTIL = 'nbjrsutilises';
@@ -150,23 +152,34 @@ class demande
             $errlog = "Demande->typelibelle : Le type de demande n'est pas défini !!!";
             echo $errlog . "<br/>";
             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-        } else {
-            $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID=?";
-            $params = array($this->typeabsenceid);
-            $query = $this->fonctions->prepared_select($sql, $params);
-            $erreur = mysqli_error($this->dbconnect);
-            if ($erreur != "") {
-                $errlog = "Demande->typdemande : " . $erreur;
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+        } 
+        else 
+        {
+            // Si le tableau des couleurs des elements du planning est défini et que le type de l'élément existe
+            if (defined('TABCOULEURPLANNINGELEMENT') and isset(TABCOULEURPLANNINGELEMENT[$this->typeabsenceid]['libelle']))
+            {
+                // On prend la couleur définie dans le tableau TABCOULEURPLANNINGELEMENT
+                return TABCOULEURPLANNINGELEMENT[$this->typeabsenceid]['libelle'];
             }
-            if (mysqli_num_rows($query) == 0) {
-                $errlog = "Demande->typdemande : Libellé du type de demande $this->typeabsenceid non trouvé";
-                echo $errlog . "<br/>";
-                error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+            else   // On n'a pas trouvé la couleur de l'élément dans le tableu => Donc on la charge depuis la base de données
+            {   
+                $sql = "SELECT LIBELLE FROM TYPEABSENCE WHERE TYPEABSENCEID=?";
+                $params = array($this->typeabsenceid);
+                $query = $this->fonctions->prepared_select($sql, $params);
+                $erreur = mysqli_error($this->dbconnect);
+                if ($erreur != "") {
+                    $errlog = "Demande->typdemande : " . $erreur;
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                if (mysqli_num_rows($query) == 0) {
+                    $errlog = "Demande->typdemande : Libellé du type de demande $this->typeabsenceid non trouvé";
+                    echo $errlog . "<br/>";
+                    error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                }
+                $result = mysqli_fetch_row($query);
+                return "$result[0]";
             }
-            $result = mysqli_fetch_row($query);
-            return "$result[0]";
         }
     }
 
@@ -377,7 +390,11 @@ class demande
             } 
             else 
             {
-                if (strcmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0 or strcmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or strcasecmp((string)$this->statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$this->statut, demande::DEMANDE_ANNULE) == 0)
+                if (strcmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0 or 
+                    strcmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or 
+                    strcasecmp((string)$this->statut, demande::DEMANDE_REFUSE) == 0 or 
+                    strcasecmp((string)$this->statut, demande::DEMANDE_ANNULE) == 0 or
+                    strcasecmp((string)$this->statut, demande::DEMANDE_VALID_RH) == 0)
                 {
                    return $this->statut;
                 }
@@ -395,7 +412,13 @@ class demande
             {
                 $this->statut = $statut;
             }
-            elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or (strcasecmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0 and (strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0)))
+            elseif (strcasecmp((string)$this->statut, demande::DEMANDE_ATTENTE) == 0 or
+                    strcasecmp((string)$this->statut, demande::DEMANDE_VALID_RH) == 0 or
+                    (strcasecmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0 and 
+                         (strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 or 
+                          strcasecmp((string)$statut, demande::DEMANDE_ANNULE) == 0)
+                    )
+                   )
             {
                 $this->datestatut = $this->fonctions->formatdatedb(date("d/m/Y"));
                 $this->statut = $statut;
@@ -544,7 +567,7 @@ class demande
         $agent = $this->agent();
         //echo "identite de l'agent => " . $agent->identitecomplete() . "\n<br>";
         //echo "Le statut de la demande est : " . $this->statut() . " \n<br>";
-        if (($this->statut() == demande::DEMANDE_VALIDE) or ($this->statut() == demande::DEMANDE_ATTENTE)) 
+        if (($this->statut() == demande::DEMANDE_VALIDE) or ($this->statut() == demande::DEMANDE_ATTENTE) or ($this->statut() == demande::DEMANDE_VALID_RH)) 
         {
             $planning = new planning($this->dbconnect);
             $planning->load($agent->agentid(), $this->datedebut(), $this->datefin());
@@ -756,7 +779,7 @@ class demande
                         $errlog = "Demande->Store : Pas de solde pour le type de demande " . $this->typeabsenceid . " et l'agent " . $this->agentid();
                         echo $errlog . "<br/>";
                         error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                        $soldeerreur = new soldeinsuffisantinfos;
+                        $soldeerreur = new soldeinsuffinfos();
                         $soldeerreur->message = $errlog;
                         $soldeerreur->nbjrsdemande = $this->nbrejrsdemande;
                         $soldeerreur->solderestant = 0;
@@ -859,7 +882,7 @@ class demande
             } else {
                 $errlog = "Solde " . $this->typelibelle() . " : Nombre de jours insuffisant (demandé : " . ($this->nbrejrsdemande) . " solde restant : " . ($nbjrrestant) . ").";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
-                $soldeerreur = new soldeinsuffisantinfos;
+                $soldeerreur = new soldeinsuffinfos();
                 $soldeerreur->message = $errlog;
                 $soldeerreur->nbjrsdemande = $this->nbrejrsdemande;
                 $soldeerreur->solderestant = $nbjrrestant;

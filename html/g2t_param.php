@@ -52,7 +52,7 @@
     
     require ("includes/menu.php");
  
-    //echo "<br>" . print_r($_POST,true) . "<br>";
+    echo "<br>" . print_r($_POST,true) . "<br>";
     echo "<br>";
     
     addwaitingimgdiv();
@@ -221,6 +221,10 @@
             $congessuppfonction = $_POST['congessuppfonction'];
             $constantename = 'FONCTIONCONGSUP';
             $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $congessuppfonction);
+
+            $absencefonction = $_POST['absencefonction'];
+            $constantename = 'FONCTIONABSENCE';
+            $msg_erreur = $msg_erreur . $fonctions->enregistredbconstante($constantename, $absencefonction);
         }
         
         /////////////////////////////////////////////
@@ -1150,7 +1154,6 @@
     echo "<br>";
     $dbconstante = 'FONCTIONCONGSUP';
     $congessuppfonction = 'n';
-
     //echo "Activer la fonction de demande de validation par la DRH lors d'ajout de congés complémentaires : ";
     echo "Activer la fonction de demande de validation par la DRH lors d'ajout de jours de récupération : ";
     if ($fonctions->testexistdbconstante($dbconstante)) { $congessuppfonction = $fonctions->liredbconstante($dbconstante); }
@@ -1164,6 +1167,29 @@
     echo "</option>";
     echo "<option value='n'";
     if (!$fonctions->convertvaluetobool($congessuppfonction))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('n');
+    echo "</option>";
+    echo "</select>";
+
+    // Fonction de demande de validation des demandes d'absence par la DRH
+    echo "<br>";
+    $dbconstante = 'FONCTIONABSENCE';
+    $absencefonction = 'n';
+    echo "Activer la fonction de demande de validation des demandes d'absence par la DRH : ";
+    if ($fonctions->testexistdbconstante($dbconstante)) { $absencefonction = $fonctions->liredbconstante($dbconstante); }
+    echo "<select id='absencefonction' name='absencefonction'>";
+    echo "<option value='o'";
+    if ($fonctions->convertvaluetobool($absencefonction))
+    {
+        echo " selected ";
+    }
+    echo ">" . $fonctions->ouinonlibelle('o');
+    echo "</option>";
+    echo "<option value='n'";
+    if (!$fonctions->convertvaluetobool($absencefonction))
     {
         echo " selected ";
     }

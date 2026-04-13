@@ -1184,6 +1184,7 @@ class esignature
                 {
                     // On doit mettre le responsable du demandeur dans le tableau
                     $codeinterne = null;
+                    $respstruct = new structure($this->dbconnect);
                     $resp = $demandeur->getsignataire(null,$respstruct,$codeinterne);
                     if (!is_null($resp) and ($resp!==false))
                     {
@@ -1289,7 +1290,7 @@ class esignature
                 }
                 elseif (strtoupper($typesignataire)==esignature::TYPESIGNATAIRE_RESP_BRANCHE)
                 {
-                    $structresp  = null;
+                    $structresp = new structure($this->dbconnect);
                     $codeinterne = null;
                     $resp = $demandeur->get_signataire_respbranche($structresp,$codeinterne);
                     $tempid = fonctions::SIGNATAIRE_AGENT . '_' . $resp->agentid();

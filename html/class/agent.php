@@ -3102,7 +3102,14 @@ const modifymotif = (motif, motifid) =>
         }
         
         $liste = null;
-        $liste = $this->demandesliste($debut_interval, $fin_interval);
+        if ($mode == MODE_RH)
+        {
+            $liste = $this->fonctions->demandesaverifier($debut_interval);
+        }
+        else
+        {
+            $liste = $this->demandesliste($debut_interval, $fin_interval);
+        }
         $debut_interval = $this->fonctions->formatdatedb($debut_interval);
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
@@ -3116,7 +3123,8 @@ const modifymotif = (motif, motifid) =>
         {
             $premieredemande = TRUE;
             foreach ($liste as $key => $demande) {
-                if (strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0) 
+                if (strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0 or
+                    (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0 and $mode == MODE_RH)) 
                 {
                     $todisplay = true;
                     // Si on est en mode MODE_CONSULTANT
@@ -3323,7 +3331,7 @@ const modifymotif = (motif, motifid) =>
                         {
                             $htmltext = $htmltext . " selected ";
                         }
-                        elseif (!isset($statutliste[$demande->id()]) and strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0)
+                        elseif (!isset($statutliste[$demande->id()]) and (strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0))
                         {
                             $htmltext = $htmltext . " selected ";
                         }

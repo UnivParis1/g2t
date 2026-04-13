@@ -514,7 +514,7 @@ class teletravail
             $this->listeidresponsable = array();
 
             $codeinterne = null;
-            $structresp = null;
+            $structresp = new structure($this->dbconnect);
             $signataire = $agent->getsignataire(null,$structresp,$codeinterne);
             if ($signataire !==false)
             {

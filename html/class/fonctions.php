@@ -1328,6 +1328,10 @@ class fonctions
         {
             return "Demande d'avis";
         }
+        elseif (strcasecmp((string)$statut, demande::DEMANDE_VALID_RH) == 0)
+        {
+            return "En attente de validation RH";
+        }
         else
         {
             echo "Demandestatutlibelle : le statut n'est pas connu [statut = $statut] !!! <br>";
@@ -1616,6 +1620,42 @@ class fonctions
             {
                 $demandeliste[] = $demande;
             }
+        }
+        return $demandeliste;
+    }
+
+    public function demandesaverifier($datedebut, $agentid = null)
+    {
+        $sql = "SELECT DISTINCT DEMANDEID,AGENTID, DATEDEBUT,DATESTATUT
+    				FROM DEMANDE
+    				WHERE STATUT = '" . demande::DEMANDE_VALID_RH . "'
+    				  AND DATEDEBUT >= ? ";
+        if (!is_null($agentid))
+        {
+            $sql = $sql . " AND AGENTID = ? ";
+            $params = array($this->formatdatedb($datedebut),$agentid);
+        }
+        else
+        {
+            $params = array($this->formatdatedb($datedebut));
+        }
+    	$sql = $sql . " ORDER BY AGENTID, DATEDEBUT, DATESTATUT";
+        $query = $this->prepared_select($sql, $params);
+        $erreur_requete = mysqli_error($this->dbconnect);
+        if ($erreur_requete != "")
+        {
+            error_log(basename(__FILE__) . " " . $erreur_requete);
+        }
+        $demandeliste = array();
+        // Si pas de demande de CET, on retourne le tableau vide
+        if (mysqli_num_rows($query) == 0) {
+            return $demandeliste;
+        }
+        while ($result = mysqli_fetch_row($query)) {
+            $demandeid = $result[0];
+            $demande = new demande($this->dbconnect);
+            $demande->load($demandeid);
+            $demandeliste[] = $demande;
         }
         return $demandeliste;
     }
