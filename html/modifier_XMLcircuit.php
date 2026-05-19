@@ -1,7 +1,12 @@
 <?php
 
+use Dom\ParentNode;
+
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
+    
+    global $dbcon;
+    global $uid;
     
     $userid = null;
     if (isset($_POST["userid"]))
@@ -166,7 +171,8 @@
             }
             elseif (strlen($addsignatairetype . "") > 0)
             {
-                $rootnode = $xmlpath->query($addsignatairepath)[0];
+                // $rootnode = $xmlpath->query($addsignatairepath)[0];
+                $rootnode = $xmlpath->query($addsignatairepath)->item(0);
                 $newnode = $xmldom->createElement("SIGNATAIRE",$signataireid);
                 $newnode->setAttribute("TYPESIGNATAIRE",$addsignatairetype);
 
@@ -258,16 +264,19 @@
             // Sinon, il ne trouve aucun noeux
             $xmlpath = new DOMXPath($xmldom);
 
-            $nodetoremove = $xmlpath->query($removesignatairepath)[0];
-            //var_dump($nodetoremove);
+            // $nodetoremove = $xmlpath->query($removesignatairepath)[0];
+            $nodetoremove = $xmlpath->query($removesignatairepath)->item(0);
+           //var_dump($nodetoremove);
             if (!is_null($nodetoremove))
             {
-                $circuit = $xmlpath->query("$circuitpath")[0];
+                // $circuit = $xmlpath->query("$circuitpath")[0];
+                $circuit = $xmlpath->query("$circuitpath")->item(0);
                 //var_dump($nbsignataire);
                 //var_dump(count($xmlpath->query('ETAPE/SIGNATAIRE',$circuit)));
                 if ($nbsignataire == count($xmlpath->query('ETAPE/SIGNATAIRE',$circuit)))
                 {
-                    $nodetoremove->remove();
+                    // $nodetoremove->remove();
+                    $nodetoremove->parentNode->removeChild($nodetoremove);
                     $valid = @$xmldom->validate();
                     if (!$valid)
                     {
@@ -637,6 +646,7 @@
         }
         else
         {
+            $numetape = "";
             $extrainfos = "";
             $etapeinfos = "";
             $datatitle = "";
@@ -739,9 +749,11 @@
 
         $xmldom->normalizeDocument();
 
-        $rootnode = $xmlpath->query('CIRCUITS')[0];
+        // $rootnode = $xmlpath->query('CIRCUITS')[0];
+        $rootnode = $xmlpath->query('CIRCUITS')->item(0);
 
-        $descriptionnode = $xmlpath->query('DESCRIPTION', $rootnode)[0];
+        // $descriptionnode = $xmlpath->query('DESCRIPTION', $rootnode)[0];
+        $descriptionnode = $xmlpath->query('DESCRIPTION', $rootnode)->item(0);
         $description = $descriptionnode->nodeValue;
         echo "<optgroup label='$description' filepath='$XMLfilename'>";
 
@@ -783,7 +795,8 @@
         @$xmldom->load($filename);
         $xmlpath = new DOMXPath($xmldom);
 
-        $circuit = $xmlpath->query($circuitpath)[0];
+        // $circuit = $xmlpath->query($circuitpath)[0];
+        $circuit = $xmlpath->query($circuitpath)->item(0);
         echo "<form name='modiferXML' method='post'>";
         // ATTENTION : Le <span> dans le <span XMLCircuit> permet de faire afficher l'icône 'dossier' => voir la CSS
         echo "<br>Cliquez sur une ligne '<span class='XMLCircuit'><span>ETAPE</span></span>' pour afficher/masquer le détail de celle-ci.";

@@ -303,6 +303,7 @@ class affectation
         $equation = preg_replace("/([0-9]+)(%)/", "$1", $equation);
         $equation = ($equation/100);
         
+        $return = '';
         if ($equation == "")
             $return = 0;
         else

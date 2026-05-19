@@ -2,6 +2,9 @@
     require_once ('../html/includes/dbconnection.php');
     require_once ('../html/includes/all_g2t_classes.php');
 
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
     $errlog = '';
     $erreur = '';

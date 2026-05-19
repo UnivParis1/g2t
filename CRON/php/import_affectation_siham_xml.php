@@ -11,6 +11,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
 
     $date = date("Ymd");
@@ -151,6 +154,7 @@
 
         echo "Import des STRUCTURES D'AFFECTATION - " . date("d/m/Y H:i:s") . "\n";
         
+        $ancienpourcentage = 0;
         // On charge la table HISTORIQUEAFFECTATION avec le fichier
         if (! file_exists($structurefile) or ($xml = @simplexml_load_file("$structurefile"))===false) 
         {
@@ -256,6 +260,7 @@
             foreach ($agentnode as $node)
             {
                 $agentid = trim($node->xpath('AGENTID')[0]);
+                $numligne = '-1';
                 if (isset($node->xpath('NUMLIGNE')[0]))
                 {
                     $numligne = trim($node->xpath('NUMLIGNE')[0]);

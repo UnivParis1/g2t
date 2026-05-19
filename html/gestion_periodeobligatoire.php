@@ -2,6 +2,10 @@
     // require_once ('CAS.php');
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
+
+    global $dbcon;
+    global $uid;
+    
     ini_set('max_execution_time', 600); // 600 seconds = 10 minutes
 
     // Initialisation de l'utilisateur

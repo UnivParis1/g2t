@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -89,6 +92,7 @@
         $structlist = $fonctions->enleverstructuresinclues_demandes($structlist);
     }
 
+    $listegeststruct = [];
     if (strcasecmp((string)$mode, MODE_GESTION) == 0) {
         $structlist = $user->structgestliste();
         // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)

@@ -6,6 +6,8 @@
 
 <link rel="icon" type="image/x-icon" href="favicon.ico"></link>
 <?php    
+    global $dbcon;
+    global $uid;
     $WSGROUPURL = $fonctions->liredbconstante("WSGROUPURL");
     // echo "<br><br>WSGROUPURL = $WSGROUPURL <br>";
 ?>
@@ -1187,13 +1189,13 @@
         if ($agentstructure->load($structureid) == false)
         {
             $agentstructure->affichetoutagent("n"); // Si impossible de charger la structure => On force la valeur à 'n'
-            $agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
+            //$agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
         }
     } 
     else 
     {
         $agentstructure->affichetoutagent("n");
-        $agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
+        //$agentstructure->estbibliotheque("0");  // Ce n'est pas une bibliothèque par défaut
     }
 
 

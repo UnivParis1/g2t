@@ -4,9 +4,11 @@
     //require_once('../vendor/autoload.php');
 
     include './includes/casconnection.php';
-
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
@@ -111,6 +113,15 @@
 
     $animationaffichee = false;
     $script_actif = false;
+    $scriptfilename = '';
+    $scripthauteur = '';
+    $scriptlargeur = '';
+    $nbimages = 10;
+    $delai = 10; // 10ms par défaut
+    $script_cleanimation = '';
+    $pleinecran = false;
+    $direction = 'V';
+
     // echo "Date du jour = " . date("d/m/Y") . "<br>";
     $affectationliste = $user->affectationliste(date("d/m/Y"), date("d/m/Y"));
 

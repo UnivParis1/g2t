@@ -271,6 +271,7 @@ class planning
         /// INTEGRATION DES CONGES, ABSENCE, ABSENCERH
         /////////////////////////////////////////////////////////
         // On récupère les demandes d'absence, les congés et les absences de type "télétravail hors convention"
+        $demandeliste = [];
         if ($includecongeabsence or $includeabsenceteletravail)
         {
             $demandeliste = $agent->demandesliste($datedebut, $datefin);
@@ -435,6 +436,7 @@ class planning
                     if ($element->type() == '')
                     {
                         // Si il n'y a pas d'exception ou si l'exception est en attente de validation
+                        $statut = null;
                         $ttexception = $this->fonctions->estjourteletravailexclu($agentid,$arraydate[0],$arraydate[1], $statut);
                         if ($ttexception===false or $statut == ttexception::STATUT_ENATTENTE)
                         {
@@ -1375,6 +1377,7 @@ class planning
         $arraytypeignore = array("ferie","WE","tppar");
 
         // Compteur indiquant le nombre de jours restant à trouver
+        $nbjoursrestant = $nbjours;
         // ATTENTION : Si on commence un jour de type arraytypeignore => On ne doit pas enlever 1/2 journée
         //      Sinon, On a déjà trouvé une 1/2 journée
         if (!in_array($elementdebut->type(), $arraytypeignore))

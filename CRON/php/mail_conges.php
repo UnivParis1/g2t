@@ -2,6 +2,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
 
     $date = date("Ymd");
@@ -167,6 +170,7 @@ Merci de contrôler son dossier.<br>");
                 if ($destinatairemail->agentid() == $cronuser->agentid()) // Si le destinataire est G2T CRON => problème de déclaration de responsable dans le structure => Mail à la DRH
                 {
                     $structureparent = $structresp;
+                    $typesignataire = '';
                     switch ($codeinterne)
                     {
                         case structure::MAIL_RESP_ENVOI_RESP_PARENT :

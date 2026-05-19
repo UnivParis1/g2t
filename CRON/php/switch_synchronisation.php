@@ -3,6 +3,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     define("SYNCHRO_ACTIF", "actif");
     define("SYNCHRO_INACTIF", "inactif");
     

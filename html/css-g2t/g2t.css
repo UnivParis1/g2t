@@ -1232,6 +1232,11 @@ select {
     font-size: 110%;
 }
 
+.linkastext {
+    color: inherit;
+    text-decoration: none;
+}
+
 /********************************************
 / CSS DE L'ARBORESCENCE XML
 /*******************************************/

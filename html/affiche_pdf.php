@@ -12,6 +12,9 @@
     require_once ('./includes/dbconnection.php');
     require_once ("./includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     use Fpdf\Fpdf as FPDF;
 
     // print_r($_POST); echo "<br>";

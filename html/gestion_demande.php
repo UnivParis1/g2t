@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -75,6 +78,7 @@
     // echo "avant chargement respo <br>";
     $responsableid = null;
     $noresponsableset = TRUE;
+    $responsable = new agent($dbcon);
     if (isset($_POST["responsableid"])) {
         //echo "responsableid = " . $responsableid . "<br>";
         $responsableid = $_POST["responsableid"];

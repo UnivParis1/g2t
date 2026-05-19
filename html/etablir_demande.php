@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
@@ -171,6 +174,9 @@
     $msg_erreur = "";
     $erreurCET = '';
     $disabledbutton = '';
+
+    // // Type de documents autorisés comme justificatif
+    // $allowed_file_types = ['.png' => 'image/png', '.jpeg' => 'image/jpeg', '.pdf' => 'application/pdf'];
 
     // Récupération de la date de début
     $deb_mataprem = null;
@@ -388,7 +394,8 @@
     require ("includes/menu.php");
     
     // echo "<br>"; print_r($_POST); echo "<br>";
-    ?>
+    // echo "<br>"; print_r($_FILES); echo "<br><br>";
+?>
     <script type="text/javascript">
     	// fonction pour le click gauche
     	function planning_lclick(date,moment)
@@ -455,6 +462,7 @@
         else
         {
             //var_dump("on est dans le else...");
+            $agentlistefull = [];
             if (isset($_POST["responsable"]))
             {
                 $agentlistefull = $responsable->listeagentenresponsabilite(date("d/m/Y"), date("d/m/Y"));
@@ -537,10 +545,13 @@
                     // echo "Apres le foreach <br>";
                 }
             }
-        } else {
+        } 
+        else 
+        {
             echo "Demande d'autorisation d'absence pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br>";
         }
-        if (! $datefausse) {
+        if (! $datefausse) 
+        {
             $planning = new planning($dbcon);
             if ($fonctions->convertvaluetobool($rh_mode))
             {
@@ -585,9 +596,28 @@
             }
         }
 
-        if ($msg_erreur != "" or $datefausse) {
-            
-            if ($msg_erreur != "" and isset($_POST["valider"])) {
+        // Si on a un justificatif qui a été posté (code 4 => Pas de fichier uploadé)
+        if (isset($_FILES['justificatif']) and $_FILES['justificatif']['error'] != 4)
+        {
+            if ($_FILES['justificatif']['error'] != 0)
+            {
+                $msg_erreur = $msg_erreur . $fonctions->getfileuploaderror($_FILES['justificatif']['error']) . '<br>';
+            }
+            elseif (is_uploaded_file($_FILES['justificatif']['tmp_name'])) 
+            {
+                $mime_type = mime_content_type($_FILES['justificatif']['tmp_name']);
+                if (! in_array($mime_type, ALLOWED_FILE_TYPES)) 
+                {
+                    // Pas le bon type MINE
+                    $msg_erreur = $msg_erreur . "Le format du fichier justificatif n'est pas supporté.";
+                }
+            }
+        }
+
+        if ($msg_erreur != "" or $datefausse) 
+        {
+            if ($msg_erreur != "" and isset($_POST["valider"])) 
+            {
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msg_erreur));
                 $msg_erreur = "Votre demande n'a pas été enregistrée.<br>" . $msg_erreur;
             }
@@ -604,6 +634,13 @@
             $demande->moment_debut($deb_mataprem);
             $demande->moment_fin($fin_mataprem);
             $demande->commentaire($commentaire);
+
+            if (isset($_FILES['justificatif']) and $_FILES['justificatif']['error'] != 4)
+            {
+                // var_dump("On init le justiftmpfilename : " . $_FILES['justificatif']['tmp_name']);
+                $demande->justiftmpfilename($_FILES['justificatif']['tmp_name']);
+            }
+
             if ($congeanticipe != "")
             {
                 $ignoresoldeinsuffisant = TRUE;
@@ -781,7 +818,7 @@
         echo "</span>";
 
 ?>
-        <form name="frm_demande_conge" method="post">
+        <form name="frm_demande_conge" method="post" enctype="multipart/form-data">
 
             <input type="hidden" name="agentid"
                 value="<?php echo $agent->agentid(); ?>">
@@ -919,6 +956,7 @@
                 // Si on est dans l'année précédente, on peut poser des congés avec le solde de l'année future
                 // Exemple : On peut poser des congés en Aout 2015/2016, avec le solde 2016/2017 (s'il existe <=> S'il est calculé)
                 //if ($rh_mode == 'yes' or !is_null($responsable))
+                $dummy = '';
                 if ($fonctions->convertvaluetobool($rh_mode) or !is_null($responsable))
                 {
                     $soldelisteannee = $agent->soldecongesliste($fonctions->anneeref(),$dummy,true);
@@ -1265,6 +1303,15 @@
             echo "Commentaire<label id='warningcommfacult'> facultatif</label> (maximum : $longueurmaxcommentaire caractères - Reste : <label id='commentairerestant'>$longueurmaxcommentaire</label> car.) :<br>";
             echo "<textarea rows='4' cols='60' class='commenttextarea' name='commentaire' id='commentaire' oninput='checktextlength(this,$longueurmaxcommentaire,\"commentairerestant\"); updatedisplay();'>$commentaire</textarea> <br>";
             echo "<input type='hidden' name='agentid' value='" . $agent->agentid() . "'>";
+            echo "<!-- MAX_FILE_SIZE must precede the file input field -->";
+            echo "<input type='hidden' name='MAX_FILE_SIZE' value='" . ini_parse_quantity(ini_get('upload_max_filesize')) . "' />";
+            echo '<!-- Name of input element determines name in $_FILES array -->';
+            echo "Joindre un justificatif (taille maximale : " . ini_get('upload_max_filesize') . ") : <input name='justificatif' type='file' accept='";
+            foreach(ALLOWED_FILE_TYPES as $minetype)
+            {
+                echo "$minetype, ";
+            }
+            echo "' />";
             echo "<br>";            
         }
 
@@ -1422,6 +1469,7 @@
         else
         {
             // Div qui sera mis à jour avec le retour HTML du WS
+            $datetemp = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
             echo "<div id='planningagent_" . $agent->agentid() . "' class='divtocomplete'></div>";
 ?>
             <script>

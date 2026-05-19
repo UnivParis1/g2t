@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
@@ -136,7 +139,7 @@
     {
         if (!is_null($agent))
         {
-            $erreur == '';
+            $erreur = '';
             if ($lib_sup != recuperation::RECUP_ID)
             {
                 $solde = new solde($dbcon);
@@ -259,6 +262,7 @@
     } 
     else 
     {
+        $commentaireid = '';
         if (! is_null($nbr_jours_conges)) 
         {
             // On a cliqué sur le bouton validé ==> On va vérifier la saisie
@@ -361,9 +365,9 @@
                     //$corpmail = $corpmail . "Votre solde de jours complémentaires est maintenant de : " . ($solde->droitaquis() - $solde->droitpris()) . " jour(s).\n";
                     //$cronuser->sendmail($agent, "Ajout de jours complémentaires", $corpmail);
                     $commentaireconge = $fonctions->lirecommentaire($commentaireid);
-                    //$dbconstante = 'VALIDRECUP';
-                    //$validrecup = '2';
-                    //if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
+                    $validrecup = '2';
+                    $dbconstante = 'VALIDRECUP';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $validrecup = $fonctions->liredbconstante($dbconstante); }
                     //$findatevalidite = date('d/m/Y',strtotime('+' . $validrecup . ' month',strtotime($fonctions->formatdatedb($commentaireconge->dateajout))));
 
                     $findatevalidite = $fonctions->finvaliditerecuperation($commentaireconge->dateajout,$commentaireconge->typeabsenceid);
@@ -447,8 +451,8 @@
                 if ($msg_erreur <> "")
                 {
                     $msg_erreur = "Erreur lors du chargement du solde de congés complémentaires $lib_sup : " . $msg_erreur;
-                    echo $fonctions->showmessage(fonctions::MSGERROR, $errlog);
-                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($errlog));
+                    echo $fonctions->showmessage(fonctions::MSGERROR, $msg_erreur);
+                    error_log(basename(__FILE__) . " " . $fonctions->stripAccents($msg_erreur));
                 }
             }
         }

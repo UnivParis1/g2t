@@ -1013,7 +1013,9 @@ class esignature
 
 
         // On récupère le premier noeux 'CIRCUITS' (puisque d'après la DTD, il est présent et qu'il doit y avoir qu'un seul)
-        $circuitsrootnode = $xmlpath->query('CIRCUITS')[0];
+        // $circuitsrootnode = $xmlpath->query('CIRCUITS')[0];
+        // $circuitsrootnode = iterator_to_array($xmlpath->query('CIRCUITS'))[0];
+        $circuitsrootnode = $xmlpath->query('CIRCUITS')->item(0);
         //var_dump($circuitsrootnode->nodeName);
 
         // On va récupérer tous les noeux SIGNATURES (pour faire un tableau des positions)
@@ -1025,9 +1027,12 @@ class esignature
             foreach ($positionlist as $position)
             {
                 $signatureposition = new signatureposition();
-                $signatureposition->x  = $xmlpath->query('X',$position)[0]->nodeValue;
-                $signatureposition->y  = $xmlpath->query('Y',$position)[0]->nodeValue;
-                $signatureposition->page  = $xmlpath->query('PAGE',$position)[0]->nodeValue;
+                // $signatureposition->x  = iterator_to_array($xmlpath->query('X',$position))[0]->nodeValue;
+                // $signatureposition->y  = iterator_to_array($xmlpath->query('Y',$position))[0]->nodeValue;
+                // $signatureposition->page  = iterator_to_array($xmlpath->query('PAGE',$position))[0]->nodeValue;
+                $signatureposition->x  = $xmlpath->query('X',$position)->item(0)->nodeValue;
+                $signatureposition->y  = $xmlpath->query('Y',$position)->item(0)->nodeValue;
+                $signatureposition->page  = $xmlpath->query('PAGE',$position)->item(0)->nodeValue;
                 $arraysignatureposition[] = $signatureposition;
             }
         }
@@ -1159,7 +1164,8 @@ class esignature
             if (count($signataireslist)!=0)
             {
                 // S'il existe on défini le noeux de référence comme étant le noeux 'SIGNATAIRES'
-                $refnode = $signataireslist[0];
+                // $refnode = iterator_to_array($signataireslist)[0];
+                $refnode = $signataireslist->item(0);
             }
             // Dans le noeux de référence 'SIGANATAIRES' ou 'ETAPE', on récupère la liste des noeux 'SIGNATAIRE'
             $signatairelist = $xmlpath->query('SIGNATAIRE',$refnode);

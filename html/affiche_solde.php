@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -205,6 +208,7 @@
         if (isset($_POST['valid_agent']))
         {
             addwaitingimgdiv();
+            $annerecherche = ($fonctions->anneeref() - $previous);
 
             if ($agentselect == '')
             {
@@ -411,6 +415,7 @@
         {
             addwaitingimgdiv();
 
+            $annerecherche = ($fonctions->anneeref() - $previous);
             if ($agentselect == '')
             {
                 $structureliste = $user->structgestliste();

@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -1444,6 +1447,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
     </script>
 <?php     	        
     	        echo "    <td class='cellulesimple centeraligntext '>";
+                $datedebutminconv_tab  = date("d/m/Y");
     	        if ($teletravail->statut() == teletravail::TELETRAVAIL_VALIDE and $mode==MODE_RH)
     	        {
                     // On peut modifier la date de début de la convention dans une période de 6 mois avant la date saisie

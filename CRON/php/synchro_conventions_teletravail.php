@@ -2,6 +2,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     echo "\nDébut de la synchronisation des conventions de télétravail " . date("d/m/Y H:i:s") . "\n";
     $fonctions = new fonctions($dbcon);
 

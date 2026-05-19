@@ -335,7 +335,7 @@ class structure
     
     function estbibliotheque()
     {
-        if ($this->islibrary == 0)
+        if ($this->islibrary == 0 or is_null($this->islibrary))
         {
             return false;
         }
@@ -1257,8 +1257,8 @@ class structure
                 }
             }
         }
+        $htmltext = "";
         if (is_array($resplist)) {
-            $htmltext = "";
             $htmltext = $htmltext . "<div id='structplanning'>";
             $htmltext = $htmltext . "<table class='tableau'><tbody>";
             

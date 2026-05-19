@@ -1,5 +1,6 @@
 <?php    
     require_once (dirname(__FILE__,3) . "/vendor/autoload.php");
+    require_once (dirname(__FILE__) . "/dbconnection.php");
     require_once (dirname(__FILE__,2) . "/class/fonctions.php");
     require_once (dirname(__FILE__,2) . "/class/agent.php");
     require_once (dirname(__FILE__,2) . "/class/structure.php");
@@ -51,6 +52,11 @@
     if (!defined('MODE_AGENT'))
     {
         define('MODE_AGENT', 'agent');
+    }
+    // Type de documents autorisés comme justificatif
+    if (!defined(''))
+    {
+        define('ALLOWED_FILE_TYPES', ['png' => 'image/png', 'jpeg' => 'image/jpeg', 'pdf' => 'application/pdf']);
     }
 
     $sql="SELECT COUNT(*) FROM STRUCTURE WHERE DEST_MAIL_AGENT IN ('" . structure::OLD_MAIL_AGENT_ENVOI_RESP_COURANT . "','" . structure::OLD_MAIL_AGENT_ENVOI_GEST_COURANT . "')";

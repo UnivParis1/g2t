@@ -25,6 +25,7 @@ class demande
 
     private const ARRAYCOMMENTAIREKEY = 'commentaire';
     private const ARRAYCOMMENTAIREJRSUTIL = 'nbjrsutilises';
+    private const COMPLEMENTJUSTIF = 'justificatif';
 
     private $demandeid = null;
 
@@ -49,6 +50,9 @@ class demande
     private $statut = null;
 
     private $motifrefus = null;
+
+    private $justiffilename = null;
+    private $justiftmpfilename = null;
 
     private $dbconnect = null;
 
@@ -119,6 +123,7 @@ class demande
             $this->datemailannulation = "$result[14]";
             
             $this->ancienstatut = $this->statut;
+
         }
     }
 
@@ -450,6 +455,22 @@ class demande
             $this->motifrefus = str_replace("'", "''", $motif);
         }
     }
+
+    function justiftmpfilename($tmpfilename)
+    {
+        $this->justiftmpfilename = $tmpfilename;
+    }
+
+    function justiffilename() :string
+    {
+        if (is_null($this->justiftmpfilename))
+        {
+            $demandecomplement = new demandecomplement($this->dbconnect);
+            $demandecomplement->load($this->demandeid, demande::COMPLEMENTJUSTIF);
+            $this->justiffilename = $demandecomplement->valeur() . '';
+        }
+        return $this->justiffilename;
+    }
     
     function agentid($agentid = null)
     {
@@ -752,6 +773,7 @@ class demande
             {
                 // On vérifie que le nombre de jour demandé est >= Nbre de jour restant (si c'est un conge !!)
                 // echo "Demande->Store : typdemande=". $this->typdemande . "<br>";
+                $solde = null;
                 if ($this->fonctions->estunconge($this->typeabsenceid)) {
                     // echo "C'est un congé... <br>";
                     unset($solde);
@@ -954,6 +976,42 @@ class demande
                             error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
                         }
                     }
+                }
+            }
+        }
+
+        if (!is_null($this->demandeid) and $this->demandeid > 0)
+        {
+            // var_dump("On verifie que le justiftmpfilename est présent : " . $this->justiftmpfilename);
+            if (!is_null($this->justiftmpfilename) and (file_exists($this->justiftmpfilename)))
+            {
+                // Set up destination of the file
+                $extension = 'unk';
+                $mime_type = mime_content_type($this->justiftmpfilename);
+                if (in_array($mime_type, ALLOWED_FILE_TYPES)) 
+                {
+                    $extension = array_search($mime_type,ALLOWED_FILE_TYPES);
+                }
+                $finaljustiffilename = 'justificatif_' . $this->demandeid . '.' . $extension;
+                $destination = $this->fonctions->justificatifpath() . '/' . $finaljustiffilename;
+                // var_dump($finaljustiffilename, $destination);
+                // Now you move/upload your file
+                if (move_uploaded_file ($this->justiftmpfilename , $destination)) 
+                {
+                    $demandecomplement = new demandecomplement($this->dbconnect);
+                    $complementid = demande::COMPLEMENTJUSTIF;
+                    $demandecomplement->delete($this->demandeid,$complementid);
+                    $demandecomplement->demandeid($this->demandeid);
+                    $demandecomplement->complementid($complementid);
+                    $demandecomplement->valeur($finaljustiffilename);
+                    $demandecomplement->store();
+                    $this->justiffilename = $finaljustiffilename;
+                    $this->justiftmpfilename = null;
+                    // var_dump("En théorie, le justificatif est ok pour la demande " . $this->demandeid);
+                }
+                else
+                {
+                    // var_dump("Impossible de déplacer le fichier temporaire : " . $this->justiftmpfilename . " vers " . $destination);
                 }
             }
         }
@@ -1206,6 +1264,7 @@ class demande
         //echo "<br>Le statut de la demande est : " . $this->statut . " <br>";
         
         $disponibilite = 'OPAQUE';
+        $ics_status = '';
         if (strcasecmp((string)$this->statut, demande::DEMANDE_VALIDE) == 0)
         // La demande est validée
         {

@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -86,9 +89,12 @@
                     //var_dump("La demande $demandeid est validée => On va l'enregistrer");
                     $demande = new demande($dbcon);
                     $demande->load($demandeid);
-                    $demande->statut($statut);
-                    $demande->store();
-                    $demandemodifiee = true;
+                    if ($demande->statut() != $statut)
+                    {
+                        $demande->statut($statut);
+                        $demande->store();
+                        $demandemodifiee = true;
+                    }
                 }
                 elseif (strcasecmp((string)$statut, demande::DEMANDE_REFUSE) == 0 )
                 {
@@ -107,10 +113,13 @@
                     {
                         $demande = new demande($dbcon);
                         $demande->load($demandeid);
-                        $demande->statut($statut);
-                        $demande->motifrefus($motif);
-                        $demande->store();
-                        $demandemodifiee = true;
+                        if ($demande->statut() != $statut)
+                        {
+                            $demande->statut($statut);
+                            $demande->motifrefus($motif);
+                            $demande->store();
+                            $demandemodifiee = true;
+                        }
                     }
                 }
                 if ($demandemodifiee)
@@ -207,7 +216,7 @@
                 }
             }
         }
-        else
+        else    // On est en mode responsable
         {
             $cronuser = new agent($dbcon);
             $cronuser->load(SPECIAL_USER_IDCRONUSER);
@@ -273,6 +282,16 @@
                             if ($msgerreur != "")
                             {
                                 echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de sauvegarde car " . $msgerreur);
+                            }
+                            else
+                            {
+                                $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".\n";
+                                $corpmail .= "Celle-ci doit maintenant être validée par le service des ressources humaines.\n";
+                                $corpmail .= "Si ce n'est pas fait, n'oubliez pas de joindre votre justificatif.\n";
+                                $ics = null;
+                                $pdffilename = null;
+                                $agent = $demande->agent();
+                                $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
                             }
                         }
                         else
@@ -589,9 +608,13 @@
             echo "<form name='frm_validation_conge'  method='post' >";
             if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
-            foreach ((array)$demandeliste as $demande);
+            // La liste retournée a une structure $liste[agentid][demandeid] = obj_demande
+            // Ici on ne s'interresse qu'au agentid => que les clés du tableau
+            // foreach ((array)$demandeliste as $agentid => $liste)
+            foreach(array_keys($demandeliste) as $agentid)
             {
-                $membre = $demande->agent();
+                $membre = new agent($dbcon);
+                $membre->load($agentid);
                 $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null,$mode);
                 if ($htmltodisplay . "" != "")
                 {

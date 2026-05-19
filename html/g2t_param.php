@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -51,6 +54,8 @@
     }
     
     require ("includes/menu.php");
+    global $WSGROUPURL;
+
  
     echo "<br>" . print_r($_POST,true) . "<br>";
     echo "<br>";
@@ -187,8 +192,8 @@
                     $periode = new periodeobligatoire($dbcon);
                     $periode->load($elementanneeref);
                     $periode->supprimerperiode($valeur[0],$valeur[1]);
+                    $periode->store();
                 }
-                $periode->store();
             }
         }
         

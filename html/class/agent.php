@@ -2884,7 +2884,7 @@ const modifymotif = (motif, motifid) =>
                 // echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
                 // if (($demande->statut() == "a" and $mode == MODE_AGENT) or ($demande->statut() == "v" and $mode == MODE_RESPONSABLE))
                 if (((strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) and strcasecmp((string)$mode, MODE_AGENT) == 0) 
-                  or (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) 
+                  or ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0) and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) 
                 {
                     if ($premieredemande) {
                         $htmltext = $htmltext . "<table id='tabledemande_" . $this->agentid() . "' class='tableausimple'>";
@@ -2910,7 +2910,7 @@ const modifymotif = (motif, motifid) =>
                             $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Commentaire</th>";
                         }
                         $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Annuler</th>";
-                        if (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
+                        if ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0) and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
                         {
                             $htmltext = $htmltext . "<th scope='col' class='cellulesimple'>Motif (obligatoire si le congé est annulé) - maximum $longueurmaxmotif caractères</th>";
                         }
@@ -2932,7 +2932,7 @@ const modifymotif = (motif, motifid) =>
                         $datatitleindicator = '';
                         $datatitletext  = '';
                         $extraclass = '';
-                        if (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
+                        if ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0) and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
                         {
                             $compldemande = new demandecomplement($this->dbconnect);
                             $compldemande->load($demande->id(), demandecomplement::PERIODE_OBLIG_AUTOMATIQUE);
@@ -3021,7 +3021,7 @@ const modifymotif = (motif, motifid) =>
                             }
                         }
                         $htmltext = $htmltext . " onclick='backcolormotif(this," . $demande->id() . ");' ></input> $spanend </td>";
-                        if (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
+                        if ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0) and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)
                         {
                             $textareastyle = " class='commenttextarea";
                             $disabletext = " disabled ";
@@ -3095,7 +3095,7 @@ const modifymotif = (motif, motifid) =>
         {
             $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDECOMPLEMENT','VALEUR');
         }
-        // SInon on demande la taille de la colonne MOTIFREFUS de la table DEMANDE
+        // Sinon on demande la taille de la colonne MOTIFREFUS de la table DEMANDE
         else
         {
             $longueurmaxmotif = $this->fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
@@ -3104,7 +3104,13 @@ const modifymotif = (motif, motifid) =>
         $liste = null;
         if ($mode == MODE_RH)
         {
-            $liste = $this->fonctions->demandesaverifier($debut_interval);
+            $liste = $this->fonctions->demandesaverifier($debut_interval, $this->agentid());
+            // La liste retournée a une structure $liste[agentid][demandeid] = obj_demande
+            // Pour récupérer la même structure => On récupère la liste des obj_demande
+            if (count($liste)>0)
+            {
+                $liste = $liste[$this->agentid()];
+            }
         }
         else
         {
@@ -3122,7 +3128,8 @@ const modifymotif = (motif, motifid) =>
         else 
         {
             $premieredemande = TRUE;
-            foreach ($liste as $key => $demande) {
+            foreach ($liste as $key => $demande) 
+            {
                 if (strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0 or
                     (strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0 and $mode == MODE_RH)) 
                 {
@@ -3186,8 +3193,29 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datedebut()) . " " . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datefin()) . " " . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
+                        $datatitleindicator = '';
+                        // Si on a un fichier de justificatif et qu'on est en mode RESPONSABLE ou RH => On affiche le bouton permettant d'afficher le justificatif
+                        if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_RESPONSABLE, MODE_RH]) )
+                        {
+                            $fullfilename = $this->fonctions->justificatifpath() . "/" . $demande->justiffilename();
+                            if (file_exists($fullfilename))
+                            {
+                                if (!isset($_SESSION['g2t']['filesecret']))
+                                {
+                                    $_SESSION['g2t']['filesecret'] = base64_encode(random_bytes(16));
+                                }
+                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '">&#128195;</a>';
+                                // $minetype = mime_content_type($fullfilename);
+                                // $handle = fopen($fullfilename, "r");
+                                // $contents = fread($handle, filesize($fullfilename));
+                                // fclose($handle);
+                                // $contents = base64_encode($contents);
+                                // $datatitleindicator = '<button type="button" name="display_justif" value="display_justif" onClick="showjustif(\''. $minetype . '\', \'' . $contents . '\');">&#128195;</button>';
+                            }
+                        }
+
                         if ($demande->type() == 'enmal') {
-                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ")</td>";
+                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "  (" . $this->nbjrsenfantmaladeutilise($debut_interval, $fin_interval) . "/" . $this->nbjrsenfantmalade() . ") $datatitleindicator</td>";
                         }
                         else 
                         {
@@ -3198,7 +3226,7 @@ const modifymotif = (motif, motifid) =>
                                 $datatitle = " data-title=" . chr(34) . htmlentities($demande->typelibelle()) . chr(34);  
                             }
                             $htmltext = $htmltext . "<td class='cellulesimple' $datatitle >";
-                            $htmltext = $htmltext . $libelledemande; 
+                            $htmltext = $htmltext . trim(trim($libelledemande) . ' ' . $datatitleindicator); 
                             $htmltext = $htmltext . "</td>";   
 //                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         }
@@ -3370,7 +3398,27 @@ const modifymotif = (motif, motifid) =>
             }
             if (! $premieredemande)
             {
-                $htmltext = $htmltext . "</tbody></table>";
+                $htmltext = $htmltext . "</tbody></table>" . PHP_EOL;
+                // $htmltext = $htmltext . "<script>" . PHP_EOL;
+                // $htmltext = $htmltext . "function showjustif(minetype,contents)" . PHP_EOL;
+                // $htmltext = $htmltext . "{"  . PHP_EOL;
+                // $htmltext = $htmltext . "let newform = document.createElement('form');"  . PHP_EOL;
+                // $htmltext = $htmltext . "let contentsinput = document.createElement('input'); "  . PHP_EOL;
+                // $htmltext = $htmltext . "let minetypeinput = document.createElement('input'); "  . PHP_EOL;
+                // $htmltext = $htmltext . "newform.method = 'POST';"  . PHP_EOL;
+                // $htmltext = $htmltext . "newform.target = '_blank';" . PHP_EOL;
+                // $htmltext = $htmltext . "newform.action = 'affiche_justificatif.php';"  . PHP_EOL;
+                // $htmltext = $htmltext . "contentsinput.value=contents;"  . PHP_EOL;
+                // $htmltext = $htmltext . "contentsinput.name='contents';"  . PHP_EOL;
+                // $htmltext = $htmltext . "newform.appendChild(contentsinput);"  . PHP_EOL;
+                // $htmltext = $htmltext . "minetypeinput.value=minetype;"  . PHP_EOL;
+                // $htmltext = $htmltext . "minetypeinput.name='minetype';"  . PHP_EOL;
+                // $htmltext = $htmltext . "newform.appendChild(minetypeinput);"  . PHP_EOL;
+                // $htmltext = $htmltext . "document.body.appendChild(newform);" . PHP_EOL;
+                // $htmltext = $htmltext . "newform.submit();"  . PHP_EOL;
+                // $htmltext = $htmltext . "document.body.removeChild(newform);"  . PHP_EOL;
+                // $htmltext = $htmltext . "}"  . PHP_EOL;
+                // $htmltext = $htmltext . "</script>" . PHP_EOL;
             }
             // $htmltext = $htmltext . "<br>";
         }
@@ -3653,7 +3701,7 @@ const modifymotif = (motif, motifid) =>
      *            optional number of day of the vacation. default is null
      * @param string $commentaire
      *            optional comment for the vacation. default is null
-     * @return
+     * @return string 
      */
     function ajoutecommentaireconge($typeconge = null, $nbrejours = null, $commentaire = null, $auteur = null, &$commentaireid = null)
     {
@@ -3702,7 +3750,8 @@ const modifymotif = (motif, motifid) =>
         mysqli_query($this->dbconnect, $sql);
         $sql = "SET AUTOCOMMIT = 1";
         mysqli_query($this->dbconnect, $sql);
-}
+        return '';
+    }
 
     /**
      *

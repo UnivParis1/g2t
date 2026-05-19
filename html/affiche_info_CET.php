@@ -4,6 +4,9 @@
     
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     echo "<html>";
     echo "<head>";
 ?>

@@ -2,6 +2,10 @@
     // require_once ('CAS.php');
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
+
+    global $dbcon;
+    global $uid;
+    
     ini_set('max_execution_time', 300); // 300 seconds = 5 minutes
 
     // Initialisation de l'utilisateur
@@ -57,6 +61,7 @@
     }
     
     require ("includes/menu.php");
+    global $WSGROUPURL;
     // echo '<html><body class="bodyhtml">';
 
     $structureid = null;

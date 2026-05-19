@@ -2,6 +2,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
     $date = date("Ymd");
 
@@ -40,6 +43,7 @@
     $tab_fonctions_RA = array();
     // On regarde si le fichier des priorites de fonctions est present
     $filename = $fonctions->inputfilepath() . "/infos_fonctions_$date.xml";
+    $tab_fonctions_interim = [];
     if (!file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false)
     {
         echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
@@ -101,10 +105,10 @@
 
     // On regarde si le fichier des fonctions est present
     $filename = $fonctions->inputfilepath() . "/siham_fonctions_$date.xml";
+    $tab_struct_fonctions = array();
     if (!file_exists($filename) or ($xml = @simplexml_load_file("$filename"))===false)
     {
         echo "Le fichier " . basename($filename) . " n'existe pas ou n'est pas un fichier XML valide. \n";
-        $tab_struct_fonctions = array();
     }
     else
     {
@@ -114,6 +118,7 @@
         foreach ($agentnode as $node)
         {
             $agentid = trim($node->xpath('AGENTID')[0]);
+            $code_fonction = '';
             if (isset($node->xpath('CONDEFONCT')[0]))
             {
                 $code_fonction = trim($node->xpath('CONDEFONCT')[0]);

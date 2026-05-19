@@ -2,6 +2,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
 
     $date = date("Y-m-d");
@@ -51,6 +54,7 @@
                         
                         $teletravaillistesuivante = $agent->teletravailliste($lendemain,'31/12/2999');
                         $conventionsuivantetrouvee = false;
+                        $conventionsuivante = new teletravail($dbcon);
                         foreach ($teletravaillistesuivante as $conventionsuivanteid)
                         {
                             $conventionsuivante = new teletravail($dbcon);

@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))

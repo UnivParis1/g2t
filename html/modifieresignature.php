@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     // Initialisation de l'utilisateur
     $userid = null;
     if (isset($_POST["userid"]))
@@ -115,6 +118,7 @@
     }
 
     require ("includes/menu.php");
+    global $WSGROUPURL;
 
     // var_dump($_POST);
 
@@ -361,6 +365,7 @@
             foreach($listeaction as $key => $action)
             {
                 $emailstring ='';
+                $stepindex = '';
                 if ($action=='remove' or $action=='replace')
                 {
                     $actioninfos = explode('_',$key);
@@ -474,6 +479,9 @@
         $textformulaireaffichepdf = '';
         foreach (array_merge((array)$teletravailidtab, (array)$alimentationidtab, (array)$optionidtab) as $element)
         {
+            $typeelement = '';
+            $datedemande = '';
+            $esignatureurl = '';
             if ($element instanceof alimentationCET)
             {
                 $typeelement = 'Alimentation CET';

@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -140,6 +143,7 @@
     }
 
     // On verifie qu'il y a autant de case à cocher marquées que de jour de TP a saisir
+    $tabTP = array_fill(0, 20, "0");
     if ($nbredemiTP != "" and ! $datefausse) {
         $nbsemaineimpaire = 0;
         $nbsemainepaire = 0;

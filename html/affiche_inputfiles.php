@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -680,6 +683,7 @@
                 foreach ($nodelist as $node)
                 {
                     $inputagentid = trim($node->xpath('AGENTID')[0]);
+                    $numligne = '';
                     if (isset($node->xpath('NUMLIGNE')[0]))
                     {
                         $numligne = trim($node->xpath('NUMLIGNE')[0]);

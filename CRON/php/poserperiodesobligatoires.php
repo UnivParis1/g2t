@@ -3,6 +3,9 @@
     require_once (dirname(__FILE__,3) . "/html/includes/dbconnection.php");
     require_once (dirname(__FILE__,3) . "/html/includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
 
     echo "\nDébut de la saisie des congés en période obligatoire " . date("d/m/Y H:i:s") . "\n";

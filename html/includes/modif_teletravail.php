@@ -1,4 +1,7 @@
 <?php
+    global $dbcon;
+    global $uid;
+
     $planningelement = new planningelement($dbcon);
     $planningelement->type('teletrav');
     $couleur = $planningelement->couleur();

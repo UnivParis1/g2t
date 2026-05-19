@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
 
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -157,6 +160,7 @@
     $eSignature_url = trim($fonctions->liredbconstante('ESIGNATUREURL'));
     //$sftpurl = $fonctions->liredbconstante('SFTPTARGETURL');
     $sftpurl = "";
+    $erreur = '';
     
     $full_g2t_ws_url = trim($fonctions->get_g2t_ws_url()) . "/alimentationWS.php";
     $full_g2t_ws_url = preg_replace('/([^:])(\/{2,})/', '$1/', $full_g2t_ws_url);
@@ -322,6 +326,7 @@
         }
         else
         {
+            $agent_mail = '';
             if (!is_null($agentid))
             {
                 // On récupère le "edupersonprincipalname" (EPPN) de l'agent en cours

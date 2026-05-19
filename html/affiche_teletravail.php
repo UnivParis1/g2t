@@ -3,6 +3,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -56,6 +59,7 @@
     }
 
     $structureidliste = $fonctions->listestructurenoninclue();
+    $structureliste = [];
     foreach ((array)$structureidliste as $structureid)
     {
         $structure = new structure($dbcon);

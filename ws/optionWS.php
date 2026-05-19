@@ -2,10 +2,14 @@
     require_once ('../html/includes/dbconnection.php');
     require_once ('../html/includes/all_g2t_classes.php');
 
+    global $dbcon;
+    global $uid;
+    
     $fonctions = new fonctions($dbcon);
     $errlog = '';
     $erreur = '';
     $eSignature_url = $fonctions->liredbconstante('ESIGNATUREURL');
+    $result_json = array();
     
     
     error_log(basename(__FILE__) . " POST = " . str_replace("\n","",var_export($_POST,true)));

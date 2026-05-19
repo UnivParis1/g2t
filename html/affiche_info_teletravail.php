@@ -4,6 +4,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -160,6 +163,11 @@
     
     if (isset($_POST['selection_trim']))
     {
+        $libelle = "";
+        $datedebut = "";
+        $datefin = "";
+
+
         $numtrimestre = $_POST['trimestre'];
         $annee = $_POST['annee'];
         switch ($numtrimestre)

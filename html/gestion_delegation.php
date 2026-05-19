@@ -4,6 +4,9 @@
     include './includes/casconnection.php';
     require_once ("./includes/all_g2t_classes.php");
     
+    global $dbcon;
+    global $uid;
+    
     $userid = null;
     if (isset($_POST["userid"]))
     {
@@ -37,6 +40,7 @@
     
     
     require ("includes/menu.php");
+    global $WSGROUPURL;
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
     

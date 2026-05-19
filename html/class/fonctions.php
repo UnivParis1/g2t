@@ -365,6 +365,7 @@ class fonctions
         } 
         else 
         {
+            $monthname = '';
             $index = $index % 12;
             if ($index==0) 
             {
@@ -462,6 +463,7 @@ class fonctions
         } 
         else 
         {
+            $dayname = '';
             $index = $index % 7;
             switch ($index)
             {
@@ -510,6 +512,7 @@ class fonctions
      */
     public function listeabsence($categorie = null)
     {
+        $listeabs = [];
         if (is_null($categorie))
         {
             $sql = "SELECT TA.TYPEABSENCEID,TA.LIBELLE FROM TYPEABSENCE TA, TYPEABSENCE TA2 WHERE TA2.ABSENCEIDPARENT='abs' AND TA.ABSENCEIDPARENT=TA2.TYPEABSENCEID ORDER BY TA.ABSENCEIDPARENT";
@@ -548,6 +551,7 @@ class fonctions
      */
     public function listecategorieabsence()
     {
+        $listecategabs = [];
         $sql = "SELECT TYPEABSENCEID,LIBELLE FROM TYPEABSENCE WHERE ANNEEREF='' AND ABSENCEIDPARENT='abs'";
         $params = array();
         $query = $this->prepared_select($sql, $params);
@@ -1624,7 +1628,7 @@ class fonctions
         return $demandeliste;
     }
 
-    public function demandesaverifier($datedebut, $agentid = null)
+    public function demandesaverifier($datedebut, $agentid = null) :array
     {
         $sql = "SELECT DISTINCT DEMANDEID,AGENTID, DATEDEBUT,DATESTATUT
     				FROM DEMANDE
@@ -1655,7 +1659,7 @@ class fonctions
             $demandeid = $result[0];
             $demande = new demande($this->dbconnect);
             $demande->load($demandeid);
-            $demandeliste[] = $demande;
+            $demandeliste[$demande->agentid()][$demande->id()] = $demande;
         }
         return $demandeliste;
     }
@@ -2321,6 +2325,12 @@ class fonctions
     {
         $basepath = $this->g2tbasepath();
         return $basepath . '/documents/';
+    }
+
+    public function justificatifpath()
+    {
+        $basepath = $this->g2tbasepath();
+        return $basepath . '/justificatifs/'; 
     }
 
     public function inputfilepath()
@@ -3626,6 +3636,7 @@ class fonctions
                 $forcemail = '';
             }
         }
+        $returnmail = [];
         foreach ((array)$response as $agentinfo)
         {
             if (isset($agentinfo["member-all"]))
@@ -5802,6 +5813,12 @@ WHERE  table_schema = Database()
         }
 
         $agent = new agent($this->dbconnect);
+        $structure = new structure($this->dbconnect);
+        $information_typeconvention = [];
+        $information_nombrejours = [];
+        $information_datedebut = [];
+        $information_datefin = [];
+        $information_jourteletravail = [];
         if (!$agent->load($teletravail->agentid()))
         {
             $errlog = 'Agent inconnu';
@@ -5852,7 +5869,6 @@ WHERE  table_schema = Database()
                     'description' => "Date de fin de la convention télétravail", 
                     'value' => $this->formatdate($teletravail->datefin())
                 );
-                $structure = new structure($this->dbconnect);
                 if (!$structure->load($affectation->structureid()))
                 {
                     $errorlog = "Structure introuvable";
@@ -5954,6 +5970,8 @@ WHERE  table_schema = Database()
         $information_F = array('name' => "F", 'description' => "Alimentation du CET", 'value' => $valeur_f);
         $information_G = array('name' => "G", 'description' => "Solde du CET après versement", 'value' => $valeur_g);
 
+        $structure = new structure($this->dbconnect);
+        $anneeref = '';
         $agent = new agent($this->dbconnect);
         $agent->load($alimentationCET->agentid());
         $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
@@ -6063,6 +6081,7 @@ WHERE  table_schema = Database()
         $information_K = array('name' => "K", 'description' => "Nombre de jours à maintenir sur le CET sous forme de congés", 'value' => $valeur_k);
         $information_L = array('name' => "L", 'description' => "Solde du CET après option", 'value' => $valeur_l);
 
+        $structure = new structure($this->dbconnect);
         $agent = new agent($this->dbconnect);
         $agent->load($optionCET->agentid());
         $affectationliste = $agent->affectationliste(date('Ymd'), date('Ymd'));
@@ -6414,6 +6433,25 @@ WHERE  table_schema = Database()
             return 0;
         }
         return ($struct1->profondeurabsolue() < $struct2->profondeurabsolue()) ? -1 : 1;
+    }
+
+    function getfileuploaderror(int $errorcode) :string
+    {
+        $phpFileUploadErrors = array(
+            0 => "Aucune erreur, le fichier a été téléchargé avec succès.",
+            1 => "La taille du fichier téléchargé dépasse la limite `upload_max_filesize` définie dans php.ini.",
+            2 => "La taille du fichier téléchargé dépasse la limite `MAX_FILE_SIZE` définie dans le formulaire HTML.",
+            3 => "Le fichier n'a été que partiellement téléchargé.",
+            4 => "Aucun fichier n'a été téléchargé.",
+            6 => "Dossier temporaire manquant.",
+            7 => "Échec de l'écriture du fichier sur le disque.",
+            8 => "Une extension PHP a interrompu le téléchargement du fichier."
+        );
+        if (isset($phpFileUploadErrors[$errorcode]))
+        {
+            return $phpFileUploadErrors[$errorcode];
+        }
+        return "Une erreur interne s'est produite : Le code erreur ($errorcode) n'est pas répertorié.";
     }
 
     
