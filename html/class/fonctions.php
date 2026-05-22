@@ -5401,7 +5401,7 @@ WHERE  table_schema = Database()
                 echo str_pad('', strlen('&nbsp;')*4*$structure->profondeurrelative(), '&nbsp;', STR_PAD_LEFT);
                 if ($structure->profondeurrelative()>0)
                 {
-                    echo " &#x21AA; "; // &#x21B3; ";
+                    echo " " . HTML_INDENTMARK . " "; 
                 }
                 echo $structure->nomlong() . " (" . $structure->nomcourt() . ")";
                 echo "</option>";

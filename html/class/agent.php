@@ -1335,40 +1335,41 @@ class agent
 	        // $msg .= "Content-Type: text/plain; charset=\"iso-8859-1\"\r\n";
 	        $msg .= "Content-Transfer-Encoding:8bit\r\n";
 	        $msg .= "\r\n";
-                if (is_object($destinataire))
+            if (is_object($destinataire))
+            {
+                $msg .= "Bonjour " . mb_convert_case($destinataire->identitecomplete(), MB_CASE_TITLE) . ",<br><br>"; // $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+            }
+            else
+            {
+                // $msg .= "Bonjour " . $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire,'UTF-8'))) . ",<br><br>";
+                $msg .= "Bonjour,<br><br>";
+            }
+	        $msg .= str_replace("&#039;", "'", str_replace("&gt;", ">", str_replace("&lt;", "<", nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false))))) . "<br>";
+                
+            // Si l'adresse est donnée directement, on ne met pas le footer dans le message. 
+            // En effet, le destinataire n'est pas forcément un utilisateur G2T (impossible de contrôler)
+            // => Pas de référence à l'application
+            if (is_object($destinataire))
+            {
+                $msg .= "Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>";
+                // Si l'expéditeur n'est pas le CRON de G2T
+                if (strcasecmp((string)$this->agentid(), SPECIAL_USER_IDCRONUSER)!=0)
                 {
-                    $msg .= "Bonjour " . mb_convert_case($destinataire->identitecomplete(), MB_CASE_TITLE) . ",<br><br>"; // $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire->identitecomplete(),'UTF-8'))) . ",<br><br>";
+                    $msg .= mb_convert_case($this->prenom . " " . $this->nom, MB_CASE_TITLE); // ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8');
                 }
                 else
                 {
-                    // $msg .= "Bonjour " . $this->fonctions->utf8_encode(ucwords(mb_strtolower($destinataire,'UTF-8'))) . ",<br><br>";
-                    $msg .= "Bonjour,<br><br>";
+                    $msg .= "<p style='font-size: 0.75em;'>Ce message est envoyé automatiquement par l'application G2T.<br>";
+                    $msg .= "Merci de ne pas répondre à cet e-mail.<br>La boîte aux lettres qui a généré cet e-mail ne traite pas les réponses.</p><br>";
                 }
-	        $msg .= str_replace("&#039;", "'", str_replace("&gt;", ">", str_replace("&lt;", "<", nl2br(htmlentities("$message", ENT_QUOTES, "UTF-8", false))))) . "<br>";
-                
-                // Si l'adresse est donnée directement, on ne met pas le footer dans le message. 
-                // En effet, le destinataire n'est pas forcément un utilisateur G2T (impossible de contrôler)
-                // => Pas de référence à l'application
-                if (is_object($destinataire))
-                {
-                    $msg .= "Cliquez sur le lien <a href='" . preg_replace('/([^:])(\/{2,})/', '$1/', $this->fonctions->get_g2t_url()) . "'>G2T</a><br><br>Cordialement<br><br>";
-                    // Si l'expéditeur n'est pas le CRON de G2T
-                    if (strcasecmp((string)$this->agentid(), SPECIAL_USER_IDCRONUSER)!=0)
-                    {
-                        $msg .= mb_convert_case($this->prenom . " " . $this->nom, MB_CASE_TITLE); // ucwords(mb_strtolower($this->prenom . " " . $this->nom),'UTF-8');
-                    }
-                    else
-                    {
-                        $msg .= "<p style='font-size: 0.75em;'>Ce message est envoyé automatiquement par l'application G2T.<br>";
-                        $msg .= "Merci de ne pas répondre à cet e-mail.<br>La boîte aux lettres qui a généré cet e-mail ne traite pas les réponses.</p><br>";
-                    }
-                    $msg .= "\r\n";
-                }
+                $msg .= "\r\n";
+            }
 
 	        // $msg .= htmlentities("$message",ENT_IGNORE,"ISO8859-15") ."<br><br>Cordialement<br><br>" . ucwords(strtolower("$PRENOM $NOM")) ."\r\n";
 	        $msg .= "\r\n";
 	        
-	        if (! is_null($ics)) {
+	        if (! is_null($ics)) 
+            {
 	            // Si le fichier ics existe ==> On met à jour le calendrier de l'agent
 	            $errormsg = $destinataire->updatecalendar($ics);
 	            // Si tout c'est bien passé, pas la peine de joindre l'ICS....
@@ -2414,9 +2415,7 @@ class agent
                     if (strlen($demande->commentaire()) != 0) 
                     {
                         $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);
-                        // $datatitleindicator = " &#11127;";
-                        // $datatitleindicator = " &#128196;";
-                        $datatitleindicator = " &#128195; ";
+                        $datatitleindicator = " " . HTML_SHOWCOMMENT . " ";
 
                     }
                     $htmltext = $htmltext . "<td $datatitle >";
@@ -2838,6 +2837,9 @@ class agent
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
         $htmltext = "";
+        $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
+        $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+        $htmltext = $htmltext . "<br>";
         $htmltext = $htmltext . "
 <script>
 const backcolormotif = (checkbox, checkid) =>
@@ -2882,9 +2884,15 @@ const modifymotif = (motif, motifid) =>
             foreach ($liste as $key => $demande) 
             {
                 // echo "demandeslistehtmlpourgestion => debut du for " . $demande->id() . "<br>";
+                // var_dump($demande->id() . "  " . $demande->statut());
                 // if (($demande->statut() == "a" and $mode == MODE_AGENT) or ($demande->statut() == "v" and $mode == MODE_RESPONSABLE))
-                if (((strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) and strcasecmp((string)$mode, MODE_AGENT) == 0) 
-                  or ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0) and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) 
+                // if (((strcasecmp((string)$demande->statut(), demande::DEMANDE_ATTENTE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) and strcasecmp((string)$mode, MODE_AGENT) == 0) 
+                //   or ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 or strcasecmp((string)$demande->statut(), demande::DEMANDE_VALID_RH) == 0) and strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) 
+                if (
+                    (strcasecmp((string)$mode, MODE_AGENT) == 0 and in_array((string)$demande->statut(), [demande::DEMANDE_ATTENTE,demande::DEMANDE_VALIDE,demande::DEMANDE_VALID_RH]))
+                    or
+                    (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0 and in_array((string)$demande->statut(), [demande::DEMANDE_VALIDE,demande::DEMANDE_VALID_RH]))
+                   )
                 {
                     if ($premieredemande) {
                         $htmltext = $htmltext . "<table id='tabledemande_" . $this->agentid() . "' class='tableausimple'>";
@@ -2922,12 +2930,41 @@ const modifymotif = (motif, motifid) =>
                     
                     if (is_null($cleelement) or (strtoupper($demande->type())==strtoupper($cleelement)))
                     {
-                        $htmltext = $htmltext . "<tr align=center >";
+                        $htmltext = $htmltext . "<tr align=center class='bulleinfo'>";
                         // $htmltext = $htmltext . " <td>" . $this->nom() . " " . $this->prenom() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->date_demande()) . "_" . str_replace(':','',$demande->heure_demande()) . "'>" . $demande->date_demande() . " " . $demande->heure_demande() . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datedebut()) . "_" . (($demande->moment_debut()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'><time datetime='" . $this->fonctions->formatdatedb($demande->datefin()) . "_" . (($demande->moment_fin()==fonctions::MOMENT_MATIN)?'AM':'PM') . "'>" . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
+
+                        $datatitleindicator = '';
+                        // Si on a un fichier de justificatif et qu'on est en mode AGENT => On affiche le bouton permettant d'afficher le justificatif
+                        if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_AGENT]) )
+                        {
+                            $fullfilename = $this->fonctions->justificatifpath() . "/" . $demande->justiffilename();
+                            if (file_exists($fullfilename))
+                            {
+                                if (!isset($_SESSION['g2t']['filesecret']))
+                                {
+                                    $_SESSION['g2t']['filesecret'] = base64_encode(random_bytes(16));
+                                }
+                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                            }
+                        }
+
+                        // Si on est en mode agent et que ce n'est pas un congé => C'est une absence
+                        if (in_array($mode, [MODE_AGENT]) and !$this->fonctions->estunconge($demande->type()) and in_array($demande->statut(), array(demande::DEMANDE_ATTENTE,demande::DEMANDE_VALID_RH, demande::DEMANDE_AVIS)))
+                        {
+                            $datatitleindicator .= '<input type="hidden" name="MAX_FILE_SIZE" value="' . ini_parse_quantity(ini_get('upload_max_filesize')) . '" />';
+                            $datatitleindicator .= '<label for="file-upload['. $demande->id() . ']" class="file-label fontsize18 cursorpointer" data-title="Ajouter/modifier un justificatif.">' . HTML_ADDJUSTIF . '</label>';
+                            $datatitleindicator .= '<input id="file-upload['. $demande->id() . ']" class="input-file" type="file" name="justificatif_' . $demande->id() .'" hidden accept="';
+                            foreach(ALLOWED_FILE_TYPES as $minetype)
+                            {
+                                $datatitleindicator .= "$minetype, ";
+                            }
+                            $datatitleindicator .= '">'; //style="display:none"
+                        }
+
+                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . trim(trim($demande->typelibelle()) . ' ' . $datatitleindicator) . "</td>";
                         $datatitle = '';
                         $datatitleindicator = '';
                         $datatitletext  = '';
@@ -2942,14 +2979,14 @@ const modifymotif = (motif, motifid) =>
                                 if (strlen($demande->commentaire()) != 0) 
                                 {
                                     $datatitletext = $demande->commentaire();
-                                    $datatitleindicator = " &#128195; ";
+                                    $datatitleindicator = " " . HTML_SHOWCOMMENT . " ";
                                 }
                             }
                             if ($this->fonctions->formatdatedb($demande->datemailannulation())>='19500101')
                             {
                                 if (trim($datatitletext) != '') { $datatitletext = $datatitletext . chr(10) . chr(13); }
                                 $datatitletext = $datatitletext . "Une demande d'annulation vous a été envoyée le " . $this->fonctions->formatdate($demande->datemailannulation()); 
-                                $datatitleindicator = $datatitleindicator . " &#x2709; ";
+                                $datatitleindicator = $datatitleindicator . " " . HTML_ENVELOPETAG . " ";
                             }
                             if (trim($datatitletext)!= '')
                             {
@@ -2976,7 +3013,8 @@ const modifymotif = (motif, motifid) =>
 */                           
                         }
                         $spanend = '';
-                        if ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_AGENT) == 0))
+                        // if ((strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0 and strcasecmp((string)$mode, MODE_AGENT) == 0))
+                        if (strcasecmp((string)$mode, MODE_AGENT) == 0 and in_array((string)$demande->statut(),[demande::DEMANDE_VALIDE, demande::DEMANDE_VALID_RH]))
                         {
                             $disable = "";
                             $datetorepostmail = date('Y-m-d', strtotime($this->fonctions->formatdatedb($demande->datemailannulation()). ' + 7 days'));
@@ -3049,7 +3087,33 @@ const modifymotif = (motif, motifid) =>
                 $htmltext = $htmltext . "</table>";
                 $htmltext = $htmltext . "<script>
                                             sort_table_init('tabledemande_" . $this->agentid() . "',1);
-                                         </script>";
+
+                                            let fileinputlist = document.getElementsByClassName('input-file');
+                                            if (fileinputlist)
+                                            {
+                                                for(let index=0; index<fileinputlist.length ; index++)
+                                                {
+                                                    let fileinput = fileinputlist[index];
+                                                    fileinput.addEventListener('change', function(event) 
+                                                    {
+                                                        let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
+                                                        if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
+                                                        {
+                                                            alert('Le fichier est trop volumineux (taille maximale : " . round(ini_parse_quantity(ini_get('upload_max_filesize')) / 1024 / 1024) . "Mo)');
+                                                        }
+                                                        else
+                                                        {
+                                                            let form = this.closest('form');
+                                                            if (form)
+                                                            {
+                                                                form.submit();
+                                                            }
+                                                        }
+                                                    })
+                                                }
+                                            }
+                                        </script>";
+
             }
         }
         if ($premieredemande)
@@ -3120,7 +3184,11 @@ const modifymotif = (motif, motifid) =>
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
         $htmltext = "";
-        // $htmltext = "<br>";
+        // $htmltext = $htmltext . "<br>";
+        // $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
+        // $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+        // $htmltext = $htmltext . "<br>";
+
         if (count($liste) == 0) 
         {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
@@ -3194,8 +3262,9 @@ const modifymotif = (motif, motifid) =>
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datedebut()) . " " . $demande->datedebut() . " " . $this->fonctions->nommoment($demande->moment_debut()) . "</td>";
                         $htmltext = $htmltext . "   <td class='cellulesimple'>" . $this->fonctions->nomjour($demande->datefin()) . " " . $demande->datefin() . " " . $this->fonctions->nommoment($demande->moment_fin()) . "</td>";
                         $datatitleindicator = '';
-                        // Si on a un fichier de justificatif et qu'on est en mode RESPONSABLE ou RH => On affiche le bouton permettant d'afficher le justificatif
-                        if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_RESPONSABLE, MODE_RH]) )
+                        // Si on a un fichier de justificatif et qu'on est en mode RH => On affiche le bouton permettant d'afficher le justificatif
+                        // if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_RESPONSABLE, MODE_RH]) )
+                        if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_RH]) )
                         {
                             $fullfilename = $this->fonctions->justificatifpath() . "/" . $demande->justiffilename();
                             if (file_exists($fullfilename))
@@ -3204,14 +3273,20 @@ const modifymotif = (motif, motifid) =>
                                 {
                                     $_SESSION['g2t']['filesecret'] = base64_encode(random_bytes(16));
                                 }
-                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '">&#128195;</a>';
-                                // $minetype = mime_content_type($fullfilename);
-                                // $handle = fopen($fullfilename, "r");
-                                // $contents = fread($handle, filesize($fullfilename));
-                                // fclose($handle);
-                                // $contents = base64_encode($contents);
-                                // $datatitleindicator = '<button type="button" name="display_justif" value="display_justif" onClick="showjustif(\''. $minetype . '\', \'' . $contents . '\');">&#128195;</button>';
+                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
                             }
+                        }
+                        
+                        if (in_array($mode, [MODE_RH]))
+                        {
+                            $datatitleindicator .= '<input type="hidden" name="MAX_FILE_SIZE" value="' . ini_parse_quantity(ini_get('upload_max_filesize')) . '" />';
+                            $datatitleindicator .= '<label for="file-upload['. $demande->id() . ']" class="file-label fontsize18 cursorpointer" data-title="Ajouter/modifier un justificatif.">' . HTML_ADDJUSTIF . '</label>';
+                            $datatitleindicator .= '<input id="file-upload['. $demande->id() . ']" class="input-file" type="file" name="justificatif_' . $demande->id() .'" hidden accept="';
+                            foreach(ALLOWED_FILE_TYPES as $minetype)
+                            {
+                                $datatitleindicator .= "$minetype, ";
+                            }
+                            $datatitleindicator .= '">'; //style="display:none"
                         }
 
                         if ($demande->type() == 'enmal') {
@@ -3225,8 +3300,8 @@ const modifymotif = (motif, motifid) =>
                             {
                                 $datatitle = " data-title=" . chr(34) . htmlentities($demande->typelibelle()) . chr(34);  
                             }
-                            $htmltext = $htmltext . "<td class='cellulesimple' $datatitle >";
-                            $htmltext = $htmltext . trim(trim($libelledemande) . ' ' . $datatitleindicator); 
+                            $htmltext = $htmltext . "<td class='cellulesimple' >";
+                            $htmltext = $htmltext . "<label $datatitle>" . trim(trim($libelledemande) . '</label> ' . $datatitleindicator); 
                             $htmltext = $htmltext . "</td>";   
 //                            $htmltext = $htmltext . "   <td class='cellulesimple'>" . $demande->typelibelle() . "</td>";
                         }
@@ -3237,8 +3312,7 @@ const modifymotif = (motif, motifid) =>
                         if (strlen($demande->commentaire()) != 0 and $this->fonctions->absencecommentaireoblig($demande->type())) 
                         {
                             $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34); 
-                            // $datatitleindicator = " &#11127;";
-                            $datatitleindicator = " &#128195;";
+                            $datatitleindicator = " " . HTML_SHOWCOMMENT . " ";
                         }
                         $htmltext = $htmltext . "   <td class='cellulesimple' $datatitle>" . $demande->nbrejrsdemande() . $datatitleindicator . "</td>";
                         
@@ -3399,26 +3473,37 @@ const modifymotif = (motif, motifid) =>
             if (! $premieredemande)
             {
                 $htmltext = $htmltext . "</tbody></table>" . PHP_EOL;
-                // $htmltext = $htmltext . "<script>" . PHP_EOL;
-                // $htmltext = $htmltext . "function showjustif(minetype,contents)" . PHP_EOL;
-                // $htmltext = $htmltext . "{"  . PHP_EOL;
-                // $htmltext = $htmltext . "let newform = document.createElement('form');"  . PHP_EOL;
-                // $htmltext = $htmltext . "let contentsinput = document.createElement('input'); "  . PHP_EOL;
-                // $htmltext = $htmltext . "let minetypeinput = document.createElement('input'); "  . PHP_EOL;
-                // $htmltext = $htmltext . "newform.method = 'POST';"  . PHP_EOL;
-                // $htmltext = $htmltext . "newform.target = '_blank';" . PHP_EOL;
-                // $htmltext = $htmltext . "newform.action = 'affiche_justificatif.php';"  . PHP_EOL;
-                // $htmltext = $htmltext . "contentsinput.value=contents;"  . PHP_EOL;
-                // $htmltext = $htmltext . "contentsinput.name='contents';"  . PHP_EOL;
-                // $htmltext = $htmltext . "newform.appendChild(contentsinput);"  . PHP_EOL;
-                // $htmltext = $htmltext . "minetypeinput.value=minetype;"  . PHP_EOL;
-                // $htmltext = $htmltext . "minetypeinput.name='minetype';"  . PHP_EOL;
-                // $htmltext = $htmltext . "newform.appendChild(minetypeinput);"  . PHP_EOL;
-                // $htmltext = $htmltext . "document.body.appendChild(newform);" . PHP_EOL;
-                // $htmltext = $htmltext . "newform.submit();"  . PHP_EOL;
-                // $htmltext = $htmltext . "document.body.removeChild(newform);"  . PHP_EOL;
-                // $htmltext = $htmltext . "}"  . PHP_EOL;
-                // $htmltext = $htmltext . "</script>" . PHP_EOL;
+            }
+
+            if (trim($htmltext) != '')
+            {
+                $htmltext = $htmltext . "<script>
+                            let fileinputlist = document.getElementsByClassName('input-file');
+                            if (fileinputlist)
+                            {
+                                for(let index=0; index<fileinputlist.length ; index++)
+                                {
+                                    let fileinput = fileinputlist[index];
+                                    fileinput.addEventListener('change', function(event) 
+                                    {
+                                        let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
+                                        if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
+                                        {
+                                            alert('Le fichier est trop volumineux (taille maximale : " . round(ini_parse_quantity(ini_get('upload_max_filesize')) / 1024 / 1024) . "Mo)');
+                                        }
+                                        else
+                                        {
+                                            let form = this.closest('form');
+                                            if (form)
+                                            {
+                                                form.submit();
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                        </script>";
+
             }
             // $htmltext = $htmltext . "<br>";
         }

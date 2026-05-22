@@ -349,14 +349,14 @@
                 $agentliste = $struct->agentlist(date("d/m/Y"), date("d/m/Y"),'n');  // On ne veut pas les agents des sous-structures
                 $infoagent = "";
                 $nbprobleme = 0;
-                $sign = '&#128077;';
+                $sign = HTML_THUMBSUP;
                 
                 // On construit le tableau des agentid pour vérifier en masse les utilisateurs G2T
                 $arrayagentid = array();
                 $textlisteagent = '';
                 foreach ((array)$agentliste as $structagent)
                 {
-                    $textlisteagent = $textlisteagent . "<span class='delegpaddingleft'><B>&#8901;</B> " . $structagent->identitecomplete() . "</span><br>";
+                    $textlisteagent = $textlisteagent . "<span class='delegpaddingleft'><B>" . HTML_DOTTAG . "</B> " . $structagent->identitecomplete() . "</span><br>";
                     $arrayagentid[] = $structagent->agentid();
                 }
                 if (count($arrayagentid)>0)
@@ -372,7 +372,7 @@
                         {
                             $nbprobleme = $nbprobleme + 1;
                             $infoagent = $infoagent . "L'agent " . $structagent->identitecomplete() . " n'est pas un utilisateur G2T valide.<br>";
-                            $sign = "&#9888;";
+                            $sign = HTML_WARNING;
                         }
                         else
                         {
@@ -388,7 +388,7 @@
                 elseif (count($arrayagentid) == 0)
                 {
                     $infoagent = "Aucun agent n'est un utilisateur G2T valide => Structure non déployée ?<br>";
-                    $sign = "&#128711;";
+                    $sign = HTML_PROHIBITEDTAG;
                 }
 
                 echo "<tr>";

@@ -461,9 +461,9 @@ class demande
         $this->justiftmpfilename = $tmpfilename;
     }
 
-    function justiffilename() :string
+    function justiffilename() :string|null
     {
-        if (is_null($this->justiftmpfilename))
+        if (is_null($this->justiffilename))
         {
             $demandecomplement = new demandecomplement($this->dbconnect);
             $demandecomplement->load($this->demandeid, demande::COMPLEMENTJUSTIF);
@@ -655,6 +655,8 @@ class demande
         // echo "Demande->store : En cours de réécriture !!!!! <br>";
         if (is_null($this->demandeid)) 
         {
+            $agent = new agent($this->dbconnect);
+            $agent->load($this->agentid);
             $nbjrrestant = 0;
             $tableaucommentaire = array();
             // Si c'est une récupération => On vérifie que le tableau des commentaires est bien renseigné
@@ -676,8 +678,6 @@ class demande
                 $anneeref = $this->fonctions->anneeref($this->datedebut());
                 $datedebutanneeuniv = ($anneeref) . $this->fonctions->debutperiode();
                 $datefinanneeuniv = ($anneeref + 1) . $this->fonctions->finperiode();
-                $agent = new agent($this->dbconnect);
-                $agent->load($this->agentid);
                 $listerecup = $agent->listecommentaireconge(recuperation::RECUP_ID);
                 foreach($listerecup as $commentaireconge)
                 {
@@ -812,11 +812,18 @@ class demande
                         // echo "solde->droitaquis_demijrs() - solde->droitpris_demijrs() ==> " . $solde->droitaquis_demijrs() . " - " . $solde->droitpris_demijrs() . "<br>";
                     }
                 }
+
+                if ($this->typeabsenceid == 'enmal')
+                {
+                    $debut = $this->fonctions->formatdate($this->fonctions->anneeref($this->datedebut()) . $this->fonctions->debutperiode());
+                    $fin = $this->fonctions->formatdate($this->fonctions->anneeref($this->datefin()) . $this->fonctions->finperiode());
+                    $nbjrrestant = $agent->nbjrsenfantmalade() - $agent->nbjrsenfantmaladeutilise($debut, $fin);
+                }
             }
             
             // echo "Nombre de jours restant = " . $nbjrrestant . " nbredemijrs_demande = " . $this->nbredemijrs_demande . " <br>";
             if (  ($nbjrrestant >= $this->nbrejrsdemande) 
-               or (! $this->fonctions->estunconge($this->typeabsenceid)) 
+               or (! $this->fonctions->estunconge($this->typeabsenceid) and $this->typeabsenceid != 'enmal') 
                or ($ignoresoldeinsuffisant == TRUE)
                //or ($this->typeabsenceid == recuperation::RECUP_ID)
                ) 
@@ -991,6 +998,11 @@ class demande
                 if (in_array($mime_type, ALLOWED_FILE_TYPES)) 
                 {
                     $extension = array_search($mime_type,ALLOWED_FILE_TYPES);
+                }
+                $previousjustiffilename = $this->justiffilename();
+                if (trim($previousjustiffilename . '') != '' and file_exists($this->fonctions->justificatifpath() . '/' . $previousjustiffilename))
+                {
+                    unlink($this->fonctions->justificatifpath() . '/' . $previousjustiffilename);
                 }
                 $finaljustiffilename = 'justificatif_' . $this->demandeid . '.' . $extension;
                 $destination = $this->fonctions->justificatifpath() . '/' . $finaljustiffilename;

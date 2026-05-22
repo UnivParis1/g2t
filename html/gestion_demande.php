@@ -123,7 +123,8 @@
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml"><br>';
 
-    //echo "POST = "; print_r($_POST); echo "<br>";
+    // echo "POST = "; print_r($_POST); echo "<br>";
+    // echo "FILE = "; print_r($_FILES); echo "<br>";
 
     $cancelbutton = array();
     if (isset($_POST["cancelbutton"]))
@@ -239,6 +240,66 @@
 //        }
     }
 
+
+    // Si on a un justificatif qui a été posté 
+    if (isset($_FILES) and count($_FILES)>0)
+    {
+        // On parcourt toutes les données
+        foreach ($_FILES as $key => $fileinfos)
+        {
+            $msg_erreur = '';
+            // Si la clé contient 'justificatif_' => c'est donc un justificatif qui est uploadé
+            if (stripos($key,'justificatif_')!==false)
+            {
+                // On a uploadé un fichier si le code est != 4 (code 4 => Pas de fichier uploadé)
+                if ($_FILES[$key]['error'] != 4)
+                {
+                    $demandeid = explode('_',$key)[1];
+                    // Le numéro de la demande est la partie droite après le '_'
+                    $demande = new demande($dbcon);
+                    $demande->load($demandeid);
+                    if ($_FILES[$key]['error'] != 0)
+                    {
+                        $msg_erreur = $msg_erreur . $fonctions->getfileuploaderror($_FILES[$key]['error']) . '<br>';
+                    }
+                    elseif (is_uploaded_file($_FILES[$key]['tmp_name'])) 
+                    {
+                        $mime_type = mime_content_type($_FILES[$key]['tmp_name']);
+                        if (! in_array($mime_type, ALLOWED_FILE_TYPES)) 
+                        {
+                            // Pas le bon type MINE
+                            $msg_erreur = $msg_erreur . "Le format du fichier justificatif n'est pas supporté.";
+                        }
+                    }
+                    if ($msg_erreur != '')
+                    {
+                        error_log($fonctions->stripAccents("Impossible de modifier le justificatif de la demande " . $demande->id() . " : " . $msg_erreur));
+                        echo $fonctions->showmessage(fonctions::MSGINFO,"Impossible de modifier le justificatif de la demande " . $demande->id() . "<br>" . $msg_erreur);
+                    }
+                    else
+                    {
+                        $demande->justiftmpfilename($_FILES[$key]['tmp_name']);
+                        $demande->store();
+
+                        if ($demande->statut() == demande::DEMANDE_VALID_RH)
+                        {
+                            $drhuser = new agent($dbcon);
+                            if ($drhuser->load(SPECIAL_USER_IDLISTERHUSER))
+                            {
+                                $mailbody = "Je vous informe que je viens d'ajouter/modifier le justificatif de ma demande du " . $fonctions->formatdate($demande->datedebut()) . ' au ' . $fonctions->formatdate($demande->datefin()) . ".\n";
+                                $user->sendmail($drhuser, "Ajout/modification d'un justificatif", $mailbody);
+                            }
+                        }
+                        error_log($fonctions->stripAccents("Le justificatif de la demande " . $demande->id() . " a été modifié."));
+                        echo $fonctions->showmessage(fonctions::MSGINFO,"Le justificatif de la demande " . $demande->id() . " a été modifié.");
+                    }
+                }
+            }
+        }
+    }
+    
+
+
     $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
     // Si on est dans le mode "previous" alors on dit que la date de fin est l'année courante
     if ($previous == 1)
@@ -259,7 +320,7 @@
     //echo "noresponsableset = $noresponsableset <br> mode = $mode <br>";
     $displaysubmit = true;
     $selectagentbutton = false;
-    echo "<form name='frm_gest_demande' id='frm_gest_demande' method='post' >";
+    echo "<form name='frm_gest_demande' id='frm_gest_demande' method='post' enctype='multipart/form-data'>";
     if ($noresponsableset and (is_null($mode) or $mode == '')) {
         // => C'est un agent qui veut gérer ses demandes
         //echo "Pas de responsable.... C'est un agent qui veut gérer ses demandes<br>";

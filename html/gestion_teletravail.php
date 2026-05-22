@@ -1891,7 +1891,7 @@ Vous pouvez la compléter et valider/refuser la demande via le menu 'Responsable
         echo "<table><tbody>";
         echo "<tr>";
     	echo "<th scope='row'>Date de début : </th>";
-        echo "<td><span class='largerfontsize' data-tip=" . chr(34) . htmlentities("Ceci est la date de début souhaitée. La date d'effet de la convention ne pourra être antérieure à la date de signature de tous les intervenants.") . chr(34) . "> &#9432; </span></td>";
+        echo "<td><span class='largerfontsize' data-tip=" . chr(34) . htmlentities("Ceci est la date de début souhaitée. La date d'effet de la convention ne pourra être antérieure à la date de signature de tous les intervenants.") . chr(34) . ">" . HTML_INFOMARK . "</span></td>";
     	if ($fonctions->verifiedate($inputdatedebut)) 
         {
     	    $inputdatedebut = $fonctions->formatdate($inputdatedebut);

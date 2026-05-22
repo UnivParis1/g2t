@@ -1110,7 +1110,7 @@
                     if (!$gestionnaire->isG2tUser())
                     {
                         $style = " class='kobackgroundtext' ";
-                        $extrainfo = "<b><span class='redtext'> &#x1F828; Le gestionnaire défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
+                        $extrainfo = "<b><span class='redtext'> " . HTML_LEFTARROW . " Le gestionnaire défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
                     }
                 }
                 echo "' size=40 $style/>$extrainfo";
@@ -1164,7 +1164,7 @@
                         if (!$delegationuser->isG2tUser())
                         {
                             $style = " class='kobackgroundtext' ";
-                            $extrainfo = "<b><span class='redtext'> &#x1F828; Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
+                            $extrainfo = "<b><span class='redtext'> " . HTML_LEFTARROW . " Le délégué défini n'a pas accès à l'application G2T. Veuillez le modifier ou contacter la DRH.</span></b>";
                         }
                     }
                     echo "' size=40 $style />$extrainfo";
@@ -1327,19 +1327,19 @@
 
                     $tiptext = "En cochant cette case, le délégué peut agir comme un responsable, mais reste sous la reponsabilité de celui-ci.\n";
                     $tiptext = $tiptext . "Le responsable :\n";
-                    $tiptext = $tiptext . "\t&#x2022; reçoit les notifications des demandes des agents. Le délégué les reçoit également. \n";
-                    $tiptext = $tiptext . "\t&#x2022; peut valider les demandes de congés/d'absences des agents et du délégué. \n";
-                    $tiptext = $tiptext . "\t&#x2022; est intégré dans le circuit de validation du CET et du télétravail des agents avec le délégué. \n";
+                    $tiptext = $tiptext . "\t" . HTML_BULLETMARK . " reçoit les notifications des demandes des agents. Le délégué les reçoit également. \n";
+                    $tiptext = $tiptext . "\t" . HTML_BULLETMARK . " peut valider les demandes de congés/d'absences des agents et du délégué. \n";
+                    $tiptext = $tiptext . "\t" . HTML_BULLETMARK . " est intégré dans le circuit de validation du CET et du télétravail des agents avec le délégué. \n";
                     $tiptext = $tiptext . "ATTENTION : Les demandes du délégué sont validées par le responsable de la structure courante. \n";
                     $tiptext = $tiptext . "\n";
                     $tiptext = $tiptext . "En ne cochant pas cette case, le délégué se substitue au responsable (poste vacant, absence longue durée).\n";
                     $tiptext = $tiptext . "Le responsable :\n";
-                    $tiptext = $tiptext . "\t&#x2022; ne reçoit pas les notifications des demandes des agents. Seul le délégué est notifié. \n";
-                    $tiptext = $tiptext . "\t&#x2022; peut valider les demandes de congés/d'absences des agents et du délégué. \n";
-                    $tiptext = $tiptext . "\t&#x2022; est intégré dans le circuit de validation du CET et du télétravail des agents avec le délégué. \n";
+                    $tiptext = $tiptext . "\t" . HTML_BULLETMARK . " ne reçoit pas les notifications des demandes des agents. Seul le délégué est notifié. \n";
+                    $tiptext = $tiptext . "\t" . HTML_BULLETMARK . " peut valider les demandes de congés/d'absences des agents et du délégué. \n";
+                    $tiptext = $tiptext . "\t" . HTML_BULLETMARK . " est intégré dans le circuit de validation du CET et du télétravail des agents avec le délégué. \n";
                     $tiptext = $tiptext . "ATTENTION : Les demandes du délégué peuvent être validées par le responsable de la structure courante ou parente. \n";
             
-                    echo "En cochant cette case, le délégué (<label id=nomdeleguelabel[" . $structure->id() . "]></label>) reste sous la responsabilité hiérarchique de " . $structure->responsablesiham()->identitecomplete()  . " <span class='cursorpointer redtext fontsize25' data-title=\"$tiptext\">&#x1F6C8;</span>.</input>";
+                    echo "En cochant cette case, le délégué (<label id=nomdeleguelabel[" . $structure->id() . "]></label>) reste sous la responsabilité hiérarchique de " . $structure->responsablesiham()->identitecomplete()  . " <span class='cursorpointer redtext fontsize25' data-title=\"$tiptext\">" . HTML_INFOMARK . "</span>.</input>";
                     echo "</div>";
                     echo "</td>";
                     echo "</tr>";

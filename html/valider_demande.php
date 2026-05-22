@@ -50,6 +50,8 @@
     // echo '<html><body class="bodyhtml">';
     echo "<br>";
 
+    
+
     //$longueurmaxmotif = $fonctions->logueurmaxcolonne('DEMANDE','MOTIFREFUS');
 
 
@@ -70,10 +72,57 @@
     }
 
 
-    //  echo "_POST = "; print_r($_POST); echo "<br>";
+    // echo "_POST = "; print_r($_POST); echo "<br>";
+    // echo "_FILES = "; print_r($_FILES); echo "<br>";
     //  var_dump($statutliste);
     //  var_dump($motifliste);
 
+        // Si on a un justificatif qui a été posté 
+    if (isset($_FILES) and count($_FILES)>0 and strcasecmp((string)$mode,MODE_RH)==0)
+    {
+        // On parcourt toutes les données
+        foreach ($_FILES as $key => $fileinfos)
+        {
+            $msg_erreur = '';
+            // Si la clé contient 'justificatif_' => c'est donc un justificatif qui est uploadé
+            if (stripos($key,'justificatif_')!==false)
+            {
+                // On a uploadé un fichier si le code est != 4 (code 4 => Pas de fichier uploadé)
+                if ($_FILES[$key]['error'] != 4)
+                {
+                    $demandeid = explode('_',$key)[1];
+                    // Le numéro de la demande est la partie droite après le '_'
+                    $demande = new demande($dbcon);
+                    $demande->load($demandeid);
+                    if ($_FILES[$key]['error'] != 0)
+                    {
+                        $msg_erreur = $msg_erreur . $fonctions->getfileuploaderror($_FILES[$key]['error']) . '<br>';
+                    }
+                    elseif (is_uploaded_file($_FILES[$key]['tmp_name'])) 
+                    {
+                        $mime_type = mime_content_type($_FILES[$key]['tmp_name']);
+                        if (! in_array($mime_type, ALLOWED_FILE_TYPES)) 
+                        {
+                            // Pas le bon type MINE
+                            $msg_erreur = $msg_erreur . "Le format du fichier justificatif n'est pas supporté.";
+                        }
+                    }
+                    if ($msg_erreur != '')
+                    {
+                        error_log($fonctions->stripAccents("Impossible de modifier le justificatif de la demande " . $demande->id() . " : " . $msg_erreur));
+                        echo $fonctions->showmessage(fonctions::MSGINFO,"Impossible de modifier le justificatif de la demande " . $demande->id() . "<br>" . $msg_erreur);
+                    }
+                    else
+                    {
+                        $demande->justiftmpfilename($_FILES[$key]['tmp_name']);
+                        $demande->store();
+                        error_log($fonctions->stripAccents("Le justificatif de la demande " . $demande->id() . " a été modifié."));
+                        echo $fonctions->showmessage(fonctions::MSGINFO,"Le justificatif de la demande " . $demande->id() . " a été modifié.");
+                    }
+                }
+            }
+        }
+    }
 
     if (is_array($statutliste))
     {
@@ -136,6 +185,17 @@
                     $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
                     $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
 
+                    // On envoi un mail (sans l'ICS et la PJ) au responsable
+                    $resp = $agent->getsignataire();
+                    if (is_null($resp) or $resp===false)
+                    {
+                        // Pas de mail car le responsable n'est pas identifié
+                    }
+                    else
+                    {
+                        $corpmail = "La demande de " . $agent->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
+                        $user->sendmail($resp, "Modification d'une demande de congés ou d'absence pour " . $agent->identitecomplete(), $corpmail);
+                    }
 
                     // $corpmail = "La demande ci-dessous a été modifiée par " . $user->identitecomplete() . " :<br>";
                     // $corpmail = $corpmail . "<br>";
@@ -385,7 +445,14 @@
         }
     }
 
-    echo "Changez l'état de chacune des demandes en \"Validée\" ou \"Refusée\", puis enregistrez les modifications en cliquant sur le bouton \"Enregistrer\" <br>Laissez l'état des demandes à \"En attente\" si vous ne souhaitez pas faire de modification.<br><U>Attention :</U> La saisie du motif est obligatoire dans le cas d'un refus.<br><br>";
+    echo "Changez l'état de chacune des demandes en \"Validée\" ou \"Refusée\", puis enregistrez les modifications en cliquant sur le bouton \"Enregistrer\" <br>";
+    echo "Laissez l'état des demandes à \"En attente\" si vous ne souhaitez pas faire de modification.<br>";
+    echo "<U>Attention :</U> La saisie du motif est obligatoire dans le cas d'un refus.<br>";
+    echo "<br>";
+    echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
+    echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+    echo "<br>";
+
 
     if ($user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) {
         $listestruct = $user->structrespliste();
@@ -396,7 +463,7 @@
             uasort($listestruct,array($fonctions,"triparprofondeurabsolue"));
         }
         // print_r($listestruct); echo "<br>";
-        echo "<form name='frm_validation_conge'  method='post' >";
+        echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
         if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         foreach ($listestruct as $key => $structure) {
@@ -466,7 +533,7 @@
     }
 
     if ($user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
-        echo "<form name='frm_validation_conge'  method='post' >";
+        echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
         if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
@@ -559,7 +626,7 @@
     
     //var_dump ("mode = $mode");
     if (strcasecmp((string)$mode, MODE_CONSULTANT) == 0) {
-        echo "<form name='frm_validation_conge'  method='post' >";
+        echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
         if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "<p class='centeraligntext'>Liste des agents avec une demande d'avis en attente</p>";
@@ -605,7 +672,7 @@
         $aumoinsunedemande = false;
         if (count($demandeliste)>0)
         {
-            echo "<form name='frm_validation_conge'  method='post' >";
+            echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
             if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
             // La liste retournée a une structure $liste[agentid][demandeid] = obj_demande

@@ -529,7 +529,8 @@ span[data-tip]:hover:after {
 span[data-title]:hover:after,
 td[data-title]:hover:after,
 label[data-title]:hover:after,
-li[data-title]:hover:after {
+li[data-title]:hover:after,
+a[data-title]:hover:after {
     opacity: 1;
     transition: all 0.1s ease 0.5s;
     visibility: visible;
@@ -539,7 +540,8 @@ li[data-title]:hover:after {
 span[data-title]:after,
 td[data-title]:after,
 label[data-title]:after,
-li[data-title]:after {
+li[data-title]:after,
+a[data-title]:after {
     content: attr(data-title);
     position: absolute;
 /*    bottom: -1.6em; */
@@ -562,7 +564,8 @@ li[data-title]:after {
 span[data-title],
 td[data-title],
 label[data-title],
-li[data-title] {
+li[data-title],
+a[data-title] {
     position: relative;
     /* font-size: initial; */
 }

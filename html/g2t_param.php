@@ -1786,19 +1786,19 @@
             echo "<td class='cellulesimple centeraligntext'>";
             if (isset($agentrhcetliste[$agentrh->agentid()]))
             {
-                echo "&#x2714";
+                echo HTML_CHECKOK;
             }
             echo "</td>";
             echo "<td class='cellulesimple centeraligntext'>";
             if (isset($agentrhcongeliste[$agentrh->agentid()]))
             {
-                echo "&#x2714";
+                echo HTML_CHECKOK;
             }
             echo "</td>";
             echo "<td class='cellulesimple centeraligntext'>";
             if (isset($agentrhteletravailliste[$agentrh->agentid()]))
             {
-                echo "&#x2714";
+                echo HTML_CHECKOK;
             }
             echo "</td>";
             $disabledtext = '';

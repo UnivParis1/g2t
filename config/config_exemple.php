@@ -171,6 +171,25 @@ define('GLPI_COLLECTEUR', 'glpi-collecteur-ppd@etab.fr');
 // Laisser à chaine vide si pas de branche particulière pour les bibliothèques et les centres de documentation
 define('BRANCHE_BIB','');
 
+///////////////////////////////////////////
+// Définition des logos pour différents indicateurs sur les pages
+define ('HTML_ADDJUSTIF', '&#x1F5F3;');
+define ('HTML_SHOWJUSTIF', '&#128195;'); // &#128195;
+define ('HTML_SHOWCOMMENT', '&#128195;'); // &#128195;
+define ('HTML_WARNING', '&#9888;');
+define ('HTML_COMMENTREQUIERED', '&#9998;');
+define ('HTML_CHECKOK', '&#x2714;');
+define ('HTML_LEFTARROW', '&#x1F828;');
+define ('HTML_INDENTMARK', '&#x21AA;'); // fleche courbée vers la droite ↪
+define ('HTML_BULLETMARK', '&#x2022;');
+define ('HTML_INFOMARK', '&#x1F6C8;');
+define ('HTML_THUMBSUP', '&#128077;');  // Pouce levé : 👍
+define ('HTML_DOTTAG', '&#8901;');  // Point ⋅
+define ('HTML_PROHIBITEDTAG', '&#128711;');
+define ('HTML_ENVELOPETAG', '&#x2709;');
+
+
+
 ////////////////////////////////////////////////////////////////////////////
 // ATTENTION : LES NOMS DES CONSTANTES DES UTILISATEURS SPECIAUX DOIVENT
 // ----------  OBLIGATOIREMENT COMMENCER PAR 'SPECIAL_USER_' POUR ETRE

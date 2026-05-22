@@ -570,7 +570,7 @@ use Dom\ParentNode;
                     $javatext = "structliste['" . $structure->id() . "'] = '" . str_pad('', strlen('&nbsp;')*4*$structure->profondeurrelative(), '&nbsp;', STR_PAD_LEFT);
                     if ($structure->profondeurrelative()>0)
                     {
-                        $javatext = $javatext . " &#x21AA; "; // &#x21B3; ";
+                        $javatext = $javatext . " " . HTML_INDENTMARK . " "; 
                     }
                     $javatext = $javatext . htmlspecialchars($structure->nomlong() . " (" . $structure->nomcourt() . ")") . "';" . chr(13);
                     echo $javatext;
@@ -665,7 +665,7 @@ use Dom\ParentNode;
                 $datatitle = $datatitle . chr(13) . 'L\'étape est obligatoire : ' . $fonctions->ouinonlibelle(trim($node->attributes->getNamedItem('OBLIGATOIRE')->nodeValue));
                 $datatitle = $datatitle . chr(13) . 'Tous les signatataires doivent signer : ' . $fonctions->ouinonlibelle(trim($node->attributes->getNamedItem('TOUTESIGNATURE')->nodeValue));
                 $datatitle = $datatitle . chr(13) . 'Un document doit être joint à la signature : ' . $fonctions->ouinonlibelle(trim($node->attributes->getNamedItem('PIECEJOINTEOBLIGATOIRE')->nodeValue));
-                $datatitle = " <label class='XMLinfoetape' data-title='" . htmlentities($datatitle) . "'>&#128712;</label>";
+                $datatitle = " <label class='XMLinfoetape' data-title='" . htmlentities($datatitle) . "'>" . HTML_INFOMARK . "</label>";
             }
             $nodepath = $node->getNodePath();
             echo "<li>";

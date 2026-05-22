@@ -81,7 +81,7 @@
         header('Content-type: text/html; charset=utf-8');
         echo "<html>";
         echo "<head><title>Justificatif d'absence</title></head>";
-        echo "<iframe width='100%' height='100%' src='data:$minetype;base64,$contents'></iframe>";
+        echo "<iframe width='100%' height='100%' src='data:$minetype;base64," . chunk_split($contents) . "'></iframe>";
         echo "</html>";
     }
     // C'est une image => On l'affiche dans une balise html img
@@ -90,7 +90,7 @@
         header('Content-type: text/html; charset=utf-8');
         echo "<html>";
         echo "<head><title>Justificatif d'absence</title></head>";
-        echo '<img src="data:' . $minetype . ';base64, ' . $contents . '">';
+        echo '<img style="max-width:100%; max-height:100%" src="data:' . $minetype . ';base64, ' . chunk_split($contents) . '">';
         echo '</html>';
     }
 

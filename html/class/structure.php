@@ -1534,7 +1534,7 @@ class structure
                             if (!$useravis->isG2tUser())
                             {
                                 $style = " class='kobackgroundtext' ";
-                                $extrainfo = "<b><span class='redtext'> &#x1F828; L'utilisateur défini n'a pas accès à l'application G2T. Veuillez le modifier.</span></b>";
+                                $extrainfo = "<b><span class='redtext'> " . HTML_LEFTARROW . " L'utilisateur défini n'a pas accès à l'application G2T. Veuillez le modifier.</span></b>";
                             }
                         }
                         $htmltext = $htmltext . "' size=40 $style/>$extrainfo";

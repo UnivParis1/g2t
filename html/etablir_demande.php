@@ -682,6 +682,22 @@
                             }
                         }
                         $user->sendmail($agent, "Modification d'une demande de congés ou d'absence", $corpmail, $pdffilename, $ics);
+
+                        // Si on est en mode RH, on doit informé le responsable également
+                        if ($mode == MODE_RH)
+                        {
+                            // On envoi un mail (sans l'ICS et la PJ) au responsable
+                            $resp = $agent->getsignataire();
+                            if (is_null($resp) or $resp===false)
+                            {
+                                // Pas de mail car le responsable n'est pas identifié
+                            }
+                            else
+                            {
+                                $corpmail = "Une demande pour " . $agent->identitecomplete() . " du " . $demande->datedebut() . " au " . $demande->datefin() . " a été déposée par le service de la DRH.";
+                                $user->sendmail($resp, "Saisie d'une demande de congés ou d'absence pour " . $agent->identitecomplete(), $corpmail);
+                            }
+                        }
                         
                         // Si c'est une demande prise sur un CET et qu'elle est validée => On envoie un mail au gestionnaire RH de CET
                         if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) 
@@ -1077,7 +1093,7 @@
                     {
                         echo " class='abssencecommoblig' ";
 //                        echo " data-color='abssencecommoblig' ";
-                        echo ">" . $nomabs . " &nbsp;&nbsp;&nbsp; &#9888; &#9998;";   // &#9888; => symbole HTML ⚠    &#128398; => synbole HTML 🖎
+                        echo ">" . $nomabs . " &nbsp;&nbsp;&nbsp; " . HTML_WARNING . " " . HTML_COMMENTREQUIERED;
                     }
                     else
                     {
