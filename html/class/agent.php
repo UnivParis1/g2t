@@ -2855,8 +2855,11 @@ class agent
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
         $htmltext = "";
-        $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
-        $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+        if ($mode == MODE_RH or $mode == MODE_AGENT)
+        {
+            $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
+            $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+        }
         $htmltext = $htmltext . "<br>";
         $htmltext = $htmltext . "
 <script>
@@ -3117,43 +3120,45 @@ const modifymotif = (motif, motifid) =>
                 $htmltext = $htmltext . "<script>
                                             sort_table_init('tabledemande_" . $this->agentid() . "',1);
 
-                                            let fileinputlist = document.getElementsByClassName('input-file');
-                                            if (fileinputlist)
                                             {
-                                                for(let index=0; index<fileinputlist.length ; index++)
+                                                let fileinputlist = document.getElementsByClassName('input-file');
+                                                if (fileinputlist)
                                                 {
-                                                    let fileinput = fileinputlist[index];
-                                                    fileinput.addEventListener('change', function(event) 
+                                                    for(let index=0; index<fileinputlist.length ; index++)
                                                     {
-                                                        let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
-                                                        if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
+                                                        let fileinput = fileinputlist[index];
+                                                        fileinput.addEventListener('change', function(event) 
                                                         {
-                                                            divstructid.hidden = true;
-                                                            divagentid.hidden = true;
-                                                            divselecttype.hidden = true;
-                                                            divmotif.hidden = true;
-                                                            labelmodalheader.innerHTML = 'Document trop volumineux';
-                                                            masquerimgmodal('error');
-                                                            divmodalcancelBtn.textContent = 'Ok';
-                                                            divmodalcancelBtn.hidden = false;
-                                                            divmodalcancelBtn.classList.add('g2tokbouton');
-                                                            divmodalconfirmBtn.hidden = true;
-                                                            divmodallabeltext.parentElement.classList.add('centeraligntext');
-                                                            divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : " . ini_get('upload_max_filesize') . ")';
-                                                            divmodal.style.display = 'block';
-                                                            // event.target => C'est l'objet input de type file
-                                                            event.target.value = '';
-                                                            event.target.files.length = 0;
-                                                        }
-                                                        else
-                                                        {
-                                                            let form = this.closest('form');
-                                                            if (form)
+                                                            let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
+                                                            if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
                                                             {
-                                                                form.submit();
+                                                                divstructid.hidden = true;
+                                                                divagentid.hidden = true;
+                                                                divselecttype.hidden = true;
+                                                                divmotif.hidden = true;
+                                                                labelmodalheader.innerHTML = 'Document trop volumineux';
+                                                                masquerimgmodal('error');
+                                                                divmodalcancelBtn.textContent = 'Ok';
+                                                                divmodalcancelBtn.hidden = false;
+                                                                divmodalcancelBtn.classList.add('g2tokbouton');
+                                                                divmodalconfirmBtn.hidden = true;
+                                                                divmodallabeltext.parentElement.classList.add('centeraligntext');
+                                                                divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : " . ini_get('upload_max_filesize') . ")';
+                                                                divmodal.style.display = 'block';
+                                                                // event.target => C'est l'objet input de type file
+                                                                event.target.value = '';
+                                                                event.target.files.length = 0;
                                                             }
-                                                        }
-                                                    })
+                                                            else
+                                                            {
+                                                                let form = this.closest('form');
+                                                                if (form)
+                                                                {
+                                                                    form.submit();
+                                                                }
+                                                            }
+                                                        })
+                                                    }
                                                 }
                                             }
                                         </script>";
@@ -3212,7 +3217,7 @@ const modifymotif = (motif, motifid) =>
         $liste = null;
         if ($mode == MODE_RH)
         {
-            $liste = $this->fonctions->demandesaverifier($debut_interval, $this->agentid());
+            $liste = $this->fonctions->demandesaverifier($debut_interval, $fin_interval, $this->agentid());
             // La liste retournée a une structure $liste[agentid][demandeid] = obj_demande
             // Pour récupérer la même structure => On récupère la liste des obj_demande
             if (count($liste)>0)
@@ -3228,11 +3233,6 @@ const modifymotif = (motif, motifid) =>
         $fin_interval = $this->fonctions->formatdatedb($fin_interval);
         
         $htmltext = "";
-        // $htmltext = $htmltext . "<br>";
-        // $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
-        // $htmltext = $htmltext . "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
-        // $htmltext = $htmltext . "<br>";
-
         if (count($liste) == 0) 
         {
             // $htmltext = $htmltext . " <tr><td class=titre1 align=center>L'agent n'a aucun congé posé pour la période de référence en cours.</td></tr>";
@@ -3523,43 +3523,45 @@ const modifymotif = (motif, motifid) =>
             if (trim($htmltext) != '')
             {
                 $htmltext = $htmltext . "<script>
-                            let fileinputlist = document.getElementsByClassName('input-file');
-                            if (fileinputlist)
                             {
-                                for(let index=0; index<fileinputlist.length ; index++)
+                                let fileinputlist = document.getElementsByClassName('input-file');
+                                if (fileinputlist)
                                 {
-                                    let fileinput = fileinputlist[index];
-                                    fileinput.addEventListener('change', function(event) 
+                                    for(let index=0; index<fileinputlist.length ; index++)
                                     {
-                                        let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
-                                        if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
+                                        let fileinput = fileinputlist[index];
+                                        fileinput.addEventListener('change', function(event) 
                                         {
-                                            divstructid.hidden = true;
-                                            divagentid.hidden = true;
-                                            divselecttype.hidden = true;
-                                            divmotif.hidden = true;
-                                            labelmodalheader.innerHTML = 'Document trop volumineux';
-                                            masquerimgmodal('error');
-                                            divmodalcancelBtn.textContent = 'Ok';
-                                            divmodalcancelBtn.hidden = false;
-                                            divmodalcancelBtn.classList.add('g2tokbouton');
-                                            divmodalconfirmBtn.hidden = true;
-                                            divmodallabeltext.parentElement.classList.add('centeraligntext');
-                                            divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : " . ini_get('upload_max_filesize') . ")';
-                                            divmodal.style.display = 'block';
-                                            // event.target => C'est l'objet input de type file
-                                            event.target.value = '';
-                                            event.target.files.length = 0;
-                                        }
-                                        else
-                                        {
-                                            let form = this.closest('form');
-                                            if (form)
+                                            let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
+                                            if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
                                             {
-                                                form.submit();
+                                                divstructid.hidden = true;
+                                                divagentid.hidden = true;
+                                                divselecttype.hidden = true;
+                                                divmotif.hidden = true;
+                                                labelmodalheader.innerHTML = 'Document trop volumineux';
+                                                masquerimgmodal('error');
+                                                divmodalcancelBtn.textContent = 'Ok';
+                                                divmodalcancelBtn.hidden = false;
+                                                divmodalcancelBtn.classList.add('g2tokbouton');
+                                                divmodalconfirmBtn.hidden = true;
+                                                divmodallabeltext.parentElement.classList.add('centeraligntext');
+                                                divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : " . ini_get('upload_max_filesize') . ")';
+                                                divmodal.style.display = 'block';
+                                                // event.target => C'est l'objet input de type file
+                                                event.target.value = '';
+                                                event.target.files.length = 0;
                                             }
-                                        }
-                                    })
+                                            else
+                                            {
+                                                let form = this.closest('form');
+                                                if (form)
+                                                {
+                                                    form.submit();
+                                                }
+                                            }
+                                        })
+                                    }
                                 }
                             }
                         </script>";

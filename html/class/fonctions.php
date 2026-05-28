@@ -1628,20 +1628,25 @@ class fonctions
         return $demandeliste;
     }
 
-    public function demandesaverifier($datedebut, $agentid = null) :array
+    public function demandesaverifier($datedebut, $datefin, $agentid = null) :array
     {
+        $datedebut = $this->formatdatedb($datedebut);
+        $datefin = $this->formatdatedb($datefin);
         $sql = "SELECT DISTINCT DEMANDEID,AGENTID, DATEDEBUT,DATESTATUT
     				FROM DEMANDE
     				WHERE STATUT = '" . demande::DEMANDE_VALID_RH . "'
-    				  AND DATEDEBUT >= ? ";
+                      AND ((DEMANDE.DATEDEBUT <= ? AND DEMANDE.DATEFIN >= ? )
+                       OR (DEMANDE.DATEFIN >= ? AND DEMANDE.DATEDEBUT <= ? )
+                       OR (DEMANDE.DATEDEBUT >= ? AND DEMANDE.DATEFIN <= ? ))";
+
         if (!is_null($agentid))
         {
             $sql = $sql . " AND AGENTID = ? ";
-            $params = array($this->formatdatedb($datedebut),$agentid);
+            $params = array($datedebut, $datedebut, $datefin, $datefin, $datedebut, $datefin,$agentid);
         }
         else
         {
-            $params = array($this->formatdatedb($datedebut));
+            $params = array($datedebut, $datedebut, $datefin, $datefin, $datedebut, $datefin);
         }
     	$sql = $sql . " ORDER BY AGENTID, DATEDEBUT, DATESTATUT";
         $query = $this->prepared_select($sql, $params);

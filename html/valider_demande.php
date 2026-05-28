@@ -450,13 +450,17 @@
     echo "Laissez l'état des demandes à \"En attente\" si vous ne souhaitez pas faire de modification.<br>";
     echo "<U>Attention :</U> La saisie du motif est obligatoire dans le cas d'un refus.<br>";
     echo "<br>";
-    echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
-    echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
-    echo "<U>Attention :</U> L'ajout/la modification d'un justificatif ne modifie pas le statut de la demande.<br>";
+    if ($mode == MODE_RH)
+    {
+        echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
+        echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+        echo "<U>Attention :</U> L'ajout/la modification d'un justificatif ne modifie pas le statut de la demande.<br>";
+    }
     echo "<br>";
 
 
-    if ($user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) {
+    if ($user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) 
+    {
         $listestruct = $user->structrespliste();
         $listestruct = $fonctions->enleverstructuresinclues_demandes($listestruct);
         if (is_array($listestruct))
@@ -468,7 +472,8 @@
         echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
         if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
-        foreach ($listestruct as $key => $structure) {
+        foreach ($listestruct as $key => $structure) 
+        {
             $aumoinsunedemande = False;
             $cleelement = $structure->id();
 
@@ -493,8 +498,10 @@
             ////$validsousstruct = strtolower($structure->respvalidsousstruct());
             ////// echo "validsousstruct = XXXXX" . $validsousstruct . "XXXXX <br>";
             ////$agentliste = $structure->agentlist(date("d/m/Y"), date("d/m/Y"), $validsousstruct);
-            if (is_array($agentliste)) {
-                foreach ($agentliste as $membrekey => $membre) {
+            if (is_array($agentliste)) 
+            {
+                foreach ($agentliste as $membrekey => $membre) 
+                {
                     // echo "boucle => " .$membre->nom() . "<br>";
                     $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
                     $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
@@ -512,7 +519,8 @@
                     // echo $membre->demandeslistehtmlpourvalidation($debut , $fin, $user->id(),null, $cleelement);
                     //$htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(), $structure->id(), $cleelement);
                     $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, $user->agentid(),$mode);
-                    if ($htmltodisplay != "") {
+                    if ($htmltodisplay != "") 
+                    {
                         echo $htmltodisplay;
                         echo "<br>";
                         $aumoinsunedemande = TRUE;
@@ -530,13 +538,15 @@
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
-    } elseif (! $user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) {
+    } 
+    elseif (! $user->estresponsable() and (strcasecmp((string)$mode, MODE_RESPONSABLE) == 0)) 
+    {
         echo "Vous n'êtes pas responsable, vous ne pouvez pas valider les demandes de congés/d'absence <br>";
     }
 
-    if ($user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
+    if ($user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) 
+    {
         echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
-        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         $listestruct = $user->structgestliste();
         // On récupère la liste des structures où l'agent (donc le gestionnaire) gère les congés (des agents et/ou du responsable)
@@ -603,13 +613,15 @@
                     $htmltodisplay = $membre->demandeslistehtmlpourvalidation($debut, $fin, null,$mode);
                     // -------------------------------------------------------------
                     // echo "htmltodisplay = $htmltodisplay <br>";
-                    if ($htmltodisplay != "") {
+                    if ($htmltodisplay != "") 
+                    {
                         echo $htmltodisplay;
                         echo "<br>";
                         $aumoinsunedemande = true;
                     }
                 }
-                if (! $aumoinsunedemande) {
+                if (! $aumoinsunedemande) 
+                {
                     echo "Aucune demande en attente pour cette structure...<br>";
                 }
             }
@@ -622,14 +634,16 @@
         echo "<br>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "</form>";
-    } elseif (! $user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) {
+    } 
+    elseif (! $user->estgestionnaire() and (strcasecmp((string)$mode, MODE_GESTION) == 0)) 
+    {
         echo "Vous n'êtes pas gestionnaire, vous ne pouvez pas valdier les demandes de congés/d'absence <br>";
     }
     
     //var_dump ("mode = $mode");
-    if (strcasecmp((string)$mode, MODE_CONSULTANT) == 0) {
+    if (strcasecmp((string)$mode, MODE_CONSULTANT) == 0) 
+    {
         echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
-        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
         echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
         echo "<p class='centeraligntext'>Liste des agents avec une demande d'avis en attente</p>";
 
@@ -668,15 +682,41 @@
 
     if ($user->estprofilrh(agent::PROFIL_RHCONGE) and (strcasecmp((string)$mode, MODE_RH) == 0)) 
     {
-        $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
-        $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
-        $demandeliste = $fonctions->demandesaverifier($debut);
+        $anneeref = $fonctions->anneeref();
+        if (isset($_POST['anneeref']))
+        {
+            $anneeref = $_POST['anneeref'];
+        }
+
+        echo "<form name='changeanneeref' method='post'>";
+        echo "<input type='hidden' name='mode' value='" . $mode . "' />";
+        echo "<input type='hidden' name='userid' value='" . $user->agentid() . "' />";
+        echo "<input type='hidden' name='previous' value='" . $previoustxt . "' />";
+        if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
+        echo "<br>Année universitaire : ";
+        echo "<select id='anneeref' name='anneeref' onchange='this.closest(\"form\").submit();'>";
+        for ($cpt=($fonctions->anneeref()-4) ; $cpt<=$fonctions->anneeref() ; $cpt++)
+        {
+            if ($cpt == $anneeref) $selected = ' selected '; else $selected = '';
+            echo "<option value='$cpt' $selected>" . $cpt . '/' . ($cpt+1) . "</option>";
+        }
+        echo "</select>";
+        echo "</form>";
+        echo "<br>";
+
+        // $debut = $fonctions->formatdate(($fonctions->anneeref() - $previous) . $fonctions->debutperiode());
+        // $fin = $fonctions->formatdate(($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode());
+        $debut = $fonctions->formatdate(($anneeref) . $fonctions->debutperiode());
+        $fin = $fonctions->formatdate(($anneeref + 1) . $fonctions->finperiode());
+
+        $demandeliste = $fonctions->demandesaverifier($debut,$fin);
+
         $aumoinsunedemande = false;
+        echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
         if (count($demandeliste)>0)
         {
-            echo "<form name='frm_validation_conge'  method='post' enctype='multipart/form-data'>";
-            if (isset($_POST['pagepath'])) echo "<input type='hidden' name='pagepath' value='" . htmlspecialchars($_POST['pagepath']) . "'>";
             echo "<input type='submit' class='g2tbouton g2tvalidebouton' value='Enregistrer' />";
+            echo "<br><br>";
             // La liste retournée a une structure $liste[agentid][demandeid] = obj_demande
             // Ici on ne s'interresse qu'au agentid => que les clés du tableau
             // foreach ((array)$demandeliste as $agentid => $liste)

@@ -382,8 +382,23 @@
     }
 
     // # On regarde si le dossier est complet pour la période demandée ==> Si pas !! Pas de saisie possible
-    if (! is_null($agent) and ! $datefausse) {
-        if (! $agent->dossiercomplet($date_debut, $date_fin)) {
+    // Attention si l'agent est dans une bibliothèque on ignore le test
+    $struct = new structure($dbcon);
+    if (! is_null($agent) and $agent->structureid() <> "")
+    {
+        if (!$struct->load($agent->structureid()))
+        {
+            $msg_erreur = $msg_erreur . "Impossible de charger la structure de l'agent<br>";
+        }
+    }
+    if (($struct->id() . '' != '') and $struct->estbibliotheque())
+    {
+        // On ne vérifie pas que le dossier est complet ou pas.
+    }    
+    elseif (! is_null($agent) and ! $datefausse ) 
+    {
+        if (! $agent->dossiercomplet($date_debut, $date_fin)) 
+        {
             $errlog = "Le dossier est incomplet sur la période $date_debut -> $date_fin ==> Vous ne pouvez pas établir de demande.";
             $msg_erreur .= "<b>" . $errlog . "</b><br/>";
             error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($errlog));
@@ -441,7 +456,8 @@
     //echo "msg_erreur 1 = " .$msg_erreur ." <br>";
     
     //var_dump("avant le test agent is null");
-    if (is_null($agent)) {
+    if (is_null($agent)) 
+    {
         //var_dump('on est dans le agent is null');
         echo "<form name='demandeforagent'  method='post' action='etablir_demande.php'>";
         //if ($rh_mode=='yes')
@@ -507,36 +523,45 @@
     {
         addwaitingimgdiv();
 
-        if (strcasecmp((string)$typedemande, "conges") == 0) {
+        if (strcasecmp((string)$typedemande, "conges") == 0) 
+        {
             $fonctions->afficheperiodesobligatoires();
 
             echo "Demande de congés pour " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "<br/>";
             $solde = new solde($dbcon);
             $codecongeanticipe = "ann" . substr($fonctions->anneeref() + 1 - $previous, 2);
             $result = $solde->load($agent->agentid(), $codecongeanticipe);
-            if ($congeanticipe != "") {
+            if ($congeanticipe != "") 
+            {
                 // On pose un congé par anticipation
                 // - Vérifier que l'utilisateur est responsable (ou pas !!!)
                 // - Vérifier que le solde du congé annuel est = 0
                 // - Afficher le congé annuel de l'année de ref + 1
-                if ($result != "") {
+                if ($result != "") 
+                {
                     $result = $solde->creersolde($codecongeanticipe, $agent->agentid());
                     if ($result != "") {
                         $msg_erreur = $msg_erreur . "<br/><b>" . $result . "</b>";
                         $msg_erreur = $msg_erreur . "<b>Contactez l'administrateur pour qu'il crée le type de congés...</b><br/>";
                         $masquerboutonvalider = TRUE; // Empêche le bouton de s'afficher !!!
-                    } else
+                    } 
+                    else
                     {
                         $solde->load($agent->agentid(), $codecongeanticipe);
                         echo $fonctions->showmessage(fonctions::MSGWARNING, "Création du solde de congés " . $solde->typelibelle() . " pour l'agent " . $agent->civilite() . " " . $agent->nom() . " " . $agent->prenom() . "");
                     }
-                } else {
+                } 
+                else 
+                {
                     // echo "Avant solde liste... <br>";
                     $soldeliste = $agent->soldecongesliste($fonctions->anneeref() - $previous);
                     // echo "Avant le for each <br>";
-                    foreach ($soldeliste as $keysolde => $solde) {
-                        if (strcasecmp((string)$solde->typeabsenceid(), "ann") == 0 . substr(($fonctions->anneeref() - $previous), 2)) {
-                            if ($solde->solde() != 0) {
+                    foreach ($soldeliste as $keysolde => $solde)
+                    {
+                        if (strcasecmp((string)$solde->typeabsenceid(), "ann") == 0 . substr(($fonctions->anneeref() - $previous), 2)) 
+                        {
+                            if ($solde->solde() != 0) 
+                            {
                                 $msg_erreur = $msg_erreur . "<br/><b>Impossible de poser un congé par anticipation. Il reste " . $solde->solde() . " jours de congés à poser pour " . $solde->typelibelle() . "</b><br/>";
                                 $masquerboutonvalider = TRUE; // Empêche le bouton de s'afficher !!!
                             }
@@ -553,22 +578,38 @@
         if (! $datefausse) 
         {
             $planning = new planning($dbcon);
+            $struct = new structure($dbcon);
+            if ($agent->structureid() <> "")
+            {
+                if (!$struct->load($agent->structureid()))
+                {
+                    $msg_erreur = $msg_erreur . "Impossible de charger la structure de l'agent<br>";
+                    $ignoreabsenceautodecla = FALSE;
+                }
+            }
+
             if ($fonctions->convertvaluetobool($rh_mode))
             {
                 // On est en mode MODE_RH donc on ignore la présence/absence de l'agent
                 //echo 'On est en mode MODE_RH donc on ignore la présence/absence de l agent <br>';
                 $ignoreabsenceautodecla = TRUE;
             }
-
+            // Si l'agent est dans une bibliothèque on doit ignorer la présence/absence de l'agent
+            elseif (($struct->id() . '' != '') and $struct->estbibliotheque())
+            {
+                $ignoreabsenceautodecla = TRUE;
+            }
             // Si la date de fin est supérieur à la date de début et que l'on accepte que ca déborde
             // on fait un traitement spécial <=> pas de vérification des autodéclarations
-            elseif ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode() and strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
+            elseif ($fonctions->formatdatedb($date_fin) > ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode() and strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) 
+            {
                 // Si la date de fin est supérieure d'un mois à la date de fin de période ==> On refuse
                 // ==> On n'accepte que de déborder d'un mois
                 $datetemp = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
                 $timestamp = strtotime($datetemp);
                 $datetemp = date("Ymd", strtotime("+1month", $timestamp)); // On passe au mois suivant
-                if ($fonctions->formatdatedb($date_fin) > $datetemp) {
+                if ($fonctions->formatdatedb($date_fin) > $datetemp) 
+                {
                     $msg_erreur = $msg_erreur . "La date de fin est trop loin - en dehors de la période (1 mois)  <br>";
                     $ignoreabsenceautodecla = FALSE;
                 } 
@@ -650,34 +691,55 @@
                 $ignoresoldeinsuffisant = FALSE;
             }
             $resultat = $demande->store(null, $ignoreabsenceautodecla, $ignoresoldeinsuffisant);
-            if ($resultat == "") {
+            if ($resultat == "") 
+            {
                 // Si on est en mode "responsable" alors la demande doit être validée automatiquement
-                if (! is_null($responsable)) {
+                if (! is_null($responsable)) 
+                {
                     // Insertion code pour validation de la demande automatique....
                     $demandeid = $demande->id();
                     unset($demande);
                     $demande = new demande($dbcon);
                     $demande->load($demandeid);
-                    $demande->statut(demande::DEMANDE_VALIDE);
+
+                    $dbconstante = 'FONCTIONABSENCE';
+                    $absencefonction = 'n';
+                    if ($fonctions->testexistdbconstante($dbconstante)) { $absencefonction = $fonctions->liredbconstante($dbconstante); }
+                    // Si ce n'est pas un congés (=> C'est une absence), que la fonction de demande de validation par DRH est activé et que le statut est DEMANDE_ATTENTE
+                    if (!$fonctions->estunconge($demande->type()) and $fonctions->convertvaluetobool($absencefonction) and strcasecmp($demande->statut(), demande::DEMANDE_ATTENTE) == 0)
+                    {
+                        // On doit passer la demande d'absence avec le statut DEMANDE_VALID_RH
+                        $demande->statut(demande::DEMANDE_VALID_RH);
+                    }
+                    else
+                    {
+                        $demande->statut(demande::DEMANDE_VALIDE);
+                    }
                     $msgerreur = "";
                     $msgerreur = $demande->store();
                     if ($msgerreur != "")
                     {
                         echo $fonctions->showmessage(fonctions::MSGERROR, "Pas de validation automatique de la demande car " . $msgerreur . ".");
                     }
-                    else {
+                    else 
+                    {
                         $ics = null;
                         $pdffilename[0] = $demande->pdf($user->agentid());
                         $agent = $demande->agent();
                         $ics = $demande->ics($agent->mail());
-                        $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".";
+                        $corpmail = "Votre demande du " . $demande->datedebut() . " au " . $demande->datefin() . " est " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . ".<br>";
+                        if (!$fonctions->estunconge($demande->type()))
+                        {
+                            $corpmail .= "N'oubliez de joindre un justificatif d'absence à cette demande.<br>";
+                        }
                         if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) // Si c'est une demande prise sur un CET et qu'elle est validée => On joint le PDF d'utilisation du CET en congés
                         {
                             // On ajoute le fichier PDF d'utilisation du CET en congés
                             $pdffilename[1] = $fonctions->documentpath() . '/' . DOC_USAGE_CET;
                             $corpmail = $corpmail . "<br><br>Vous devez retourner par mail le document " . basename($pdffilename[1]) . "  rempli et signé à :<br>";
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
-                            foreach ($arrayagentrh as $gestrh) {
+                            foreach ($arrayagentrh as $gestrh)
+                            {
                                 $corpmail = $corpmail . $gestrh->identitecomplete() . " : " . $gestrh->mail() . "<br>";
                             }
                         }
@@ -703,7 +765,8 @@
                         if (strcasecmp((string)$demande->type(), "cet") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) 
                         {
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCET); // Profil = 1 ==> GESTIONNAIRE RH DE CET
-                            foreach ($arrayagentrh as $gestrh) {
+                            foreach ($arrayagentrh as $gestrh) 
+                            {
                                 $corpmail = "Une demande de congés a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " sur le CET de " . $agent->identitecomplete() . ".<br>";
                                 $corpmail = $corpmail . "<br>";
                                 $corpmail = $corpmail . "Détail de la demande :<br>";
@@ -718,7 +781,8 @@
                         elseif (strcasecmp((string)$demande->type(), "telesante") == 0 and strcasecmp((string)$demande->statut(), demande::DEMANDE_VALIDE) == 0) 
                         {
                             $arrayagentrh = $fonctions->listeprofilrh(agent::PROFIL_RHCONGE); // Profil = 2 ==> GESTIONNAIRE RH CONGE
-                            foreach ($arrayagentrh as $gestrh) {
+                            foreach ($arrayagentrh as $gestrh) 
+                            {
                                 $corpmail = "Une demande de type 'Télétravail pour raison de santé' a été " . mb_strtolower($fonctions->demandestatutlibelle($demande->statut()), 'UTF-8') . " pour " . $agent->identitecomplete() . ".<br>";
                                 $corpmail = $corpmail . "<br>";
                                 $corpmail = $corpmail . "Détail de la demande :<br>";
@@ -770,10 +834,13 @@
                     //echo "errormsg = $errormsg <br>";
                 }
                 $msgstore = "Votre demande a été enregistrée.<br>";
-                if (strcasecmp((string)$typedemande, "conges") == 0) {
+                if (strcasecmp((string)$typedemande, "conges") == 0) 
+                {
                     if (($demande->nbrejrsdemande()) > 1) {
                         $msgstore .= $demande->nbrejrsdemande() . " jours vous seront decomptés (" . $demande->typelibelle() . ")";
-                    } else {
+                    } 
+                    else 
+                    {
                         $msgstore .= $demande->nbrejrsdemande() . " jour vous sera decompté (" . $demande->typelibelle() . ")";
                     }
                 } else 
@@ -810,7 +877,9 @@
                 $listetype = null;
                 $commentaire = "";
                 
-            } else {
+            } 
+            else 
+            {
                 $msgstore = "Votre demande n'a pas été enregistrée.<br>" . $resultat;
                 error_log(basename(__FILE__) . " uid : " . $agentid . " : " . $fonctions->stripAccents($msgstore));
                 echo $fonctions->showmessage(fonctions::MSGERROR, $msgstore);
@@ -874,7 +943,7 @@
         // Calcul de la date de debut minimale pour le calendrier de début
         //if ($rh_mode == 'yes') 
         if ($fonctions->convertvaluetobool($rh_mode)) 
-       {
+        {
             $minperiode_debut =  $fonctions->formatdate($fonctions->anneeref()-$rh_annee_previous . $fonctions->debutperiode()); 
         }
         else 
@@ -933,8 +1002,8 @@
     				<input required class="calendrier" type='text' name='date_debut' id='<?php echo $calendrierid_deb ?>' oninput='showhiderecupdiv()' onchange='showhiderecupdiv()' size=10 minperiode='<?php echo "$minperiode_debut"; ?>' maxperiode='<?php echo "$maxperiode_debut"; ?>' value='<?php echo "$date_debut"; ?>'>
     			</td>
     			<td align="left">
-                                <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) { echo " checked "; } ?>>Matin 
-                                <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if ($deb_mataprem == fonctions::MOMENT_APRESMIDI) { echo " checked "; } ?>>Après-midi
+                    <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if (($deb_mataprem == fonctions::MOMENT_MATIN) or ($deb_mataprem . "" == '')) { echo " checked "; } ?>>Matin 
+                    <input type='radio' name='deb_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if ($deb_mataprem == fonctions::MOMENT_APRESMIDI) { echo " checked "; } ?>>Après-midi
     			</td>
     		</tr>
     		<tr>
@@ -943,18 +1012,20 @@
     				<input required class="calendrier" type='text' name='date_fin' id='<?php echo $calendrierid_fin ?>' oninput='showhiderecupdiv()' onchange='showhiderecupdiv()' size=10 minperiode='<?php echo "$minperiode_fin"; ?>' maxperiode='<?php echo "$maxperiode_fin"; ?>' value='<?php echo "$date_fin"; ?>'>
     			</td>
     			<td align="left">
-                                <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) { echo " checked "; } ?>>Matin
-                                <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if (($fin_mataprem == fonctions::MOMENT_APRESMIDI) or ($fin_mataprem . "" == '')) { echo " checked "; } ?>>Après-midi
+                    <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_MATIN; ?>' <?php if ($fin_mataprem == fonctions::MOMENT_MATIN) { echo " checked "; } ?>>Matin
+                    <input type='radio' name='fin_mataprem' value='<?php echo fonctions::MOMENT_APRESMIDI; ?>' <?php if (($fin_mataprem == fonctions::MOMENT_APRESMIDI) or ($fin_mataprem . "" == '')) { echo " checked "; } ?>>Après-midi
     			</td>
     		</tr>
     		<tr>
     			<td>Type de demande :</td>
     			<td colspan="2">
     <?php
-        if (strcasecmp((string)$typedemande, "conges") == 0) {
+        if (strcasecmp((string)$typedemande, "conges") == 0) 
+        {
             // echo "congesanticipe = " . $congeanticipe . "<br>";
             // C'est une demande par anticipation
-            if ($congeanticipe != "") {
+            if ($congeanticipe != "") 
+            {
                 $solde = new solde($dbcon);
                 $solde->typeabsenceid("ann" . substr(($fonctions->anneeref() + 1 - $previous), 2));
                 echo "<select name='listetype' id='listetype'>";
@@ -983,11 +1054,14 @@
                 }
                 $soldeliste = array_merge((array) $soldeliste, (array) $soldelisteannee);
                 //var_dump($soldeliste);
-                if (! is_null($soldeliste)) {
+                if (! is_null($soldeliste)) 
+                {
                     echo "<select name='listetype'  id='listetype' oninput='showhiderecupdiv() ; showhideperiodeoblig()' onchange='showhiderecupdiv() ; showhideperiodeoblig()'>";
                     $nbretype = 0;
-                    foreach ($soldeliste as $keysolde => $solde) {
-                        if ($solde->solde() > 0) {
+                    foreach ($soldeliste as $keysolde => $solde) 
+                    {
+                        if ($solde->solde() > 0) 
+                        {
                             ///////////////////////////////////////////////////////////////
                             //if ($rh_mode == 'yes' and $solde->typeabsenceid() != 'cet' and $show_cet == 'yes')
                             if ($fonctions->convertvaluetobool($rh_mode) and $solde->typeabsenceid() != 'cet' and $show_cet == 'yes')
@@ -1077,7 +1151,8 @@
             echo "<SELECT name='listetype' id='listetype' onchange='updatedisplay()' class='abssencecommfacultatif'>";
             $listecateg = $fonctions->listecategorieabsence();
             echo "<OPTION class='abssencecommfacultatif' value=''>-- Veuillez sélectionner un type d'absence --</OPTION>";
-            foreach ((array)$listecateg as $keycateg => $nomcateg) {
+            foreach ((array)$listecateg as $keycateg => $nomcateg) 
+            {
                 echo "<optgroup class='abssencecommfacultatif' label='" . str_replace("_", " ", $nomcateg) . " &nbsp;'>";
                 $listeabs = $fonctions->listeabsence($keycateg);
                 foreach ((array)$listeabs as $keyabs => $nomabs)
@@ -1484,7 +1559,8 @@
             }
 
         }
-        elseif (strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) {
+        elseif (strcasecmp((string)$fonctions->liredbconstante("LIMITE_CONGE_PERIODE"), "n") == 0) 
+        {
             $datetemp = ($fonctions->anneeref() + 1 - $previous) . $fonctions->finperiode();
             $timestamp = strtotime($datetemp);
             $datetemp = date("Ymd", strtotime("+1month", $timestamp)); // On passe au mois suivant

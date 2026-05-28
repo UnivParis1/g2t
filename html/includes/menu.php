@@ -1270,6 +1270,9 @@
                         </form> 
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé</a>
                     </li>
+<?php                                    
+    }
+?>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'etablir_demande.php'; ?>
                         <form name='dem_absence' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1289,6 +1292,10 @@
                         </form>
                         <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Gestion des demandes</a>
                     </li>
+<?php
+    if (!$agentstructure->estbibliotheque())
+    {
+?>
                     <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                         <?php $destpagename = 'saisir_tpspartiel.php'; ?>
                         <form name='agent_tpspartiel' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1525,6 +1532,9 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                             </li>
+<?php
+        }
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'valider_demande.php'; ?>
                                 <form name='resp_valid_conge' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1545,6 +1555,10 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
                             </li>
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'deplacer_teletravail.php'; ?>
                                 <form name='resp_depla_teletravail' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1565,6 +1579,9 @@
                                 </form>
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un agent</a>
                             </li>
+<?php
+        }
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
                                 <form name='resp_absence' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1576,6 +1593,10 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un agent</a>
                             </li>
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'ajouter_conges.php'; ?>
                                 <form name='resp_ajout_conge' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1645,10 +1666,6 @@
 ?>
                         </ul>
                     </li>
-<?php
-        if (!$estrespdebibliotheque)
-        {
-?>
                     <li role="none">
                         <a role="menuitem" aria-haspopup="true" aria-expanded="false" href="#anneeprecedente">
                             Gestion de l'année précédente
@@ -1657,6 +1674,10 @@
                             </svg>
                         </a>
                         <ul role="menu" aria-label="anneeprecedente" class="niveau3">  <!-- class="niveau3" -->
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'structure_planning.php'; ?>
                                 <form name='resp_struct_planning_previous' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1667,6 +1688,9 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Planning de la structure</a>
                             </li>
+<?php
+        }
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'valider_demande.php'; ?>
                                 <form name='resp_valid_conge_previous' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1687,6 +1711,10 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Annulation de congé ou d'absence</a>
                             </li>
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
                                 <form name='resp_conge_previous' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1698,6 +1726,9 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande de congé pour un agent</a>
                             </li>
+<?php
+        }
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'etablir_demande.php'; ?>
                                 <form name='resp_absence_previous' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1709,6 +1740,10 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Saisie d'une demande d'absence pour un agent</a>
                             </li>
+<?php
+        if (!$estrespdebibliotheque)
+        {
+?>
                             <li role="none" onclick="this.getElementsByTagName('form')[0].submit();">
                                 <?php $destpagename = 'affiche_solde.php'; ?>
                                 <form name='resp_aff_solde_previous' method='post' action="<?php echo "$destpagename"; ?>">
@@ -1719,16 +1754,17 @@
                                 </form> 
                                 <a role="menuitem" href="<?php echo "$destpagename"; ?>" onclick="this.parentNode.click(); return false;">Affichage du solde des agents de la structure</a>
                             </li>
-                        </ul>
-                    </li>
 <?php
         }
 ?>
+                        </ul>
+                    </li>
                 </ul>
             </li>
 <?php
     }
-?> 
+?>
+
 <!------------------------------------------------------------
                 Menu Gestionnaire
 ------------------------------------------------------------->
