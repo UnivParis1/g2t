@@ -217,6 +217,7 @@
                         divstructid.hidden = true;
                         divagentid.hidden = true;
                         divselecttype.hidden = true;
+                        divmotif.hidden = true;
                         labelmodalheader.innerHTML = 'Données manquantes';
                         divmodalcancelBtn.textContent = "Ok";
                         divmodalcancelBtn.hidden = false;
@@ -303,6 +304,7 @@
             divstructid.hidden = true;
             divagentid.hidden = true;
             divselecttype.hidden = true;
+            divmotif.hidden = true;
             labelmodalheader.innerHTML = 'Confirmation';
             divmodallabeltext.parentElement.classList.add('centeraligntext');
             divmodalcancelBtn.textContent = "Non";

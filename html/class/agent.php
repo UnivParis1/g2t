@@ -2412,14 +2412,32 @@ class agent
                     $htmltext = $htmltext . "</td>";   
                     $datatitle = '';
                     $datatitleindicator = '';
-                    if (strlen($demande->commentaire()) != 0) 
+                    if (strlen($demande->commentaire() . '') != 0) 
                     {
                         $datatitle = " data-title=" . chr(34) . htmlentities($this->fonctions->ajoute_crlf($demande->commentaire(),60)) . chr(34);
                         $datatitleindicator = " " . HTML_SHOWCOMMENT . " ";
 
                     }
-                    $htmltext = $htmltext . "<td $datatitle >";
-                    $htmltext = $htmltext . $demande->nbrejrsdemande() . $datatitleindicator;
+                    $justifindicator = "";
+                    $justiftitleindicator = '';
+                    if (strlen($demande->justiffilename() . '') != 0) 
+                    {
+                        $fullfilename = $demande->justiffilename();
+                        if (file_exists($fullfilename))
+                        {
+                            if (!isset($_SESSION['g2t']['filesecret']))
+                            {
+                                $_SESSION['g2t']['filesecret'] = base64_encode(random_bytes(16));
+                            }
+                            $justifindicator = " data-title=" . chr(34) . htmlentities("Afficher le justificatif") . chr(34);
+                            // $justiftitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                            $justiftitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?demandeid=' . $demande->id() .'&signature=' . hash_hmac('sha256', $demande->id(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                            // $justiftitleindicator = " " . HTML_SHOWJUSTIF . " ";
+                        }
+                    }
+
+                    $htmltext = $htmltext . "<td>"; // $datatitle >";
+                    $htmltext = $htmltext . trim($demande->nbrejrsdemande())  . " <label $datatitle >" . trim($datatitleindicator) . "</label> <label $justifindicator>" . trim($justiftitleindicator) . "</label>";
                     $htmltext = $htmltext . "</td>";   
                     $htmltext = $htmltext . "<td>";
                     $fullpdffilename = '';
@@ -2940,14 +2958,15 @@ const modifymotif = (motif, motifid) =>
                         // Si on a un fichier de justificatif et qu'on est en mode AGENT => On affiche le bouton permettant d'afficher le justificatif
                         if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_AGENT]) )
                         {
-                            $fullfilename = $this->fonctions->justificatifpath() . "/" . $demande->justiffilename();
+                            $fullfilename = $demande->justiffilename();
                             if (file_exists($fullfilename))
                             {
                                 if (!isset($_SESSION['g2t']['filesecret']))
                                 {
                                     $_SESSION['g2t']['filesecret'] = base64_encode(random_bytes(16));
                                 }
-                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                                // $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?demandeid=' . $demande->id() .'&signature=' . hash_hmac('sha256', $demande->id(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
                             }
                         }
 
@@ -2964,7 +2983,17 @@ const modifymotif = (motif, motifid) =>
                             $datatitleindicator .= '">'; //style="display:none"
                         }
 
-                        $htmltext = $htmltext . "   <td class='cellulesimple'>" . trim(trim($demande->typelibelle()) . ' ' . $datatitleindicator) . "</td>";
+                        // $htmltext = $htmltext . "   <td class='cellulesimple'>" . trim(trim($demande->typelibelle()) . ' ' . $datatitleindicator) . "</td>";
+                        $libelledemande = $this->fonctions->tronque_chaine($demande->typelibelle(),40, true);
+                        $datatitle = '';
+                        if (strlen($demande->typelibelle()) != strlen($libelledemande)) 
+                        {
+                            $datatitle = " data-title=" . chr(34) . htmlentities($demande->typelibelle()) . chr(34);  
+                        }
+                        $htmltext = $htmltext . "<td class='cellulesimple' >";
+                        $htmltext = $htmltext . "<label $datatitle>" . trim(trim($libelledemande) . '</label> ' . $datatitleindicator); 
+                        $htmltext = $htmltext . "</td>";
+
                         $datatitle = '';
                         $datatitleindicator = '';
                         $datatitletext  = '';
@@ -3017,7 +3046,7 @@ const modifymotif = (motif, motifid) =>
                         if (strcasecmp((string)$mode, MODE_AGENT) == 0 and in_array((string)$demande->statut(),[demande::DEMANDE_VALIDE, demande::DEMANDE_VALID_RH]))
                         {
                             $disable = "";
-                            $datetorepostmail = date('Y-m-d', strtotime($this->fonctions->formatdatedb($demande->datemailannulation()). ' + 7 days'));
+                            $datetorepostmail = $demande->datemailrelanceannulation(); // = date('Y-m-d', strtotime($this->fonctions->formatdatedb($demande->datemailannulation()). ' + 7 days'));
                             //var_dump($datetorepostmail);
 /***********************                            
                             if (isset($_POST["cancelbutton"]) and isset($_POST["cancelbutton"][$demande->id()]))
@@ -3043,7 +3072,7 @@ const modifymotif = (motif, motifid) =>
                         {
                             $htmltext = $htmltext . "<td class='cellulesimple' " 
                                 . " data-title=" . chr(34) . "Votre demande n'est pas validée. Vous pouvez annuler votre demande." . chr(34) . ">"
-                                . "<input type='submit' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick='if (this.tagname!=\"OK\") {click_element(\"cancel[" . $demande->id() . "]\"); return false; }'";
+                                . "<input type='submit' name=cancel[" . $demande->id() . "] id=cancel[" . $demande->id() . "] class='cancel g2tbouton g2tsupprbouton' value='Supprimer' onclick='if (this.tagname!=\"OK\") {click_element(\"cancel[" . $demande->id() . "]\",true); return false; }'";
                         }
                         else // On est en mode responsable
                         {
@@ -3099,7 +3128,22 @@ const modifymotif = (motif, motifid) =>
                                                         let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
                                                         if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
                                                         {
-                                                            alert('Le fichier est trop volumineux (taille maximale : " . round(ini_parse_quantity(ini_get('upload_max_filesize')) / 1024 / 1024) . "Mo)');
+                                                            divstructid.hidden = true;
+                                                            divagentid.hidden = true;
+                                                            divselecttype.hidden = true;
+                                                            divmotif.hidden = true;
+                                                            labelmodalheader.innerHTML = 'Document trop volumineux';
+                                                            masquerimgmodal('error');
+                                                            divmodalcancelBtn.textContent = 'Ok';
+                                                            divmodalcancelBtn.hidden = false;
+                                                            divmodalcancelBtn.classList.add('g2tokbouton');
+                                                            divmodalconfirmBtn.hidden = true;
+                                                            divmodallabeltext.parentElement.classList.add('centeraligntext');
+                                                            divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : " . ini_get('upload_max_filesize') . ")';
+                                                            divmodal.style.display = 'block';
+                                                            // event.target => C'est l'objet input de type file
+                                                            event.target.value = '';
+                                                            event.target.files.length = 0;
                                                         }
                                                         else
                                                         {
@@ -3266,14 +3310,15 @@ const modifymotif = (motif, motifid) =>
                         // if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_RESPONSABLE, MODE_RH]) )
                         if ($demande->justiffilename() . '' != '' and in_array($mode, [MODE_RH]) )
                         {
-                            $fullfilename = $this->fonctions->justificatifpath() . "/" . $demande->justiffilename();
+                            $fullfilename = $demande->justiffilename();
                             if (file_exists($fullfilename))
                             {
                                 if (!isset($_SESSION['g2t']['filesecret']))
                                 {
                                     $_SESSION['g2t']['filesecret'] = base64_encode(random_bytes(16));
                                 }
-                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                                // $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?filename=' . $demande->justiffilename() .'&signature=' . hash_hmac('sha256', $demande->justiffilename(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
+                                $datatitleindicator = '<a class="linkastext" target="_blank" href="affiche_justificatif.php?demandeid=' . $demande->id() .'&signature=' . hash_hmac('sha256', $demande->id(), $_SESSION['g2t']['filesecret']) . '" data-title="Afficher le justificatif.">' . HTML_SHOWJUSTIF . '</a>';
                             }
                         }
                         
@@ -3489,7 +3534,22 @@ const modifymotif = (motif, motifid) =>
                                         let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
                                         if (event.target.files[0].size >= " . ini_parse_quantity(ini_get('upload_max_filesize')) . ")
                                         {
-                                            alert('Le fichier est trop volumineux (taille maximale : " . round(ini_parse_quantity(ini_get('upload_max_filesize')) / 1024 / 1024) . "Mo)');
+                                            divstructid.hidden = true;
+                                            divagentid.hidden = true;
+                                            divselecttype.hidden = true;
+                                            divmotif.hidden = true;
+                                            labelmodalheader.innerHTML = 'Document trop volumineux';
+                                            masquerimgmodal('error');
+                                            divmodalcancelBtn.textContent = 'Ok';
+                                            divmodalcancelBtn.hidden = false;
+                                            divmodalcancelBtn.classList.add('g2tokbouton');
+                                            divmodalconfirmBtn.hidden = true;
+                                            divmodallabeltext.parentElement.classList.add('centeraligntext');
+                                            divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : " . ini_get('upload_max_filesize') . ")';
+                                            divmodal.style.display = 'block';
+                                            // event.target => C'est l'objet input de type file
+                                            event.target.value = '';
+                                            event.target.files.length = 0;
                                         }
                                         else
                                         {

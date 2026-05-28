@@ -975,6 +975,7 @@
             divstructid.hidden = true;
             divagentid.hidden = true;
             divselecttype.hidden = true;
+            divmotif.hidden = true;
             labelmodalheader.innerHTML = 'Confirmation';
             divmodallabeltext.parentElement.classList.add('centeraligntext');
             divmodalcancelBtn.textContent = "Non";

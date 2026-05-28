@@ -624,13 +624,15 @@
                     <br>
                     <input type='hidden' id='indexjroblig' name='indexjroblig' />
                     <p class='centeraligntext nomargin' id='labelreport' name='labelreport' hidden>
-                    <!-- <label id='labelreport' name='labelreport' hidden></label> -->
                     </p>
+                </div>
+                <div id='divmotif' name='divmotif' class='centeraligntext' hidden>
+                    <textarea name="motiftextarea" id="motiftextarea" class='motiftextarea' rows="5" cols="60"></textarea>
                 </div>
             </form>
             <menu class='nopadding centeraligntext'>
-                <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  <!-- javaconfirmbutton -->
-                <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button> <!-- javacancelbutton -->
+                <button id="questionconfirmBtn" value="" class='g2tbouton g2tvalidebouton'>Ok</button>  
+                <button id="questioncancelBtn" value="cancel" class='g2tbouton g2tannulerbouton'>Annuler</button>
             </menu>
         </div>
     </div>
@@ -645,6 +647,7 @@
         var divstructid = divmodal.querySelector('#divstructid');
         var divreportid = divmodal.querySelector('#divreportid');
         var divagentid = divmodal.querySelector('#divagentid');
+        var divmotif = divmodal.querySelector('#divmotif');
         var divselecttype = divmodal.querySelector('#divselecttype');
         var labelmodalheader = divmodal.querySelector('#labelmodalheader');
         var imgmodallist = divmodal.querySelectorAll(".imagedialog")
@@ -655,6 +658,7 @@
         var reportselect = divmodal.querySelector('#reportchoice');
         var labelreport = divmodal.querySelector('#labelreport');
         var indexjroblig = divmodal.querySelector('#indexjroblig');
+        var motiftextarea = divmodal.querySelector('#motiftextarea');
 
         // Si l'affichage change le contrôle qui a focus (voir checktextlength), on doit rendre le focus après que la fenêtre modale soit fermée
         var previousfocuscontrol = null;
@@ -678,6 +682,7 @@
             divstructid.hidden = true;
             divreportid.hidden = true;
             divagentid.hidden = true;
+            divmotif.hidden = true;
             divselecttype.hidden = true;
             labelreport.hidden = true;
             labelreport.innerHTML = '';
@@ -774,6 +779,7 @@
                     divagentid.hidden = true;
                     divselecttype.hidden = true;
                     divreportid.hidden = true;
+                    divmotif.hidden = true;
                     labelmodalheader.innerHTML = 'Longueur du texte';
                     divmodalcancelBtn.textContent = "Ok";
                     divmodalcancelBtn.hidden = false;
@@ -834,6 +840,7 @@
                     divagentid.hidden = true;
                     divselecttype.hidden = true;
                     divreportid.hidden = true;
+                    divmotif.hidden = true;
                     labelmodalheader.innerHTML = 'Longueur du texte';
                     divmodalcancelBtn.textContent = "Ok";
                     divmodalcancelBtn.hidden = false;

@@ -496,6 +496,18 @@ class demande
         }       
     }
 
+    function datemailrelanceannulation()
+    {
+        if ($this->fonctions->verifiedate($this->fonctions->formatdate($this->datemailannulation())))
+        {
+            return date('Y-m-d', strtotime($this->fonctions->formatdatedb($this->datemailannulation()). ' + 7 days'));
+        }
+        else
+        {
+            return '1900-01-01';
+        }
+    }
+
     /**
      *
      * @deprecated
@@ -1000,24 +1012,34 @@ class demande
                     $extension = array_search($mime_type,ALLOWED_FILE_TYPES);
                 }
                 $previousjustiffilename = $this->justiffilename();
-                if (trim($previousjustiffilename . '') != '' and file_exists($this->fonctions->justificatifpath() . '/' . $previousjustiffilename))
+                if (trim($previousjustiffilename . '') != '' and file_exists($previousjustiffilename))
                 {
-                    unlink($this->fonctions->justificatifpath() . '/' . $previousjustiffilename);
+                    unlink($previousjustiffilename);
                 }
+
+                $moisdemande = date('m', strtotime($this->fonctions->formatdatedb($this->date_demande())));
+                $anneedemande = date('Y', strtotime($this->fonctions->formatdatedb($this->date_demande())));
+                $finalpath = $this->fonctions->justificatifpath() . DIRECTORY_SEPARATOR . $anneedemande . '-' . $moisdemande;
                 $finaljustiffilename = 'justificatif_' . $this->demandeid . '.' . $extension;
-                $destination = $this->fonctions->justificatifpath() . '/' . $finaljustiffilename;
-                // var_dump($finaljustiffilename, $destination);
+
+                if (!file_exists($finalpath))
+                {
+                    mkdir("$finalpath",0777,true);
+                    chmod("$finalpath", 0777);
+                }
+                $finalpath = realpath("$finalpath");
+                $destination = $finalpath . DIRECTORY_SEPARATOR . $finaljustiffilename; 
                 // Now you move/upload your file
-                if (move_uploaded_file ($this->justiftmpfilename , $destination)) 
+                if (move_uploaded_file ($this->justiftmpfilename , "$destination")) 
                 {
                     $demandecomplement = new demandecomplement($this->dbconnect);
                     $complementid = demande::COMPLEMENTJUSTIF;
                     $demandecomplement->delete($this->demandeid,$complementid);
                     $demandecomplement->demandeid($this->demandeid);
                     $demandecomplement->complementid($complementid);
-                    $demandecomplement->valeur($finaljustiffilename);
+                    $demandecomplement->valeur($destination); // $finaljustiffilename);
                     $demandecomplement->store();
-                    $this->justiffilename = $finaljustiffilename;
+                    $this->justiffilename = $destination; // $finaljustiffilename;
                     $this->justiftmpfilename = null;
                     // var_dump("En théorie, le justificatif est ok pour la demande " . $this->demandeid);
                 }

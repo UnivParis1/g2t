@@ -488,6 +488,7 @@
                             divagentid.hidden = true;
                             divselecttype.hidden = true;
                             divreportid.hidden = true;
+                            divmotif.hidden = true;
                             labelmodalheader.innerHTML = 'Réactivation impossible';
                             divmodalcancelBtn.textContent = "Ok";
                             divmodalcancelBtn.hidden = false;

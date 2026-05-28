@@ -10,9 +10,10 @@
     $contents = '';
     $minetype = '';
 
-    if (isset($_GET['filename']) and isset($_GET['signature']))
+    if (isset($_GET['demandeid']) and isset($_GET['signature']))
     {
-        $filename = $_GET['filename'];
+        $demandeid = $_GET['demandeid'];
+        // $filename = $_GET['filename'];
         $signature = $_GET['signature'];
 
         if (!isset($_SESSION['g2t']['filesecret']))
@@ -21,7 +22,7 @@
             echo "Problème interne : Impossible de vérifier les paramètres de l'URL !";
             exit();  
         }
-        $verifsignature = hash_hmac('sha256', $filename, $_SESSION['g2t']['filesecret']);
+        $verifsignature = hash_hmac('sha256', $demandeid, $_SESSION['g2t']['filesecret']);
 
         if ($verifsignature !== $signature)
         {
@@ -30,7 +31,10 @@
             exit();
         }
 
-        $fullfilename = $fonctions->justificatifpath() . '/' . $filename;
+        $demande = new demande($dbcon);
+        $demande->load($demandeid);
+
+        $fullfilename = $demande->justiffilename() . '';
         if (!file_exists($fullfilename))
         {
             header('Content-type: text/html; charset=utf-8');

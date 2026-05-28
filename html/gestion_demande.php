@@ -43,7 +43,6 @@
        $mode = $_POST["mode"];
     }
 
-
     if (isset($_POST["agentid"]))
     {
        $agentid = $_POST["agentid"];
@@ -119,6 +118,12 @@
         $previous = 0;
     }
 
+    $inputmotif = '';
+    if (isset($_POST["inputmotif"]))
+    {
+        $inputmotif =$_POST["inputmotif"];
+    }
+
     // echo "Avant le include <br>";
     require ("includes/menu.php");
     // echo '<html><body class="bodyhtml"><br>';
@@ -146,16 +151,26 @@
         }
         else
         {
-            $demandeur->sendmail($resp,"Demande d'annulation d'une demande", "Merci de bien vouloir annuler ma demande de congés ou d'absence établie le " . $fonctions->formatdate($demande->date_demande()) . " :<br>"
-              . "<ul>"
-              . "<li>Début : " . $fonctions->formatdate($demande->datedebut()) . " " . $fonctions->nommoment($demande->moment_debut()) . "</li>"
-              . "<li>Fin : " . $fonctions->formatdate($demande->datefin()) . " " . $fonctions->nommoment($demande->moment_fin()) . "</li>"
-              . "<li>Nombre de jours : " . $demande->nbrejrsdemande() . "</li>"
-              . "<li>Type de demande : " . $demande->typelibelle() . "</li>"
-              . "</ul><br>");
-            $demande->datemailannulation(date('d/m/Y'));
-            $demande->store();
-            echo $fonctions->showmessage(fonctions::MSGINFO, "La demande d'annulation a été envoyée à " . $resp->identitecomplete());
+            $datetorepostmail = $demande->datemailrelanceannulation();
+            if ($datetorepostmail > date('Y-m-d'))
+            {
+                // On a déjà envoyé un message il y a moins de XX jours => On ne refait rien
+                // Cela evite les renvois de mails suite au refresh de pages de navigateurs (touche F5)
+            }
+            else
+            {
+                $demandeur->sendmail($resp,"Demande d'annulation d'une demande", "Merci de bien vouloir annuler ma demande de congés ou d'absence établie le " . $fonctions->formatdate($demande->date_demande()) . " :<br>"
+                . "<ul>"
+                . "<li>Début : " . $fonctions->formatdate($demande->datedebut()) . " " . $fonctions->nommoment($demande->moment_debut()) . "</li>"
+                . "<li>Fin : " . $fonctions->formatdate($demande->datefin()) . " " . $fonctions->nommoment($demande->moment_fin()) . "</li>"
+                . "<li>Nombre de jours : " . $demande->nbrejrsdemande() . "</li>"
+                . "<li>Type de demande : " . $demande->typelibelle() . "</li>"
+                . "</ul><br>"
+                . "Motif : " . htmlentities($inputmotif) . " <br>");
+                $demande->datemailannulation(date('d/m/Y'));
+                $demande->store();
+                echo $fonctions->showmessage(fonctions::MSGINFO, "La demande d'annulation a été envoyée à " . $resp->identitecomplete());
+            }
         }
     }
 
@@ -503,57 +518,132 @@
         //     return false;
         // }
 
+        motiftextarea.addEventListener("input", (event) => {
+            if (motiftextarea.value.trim() == '')
+            {
+                divmodalconfirmBtn.disabled = true;
+            }
+            else
+            {
+                divmodalconfirmBtn.disabled = false;
+
+            }
+         })
+
         divmodalconfirmBtn.onclick = function()
         {
+            // Si on demande le motif 
+            // if (labelmodalheader.innerHTML == 'Motif')
+            if (divmotif.hidden == false)
+            {
+                if (motiftextarea.value.trim() == '')
+                {
+                    alert("La saisie d'un motif est obligatoire.");
+                    return;
+                }
+                let elementid = divmodalconfirmBtn.getAttribute('active-elementid');
+                click_element(elementid,true);
+            }
+            // else if (labelmodalheader.innerHTML == 'Confirmation')
+            else
+            {
+                // ATTENTION : 
+                // La gestion est différente puisqu'on doit simuler l'appui sur le bouton et non le submit du formulaire
+                // ------------------------------------------------------------------------------------------------------
 
-            // ATTENTION : 
-            // La gestion est différente puisqu'on doit simuler l'appui sur le bouton et non le submit du formulaire
-            // ------------------------------------------------------------------------------------------------------
-            divmodal.style.display = "none";
-            var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
-            //console.log(activeelementid);
-            var submit_button = document.getElementById(activeelementid);
-            submit_button.tagname = 'OK';
-            submit_button.click();
+                divmodal.style.display = "none";
+                var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
+                //console.log(activeelementid);
+                var submit_button = document.getElementById(activeelementid);
 
-            // var activeelementid = divmodalconfirmBtn.getAttribute('active-elementid');
-            // var activeelement = document.getElementById(activeelementid)
-            // //console.debug(activeelement.name);
-            // //console.debug(activeelement.value);
-            // var closestform = activeelement.closest("form");
-            // //console.debug(closestform.name)
-            // closestform.submit();
+                // On récupère le motif directement depuis le textarea car il n'a pas été réinitialisé
+                let motif = motiftextarea.value;
+                // On vérifie que l'input n'est pas dans la page
+                let inputmotif = document.getElementById('inputmotif');
+                if (!inputmotif)
+                {
+                    // On ajoute dans le document un input caché contenant ce motif
+                    inputmotif = document.createElement("input");
+                    inputmotif.type = 'hidden';
+                    inputmotif.name = 'inputmotif';
+                    inputmotif.id = inputmotif.name;
+                    submit_button.closest('form').appendChild(inputmotif);
+                }
+                // console.log(inputmotif);
+                inputmotif.value = motif;
+
+                submit_button.tagname = 'OK';
+                submit_button.click();
+            }
         }
 
-        var click_element = function(elementid)
+        var click_element = function(elementid, tosubmit)
         {
-            masquerimgmodal('question');
-
-            var submit_button = document.getElementById(elementid);
-
-            if (submit_button.classList.contains("cancelbutton"))
+            if (tosubmit)
             {
-                divmodallabeltext.innerHTML = 'Confirmez vous l\'envoie de la requête d\'annulation pour cette demande auprès du responsable ?';
-            }
-            else if (submit_button.classList.contains("cancel"))
-            {
-                divmodallabeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
-            }
+                masquerimgmodal('question');
 
-            divstructid.hidden = true;
-            divagentid.hidden = true;
-            divselecttype.hidden = true;
-            labelmodalheader.innerHTML = 'Confirmation';
-            divmodallabeltext.parentElement.classList.add('centeraligntext');
-            divmodalcancelBtn.textContent = "Non";
-            divmodalcancelBtn.classList.add("g2tannulerbouton");
-            divmodalcancelBtn.setAttribute('active-elementid',elementid);
-            divmodalcancelBtn.hidden = false;
-            divmodalconfirmBtn.textContent = "Oui";
-            divmodalconfirmBtn.classList.add("g2tvalidebouton");
-            divmodalconfirmBtn.setAttribute('active-elementid',elementid);
-            divmodalconfirmBtn.hidden = false;
-            divmodal.style.display = "block";
+                var submit_button = document.getElementById(elementid);
+
+                if (submit_button.classList.contains("cancelbutton"))
+                {
+                    divmodallabeltext.innerHTML = 'Confirmez vous l\'envoi de la requête d\'annulation pour cette demande auprès du responsable ?';
+                }
+                else if (submit_button.classList.contains("cancel"))
+                {
+                    divmodallabeltext.innerHTML = 'Confirmez vous l\'annulation de cette demande ? ';
+                }
+
+                divstructid.hidden = true;
+                divagentid.hidden = true;
+                divselecttype.hidden = true;
+                divmotif.hidden = true;
+                labelmodalheader.innerHTML = 'Confirmation';
+                divmodallabeltext.parentElement.classList.add('centeraligntext');
+                divmodalcancelBtn.textContent = "Non";
+                divmodalcancelBtn.classList.add("g2tannulerbouton");
+                divmodalcancelBtn.setAttribute('active-elementid',elementid);
+                divmodalcancelBtn.hidden = false;
+                divmodalconfirmBtn.textContent = "Oui";
+                divmodalconfirmBtn.classList.add("g2tvalidebouton");
+                divmodalconfirmBtn.setAttribute('active-elementid',elementid);
+                divmodalconfirmBtn.hidden = false;
+                divmodalconfirmBtn.disabled = false;
+                divmodal.style.display = "block";
+            }
+            else
+            {
+                masquerimgmodal('question');
+
+                var submit_button = document.getElementById(elementid);
+
+                if (submit_button.classList.contains("cancelbutton"))
+                {
+                    divmodallabeltext.innerHTML = 'Saisissez le motif de la demande d\'annulation';
+                }
+                else if (submit_button.classList.contains("cancel"))
+                {
+                    divmodallabeltext.innerHTML = 'Saisissez le motif de la demande d\'annulation';
+                }
+
+                divstructid.hidden = true;
+                divagentid.hidden = true;
+                divselecttype.hidden = true;
+                divmotif.hidden = false;
+                labelmodalheader.innerHTML = 'Motif';
+                divmodallabeltext.parentElement.classList.add('centeraligntext');
+                divmodalcancelBtn.textContent = "Annuler";
+                divmodalcancelBtn.classList.add("g2tannulerbouton");
+                divmodalcancelBtn.setAttribute('active-elementid',elementid);
+                divmodalcancelBtn.hidden = false;
+                divmodalconfirmBtn.textContent = "Ok";
+                divmodalconfirmBtn.classList.add("g2tvalidebouton");
+                divmodalconfirmBtn.setAttribute('active-elementid',elementid);
+                divmodalconfirmBtn.hidden = false;
+                divmodalconfirmBtn.disabled = true;
+                motiftextarea.value = '';
+                divmodal.style.display = "block";
+            }
         };
 
     </script>

@@ -384,6 +384,7 @@ use Dom\ParentNode;
         divstructid.hidden = true;
         divagentid.hidden = true;
         divselecttype.hidden = true;
+        divmotif.hidden = true;
         labelmodalheader.innerHTML = 'Suppression d\'un signataire';
 
         if (!activeelement.classList.contains("XMLsignataire"))
@@ -455,6 +456,7 @@ use Dom\ParentNode;
         divstructid.hidden = true;
         divagentid.hidden = true;
         divselecttype.hidden = false;
+        divmotif.hidden = true;
         labelmodalheader.innerHTML = 'Ajout d\'un signataire';
 
         divmodalcancelBtn.textContent = "Annuler";

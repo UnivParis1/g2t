@@ -1027,7 +1027,8 @@ select {
     padding-right: 5px;
 }
 
-.commenttextarea {
+.commenttextarea,
+.motiftextarea {
     line-height:20px;
     resize: none;
 }

@@ -1322,7 +1322,7 @@
             echo "<!-- MAX_FILE_SIZE must precede the file input field -->";
             echo "<input type='hidden' name='MAX_FILE_SIZE' value='" . ini_parse_quantity(ini_get('upload_max_filesize')) . "' />";
             echo '<!-- Name of input element determines name in $_FILES array -->';
-            echo "Joindre un justificatif (taille maximale : " . ini_get('upload_max_filesize') . ") : <input name='justificatif' type='file' accept='";
+            echo "Joindre un justificatif (taille maximale : " . ini_get('upload_max_filesize') . ") : <input class='input-file' name='justificatif' type='file' accept='";
             foreach(ALLOWED_FILE_TYPES as $minetype)
             {
                 echo "$minetype, ";
@@ -1349,6 +1349,37 @@
 
 ?>    
     <script>      
+        let fileinputlist = document.getElementsByClassName('input-file');
+        if (fileinputlist)
+        {
+            for(let index=0; index<fileinputlist.length ; index++)
+            {
+                let fileinput = fileinputlist[index];
+                fileinput.addEventListener('change', function(event) 
+                {
+                    let fileName = event.target.files.length > 0 ? event.target.files[0].name : 'Aucun fichier choisi';
+                    if (event.target.files[0].size >= '<?php echo ini_parse_quantity(ini_get('upload_max_filesize')); ?>')
+                    {
+                        masquerimgmodal('error');
+                        divstructid.hidden = true;
+                        divagentid.hidden = true;
+                        divselecttype.hidden = true;
+                        divmotif.hidden = true;
+                        labelmodalheader.innerHTML = 'Document trop volumineux';
+                        divmodalcancelBtn.textContent = 'Ok';
+                        divmodalcancelBtn.hidden = false;
+                        divmodalcancelBtn.classList.add('g2tokbouton');
+                        divmodalconfirmBtn.hidden = true;
+                        divmodallabeltext.parentElement.classList.add('centeraligntext');
+                        divmodallabeltext.innerHTML = 'Le fichier est trop volumineux (taille maximale : <?php echo ini_get('upload_max_filesize'); ?>)';
+                        divmodal.style.display = 'block';
+                        // event.target => C'est l'objet input de type file
+                        event.target.value = '';
+                        event.target.files.length = 0;
+                    }
+                })
+            }
+        }
 
         var commentaire = document.getElementById('commentaire');
         if (commentaire)

@@ -71,13 +71,13 @@
         $motifliste = $_POST['motif'];
     }
 
-
     // echo "_POST = "; print_r($_POST); echo "<br>";
     // echo "_FILES = "; print_r($_FILES); echo "<br>";
-    //  var_dump($statutliste);
-    //  var_dump($motifliste);
+    // var_dump($statutliste);
+    // var_dump($motifliste);
 
-        // Si on a un justificatif qui a été posté 
+    $updatejustif = false;
+    // Si on a un justificatif qui a été posté 
     if (isset($_FILES) and count($_FILES)>0 and strcasecmp((string)$mode,MODE_RH)==0)
     {
         // On parcourt toutes les données
@@ -90,6 +90,7 @@
                 // On a uploadé un fichier si le code est != 4 (code 4 => Pas de fichier uploadé)
                 if ($_FILES[$key]['error'] != 4)
                 {
+                    $updatejustif = true;
                     $demandeid = explode('_',$key)[1];
                     // Le numéro de la demande est la partie droite après le '_'
                     $demande = new demande($dbcon);
@@ -124,7 +125,7 @@
         }
     }
 
-    if (is_array($statutliste))
+    if (is_array($statutliste) and $updatejustif==false)
     {
         if (strcasecmp((string)$mode,MODE_RH)==0)
         {
@@ -276,7 +277,7 @@
                 }
             }
         }
-        else    // On est en mode responsable
+        elseif (strcasecmp((string)$mode,MODE_RESPONSABLE)==0)    // On est en mode responsable
         {
             $cronuser = new agent($dbcon);
             $cronuser->load(SPECIAL_USER_IDCRONUSER);
@@ -451,6 +452,7 @@
     echo "<br>";
     echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_SHOWJUSTIF . "</label> pour afficher le justficatif d'une demande dans un nouvel onglet.<br>";
     echo "Cliquez sur le symbole <label class='fontsize18'>" . HTML_ADDJUSTIF . "</label> pour ajouter ou modifier le justificatif d'une demande.<br>";
+    echo "<U>Attention :</U> L'ajout/la modification d'un justificatif ne modifie pas le statut de la demande.<br>";
     echo "<br>";
 
 
