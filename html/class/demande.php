@@ -99,11 +99,13 @@ class demande
                 $errlog = "Demande->Load : " . $erreur;
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return;
             }
             if (mysqli_num_rows($query) == 0) {
                 $errlog = "Demande->Load : Demande $demandeid non trouvée";
                 echo $errlog . "<br/>";
                 error_log(basename(__FILE__) . " " . $this->fonctions->stripAccents($errlog));
+                return;
             }
             $result = mysqli_fetch_row($query);
             $this->demandeid = "$result[0]";
